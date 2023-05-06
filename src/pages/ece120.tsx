@@ -1,7 +1,5 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import Link from "next/link";
-import { signIn, signOut, useSession } from "next-auth/react";
 
 import { Card, Image, Text, Title, Badge, MantineProvider, Button, Group } from '@mantine/core';
 
@@ -9,16 +7,12 @@ import { FileInput, rem } from '@mantine/core';
 import { IconUpload } from '@tabler/icons-react';
 
 import { createStyles } from '@mantine/core';
-import { useListState } from '@mantine/hooks';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { IconGripVertical } from '@tabler/icons-react';
-
-
 
 import { api } from "~/utils/api";
 
-const Home: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
+
+const CourseMain: NextPage = () => {
+  // const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
   return (
     <>
@@ -29,9 +23,9 @@ const Home: NextPage = () => {
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/>
-
       </Head>
-      <main className="flex min-h-screen flex-col items-left justify-left background #a3e635">
+
+      <main className="flex min-h-screen flex-col items-left justify-left; course-page-main">
 
         
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
@@ -43,8 +37,8 @@ const Home: NextPage = () => {
           <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             ECE <span className="text-[hsl(280,100%,70%)]">120</span>
           </h2>
-        <Text STYLE="font-family: 'Lora'" size="md" color="white">
-          Taught by <Text STYLE="display: inline" color="skyblue">Prof. Volodymyr (Vlad) Kindratenko</Text>, Director of the Center for Artificial Intelligence Innovation at NCSA, in <Text STYLE="display: inline" color="skyblue">Spring 2022</Text>.
+        <Text style={{fontFamily: 'Lora'}} size="md" color="white">
+          Taught by <Text style={{display: "inline"}} color="skyblue">Prof. Volodymyr (Vlad) Kindratenko</Text>, Director of the Center for Artificial Intelligence Innovation at NCSA, in <Text style={{display: "inline"}} color="skyblue">Spring 2022</Text>.
         </Text>
         {/* <FileUpload /> */}
       
@@ -56,11 +50,11 @@ const Home: NextPage = () => {
 
         {/* MAIN WEEKLY CONTENT */}
         <Title order={1}>Course Overview</Title>
-        <div class="flex-container">
-          <div class="item"><CourseCard /></div>
-          <div class="item"><CourseCard /></div>
-          <div class="item"><CourseCard /></div>
-          <div class="item-wide"><DropzoneButton /></div>
+        <div className="flex-container">
+          <div className="item"><MaterialsCard /></div>
+          <div className="item"><MaterialsCard /></div>
+          <div className="item"><MaterialsCard /></div>
+          <div className="item-wide"><DropzoneButton /></div>
         </div>
 
         <Title order={1}>Week 1: Finite State Machines</Title>
@@ -92,7 +86,7 @@ const Home: NextPage = () => {
 };
 
 {/* <DndListHandle data={"position": 1, "mass": 2, "symbol": "string", "name": "string"}/> */}
-export default Home;
+export default CourseMain;
 
 import { Switch, Flex, Container, TextInput, TextInputProps, ActionIcon, useMantineTheme } from '@mantine/core';
 import { IconSearch, IconArrowRight, IconArrowLeft } from '@tabler/icons-react';
@@ -191,7 +185,7 @@ export function DropzoneButton() {
     <div className={classes.wrapper} style={{ maxWidth: '50%'}}>
       <Dropzone
         openRef={openRef}
-        onDrop={() => {}}
+        onDrop={() => {console.log("Got your upload! But still haven't saved it.")}}
         className={classes.dropzone}
         radius="md"
         accept={[MIME_TYPES.pdf, MIME_TYPES.mp4, MIME_TYPES.docx, MIME_TYPES.xlsx, MIME_TYPES.pptx, MIME_TYPES.ppt, MIME_TYPES.doc, ]}
@@ -202,7 +196,7 @@ export function DropzoneButton() {
             <Dropzone.Accept>
               <IconDownload
                 size={rem(50)}
-                color={theme.colors[theme.primaryColor][6]}
+                color={theme.primaryColor[6]}
                 stroke={1.5}
               />
             </Dropzone.Accept>
@@ -242,9 +236,11 @@ function oneWeek() {
     <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">hello</h1>
   );
   }
-function CourseCard() {
+
+function MaterialsCard() {
   return (
-    <Card STYLE="max-width: 100%;" shadow="sm" padding="lg" radius="md" withBorder>
+    <div className="box-sizing: border-box; border: 100px solid #ccc;">
+    <Card style={{maxWidth: "100%"}} shadow="sm" padding="lg" radius="md" withBorder>
       <Card.Section>
         <Image
           src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
@@ -254,23 +250,23 @@ function CourseCard() {
       </Card.Section>
 
       <Group position="apart" mt="md" mb="xs">
-        <Text STYLE="font-family: 'Montserrat'" size="xl" weight={800}>ECE 120</Text>
+        <Text style={{fontFamily: 'Montserrat'}} size="xl" weight={800}>Finite Satem Machine Readings</Text>
         <Badge size="xl" color="pink" variant="light">
           ECE
         </Badge>
       </Group>
 
       <Text size="sm" color="dimmed">
-        Taught by <Text STYLE="display: inline" color="blue">Prof. Volodymyr (Vlad) Kindratenko</Text>, Director of the Center for Artificial Intelligence Innovation at NCSA, in <Text STYLE="display: inline" color="blue">Spring 2022</Text>.
+        Crucial for any learning endeavour.
       </Text>
 
       <Button variant="light" color="blue" fullWidth mt="md" radius="md">
         View
       </Button>
     </Card>
+    </div>
   );
 }
-
 
 function FileUpload() {
   return <FileInput multiple label="Upload your documents" placeholder="textbook.pdf  /   notes.docx  /  lecture.mp4" icon={<IconUpload size={rem(14)} />} />;
