@@ -13,7 +13,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     
-    <SessionProvider session={session}>
+    // <SessionProvider session={session}>
       <MantineProvider 
         withGlobalStyles 
         withNormalizeCSS 
@@ -48,7 +48,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
     >
         <Component {...pageProps} />
       </MantineProvider>
-    </SessionProvider>
+    // </SessionProvider>
   );
 };
 
