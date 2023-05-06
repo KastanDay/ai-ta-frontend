@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* .grid-container {
+  display: inline-grid;
+  gap: 20rem 0rem;
+  grid-template: auto / repeat(3, 1fr);
+} */
+
+.flex-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.item-wide {
+  flex: 1.5;
+  padding: 10px;
+  box-sizing: border-box;
+  /* border: 1px solid #ccc; */
+}
+.item {
+  flex: 1;
+  padding: 10px;
+  box-sizing: border-box;
+  /* border: 1px solid #ccc; */
+}
