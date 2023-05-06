@@ -17,9 +17,9 @@ const Home: NextPage = () => {
         <title>UIUC Course AI</title>
         <meta name="description" content="The AI teaching assistant built for students at UIUC." />
         <link rel="icon" href="/favicon.ico" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
+        {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat"/>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
 
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
@@ -52,9 +52,9 @@ const Home: NextPage = () => {
 
           {/* Main courses */}
           <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
+            {/* <p className="text-2xl text-white">
               {hello.data ? hello.data.greeting : "Loading tRPC query..."}
-            </p>
+            </p> */}
             {/* <AuthShowcase /> */}
             <CourseCard />
             <MoreCoursesSoonCard />

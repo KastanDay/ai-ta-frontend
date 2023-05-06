@@ -20,9 +20,9 @@ const CourseMain: NextPage = () => {
         <title>UIUC Course AI</title>
         <meta name="description" content="The AI teaching assistant built for students at UIUC." />
         <link rel="icon" href="/favicon.ico" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
+        {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat"/>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
       </Head>
 
       <main className="flex min-h-screen flex-col items-left justify-left; course-page-main">
