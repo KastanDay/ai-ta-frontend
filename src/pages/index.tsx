@@ -27,6 +27,27 @@ const Home: NextPage = () => {
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             <Link href="/">UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span></Link>
           </h1>
+          
+          <FeaturesCards/>
+
+          <Title color='white' order={1}>Check out the Courses </Title>
+
+          {/* Main courses */}
+          <div className="flex flex-col items-center gap-2">
+            {/* <p className="text-2xl text-white">
+              {hello.data ? hello.data.greeting : "Loading tRPC query..."}
+            </p> */}
+            {/* <AuthShowcase /> */}
+            <CourseCard />
+            <MoreCoursesSoonCard />
+
+            {/* <Text variant="gradient" size="xl" >ECE 120</Text>
+            <Text STYLE="font-family: 'Audiowide'" variant="gradient" gradient={{ from: 'indigo', to: 'cyan', deg: 45 }} size="xl" weight="800">ECE 120</Text> */}
+          </div>
+
+          <h4 className="font-extrabold tracking-tight text-white sm:text-[3rem]">
+            <Link href="/">Some background <span className="text-[hsl(280,100%,70%)]">about us</span></Link>
+          </h4>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
             <Link
               className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
@@ -49,20 +70,8 @@ const Home: NextPage = () => {
               </div>
             </Link>
           </div>
-
-          {/* Main courses */}
-          <div className="flex flex-col items-center gap-2">
-            {/* <p className="text-2xl text-white">
-              {hello.data ? hello.data.greeting : "Loading tRPC query..."}
-            </p> */}
-            {/* <AuthShowcase /> */}
-            <CourseCard />
-            <MoreCoursesSoonCard />
-
-            {/* <Text variant="gradient" size="xl" >ECE 120</Text>
-            <Text STYLE="font-family: 'Audiowide'" variant="gradient" gradient={{ from: 'indigo', to: 'cyan', deg: 45 }} size="xl" weight="800">ECE 120</Text> */}
-          </div>
         </div>
+        
 
         {/* <Text STYLE="font-family: 'Lora'" ta="left" variant="gradient" size="xl" weight="800">ECE 120</Text>
         <Text STYLE="font-family: 'Montserrat'" ta="left" variant="gradient" size="xl" weight="800">ECE 120</Text>
@@ -76,6 +85,115 @@ const Home: NextPage = () => {
 };
 
 export default Home;
+
+import {
+  createStyles,
+  SimpleGrid,
+  Container,
+} from '@mantine/core';
+import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react';
+
+const mockdata = [
+  {
+    title: 'Faster than ChatGPT, with better prompts',
+    description:
+      'It is said to have an IQ of 5,000 and is a math genius, and can answer any question you throw at it.',
+    icon: IconGauge,
+  },
+  {
+    title: 'Course Specific',
+    description:
+      'Made by your professor, with all your course materials for hyper-detailed answers.',
+    icon: IconUser,
+  },
+  {
+    title: 'Upload anything, get answers',
+    description:
+      'Add your own study materials and get answers from the AI. Optionally, share these with your classmates.',
+    icon: IconCookie,
+  },
+];
+
+const useStyles = createStyles((theme) => ({
+  title: {
+    fontSize: rem(34),
+    fontWeight: 900,
+
+    [theme.fn.smallerThan('sm')]: {
+      fontSize: rem(24),
+    },
+  },
+
+  description: {
+    maxWidth: 600,
+    margin: 'auto',
+
+    '&::after': {
+      content: '""',
+      display: 'block',
+      backgroundColor: 'white',//theme.fn.primaryColor(),
+      width: rem(45),
+      height: rem(2),
+      marginTop: theme.spacing.sm,
+      marginLeft: 'auto',
+      marginRight: 'auto',
+    },
+  },
+
+  card: {
+    border: `${rem(1)} solid ${
+      theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
+    }`,
+  },
+
+  cardTitle: {
+    '&::after': {
+      content: '""',
+      display: 'block',
+      backgroundColor: 'white',//theme.fn.primaryColor(),
+      width: rem(45),
+      height: rem(2),
+      marginTop: theme.spacing.sm,
+    },
+  },
+}));
+
+export function FeaturesCards() {
+  const { classes, theme } = useStyles();
+  const features = mockdata.map((feature) => (
+    <Card bg='white' key={feature.title} shadow="md" radius="md" className={classes.card} padding="xl">
+      <feature.icon size={rem(50)} stroke={2} color={theme.fn.primaryColor()} /> 
+      <Text color='dark' fz="lg" fw={500} className={classes.cardTitle} mt="md">
+        {feature.title}
+      </Text>
+      <Text style={{color: '#57534e'}} fz="sm" c="dimmed" mt="sm">
+        {feature.description}
+      </Text>
+    </Card>
+  ));
+
+  return (
+    <Container size="lg" py="xl">
+      {/* <Group position="center">
+        <Badge variant="filled" size="lg">
+          Features
+        </Badge>
+      </Group> */}
+
+      <Title color="white" order={2} className={classes.title} ta="center" mt="sm">
+        AI Teaching Assistant built for UIUC students,<br></br>by UIUC students.
+      </Title>
+
+      <Text color='#57534e' c="dimmed" className={classes.description} ta="center" mt="md">
+        Upload anything, search everything. Get factual answers.
+      </Text>
+
+      <SimpleGrid cols={3} spacing="xl" mt={50} breakpoints={[{ maxWidth: 'md', cols: 1 }]}>
+        {features}
+      </SimpleGrid>
+    </Container>
+  );
+}
 
 // TODO: USE BETTER CARDS! https://ui.mantine.dev/category/article-cards
 function CourseCard() {
