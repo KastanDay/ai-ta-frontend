@@ -43,32 +43,31 @@ const CourseMain: NextPage = () => {
             Taught by <Text style={{display: "inline"}} color="skyblue">Prof. Volodymyr (Vlad) Kindratenko</Text>, Director of the Center for Artificial Intelligence Innovation at NCSA, in <Text style={{display: "inline"}} color="skyblue">Spring 2022</Text>.
           </Text>
         </div>
-        {/* <FileUpload /> */}
       
         {/* QA goes here */}
-        <Container size="100rem" px="md" py="lg" >
+        <Container size="100rem" px="lg" py="lg" >
           <AShortChat />
           <InputWithButton pb="md"/>
           <ChatSettings />
         </Container>
 
         {/* MAIN WEEKLY CONTENT */}
-        {/* contentEditable="true" */}
-        <Container size="130rem" px="md" py="md">
+        <Container size="130" py="md" pl={"6em"}>
         <Title order={1}>Course Overview</Title> 
-        <div className="flex-container">
-          <div className="item"><MaterialsCard /></div>
+          <Flex
+            mih={50}
+            // bg="rgba(0, 0, 0, .3)"
+            justify="flex-start"
+            align="flex-start"
+            direction="row"
+            wrap="wrap"
+          >
+
+          <div className="item" ><MaterialsCard /></div>
           <div className="item"><MaterialsCard /></div>
           <div className="item"><MaterialsCard /></div>
           <div className="item-wide"><DropzoneButton /></div>
-        </div>
-        {/* <Textarea
-          placeholder="Course Overview"
-          // label="Autosize with no rows limit"
-          autosize
-          minRows={1}
-          maxRows={2}
-        /> */}
+        </Flex>
         
         <Title order={1}>Week 1: Finite State Machines</Title>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
@@ -111,9 +110,56 @@ export default CourseMain;
 
 import { Switch, Flex, Container, TextInput, TextInputProps, ActionIcon, useMantineTheme } from '@mantine/core';
 import { IconSearch, IconArrowRight, IconArrowLeft } from '@tabler/icons-react';
+import { useListState, randomId } from '@mantine/hooks';
+import { Checkbox } from '@mantine/core';
+
+const initialValues = [
+  { label: 'Week 1: Finite State Machines', checked: true, key: randomId() },
+  { label: 'Week 2: Circuit Diagrams', checked: true, key: randomId() },
+  { label: 'Week 3: LC-3 ISA', checked: true, key: randomId() },
+];
+
+export function IndeterminateCheckbox() {
+  const [values, handlers] = useListState(initialValues);
+
+  const allChecked = values.every((value) => value.checked);
+  const indeterminate = values.some((value) => value.checked) && !allChecked;
+
+  const items = values.map((value, index) => (
+    <Checkbox
+      mt="xs"
+      ml={33}
+      color="cyan"
+      label={value.label}
+      key={value.key}
+      checked={value.checked}
+      onChange={(event) => handlers.setItemProp(index, 'checked', event.currentTarget.checked)}
+    />
+  ));
+
+  return (
+    <>
+    <Text size="lg" pb=".2rem" weight={700} variant="gradient" gradient={{ from: 'cyan', to: 'indigo', deg: 0 }}>Optionally refine your search space</Text>
+      <Checkbox
+        checked={allChecked}
+        indeterminate={indeterminate}
+        label="Include content from all weeks"
+        color="cyan"
+        transitionDuration={0}
+        onChange={() =>
+          handlers.setState((current) =>
+            current.map((value) => ({ ...value, checked: !allChecked }))
+          )
+        }
+      />
+      {items}
+    </>
+  );
+}
 
 function ChatSettings() {
   return (
+    <div>
     <Flex
       mih={50}
       // bg="rgba(0, 0, 0, .3)"
@@ -124,8 +170,11 @@ function ChatSettings() {
       wrap="wrap"
     >
       <PublicChatSwitch />
-      <UseGPT4Switch />
+      <GPT4Switch />
+      
     </Flex>
+    <IndeterminateCheckbox />
+    </div>
   );
 }
 
@@ -151,7 +200,7 @@ function AShortChat() {
       <div className="chat chat-start">
         <div className="chat-image avatar">
           <div className="w-10 rounded-full">
-            <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+            <img className="mask mask-hexagon-2" src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
           </div>
         </div>
         <div className="chat-header">
@@ -194,23 +243,22 @@ function AShortChat() {
 
 function PublicChatSwitch() {
   return (
-    <Switch
-      label="Share chat publicly"
-      description="Chat history appears on your profile"
-      color="hsl(280,100%,70%)"
-    />
-  );
-}
-
-function UseGPT4Switch() {
+      <Switch
+        label="Share chat publicly"
+        description="Chat history appears on your profile"
+        color="cyan"
+        />
+    );
+  }
+function GPT4Switch() {
   return (
-    <Switch
-      label="Use GPT-4 (instead of 3.5)"
-      description="Best for extremely long contexts "
-      color="light-purple"
-    />
-  );
-}
+      <Switch
+          label="Use GPT-4 (instead of 3.5)"
+          description="Best for extremely long contexts "
+          color="cyan"
+      />
+    );
+  }
 
 export function InputWithButton(props: TextInputProps) {
   const theme = useMantineTheme();
@@ -269,7 +317,7 @@ export function DropzoneButton() {
   const openRef = useRef<() => void>(null);
 
   return (
-    <div className={classes.wrapper} style={{ maxWidth: '50%'}}>
+    <div className={classes.wrapper} style={{ maxWidth: '220px'}}>
       <Dropzone
         openRef={openRef}
         onDrop={() => {console.log("Got your upload! But still haven't saved it.")}}
