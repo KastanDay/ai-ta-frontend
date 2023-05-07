@@ -20,15 +20,15 @@ const CourseMain: NextPage = () => {
         <title>ECE 120 Course AI</title>
         <meta name="description" content="The AI teaching assistant built for students at UIUC." />
         <link rel="icon" href="/favicon.ico" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
+        {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat"/>
-        {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
       </Head>
 
-      <main className="flex min-h-screen flex-col items-left justify-left course-page-main">
+      <main className="flex min-h-screen flex-col items-left justify-left; course-page-main">
 
         
-        <div className="container flex flex-col items-center justify-center gap-12 py-16 ">
+        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
           <Link href="/">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
