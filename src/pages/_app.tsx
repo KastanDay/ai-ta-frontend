@@ -23,9 +23,12 @@ const MyApp: AppType<{ session: Session | null }> = ({
           // Add your color
           deepBlue: ['#E9EDFC', '#C1CCF6', '#99ABF0' /* ... */],
           lime: ['#a3e635', '#65a30d', '#365314' /* ... */],
+          aiPurple: ['#C06BF9'],
           // or replace default theme color
           // blue: ['#E9EDFC', '#C1CCF6', '#99ABF0' /* ... */],
+          
         },
+        // primaryColor: 'aiPurple',
 
         shadows: {
           // md: '1px 1px 3px rgba(0, 0, 0, .25)',

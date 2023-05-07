@@ -22,7 +22,7 @@ const Home: NextPage = () => {
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
 
       </Head>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             <Link href="/">UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span></Link>
@@ -161,12 +161,12 @@ const useStyles = createStyles((theme) => ({
 export function FeaturesCards() {
   const { classes, theme } = useStyles();
   const features = mockdata.map((feature) => (
-    <Card bg='white' key={feature.title} shadow="md" radius="md" className={classes.card} padding="xl">
-      <feature.icon size={rem(50)} stroke={2} color={theme.fn.primaryColor()} /> 
-      <Text color='dark' fz="lg" fw={500} className={classes.cardTitle} mt="md">
+    <Card bg='#0E1116' key={feature.title} shadow="md" radius="md" className={classes.card} padding="xl">
+      <feature.icon size={rem(50)} stroke={2} color="#C06BF9"  /> 
+      <Text color='white' fz="lg" fw={500} className={classes.cardTitle} mt="md">
         {feature.title}
       </Text>
-      <Text style={{color: '#57534e'}} fz="sm" c="dimmed" mt="sm">
+      <Text style={{color: 'white'}} fz="sm" c="dimmed" mt="sm">
         {feature.description}
       </Text>
     </Card>
@@ -200,7 +200,7 @@ function CourseCard() {
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
     <Link href="/ece120">
-    <Card style={{maxWidth: "100%"}} shadow="sm" padding="lg" radius="md" withBorder>
+    <Card bg='#0E1116' style={{maxWidth: "100%"}} shadow="sm" padding="lg" radius="md" withBorder>
       <Card.Section>
         <Image
           src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
@@ -233,7 +233,7 @@ function MoreCoursesSoonCard() {
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
     <Link href="/ece120">
-    <Card style={{maxWidth: "100%"}} shadow="sm" padding="lg" radius="md" withBorder>
+    <Card bg='#0E1116' style={{maxWidth: "100%"}} shadow="sm" padding="lg" radius="md" withBorder>
       <Card.Section>
         <Image
           src="https://github.com/KastanDay/learning-t3/blob/dd33e38bc801f4f6bbfc3b3a826a09d805f9bf65/media/Toy_University_students_walking_walter_wick_StableDiffusion-xl-beta-v2-2-2.png?raw=true"

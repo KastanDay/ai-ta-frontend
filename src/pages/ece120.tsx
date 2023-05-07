@@ -51,7 +51,8 @@ const CourseMain: NextPage = () => {
         </Container>
 
         {/* MAIN WEEKLY CONTENT */}
-        <Title contentEditable="true" order={1}>Course Overview</Title>
+        {/* contentEditable="true" */}
+        <Title order={1}>Course Overview</Title> 
         <div className="flex-container">
           <div className="item"><MaterialsCard /></div>
           <div className="item"><MaterialsCard /></div>
@@ -129,6 +130,7 @@ function PublicChatSwitch() {
     <Switch
       label="Share chat publicly"
       description="Chat history appears on your profile"
+      color="hsl(280,100%,70%)"
     />
   );
 }
@@ -138,6 +140,7 @@ function UseGPT4Switch() {
     <Switch
       label="Use GPT-4 (instead of 3.5)"
       description="Best for extremely long contexts "
+      color="light-purple"
     />
   );
 }
@@ -206,6 +209,7 @@ export function DropzoneButton() {
         className={classes.dropzone}
         radius="md"
         accept={[MIME_TYPES.pdf, MIME_TYPES.mp4, MIME_TYPES.docx, MIME_TYPES.xlsx, MIME_TYPES.pptx, MIME_TYPES.ppt, MIME_TYPES.doc, ]}
+        bg="#0E1116"
         // maxSize={30 * 1024 ** 2} max file size
       >
         <div style={{ pointerEvents: 'none' }}>
@@ -257,7 +261,7 @@ function oneWeek() {
 function MaterialsCard() {
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
-    <Card style={{maxWidth: "100%"}} shadow="sm" padding="lg" radius="md" withBorder>
+    <Card bg='#0E1116' style={{maxWidth: "100%"}} shadow="sm" padding="lg" radius="md" withBorder>
       <Card.Section>
         <Image
           src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
@@ -286,5 +290,5 @@ function MaterialsCard() {
 }
 
 function FileUpload() {
-  return <FileInput multiple label="Upload your documents" placeholder="textbook.pdf  /   notes.docx  /  lecture.mp4" icon={<IconUpload size={rem(14)} />} />;
+  return <FileInput style={{backgroundColor: "#0E1116"}} multiple label="Upload your documents" placeholder="textbook.pdf  /   notes.docx  /  lecture.mp4" icon={<IconUpload size={rem(14)} />} />;
 }
