@@ -35,6 +35,7 @@
     "@trpc/next": "^10.18.0",
     "@trpc/react-query": "^10.18.0",
     "@trpc/server": "^10.18.0",
+    "@vercel/analytics": "^1.0.1",
     "dayjs": "^1.11.7",
     "embla-carousel-react": "^7.1.0",
     "next": "13.3.4",
