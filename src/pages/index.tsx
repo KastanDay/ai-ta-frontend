@@ -25,7 +25,7 @@ const Home: NextPage = () => {
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
+            <Link href="/">UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span></Link>
           </h1>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
             <Link
@@ -35,7 +35,7 @@ const Home: NextPage = () => {
             >
               <h3 className="text-2xl font-bold">Read the code →</h3>
               <div className="text-lg">
-                100% open source<br></br>100% free<br></br>100% awesome
+                100% free<br></br>100% open source<br></br>100% awesome
               </div>
             </Link>
             <Link
@@ -118,9 +118,9 @@ function MoreCoursesSoonCard() {
     <Card style={{maxWidth: "100%"}} shadow="sm" padding="lg" radius="md" withBorder>
       <Card.Section>
         <Image
-          src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
-          height={160}
-          alt="Norway"
+          src="https://github.com/KastanDay/learning-t3/blob/dd33e38bc801f4f6bbfc3b3a826a09d805f9bf65/media/Toy_University_students_walking_walter_wick_StableDiffusion-xl-beta-v2-2-2.png?raw=true"
+          height={300}
+          alt="Students walking to school"
         />
       </Card.Section>
 

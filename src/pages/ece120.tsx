@@ -1,7 +1,7 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 
-import { Card, Image, Text, Title, Badge, MantineProvider, Button, Group } from '@mantine/core';
+import { Textarea, Card, Image, Text, Title, Badge, MantineProvider, Button, Group } from '@mantine/core';
 
 import { FileInput, rem } from '@mantine/core';
 import { IconUpload } from '@tabler/icons-react';
@@ -17,7 +17,7 @@ const CourseMain: NextPage = () => {
   return (
     <>
       <Head>
-        <title>UIUC Course AI</title>
+        <title>ECE 120 Course AI</title>
         <meta name="description" content="The AI teaching assistant built for students at UIUC." />
         <link rel="icon" href="/favicon.ico" />
         {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
@@ -29,9 +29,11 @@ const CourseMain: NextPage = () => {
 
         
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
+          <Link href="/">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
           </h1>
+          </Link>
         </div>
         <div className="container flex flex-col items-left justify-center gap-12 px-20 py-16 ">
           <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
@@ -49,14 +51,21 @@ const CourseMain: NextPage = () => {
         </Container>
 
         {/* MAIN WEEKLY CONTENT */}
-        <Title order={1}>Course Overview</Title>
+        <Title contentEditable="true" order={1}>Course Overview</Title>
         <div className="flex-container">
           <div className="item"><MaterialsCard /></div>
           <div className="item"><MaterialsCard /></div>
           <div className="item"><MaterialsCard /></div>
           <div className="item-wide"><DropzoneButton /></div>
         </div>
-
+        {/* <Textarea
+          placeholder="Course Overview"
+          // label="Autosize with no rows limit"
+          autosize
+          minRows={1}
+          maxRows={2}
+        /> */}
+        
         <Title order={1}>Week 1: Finite State Machines</Title>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
           <DropzoneButton />
@@ -69,6 +78,13 @@ const CourseMain: NextPage = () => {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
           <DropzoneButton />
         </div>
+
+        <TextInput
+          placeholder="Add another content section here! (testing different ways of making the titles editable by the professors)"
+          variant="unstyled"
+          size="xl"
+          withAsterisk
+        />
 
 
 
@@ -153,6 +169,7 @@ export function InputWithButton(props: TextInputProps) {
 import { useRef } from 'react';
 import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
 import { IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react';
+import Link from "next/link";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -250,7 +267,7 @@ function MaterialsCard() {
       </Card.Section>
 
       <Group position="apart" mt="md" mb="xs">
-        <Text style={{fontFamily: 'Montserrat'}} size="xl" weight={800}>Finite Satem Machine Readings</Text>
+        <Text style={{fontFamily: 'Montserrat'}} size="xl" weight={800}>Finite State Machine Readings</Text>
         <Badge size="xl" color="pink" variant="light">
           ECE
         </Badge>
