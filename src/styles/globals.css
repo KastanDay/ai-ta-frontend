@@ -26,10 +26,27 @@
   /* border: 1px solid #ccc; */
 }
 
+/* Make the purple background fade out  */
 .course-page-main {
   /* height: 400px;     */
   background: -webkit-gradient(linear, left top, left bottom, from(#2e026d), to(#020307), color-stop(0.75, #15162c));
   background-color: #020307;
-  background-size: 100% 30%, 0%;
+  background-size: 100% 45%, 0%;
   background-repeat: no-repeat;
+}
+
+.fade {
+  overflow: hidden;
+  position: relative;
+  height: 6.1em; /* exactly three lines */
+}
+.fade::after {
+  content: "";
+  text-align: right;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 70%;
+  height: 1.2em;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), #0E1116 80%);
 }
