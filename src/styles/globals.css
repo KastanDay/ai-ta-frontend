@@ -30,6 +30,6 @@
   /* height: 400px;     */
   background: -webkit-gradient(linear, left top, left bottom, from(#2e026d), to(#020307), color-stop(0.75, #15162c));
   background-color: #020307;
-  background-size: 100% 30%, 0%;
+  background-size: 100% 30%, 30%;
   background-repeat: no-repeat;
 }

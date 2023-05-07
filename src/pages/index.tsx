@@ -17,12 +17,12 @@ const Home: NextPage = () => {
         <title>UIUC Course AI</title>
         <meta name="description" content="The AI teaching assistant built for students at UIUC." />
         <link rel="icon" href="/favicon.ico" />
-        {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat"/>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
+        {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
 
       </Head>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
+      <main className="flex min-h-screen min-w-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             <Link href="/">UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span></Link>
