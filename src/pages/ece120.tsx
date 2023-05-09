@@ -45,14 +45,18 @@ const CourseMain: NextPage = () => {
         </div>
       
         {/* QA goes here */}
-        <Container size="100rem" px="lg" py="lg" >
+        <Container size="xl" px="md" py="md" >
           <AShortChat />
           <InputWithButton pb="md"/>
           <ChatSettings />
         </Container>
 
         {/* MAIN WEEKLY CONTENT */}
-        <Container size="130" py="md" pl={"6em"}>
+        {/* <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 "> */}
+        {/* <Link href="/"> */}
+        {/* <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]"></h1> */}
+        {/* pl={"6em"} */}
+        <Container size="xl" px="md" py="md"> 
         <Title order={1}>Course Overview</Title> 
           <Flex
             mih={50}
@@ -180,7 +184,7 @@ function ChatSettings() {
 
 function AShortChat() {
   return (
-    <Container size="50rem" px="md" py="md" >
+    <Container size="lg" px="md" py="md" >
       <div className="chat chat-end">
         <div className="chat-image avatar">
           <div className="w-10 rounded-full">
