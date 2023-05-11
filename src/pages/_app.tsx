@@ -1,24 +1,23 @@
-import { type AppType } from "next/app";
-import { type Session } from "next-auth";
-import { SessionProvider } from "next-auth/react";
-import { MantineProvider } from '@mantine/core';
-import { Analytics } from '@vercel/analytics/react';
+import { type AppType } from 'next/app'
+import { type Session } from 'next-auth'
+import { SessionProvider } from 'next-auth/react'
+import { MantineProvider } from '@mantine/core'
+import { Analytics } from '@vercel/analytics/react'
 
-import { api } from "~/utils/api";
+import { api } from '~/utils/api'
 
-import "~/styles/globals.css";
+import '~/styles/globals.css'
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
 }) => {
   return (
-    
     // <SessionProvider session={session}>
-      <MantineProvider 
-        withGlobalStyles 
-        withNormalizeCSS 
-        theme={{
+    <MantineProvider
+      withGlobalStyles
+      withNormalizeCSS
+      theme={{
         colorScheme: 'dark',
         colors: {
           // Add your color
@@ -27,7 +26,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
           aiPurple: ['#C06BF9'],
           // or replace default theme color
           // blue: ['#E9EDFC', '#C1CCF6', '#99ABF0' /* ... */],
-          
         },
         // primaryColor: 'aiPurple',
 
@@ -44,18 +42,17 @@ const MyApp: AppType<{ session: Session | null }> = ({
           },
         },
         defaultGradient: {
-            from: '#dc2626',
-            to: '#431407',
-            deg: 80,
-          },
+          from: '#dc2626',
+          to: '#431407',
+          deg: 80,
+        },
       }}
     >
-        <Component {...pageProps} />
-        <Analytics />
-
-      </MantineProvider>
+      <Component {...pageProps} />
+      <Analytics />
+    </MantineProvider>
     // </SessionProvider>
-  );
-};
+  )
+}
 
-export default api.withTRPC(MyApp);
+export default api.withTRPC(MyApp)

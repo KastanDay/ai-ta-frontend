@@ -1,12 +1,23 @@
-import { type NextPage } from "next";
-import Head from "next/head";
-import Link from "next/link";
+import { type NextPage } from 'next'
+import Head from 'next/head'
+import Link from 'next/link'
 // import { signIn, signOut, useSession } from "next-auth/react";
 
-import { FileInput, rem, Card, Image, Text, Title, Badge, MantineProvider, Button, Group } from '@mantine/core';
-import { IconUpload } from '@tabler/icons-react';
+import {
+  FileInput,
+  rem,
+  Card,
+  Image,
+  Text,
+  Title,
+  Badge,
+  MantineProvider,
+  Button,
+  Group,
+} from '@mantine/core'
+import { IconUpload } from '@tabler/icons-react'
 
-import { api } from "~/utils/api";
+import { api } from '~/utils/api'
 
 const Home: NextPage = () => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
@@ -15,22 +26,28 @@ const Home: NextPage = () => {
     <>
       <Head>
         <title>UIUC Course AI</title>
-        <meta name="description" content="The AI teaching assistant built for students at UIUC." />
+        <meta
+          name="description"
+          content="The AI teaching assistant built for students at UIUC."
+        />
         <link rel="icon" href="/favicon.ico" />
         {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
-
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            <Link href="/">UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span></Link>
+            <Link href="/">
+              UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
+            </Link>
           </h1>
-          
-          <FeaturesCards/>
 
-          <Title color='white' order={1}>Check out the Courses </Title>
+          <FeaturesCards />
+
+          <Title color="white" order={1}>
+            Check out the Courses{' '}
+          </Title>
 
           {/* Main courses */}
           <div className="flex flex-col items-center gap-2">
@@ -46,7 +63,10 @@ const Home: NextPage = () => {
           </div>
 
           <h4 className="font-extrabold tracking-tight text-white sm:text-[3rem]">
-            <Link href="/">Some background <span className="text-[hsl(280,100%,70%)]">about us</span></Link>
+            <Link href="/">
+              Some background{' '}
+              <span className="text-[hsl(280,100%,70%)]">about us</span>
+            </Link>
           </h4>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
             <Link
@@ -65,56 +85,24 @@ const Home: NextPage = () => {
               target="_blank"
             >
               <h3 className="text-2xl font-bold">Bio →</h3>
-              <div className="text-lg">
-                Made at UIUC by Kastan Day.
-              </div>
+              <div className="text-lg">Made at UIUC by Kastan Day.</div>
             </Link>
           </div>
         </div>
-
-        <div className="chat chat-start">
-          <div className="chat-header">
-            Obi-Wan Kenobi
-            <time className="text-xs opacity-50">2 hours ago</time>
-          </div>
-          <div className="chat-bubble">You were the Chosen One!</div>
-          <div className="chat-footer opacity-50">
-            Seen
-          </div>
-        </div>
-        <div className="chat chat-start">
-          <div className="chat-header">
-            Obi-Wan Kenobi
-            <time className="text-xs opacity-50">2 hour ago</time>
-          </div>
-          <div className="chat-bubble">I loved you.</div>
-          <div className="chat-footer opacity-50">
-            Delivered
-          </div>
-        </div>
-
-        
-        
-
         {/* <Text STYLE="font-family: 'Lora'" ta="left" variant="gradient" size="xl" weight="800">ECE 120</Text>
         <Text STYLE="font-family: 'Montserrat'" ta="left" variant="gradient" size="xl" weight="800">ECE 120</Text>
         <Text STYLE="font-family: 'Montserrat'" ta="left" size="xl" weight="800">ECE 120</Text>
         <Title order={1}>ECE 120</Title>
         <Title align="left" order={2}>ECE 120</Title> */}
-
       </main>
     </>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home
 
-import {
-  createStyles,
-  SimpleGrid,
-  Container,
-} from '@mantine/core';
-import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react';
+import { createStyles, SimpleGrid, Container } from '@mantine/core'
+import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
 
 const mockdata = [
   {
@@ -135,7 +123,7 @@ const mockdata = [
       'Add your own study materials and get answers from the AI. Optionally, share these with your classmates.',
     icon: IconCookie,
   },
-];
+]
 
 const useStyles = createStyles((theme) => ({
   title: {
@@ -154,7 +142,7 @@ const useStyles = createStyles((theme) => ({
     '&::after': {
       content: '""',
       display: 'block',
-      backgroundColor: 'white',//theme.fn.primaryColor(),
+      backgroundColor: 'white', //theme.fn.primaryColor(),
       width: rem(45),
       height: rem(2),
       marginTop: theme.spacing.sm,
@@ -173,27 +161,40 @@ const useStyles = createStyles((theme) => ({
     '&::after': {
       content: '""',
       display: 'block',
-      backgroundColor: 'white',//theme.fn.primaryColor(),
+      backgroundColor: 'white', //theme.fn.primaryColor(),
       width: rem(45),
       height: rem(2),
       marginTop: theme.spacing.sm,
     },
   },
-}));
+}))
 
 export function FeaturesCards() {
-  const { classes, theme } = useStyles();
+  const { classes, theme } = useStyles()
   const features = mockdata.map((feature) => (
-    <Card bg='#0E1116' key={feature.title} shadow="md" radius="md" className={classes.card} padding="xl">
-      <feature.icon size={rem(50)} stroke={2} color="#C06BF9"  /> 
-      <Text color='white' fz="lg" fw={500} className={classes.cardTitle} mt="md">
+    <Card
+      bg="#0E1116"
+      key={feature.title}
+      shadow="md"
+      radius="md"
+      className={classes.card}
+      padding="xl"
+    >
+      <feature.icon size={rem(50)} stroke={2} color="#C06BF9" />
+      <Text
+        color="white"
+        fz="lg"
+        fw={500}
+        className={classes.cardTitle}
+        mt="md"
+      >
         {feature.title}
       </Text>
-      <Text style={{color: 'white'}} fz="sm" c="dimmed" mt="sm">
+      <Text style={{ color: 'white' }} fz="sm" c="dimmed" mt="sm">
         {feature.description}
       </Text>
     </Card>
-  ));
+  ))
 
   return (
     <Container size="lg" py="xl">
@@ -203,90 +204,150 @@ export function FeaturesCards() {
         </Badge>
       </Group> */}
 
-      <Title color="white" order={2} className={classes.title} ta="center" mt="sm">
+      <Title
+        color="white"
+        order={2}
+        className={classes.title}
+        ta="center"
+        mt="sm"
+      >
         AI Teaching Assistant built for UIUC students,<br></br>by UIUC students.
       </Title>
 
-      <Text color='#57534e' c="dimmed" className={classes.description} ta="center" mt="md">
+      <Text
+        color="#57534e"
+        c="dimmed"
+        className={classes.description}
+        ta="center"
+        mt="md"
+      >
         Upload anything, search everything. Get factual answers.
       </Text>
 
-      <SimpleGrid cols={3} spacing="xl" mt={50} breakpoints={[{ maxWidth: 'md', cols: 1 }]}>
+      <SimpleGrid
+        cols={3}
+        spacing="xl"
+        mt={50}
+        breakpoints={[{ maxWidth: 'md', cols: 1 }]}
+      >
         {features}
       </SimpleGrid>
     </Container>
-  );
+  )
 }
 
 // TODO: USE BETTER CARDS! https://ui.mantine.dev/category/article-cards
 function CourseCard() {
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
-    <Link href="/ece120">
-    <Card bg='#0E1116' style={{maxWidth: "100%"}} shadow="sm" padding="lg" radius="md" withBorder>
-      <Card.Section>
-        <Image
-          src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
-          height={160}
-          alt="Norway"
-        />
-      </Card.Section>
+      <Link href="/ece120">
+        <Card
+          bg="#0E1116"
+          style={{ maxWidth: '100%' }}
+          shadow="sm"
+          padding="lg"
+          radius="md"
+          withBorder
+        >
+          <Card.Section>
+            <Image
+              src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
+              height={160}
+              alt="Norway"
+            />
+          </Card.Section>
 
-      <Group position="apart" mt="md" mb="xs">
-        <Text style={{fontFamily: 'Montserrat'}} size="xl" weight={800}>ECE 120</Text>
-        <Badge size="xl" color="pink" variant="light">
-          ECE
-        </Badge>
-      </Group>
+          <Group position="apart" mt="md" mb="xs">
+            <Text style={{ fontFamily: 'Montserrat' }} size="xl" weight={800}>
+              ECE 120
+            </Text>
+            <Badge size="xl" color="pink" variant="light">
+              ECE
+            </Badge>
+          </Group>
 
-      <Text size="sm" color="dimmed">
-        Taught by <Text style={{display: "inline"}} color="blue">Prof. Volodymyr (Vlad) Kindratenko</Text>, Director of the Center for Artificial Intelligence Innovation at NCSA, in <Text style={{display: "inline"}} color="blue">Spring 2022</Text>.
-      </Text>
+          <Text size="sm" color="dimmed">
+            Taught by{' '}
+            <Text style={{ display: 'inline' }} color="blue">
+              Prof. Volodymyr (Vlad) Kindratenko
+            </Text>
+            , Director of the Center for Artificial Intelligence Innovation at
+            NCSA, in{' '}
+            <Text style={{ display: 'inline' }} color="blue">
+              Spring 2022
+            </Text>
+            .
+          </Text>
 
-      <Button variant="light" color="blue" fullWidth mt="md" radius="md">
-        View
-      </Button>
-    </Card>
-    </Link>
+          <Button variant="light" color="blue" fullWidth mt="md" radius="md">
+            View
+          </Button>
+        </Card>
+      </Link>
     </div>
-  );
+  )
 }
 
 function MoreCoursesSoonCard() {
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
-    <Link href="/ece120">
-    <Card bg='#0E1116' style={{maxWidth: "100%"}} shadow="sm" padding="lg" radius="md" withBorder>
-      <Card.Section>
-        <Image
-          src="https://github.com/KastanDay/learning-t3/blob/dd33e38bc801f4f6bbfc3b3a826a09d805f9bf65/media/Toy_University_students_walking_walter_wick_StableDiffusion-xl-beta-v2-2-2.png?raw=true"
-          height={300}
-          alt="Students walking to school"
-        />
-      </Card.Section>
+      <Link href="/ece120">
+        <Card
+          bg="#0E1116"
+          style={{ maxWidth: '100%' }}
+          shadow="sm"
+          padding="lg"
+          radius="md"
+          withBorder
+        >
+          <Card.Section>
+            <Image
+              src="https://github.com/KastanDay/learning-t3/blob/dd33e38bc801f4f6bbfc3b3a826a09d805f9bf65/media/Toy_University_students_walking_walter_wick_StableDiffusion-xl-beta-v2-2-2.png?raw=true"
+              height={300}
+              alt="Students walking to school"
+            />
+          </Card.Section>
 
-      <Group position="apart" mt="md" mb="xs">
-        <Text style={{fontFamily: 'Montserrat'}} size="xl" weight={800}>More courses coming soon :)</Text>
-        <Badge size="xl" color="pink" variant="light">
-          ECE
-        </Badge>
-      </Group>
+          <Group position="apart" mt="md" mb="xs">
+            <Text style={{ fontFamily: 'Montserrat' }} size="xl" weight={800}>
+              More courses coming soon :)
+            </Text>
+            <Badge size="xl" color="pink" variant="light">
+              ECE
+            </Badge>
+          </Group>
 
-      <Text size="sm" color="dimmed">
-        Taught by <Text style={{display: "inline"}} color="blue">Prof. Volodymyr (Vlad) Kindratenko</Text>, Director of the Center for Artificial Intelligence Innovation at NCSA, in <Text style={{display: "inline"}} color="blue">Spring 2022</Text>.
-      </Text>
+          <Text size="sm" color="dimmed">
+            Taught by{' '}
+            <Text style={{ display: 'inline' }} color="blue">
+              Prof. Volodymyr (Vlad) Kindratenko
+            </Text>
+            , Director of the Center for Artificial Intelligence Innovation at
+            NCSA, in{' '}
+            <Text style={{ display: 'inline' }} color="blue">
+              Spring 2022
+            </Text>
+            .
+          </Text>
 
-        <Button variant="light" color="blue" fullWidth mt="md" radius="md">
-          View
-        </Button>
-    </Card>
-    </Link>
+          <Button variant="light" color="blue" fullWidth mt="md" radius="md">
+            View
+          </Button>
+        </Card>
+      </Link>
     </div>
-  );
+  )
 }
 
 function BasicFileUpload() {
-  return <FileInput multiple label="Upload your documents" placeholder="textbook.pdf  /   notes.docx  /  lecture.mp4" icon={<IconUpload size={rem(14)} />} />;
+  return (
+    <FileInput
+      multiple
+      label="Upload your documents"
+      placeholder="textbook.pdf  /   notes.docx  /  lecture.mp4"
+      icon={<IconUpload size={rem(14)} />}
+    />
+  )
 }
 
 // const AuthShowcase: React.FC = () => {

@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from 'zod'
+import { createEnv } from '@t3-oss/env-nextjs'
 
 export const env = createEnv({
   /**
@@ -8,7 +8,7 @@ export const env = createEnv({
    */
   server: {
     DATABASE_URL: z.string().url(),
-    NODE_ENV: z.enum(["development", "test", "production"]),
+    NODE_ENV: z.enum(['development', 'test', 'production']),
     // NEXTAUTH_SECRET:
     //   process.env.NODE_ENV === "production"
     //     ? z.string().min(1)
@@ -46,4 +46,4 @@ export const env = createEnv({
     // DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
     // DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
   },
-});
+})
