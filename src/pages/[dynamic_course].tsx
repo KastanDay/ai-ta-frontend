@@ -1,5 +1,6 @@
 import { type NextPage } from 'next'
 import Head from 'next/head'
+import { env } from '~/env.mjs'
 
 import {
   Textarea,
@@ -20,29 +21,55 @@ import {
 import { IconUpload } from '@tabler/icons-react'
 import { api } from '~/utils/api'
 
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { createClient } from '@supabase/supabase-js'
+import { GetServerSideProps } from 'next'
 
 
-const CourseMain: NextPage = () => {
-  // const hello = api.example.hello.useQuery({ text: "from tRPC" });
+// run on server side
+export async function getServerSideProps(context) {
+  const { params } = context;
+  const { slug } = params;
+  console.log("params ----------------------", params)
+  const course_name = params['dynamic_course']
 
+  const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET)
+  async function checkCourseExists() {
+    const { data } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('name', course_name)
+      .single()
 
-  axios.get('https://flask-production-751b.up.railway.app/getContexts?language=penis')
-    .then(response => {
-      // Handle the response data
-      console.log("HERE IS OUR RESPONSE!");
-      console.log(response.data);
-    })
-    .catch(error => {
-      // Handle any errors
-      console.error(error);
-    });
+    if (!data) {
+      console.log('Course not found ☹️')
+    } else {
+      console.log('Course found 😍')
+    }
+    return data
+  }
 
+  const course_data = await checkCourseExists()
+  console.log("course_data")
+  console.log(course_data)
+  return {
+    props: {
+      course_data,
+      course_name,
+    },
+  }
+}
 
-  return (
-    <>
+const CourseMain: NextPage = (props) => {
+
+  console.log("PROPS IN COURSE_MAIN", props)
+
+  if (props.course_data == null) {
+    return (
+      <>
       <Head>
-        <title>ECE 120 Course AI</title>
+        <title>{GetCurrentPageName()}</title>
         <meta
           name="description"
           content="The AI teaching assistant built for students at UIUC."
@@ -63,7 +90,42 @@ const CourseMain: NextPage = () => {
         </div>
         <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
           <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            ECE <span className="text-[hsl(280,100%,70%)]">120</span>
+            Course does not exist, <span className="text-[hsl(280,100%,70%)]">yet!</span>
+          </h2>
+        <Title order={2}></Title>
+        <Title order={3}>To create course, simply upload your course materials!</Title>
+        <DropzoneButton />
+        </div>
+      </main>
+      </>
+      )
+  }
+
+  return (
+    <>
+      <Head>
+        <title>{GetCurrentPageName()}</title>
+        <meta
+          name="description"
+          content="The AI teaching assistant built for students at UIUC."
+        />
+        <link rel="icon" href="/favicon.ico" />
+        {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat"/>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
+      </Head>
+
+      <main className="items-left justify-left; course-page-main flex min-h-screen flex-col">
+        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
+          <Link href="/">
+            <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
+              UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
+            </h1>
+          </Link>
+        </div>
+        <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
+          <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
+            UIUC <span className="text-[hsl(280,100%,70%)]">{GetCurrentPageName()}</span>
           </h2>
           <Text style={{ fontFamily: 'Montserrat' }} size="md" color="white">
             Taught by{' '}
@@ -133,22 +195,13 @@ const CourseMain: NextPage = () => {
           />
         </Container>
 
-        {/* <Text variant="gradient" size="xl" >ECE 120</Text>
-        <Text STYLE="font-family: 'Audiowide'" variant="gradient" gradient={{ from: 'indigo', to: 'cyan', deg: 45 }} size="xl" weight="800">ECE 120</Text>
-        <Text STYLE="font-family: 'Lora'" ta="left" variant="gradient" size="xl" weight="800">ECE 120</Text>
-        <Text STYLE="font-family: 'Montserrat'" ta="left" variant="gradient" size="xl" weight="800">ECE 120</Text>
-        <Text STYLE="font-family: 'Montserrat'" ta="left" size="xl" weight="800">ECE 120</Text>
-        <Title order={2}>ECE 120</Title>
-        <Title align="left" order={2}>ECE 120</Title> */}
+        {/* <BuildContextCards /> */}
       </main>
     </>
   )
 }
-
-{
-  /* <DndListHandle data={"position": 1, "mass": 2, "symbol": "string", "name": "string"}/> */
-}
 export default CourseMain
+
 
 import {
   Switch,
@@ -158,10 +211,150 @@ import {
   TextInputProps,
   ActionIcon,
   useMantineTheme,
+  Checkbox
 } from '@mantine/core'
-import { IconSearch, IconArrowRight, IconArrowLeft } from '@tabler/icons-react'
+import { IconSearch, IconArrowRight, IconArrowLeft, IconExternalLink, IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
 import { useListState, randomId } from '@mantine/hooks'
-import { Checkbox } from '@mantine/core'
+import { useRef } from 'react'
+import { Dropzone, MIME_TYPES } from '@mantine/dropzone'
+import Link from 'next/link'
+import { useRouter } from 'next/router';
+import { UploadDropzone } from '@uploadthing/react'
+
+
+/// START OF COMPONENTS
+export const GetCurrentPageName = () => {
+  const router = useRouter();
+  return router.asPath.slice(1,);
+}
+
+export class getRoute extends React.Component {
+  
+    static async getInitialProps(context) {
+        // Using context prop to get asPath, query, context
+        const {asPath, query, pathname} = context 
+        return{asPath, query, pathname}
+    }
+      
+    render() {
+        // Consoling the values
+        console.log(this.props.pathname)
+        console.log(this.props.query)
+        console.log(this.props.asPath)
+        return (
+            <div>
+                <h1>GeeksforGeeks</h1>
+                <h2>Using Context prop in getInitialProps</h2>
+            </div>
+        )
+    }
+}
+  
+
+export const BuildContextCards = () => {
+  const [contexts, setContexts] = useState([]);
+
+  useEffect(() => {
+    axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app';
+
+    axios
+      .get('/getTopContexts', {
+        params: {
+          course_name: 'kastan',
+        },
+      })
+      .then((response) => {
+        setContexts(response.data.contexts);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
+
+  return (
+    <>
+      {contexts.map((context) => (
+        <DynamicMaterialsCard
+          key={context.id}
+          sourceName={context.source_name}
+          sourceLocation={context.source_location}
+          text={context.text}
+        />
+      ))}
+    </>
+  );
+};
+
+interface DynamicMaterialsCardProps {
+  sourceName: string;
+  sourceLocation: string;
+  text: string;
+}
+
+function DynamicMaterialsCard({ sourceName, sourceLocation, text }: DynamicMaterialsCardProps) {
+  return (
+    <div className="box-sizing: border-box; border: 100px solid #ccc;">
+      <Card
+        bg="#0E1116"
+        style={{ maxWidth: '20rem' }}
+        shadow="sm"
+        padding="md"
+        radius="md"
+        withBorder
+      >
+        <Card.Section>
+          <Image
+            src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
+            height={'7rem'}
+            alt="Norway"
+          />
+        </Card.Section>
+
+        <Group position="apart" mt="md" mb="xs">
+          <Text style={{ fontFamily: 'Montserrat' }} size="xl" weight={800}>
+            {sourceName}
+          </Text>
+        </Group>
+
+        <Text
+          size="sm"
+          variant="gradient"
+          weight={600}
+          gradient={{ from: 'yellow', to: 'green', deg: 0 }}
+        >
+          AI summary
+        </Text>
+        <Text className="fade" size="md" color="dimmed">
+          {text}
+        </Text>
+
+        <Link href={"https://kastanday.com"} rel="noopener noreferrer" target="_blank">
+          <Group >
+            <IconExternalLink 
+              size={20}
+              strokeWidth={2}
+              color={'white'}
+            />
+            <Text
+              size="xs"
+              variant="dimmed"
+              weight={4300}
+              // gradient={{ from: 'yellow', to: 'green', deg: 0 }}
+            >
+              Source {sourceLocation}
+            </Text>
+          </Group>
+        </Link>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button size="xs" variant="dimmed" pb="0">
+            Show full paragraph
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 
 const initialValues = [
   { label: 'Week 1: Finite State Machines', checked: true, key: randomId() },
@@ -351,10 +544,6 @@ export function InputWithButton(props: TextInputProps) {
   )
 }
 
-import { useRef } from 'react'
-import { Dropzone, MIME_TYPES } from '@mantine/dropzone'
-import { IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
-import Link from 'next/link'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {

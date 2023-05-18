@@ -18,5 +18,8 @@ const config = {
     locales: ['en'],
     defaultLocale: 'en',
   },
+  experimental: {
+    esmExternals: false, // To make upload thing work with /pages router.
+  },
 }
 export default config

@@ -4,6 +4,7 @@ const config = {
   semi: false,
   singleQuote: true,
   trailingComma: 'all',
+  pluginSearchDirs: false,
 }
 
 module.exports = config

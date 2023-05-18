@@ -20,29 +20,105 @@ import {
 import { IconUpload } from '@tabler/icons-react'
 import { api } from '~/utils/api'
 
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 
-const CourseMain: NextPage = () => {
-  // const hello = api.example.hello.useQuery({ text: "from tRPC" });
-
-
-  axios.get('https://flask-production-751b.up.railway.app/getContexts?language=penis')
+const oldBuildContextCards = () => {
+  axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app'
+  
+  axios.get('/getTopContexts', {
+      params: {
+        course_name: 'kastan'
+      }
+    })
     .then(response => {
       // Handle the response data
       console.log("HERE IS OUR RESPONSE!");
       console.log(response.data);
+  
+      response.data.contexts.forEach((context) => {
+        console.log("In the loop");
+        // console.log(context);
+        console.log(context.source_name);
+        console.log(context.source_location);
+        console.log(context.text);
+      }, this);
+    })
+    .catch(error => {
+      // Handle any errors
+      console.error(error);
+    });
+  return (
+    <>
+    
+    </>
+  )
+}
+
+const CourseMain: NextPage = () => {
+  // const hello = api.example.hello.useQuery({ text: "from tRPC" });
+  axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app'
+
+  axios.get('/getTopContexts', {
+      params: {
+        course_name: 'kastan'
+      }
+    })
+    .then(response => {
+      // Handle the response data
+      console.log("HERE IS OUR RESPONSE!");
+      console.log(response.data);
+
+      response.data.contexts.forEach((context) => {
+        console.log("In the loop");
+        // console.log(context);
+        console.log(context.source_name);
+        console.log(context.source_location);
+        console.log(context.text);
+      }, this);
     })
     .catch(error => {
       // Handle any errors
       console.error(error);
     });
 
+    const router = useRouter();
+    console.log("router.query.slug ----------------------")
+    console.log(router.query.slug)
+
+
+    // Optionally the request above could also be done as
+  // axios.get('/user', {
+  //     params: {
+  //       ID: 12345
+  //     }
+  //   })
+  //   .then(function (response) {
+  //     console.log(response);
+  //   })
+  //   .catch(function (error) {
+  //     console.log(error);
+  //   })
+  //   .finally(function () {
+  //     // always executed
+  //   });
+
+  // Want to use async/await? Add the `async` keyword to your outer function/method.
+  async function getUser() {
+    try {
+      const response = await axios.get('/user?ID=12345');
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
 
   return (
     <>
       <Head>
-        <title>ECE 120 Course AI</title>
+        <title>ACOURSEHERE</title>
         <meta
           name="description"
           content="The AI teaching assistant built for students at UIUC."
@@ -63,7 +139,7 @@ const CourseMain: NextPage = () => {
         </div>
         <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
           <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            ECE <span className="text-[hsl(280,100%,70%)]">120</span>
+            TODO <span className="text-[hsl(280,100%,70%)]">ACOURSEHERE</span>
           </h2>
           <Text style={{ fontFamily: 'Montserrat' }} size="md" color="white">
             Taught by{' '}
@@ -133,6 +209,10 @@ const CourseMain: NextPage = () => {
           />
         </Container>
 
+        <BuildContextCards />
+
+        <WhichPage />
+
         {/* <Text variant="gradient" size="xl" >ECE 120</Text>
         <Text STYLE="font-family: 'Audiowide'" variant="gradient" gradient={{ from: 'indigo', to: 'cyan', deg: 45 }} size="xl" weight="800">ECE 120</Text>
         <Text STYLE="font-family: 'Lora'" ta="left" variant="gradient" size="xl" weight="800">ECE 120</Text>
@@ -144,11 +224,8 @@ const CourseMain: NextPage = () => {
     </>
   )
 }
-
-{
-  /* <DndListHandle data={"position": 1, "mass": 2, "symbol": "string", "name": "string"}/> */
-}
 export default CourseMain
+
 
 import {
   Switch,
@@ -158,10 +235,156 @@ import {
   TextInputProps,
   ActionIcon,
   useMantineTheme,
+  Checkbox
 } from '@mantine/core'
-import { IconSearch, IconArrowRight, IconArrowLeft } from '@tabler/icons-react'
+import { IconSearch, IconArrowRight, IconArrowLeft, IconExternalLink, IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
 import { useListState, randomId } from '@mantine/hooks'
-import { Checkbox } from '@mantine/core'
+import { useRef } from 'react'
+import { Dropzone, MIME_TYPES } from '@mantine/dropzone'
+import Link from 'next/link'
+
+
+/// START OF COMPONENTS
+
+import { useRouter } from 'next/router';
+
+export const WhichPage = () => {
+  const router = useRouter();
+  console.log("router.query.slug ----------------------")
+  console.log(router.query.slug)
+  return <p>Post: {router.query.slug}</p>;
+}
+
+
+export class getRoute extends React.Component {
+  
+    static async getInitialProps(context) {
+        // Using context prop to get asPath, query, context
+        const {asPath, query, pathname} = context 
+        return{asPath, query, pathname}
+    }
+      
+    render() {
+        // Consoling the values
+        console.log(this.props.pathname)
+        console.log(this.props.query)
+        console.log(this.props.asPath)
+        return (
+            <div>
+                <h1>GeeksforGeeks</h1>
+                <h2>Using Context prop in getInitialProps</h2>
+            </div>
+        )
+    }
+}
+  
+// export default getRoute
+
+export const BuildContextCards = () => {
+  const [contexts, setContexts] = useState([]);
+
+  useEffect(() => {
+    axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app';
+
+    axios
+      .get('/getTopContexts', {
+        params: {
+          course_name: 'kastan',
+        },
+      })
+      .then((response) => {
+        setContexts(response.data.contexts);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
+
+  return (
+    <>
+      {contexts.map((context) => (
+        <DynamicMaterialsCard
+          key={context.id}
+          sourceName={context.source_name}
+          sourceLocation={context.source_location}
+          text={context.text}
+        />
+      ))}
+    </>
+  );
+};
+
+interface MaterialsCardSmallProps {
+  sourceName: string;
+  sourceLocation: string;
+  text: string;
+}
+
+
+function DynamicMaterialsCard({ sourceName, sourceLocation, text }: MaterialsCardSmallProps) {
+  return (
+    <div className="box-sizing: border-box; border: 100px solid #ccc;">
+      <Card
+        bg="#0E1116"
+        style={{ maxWidth: '20rem' }}
+        shadow="sm"
+        padding="md"
+        radius="md"
+        withBorder
+      >
+        <Card.Section>
+          <Image
+            src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
+            height={'7rem'}
+            alt="Norway"
+          />
+        </Card.Section>
+
+        <Group position="apart" mt="md" mb="xs">
+          <Text style={{ fontFamily: 'Montserrat' }} size="xl" weight={800}>
+            {sourceName}
+          </Text>
+        </Group>
+
+        <Text
+          size="sm"
+          variant="gradient"
+          weight={600}
+          gradient={{ from: 'yellow', to: 'green', deg: 0 }}
+        >
+          AI summary
+        </Text>
+        <Text className="fade" size="md" color="dimmed">
+          {text}
+        </Text>
+
+        <Link href={"https://kastanday.com"} rel="noopener noreferrer" target="_blank">
+          <Group >
+            <IconExternalLink 
+              size={20}
+              strokeWidth={2}
+              color={'white'}
+            />
+            <Text
+              size="xs"
+              variant="dimmed"
+              weight={4300}
+              // gradient={{ from: 'yellow', to: 'green', deg: 0 }}
+            >
+              Source {sourceLocation}
+            </Text>
+          </Group>
+        </Link>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button size="xs" variant="dimmed" pb="0">
+            Show full paragraph
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 
 const initialValues = [
   { label: 'Week 1: Finite State Machines', checked: true, key: randomId() },
@@ -351,10 +574,6 @@ export function InputWithButton(props: TextInputProps) {
   )
 }
 
-import { useRef } from 'react'
-import { Dropzone, MIME_TYPES } from '@mantine/dropzone'
-import { IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
-import Link from 'next/link'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {

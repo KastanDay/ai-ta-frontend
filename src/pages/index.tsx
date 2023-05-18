@@ -94,6 +94,9 @@ const Home: NextPage = () => {
         <Text STYLE="font-family: 'Montserrat'" ta="left" size="xl" weight="800">ECE 120</Text>
         <Title order={1}>ECE 120</Title>
         <Title align="left" order={2}>ECE 120</Title> */}
+        <script async src="https://cse.google.com/cse.js?cx=2616b82a523e047b2">
+        </script>
+        <div className="gcse-search"></div>
       </main>
     </>
   )
