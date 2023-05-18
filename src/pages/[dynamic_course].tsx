@@ -77,10 +77,6 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
 
   console.log("PROPS IN COURSE_MAIN", props)
 
-  if (!props.course_data) {
-    return (<Title> None</Title>)
-  }
-
   if (props.course_data == null) {
     return (
       <>
@@ -106,11 +102,15 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
         </div>
         <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
           <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            Course does not exist, <span className="text-[hsl(280,100%,70%)]">yet!</span>
+            Course does not exist, <span className="text-[hsl(280,100%,70%)]">&nbsp;yet!</span>
           </h2>
         <Title order={2}></Title>
-        <Title order={3}>To create course, simply upload your course materials!</Title>
-        <DropzoneButton />
+        <Flex direction="column" align="center" justify="center">
+          <Title order={3} p="md">To create course, simply upload your course materials and on will be created for you!</Title>
+          <Title order={3}>The course will be named:</Title> 
+          <Title order={2} p="md" variant="gradient" weight="bold" gradient={{ from: 'gold', to: 'white', deg: 140 }}>{props.course_name}</Title>
+          <DropzoneButton />
+        </Flex>
         </div>
       </main>
       </>
@@ -266,7 +266,7 @@ export const BuildContextCards = () => {
     axios
       .get('/getTopContexts', {
         params: {
-          course_name: 'kastan',
+          course_name: GetCurrentPageName(),
         },
       })
       .then((response: AxiosResponse<contextsResponse>) => {
