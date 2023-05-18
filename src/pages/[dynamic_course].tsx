@@ -22,15 +22,21 @@ import { IconUpload } from '@tabler/icons-react'
 import { api } from '~/utils/api'
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { createClient } from '@supabase/supabase-js'
-import { GetServerSideProps } from 'next'
+import { GetServerSideProps, GetServerSidePropsContext } from 'next'
+
 
 
 // run on server side
-export async function getServerSideProps(context) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { params } = context;
-  const { slug } = params;
+  if (!params) {
+    return {
+      course_data: null,
+      course_name: null,
+    }
+  }
   console.log("params ----------------------", params)
   const course_name = params['dynamic_course']
 
@@ -61,9 +67,19 @@ export async function getServerSideProps(context) {
   }
 }
 
-const CourseMain: NextPage = (props) => {
+interface CourseMainProps {
+  course_data: any,
+  course_name: string,
+}
+
+// run on client side
+const CourseMain: NextPage<CourseMainProps> = (props) => {
 
   console.log("PROPS IN COURSE_MAIN", props)
+
+  if (!props.course_data) {
+    return (<Title> None</Title>)
+  }
 
   if (props.course_data == null) {
     return (
@@ -228,31 +244,21 @@ export const GetCurrentPageName = () => {
   return router.asPath.slice(1,);
 }
 
-export class getRoute extends React.Component {
-  
-    static async getInitialProps(context) {
-        // Using context prop to get asPath, query, context
-        const {asPath, query, pathname} = context 
-        return{asPath, query, pathname}
-    }
-      
-    render() {
-        // Consoling the values
-        console.log(this.props.pathname)
-        console.log(this.props.query)
-        console.log(this.props.asPath)
-        return (
-            <div>
-                <h1>GeeksforGeeks</h1>
-                <h2>Using Context prop in getInitialProps</h2>
-            </div>
-        )
-    }
+interface getTopContextsResponse {
+  id: number;
+  source_name: string;
+  source_location: string;
+  text: string;
 }
-  
+
+interface contextsResponse {
+  contexts: getTopContextsResponse[];
+}
+
 
 export const BuildContextCards = () => {
-  const [contexts, setContexts] = useState([]);
+  // const [contexts, setContexts] = useState([]);
+  const [contexts, setContexts] = useState<getTopContextsResponse[]>([]);
 
   useEffect(() => {
     axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app';
@@ -263,7 +269,7 @@ export const BuildContextCards = () => {
           course_name: 'kastan',
         },
       })
-      .then((response) => {
+      .then((response: AxiosResponse<contextsResponse>) => {
         setContexts(response.data.contexts);
       })
       .catch((error) => {
@@ -273,7 +279,7 @@ export const BuildContextCards = () => {
 
   return (
     <>
-      {contexts.map((context) => (
+      {contexts.map((context: getTopContextsResponse) => (
         <DynamicMaterialsCard
           key={context.id}
           sourceName={context.source_name}

@@ -23,69 +23,42 @@ import { api } from '~/utils/api'
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-
-const oldBuildContextCards = () => {
-  axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app'
-  
-  axios.get('/getTopContexts', {
-      params: {
-        course_name: 'kastan'
-      }
-    })
-    .then(response => {
-      // Handle the response data
-      console.log("HERE IS OUR RESPONSE!");
-      console.log(response.data);
-  
-      response.data.contexts.forEach((context) => {
-        console.log("In the loop");
-        // console.log(context);
-        console.log(context.source_name);
-        console.log(context.source_location);
-        console.log(context.text);
-      }, this);
-    })
-    .catch(error => {
-      // Handle any errors
-      console.error(error);
-    });
-  return (
-    <>
-    
-    </>
-  )
+interface getTopContextsResponse {
+  id: number;
+  source_name: string;
+  source_location: string;
+  text: string;
 }
 
 const CourseMain: NextPage = () => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
-  axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app'
+  // axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app'
 
-  axios.get('/getTopContexts', {
-      params: {
-        course_name: 'kastan'
-      }
-    })
-    .then(response => {
-      // Handle the response data
-      console.log("HERE IS OUR RESPONSE!");
-      console.log(response.data);
+  // axios.get('/getTopContexts', {
+  //     params: {
+  //       course_name: 'kastan'
+  //     }
+  //   })
+  //   .then(response => {
+  //     // Handle the response data
+  //     console.log("HERE IS OUR RESPONSE!");
+  //     console.log(response.data);
+  //     response.data.contexts.forEach((context: getTopContextsResponse) => {
+  //       console.log("In the loop");
+  //       // console.log(context);
+  //       console.log(context.source_name);
+  //       console.log(context.source_location);
+  //       console.log(context.text);
+  //     }, this);
+  //   })
+  //   .catch(error => {
+  //     // Handle any errors
+  //     console.error(error);
+  //   });
 
-      response.data.contexts.forEach((context) => {
-        console.log("In the loop");
-        // console.log(context);
-        console.log(context.source_name);
-        console.log(context.source_location);
-        console.log(context.text);
-      }, this);
-    })
-    .catch(error => {
-      // Handle any errors
-      console.error(error);
-    });
-
-    const router = useRouter();
-    console.log("router.query.slug ----------------------")
-    console.log(router.query.slug)
+  //   const router = useRouter();
+  //   console.log("router.query.slug ----------------------")
+  //   console.log(router.query.slug)
 
 
     // Optionally the request above could also be done as
@@ -209,7 +182,7 @@ const CourseMain: NextPage = () => {
           />
         </Container>
 
-        <BuildContextCards />
+        {/* <BuildContextCards /> */}
 
         <WhichPage />
 
@@ -256,63 +229,39 @@ export const WhichPage = () => {
 }
 
 
-export class getRoute extends React.Component {
-  
-    static async getInitialProps(context) {
-        // Using context prop to get asPath, query, context
-        const {asPath, query, pathname} = context 
-        return{asPath, query, pathname}
-    }
-      
-    render() {
-        // Consoling the values
-        console.log(this.props.pathname)
-        console.log(this.props.query)
-        console.log(this.props.asPath)
-        return (
-            <div>
-                <h1>GeeksforGeeks</h1>
-                <h2>Using Context prop in getInitialProps</h2>
-            </div>
-        )
-    }
-}
-  
-// export default getRoute
+// export const BuildContextCards = () => {
+//   const [contexts, setContexts] = useState([]);
 
-export const BuildContextCards = () => {
-  const [contexts, setContexts] = useState([]);
+//   useEffect(() => {
+//     axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app';
 
-  useEffect(() => {
-    axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app';
+//     axios
+//       .get('/getTopContexts', {
+//         params: {
+//           course_name: 'kastan',
+//         },
+//       })
+//       .then((response) => {
+//         setContexts(response.data.contexts);
+//       })
+//       .catch((error) => {
+//         console.error(error);
+//       });
+//   }, []);
 
-    axios
-      .get('/getTopContexts', {
-        params: {
-          course_name: 'kastan',
-        },
-      })
-      .then((response) => {
-        setContexts(response.data.contexts);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }, []);
-
-  return (
-    <>
-      {contexts.map((context) => (
-        <DynamicMaterialsCard
-          key={context.id}
-          sourceName={context.source_name}
-          sourceLocation={context.source_location}
-          text={context.text}
-        />
-      ))}
-    </>
-  );
-};
+//   return (
+//     <>
+//       {contexts.map((context: getTopContextsResponse) => (
+//         <DynamicMaterialsCard
+//           key={context.id}
+//           sourceName={context.source_name}
+//           sourceLocation={context.source_location}
+//           text={context.text}
+//         />
+//       ))}
+//     </>
+//   );
+// };
 
 interface MaterialsCardSmallProps {
   sourceName: string;
