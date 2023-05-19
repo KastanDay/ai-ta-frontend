@@ -1,9 +1,10 @@
 import { type NextPage } from 'next'
 import Head from 'next/head'
 import { env } from '~/env.mjs'
+import dynamic from 'next/dynamic';
 
 import {
-  Textarea,
+  // Textarea,
   Card,
   Image,
   Text,
@@ -26,7 +27,29 @@ import axios, { AxiosResponse } from 'axios';
 import { createClient } from '@supabase/supabase-js'
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 
+// trying to do supabase connection on edge function.
+// export const config = {
+  //   runtime: 'edge', // this is a pre-requisite
+  // };
+  
+  
+// TRY TO UPLOAD TO S3
+import { S3Client, PutObjectCommand, PutObjectRequest, PutObjectCommandInput } from '@aws-sdk/client-s3';
 
+const aws_config = {
+  bucketName: process.env.S3_BUCKET_NAME,
+  region: 'us-east-1',
+  accessKeyId: process.env.AWS_KEY,
+  secretAccessKey: process.env.AWS_SECRET,
+};
+
+const s3Client = new S3Client({
+  region: aws_config.region,
+    credentials: {
+      accessKeyId: process.env.AWS_KEY as string,
+      secretAccessKey: process.env.AWS_SECRET as string,
+    },
+});
 
 // run on server side
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -76,7 +99,9 @@ interface CourseMainProps {
 const CourseMain: NextPage<CourseMainProps> = (props) => {
 
   console.log("PROPS IN COURSE_MAIN", props)
+  const course_name = props.course_name
 
+  // MAKE A NEW COURSE PAGE
   if (props.course_data == null) {
     return (
       <>
@@ -106,10 +131,10 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
           </h2>
         <Title order={2}></Title>
         <Flex direction="column" align="center" justify="center">
-          <Title order={3} p="md">To create course, simply upload your course materials and on will be created for you!</Title>
-          <Title order={3}>The course will be named:</Title> 
-          <Title order={2} p="md" variant="gradient" weight="bold" gradient={{ from: 'gold', to: 'white', deg: 140 }}>{props.course_name}</Title>
-          <DropzoneButton />
+          <Title style={{color: 'White'}} order={3} p="md">To create course, simply upload your course materials and on will be created for you!</Title>
+          <Title style={{color: 'White'}} order={3} variant='normal'>The course will be named:</Title> 
+          <Title style={{color: 'White'}} order={2} p="md" variant="gradient" weight="bold" gradient={{ from: 'gold', to: 'white', deg: 140 }}>{props.course_name}</Title>
+          <DropzoneS3Upload course_name={props.course_name} />
         </Flex>
         </div>
       </main>
@@ -117,6 +142,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
       )
   }
 
+  // COURSE PAGE
   return (
     <>
       <Head>
@@ -186,21 +212,21 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
               <MaterialsCard />
             </div>
             <div className="item-wide">
-              <DropzoneButton />
+              <DropzoneS3Upload course_name={course_name} />
             </div>
           </Flex>
 
           <Title order={2}>Week 1: Finite State Machines</Title>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <DropzoneButton />
+            <DropzoneS3Upload course_name={course_name} />
           </div>
           <Title order={2}>Week 2: Circuit Diagrams</Title>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <DropzoneButton />
+            <DropzoneS3Upload course_name={course_name} />
           </div>
           <Title order={2}>Week 3: LC-3 ISA</Title>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <DropzoneButton />
+            <DropzoneS3Upload course_name={course_name} />
           </div>
 
           <TextInput
@@ -236,6 +262,7 @@ import { Dropzone, MIME_TYPES } from '@mantine/dropzone'
 import Link from 'next/link'
 import { useRouter } from 'next/router';
 import { UploadDropzone } from '@uploadthing/react'
+import { Interface } from 'readline';
 
 
 /// START OF COMPONENTS
@@ -577,16 +604,75 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-export function DropzoneButton() {
+export function DropzoneS3Upload ( {course_name}: {course_name: string} ) {
   const { classes, theme } = useStyles()
   const openRef = useRef<() => void>(null)
+
+  const readFileAsArrayBuffer = (file: File): Promise<ArrayBuffer> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = (error) => reject(error);
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  const handleUpload = async (file: File) => {
+    try {
+      const fileArrayBuffer: ArrayBuffer = await readFileAsArrayBuffer(file);
+      const fileUint8Array = new Uint8Array(fileArrayBuffer);
+      const s3_filepath = "courses/" + course_name + "/" + file.name; // todo: add course name
+      const uploadParams : PutObjectCommandInput = {
+        Bucket: aws_config.bucketName,
+        Key: s3_filepath,
+        Body: fileUint8Array,
+      };
+      const command = new PutObjectCommand(uploadParams);
+      const response = await s3Client.send(command);
+      console.log('File uploaded successfully:', response);
+      
+      // TODO: make entry in supabase
+      axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app';
+      axios.post('/createCourse', {
+        params: {
+          course_name: course_name,
+          file_name: file.name,
+          file_path: s3_filepath,
+          file_type: file.type,
+          file_size: file.size,
+        }
+      })
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      })
+      .finally(function () {
+        // always executed
+      });
+
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    }
+  };
 
   return (
     <div className={classes.wrapper} style={{ maxWidth: '220px' }}>
       <Dropzone
         openRef={openRef}
-        onDrop={() => {
-          console.log("Got your upload! But still haven't saved it.")
+        onDrop={(files) => {
+          // UPLOAD TO S3
+          files.forEach((file) => {
+          void (async () => {
+            await handleUpload(file).catch((error) => {
+              console.error('Error during file upload:', error);
+            });
+          })();
+        });
+
+          console.log("Got your upload! And saved it!")
+          console.log(files)
         }}
         className={classes.dropzone}
         radius="md"
@@ -635,15 +721,11 @@ export function DropzoneButton() {
             <Dropzone.Idle>Upload materials</Dropzone.Idle>
           </Text>
           <Text ta="center" fz="sm" mt="xs" c="dimmed">
-            Drag&apos;n&apos;drop files here to upload. <br></br>We support PDF,
+            Drag&apos;n&apos;drop files here to upload.<br></br>We support PDF,
             MP4, DOCX, XLSX, PPTX, PPT, DOC.
           </Text>
         </div>
       </Dropzone>
-
-      {/* <Button className={classes.control} size="md" radius="xl" onClick={() => openRef.current?.()}>
-        Select files
-      </Button> */}
     </div>
   )
 }

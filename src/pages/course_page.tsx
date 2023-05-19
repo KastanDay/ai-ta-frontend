@@ -30,7 +30,7 @@ interface getTopContextsResponse {
   text: string;
 }
 
-const CourseMain: NextPage = () => {
+const CourseTesting: NextPage = () => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
   // axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app'
 
@@ -197,7 +197,7 @@ const CourseMain: NextPage = () => {
     </>
   )
 }
-export default CourseMain
+export default CourseTesting
 
 
 import {

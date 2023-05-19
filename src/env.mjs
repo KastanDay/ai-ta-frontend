@@ -11,6 +11,9 @@ export const env = createEnv({
     NODE_ENV: z.enum(['development', 'test', 'production']),
     SUPABASE_URL: z.string().url(),
     SUPABASE_SECRET: z.string().min(1),
+    S3_BUCKET_NAME: z.string().min(1),
+    AWS_KEY: z.string().min(1),
+    AWS_SECRET: z.string().min(1),
     // NEXTAUTH_SECRET:
     //   process.env.NODE_ENV === "production"
     //     ? z.string().min(1)
@@ -45,6 +48,9 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     SUPABASE_URL: process.env.SUPABASE_URL,
     SUPABASE_SECRET: process.env.SUPABASE_SECRET,
+    S3_BUCKET_NAME: process.env.S3_BUCKET_NAME,
+    AWS_KEY: process.env.AWS_KEY,
+    AWS_SECRET: process.env.AWS_SECRET,
     // NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     // NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     // DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
