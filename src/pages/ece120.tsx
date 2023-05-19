@@ -25,16 +25,56 @@ import axios from 'axios';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 
 // run on server side
+// export async function getServerSideProps(context: GetServerSidePropsContext) {
+//   const { params } = context;
+//   if (!params) {
+//     return {
+//       course_data: null,
+//       course_name: null,
+//     }
+//   }
+//   console.log("params ----------------------", params)
+//   const course_name = params['dynamic_course']
+
+//   const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET)
+//   async function checkCourseExists() {
+//     const { data } = await supabase
+//       .from('courses')
+//       .select('*')
+//       .eq('name', course_name)
+//       .single()
+
+//     if (!data) {
+//       console.log('Course not found ☹️')
+//     } else {
+//       console.log('Course found 😍')
+//     }
+//     return data
+//   }
+
+//   const course_data = await checkCourseExists()
+//   console.log("course_data")
+//   console.log(course_data)
+//   return {
+//     props: {
+//       course_data,
+//       course_name,
+//     },
+//   }
+// }
+
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { params } = context;
   if (!params) {
     return {
-      course_data: null,
-      course_name: null,
+      props: {
+        course_data: null,
+        course_name: null,
+      },
     }
   }
   console.log("params ----------------------", params)
-  const course_name = params['dynamic_course']
+  const course_name = 'ece120'
 
   const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET)
   async function checkCourseExists() {
@@ -45,9 +85,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       .single()
 
     if (!data) {
-      console.log('Course not found ☹️')
+      console.log('Course not found :/')
     } else {
-      console.log('Course found 😍')
+      console.log('Course found !!!')
     }
     return data
   }
@@ -62,6 +102,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     },
   }
 }
+
 
 interface CourseMainProps {
   course_data: any,
