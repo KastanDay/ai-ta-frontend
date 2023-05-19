@@ -37,12 +37,13 @@ export const config = {
 import { S3Client, PutObjectCommand, PutObjectRequest, PutObjectCommandInput } from '@aws-sdk/client-s3';
 
 const aws_config = {
-  bucketName: process.env.S3_BUCKET_NAME,
+  bucketName: 'uiuc-chatbot',
   region: 'us-east-1',
   accessKeyId: process.env.AWS_KEY,
   secretAccessKey: process.env.AWS_SECRET,
 };
 console.log("bucket name ---------------", process.env.S3_BUCKET_NAME)
+console.log("aws ---------------", process.env.AWS_KEY)
 
 const s3Client = new S3Client({
   region: aws_config.region,
