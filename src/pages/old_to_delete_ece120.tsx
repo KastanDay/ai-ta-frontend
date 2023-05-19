@@ -114,7 +114,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
 
-  axios.get('https://flask-production-751b.up.railway.app/getContexts?language=penis')
+  axios.get('https://flask-production-751b.up.railway.app/getContexts')
     .then(response => {
       // Handle the response data
       console.log("HERE IS OUR RESPONSE!");
@@ -124,6 +124,9 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
       // Handle any errors
       console.error(error);
     });
+
+  console.log("PROPS IN COURSE_MAIN", props)
+  const course_name = props.course_name
 
 
   return (
