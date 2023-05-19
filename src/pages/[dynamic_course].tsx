@@ -28,27 +28,27 @@ import { createClient } from '@supabase/supabase-js'
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 
 // trying to do supabase connection on edge function.
-// export const config = {
-  //   runtime: 'edge', // this is a pre-requisite
-  // };
+export const config = {
+    runtime: 'experimental-edge', // this is a pre-requisite
+  };
   
   
 // TRY TO UPLOAD TO S3
 import { S3Client, PutObjectCommand, PutObjectRequest, PutObjectCommandInput } from '@aws-sdk/client-s3';
 
 const aws_config = {
-  bucketName: env.S3_BUCKET_NAME as string,
+  bucketName: process.env.S3_BUCKET_NAME,
   region: 'us-east-1',
-  accessKeyId: env.AWS_KEY as string,
-  secretAccessKey: env.AWS_SECRET as string,
+  accessKeyId: process.env.AWS_KEY,
+  secretAccessKey: process.env.AWS_SECRET,
 };
-console.log("bucket name ---------------", env.S3_BUCKET_NAME)
+console.log("bucket name ---------------", process.env.S3_BUCKET_NAME)
 
 const s3Client = new S3Client({
   region: aws_config.region,
     credentials: {
-      accessKeyId: env.AWS_KEY as string,
-      secretAccessKey: env.AWS_SECRET as string,
+      accessKeyId: process.env.AWS_KEY as string,
+      secretAccessKey: process.env.AWS_SECRET as string,
     },
 });
 
