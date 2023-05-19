@@ -33,26 +33,6 @@ import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 //     runtime: 'experimental-edge', // this is a pre-requisite
 //   };
   
-  
-// TRY TO UPLOAD TO S3
-import { S3Client, PutObjectCommand, PutObjectRequest, PutObjectCommandInput } from '@aws-sdk/client-s3';
-
-const aws_config = {
-  bucketName: 'uiuc-chatbot',
-  region: 'us-east-1',
-  accessKeyId: process.env.AWS_KEY,
-  secretAccessKey: process.env.AWS_SECRET,
-};
-console.log("bucket name ---------------", process.env.S3_BUCKET_NAME)
-console.log("aws ---------------", process.env.AWS_KEY)
-
-const s3Client = new S3Client({
-  region: aws_config.region,
-    credentials: {
-      accessKeyId: process.env.AWS_KEY as string,
-      secretAccessKey: process.env.AWS_SECRET as string,
-    },
-});
 
 // run on server side
 export async function getServerSideProps(context: GetServerSidePropsContext) {

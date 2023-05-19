@@ -16,14 +16,60 @@ import {
   FileInput, 
   rem,
 } from '@mantine/core'
-
 import { IconUpload } from '@tabler/icons-react'
+import { env } from '~/env.mjs'
 import { api } from '~/utils/api'
-
+import { DropzoneS3Upload } from '~/components/Upload_S3'
+import { createClient } from '@supabase/supabase-js'
 import axios from 'axios';
+import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 
+// run on server side
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const { params } = context;
+  if (!params) {
+    return {
+      course_data: null,
+      course_name: null,
+    }
+  }
+  console.log("params ----------------------", params)
+  const course_name = params['dynamic_course']
 
-const CourseMain: NextPage = () => {
+  const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET)
+  async function checkCourseExists() {
+    const { data } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('name', course_name)
+      .single()
+
+    if (!data) {
+      console.log('Course not found ☹️')
+    } else {
+      console.log('Course found 😍')
+    }
+    return data
+  }
+
+  const course_data = await checkCourseExists()
+  console.log("course_data")
+  console.log(course_data)
+  return {
+    props: {
+      course_data,
+      course_name,
+    },
+  }
+}
+
+interface CourseMainProps {
+  course_data: any,
+  course_name: string,
+}
+
+// run on client side
+const CourseMain: NextPage<CourseMainProps> = (props) => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
 
@@ -108,21 +154,21 @@ const CourseMain: NextPage = () => {
               <MaterialsCard />
             </div>
             <div className="item-wide">
-              <DropzoneButton />
+              <DropzoneS3Upload course_name={props.course_name}  />
             </div>
           </Flex>
 
           <Title order={2}>Week 1: Finite State Machines</Title>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <DropzoneButton />
+            <DropzoneS3Upload course_name={props.course_name}  />
           </div>
           <Title order={2}>Week 2: Circuit Diagrams</Title>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <DropzoneButton />
+            <DropzoneS3Upload course_name={props.course_name}  />
           </div>
           <Title order={2}>Week 3: LC-3 ISA</Title>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <DropzoneButton />
+            <DropzoneS3Upload course_name={props.course_name}  />
           </div>
 
           <TextInput
@@ -382,85 +428,6 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-export function DropzoneButton() {
-  const { classes, theme } = useStyles()
-  const openRef = useRef<() => void>(null)
-
-  return (
-    <div className={classes.wrapper} style={{ maxWidth: '220px' }}>
-      <Dropzone
-        openRef={openRef}
-        onDrop={() => {
-          console.log("Got your upload! But still haven't saved it.")
-        }}
-        className={classes.dropzone}
-        radius="md"
-        accept={[
-          MIME_TYPES.pdf,
-          MIME_TYPES.mp4,
-          MIME_TYPES.docx,
-          MIME_TYPES.xlsx,
-          MIME_TYPES.pptx,
-          MIME_TYPES.ppt,
-          MIME_TYPES.doc,
-        ]}
-        bg="#0E1116"
-        // maxSize={30 * 1024 ** 2} max file size
-      >
-        <div style={{ pointerEvents: 'none' }}>
-          <Group position="center">
-            <Dropzone.Accept>
-              <IconDownload
-                size={rem(50)}
-                color={theme.primaryColor[6]}
-                stroke={1.5}
-              />
-            </Dropzone.Accept>
-            <Dropzone.Reject>
-              <IconX size={rem(50)} color={theme.colors.red[6]} stroke={1.5} />
-            </Dropzone.Reject>
-            <Dropzone.Idle>
-              <IconCloudUpload
-                size={rem(50)}
-                color={
-                  theme.colorScheme === 'dark'
-                    ? theme.colors.dark[0]
-                    : theme.black
-                }
-                stroke={1.5}
-              />
-            </Dropzone.Idle>
-          </Group>
-
-          <Text ta="center" fw={700} fz="lg" mt="xl">
-            <Dropzone.Accept>Drop files here</Dropzone.Accept>
-            <Dropzone.Reject>
-              Upload rejected, not proper file type or too large.
-            </Dropzone.Reject>
-            <Dropzone.Idle>Upload materials</Dropzone.Idle>
-          </Text>
-          <Text ta="center" fz="sm" mt="xs" c="dimmed">
-            Drag&apos;n&apos;drop files here to upload. <br></br>We support PDF,
-            MP4, DOCX, XLSX, PPTX, PPT, DOC.
-          </Text>
-        </div>
-      </Dropzone>
-
-      {/* <Button className={classes.control} size="md" radius="xl" onClick={() => openRef.current?.()}>
-        Select files
-      </Button> */}
-    </div>
-  )
-}
-
-function oneWeek() {
-  return (
-    <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-      hello
-    </h1>
-  )
-}
-
 function MaterialsCard() {
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
@@ -555,17 +522,5 @@ function MaterialsCardSmall() {
         </div>
       </Card>
     </div>
-  )
-}
-
-function FileUpload() {
-  return (
-    <FileInput
-      style={{ backgroundColor: '#0E1116' }}
-      multiple
-      label="Upload your documents"
-      placeholder="textbook.pdf  /   notes.docx  /  lecture.mp4"
-      icon={<IconUpload size={rem(14)} />}
-    />
   )
 }
