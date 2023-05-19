@@ -1,7 +1,7 @@
 // upload.ts
-import type { PutObjectCommandInput } from '@aws-sdk/client-s3';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client } from '@aws-sdk/client-s3';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 
 const aws_config = {
   bucketName: 'uiuc-chatbot',
@@ -23,26 +23,22 @@ const s3Client = new S3Client({
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const { file, fileName, courseName } = req.body as { file: string; fileName: string; courseName: string };
+    const { fileName, courseName } = req.body as { fileName: string; courseName: string };
 
     const s3_filepath = `courses/${courseName}/${fileName}`;
 
-    // Convert base64-encoded file data to a buffer
-    const fileBuffer = Buffer.from(file, 'base64');
-
-    const uploadParams: PutObjectCommandInput = {
+    const post = await createPresignedPost(s3Client, {
       Bucket: aws_config.bucketName,
       Key: s3_filepath,
-      Body: fileBuffer,
-    };
-    const command = new PutObjectCommand(uploadParams);
-    const response = await s3Client.send(command);
-    console.log('File uploaded successfully:', response);
+      Expires: 60 * 60, // 1 hour
+    });
 
-    res.status(200).json({ message: 'File uploaded successfully', response });
+    console.log('Presigned URL generated successfully:', post);
+
+    res.status(200).json({ message: 'Presigned URL generated successfully', post });
   } catch (error) {
-    console.error('Error uploading file:', error);
-    res.status(500).json({ message: 'Error uploading file', error });
+    console.error('Error generating presigned URL:', error);
+    res.status(500).json({ message: 'Error generating presigned URL', error });
   }
 };
 

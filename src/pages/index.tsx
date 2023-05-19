@@ -342,17 +342,6 @@ function MoreCoursesSoonCard() {
   )
 }
 
-function BasicFileUpload() {
-  return (
-    <FileInput
-      multiple
-      label="Upload your documents"
-      placeholder="textbook.pdf  /   notes.docx  /  lecture.mp4"
-      icon={<IconUpload size={rem(14)} />}
-    />
-  )
-}
-
 // const AuthShowcase: React.FC = () => {
 //   const { data: sessionData } = useSession();
 

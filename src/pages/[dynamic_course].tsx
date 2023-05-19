@@ -1,7 +1,8 @@
 import { type NextPage } from 'next'
 import Head from 'next/head'
 import { env } from '~/env.mjs'
-import dynamic from 'next/dynamic';
+import { DropzoneS3Upload } from '~/components/Upload_S3'
+import dynamic from 'next/dynamic'
 
 import {
   // Textarea,
@@ -28,9 +29,9 @@ import { createClient } from '@supabase/supabase-js'
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 
 // trying to do supabase connection on edge function.
-export const config = {
-    runtime: 'experimental-edge', // this is a pre-requisite
-  };
+// export const config = {
+//     runtime: 'experimental-edge', // this is a pre-requisite
+//   };
   
   
 // TRY TO UPLOAD TO S3
@@ -606,131 +607,131 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-export function DropzoneS3Upload ( {course_name}: {course_name: string} ) {
-  const { classes, theme } = useStyles()
-  const openRef = useRef<() => void>(null)
+// export function DropzoneS3Upload ( {course_name}: {course_name: string} ) {
+//   const { classes, theme } = useStyles()
+//   const openRef = useRef<() => void>(null)
 
-  const readFileAsArrayBuffer = (file: File): Promise<ArrayBuffer> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as ArrayBuffer);
-      reader.onerror = (error) => reject(error);
-      reader.readAsArrayBuffer(file);
-    });
-  };
+//   const readFileAsArrayBuffer = (file: File): Promise<ArrayBuffer> => {
+//     return new Promise((resolve, reject) => {
+//       const reader = new FileReader();
+//       reader.onload = () => resolve(reader.result as ArrayBuffer);
+//       reader.onerror = (error) => reject(error);
+//       reader.readAsArrayBuffer(file);
+//     });
+//   };
 
-  const handleUpload = async (file: File) => {
-    try {
-      const fileArrayBuffer: ArrayBuffer = await readFileAsArrayBuffer(file);
-      const fileUint8Array = new Uint8Array(fileArrayBuffer);
-      const s3_filepath = "courses/" + course_name + "/" + file.name; // todo: add course name
-      const uploadParams : PutObjectCommandInput = {
-        Bucket: aws_config.bucketName,
-        Key: s3_filepath,
-        Body: fileUint8Array,
-      };
-      const command = new PutObjectCommand(uploadParams);
-      const response = await s3Client.send(command);
-      console.log('File uploaded successfully:', response);
+//   const handleUpload = async (file: File) => {
+//     try {
+//       const fileArrayBuffer: ArrayBuffer = await readFileAsArrayBuffer(file);
+//       const fileUint8Array = new Uint8Array(fileArrayBuffer);
+//       const s3_filepath = "courses/" + course_name + "/" + file.name; // todo: add course name
+//       const uploadParams : PutObjectCommandInput = {
+//         Bucket: aws_config.bucketName,
+//         Key: s3_filepath,
+//         Body: fileUint8Array,
+//       };
+//       const command = new PutObjectCommand(uploadParams);
+//       const response = await s3Client.send(command);
+//       console.log('File uploaded successfully:', response);
       
-      // TODO: make entry in supabase
-      axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app';
-      axios.post('/createCourse', {
-        params: {
-          course_name: course_name,
-          file_name: file.name,
-          file_path: s3_filepath,
-          file_type: file.type,
-          file_size: file.size,
-        }
-      })
-      .then(function (response) {
-        console.log(response);
-      })
-      .catch(function (error) {
-        console.log(error);
-      })
-      .finally(function () {
-        // always executed
-      });
+//       // TODO: make entry in supabase
+//       axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app';
+//       axios.post('/createCourse', {
+//         params: {
+//           course_name: course_name,
+//           file_name: file.name,
+//           file_path: s3_filepath,
+//           file_type: file.type,
+//           file_size: file.size,
+//         }
+//       })
+//       .then(function (response) {
+//         console.log(response);
+//       })
+//       .catch(function (error) {
+//         console.log(error);
+//       })
+//       .finally(function () {
+//         // always executed
+//       });
 
-    } catch (error) {
-      console.error('Error uploading file:', error);
-    }
-  };
+//     } catch (error) {
+//       console.error('Error uploading file:', error);
+//     }
+//   };
 
-  return (
-    <div className={classes.wrapper} style={{ maxWidth: '220px' }}>
-      <Dropzone
-        openRef={openRef}
-        onDrop={(files) => {
-          // UPLOAD TO S3
-          files.forEach((file) => {
-          void (async () => {
-            await handleUpload(file).catch((error) => {
-              console.error('Error during file upload:', error);
-            });
-          })();
-        });
+//   return (
+//     <div className={classes.wrapper} style={{ maxWidth: '220px' }}>
+//       <Dropzone
+//         openRef={openRef}
+//         onDrop={(files) => {
+//           // UPLOAD TO S3
+//           files.forEach((file) => {
+//           void (async () => {
+//             await handleUpload(file).catch((error) => {
+//               console.error('Error during file upload:', error);
+//             });
+//           })();
+//         });
 
-          console.log("Got your upload! And saved it!")
-          console.log(files)
-        }}
-        className={classes.dropzone}
-        radius="md"
-        accept={[
-          MIME_TYPES.pdf,
-          MIME_TYPES.mp4,
-          MIME_TYPES.docx,
-          MIME_TYPES.xlsx,
-          MIME_TYPES.pptx,
-          MIME_TYPES.ppt,
-          MIME_TYPES.doc,
-        ]}
-        bg="#0E1116"
-        // maxSize={30 * 1024 ** 2} max file size
-      >
-        <div style={{ pointerEvents: 'none' }}>
-          <Group position="center">
-            <Dropzone.Accept>
-              <IconDownload
-                size={rem(50)}
-                color={theme.primaryColor[6]}
-                stroke={1.5}
-              />
-            </Dropzone.Accept>
-            <Dropzone.Reject>
-              <IconX size={rem(50)} color={theme.colors.red[6]} stroke={1.5} />
-            </Dropzone.Reject>
-            <Dropzone.Idle>
-              <IconCloudUpload
-                size={rem(50)}
-                color={
-                  theme.colorScheme === 'dark'
-                    ? theme.colors.dark[0]
-                    : theme.black
-                }
-                stroke={1.5}
-              />
-            </Dropzone.Idle>
-          </Group>
+//           console.log("Got your upload! And saved it!")
+//           console.log(files)
+//         }}
+//         className={classes.dropzone}
+//         radius="md"
+//         accept={[
+//           MIME_TYPES.pdf,
+//           MIME_TYPES.mp4,
+//           MIME_TYPES.docx,
+//           MIME_TYPES.xlsx,
+//           MIME_TYPES.pptx,
+//           MIME_TYPES.ppt,
+//           MIME_TYPES.doc,
+//         ]}
+//         bg="#0E1116"
+//         // maxSize={30 * 1024 ** 2} max file size
+//       >
+//         <div style={{ pointerEvents: 'none' }}>
+//           <Group position="center">
+//             <Dropzone.Accept>
+//               <IconDownload
+//                 size={rem(50)}
+//                 color={theme.primaryColor[6]}
+//                 stroke={1.5}
+//               />
+//             </Dropzone.Accept>
+//             <Dropzone.Reject>
+//               <IconX size={rem(50)} color={theme.colors.red[6]} stroke={1.5} />
+//             </Dropzone.Reject>
+//             <Dropzone.Idle>
+//               <IconCloudUpload
+//                 size={rem(50)}
+//                 color={
+//                   theme.colorScheme === 'dark'
+//                     ? theme.colors.dark[0]
+//                     : theme.black
+//                 }
+//                 stroke={1.5}
+//               />
+//             </Dropzone.Idle>
+//           </Group>
 
-          <Text ta="center" fw={700} fz="lg" mt="xl">
-            <Dropzone.Accept>Drop files here</Dropzone.Accept>
-            <Dropzone.Reject>
-              Upload rejected, not proper file type or too large.
-            </Dropzone.Reject>
-            <Dropzone.Idle>Upload materials</Dropzone.Idle>
-          </Text>
-          <Text ta="center" fz="sm" mt="xs" c="dimmed">
-            Drag&apos;n&apos;drop files here to upload.<br></br>We support PDF,
-            MP4, DOCX, XLSX, PPTX, PPT, DOC.
-          </Text>
-        </div>
-      </Dropzone>
-    </div>
-  )
-}
+//           <Text ta="center" fw={700} fz="lg" mt="xl">
+//             <Dropzone.Accept>Drop files here</Dropzone.Accept>
+//             <Dropzone.Reject>
+//               Upload rejected, not proper file type or too large.
+//             </Dropzone.Reject>
+//             <Dropzone.Idle>Upload materials</Dropzone.Idle>
+//           </Text>
+//           <Text ta="center" fz="sm" mt="xs" c="dimmed">
+//             Drag&apos;n&apos;drop files here to upload.<br></br>We support PDF,
+//             MP4, DOCX, XLSX, PPTX, PPT, DOC.
+//           </Text>
+//         </div>
+//       </Dropzone>
+//     </div>
+//   )
+// }
 
 function oneWeek() {
   return (
