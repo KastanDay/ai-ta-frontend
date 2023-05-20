@@ -3,7 +3,7 @@ import { OpenAIError, OpenAIStream } from '@/utils/server'
 
 import { ChatBody, Message } from '@/types/chat'
 
-// @ts-expect-error
+// @ts-expect-error - no types
 import wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module'
 
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'

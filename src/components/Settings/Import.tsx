@@ -26,7 +26,7 @@ export const Import: FC<Props> = ({ onImport }) => {
           if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
-              let json = JSON.parse(e.target?.result as string);
+              const json = JSON.parse(e.target?.result as string);
               onImport(json);
             };
             reader.readAsText(file);
