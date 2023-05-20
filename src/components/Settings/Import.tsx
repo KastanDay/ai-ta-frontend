@@ -22,14 +22,14 @@ export const Import: FC<Props> = ({ onImport }) => {
         type="file"
         accept=".json"
         onChange={(e) => {
-          const file = e.target.files?.[0];
+          const file = e.target.files?.[0]
           if (file) {
-            const reader = new FileReader();
+            const reader = new FileReader()
             reader.onload = (e) => {
-              const json = JSON.parse(e.target?.result as string);
-              onImport(json);
-            };
-            reader.readAsText(file);
+              const json = JSON.parse(e.target?.result as string)
+              onImport(json)
+            }
+            reader.readAsText(file)
           }
         }}
       />

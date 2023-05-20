@@ -80,14 +80,13 @@ const Home = ({
   // ORIGINAL
   // const [error, setError] = useState(null)
   // const [data, setData] = useState(null)
-  
-  // from AI 
+
+  // from AI
   const [data, setData] = useState(null) // using the original version.
   // const [data, setData] = useState<Model[] | null>(null); // Replace Model with the correct type for a single model
-  const [error, setError] = useState<unknown>(null); // Update the type of the error state variable
+  const [error, setError] = useState<unknown>(null) // Update the type of the error state variable
 
-
-  // ORIGINAL 
+  // ORIGINAL
   useEffect(() => {
     if (!apiKey && !serverSideApiKeyIsSet) return
 
@@ -96,7 +95,10 @@ const Home = ({
 
     const fetchData = async () => {
       try {
-        const models = await getModels({ key: apiKey }, signal) as unknown as null
+        const models = (await getModels(
+          { key: apiKey },
+          signal,
+        )) as unknown as null
         setData(models)
       } catch (err) {
         setError(err)
@@ -110,7 +112,7 @@ const Home = ({
     }
   }, [apiKey, serverSideApiKeyIsSet])
 
-  // AI VERSION, doesn't work. 
+  // AI VERSION, doesn't work.
   // useEffect(() => {
   //   if (!apiKey && !serverSideApiKeyIsSet) return
 
@@ -141,13 +143,16 @@ const Home = ({
 
     const fetchData = async () => {
       try {
-        const models = await getModels({ key: apiKey }, signal) as unknown as null;
-        setData(models);
-        // original: 
+        const models = (await getModels(
+          { key: apiKey },
+          signal,
+        )) as unknown as null
+        setData(models)
+        // original:
         // const models = await getModels({ key: apiKey }, signal)
         // setData(models)
       } catch (err) {
-        setError(err);
+        setError(err)
       }
     }
 
