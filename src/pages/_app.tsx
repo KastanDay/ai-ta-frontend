@@ -3,6 +3,7 @@ import { type Session } from 'next-auth'
 import { SessionProvider } from 'next-auth/react'
 import { MantineProvider } from '@mantine/core'
 import { Analytics } from '@vercel/analytics/react'
+import { appWithTranslation } from 'next-i18next'
 
 import { api } from '~/utils/api'
 
@@ -55,4 +56,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
   )
 }
 
-export default api.withTRPC(MyApp)
+// export default .withTRPC(MyApp)
+
+export default api.withTRPC(appWithTranslation(MyApp))
