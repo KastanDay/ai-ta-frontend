@@ -81,13 +81,14 @@ interface CourseMainProps {
 const CourseMain: NextPage<CourseMainProps> = (props) => {
   console.log('PROPS IN COURSE_MAIN', props)
   const course_name = props.course_name
+  const currentPageName = GetCurrentPageName()
 
   // MAKE A NEW COURSE PAGE
   if (props.course_data == null) {
     return (
       <>
         <Head>
-          <title>{GetCurrentPageName()}</title>
+          <title>{currentPageName}</title>
           <meta
             name="description"
             content="The AI teaching assistant built for students at UIUC."
@@ -142,7 +143,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
   return (
     <>
       <Head>
-        <title>{GetCurrentPageName()}</title>
+        <title>{currentPageName}</title>
         <meta
           name="description"
           content="The AI teaching assistant built for students at UIUC."
@@ -165,7 +166,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
           <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             UIUC{' '}
             <span className="text-[hsl(280,100%,70%)]">
-              {GetCurrentPageName()}
+              {currentPageName}
             </span>
           </h2>
           <Text style={{ fontFamily: 'Montserrat' }} size="md" color="white">
@@ -236,7 +237,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
           />
         </Container>
 
-        {/* <BuildContextCards /> */}
+        <BuildContextCards />
       </main>
     </>
   )
@@ -266,14 +267,13 @@ import { useListState, randomId } from '@mantine/hooks'
 import { useRef } from 'react'
 import { Dropzone, MIME_TYPES } from '@mantine/dropzone'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
 import { UploadDropzone } from '@uploadthing/react'
 import { Interface } from 'readline'
 
 /// START OF COMPONENTS
+import { useRouter } from 'next/router'
 export const GetCurrentPageName = () => {
-  const router = useRouter()
-  return router.asPath.slice(1)
+  return useRouter().asPath.slice(1)
 }
 
 interface getTopContextsResponse {
@@ -290,6 +290,7 @@ interface contextsResponse {
 export const BuildContextCards = () => {
   // const [contexts, setContexts] = useState([]);
   const [contexts, setContexts] = useState<getTopContextsResponse[]>([])
+  const currentPageName = GetCurrentPageName()
 
   useEffect(() => {
     axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app'
@@ -297,7 +298,7 @@ export const BuildContextCards = () => {
     axios
       .get('/getTopContexts', {
         params: {
-          course_name: GetCurrentPageName(),
+          course_name: currentPageName,
         },
       })
       .then((response: AxiosResponse<contextsResponse>) => {
