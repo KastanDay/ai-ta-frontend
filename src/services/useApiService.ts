@@ -6,11 +6,6 @@ export interface GetModelsRequestProps {
   key: string
 }
 
-// in useApiService.ts (or wherever getModels is defined)
-interface GetModelsResponse {
-  data: Model[]; // Replace Model with the correct type for a single model
-}
-
 const useApiService = () => {
   const fetchService = useFetch()
 
