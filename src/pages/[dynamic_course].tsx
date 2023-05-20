@@ -16,15 +16,15 @@ import {
   Group,
   Stack,
   createStyles,
-  FileInput, 
+  FileInput,
   rem,
 } from '@mantine/core'
 
 import { IconUpload } from '@tabler/icons-react'
 import { api } from '~/utils/api'
 
-import React, { useState, useEffect } from 'react';
-import axios, { AxiosResponse } from 'axios';
+import React, { useState, useEffect } from 'react'
+import axios, { AxiosResponse } from 'axios'
 import { createClient } from '@supabase/supabase-js'
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 
@@ -32,18 +32,17 @@ import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 // export const config = {
 //     runtime: 'experimental-edge', // this is a pre-requisite
 //   };
-  
 
 // run on server side
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const { params } = context;
+  const { params } = context
   if (!params) {
     return {
       course_data: null,
       course_name: null,
     }
   }
-  console.log("params ----------------------", params)
+  console.log('params ----------------------', params)
   const course_name = params['dynamic_course']
 
   const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET)
@@ -63,7 +62,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const course_data = await checkCourseExists()
-  console.log("course_data")
+  console.log('course_data')
   console.log(course_data)
   return {
     props: {
@@ -74,55 +73,69 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface CourseMainProps {
-  course_data: any,
-  course_name: string,
+  course_data: any
+  course_name: string
 }
 
 // run on client side
 const CourseMain: NextPage<CourseMainProps> = (props) => {
-
-  console.log("PROPS IN COURSE_MAIN", props)
+  console.log('PROPS IN COURSE_MAIN', props)
   const course_name = props.course_name
 
   // MAKE A NEW COURSE PAGE
   if (props.course_data == null) {
     return (
       <>
-      <Head>
-        <title>{GetCurrentPageName()}</title>
-        <meta
-          name="description"
-          content="The AI teaching assistant built for students at UIUC."
-        />
-        <link rel="icon" href="/favicon.ico" />
-        {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
+        <Head>
+          <title>{GetCurrentPageName()}</title>
+          <meta
+            name="description"
+            content="The AI teaching assistant built for students at UIUC."
+          />
+          <link rel="icon" href="/favicon.ico" />
+          {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
-      </Head>
+        </Head>
 
-      <main className="items-left justify-left; course-page-main flex min-h-screen flex-col">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-          <Link href="/">
-            <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-              UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
-            </h1>
-          </Link>
-        </div>
-        <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
-          <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            Course does not exist, <span className="text-[hsl(280,100%,70%)]">&nbsp;yet!</span>
-          </h2>
-        <Title order={2}></Title>
-        <Flex direction="column" align="center" justify="center">
-          <Title style={{color: 'White'}} order={3} p="md">To create course, simply upload your course materials and on will be created for you!</Title>
-          <Title style={{color: 'White'}} order={3} variant='normal'>The course will be named:</Title> 
-          <Title style={{color: 'White'}} order={2} p="md" variant="gradient" weight="bold" gradient={{ from: 'gold', to: 'white', deg: 140 }}>{props.course_name}</Title>
-          <DropzoneS3Upload course_name={props.course_name} />
-        </Flex>
-        </div>
-      </main>
+        <main className="items-left justify-left; course-page-main flex min-h-screen flex-col">
+          <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
+            <Link href="/">
+              <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
+                UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
+              </h1>
+            </Link>
+          </div>
+          <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
+            <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
+              Course does not exist,{' '}
+              <span className="text-[hsl(280,100%,70%)]">&nbsp;yet!</span>
+            </h2>
+            <Title order={2}></Title>
+            <Flex direction="column" align="center" justify="center">
+              <Title style={{ color: 'White' }} order={3} p="md">
+                To create course, simply upload your course materials and on
+                will be created for you!
+              </Title>
+              <Title style={{ color: 'White' }} order={3} variant="normal">
+                The course will be named:
+              </Title>
+              <Title
+                style={{ color: 'White' }}
+                order={2}
+                p="md"
+                variant="gradient"
+                weight="bold"
+                gradient={{ from: 'gold', to: 'white', deg: 140 }}
+              >
+                {props.course_name}
+              </Title>
+              <DropzoneS3Upload course_name={props.course_name} />
+            </Flex>
+          </div>
+        </main>
       </>
-      )
+    )
   }
 
   // COURSE PAGE
@@ -150,7 +163,10 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
         </div>
         <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
           <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            UIUC <span className="text-[hsl(280,100%,70%)]">{GetCurrentPageName()}</span>
+            UIUC{' '}
+            <span className="text-[hsl(280,100%,70%)]">
+              {GetCurrentPageName()}
+            </span>
           </h2>
           <Text style={{ fontFamily: 'Montserrat' }} size="md" color="white">
             Taught by{' '}
@@ -227,7 +243,6 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
 }
 export default CourseMain
 
-
 import {
   Switch,
   Flex,
@@ -236,42 +251,48 @@ import {
   TextInputProps,
   ActionIcon,
   useMantineTheme,
-  Checkbox
+  Checkbox,
 } from '@mantine/core'
-import { IconSearch, IconArrowRight, IconArrowLeft, IconExternalLink, IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
+import {
+  IconSearch,
+  IconArrowRight,
+  IconArrowLeft,
+  IconExternalLink,
+  IconCloudUpload,
+  IconX,
+  IconDownload,
+} from '@tabler/icons-react'
 import { useListState, randomId } from '@mantine/hooks'
 import { useRef } from 'react'
 import { Dropzone, MIME_TYPES } from '@mantine/dropzone'
 import Link from 'next/link'
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/router'
 import { UploadDropzone } from '@uploadthing/react'
-import { Interface } from 'readline';
-
+import { Interface } from 'readline'
 
 /// START OF COMPONENTS
 export const GetCurrentPageName = () => {
-  const router = useRouter();
-  return router.asPath.slice(1,);
+  const router = useRouter()
+  return router.asPath.slice(1)
 }
 
 interface getTopContextsResponse {
-  id: number;
-  source_name: string;
-  source_location: string;
-  text: string;
+  id: number
+  source_name: string
+  source_location: string
+  text: string
 }
 
 interface contextsResponse {
-  contexts: getTopContextsResponse[];
+  contexts: getTopContextsResponse[]
 }
-
 
 export const BuildContextCards = () => {
   // const [contexts, setContexts] = useState([]);
-  const [contexts, setContexts] = useState<getTopContextsResponse[]>([]);
+  const [contexts, setContexts] = useState<getTopContextsResponse[]>([])
 
   useEffect(() => {
-    axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app';
+    axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app'
 
     axios
       .get('/getTopContexts', {
@@ -280,12 +301,12 @@ export const BuildContextCards = () => {
         },
       })
       .then((response: AxiosResponse<contextsResponse>) => {
-        setContexts(response.data.contexts);
+        setContexts(response.data.contexts)
       })
       .catch((error) => {
-        console.error(error);
-      });
-  }, []);
+        console.error(error)
+      })
+  }, [])
 
   return (
     <>
@@ -298,8 +319,8 @@ export const BuildContextCards = () => {
         />
       ))}
     </>
-  );
-};
+  )
+}
 
 // interface DynamicMaterialsCardProps {
 //   sourceName: string;
@@ -308,7 +329,11 @@ export const BuildContextCards = () => {
 // }
 
 // function DynamicMaterialsCard({ sourceName, sourceLocation, text }: DynamicMaterialsCardProps) {
-function DynamicMaterialsCard(props: { sourceName: string, sourceLocation: string, text: string }) {
+function DynamicMaterialsCard(props: {
+  sourceName: string
+  sourceLocation: string
+  text: string
+}) {
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
       <Card
@@ -345,13 +370,13 @@ function DynamicMaterialsCard(props: { sourceName: string, sourceLocation: strin
           {props.text}
         </Text>
 
-        <Link href={"https://kastanday.com"} rel="noopener noreferrer" target="_blank">
-          <Group >
-            <IconExternalLink 
-              size={20}
-              strokeWidth={2}
-              color={'white'}
-            />
+        <Link
+          href={'https://kastanday.com'}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <Group>
+            <IconExternalLink size={20} strokeWidth={2} color={'white'} />
             <Text
               size="xs"
               variant="dimmed"
@@ -369,9 +394,8 @@ function DynamicMaterialsCard(props: { sourceName: string, sourceLocation: strin
         </div>
       </Card>
     </div>
-  );
+  )
 }
-
 
 const initialValues = [
   { label: 'Week 1: Finite State Machines', checked: true, key: randomId() },
@@ -508,7 +532,6 @@ function AShortChat() {
         <div className="chat-bubble">Why are they useful??</div>
         <div className="chat-footer opacity-50">Seen at 12:47</div>
       </div>
-
     </Container>
   )
 }
@@ -560,7 +583,6 @@ export function InputWithButton(props: TextInputProps) {
     />
   )
 }
-
 
 function MaterialsCard() {
   return (

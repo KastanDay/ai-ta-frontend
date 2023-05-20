@@ -1,13 +1,7 @@
 // upload.tsx
-import React, { useState, useRef } from 'react';
-import {
-  Text,
-  Group,
-  createStyles,
-  FileInput, 
-  rem,
-} from '@mantine/core'
-import {  IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
+import React, { useState, useRef } from 'react'
+import { Text, Group, createStyles, FileInput, rem } from '@mantine/core'
+import { IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
 import { Dropzone, MIME_TYPES } from '@mantine/dropzone'
 
 const useStyles = createStyles((theme) => ({
@@ -36,19 +30,17 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-
-
 export function DropzoneS3Upload({ course_name }: { course_name: string }) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      if (e.target.files[0]) setSelectedFile(e.target.files[0]);
+      if (e.target.files[0]) setSelectedFile(e.target.files[0])
     }
-  };
+  }
 
   const uploadFile = async (file: File | null) => {
-    if (!file) return;
+    if (!file) return
 
     const requestObject = {
       method: 'POST',
@@ -60,45 +52,45 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
         fileType: file.type,
         courseName: course_name,
       }),
-    };
+    }
 
     try {
       interface PresignedPostResponse {
         post: {
-          url: string;
-          fields: { [key: string]: string };
-        };
+          url: string
+          fields: { [key: string]: string }
+        }
       }
 
       // Then, update the lines where you fetch the response and parse the JSON
-      const response = await fetch('/api/upload', requestObject);
-      const data = (await response.json()) as PresignedPostResponse;
+      const response = await fetch('/api/upload', requestObject)
+      const data = (await response.json()) as PresignedPostResponse
 
       const { url, fields } = data.post as {
-        url: string;
-        fields: { [key: string]: string };
-      };
-      const formData = new FormData();
+        url: string
+        fields: { [key: string]: string }
+      }
+      const formData = new FormData()
 
       Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
+        formData.append(key, value)
+      })
 
-      formData.append('file', file);
+      formData.append('file', file)
 
       await fetch(url, {
         method: 'POST',
         body: formData,
-      });
+      })
 
-      console.log('File uploaded successfully!!');
+      console.log('File uploaded successfully!!')
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('Error uploading file:', error)
     }
-  };
+  }
 
-  const { classes, theme } = useStyles();
-  const openRef = useRef<() => void>(null);
+  const { classes, theme } = useStyles()
+  const openRef = useRef<() => void>(null)
 
   return (
     <div className={classes.wrapper} style={{ maxWidth: '220px' }}>
@@ -109,13 +101,13 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
           files.forEach((file) => {
             void (async () => {
               await uploadFile(file).catch((error) => {
-                console.error('Error during file upload:', error);
-              });
-            })();
-          });
+                console.error('Error during file upload:', error)
+              })
+            })()
+          })
 
-          console.log('Got your upload! And saved it!');
-          console.log(files);
+          console.log('Got your upload! And saved it!')
+          console.log(files)
         }}
         className={classes.dropzone}
         radius="md"
@@ -141,11 +133,7 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
               />
             </Dropzone.Accept>
             <Dropzone.Reject>
-              <IconX
-                size={rem(50)}
-                color={theme.colors.red[6]}
-                stroke={1.5}
-              />
+              <IconX size={rem(50)} color={theme.colors.red[6]} stroke={1.5} />
             </Dropzone.Reject>
             <Dropzone.Idle>
               <IconCloudUpload
@@ -174,7 +162,7 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
         </div>
       </Dropzone>
     </div>
-  );
+  )
 }
 
-export default DropzoneS3Upload;
+export default DropzoneS3Upload
