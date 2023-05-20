@@ -77,9 +77,17 @@ const Home = ({
 
   const stopConversationRef = useRef<boolean>(false)
 
-  const [data, setData] = useState(null)
-  const [error, setError] = useState(null)
+  // ORIGINAL
+  // const [error, setError] = useState(null)
+  // const [data, setData] = useState(null)
+  
+  // from AI 
+  const [data, setData] = useState(null) // using the original version.
+  // const [data, setData] = useState<Model[] | null>(null); // Replace Model with the correct type for a single model
+  const [error, setError] = useState<unknown>(null); // Update the type of the error state variable
 
+
+  // ORIGINAL 
   useEffect(() => {
     if (!apiKey && !serverSideApiKeyIsSet) return
 
@@ -88,7 +96,7 @@ const Home = ({
 
     const fetchData = async () => {
       try {
-        const models = await getModels({ key: apiKey }, signal)
+        const models = await getModels({ key: apiKey }, signal) as unknown as null
         setData(models)
       } catch (err) {
         setError(err)
@@ -102,6 +110,29 @@ const Home = ({
     }
   }, [apiKey, serverSideApiKeyIsSet])
 
+  // AI VERSION, doesn't work. 
+  // useEffect(() => {
+  //   if (!apiKey && !serverSideApiKeyIsSet) return
+
+  //   const controller = new AbortController()
+  //   const { signal } = controller
+
+  //   const fetchData = async () => {
+  //     try {
+  //       const modelsResponse = await getModels({ key: apiKey }, signal)
+  //       setData(modelsResponse.data) // <-- Set the correct data type here
+  //     } catch (err) {
+  //       setError(err)
+  //     }
+  //   }
+
+  //   fetchData()
+
+  //   return () => {
+  //     controller.abort()
+  //   }
+  // }, [apiKey, serverSideApiKeyIsSet])
+
   const refetch = () => {
     if (!apiKey && !serverSideApiKeyIsSet) return
 
@@ -110,10 +141,13 @@ const Home = ({
 
     const fetchData = async () => {
       try {
-        const models = await getModels({ key: apiKey }, signal)
-        setData(models)
+        const models = await getModels({ key: apiKey }, signal) as unknown as null;
+        setData(models);
+        // original: 
+        // const models = await getModels({ key: apiKey }, signal)
+        // setData(models)
       } catch (err) {
-        setError(err)
+        setError(err);
       }
     }
 
