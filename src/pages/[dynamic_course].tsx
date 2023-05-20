@@ -165,9 +165,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
         <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
           <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             UIUC{' '}
-            <span className="text-[hsl(280,100%,70%)]">
-              {currentPageName}
-            </span>
+            <span className="text-[hsl(280,100%,70%)]">{currentPageName}</span>
           </h2>
           <Text style={{ fontFamily: 'Montserrat' }} size="md" color="white">
             Taught by{' '}
