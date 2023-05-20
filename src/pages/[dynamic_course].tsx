@@ -301,13 +301,14 @@ export const BuildContextCards = () => {
   );
 };
 
-interface DynamicMaterialsCardProps {
-  sourceName: string;
-  sourceLocation: string;
-  text: string;
-}
+// interface DynamicMaterialsCardProps {
+//   sourceName: string;
+//   sourceLocation: string;
+//   text: string;
+// }
 
-function DynamicMaterialsCard({ sourceName, sourceLocation, text }: DynamicMaterialsCardProps) {
+// function DynamicMaterialsCard({ sourceName, sourceLocation, text }: DynamicMaterialsCardProps) {
+function DynamicMaterialsCard(props: { sourceName: string, sourceLocation: string, text: string }) {
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
       <Card
@@ -328,7 +329,7 @@ function DynamicMaterialsCard({ sourceName, sourceLocation, text }: DynamicMater
 
         <Group position="apart" mt="md" mb="xs">
           <Text style={{ fontFamily: 'Montserrat' }} size="xl" weight={800}>
-            {sourceName}
+            {props.sourceName}
           </Text>
         </Group>
 
@@ -341,7 +342,7 @@ function DynamicMaterialsCard({ sourceName, sourceLocation, text }: DynamicMater
           AI summary
         </Text>
         <Text className="fade" size="md" color="dimmed">
-          {text}
+          {props.text}
         </Text>
 
         <Link href={"https://kastanday.com"} rel="noopener noreferrer" target="_blank">
@@ -357,7 +358,7 @@ function DynamicMaterialsCard({ sourceName, sourceLocation, text }: DynamicMater
               weight={4300}
               // gradient={{ from: 'yellow', to: 'green', deg: 0 }}
             >
-              Source {sourceLocation}
+              Source {props.sourceLocation}
             </Text>
           </Group>
         </Link>
