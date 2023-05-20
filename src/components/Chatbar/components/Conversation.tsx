@@ -4,7 +4,7 @@ import {
   IconPencil,
   IconTrash,
   IconX,
-} from '@tabler/icons-react';
+} from '@tabler/icons-react'
 import {
   DragEvent,
   KeyboardEvent,
@@ -12,17 +12,17 @@ import {
   useContext,
   useEffect,
   useState,
-} from 'react';
+} from 'react'
 
-import { Conversation } from '@/types/chat';
+import { Conversation } from '@/types/chat'
 
-import HomeContext from '~/pages/home/home.context';
+import HomeContext from '~/pages/home/home.context'
 
-import SidebarActionButton from '@/components/Buttons/SidebarActionButton';
-import ChatbarContext from '@/components/Chatbar/Chatbar.context';
+import SidebarActionButton from '@/components/Buttons/SidebarActionButton'
+import ChatbarContext from '@/components/Chatbar/Chatbar.context'
 
 interface Props {
-  conversation: Conversation;
+  conversation: Conversation
 }
 
 export const ConversationComponent = ({ conversation }: Props) => {
@@ -30,75 +30,75 @@ export const ConversationComponent = ({ conversation }: Props) => {
     state: { selectedConversation, messageIsStreaming },
     handleSelectConversation,
     handleUpdateConversation,
-  } = useContext(HomeContext);
+  } = useContext(HomeContext)
 
-  const { handleDeleteConversation } = useContext(ChatbarContext);
+  const { handleDeleteConversation } = useContext(ChatbarContext)
 
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isRenaming, setIsRenaming] = useState(false);
-  const [renameValue, setRenameValue] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [renameValue, setRenameValue] = useState('')
 
   const handleEnterDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter') {
-      e.preventDefault();
-      selectedConversation && handleRename(selectedConversation);
+      e.preventDefault()
+      selectedConversation && handleRename(selectedConversation)
     }
-  };
+  }
 
   const handleDragStart = (
     e: DragEvent<HTMLButtonElement>,
     conversation: Conversation,
   ) => {
     if (e.dataTransfer) {
-      e.dataTransfer.setData('conversation', JSON.stringify(conversation));
+      e.dataTransfer.setData('conversation', JSON.stringify(conversation))
     }
-  };
+  }
 
   const handleRename = (conversation: Conversation) => {
     if (renameValue.trim().length > 0) {
       handleUpdateConversation(conversation, {
         key: 'name',
         value: renameValue,
-      });
-      setRenameValue('');
-      setIsRenaming(false);
+      })
+      setRenameValue('')
+      setIsRenaming(false)
     }
-  };
+  }
 
   const handleConfirm: MouseEventHandler<HTMLButtonElement> = (e) => {
-    e.stopPropagation();
+    e.stopPropagation()
     if (isDeleting) {
-      handleDeleteConversation(conversation);
+      handleDeleteConversation(conversation)
     } else if (isRenaming) {
-      handleRename(conversation);
+      handleRename(conversation)
     }
-    setIsDeleting(false);
-    setIsRenaming(false);
-  };
+    setIsDeleting(false)
+    setIsRenaming(false)
+  }
 
   const handleCancel: MouseEventHandler<HTMLButtonElement> = (e) => {
-    e.stopPropagation();
-    setIsDeleting(false);
-    setIsRenaming(false);
-  };
+    e.stopPropagation()
+    setIsDeleting(false)
+    setIsRenaming(false)
+  }
 
   const handleOpenRenameModal: MouseEventHandler<HTMLButtonElement> = (e) => {
-    e.stopPropagation();
-    setIsRenaming(true);
-    selectedConversation && setRenameValue(selectedConversation.name);
-  };
+    e.stopPropagation()
+    setIsRenaming(true)
+    selectedConversation && setRenameValue(selectedConversation.name)
+  }
   const handleOpenDeleteModal: MouseEventHandler<HTMLButtonElement> = (e) => {
-    e.stopPropagation();
-    setIsDeleting(true);
-  };
+    e.stopPropagation()
+    setIsDeleting(true)
+  }
 
   useEffect(() => {
     if (isRenaming) {
-      setIsDeleting(false);
+      setIsDeleting(false)
     } else if (isDeleting) {
-      setIsRenaming(false);
+      setIsRenaming(false)
     }
-  }, [isRenaming, isDeleting]);
+  }, [isRenaming, isDeleting])
 
   return (
     <div className="relative flex items-center">
@@ -164,5 +164,5 @@ export const ConversationComponent = ({ conversation }: Props) => {
           </div>
         )}
     </div>
-  );
-};
+  )
+}

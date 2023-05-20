@@ -1,1 +1,1 @@
-export { default } from './SidebarActionButton';
+export { default } from './SidebarActionButton'

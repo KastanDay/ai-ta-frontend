@@ -5,5 +5,5 @@ export const cleanSourceText = (text: string) => {
     .replace(/\n\n/g, ' ')
     .replace(/ {3,}/g, '  ')
     .replace(/\t/g, '')
-    .replace(/\n+(\s*\n)*/g, '\n');
-};
+    .replace(/\n+(\s*\n)*/g, '\n')
+}

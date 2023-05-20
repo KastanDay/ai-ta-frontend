@@ -1,10 +1,10 @@
-import { IconCircleX } from '@tabler/icons-react';
-import { FC } from 'react';
+import { IconCircleX } from '@tabler/icons-react'
+import { FC } from 'react'
 
-import { ErrorMessage } from '@/types/error';
+import { ErrorMessage } from '@/types/error'
 
 interface Props {
-  error: ErrorMessage;
+  error: ErrorMessage
 }
 
 export const ErrorMessageDiv: FC<Props> = ({ error }) => {
@@ -24,5 +24,5 @@ export const ErrorMessageDiv: FC<Props> = ({ error }) => {
         {error.code ? <i>Code: {error.code}</i> : ''}
       </div>
     </div>
-  );
-};
+  )
+}

@@ -1,28 +1,28 @@
-import { IconFolderPlus, IconMistOff, IconPlus } from '@tabler/icons-react';
-import { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { IconFolderPlus, IconMistOff, IconPlus } from '@tabler/icons-react'
+import { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   CloseSidebarButton,
   OpenSidebarButton,
-} from './components/OpenCloseButton';
+} from './components/OpenCloseButton'
 
-import Search from '../Search';
+import Search from '../Search'
 
 interface Props<T> {
-  isOpen: boolean;
-  addItemButtonTitle: string;
-  side: 'left' | 'right';
-  items: T[];
-  itemComponent: ReactNode;
-  folderComponent: ReactNode;
-  footerComponent?: ReactNode;
-  searchTerm: string;
-  handleSearchTerm: (searchTerm: string) => void;
-  toggleOpen: () => void;
-  handleCreateItem: () => void;
-  handleCreateFolder: () => void;
-  handleDrop: (e: any) => void;
+  isOpen: boolean
+  addItemButtonTitle: string
+  side: 'left' | 'right'
+  items: T[]
+  itemComponent: ReactNode
+  folderComponent: ReactNode
+  footerComponent?: ReactNode
+  searchTerm: string
+  handleSearchTerm: (searchTerm: string) => void
+  toggleOpen: () => void
+  handleCreateItem: () => void
+  handleCreateFolder: () => void
+  handleDrop: (e: any) => void
 }
 
 const Sidebar = <T,>({
@@ -40,19 +40,19 @@ const Sidebar = <T,>({
   handleCreateFolder,
   handleDrop,
 }: Props<T>) => {
-  const { t } = useTranslation('promptbar');
+  const { t } = useTranslation('promptbar')
 
   const allowDrop = (e: any) => {
-    e.preventDefault();
-  };
+    e.preventDefault()
+  }
 
   const highlightDrop = (e: any) => {
-    e.target.style.background = '#343541';
-  };
+    e.target.style.background = '#343541'
+  }
 
   const removeHighlight = (e: any) => {
-    e.target.style.background = 'none';
-  };
+    e.target.style.background = 'none'
+  }
 
   return isOpen ? (
     <div>
@@ -63,8 +63,8 @@ const Sidebar = <T,>({
           <button
             className="text-sidebar flex w-[190px] flex-shrink-0 cursor-pointer select-none items-center gap-3 rounded-md border border-white/20 p-3 text-white transition-colors duration-200 hover:bg-gray-500/10"
             onClick={() => {
-              handleCreateItem();
-              handleSearchTerm('');
+              handleCreateItem()
+              handleSearchTerm('')
             }}
           >
             <IconPlus size={16} />
@@ -117,7 +117,7 @@ const Sidebar = <T,>({
     </div>
   ) : (
     <OpenSidebarButton onClick={toggleOpen} side={side} />
-  );
-};
+  )
+}
 
-export default Sidebar;
+export default Sidebar

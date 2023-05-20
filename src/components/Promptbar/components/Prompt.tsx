@@ -3,24 +3,24 @@ import {
   IconCheck,
   IconTrash,
   IconX,
-} from '@tabler/icons-react';
+} from '@tabler/icons-react'
 import {
   DragEvent,
   MouseEventHandler,
   useContext,
   useEffect,
   useState,
-} from 'react';
+} from 'react'
 
-import { Prompt } from '@/types/prompt';
+import { Prompt } from '@/types/prompt'
 
-import SidebarActionButton from '@/components/Buttons/SidebarActionButton';
+import SidebarActionButton from '@/components/Buttons/SidebarActionButton'
 
-import PromptbarContext from '../PromptBar.context';
-import { PromptModal } from './PromptModal';
+import PromptbarContext from '../PromptBar.context'
+import { PromptModal } from './PromptModal'
 
 interface Props {
-  prompt: Prompt;
+  prompt: Prompt
 }
 
 export const PromptComponent = ({ prompt }: Props) => {
@@ -28,52 +28,52 @@ export const PromptComponent = ({ prompt }: Props) => {
     dispatch: promptDispatch,
     handleUpdatePrompt,
     handleDeletePrompt,
-  } = useContext(PromptbarContext);
+  } = useContext(PromptbarContext)
 
-  const [showModal, setShowModal] = useState<boolean>(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isRenaming, setIsRenaming] = useState(false);
-  const [renameValue, setRenameValue] = useState('');
+  const [showModal, setShowModal] = useState<boolean>(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [renameValue, setRenameValue] = useState('')
 
   const handleUpdate = (prompt: Prompt) => {
-    handleUpdatePrompt(prompt);
-    promptDispatch({ field: 'searchTerm', value: '' });
-  };
+    handleUpdatePrompt(prompt)
+    promptDispatch({ field: 'searchTerm', value: '' })
+  }
 
   const handleDelete: MouseEventHandler<HTMLButtonElement> = (e) => {
-    e.stopPropagation();
+    e.stopPropagation()
 
     if (isDeleting) {
-      handleDeletePrompt(prompt);
-      promptDispatch({ field: 'searchTerm', value: '' });
+      handleDeletePrompt(prompt)
+      promptDispatch({ field: 'searchTerm', value: '' })
     }
 
-    setIsDeleting(false);
-  };
+    setIsDeleting(false)
+  }
 
   const handleCancelDelete: MouseEventHandler<HTMLButtonElement> = (e) => {
-    e.stopPropagation();
-    setIsDeleting(false);
-  };
+    e.stopPropagation()
+    setIsDeleting(false)
+  }
 
   const handleOpenDeleteModal: MouseEventHandler<HTMLButtonElement> = (e) => {
-    e.stopPropagation();
-    setIsDeleting(true);
-  };
+    e.stopPropagation()
+    setIsDeleting(true)
+  }
 
   const handleDragStart = (e: DragEvent<HTMLButtonElement>, prompt: Prompt) => {
     if (e.dataTransfer) {
-      e.dataTransfer.setData('prompt', JSON.stringify(prompt));
+      e.dataTransfer.setData('prompt', JSON.stringify(prompt))
     }
-  };
+  }
 
   useEffect(() => {
     if (isRenaming) {
-      setIsDeleting(false);
+      setIsDeleting(false)
     } else if (isDeleting) {
-      setIsRenaming(false);
+      setIsRenaming(false)
     }
-  }, [isRenaming, isDeleting]);
+  }, [isRenaming, isDeleting])
 
   return (
     <div className="relative flex items-center">
@@ -81,14 +81,14 @@ export const PromptComponent = ({ prompt }: Props) => {
         className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-sm transition-colors duration-200 hover:bg-[#343541]/90"
         draggable="true"
         onClick={(e) => {
-          e.stopPropagation();
-          setShowModal(true);
+          e.stopPropagation()
+          setShowModal(true)
         }}
         onDragStart={(e) => handleDragStart(e, prompt)}
         onMouseLeave={() => {
-          setIsDeleting(false);
-          setIsRenaming(false);
-          setRenameValue('');
+          setIsDeleting(false)
+          setIsRenaming(false)
+          setRenameValue('')
         }}
       >
         <IconBulbFilled size={18} />
@@ -126,5 +126,5 @@ export const PromptComponent = ({ prompt }: Props) => {
         />
       )}
     </div>
-  );
-};
+  )
+}

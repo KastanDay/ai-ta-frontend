@@ -1,20 +1,20 @@
-import { IconExternalLink } from '@tabler/icons-react';
-import { useContext } from 'react';
+import { IconExternalLink } from '@tabler/icons-react'
+import { useContext } from 'react'
 
-import { useTranslation } from 'next-i18next';
+import { useTranslation } from 'next-i18next'
 
-import { OpenAIModel } from '@/types/openai';
+import { OpenAIModel } from '@/types/openai'
 
-import HomeContext from '~/pages/home/home.context';
+import HomeContext from '~/pages/home/home.context'
 
 export const ModelSelect = () => {
-  const { t } = useTranslation('chat');
+  const { t } = useTranslation('chat')
 
   const {
     state: { selectedConversation, models, defaultModelId },
     handleUpdateConversation,
     dispatch: homeDispatch,
-  } = useContext(HomeContext);
+  } = useContext(HomeContext)
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     selectedConversation &&
@@ -23,8 +23,8 @@ export const ModelSelect = () => {
         value: models.find(
           (model) => model.id === e.target.value,
         ) as OpenAIModel,
-      });
-  };
+      })
+  }
 
   return (
     <div className="flex flex-col">
@@ -51,16 +51,16 @@ export const ModelSelect = () => {
           ))}
         </select>
       </div>
-      <div className="w-full mt-3 text-left text-neutral-700 dark:text-neutral-400 flex items-center">
+      <div className="mt-3 flex w-full items-center text-left text-neutral-700 dark:text-neutral-400">
         <a
           href="https://platform.openai.com/account/usage"
           target="_blank"
           className="flex items-center"
         >
-          <IconExternalLink size={18} className={'inline mr-1'} />
+          <IconExternalLink size={18} className={'mr-1 inline'} />
           {t('View Account Usage')}
         </a>
       </div>
     </div>
-  );
-};
+  )
+}

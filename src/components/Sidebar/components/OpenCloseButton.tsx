@@ -1,8 +1,8 @@
-import { IconArrowBarLeft, IconArrowBarRight } from '@tabler/icons-react';
+import { IconArrowBarLeft, IconArrowBarRight } from '@tabler/icons-react'
 
 interface Props {
-  onClick: any;
-  side: 'left' | 'right';
+  onClick: any
+  side: 'left' | 'right'
 }
 
 export const CloseSidebarButton = ({ onClick, side }: Props) => {
@@ -20,11 +20,11 @@ export const CloseSidebarButton = ({ onClick, side }: Props) => {
       </button>
       <div
         onClick={onClick}
-        className="absolute top-0 left-0 z-10 h-full w-full bg-black opacity-70 sm:hidden"
+        className="absolute left-0 top-0 z-10 h-full w-full bg-black opacity-70 sm:hidden"
       ></div>
     </>
-  );
-};
+  )
+}
 
 export const OpenSidebarButton = ({ onClick, side }: Props) => {
   return (
@@ -38,5 +38,5 @@ export const OpenSidebarButton = ({ onClick, side }: Props) => {
     >
       {side === 'right' ? <IconArrowBarLeft /> : <IconArrowBarRight />}
     </button>
-  );
-};
+  )
+}

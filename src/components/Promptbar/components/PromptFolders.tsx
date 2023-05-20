@@ -1,36 +1,36 @@
-import { useContext } from 'react';
+import { useContext } from 'react'
 
-import { FolderInterface } from '@/types/folder';
+import { FolderInterface } from '@/types/folder'
 
-import HomeContext from '~/pages/home/home.context';
+import HomeContext from '~/pages/home/home.context'
 
-import Folder from '@/components/Folder';
-import { PromptComponent } from '@/components/Promptbar/components/Prompt';
+import Folder from '@/components/Folder'
+import { PromptComponent } from '@/components/Promptbar/components/Prompt'
 
-import PromptbarContext from '../PromptBar.context';
+import PromptbarContext from '../PromptBar.context'
 
 export const PromptFolders = () => {
   const {
     state: { folders },
-  } = useContext(HomeContext);
+  } = useContext(HomeContext)
 
   const {
     state: { searchTerm, filteredPrompts },
     handleUpdatePrompt,
-  } = useContext(PromptbarContext);
+  } = useContext(PromptbarContext)
 
   const handleDrop = (e: any, folder: FolderInterface) => {
     if (e.dataTransfer) {
-      const prompt = JSON.parse(e.dataTransfer.getData('prompt'));
+      const prompt = JSON.parse(e.dataTransfer.getData('prompt'))
 
       const updatedPrompt = {
         ...prompt,
         folderId: folder.id,
-      };
+      }
 
-      handleUpdatePrompt(updatedPrompt);
+      handleUpdatePrompt(updatedPrompt)
     }
-  };
+  }
 
   const PromptFolders = (currentFolder: FolderInterface) =>
     filteredPrompts
@@ -41,9 +41,9 @@ export const PromptFolders = () => {
             <div key={index} className="ml-5 gap-2 border-l pl-2">
               <PromptComponent prompt={prompt} />
             </div>
-          );
+          )
         }
-      });
+      })
 
   return (
     <div className="flex w-full flex-col pt-2">
@@ -60,5 +60,5 @@ export const PromptFolders = () => {
           />
         ))}
     </div>
-  );
-};
+  )
+}

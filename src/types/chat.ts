@@ -1,4 +1,4 @@
-import { OpenAIModel } from './openai';
+import { OpenAIModel } from './openai'
 
 // export interface Message {
 //   role: Role;
@@ -9,27 +9,27 @@ import { OpenAIModel } from './openai';
 // adding this for Sources
 export interface Message {
   // id: string;
-  role: Role;
-  content: string;
-  sources?: string[];
+  role: Role
+  content: string
+  sources?: string[]
 }
 
-export type Role = 'assistant' | 'user';
+export type Role = 'assistant' | 'user'
 
 export interface ChatBody {
-  model: OpenAIModel;
-  messages: Message[];
-  key: string;
-  prompt: string;
-  temperature: number;
+  model: OpenAIModel
+  messages: Message[]
+  key: string
+  prompt: string
+  temperature: number
 }
 
 export interface Conversation {
-  id: string;
-  name: string;
-  messages: Message[];
-  model: OpenAIModel;
-  prompt: string;
-  temperature: number;
-  folderId: string | null;
+  id: string
+  name: string
+  messages: Message[]
+  model: OpenAIModel
+  prompt: string
+  temperature: number
+  folderId: string | null
 }

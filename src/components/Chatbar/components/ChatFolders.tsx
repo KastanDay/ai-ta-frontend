@@ -1,32 +1,32 @@
-import { useContext } from 'react';
+import { useContext } from 'react'
 
-import { FolderInterface } from '@/types/folder';
+import { FolderInterface } from '@/types/folder'
 
-import HomeContext from '~/pages/home/home.context';
+import HomeContext from '~/pages/home/home.context'
 
-import Folder from '@/components/Folder';
+import Folder from '@/components/Folder'
 
-import { ConversationComponent } from './Conversation';
+import { ConversationComponent } from './Conversation'
 
 interface Props {
-  searchTerm: string;
+  searchTerm: string
 }
 
 export const ChatFolders = ({ searchTerm }: Props) => {
   const {
     state: { folders, conversations },
     handleUpdateConversation,
-  } = useContext(HomeContext);
+  } = useContext(HomeContext)
 
   const handleDrop = (e: any, folder: FolderInterface) => {
     if (e.dataTransfer) {
-      const conversation = JSON.parse(e.dataTransfer.getData('conversation'));
+      const conversation = JSON.parse(e.dataTransfer.getData('conversation'))
       handleUpdateConversation(conversation, {
         key: 'folderId',
         value: folder.id,
-      });
+      })
     }
-  };
+  }
 
   const ChatFolders = (currentFolder: FolderInterface) => {
     return (
@@ -39,11 +39,11 @@ export const ChatFolders = ({ searchTerm }: Props) => {
               <div key={index} className="ml-5 gap-2 border-l pl-2">
                 <ConversationComponent conversation={conversation} />
               </div>
-            );
+            )
           }
         })
-    );
-  };
+    )
+  }
 
   return (
     <div className="flex w-full flex-col pt-2">
@@ -60,5 +60,5 @@ export const ChatFolders = ({ searchTerm }: Props) => {
           />
         ))}
     </div>
-  );
-};
+  )
+}

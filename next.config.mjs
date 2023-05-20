@@ -4,8 +4,8 @@
  * for Docker builds.
  */
 await import('./src/env.mjs')
-import nextI18NextConfig from './next-i18next.config.mjs';
-import path from 'path';
+import nextI18NextConfig from './next-i18next.config.mjs'
+import path from 'path'
 // import { nextI18NextConfig } from './next-i18next.config.ts';
 
 /** @type {import("next").NextConfig} */

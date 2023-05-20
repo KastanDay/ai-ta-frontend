@@ -1,13 +1,13 @@
-import { FC, useEffect, useRef } from 'react';
+import { FC, useEffect, useRef } from 'react'
 
-import { useTranslation } from 'next-i18next';
+import { useTranslation } from 'next-i18next'
 
-import { Plugin, PluginList } from '@/types/plugin';
+import { Plugin, PluginList } from '@/types/plugin'
 
 interface Props {
-  plugin: Plugin | null;
-  onPluginChange: (plugin: Plugin) => void;
-  onKeyDown: (e: React.KeyboardEvent<HTMLSelectElement>) => void;
+  plugin: Plugin | null
+  onPluginChange: (plugin: Plugin) => void
+  onKeyDown: (e: React.KeyboardEvent<HTMLSelectElement>) => void
 }
 
 export const PluginSelect: FC<Props> = ({
@@ -15,50 +15,50 @@ export const PluginSelect: FC<Props> = ({
   onPluginChange,
   onKeyDown,
 }) => {
-  const { t } = useTranslation('chat');
+  const { t } = useTranslation('chat')
 
-  const selectRef = useRef<HTMLSelectElement>(null);
+  const selectRef = useRef<HTMLSelectElement>(null)
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLSelectElement>) => {
-    const selectElement = selectRef.current;
-    const optionCount = selectElement?.options.length || 0;
+    const selectElement = selectRef.current
+    const optionCount = selectElement?.options.length || 0
 
     if (e.key === '/' && e.metaKey) {
-      e.preventDefault();
+      e.preventDefault()
       if (selectElement) {
         selectElement.selectedIndex =
-          (selectElement.selectedIndex + 1) % optionCount;
-        selectElement.dispatchEvent(new Event('change'));
+          (selectElement.selectedIndex + 1) % optionCount
+        selectElement.dispatchEvent(new Event('change'))
       }
     } else if (e.key === '/' && e.shiftKey && e.metaKey) {
-      e.preventDefault();
+      e.preventDefault()
       if (selectElement) {
         selectElement.selectedIndex =
-          (selectElement.selectedIndex - 1 + optionCount) % optionCount;
-        selectElement.dispatchEvent(new Event('change'));
+          (selectElement.selectedIndex - 1 + optionCount) % optionCount
+        selectElement.dispatchEvent(new Event('change'))
       }
     } else if (e.key === 'Enter') {
-      e.preventDefault();
+      e.preventDefault()
       if (selectElement) {
-        selectElement.dispatchEvent(new Event('change'));
+        selectElement.dispatchEvent(new Event('change'))
       }
 
       onPluginChange(
         PluginList.find(
           (plugin) =>
-            plugin.name === selectElement?.selectedOptions[0].innerText,
+            plugin.name === selectElement?.selectedOptions[0]?.innerText,
         ) as Plugin,
-      );
+      )
     } else {
-      onKeyDown(e);
+      onKeyDown(e)
     }
-  };
+  }
 
   useEffect(() => {
     if (selectRef.current) {
-      selectRef.current.focus();
+      selectRef.current.focus()
     }
-  }, []);
+  }, [])
 
   return (
     <div className="flex flex-col">
@@ -73,10 +73,10 @@ export const PluginSelect: FC<Props> = ({
               PluginList.find(
                 (plugin) => plugin.id === e.target.value,
               ) as Plugin,
-            );
+            )
           }}
           onKeyDown={(e) => {
-            handleKeyDown(e);
+            handleKeyDown(e)
           }}
         >
           <option
@@ -99,5 +99,5 @@ export const PluginSelect: FC<Props> = ({
         </select>
       </div>
     </div>
-  );
-};
+  )
+}

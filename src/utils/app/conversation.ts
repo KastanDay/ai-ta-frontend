@@ -1,4 +1,4 @@
-import { Conversation } from '@/types/chat';
+import { Conversation } from '@/types/chat'
 
 export const updateConversation = (
   updatedConversation: Conversation,
@@ -6,25 +6,25 @@ export const updateConversation = (
 ) => {
   const updatedConversations = allConversations.map((c) => {
     if (c.id === updatedConversation.id) {
-      return updatedConversation;
+      return updatedConversation
     }
 
-    return c;
-  });
+    return c
+  })
 
-  saveConversation(updatedConversation);
-  saveConversations(updatedConversations);
+  saveConversation(updatedConversation)
+  saveConversations(updatedConversations)
 
   return {
     single: updatedConversation,
     all: updatedConversations,
-  };
-};
+  }
+}
 
 export const saveConversation = (conversation: Conversation) => {
-  localStorage.setItem('selectedConversation', JSON.stringify(conversation));
-};
+  localStorage.setItem('selectedConversation', JSON.stringify(conversation))
+}
 
 export const saveConversations = (conversations: Conversation[]) => {
-  localStorage.setItem('conversationHistory', JSON.stringify(conversations));
-};
+  localStorage.setItem('conversationHistory', JSON.stringify(conversations))
+}

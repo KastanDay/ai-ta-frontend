@@ -1,4 +1,4 @@
 export interface Settings {
-  theme: 'light' | 'dark';
-  cooldown: number;
+  theme: 'light' | 'dark'
+  cooldown: number
 }

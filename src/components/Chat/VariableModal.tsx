@@ -1,12 +1,12 @@
-import { FC, KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { FC, KeyboardEvent, useEffect, useRef, useState } from 'react'
 
-import { Prompt } from '@/types/prompt';
+import { Prompt } from '@/types/prompt'
 
 interface Props {
-  prompt: Prompt;
-  variables: string[];
-  onSubmit: (updatedVariables: string[]) => void;
-  onClose: () => void;
+  prompt?: Prompt
+  variables: string[]
+  onSubmit: (updatedVariables: string[]) => void
+  onClose: () => void
 }
 
 export const VariableModal: FC<Props> = ({
@@ -14,7 +14,7 @@ export const VariableModal: FC<Props> = ({
   variables,
   onSubmit,
   onClose,
-}) => {
+}: Props) => {
   const [updatedVariables, setUpdatedVariables] = useState<
     { key: string; value: string }[]
   >(
@@ -24,57 +24,61 @@ export const VariableModal: FC<Props> = ({
         (item, index, array) =>
           array.findIndex((t) => t.key === item.key) === index,
       ),
-  );
+  )
 
-  const modalRef = useRef<HTMLDivElement>(null);
-  const nameInputRef = useRef<HTMLTextAreaElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null)
+  const nameInputRef = useRef<HTMLTextAreaElement>(null)
 
   const handleChange = (index: number, value: string) => {
     setUpdatedVariables((prev) => {
-      const updated = [...prev];
-      updated[index].value = value;
-      return updated;
-    });
-  };
+      const updated = prev.map((item, i) => {
+        if (i === index) {
+          return { ...item, value }
+        }
+        return item
+      })
+      return updated
+    })
+  }
 
   const handleSubmit = () => {
     if (updatedVariables.some((variable) => variable.value === '')) {
-      alert('Please fill out all variables');
-      return;
+      alert('Please fill out all variables')
+      return
     }
 
-    onSubmit(updatedVariables.map((variable) => variable.value));
-    onClose();
-  };
+    onSubmit(updatedVariables.map((variable) => variable.value))
+    onClose()
+  }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
+      e.preventDefault()
+      handleSubmit()
     } else if (e.key === 'Escape') {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        onClose();
+        onClose()
       }
-    };
+    }
 
-    window.addEventListener('click', handleOutsideClick);
+    window.addEventListener('click', handleOutsideClick)
 
     return () => {
-      window.removeEventListener('click', handleOutsideClick);
-    };
-  }, [onClose]);
+      window.removeEventListener('click', handleOutsideClick)
+    }
+  }, [onClose])
 
   useEffect(() => {
     if (nameInputRef.current) {
-      nameInputRef.current.focus();
+      nameInputRef.current.focus()
     }
-  }, []);
+  }, [])
 
   return (
     <div
@@ -83,16 +87,20 @@ export const VariableModal: FC<Props> = ({
     >
       <div
         ref={modalRef}
-        className="dark:border-netural-400 inline-block max-h-[400px] transform overflow-y-auto rounded-lg border border-gray-300 bg-white px-4 pt-5 pb-4 text-left align-bottom shadow-xl transition-all dark:bg-[#202123] sm:my-8 sm:max-h-[600px] sm:w-full sm:max-w-lg sm:p-6 sm:align-middle"
+        className="dark:border-netural-400 inline-block max-h-[400px] transform overflow-y-auto rounded-lg border border-gray-300 bg-white px-4 pb-4 pt-5 text-left align-bottom shadow-xl transition-all dark:bg-[#202123] sm:my-8 sm:max-h-[600px] sm:w-full sm:max-w-lg sm:p-6 sm:align-middle"
         role="dialog"
       >
-        <div className="mb-4 text-xl font-bold text-black dark:text-neutral-200">
-          {prompt.name}
-        </div>
+        {prompt && (
+          <>
+            <div className="mb-4 text-xl font-bold text-black dark:text-neutral-200">
+              {prompt.name}
+            </div>
 
-        <div className="mb-4 text-sm italic text-black dark:text-neutral-200">
-          {prompt.description}
-        </div>
+            <div className="mb-4 text-sm italic text-black dark:text-neutral-200">
+              {prompt.description}
+            </div>
+          </>
+        )}
 
         {updatedVariables.map((variable, index) => (
           <div className="mb-4" key={index}>
@@ -120,5 +128,5 @@ export const VariableModal: FC<Props> = ({
         </button>
       </div>
     </div>
-  );
-};
+  )
+}

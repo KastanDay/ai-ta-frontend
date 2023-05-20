@@ -1,54 +1,54 @@
-import { IconKey } from '@tabler/icons-react';
-import { KeyboardEvent, useContext, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { IconKey } from '@tabler/icons-react'
+import { KeyboardEvent, useContext, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
-import { PluginID, PluginKey } from '@/types/plugin';
+import { PluginID, PluginKey } from '@/types/plugin'
 
-import HomeContext from '~/pages/home/home.context';
+import HomeContext from '~/pages/home/home.context'
 
-import { SidebarButton } from '@/components/Sidebar/SidebarButton';
+import { SidebarButton } from '@/components/Sidebar/SidebarButton'
 
-import ChatbarContext from '../Chatbar.context';
+import ChatbarContext from '../Chatbar.context'
 
 export const PluginKeys = () => {
-  const { t } = useTranslation('sidebar');
+  const { t } = useTranslation('sidebar')
 
   const {
     state: { pluginKeys },
-  } = useContext(HomeContext);
+  } = useContext(HomeContext)
 
   const { handlePluginKeyChange, handleClearPluginKey } =
-    useContext(ChatbarContext);
+    useContext(ChatbarContext)
 
-  const [isChanging, setIsChanging] = useState(false);
+  const [isChanging, setIsChanging] = useState(false)
 
-  const modalRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null)
 
   const handleEnter = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      setIsChanging(false);
+      e.preventDefault()
+      setIsChanging(false)
     }
-  };
+  }
 
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        window.addEventListener('mouseup', handleMouseUp);
+        window.addEventListener('mouseup', handleMouseUp)
       }
-    };
+    }
 
     const handleMouseUp = (e: MouseEvent) => {
-      window.removeEventListener('mouseup', handleMouseUp);
-      setIsChanging(false);
-    };
+      window.removeEventListener('mouseup', handleMouseUp)
+      setIsChanging(false)
+    }
 
-    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousedown', handleMouseDown)
 
     return () => {
-      window.removeEventListener('mousedown', handleMouseDown);
-    };
-  }, []);
+      window.removeEventListener('mousedown', handleMouseDown)
+    }
+  }, [])
 
   return (
     <>
@@ -64,7 +64,7 @@ export const PluginKeys = () => {
           onKeyDown={handleEnter}
         >
           <div className="fixed inset-0 z-10 overflow-hidden">
-            <div className="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div className="flex min-h-screen items-center justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0">
               <div
                 className="hidden sm:inline-block sm:h-screen sm:align-middle"
                 aria-hidden="true"
@@ -72,7 +72,7 @@ export const PluginKeys = () => {
 
               <div
                 ref={modalRef}
-                className="dark:border-netural-400 inline-block max-h-[400px] transform overflow-y-auto rounded-lg border border-gray-300 bg-white px-4 pt-5 pb-4 text-left align-bottom shadow-xl transition-all dark:bg-[#202123] sm:my-8 sm:max-h-[600px] sm:w-full sm:max-w-lg sm:p-6 sm:align-middle"
+                className="dark:border-netural-400 inline-block max-h-[400px] transform overflow-y-auto rounded-lg border border-gray-300 bg-white px-4 pb-4 pt-5 text-left align-bottom shadow-xl transition-all dark:bg-[#202123] sm:my-8 sm:max-h-[600px] sm:w-full sm:max-w-lg sm:p-6 sm:align-middle"
                 role="dialog"
               >
                 <div className="mb-10 text-4xl">Plugin Keys</div>
@@ -99,12 +99,12 @@ export const PluginKeys = () => {
                     onChange={(e) => {
                       const pluginKey = pluginKeys.find(
                         (p) => p.pluginId === PluginID.GOOGLE_SEARCH,
-                      );
+                      )
 
                       if (pluginKey) {
                         const requiredKey = pluginKey.requiredKeys.find(
                           (k) => k.key === 'GOOGLE_API_KEY',
-                        );
+                        )
 
                         if (requiredKey) {
                           const updatedPluginKey = {
@@ -114,14 +114,14 @@ export const PluginKeys = () => {
                                 return {
                                   ...k,
                                   value: e.target.value,
-                                };
+                                }
                               }
 
-                              return k;
+                              return k
                             }),
-                          };
+                          }
 
-                          handlePluginKeyChange(updatedPluginKey);
+                          handlePluginKeyChange(updatedPluginKey)
                         }
                       } else {
                         const newPluginKey: PluginKey = {
@@ -136,9 +136,9 @@ export const PluginKeys = () => {
                               value: '',
                             },
                           ],
-                        };
+                        }
 
-                        handlePluginKeyChange(newPluginKey);
+                        handlePluginKeyChange(newPluginKey)
                       }
                     }}
                   />
@@ -158,12 +158,12 @@ export const PluginKeys = () => {
                     onChange={(e) => {
                       const pluginKey = pluginKeys.find(
                         (p) => p.pluginId === PluginID.GOOGLE_SEARCH,
-                      );
+                      )
 
                       if (pluginKey) {
                         const requiredKey = pluginKey.requiredKeys.find(
                           (k) => k.key === 'GOOGLE_CSE_ID',
-                        );
+                        )
 
                         if (requiredKey) {
                           const updatedPluginKey = {
@@ -173,14 +173,14 @@ export const PluginKeys = () => {
                                 return {
                                   ...k,
                                   value: e.target.value,
-                                };
+                                }
                               }
 
-                              return k;
+                              return k
                             }),
-                          };
+                          }
 
-                          handlePluginKeyChange(updatedPluginKey);
+                          handlePluginKeyChange(updatedPluginKey)
                         }
                       } else {
                         const newPluginKey: PluginKey = {
@@ -195,9 +195,9 @@ export const PluginKeys = () => {
                               value: e.target.value,
                             },
                           ],
-                        };
+                        }
 
-                        handlePluginKeyChange(newPluginKey);
+                        handlePluginKeyChange(newPluginKey)
                       }
                     }}
                   />
@@ -207,10 +207,10 @@ export const PluginKeys = () => {
                     onClick={() => {
                       const pluginKey = pluginKeys.find(
                         (p) => p.pluginId === PluginID.GOOGLE_SEARCH,
-                      );
+                      )
 
                       if (pluginKey) {
-                        handleClearPluginKey(pluginKey);
+                        handleClearPluginKey(pluginKey)
                       }
                     }}
                   >
@@ -231,5 +231,5 @@ export const PluginKeys = () => {
         </div>
       )}
     </>
-  );
-};
+  )
+}

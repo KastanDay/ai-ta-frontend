@@ -1,8 +1,8 @@
-import { FC } from 'react';
+import { FC } from 'react'
 
 interface Props {
-  size?: string;
-  className?: string;
+  size?: string
+  className?: string
 }
 
 const Spinner = ({ size = '1em', className = '' }: Props) => {
@@ -28,7 +28,7 @@ const Spinner = ({ size = '1em', className = '' }: Props) => {
       <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
       <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
     </svg>
-  );
-};
+  )
+}
 
-export default Spinner;
+export default Spinner

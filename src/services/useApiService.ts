@@ -1,13 +1,13 @@
-import { useCallback } from 'react';
+import { useCallback } from 'react'
 
-import { useFetch } from '@/hooks/useFetch';
+import { useFetch } from '@/hooks/useFetch'
 
 export interface GetModelsRequestProps {
-  key: string;
+  key: string
 }
 
 const useApiService = () => {
-  const fetchService = useFetch();
+  const fetchService = useFetch()
 
   // const getModels = useCallback(
   // 	(
@@ -33,14 +33,14 @@ const useApiService = () => {
           'Content-Type': 'application/json',
         },
         signal,
-      });
+      })
     },
     [fetchService],
-  );
+  )
 
   return {
     getModels,
-  };
-};
+  }
+}
 
-export default useApiService;
+export default useApiService

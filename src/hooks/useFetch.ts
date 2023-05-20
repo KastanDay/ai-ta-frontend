@@ -1,12 +1,12 @@
 export type RequestModel = {
-  params?: object;
-  headers?: object;
-  signal?: AbortSignal;
-};
+  params?: object
+  headers?: object
+  signal?: AbortSignal
+}
 
 export type RequestWithBodyModel = RequestModel & {
-  body?: object | FormData;
-};
+  body?: object | FormData
+}
 
 export const useFetch = () => {
   const handleFetch = async (
@@ -14,13 +14,13 @@ export const useFetch = () => {
     request: any,
     signal?: AbortSignal,
   ) => {
-    const requestUrl = request?.params ? `${url}${request.params}` : url;
+    const requestUrl = request?.params ? `${url}${request.params}` : url
 
     const requestBody = request?.body
       ? request.body instanceof FormData
         ? { ...request, body: request.body }
         : { ...request, body: JSON.stringify(request.body) }
-      : request;
+      : request
 
     const headers = {
       ...(request?.headers
@@ -28,16 +28,16 @@ export const useFetch = () => {
         : request?.body && request.body instanceof FormData
         ? {}
         : { 'Content-type': 'application/json' }),
-    };
+    }
 
     return fetch(requestUrl, { ...requestBody, headers, signal })
       .then((response) => {
-        if (!response.ok) throw response;
+        if (!response.ok) throw response
 
-        const contentType = response.headers.get('content-type');
-        const contentDisposition = response.headers.get('content-disposition');
+        const contentType = response.headers.get('content-type')
+        const contentDisposition = response.headers.get('content-disposition')
 
-        const headers = response.headers;
+        const headers = response.headers
 
         const result =
           contentType &&
@@ -46,43 +46,43 @@ export const useFetch = () => {
             ? response.json()
             : contentDisposition?.indexOf('attachment') !== -1
             ? response.blob()
-            : response;
+            : response
 
-        return result;
+        return result
       })
       .catch(async (err) => {
-        const contentType = err.headers.get('content-type');
+        const contentType = err.headers.get('content-type')
 
         const errResult =
           contentType && contentType?.indexOf('application/problem+json') !== -1
             ? await err.json()
-            : err;
+            : err
 
-        throw errResult;
-      });
-  };
+        throw errResult
+      })
+  }
 
   return {
     get: async <T>(url: string, request?: RequestModel): Promise<T> => {
-      return handleFetch(url, { ...request, method: 'get' });
+      return handleFetch(url, { ...request, method: 'get' })
     },
     post: async <T>(
       url: string,
       request?: RequestWithBodyModel,
     ): Promise<T> => {
-      return handleFetch(url, { ...request, method: 'post' });
+      return handleFetch(url, { ...request, method: 'post' })
     },
     put: async <T>(url: string, request?: RequestWithBodyModel): Promise<T> => {
-      return handleFetch(url, { ...request, method: 'put' });
+      return handleFetch(url, { ...request, method: 'put' })
     },
     patch: async <T>(
       url: string,
       request?: RequestWithBodyModel,
     ): Promise<T> => {
-      return handleFetch(url, { ...request, method: 'patch' });
+      return handleFetch(url, { ...request, method: 'patch' })
     },
     delete: async <T>(url: string, request?: RequestModel): Promise<T> => {
-      return handleFetch(url, { ...request, method: 'delete' });
+      return handleFetch(url, { ...request, method: 'delete' })
     },
-  };
-};
+  }
+}
