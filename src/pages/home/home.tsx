@@ -77,20 +77,53 @@ const Home = ({
 
   const stopConversationRef = useRef<boolean>(false);
 
-  // const { data, error, refetch } = useQuery(
-  //   ['GetModels', apiKey, serverSideApiKeyIsSet],
-  //   ({ signal }) => {
-  //     if (!apiKey && !serverSideApiKeyIsSet) return null;
 
-  //     return getModels(
-  //       {
-  //         key: apiKey,
-  //       },
-  //       signal,
-  //     );
-  //   },
-  //   { enabled: !!apiKey || serverSideApiKeyIsSet, refetchOnMount: false },
-  // );
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!apiKey && !serverSideApiKeyIsSet) return;
+
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    const fetchData = async () => {
+      try {
+        const models = await getModels({ key: apiKey }, signal);
+        setData(models);
+      } catch (err) {
+        setError(err);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      controller.abort();
+    };
+  }, [apiKey, serverSideApiKeyIsSet]);
+
+  const refetch = () => {
+    if (!apiKey && !serverSideApiKeyIsSet) return;
+
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    const fetchData = async () => {
+      try {
+        const models = await getModels({ key: apiKey }, signal);
+        setData(models);
+      } catch (err) {
+        setError(err);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      controller.abort();
+    };
+  };
 
   // Add a new useEffect hook to fetch models
   useEffect(() => {
@@ -108,13 +141,13 @@ const Home = ({
     fetchData();
   }, [apiKey, serverSideApiKeyIsSet, getModels, getModelsError, dispatch]);
 
-  // useEffect(() => {
-  //   if (data) dispatch({ field: 'models', value: data });
-  // }, [data, dispatch]);
+  useEffect(() => {
+    if (data) dispatch({ field: 'models', value: data });
+  }, [data, dispatch]);
 
-  // useEffect(() => {
-  //   dispatch({ field: 'modelError', value: getModelsError(error) });
-  // }, [dispatch, error, getModelsError]);
+  useEffect(() => {
+    dispatch({ field: 'modelError', value: getModelsError(error) });
+  }, [dispatch, error, getModelsError]);
 
   // FETCH MODELS ----------------------------------------------
 
