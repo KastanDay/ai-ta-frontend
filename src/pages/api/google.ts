@@ -1,3 +1,4 @@
+// @src/pages/api/google
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import { OPENAI_API_HOST } from '@/utils/app/const'
@@ -14,9 +15,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
   try {
     const { messages, key, model, googleAPIKey, googleCSEId } =
       req.body as GoogleBody
-
-    const userMessage = messages[messages.length - 1]
-    const query = encodeURIComponent(userMessage.content.trim())
+    
+    const userMessage = messages?.[messages.length - 1] ?? { content: '' };
+    const query = encodeURIComponent(userMessage.content.trim());
+    // const userMessage = messages[messages.length - 1]
+    // const query = encodeURIComponent(userMessage.content.trim())
 
     const googleRes = await fetch(
       `https://customsearch.googleapis.com/customsearch/v1?key=${
