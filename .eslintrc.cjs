@@ -27,6 +27,7 @@ const config = {
   rules: {
     '@typescript-eslint/no-unsafe-assignment': 'off',
     '@typescript-eslint/no-empty-interface': 'off',
+    // '@typescript-eslint/consistent-type-imports': 'off',
     '@typescript-eslint/consistent-type-imports': [
       'warn',
       {
