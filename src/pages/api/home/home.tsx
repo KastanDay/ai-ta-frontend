@@ -86,98 +86,33 @@ const Home = ({
   // const [data, setData] = useState<Model[] | null>(null); // Replace Model with the correct type for a single model
   const [error, setError] = useState<unknown>(null) // Update the type of the error state variable
 
-  // ORIGINAL
+  // Add a new state variable to track whether models have been fetched
+  const [modelsFetched, setModelsFetched] = useState(false)
+
+  // Update the useEffect hook to fetch models only if they haven't been fetched before
   useEffect(() => {
     if (!apiKey && !serverSideApiKeyIsSet) return
-
-    const controller = new AbortController()
-    const { signal } = controller
-
-    const fetchData = async () => {
-      try {
-        const models = (await getModels(
-          { key: apiKey },
-          signal,
-        )) as unknown as null
-        setData(models)
-      } catch (err) {
-        setError(err)
-      }
-    }
-
-    fetchData()
-
-    return () => {
-      controller.abort()
-    }
-  }, [apiKey, serverSideApiKeyIsSet])
-
-  // AI VERSION, doesn't work.
-  // useEffect(() => {
-  //   if (!apiKey && !serverSideApiKeyIsSet) return
-
-  //   const controller = new AbortController()
-  //   const { signal } = controller
-
-  //   const fetchData = async () => {
-  //     try {
-  //       const modelsResponse = await getModels({ key: apiKey }, signal)
-  //       setData(modelsResponse.data) // <-- Set the correct data type here
-  //     } catch (err) {
-  //       setError(err)
-  //     }
-  //   }
-
-  //   fetchData()
-
-  //   return () => {
-  //     controller.abort()
-  //   }
-  // }, [apiKey, serverSideApiKeyIsSet])
-
-  const refetch = () => {
-    if (!apiKey && !serverSideApiKeyIsSet) return
-
-    const controller = new AbortController()
-    const { signal } = controller
-
-    const fetchData = async () => {
-      try {
-        const models = (await getModels(
-          { key: apiKey },
-          signal,
-        )) as unknown as null
-        setData(models)
-        // original:
-        // const models = await getModels({ key: apiKey }, signal)
-        // setData(models)
-      } catch (err) {
-        setError(err)
-      }
-    }
-
-    fetchData()
-
-    return () => {
-      controller.abort()
-    }
-  }
-
-  // Add a new useEffect hook to fetch models
-  useEffect(() => {
-    if (!apiKey && !serverSideApiKeyIsSet) return
+    if (modelsFetched) return // Add this line to prevent fetching models multiple times
 
     const fetchData = async () => {
       try {
         const data = await getModels({ key: apiKey })
         dispatch({ field: 'models', value: data })
+        setModelsFetched(true) // Set modelsFetched to true after fetching models
       } catch (error) {
         dispatch({ field: 'modelError', value: getModelsError(error) })
       }
     }
 
     fetchData()
-  }, [apiKey, serverSideApiKeyIsSet, getModels, getModelsError, dispatch])
+  }, [
+    apiKey,
+    serverSideApiKeyIsSet,
+    getModels,
+    getModelsError,
+    dispatch,
+    modelsFetched,
+  ]) // Add modelsFetched to the dependency array
 
   useEffect(() => {
     if (data) dispatch({ field: 'models', value: data })
