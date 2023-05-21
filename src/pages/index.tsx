@@ -179,6 +179,7 @@ export function FeaturesCards() {
       radius="md"
       className={classes.card}
       padding="xl"
+      style={{ position: 'relative' }}
     >
       <feature.icon size={rem(50)} stroke={2} color="#C06BF9" />
       <Text
@@ -197,7 +198,7 @@ export function FeaturesCards() {
   ))
 
   return (
-    <Container size="lg" py="xl">
+    <Container size="lg" py="xl" style={{ position: 'relative' }}>
       {/* <Group position="center">
         <Badge variant="filled" size="lg">
           Features
@@ -243,7 +244,7 @@ function CourseCard() {
       <Link href="/ece120">
         <Card
           bg="#0E1116"
-          style={{ maxWidth: '100%' }}
+          style={{ maxWidth: '100%', position: 'relative' }}
           shadow="sm"
           padding="lg"
           radius="md"
