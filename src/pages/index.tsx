@@ -34,6 +34,18 @@ const Home: NextPage = () => {
         {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat"/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
+        
+        {/* Preload images for improved CLS score */}
+        <link
+          rel="preload"
+          href="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
+          as="image"
+        />
+        <link
+          rel="preload"
+          href="https://github.com/KastanDay/learning-t3/blob/dd33e38bc801f4f6bbfc3b3a826a09d805f9bf65/media/Toy_University_students_walking_walter_wick_StableDiffusion-xl-beta-v2-2-2.png?raw=true"
+          as="image"
+        />
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
@@ -198,7 +210,8 @@ export function FeaturesCards() {
   ))
 
   return (
-    <Container size="lg" py="xl" style={{ position: 'relative' }}>
+    // <Container size="lg" py="xl" style={{ position: 'relative' }}>
+    <Container size="lg" py="xl" style={{ position: 'relative', minHeight: '100%' }}>
       {/* <Group position="center">
         <Badge variant="filled" size="lg">
           Features
