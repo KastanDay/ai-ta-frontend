@@ -179,7 +179,7 @@ export function FeaturesCards() {
       radius="md"
       className={classes.card}
       padding="xl"
-      style={{ position: 'relative' }}
+      style={{ position: 'relative', minHeight: '100%' }}
     >
       <feature.icon size={rem(50)} stroke={2} color="#C06BF9" />
       <Text
@@ -244,7 +244,7 @@ function CourseCard() {
       <Link href="/ece120">
         <Card
           bg="#0E1116"
-          style={{ maxWidth: '100%', position: 'relative' }}
+          style={{ maxWidth: '100%', position: 'relative', minHeight: '100%' }}
           shadow="sm"
           padding="lg"
           radius="md"
@@ -295,7 +295,7 @@ function MoreCoursesSoonCard() {
       <Link href="/ece120">
         <Card
           bg="#0E1116"
-          style={{ maxWidth: '100%' }}
+          style={{ maxWidth: '100%', minHeight: '100%' }}
           shadow="sm"
           padding="lg"
           radius="md"
