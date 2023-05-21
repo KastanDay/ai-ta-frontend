@@ -94,7 +94,7 @@ export const ChatMessage: FC<Props> = memo(
             <Card.Section style={{ padding: 'xs' }}>
               <Image
                 src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
-                // height={'20rem'}
+                height="120px"
                 alt="Norway"
                 className='class="div-with-image'
                 // style={{ objectFit: 'cover', position: 'relative', overflow: 'hidden'}}
@@ -264,9 +264,12 @@ export const ChatMessage: FC<Props> = memo(
         style={{ overflowWrap: 'anywhere' }}
       >
         <div className="relative m-auto flex p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-5xl lg:px-0 xl:max-w-3xl">
-          <div className="min-w-[40px] text-right font-bold">
+          <div className="min-w-[40px] text-left">
             {message.role === 'assistant' ? (
+              <>
               <IconRobot size={30} />
+              <Timer timerVisible={timerVisible} />
+            </>
             ) : (
               <IconUser size={30} />
             )}
@@ -434,7 +437,7 @@ export const ChatMessage: FC<Props> = memo(
                 </div>
               </div>
             )}
-          {message.role === 'assistant' && <Timer timerVisible={timerVisible} />}
+          {/* {message.role === 'assistant' && <Timer timerVisible={timerVisible} />} */}
           </div>
         </div>
       </div>
