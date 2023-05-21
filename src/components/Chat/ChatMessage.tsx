@@ -37,23 +37,21 @@ import {
   Divider,
 } from '@mantine/core'
 
-// export interface Props {
-//   message: Message;
-//   messageIndex: number;
-//   onEdit?: (editedMessage: Message) => void
-// }
 
-
+// Component that's the Timer for GPT's response duration.
 const Timer: React.FC<{ timerVisible: boolean }> = ({ timerVisible }) => {
   const [timer, setTimer] = useState(0)
 
   useEffect(() => {
+    let interval: NodeJS.Timeout;
     if (timerVisible) {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         setTimer((prevTimer) => prevTimer + 1)
       }, 1000)
+    }
 
-      return () => {
+    return () => {
+      if (interval) {
         clearInterval(interval)
       }
     }
@@ -163,16 +161,17 @@ export const ChatMessage: FC<Props> = memo(
 
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-    // SET TIMER (from gpt-4)
+    // SET TIMER for message writing (from gpt-4)
     const [timerVisible, setTimerVisible] = useState(false)
-
     useEffect(() => {
-      if (message.role === 'assistant' && messageIsStreaming) {
-        setTimerVisible(true)
-      } else {
-        setTimerVisible(false)
+      if (message.role === 'assistant') {
+        if (messageIsStreaming && messageIndex == (selectedConversation?.messages.length ?? 0) - 1) {
+          setTimerVisible(true)
+        } else {
+          setTimerVisible(false)
+        }
       }
-    }, [message.role, messageIsStreaming])
+    }, [message.role, messageIsStreaming, messageIndex, selectedConversation])
 
     const toggleEditing = () => {
       setIsEditing(!isEditing)
