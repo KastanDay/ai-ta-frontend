@@ -43,6 +43,25 @@ import {
 //   onEdit?: (editedMessage: Message) => void
 // }
 
+
+const Timer: React.FC<{ timerVisible: boolean }> = ({ timerVisible }) => {
+  const [timer, setTimer] = useState(0)
+
+  useEffect(() => {
+    if (timerVisible) {
+      const interval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer + 1)
+      }, 1000)
+
+      return () => {
+        clearInterval(interval)
+      }
+    }
+  }, [timerVisible])
+
+  return <div>{timer} seconds</div>
+}
+
 export interface Props {
   message: Message
   messageIndex: number
@@ -62,8 +81,7 @@ export const ChatMessage: FC<Props> = memo(
         setIsFade(!isShowFullParagraph)
       }
 
-      // either query Pinecone directly, or use a flask endpoint. But why bother with flask?
-
+      // 
       return (
         <div className="box-sizing: border-box; border: 100px solid #ccc;">
           {/* <h4 className="font-bold">Sources from the course</h4>  */}
@@ -144,6 +162,17 @@ export const ChatMessage: FC<Props> = memo(
     const [messagedCopied, setMessageCopied] = useState(false)
 
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    // SET TIMER (from gpt-4)
+    const [timerVisible, setTimerVisible] = useState(false)
+
+    useEffect(() => {
+      if (message.role === 'assistant' && messageIsStreaming) {
+        setTimerVisible(true)
+      } else {
+        setTimerVisible(false)
+      }
+    }, [message.role, messageIsStreaming])
 
     const toggleEditing = () => {
       setIsEditing(!isEditing)
@@ -406,6 +435,7 @@ export const ChatMessage: FC<Props> = memo(
                 </div>
               </div>
             )}
+          {message.role === 'assistant' && <Timer timerVisible={timerVisible} />}
           </div>
         </div>
       </div>
