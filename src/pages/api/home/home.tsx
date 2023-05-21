@@ -443,7 +443,7 @@ const Home = ({
       }}
     >
       <Head>
-        <title>Chatbot UI</title>
+        <title>UIUC Course AI</title>
         <meta name="description" content="ChatGPT but better." />
         <meta
           name="viewport"
