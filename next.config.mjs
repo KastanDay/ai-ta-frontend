@@ -6,7 +6,11 @@
 await import('./src/env.mjs')
 import nextI18NextConfig from './next-i18next.config.mjs'
 import path from 'path'
-// import { nextI18NextConfig } from './next-i18next.config.ts';
+import withBundleAnalyzer from '@next/bundle-analyzer'
+
+const bundleAnalyzerConfig = {
+  enabled: process.env.ANALYZE === 'true',
+};
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -26,4 +30,5 @@ const config = {
     esmExternals: false, // To make upload thing work with /pages router.
   },
 }
-export default config
+
+export default withBundleAnalyzer(bundleAnalyzerConfig)(config)
