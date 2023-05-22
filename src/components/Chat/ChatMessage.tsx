@@ -57,7 +57,7 @@ const Timer: React.FC<{ timerVisible: boolean }> = ({ timerVisible }) => {
     }
   }, [timerVisible])
 
-  return <Text fz="sm" c="dimmed" mt="sm">{timer} seconds</Text>
+  return <Text fz="sm" c="dimmed" mt="sm">{timer} s.</Text>
 }
 
 export interface Props {
