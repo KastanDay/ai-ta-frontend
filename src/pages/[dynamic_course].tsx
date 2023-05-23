@@ -289,7 +289,8 @@ export const BuildContextCards = () => {
         // contexts.map((context: getTopContextsResponse) => (
         contexts.map((context: getTopContextsResponse, index: number) => (
           <DynamicMaterialsCard
-            id={context.id || index} // Add fallback key using index
+            key={context.id || index}
+            id={context.id || index} // Add fallback key using index. Not sure why we need a key and an ID.... bad code.
             source_name={context.source_name}
             source_location={context.source_location}
             text={context.text}
@@ -307,7 +308,7 @@ export const BuildContextCards = () => {
   //   sourceLocation: string
   //   text: string
   // }) {
-function DynamicMaterialsCard({ id, source_name, source_location, text }: getTopContextsResponse) {
+function DynamicMaterialsCard({ source_name, source_location, text }: getTopContextsResponse) {
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
       <Card
