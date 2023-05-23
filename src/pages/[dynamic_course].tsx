@@ -322,7 +322,7 @@ interface DynamicMaterialsCardProps {
 // }
 
 export const BuildContextCards = () => {
-  const [contexts, setContexts] = useState<getTopContextsResponse[]>([]);
+  const [contexts, setContexts] = useState<contextsResponse>();
 
   useEffect(() => {
     fetchContexts().then((data) => {
