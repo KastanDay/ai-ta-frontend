@@ -1,4 +1,14 @@
 import {
+  Card,
+  Image,
+  Text,
+  MantineProvider,
+  Button,
+  Group,
+  Stack,
+  Divider,
+} from '@mantine/core'
+import {
   IconCheck,
   IconCopy,
   IconEdit,
@@ -23,19 +33,8 @@ import rehypeMathjax from 'rehype-mathjax'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
-import {
-  Card,
-  Image,
-  Text,
-  MantineProvider,
-  Button,
-  Group,
-  Stack,
-  createStyles,
-  FileInput,
-  rem,
-  Divider,
-} from '@mantine/core'
+// Kastan
+import { BuildContextCards } from '../../pages/dynamic_course'
 
 
 // Component that's the Timer for GPT's response duration.
@@ -71,78 +70,6 @@ export interface Props {
 export const ChatMessage: FC<Props> = memo(
   ({ message, messageIndex, onEdit, sources }) => {
     const { t } = useTranslation('chat')
-
-    function MaterialsCardSmall() {
-      const [isShowFullParagraph, setIsFade] = useState(true)
-
-      const toggleFade = () => {
-        setIsFade(!isShowFullParagraph)
-      }
-
-      // 
-      return (
-        <div className="box-sizing: border-box; border: 100px solid #ccc;">
-          {/* <h4 className="font-bold">Sources from the course</h4>  */}
-          <Card
-            bg="#0E1116"
-            style={{ maxWidth: '20rem' }}
-            shadow="sm"
-            padding="md"
-            radius="md"
-            withBorder
-          >
-            <Card.Section style={{ padding: 'xs' }}>
-              <Image
-                src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
-                height="120px"
-                alt="Norway"
-                className='class="div-with-image'
-                // style={{ objectFit: 'cover', position: 'relative', overflow: 'hidden'}}
-                // position="relative"
-                // overflow="hidden"
-              />
-            </Card.Section>
-
-            <Group position="apart" mt="md" mb="xs">
-              <Text style={{ fontFamily: 'Montserrat' }} size="xl" weight={800}>
-                Finite State Machine Readings
-              </Text>
-              {/* <Badge size="xl" color="pink" variant="light">
-            ECE
-          </Badge> */}
-            </Group>
-
-            <Text
-              size="sm"
-              variant="gradient"
-              weight={600}
-              gradient={{ from: 'yellow', to: 'green', deg: 0 }}
-            >
-              AI summary
-            </Text>
-            {/* style={{'font-family': 'Lora'}} */}
-            <Text
-              className={isShowFullParagraph ? 'fade' : ''}
-              size="md"
-              color="dimmed"
-            >
-              In a FSM, each state represents a specific condition or mode that
-              the system can be in, and each transition represents a change of
-              state triggered by a specific input or event. The FSM can be
-              defined by a set of states, a set of input symbols or events, a
-              set of output symbols or actions, and a transition function that
-              maps each state and input to a next state and output.
-            </Text>
-            {/* <Button size="xs" variant="dimmed">Show full paragraph</Button> */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Button size="xs" variant="dimmed" pb="0" onClick={toggleFade}>
-                Show full paragraph
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )
-    }
 
     const {
       state: {
@@ -413,10 +340,7 @@ export const ChatMessage: FC<Props> = memo(
                   <Divider my="sm" variant="solid" />
                   <h4 className="font-bold">Sources from the course</h4>
                   <Group variant="row" spacing="xs">
-                    <MaterialsCardSmall />
-                    <MaterialsCardSmall />
-                    {/* <MaterialsCardSmall />  */}
-                    {/* Add more instances with different useFade values as needed */}
+                    <BuildContextCards />
                   </Group>
                 </div>
 
