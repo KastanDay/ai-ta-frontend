@@ -265,6 +265,8 @@ import Link from 'next/link'
 // import { UploadDropzone } from '@uploadthing/react'
 // import { Interface } from 'readline'
 
+import { fetchContexts } from './api/getContexts'
+
 /// START OF COMPONENTS
 import { useRouter } from 'next/router'
 export const GetCurrentPageName = () => {
@@ -282,35 +284,59 @@ interface contextsResponse {
   contexts: getTopContextsResponse[]
 }
 
+interface DynamicMaterialsCardProps {
+  id: number;
+  sourceName: string;
+  sourceLocation: string;
+  text: string;
+}
+
+// TODO: Use API route to get contexts... ?
+
+// export const BuildContextCards = () => {
+//   // const [contexts, setContexts] = useState([]);
+//   // const [contexts, setContexts] = useState<getTopContextsResponse[]>([])
+//   // const currentPageName = GetCurrentPageName()
+
+//   console.log('About to fetch contexts...')
+//   const contexts = fetchContexts()
+//   console.log('Just returned fron contexts')
+
+
+//   return (
+//     <>
+//       {contexts && contexts.length > 0 ? (
+//         contexts.map((context: getTopContextsResponse) => (
+//           <DynamicMaterialsCard
+//             key={context.id}
+//             sourceName={context.source_name}
+//             sourceLocation={context.source_location}
+//             text={context.text}
+//           />
+//         ))
+//       ) : (
+//         <p>Loading...</p>
+//       )}
+//     </>
+//   )
+// }
+
 export const BuildContextCards = () => {
-  // const [contexts, setContexts] = useState([]);
-  const [contexts, setContexts] = useState<getTopContextsResponse[]>([])
-  const currentPageName = GetCurrentPageName()
+  const [contexts, setContexts] = useState<getTopContextsResponse[]>([]);
 
   useEffect(() => {
-    axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app'
-
-    axios
-      .get('/getTopContexts', {
-        params: {
-          course_name: currentPageName,
-          search_query: 'finite state machines?', // TODO: fix HARD CODED query
-        },
-      })
-      .then((response: AxiosResponse<contextsResponse>) => {
-        setContexts(response.data.contexts)
-      })
-      .catch((error) => {
-        console.error(error)
-      })
-  }, [])
+    fetchContexts().then((data) => {
+      setContexts(data);
+    });
+  }, []);
 
   return (
     <>
       {contexts && contexts.length > 0 ? (
-        contexts.map((context: getTopContextsResponse) => (
+        // contexts.map((context: getTopContextsResponse) => (
+        contexts.map((context: getTopContextsResponse, index: number) => (
           <DynamicMaterialsCard
-            key={context.id}
+            key={context.id || index} // Add fallback key using index
             sourceName={context.source_name}
             sourceLocation={context.source_location}
             text={context.text}
@@ -320,8 +346,8 @@ export const BuildContextCards = () => {
         <p>Loading...</p>
       )}
     </>
-  )
-}
+  );
+};
 
 // interface DynamicMaterialsCardProps {
 //   sourceName: string;
