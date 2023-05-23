@@ -257,16 +257,13 @@ import {
   IconArrowRight,
   IconArrowLeft,
   IconExternalLink,
-  IconCloudUpload,
-  IconX,
-  IconDownload,
 } from '@tabler/icons-react'
 import { useListState, randomId } from '@mantine/hooks'
-import { useRef } from 'react'
-import { Dropzone, MIME_TYPES } from '@mantine/dropzone'
+// import { useRef } from 'react'
+// import { Dropzone, MIME_TYPES } from '@mantine/dropzone'
 import Link from 'next/link'
-import { UploadDropzone } from '@uploadthing/react'
-import { Interface } from 'readline'
+// import { UploadDropzone } from '@uploadthing/react'
+// import { Interface } from 'readline'
 
 /// START OF COMPONENTS
 import { useRouter } from 'next/router'
@@ -297,6 +294,7 @@ export const BuildContextCards = () => {
       .get('/getTopContexts', {
         params: {
           course_name: currentPageName,
+          search_query: 'finite state machines?', // TODO: fix HARD CODED query
         },
       })
       .then((response: AxiosResponse<contextsResponse>) => {
