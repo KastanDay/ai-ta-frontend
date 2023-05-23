@@ -307,14 +307,18 @@ export const BuildContextCards = () => {
 
   return (
     <>
-      {contexts.map((context: getTopContextsResponse) => (
-        <DynamicMaterialsCard
-          key={context.id}
-          sourceName={context.source_name}
-          sourceLocation={context.source_location}
-          text={context.text}
-        />
-      ))}
+      {contexts && contexts.length > 0 ? (
+        contexts.map((context: getTopContextsResponse) => (
+          <DynamicMaterialsCard
+            key={context.id}
+            sourceName={context.source_name}
+            sourceLocation={context.source_location}
+            text={context.text}
+          />
+        ))
+      ) : (
+        <p>Loading...</p>
+      )}
     </>
   )
 }
