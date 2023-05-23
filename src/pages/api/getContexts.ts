@@ -1,4 +1,8 @@
 import axios, { AxiosResponse } from 'axios'
+
+export const config = {
+  runtime: 'edge',
+}
 export interface getTopContextsResponse {
   id: number
   source_name: string
@@ -15,6 +19,7 @@ export const fetchContexts = async () => {
         search_query: 'finite state machines?', // TODO: fix HARD CODED query
       },
     });
+    console.log('fetchContexts things', response.data);
     return response.data;
   } catch (error) {
     console.error(error);
