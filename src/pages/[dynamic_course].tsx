@@ -265,7 +265,7 @@ import Link from 'next/link'
 // import { UploadDropzone } from '@uploadthing/react'
 // import { Interface } from 'readline'
 
-import { fetchContexts } from './api/getContexts'
+import { fetchContexts, getTopContextsResponse } from './api/getContexts'
 
 /// START OF COMPONENTS
 import { useRouter } from 'next/router'
@@ -273,56 +273,9 @@ export const GetCurrentPageName = () => {
   return useRouter().asPath.slice(1)
 }
 
-interface getTopContextsResponse {
-  id: number
-  source_name: string
-  source_location: string
-  text: string
-}
-
-interface contextsResponse {
-  contexts: getTopContextsResponse[]
-}
-
-interface DynamicMaterialsCardProps {
-  id: number;
-  sourceName: string;
-  sourceLocation: string;
-  text: string;
-}
-
-// TODO: Use API route to get contexts... ?
-
-// export const BuildContextCards = () => {
-//   // const [contexts, setContexts] = useState([]);
-//   // const [contexts, setContexts] = useState<getTopContextsResponse[]>([])
-//   // const currentPageName = GetCurrentPageName()
-
-//   console.log('About to fetch contexts...')
-//   const contexts = fetchContexts()
-//   console.log('Just returned fron contexts')
-
-
-//   return (
-//     <>
-//       {contexts && contexts.length > 0 ? (
-//         contexts.map((context: getTopContextsResponse) => (
-//           <DynamicMaterialsCard
-//             key={context.id}
-//             sourceName={context.source_name}
-//             sourceLocation={context.source_location}
-//             text={context.text}
-//           />
-//         ))
-//       ) : (
-//         <p>Loading...</p>
-//       )}
-//     </>
-//   )
-// }
 
 export const BuildContextCards = () => {
-  const [contexts, setContexts] = useState<contextsResponse>();
+  const [contexts, setContexts] = useState<getTopContextsResponse[]>();
 
   useEffect(() => {
     fetchContexts().then((data) => {
@@ -332,13 +285,13 @@ export const BuildContextCards = () => {
 
   return (
     <>
-      {contexts && contexts.length > 0 ? (
+      {contexts ? (
         // contexts.map((context: getTopContextsResponse) => (
         contexts.map((context: getTopContextsResponse, index: number) => (
           <DynamicMaterialsCard
-            key={context.id || index} // Add fallback key using index
-            sourceName={context.source_name}
-            sourceLocation={context.source_location}
+            id={context.id || index} // Add fallback key using index
+            source_name={context.source_name}
+            source_location={context.source_location}
             text={context.text}
           />
         ))
@@ -349,18 +302,12 @@ export const BuildContextCards = () => {
   );
 };
 
-// interface DynamicMaterialsCardProps {
-//   sourceName: string;
-//   sourceLocation: string;
-//   text: string;
-// }
-
-// function DynamicMaterialsCard({ sourceName, sourceLocation, text }: DynamicMaterialsCardProps) {
-function DynamicMaterialsCard(props: {
-  sourceName: string
-  sourceLocation: string
-  text: string
-}) {
+// function DynamicMaterialsCard(props: {
+  //   sourceName: string
+  //   sourceLocation: string
+  //   text: string
+  // }) {
+function DynamicMaterialsCard({ id, source_name, source_location, text }: getTopContextsResponse) {
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
       <Card
@@ -381,7 +328,7 @@ function DynamicMaterialsCard(props: {
 
         <Group position="apart" mt="md" mb="xs">
           <Text style={{ fontFamily: 'Montserrat' }} size="xl" weight={800}>
-            {props.sourceName}
+            {source_name}
           </Text>
         </Group>
 
@@ -394,7 +341,7 @@ function DynamicMaterialsCard(props: {
           AI summary
         </Text>
         <Text className="fade" size="md" color="dimmed">
-          {props.text}
+          {text}
         </Text>
 
         <Link
@@ -410,7 +357,7 @@ function DynamicMaterialsCard(props: {
               weight={4300}
               // gradient={{ from: 'yellow', to: 'green', deg: 0 }}
             >
-              Source {props.sourceLocation}
+              Source {source_location}
             </Text>
           </Group>
         </Link>
