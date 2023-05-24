@@ -22,9 +22,11 @@ export interface ChatBody {
   key: string
   prompt: string
   temperature: number
+  // NO FOLDER ID
 }
 
 export interface Conversation {
+  // NO KEY
   id: string
   name: string
   messages: Message[]
