@@ -77,6 +77,11 @@ function DynamicMaterialsCard({
 }: getTopContextsResponse) {
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
+      <Link
+        href={'https://kastanday.com'}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
       <Card
         bg="#0E1116"
         style={{ maxWidth: '20rem' }}
@@ -99,11 +104,6 @@ function DynamicMaterialsCard({
           </Text>
         </Group>
 
-        <Link
-          href={'https://kastanday.com'}
-          rel="noopener noreferrer"
-          target="_blank"
-        >
           <Group>
             {/* <IconExternalLink size={20} strokeWidth={2} color={'white'} /> */}
             <Text
@@ -116,14 +116,13 @@ function DynamicMaterialsCard({
               Page 11
             </Text>
           </Group>
-        </Link>
 
         <Text
           size="sm"
           variant="gradient"
           weight={600}
           gradient={{ from: 'yellow', to: 'green', deg: 0 }}
-        >
+          >
           AI summary
         </Text>
         <Text className="fade" size="md" color="dimmed">
@@ -136,6 +135,7 @@ function DynamicMaterialsCard({
           </Button>
         </div>
       </Card>
+      </Link>
     </div>
   )
 }
