@@ -37,7 +37,7 @@ export const BuildContextCards = () => {
             key={context.id || index}
             id={context.id || index} // Add fallback key using index. Not sure why we need a key and an ID.... bad code.
             source_name={context.source_name}
-            source_location={context.source_location}
+            pagenumber_or_timestamp={context.source_location}
             text={context.text}
           />
         ))
@@ -67,7 +67,14 @@ export const BuildContextCards = () => {
   );
 };
 
-function DynamicMaterialsCard({ source_name, source_location, text }: getTopContextsResponse) {
+function DynamicMaterialsCard({
+  id,
+  text,
+  readable_filename,
+  course_name,
+  s3_path,
+  pagenumber_or_timestamp,
+}: getTopContextsResponse) {
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
       <Card
@@ -88,7 +95,7 @@ function DynamicMaterialsCard({ source_name, source_location, text }: getTopCont
 
         <Group position="apart" mt="xs" mb="xs">
           <Text style={{ fontFamily: 'Montserrat' }} size="md" weight={600}>
-            {source_name}
+            {readable_filename}
           </Text>
         </Group>
 
@@ -105,7 +112,7 @@ function DynamicMaterialsCard({ source_name, source_location, text }: getTopCont
               weight={4300}
               // gradient={{ from: 'yellow', to: 'green', deg: 0 }}
             >
-              {/* Source {source_location} */}
+              Source {pagenumber_or_timestamp}
               Page 11
             </Text>
           </Group>

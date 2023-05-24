@@ -5,10 +5,13 @@ export const config = {
 }
 export interface getTopContextsResponse {
   id: number
-  source_name: string
-  source_location: string
   text: string
+  readable_filename: string
+  course_name: string
+  s3_path: string
+  pagenumber_or_timestamp: string
 }
+
 
 export const fetchContexts = async () => {
   axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app';
