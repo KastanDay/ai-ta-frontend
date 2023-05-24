@@ -13,8 +13,9 @@
     "analyze": "cross-env ANALYZE=true next build"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.335.0",
-    "@aws-sdk/s3-presigned-post": "^3.335.0",
+    "@aws-sdk/client-s3": "^3.338.0",
+    "@aws-sdk/s3-presigned-post": "^3.338.0",
+    "@aws-sdk/s3-request-presigner": "^3.338.0",
     "@dqbd/tiktoken": "^1.0.7",
     "@emotion/react": "^11.11.0",
     "@mantine/carousel": "^6.0.10",
