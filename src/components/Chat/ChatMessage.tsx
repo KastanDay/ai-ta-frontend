@@ -36,7 +36,6 @@ import remarkMath from 'remark-math'
 // Kastan
 import { BuildContextCards } from '~/components/UIUC-Components/ContextCards'
 
-
 // Component that's the Timer for GPT's response duration.
 const Timer: React.FC<{ timerVisible: boolean }> = ({ timerVisible }) => {
   const [timer, setTimer] = useState(0)
