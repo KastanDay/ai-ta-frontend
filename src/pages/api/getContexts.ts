@@ -14,9 +14,9 @@ export interface getTopContextsResponse {
 
 
 export const fetchContexts = async () => {
-  axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app';
+  // axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app'; TODO: could use multiple axios instances for each api service
   try {
-    const response: AxiosResponse<getTopContextsResponse[]> = await axios.get('/getTopContexts', {
+    const response: AxiosResponse<getTopContextsResponse[]> = await axios.get('https://flask-production-751b.up.railway.app/getTopContexts', {
       params: {
         // course_name: currentPageName,
         search_query: 'finite state machines?', // TODO: fix HARD CODED query
