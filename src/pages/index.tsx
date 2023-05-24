@@ -1,6 +1,7 @@
 import { type NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
+import { Montserrat, Lora, Audiowide  } from 'next/font/google'
 // import { signIn, signOut, useSession } from "next-auth/react";
 
 import {
@@ -31,10 +32,6 @@ const Home: NextPage = () => {
           content="The AI teaching assistant built for students at UIUC."
         />
         <link rel="icon" href="/favicon.ico" />
-        {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat"/>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
-        
         {/* Preload images for improved CLS score */}
         <link
           rel="preload"
