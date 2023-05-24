@@ -34,7 +34,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
 // Kastan
-import { BuildContextCards } from '../../pages/dynamic_course'
+import { BuildContextCards } from '~/components/UIUC-Components/ContextCards'
 
 
 // Component that's the Timer for GPT's response duration.

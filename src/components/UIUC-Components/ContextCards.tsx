@@ -1,5 +1,3 @@
-import { env } from '~/env.mjs'
-
 import {
   Card,
   Image,
@@ -36,9 +34,11 @@ export const BuildContextCards = () => {
           <DynamicMaterialsCard
             key={context.id || index}
             id={context.id || index} // Add fallback key using index. Not sure why we need a key and an ID.... bad code.
-            source_name={context.source_name}
-            pagenumber_or_timestamp={context.source_location}
             text={context.text}
+            readable_filename={context.readable_filename}
+            pagenumber_or_timestamp={context.pagenumber_or_timestamp}
+            s3_path={context.s3_path}
+            course_name={context.course_name}
           />
         ))
       ) : (
