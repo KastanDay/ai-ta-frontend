@@ -36,6 +36,7 @@ import remarkMath from 'remark-math'
 // Kastan
 import { BuildContextCards } from '~/components/UIUC-Components/ContextCards'
 
+import { useRouter } from 'next/router'
 // Component that's the Timer for GPT's response duration.
 const Timer: React.FC<{ timerVisible: boolean }> = ({ timerVisible }) => {
   const [timer, setTimer] = useState(0)
@@ -65,10 +66,16 @@ export interface Props {
   sources?: string[] // Add this line
 }
 
+
 // export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) => {
 export const ChatMessage: FC<Props> = memo(
   ({ message, messageIndex, onEdit, sources }) => {
     const { t } = useTranslation('chat')
+
+    const GetCurrentPageName = () => {
+      // /CS-125/materials --> CS-125
+      return useRouter().asPath.slice(1).split("/")[0]
+    }
 
     const {
       state: {
@@ -339,7 +346,7 @@ export const ChatMessage: FC<Props> = memo(
                   <Divider my="sm" variant="solid" />
                   <h4 className="font-bold">Sources from the course</h4>
                   <Group variant="row" spacing="xs">
-                    <BuildContextCards />
+                    <BuildContextCards course_name={GetCurrentPageName() || ""} search_query="fsm?" />
                   </Group>
                 </div>
 

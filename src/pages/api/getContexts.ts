@@ -13,16 +13,17 @@ export interface getTopContextsResponse {
 }
 
 
-export const fetchContexts = async () => {
+export const fetchContexts = async (course_name : string, search_query: string) => {
   // axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app'; TODO: could use multiple axios instances for each api service
   try {
     const response: AxiosResponse<getTopContextsResponse[]> = await axios.get('https://flask-production-751b.up.railway.app/getTopContexts', {
       params: {
-        // course_name: currentPageName,
-        search_query: 'finite state machines?', // TODO: fix HARD CODED query
+        course_name: course_name,
+        search_query: search_query,
+        top_n: 5, // todo make dynamic if we want.
       },
     });
-    console.log('fetchContexts things', response.data);
+    // console.log('fetchContexts things', response.data);
     return response.data;
   } catch (error) {
     console.error(error);

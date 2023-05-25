@@ -31,8 +31,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
 
-    console.log('Presigned URL generated successfully:', presignedUrl);
-
     res
         .status(200)
         .json({ message: 'Presigned URL generated successfully', url: presignedUrl })
