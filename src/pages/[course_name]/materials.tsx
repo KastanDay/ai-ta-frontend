@@ -201,7 +201,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
           />
         </Container>
 
-        <BuildContextCards />
+        {/* <BuildContextCards /> */}
       </main>
     </>
   )
