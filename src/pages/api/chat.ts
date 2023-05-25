@@ -91,9 +91,10 @@ const handler = async (req: Request): Promise<Response> => {
       const context_text = await fetchContexts(course_name, search_query).then((context_arr) => {
         const separator = "--------------------------" // between each context
         const all_texts = context_arr.map((context) => `${context.readable_filename}\n${context.text}`).join(separator + "\n");
-
+        
+        log.warn('all_texts', context_arr[0]?.course_name);
+        log.warn('all_texts', context_arr[0]?.text);
         console.log('all_texts', all_texts)
-        log.warn('all_texts', all_texts);
         return all_texts
       }).catch((err) => {console.log('err', err); return ""});
 
