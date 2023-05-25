@@ -22,11 +22,10 @@ import {
   rem,
 } from '@mantine/core'
 
-import { IconUpload } from '@tabler/icons-react'
-import { api } from '~/utils/api'
+// import { IconUpload } from '@tabler/icons-react'
+// import { api } from '~/utils/api'
 
 import React, { useState, useEffect } from 'react'
-import axios, { AxiosResponse } from 'axios'
 import { createClient } from '@supabase/supabase-js'
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 
