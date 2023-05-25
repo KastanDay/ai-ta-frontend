@@ -30,11 +30,11 @@ async function fetchPresignedUrl(filePath: string) {
   }
 }
 
-export const BuildContextCards = () => {
+export const BuildContextCards = ( {course_name, search_query} : {course_name: string, search_query: string }) => {
   const [contexts, setContexts] = useState<getTopContextsResponse[]>();
 
   useEffect(() => {
-    fetchContexts().then((data) => {
+    fetchContexts(course_name, search_query).then((data) => {
       setContexts(data);
     });
   }, []);
