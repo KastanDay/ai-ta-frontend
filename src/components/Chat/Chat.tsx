@@ -112,6 +112,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
           course_name: NewGetCurrentPageName() || "",
+          // context_text: GetContextText(),
         }
         const endpoint = getEndpoint(plugin)
         let body
