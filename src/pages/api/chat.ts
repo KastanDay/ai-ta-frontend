@@ -10,7 +10,11 @@ import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 
 import { fetchContexts } from '~/pages/api/getContexts'
-import { all } from 'axios'
+// import { all } from 'axios'
+// import { optional } from 'zod'
+// import { OptionalPortal } from '@mantine/core'
+
+import log from 'next/dist/build/output/log';
 
 export const config = {
   runtime: 'edge',
@@ -89,6 +93,7 @@ const handler = async (req: Request): Promise<Response> => {
         const all_texts = context_arr.map((context) => `${context.readable_filename}\n${context.text}`).join(separator + "\n");
 
         console.log('all_texts', all_texts)
+        log.warn('all_texts', all_texts);
         return all_texts
       }).catch((err) => {console.log('err', err); return ""});
 
