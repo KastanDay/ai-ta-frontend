@@ -1,3 +1,5 @@
+// src/components/UIUC-Components/ContextCards.tsx
+
 import {
   Card,
   Image,
@@ -17,6 +19,7 @@ import React, { useState, useEffect } from 'react'
 import { fetchContexts, getTopContextsResponse } from '~/pages/api/getContexts'
 import Link from 'next/link'
 import axios from "axios";
+import { set } from 'zod';
 
 async function fetchPresignedUrl(filePath: string) {
   try {
@@ -30,14 +33,30 @@ async function fetchPresignedUrl(filePath: string) {
   }
 }
 
-export const BuildContextCards = ( {course_name, search_query} : {course_name: string, search_query: string }) => {
-  const [contexts, setContexts] = useState<getTopContextsResponse[]>();
+// Set "search query" for Qdrant from user's message (in chat.ts)
+export const useSearchQuery = () => {
+  const [searchQuery, setSearchQuery] = useState<string>("badm_567");
+  
+  const updateSearchQuery = (newSearchQuery: string) => {
+    setSearchQuery(newSearchQuery);
+  };
 
+  return { searchQuery, updateSearchQuery };
+};
+
+export const BuildContextCards = () => {
+  const [contexts, setContexts] = useState<getTopContextsResponse[]>();
+  const { searchQuery, updateSearchQuery } = useSearchQuery();
+  
+  // get contexts from Qdrant
   useEffect(() => {
-    fetchContexts(course_name, search_query).then((data) => {
+    fetchContexts("badm_567", searchQuery).then((data) => {
       setContexts(data);
     });
   }, []);
+
+  console.log("contexts: ", contexts);
+  console.log("searchQuery: ", searchQuery);
 
   return (
     <>
@@ -54,7 +73,7 @@ export const BuildContextCards = ( {course_name, search_query} : {course_name: s
           />
         ))
       ) : (
-        // <p>Loading...</p>
+        // Loading state...
 
         <div role="status" className="max-w-sm p-4 border border-gray-200 rounded shadow animate-pulse md:p-6 dark:border-gray-700">
             <div className="flex items-center justify-center h-48 mb-4 bg-gray-300 rounded dark:bg-gray-700">
@@ -94,7 +113,6 @@ function DynamicMaterialsCard({
       setPresignedUrl(url);
     });
   }, [s3_path]);
-
 
 
   return (
