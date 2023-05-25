@@ -12,7 +12,6 @@ export interface getTopContextsResponse {
   pagenumber_or_timestamp: string
 }
 
-
 export const fetchContexts = async (course_name : string, search_query: string) => {
   // axios.defaults.baseURL = 'https://flask-production-751b.up.railway.app'; TODO: could use multiple axios instances for each api service
   try {
@@ -30,3 +29,19 @@ export const fetchContexts = async (course_name : string, search_query: string) 
     return [];
   }
 };
+
+// Axios doesn't work in Next.js Edge runtime, so using standard fetch instead. 
+export async function fetchContextsNOAXIOS(course_name: string, search_query: string) {
+  const API_URL = 'https://flask-production-751b.up.railway.app';
+  const res = await fetch(`${API_URL}/getTopContexts?course_name=${course_name}&search_query=${search_query}`, {
+    method: 'GET',
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch contexts. Err status:' + res.status);
+  }
+
+  const data: getTopContextsResponse[] = await res.json();
+  console.log('fetchContextsNOAXIOS things', data);
+  return data;
+}
