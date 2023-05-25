@@ -1,3 +1,4 @@
+// src/components/Chat/Chat.tsx
 import { IconClearAll, IconSettings } from '@tabler/icons-react'
 import {
   MutableRefObject,
@@ -34,12 +35,22 @@ import { SystemPrompt } from './SystemPrompt'
 import { TemperatureSlider } from './Temperature'
 import { MemoizedChatMessage } from './MemoizedChatMessage'
 
+
 interface Props {
   stopConversationRef: MutableRefObject<boolean>
 }
 
+import { useRouter } from 'next/router'
+
 export const Chat = memo(({ stopConversationRef }: Props) => {
   const { t } = useTranslation('chat')
+
+  // how to get the current route inside ANY component
+  const router = useRouter()
+  const NewGetCurrentPageName = () => {
+    // /CS-125/materials --> CS-125
+    return router.asPath.slice(1).split("/")[0]
+  }
 
   const {
     state: {
@@ -70,6 +81,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
 
   const handleSend = useCallback(
     async (message: Message, deleteCount = 0, plugin: Plugin | null = null) => {
+
       if (selectedConversation) {
         let updatedConversation: Conversation
         if (deleteCount) {
@@ -99,6 +111,8 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           key: apiKey,
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
+          course_name: NewGetCurrentPageName() || "",
+          // context_text: GetContextText(),
         }
         const endpoint = getEndpoint(plugin)
         let body

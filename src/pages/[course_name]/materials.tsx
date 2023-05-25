@@ -101,57 +101,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
   // MAKE A NEW COURSE PAGE
   if (props.course_data == null) {
     return (
-      <MakeNewCoursePage course_name={currentPageName} />
-      // <>
-      //   <Head>
-      //     <title>{currentPageName}</title>
-      //     <meta
-      //       name="description"
-      //       content="The AI teaching assistant built for students at UIUC."
-      //     />
-      //     <link rel="icon" href="/favicon.ico" />
-      //     {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
-      //   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat"/>
-      //   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
-      //   </Head>
-
-      //   <main className="items-left justify-left; course-page-main flex min-h-screen flex-col">
-      //     <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-      //       <Link href="/">
-      //         <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-      //           UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
-      //         </h1>
-      //       </Link>
-      //     </div>
-      //     <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
-      //       <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-      //         Course does not exist,{' '}
-      //         <span className="text-[hsl(280,100%,70%)]">&nbsp;yet!</span>
-      //       </h2>
-      //       <Title order={2}></Title>
-      //       <Flex direction="column" align="center" justify="center">
-      //         <Title style={{ color: 'White' }} order={3} p="md">
-      //           To create course, simply upload your course materials and on
-      //           will be created for you!
-      //         </Title>
-      //         <Title style={{ color: 'White' }} order={3} variant="normal">
-      //           The course will be named:
-      //         </Title>
-      //         <Title
-      //           style={{ color: 'White' }}
-      //           order={2}
-      //           p="md"
-      //           variant="gradient"
-      //           weight="bold"
-      //           gradient={{ from: 'gold', to: 'white', deg: 140 }}
-      //         >
-      //           {props.course_name}
-      //         </Title>
-      //         <DropzoneS3Upload course_name={props.course_name} />
-      //       </Flex>
-      //     </div>
-      //   </main>
-      // </>
+      <MakeNewCoursePage course_name={currentPageName || ""} />
     )
   }
 
@@ -251,7 +201,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
           />
         </Container>
 
-        <BuildContextCards />
+        {/* <BuildContextCards /> */}
       </main>
     </>
   )
@@ -284,13 +234,13 @@ import Link from 'next/link'
 import { fetchContexts, getTopContextsResponse } from '~/pages/api/getContexts'
 
 /// START OF COMPONENTS
-import { useRouter } from 'next/router'
 import { BuildContextCards } from '~/components/UIUC-Components/ContextCards'
+
+import { useRouter } from 'next/router'
 export const GetCurrentPageName = () => {
-  return useRouter().asPath.slice(1)
+  // /CS-125/materials --> CS-125
+  return useRouter().asPath.slice(1).split("/")[0]
 }
-
-
 
 const initialValues = [
   { label: 'Week 1: Finite State Machines', checked: true, key: randomId() },
