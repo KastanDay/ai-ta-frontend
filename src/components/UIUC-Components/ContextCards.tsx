@@ -134,8 +134,17 @@ function DynamicMaterialsCard({
               weight={4300}
               // gradient={{ from: 'yellow', to: 'green', deg: 0 }}
             >
-              Source {pagenumber_or_timestamp}
-              Page 11
+              {/* if page number exists, use it, otherwise skip this field */}
+            {pagenumber_or_timestamp !== "" ? (
+                <Text size="sm" variant="dimmed" weight={600}>
+                  Page {pagenumber_or_timestamp}
+                </Text>
+              ) : ( <></>
+              //   <Text size="sm" variant="dimmed" weight={600}>
+              //     NO PAGE NUMBER sorry :(
+              //   </Text>
+              )
+              }
             </Text>
           </Group>
 
