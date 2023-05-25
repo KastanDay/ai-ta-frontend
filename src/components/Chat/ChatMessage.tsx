@@ -346,7 +346,7 @@ export const ChatMessage: FC<Props> = memo(
                   <Divider my="sm" variant="solid" />
                   <h4 className="font-bold">Sources from the course</h4>
                   <Group variant="row" spacing="xs">
-                    <BuildContextCards course_name={GetCurrentPageName() || ""} search_query="fsm?" />
+                    <BuildContextCards />
                   </Group>
                 </div>
 

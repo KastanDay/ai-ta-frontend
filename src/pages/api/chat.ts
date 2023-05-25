@@ -1,7 +1,8 @@
+// src/pages/api/chat.ts
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const'
 import { OpenAIError, OpenAIStream } from '@/utils/server'
 
-import { useState, useEffect } from 'react'
+// import { useState, useEffect } from 'react'
 
 import { ChatBody, Message } from '@/types/chat'
 
@@ -11,12 +12,12 @@ import wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?mod
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 
-import { fetchContextsNOAXIOS, fetchContexts, getTopContextsResponse } from '~/pages/api/getContexts'
-// import { all } from 'axios'
-// import { optional } from 'zod'
-// import { OptionalPortal } from '@mantine/core'
+// import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
 
-import log from 'next/dist/build/output/log';
+import { fetchContextsNOAXIOS } from '~/pages/api/getContexts'
+
+
+import log from 'next/dist/build/output/log'; // logging to next.js web gui
 
 export const config = {
   runtime: 'edge',
@@ -74,9 +75,15 @@ const handler = async (req: Request): Promise<Response> => {
           messagesToSend = [message, ...messagesToSend];
         }
       }
-
-
       encoding.free() // keep this, idk what it does
+
+
+
+
+
+
+
+      
 
       // ! A BUNCH OF CRAP TO DO PROMPT STUFFING WITH CONTEXTS
       // TODO -- move this semewhere else, and run it before we trim the context limit
@@ -84,8 +91,12 @@ const handler = async (req: Request): Promise<Response> => {
 
       // update the last message.content with the prompt injection
       const original_message = messagesToSend[messagesToSend.length - 1]?.content
-
       const search_query = original_message || ""
+
+      // SEND THE QUERY TO THE CONTEXT_CARD.tsx
+      // const { searchQuery, updateSearchQuery } = useSearchQuery(); // ERROR
+      // updateSearchQuery(search_query);
+
       const context_text = await fetchContextsNOAXIOS(course_name, search_query).then((context_arr) => {
         const separator = "--------------------------" // between each context
         const all_texts = context_arr.map((context) => `Document: ${context.readable_filename}\n${context.text}\n`).join(separator + "\n");
@@ -105,6 +116,13 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("......................")
       console.log('Stuffed prompt', stuffedPrompt)
       console.log("RIGHT BEFORE OPENAI STREAM .........")
+
+
+
+
+
+
+
 
       const stream = await OpenAIStream(
         model,
