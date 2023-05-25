@@ -36,8 +36,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       Expires: 60 * 60, // 1 hour
     })
 
-    console.log('Presigned URL generated successfully:', post)
-
     res
       .status(200)
       .json({ message: 'Presigned URL generated successfully', post })

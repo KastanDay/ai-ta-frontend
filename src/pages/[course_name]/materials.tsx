@@ -234,8 +234,9 @@ import Link from 'next/link'
 import { fetchContexts, getTopContextsResponse } from '~/pages/api/getContexts'
 
 /// START OF COMPONENTS
-import { useRouter } from 'next/router'
 import { BuildContextCards } from '~/components/UIUC-Components/ContextCards'
+
+import { useRouter } from 'next/router'
 export const GetCurrentPageName = () => {
   // /CS-125/materials --> CS-125
   return useRouter().asPath.slice(1).split("/")[0]

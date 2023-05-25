@@ -22,6 +22,7 @@ export interface ChatBody {
   key: string
   prompt: string
   temperature: number
+  course_name: string
   // NO FOLDER ID
 }
 

@@ -15,7 +15,7 @@ export const config = {
 
 const handler = async (req: Request): Promise<Response> => {
   try {
-    const { model, messages, key, prompt, temperature } =
+    const { model, messages, key, prompt, temperature, course_name } =
       (await req.json()) as ChatBody
 
     await init((imports) => WebAssembly.instantiate(wasm, imports))
@@ -68,6 +68,26 @@ const handler = async (req: Request): Promise<Response> => {
 
 
     encoding.free()
+
+    console.log('promptToSend promptToSend promptToSend promptToSend promptToSend promptToSend ')
+    console.log('promptToSend', promptToSend)
+    console.log('messages', messagesToSend)
+    
+    
+    console.log('COURSE NAME ------------ ', course_name)
+
+
+
+  // promptToSend is just the SYSTEM PROMPT ONLY
+  
+  // get last messages instead 
+//     {
+//   role: 'assistant',
+//   content: 'I\'m not sure what you\'re trying to convey with "dsf." If you have any questions or need assistance, please feel free to ask.'
+// },
+//   { role: 'user', content: 'one more' }
+
+
 
     const stream = await OpenAIStream(
       model,
