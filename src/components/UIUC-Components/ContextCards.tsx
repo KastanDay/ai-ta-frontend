@@ -89,9 +89,12 @@ function DynamicMaterialsCard({
 }: getTopContextsResponse) {
   const [presignedUrl, setPresignedUrl] = useState<string | null>(null);
 
-  fetchPresignedUrl(s3_path).then((url) => {
+  useEffect(() => {
+    fetchPresignedUrl(s3_path).then((url) => {
       setPresignedUrl(url);
-  });
+    });
+  }, [s3_path]);
+
 
 
   return (
