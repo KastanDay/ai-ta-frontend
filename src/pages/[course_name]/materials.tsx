@@ -34,19 +34,6 @@ import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 //     runtime: 'experimental-edge', // this is a pre-requisite
 //   };
 
-async function checkCourseExists({course_name} : {course_name: string}) {
-  const response = await fetch(`/utils/check_course_exists?course_name=${course_name}`);
-
-  if (response.ok) {
-    const data = await response.json();
-    console.log('Course found 😍', data);
-    return data;
-  } else {
-    console.log('Course not found ☹️');
-    return null;
-  }
-}
-
 // run on server side
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { params } = context

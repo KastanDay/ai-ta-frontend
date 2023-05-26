@@ -31,11 +31,11 @@ export const fetchContexts = async (course_name : string, search_query: string) 
 };
 
 // Axios doesn't work in Next.js Edge runtime, so using standard fetch instead. 
-export async function fetchContextsNOAXIOS(course_name: string, search_query: string) {
+export async function fetchContextsNOAXIOS(course_name: string, search_query: string, top_n: number = 4) {
   const API_URL = 'https://flask-production-751b.up.railway.app';
   // console.log('\n\n------------------I DISABLED COURES NAME IN THE SEARCH MAKE SURE TO RENEABLE IT\n------------------\n\n')
   console.log('\n\n------------------TODO: CHANGE /getTopContexts to use a FILTER object, not just course name. SURE TO RENEABLE IT\n------------------\n\n')
-  const res = await fetch(`${API_URL}/getTopContexts?course_name=${course_name}&search_query=${search_query}`, {
+  const res = await fetch(`${API_URL}/getTopContexts?course_name=${course_name}&search_query=${search_query}&top_n=${top_n}`, {
   // const res = await fetch(`${API_URL}/getTopContexts?search_query=${search_query}`, {
     method: 'GET',
   });

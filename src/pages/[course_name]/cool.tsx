@@ -55,19 +55,25 @@
 //     return NextResponse.error(404);
 //   }
 // }
+
+
+// import { checkExists } from '~/pages/api/UIUC-api/checkCourseExists'
+
+
 import { GetServerSideProps, GetServerSidePropsContext } from 'next' // GetServerSideProps,
 import { has } from '@vercel/edge-config';
 import { NextPage } from 'next';
-// import { checkExists } from '~/pages/api/UIUC-api/checkCourseExists'
 
-export async function GetServerSideProps(context: GetServerSidePropsContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { params } = context
   if (!params) {
-    return {
+  return {
+    props: {
       course_data: null,
       course_name: null,
-    }
-  }
+    },
+  };
+}
 
   async function checkExists (courseName: string): Promise<boolean> {
     // get the param "courseName" from the request
