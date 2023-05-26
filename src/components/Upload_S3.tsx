@@ -269,13 +269,14 @@ const ingestFile = async (file: File | null) => {
               await ingestFile(file).catch((error) => {
                 console.error('Error during file upload:', error)
               })
+              console.log('Ingested a file.')
 
-              console.log('Done calling ingestFile! Now refreshing the page...')
-              refreshPage();
             }
             )()
           })
-
+          
+          console.log('Done ingesting everything! Now refreshing the page...')
+          refreshPage();
           // console.log('Got your upload! And saved it!')
           // console.log(files)
         }}
