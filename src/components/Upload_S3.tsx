@@ -137,41 +137,109 @@ const ingestFile = async (file: File | null) => {
   }
 }
 
-const createEdgeConfigKey = async (courseName: string) => {
-  console.log('createEdgeConfigKey.....:', courseName)
-  if (!courseName) return
-  const queryParams = new URLSearchParams({
-    courseName: courseName,
-  }).toString();
+// const createEdgeConfigKey = async (courseName: string) => {
+//   console.log('createEdgeConfigKey.....:', courseName)
+//   if (!courseName) return
+//   const queryParams = new URLSearchParams({
+//     courseName: courseName,
+//   }).toString();
 
   
-  const requestObject = {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    query: {
+//   const requestObject = {
+//     method: 'GET',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     query: {
+//       courseName: courseName,
+//     }
+//   };
+  
+//   console.log('right before fetch.....')
+//   // Actually we CAN await here, just don't await this function.
+//   const response = await fetch(`/api/UIUC-api/sosad?${queryParams}`, requestObject)
+//   console.log('right after fetch.....')
+  
+//   // check if the response was ok 
+//   if (response.ok) {
+//     const data = await response.json()
+//     // console.log(file.name as string + ' ingested successfully!!')
+//     console.log('Response:', data)
+//     return data
+//   } else {
+//     console.log('Error during ingest:', response.statusText)
+//     console.log('Full Response message:', response)
+//     return response
+//   }
+// }
+// const createEdgeConfigKey = async (courseName: string) => {
+//   console.log('createEdgeConfigKey.....:', courseName)
+//   if (!courseName) return
+//   const queryParams = new URLSearchParams({
+//     courseName: courseName,
+//   }).toString();
+
+//   const requestObject = {
+//     method: 'GET',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     query: {
+//       courseName: courseName,
+//     }
+//   };
+  
+//   console.log('right before fetch.....')
+//   // Actually we CAN await here, just don't await this function.
+//   const response = await fetch(`/api/UIUC-api/sosad?${queryParams}`, requestObject)
+//   console.log('right after fetch.....')
+  
+//   // check if the response was ok 
+//   if (response.ok) {
+//     const data = await response.json()
+//     // console.log(file.name as string + ' ingested successfully!!')
+//     console.log('Response:', data)
+//     return data
+//   } else {
+//     console.log('Error during ingest:', response.statusText)
+//     console.log('Full Response message:', response)
+//     return response
+//   }
+// }
+
+  const createEdgeConfigKey = async (courseName: string) => {
+    console.log('createEdgeConfigKey.....:', courseName)
+    if (!courseName) return
+    const queryParams = new URLSearchParams({
       courseName: courseName,
+    }).toString();
+
+    const requestObject = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      query: {
+        courseName: courseName,
+      }
+    };
+    console.log('right before fetch.....')
+    // Actually we CAN await here, just don't await this function.
+    const response = await fetch(`/api/UIUC-api/vercelsosad?${queryParams}`, requestObject)
+    console.log('right after fetch.....')
+
+    // check if the response was ok 
+    if (response.ok) {
+      const data = await response.json()
+      // console.log(file.name as string + ' ingested successfully!!')
+      console.log('Response:', data)
+      return data
+    } else {
+      console.log('Error during ingest:', response.statusText)
+      console.log('Full Response message:', response)
+      return response
     }
-  };
-  
-  console.log('right before fetch.....')
-  // Actually we CAN await here, just don't await this function.
-  const response = await fetch(`/api/UIUC-api/sosad?${queryParams}`, requestObject)
-  console.log('right after fetch.....')
-  
-  // check if the response was ok 
-  if (response.ok) {
-    const data = await response.json()
-    // console.log(file.name as string + ' ingested successfully!!')
-    console.log('Response:', data)
-    return data
-  } else {
-    console.log('Error during ingest:', response.statusText)
-    console.log('Full Response message:', response)
-    return response
   }
-}
 
   const { classes, theme } = useStyles()
   const openRef = useRef<() => void>(null)
@@ -213,19 +281,6 @@ const createEdgeConfigKey = async (courseName: string) => {
         }}
         className={classes.dropzone}
         radius="md"
-        // accept={[
-        //   MIME_TYPES.mp4,
-        //   ...PDF_MIME_TYPE,
-        //   ...MS_WORD_MIME_TYPE,
-        //   ...MS_POWERPOINT_MIME_TYPE,
-        //   "text/srt",
-        //   // MIME_TYPES.pdf,
-        //   // MIME_TYPES.doc,
-        //   // MIME_TYPES.docx,
-        //   // MIME_TYPES.pptx,
-        //   // MIME_TYPES.ppt,
-        //   // MIME_TYPES.xlsx,
-        // ]}
         bg="#0E1116"
         // maxSize={30 * 1024 ** 2} max file size
       >
