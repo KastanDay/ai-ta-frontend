@@ -6,11 +6,11 @@ export async function addEdgeConfigItem(course_name: string): Promise<void> {
   // Docs: https://vercel.com/docs/storage/edge-config/vercel-api#update-your-edge-config-items
   try {
     const updateEdgeConfig = await fetch(
-      `https://api.vercel.com/v1/edge-config/${process.env.EDGE_CONFIG_ID}/items`,
+      `${process.env.EDGE_CONFIG}/items`,
       {
         method: 'PATCH',
         headers: {
-          Authorization: `Bearer ${process.env.VERCEL_API_TOKEN}`,
+          // Authorization: `Bearer ${process.env.VERCEL_API_TOKEN}`, // token is built into EDGE_CONFIG
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
