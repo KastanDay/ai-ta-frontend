@@ -10,7 +10,7 @@ const SciteBadge = ( {doi }: {doi?: string}) => {
 
   useEffect(() => {
     if (badgeRef.current) {
-      badgeRef.current.innerHTML = '';
+      // badgeRef.current.innerHTML = '';
       const badge = document.createElement('div');
       badge.className = 'scite-badge';
       // badge.setAttribute('data-doi', '10.1016/j.biopsych.2005.08.012');
@@ -18,7 +18,7 @@ const SciteBadge = ( {doi }: {doi?: string}) => {
       // badge.setAttribute('data-tally-show', 'true');
       badge.setAttribute('data-show-labels', 'true');
       badge.setAttribute('data-section-tally-show', 'false');
-      badgeRef.current.appendChild(badge);
+      // badgeRef.current.appendChild(badge);
     }
   }, []);
 
