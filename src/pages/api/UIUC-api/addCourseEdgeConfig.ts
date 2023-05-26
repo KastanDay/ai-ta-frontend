@@ -9,13 +9,13 @@ export async function addEdgeConfigItem(course_name: string): Promise<void> {
     const vercelTeamID = process.env.VERCEL_TEAM_ID;
     console.log('edgeConfigVar', edgeConfigVar);
     console.log('vercelTeamID', vercelTeamID);
-    
+
     const updateEdgeConfig = await fetch(
-      `${edgeConfigVar}/items?teamId=${vercelTeamID}`,
+      `${edgeConfigVar}/items`,
       {
         method: 'PATCH',
         headers: {
-          // Authorization: `Bearer ${process.env.VERCEL_API_TOKEN}`, // token is built into EDGE_CONFIG
+          Authorization: `Bearer ${process.env.VERCEL_API_TOKEN}`, // token is built into EDGE_CONFIG
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
