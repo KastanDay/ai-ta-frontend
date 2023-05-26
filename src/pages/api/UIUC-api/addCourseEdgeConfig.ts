@@ -6,7 +6,7 @@ export async function addEdgeConfigItem(course_name: string): Promise<void> {
   // Docs: https://vercel.com/docs/storage/edge-config/vercel-api#update-your-edge-config-items
   try {
     const updateEdgeConfig = await fetch(
-      `${process.env.EDGE_CONFIG}/items`,
+      `${process.env.EDGE_CONFIG}/items?teamId=${process.env.VERCEL_TEAM_ID}`,
       {
         method: 'PATCH',
         headers: {
