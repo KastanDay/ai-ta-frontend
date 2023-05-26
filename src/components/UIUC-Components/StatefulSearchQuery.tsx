@@ -7,7 +7,7 @@ interface ChatContextData {
 
 const SearchQuery = createContext<ChatContextData>({
   searchQuery: "",
-  setSearchQuery: () => {},
+  setSearchQuery: () => {}, // ignore: @typescript-eslint/no-empty-function
 });
 
 export const useChatContext = () => useContext(SearchQuery);
