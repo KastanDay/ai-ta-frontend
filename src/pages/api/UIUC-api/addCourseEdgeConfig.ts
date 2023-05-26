@@ -5,8 +5,13 @@ export const config = {
 export async function addEdgeConfigItem(course_name: string): Promise<void> {
   // Docs: https://vercel.com/docs/storage/edge-config/vercel-api#update-your-edge-config-items
   try {
+    const edgeConfigVar = process.env.EDGE_CONFIG;
+    const vercelTeamID = process.env.VERCEL_TEAM_ID;
+    console.log('edgeConfigVar', edgeConfigVar);
+    console.log('vercelTeamID', vercelTeamID);
+    
     const updateEdgeConfig = await fetch(
-      `${process.env.EDGE_CONFIG}/items?teamId=${process.env.VERCEL_TEAM_ID}`,
+      `${edgeConfigVar}/items?teamId=${vercelTeamID}`,
       {
         method: 'PATCH',
         headers: {
