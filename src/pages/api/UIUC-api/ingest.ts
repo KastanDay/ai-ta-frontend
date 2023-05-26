@@ -2,12 +2,24 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import axios, { AxiosResponse } from "axios";
 
+import { addEdgeConfigItem } from './addCourseEdgeConfig';
+
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const { fileName, courseName } = req.query as {
       fileName: string
       courseName: string
     }
+
+    // Make course exist in EdgeConfig
+    console.log('Making course exist in EdgeConfig');
+
+    (async () => {
+      await addEdgeConfigItem(courseName)
+    })();
+
+    console.log('IT DONE ');
+
     
     const s3_filepath = `courses/${courseName}/${fileName}`
     
@@ -17,8 +29,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         s3_paths: s3_filepath,
       },
     });
-    console.log('Getting to our /ingest endpoint', response.data);
-    return response;
+    // const data = await 
+    return res.status(200).json(response.data)
+    // console.log('Getting to our /ingest endpoint', data);
+    // return data;
   } catch (error) {
     console.error(error);
     return [];

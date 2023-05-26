@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react'
 import { Text, Group, createStyles, FileInput, rem } from '@mantine/core'
 import { IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
 import { Dropzone, MIME_TYPES, MS_POWERPOINT_MIME_TYPE, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from '@mantine/dropzone'
-import axios, { AxiosResponse } from "axios";
+import { useRouter } from 'next/router';
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -39,6 +39,12 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
       if (e.target.files[0]) setSelectedFile(e.target.files[0])
     }
   }
+
+  const router = useRouter();
+
+  const refreshPage = () => {
+    router.replace(router.asPath);
+  };
 
   const uploadToS3 = async (file: File | null) => {
   if (!file) return
@@ -90,7 +96,7 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
   }
 }
 
-  const ingestFile = async (file: File | null) => {
+const ingestFile = async (file: File | null) => {
   if (!file) return
   const queryParams = new URLSearchParams({
     courseName: course_name,
@@ -108,8 +114,6 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
     }
   };
 
-  console.log("about to fetch ingest endpoint")
-
   // Actually we CAN await here, just don't await this function.
   const response = await fetch(`/api/UIUC-api/ingest?${queryParams}`, requestObject)
 
@@ -118,9 +122,11 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
     const data = await response.json()
     console.log(file.name as string + 'ingested successfully!!')
     console.log('Response:', data)
+    return data
   } else {
     console.log('Error during ingest:', response.statusText)
     console.log('Full Response message:', response)
+    return response
   }
 }
 
@@ -145,6 +151,9 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
               await ingestFile(file).catch((error) => {
                 console.error('Error during file upload:', error)
               })
+
+              console.log('Done calling ingestFile! Now refreshing the page...')
+              refreshPage();
             }
             )()
           })
