@@ -46,6 +46,7 @@
     "@trpc/server": "^10.18.0",
     "@uploadthing/react": "^3.0.1",
     "@vercel/analytics": "^1.0.1",
+    "@vercel/edge-config": "^0.2.0",
     "aws-sdk": "^2.1380.0",
     "axios": "^1.4.0",
     "daisyui": "^2.51.6",
