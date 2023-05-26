@@ -12,7 +12,7 @@ import wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?mod
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 
-// import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
+import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
 
 import { fetchContextsNOAXIOS } from '~/pages/api/getContexts'
 
@@ -67,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       const context_text = await fetchContextsNOAXIOS(course_name, search_query).then((context_arr) => {
         const separator = "--------------------------" // between each context
-        const all_texts = context_arr.map((context) => `Document: ${context.readable_filename}\n${context.text}\n`).join(separator + "\n");
+        const all_texts = context_arr.map((context) => `Document: ${context.readable_filename}, page number (if exists): ${context.pagenumber_or_timestamp}\n${context.text}\n`).join(separator + "\n");
         
         // log.warn('all_texts', context_arr[0]?.course_name);
         // log.warn('all_texts', context_arr[0]?.text);
@@ -75,7 +75,7 @@ const handler = async (req: Request): Promise<Response> => {
         return all_texts
       }).catch((err) => {console.log('ERROR IN FETCH CONTEXT CALL', err); return ""});
 
-      const stuffedPrompt = "Please answer the following question. Use the context below only if it's helpful and don't use parts that are very irrelevant. It's good to quote the context directly, something like 'from ABS source it says XYZ' Feel free to say you don't know. \nHere's a few passages of high quality context:\n" + context_text + "\n\nNow please respond to my query: " + original_message
+      const stuffedPrompt = "Please answer the following question. Use the context below, called 'official course materials,' only if it's helpful and don't use parts that are very irrelevant. It's good to quote the official course materials directly, something like 'from ABS source it says XYZ' Feel free to say you don't know. \nHere's a few passages of high quality official course materials:\n" + context_text + "\n\nNow please respond to my query: " + original_message
 
       if (messages && messages.length > 0 && messages[messages.length - 1]) {
         messages[messages.length - 1]!.content = stuffedPrompt || ""

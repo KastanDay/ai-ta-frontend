@@ -35,6 +35,8 @@ import { SystemPrompt } from './SystemPrompt'
 import { TemperatureSlider } from './Temperature'
 import { MemoizedChatMessage } from './MemoizedChatMessage'
 
+// import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
+import SearchQuery from "~/components/UIUC-Components/StatefulSearchQuery";
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>
@@ -44,6 +46,11 @@ import { useRouter } from 'next/router'
 
 export const Chat = memo(({ stopConversationRef }: Props) => {
   const { t } = useTranslation('chat')
+  
+  // KASTAN HERE -- grabbing the latest message from selected converation
+  const [searchQuery, setSearchQuery] = useState("");
+  // const [message, setMessage] = useState("");
+  // const { searchQuery, updateSearchQuery } = useSearchQuery();
 
   // how to get the current route inside ANY component
   const router = useRouter()
@@ -51,6 +58,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
     // /CS-125/materials --> CS-125
     return router.asPath.slice(1).split("/")[0]
   }
+
 
   const {
     state: {
@@ -79,8 +87,15 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+
+  // THIS IS WHERE MESSAGES ARE SENT. 
   const handleSend = useCallback(
     async (message: Message, deleteCount = 0, plugin: Plugin | null = null) => {
+
+      // New way with React Context API
+      console.log("IN handleSend: ", message)
+      setSearchQuery(message.content);
+      
 
       if (selectedConversation) {
         let updatedConversation: Conversation
@@ -320,6 +335,9 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   }
   const throttledScrollDown = throttle(scrollDown, 250)
 
+
+  // WHY IS THIS COMMENTED OUT??? 
+
   // useEffect(() => {
   //   console.log('currentMessage', currentMessage);
   //   if (currentMessage) {
@@ -361,6 +379,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   }, [messagesEndRef])
 
   return (
+    <SearchQuery.Provider value={{ searchQuery, setSearchQuery }}>
     <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#343541]">
       {!(apiKey || serverSideApiKeyIsSet) ? (
         <div className="mx-auto flex h-full w-[300px] flex-col justify-center space-y-6 sm:w-[600px]">
@@ -487,6 +506,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                       handleSend(
                         editedMessage,
                         selectedConversation?.messages.length - index,
+                        null,
                       )
                     }}
                   />
@@ -520,6 +540,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
         </>
       )}
     </div>
+    </SearchQuery.Provider>
   )
 })
 Chat.displayName = 'Chat'

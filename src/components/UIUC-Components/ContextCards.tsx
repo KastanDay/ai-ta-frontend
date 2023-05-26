@@ -21,6 +21,11 @@ import Link from 'next/link'
 import axios from "axios";
 import { set } from 'zod';
 import SciteBadge from './SciteBadge';
+import { useRouter } from 'next/router';
+
+// My way to manage content
+import { useChatContext } from "./StatefulSearchQuery";
+
 
 async function fetchPresignedUrl(filePath: string) {
   try {
@@ -34,9 +39,10 @@ async function fetchPresignedUrl(filePath: string) {
   }
 }
 
+
 // Set "search query" for Qdrant from user's message (in chat.ts)
 export const useSearchQuery = () => {
-  const [searchQuery, setSearchQuery] = useState<string>("badm_567");
+  const [searchQuery, setSearchQuery] = useState<string>("kastan");
   
   const updateSearchQuery = (newSearchQuery: string) => {
     setSearchQuery(newSearchQuery);
@@ -47,16 +53,30 @@ export const useSearchQuery = () => {
 
 export const BuildContextCards = () => {
   const [contexts, setContexts] = useState<getTopContextsResponse[]>();
-  const { searchQuery, updateSearchQuery } = useSearchQuery();
-  
-  // get contexts from Qdrant
+  // const { searchQuery, updateSearchQuery } = useSearchQuery();
+
+  // how to get the current route inside ANY component
+  const router = useRouter()
+  const getCurrentPageName = (): string => {
+    // /CS-125/materials --> CS-125
+    console.log("curr page name:", router.asPath.slice(1).split("/")[0] || "DEFAULTPAGE")
+    return router.asPath.slice(1).split("/")[0] || "DEFAULTPAGE"; // Kastan as default
+  }
+
+  // My new way to share state with React's Context API
+  const { searchQuery } = useChatContext();
   useEffect(() => {
-    fetchContexts("badm_567", searchQuery).then((data) => {
+    if (searchQuery) {
+      // Perform your action when the searchQuery changes
+      fetchContexts(getCurrentPageName(), searchQuery).then((data) => {
       setContexts(data);
     });
-  }, []);
-
+    }
+  }, [searchQuery]);
+  
+  console.log("From ContextCards.tsx:");
   console.log("contexts: ", contexts);
+  console.log("currentPageName: ", getCurrentPageName());
   console.log("searchQuery: ", searchQuery);
 
   return (
