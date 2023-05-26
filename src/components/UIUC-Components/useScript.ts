@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 // for loading scripts in next.js
 // For Scite badges 
 
-const useScript = (src) => {
+const useScript = (src: string) => {
   useEffect(() => {
     const script = document.createElement('script');
     script.src = src;
