@@ -5,6 +5,8 @@ import { IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
 import { Dropzone, MIME_TYPES, MS_POWERPOINT_MIME_TYPE, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from '@mantine/dropzone'
 import { useRouter } from 'next/router';
 
+import { addEdgeConfigItem } from '~/pages/api/UIUC-api/addCourseEdgeConfig';
+
 const useStyles = createStyles((theme) => ({
   wrapper: {
     position: 'relative',
@@ -31,6 +33,7 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
+
 export function DropzoneS3Upload({ course_name }: { course_name: string }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
@@ -45,6 +48,10 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
   const refreshPage = () => {
     router.replace(router.asPath);
   };
+  const NewGetCurrentPageName = () => {
+    // /CS-125/materials --> CS-125
+    return router.asPath.slice(1).split("/")[0]
+  }
 
   const uploadToS3 = async (file: File | null) => {
   if (!file) return
@@ -120,7 +127,7 @@ const ingestFile = async (file: File | null) => {
   // check if the response was ok 
   if (response.ok) {
     const data = await response.json()
-    console.log(file.name as string + 'ingested successfully!!')
+    // console.log(file.name as string + ' ingested successfully!!')
     console.log('Response:', data)
     return data
   } else {
@@ -138,6 +145,14 @@ const ingestFile = async (file: File | null) => {
       <Dropzone
         openRef={openRef}
         onDrop={(files) => {
+          // Make course exist in EdgeConfig
+          console.log('Adding course to EdgeConfig, named:', NewGetCurrentPageName() as string);
+
+          (async () => {
+            await addEdgeConfigItem(NewGetCurrentPageName() as string)
+          })();
+
+
           // UPLOAD TO S3
           files.forEach((file) => {
             void (async () => {
@@ -163,19 +178,19 @@ const ingestFile = async (file: File | null) => {
         }}
         className={classes.dropzone}
         radius="md"
-        accept={[
-          MIME_TYPES.mp4,
-          ...PDF_MIME_TYPE,
-          ...MS_WORD_MIME_TYPE,
-          ...MS_POWERPOINT_MIME_TYPE,
-          "text/srt",
-          // MIME_TYPES.pdf,
-          // MIME_TYPES.doc,
-          // MIME_TYPES.docx,
-          // MIME_TYPES.pptx,
-          // MIME_TYPES.ppt,
-          // MIME_TYPES.xlsx,
-        ]}
+        // accept={[
+        //   MIME_TYPES.mp4,
+        //   ...PDF_MIME_TYPE,
+        //   ...MS_WORD_MIME_TYPE,
+        //   ...MS_POWERPOINT_MIME_TYPE,
+        //   "text/srt",
+        //   // MIME_TYPES.pdf,
+        //   // MIME_TYPES.doc,
+        //   // MIME_TYPES.docx,
+        //   // MIME_TYPES.pptx,
+        //   // MIME_TYPES.ppt,
+        //   // MIME_TYPES.xlsx,
+        // ]}
         bg="#0E1116"
         // maxSize={30 * 1024 ** 2} max file size
       >
