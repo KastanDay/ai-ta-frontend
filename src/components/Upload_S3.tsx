@@ -2,7 +2,8 @@
 import React, { useState, useRef } from 'react'
 import { Text, Group, createStyles, FileInput, rem } from '@mantine/core'
 import { IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
-import { Dropzone, MIME_TYPES } from '@mantine/dropzone'
+import { Dropzone, MIME_TYPES, MS_POWERPOINT_MIME_TYPE, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from '@mantine/dropzone'
+import axios, { AxiosResponse } from "axios";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -39,55 +40,89 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
     }
   }
 
-  const uploadFile = async (file: File | null) => {
-    if (!file) return
+  const uploadToS3 = async (file: File | null) => {
+  if (!file) return
 
-    const requestObject = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        fileName: file.name,
-        fileType: file.type,
-        courseName: course_name,
-      }),
-    }
+  const requestObject = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      fileName: file.name,
+      fileType: file.type,
+      courseName: course_name,
+    }),
+  }
 
-    try {
-      interface PresignedPostResponse {
-        post: {
-          url: string
-          fields: { [key: string]: string }
-        }
-      }
-
-      // Then, update the lines where you fetch the response and parse the JSON
-      const response = await fetch('/api/upload', requestObject)
-      const data = (await response.json()) as PresignedPostResponse
-
-      const { url, fields } = data.post as {
+  try {
+    interface PresignedPostResponse {
+      post: {
         url: string
         fields: { [key: string]: string }
       }
-      const formData = new FormData()
-
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value)
-      })
-
-      formData.append('file', file)
-
-      await fetch(url, {
-        method: 'POST',
-        body: formData,
-      })
-
-      console.log('File uploaded successfully!!')
-    } catch (error) {
-      console.error('Error uploading file:', error)
     }
+
+    // Then, update the lines where you fetch the response and parse the JSON
+    const response = await fetch('/api/UIUC-api/uploadToS3', requestObject)
+    const data = (await response.json()) as PresignedPostResponse
+
+    const { url, fields } = data.post as {
+      url: string
+      fields: { [key: string]: string }
+    }
+    const formData = new FormData()
+
+    Object.entries(fields).forEach(([key, value]) => {
+      formData.append(key, value)
+    })
+
+    formData.append('file', file)
+
+    await fetch(url, {
+      method: 'POST',
+      body: formData,
+    })
+
+    console.log(file.name as string + 'uploaded to S3 successfully!!')
+  } catch (error) {
+    console.error('Error uploading file:', error)
   }
+}
+
+  const ingestFile = async (file: File | null) => {
+  if (!file) return
+  const queryParams = new URLSearchParams({
+    courseName: course_name,
+    fileName: file.name,
+  }).toString();
+
+  const requestObject = {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    query: {
+      fileName: file.name,
+      courseName: course_name,
+    }
+  };
+
+  console.log("about to fetch ingest endpoint")
+
+  // Actually we CAN await here, just don't await this function.
+  const response = await fetch(`/api/UIUC-api/ingest?${queryParams}`, requestObject)
+
+  // check if the response was ok 
+  if (response.ok) {
+    const data = await response.json()
+    console.log(file.name as string + 'ingested successfully!!')
+    console.log('Response:', data)
+  } else {
+    console.log('Error during ingest:', response.statusText)
+    console.log('Full Response message:', response)
+  }
+}
 
   const { classes, theme } = useStyles()
   const openRef = useRef<() => void>(null)
@@ -100,25 +135,37 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
           // UPLOAD TO S3
           files.forEach((file) => {
             void (async () => {
-              await uploadFile(file).catch((error) => {
+              await uploadToS3(file).catch((error) => {
                 console.error('Error during file upload:', error)
               })
-            })()
+
+              console.log('About to call ingestFile...')
+
+              // UPLOAD TO SupaBase
+              await ingestFile(file).catch((error) => {
+                console.error('Error during file upload:', error)
+              })
+            }
+            )()
           })
 
-          console.log('Got your upload! And saved it!')
-          console.log(files)
+          // console.log('Got your upload! And saved it!')
+          // console.log(files)
         }}
         className={classes.dropzone}
         radius="md"
         accept={[
-          MIME_TYPES.pdf,
           MIME_TYPES.mp4,
-          MIME_TYPES.docx,
-          MIME_TYPES.xlsx,
-          MIME_TYPES.pptx,
-          MIME_TYPES.ppt,
-          MIME_TYPES.doc,
+          ...PDF_MIME_TYPE,
+          ...MS_WORD_MIME_TYPE,
+          ...MS_POWERPOINT_MIME_TYPE,
+          "text/srt",
+          // MIME_TYPES.pdf,
+          // MIME_TYPES.doc,
+          // MIME_TYPES.docx,
+          // MIME_TYPES.pptx,
+          // MIME_TYPES.ppt,
+          // MIME_TYPES.xlsx,
         ]}
         bg="#0E1116"
         // maxSize={30 * 1024 ** 2} max file size
@@ -156,8 +203,8 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
             <Dropzone.Idle>Upload materials</Dropzone.Idle>
           </Text>
           <Text ta="center" fz="sm" mt="xs" c="dimmed">
-            Drag&apos;n&apos;drop files here to upload.<br></br>We support PDF,
-            MP4, DOCX, XLSX, PPTX, PPT, DOC.
+            Drag&apos;n&apos;drop files or a whole folder here.<br></br>We support PDF,
+            Word, Powerpoint, Excel, .mp4 video, and SRT closed-captions.
           </Text>
         </div>
       </Dropzone>

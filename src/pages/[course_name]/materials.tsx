@@ -236,6 +236,7 @@ import { fetchContexts, getTopContextsResponse } from '~/pages/api/getContexts'
 import { BuildContextCards } from '~/components/UIUC-Components/ContextCards'
 
 import { useRouter } from 'next/router'
+import SciteBadge from '~/components/UIUC-Components/SciteBadge'
 export const GetCurrentPageName = () => {
   // /CS-125/materials --> CS-125
   return useRouter().asPath.slice(1).split("/")[0]

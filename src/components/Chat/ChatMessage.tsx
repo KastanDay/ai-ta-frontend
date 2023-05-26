@@ -37,6 +37,7 @@ import remarkMath from 'remark-math'
 import { BuildContextCards } from '~/components/UIUC-Components/ContextCards'
 
 import { useRouter } from 'next/router'
+import SciteBadge from '../UIUC-Components/SciteBadge'
 // Component that's the Timer for GPT's response duration.
 const Timer: React.FC<{ timerVisible: boolean }> = ({ timerVisible }) => {
   const [timer, setTimer] = useState(0)
@@ -346,7 +347,10 @@ export const ChatMessage: FC<Props> = memo(
                   <Divider my="sm" variant="solid" />
                   <h4 className="font-bold">Sources from the course</h4>
                   <Group variant="row" spacing="xs">
-                    <BuildContextCards course_name={GetCurrentPageName() || ""} search_query="fsm?" />
+                    <BuildContextCards />
+                    {/* <script async type="application/javascript" src="https://cdn.scite.ai/badge/scite-badge-latest.min.js"></script>
+                    <div className="scite-badge" data-doi="10.1016/j.biopsych.2005.08.012" data-tally-show='true' data-show-labels='true' data-section-tally-show='false' /> */}
+
                   </Group>
                 </div>
 
