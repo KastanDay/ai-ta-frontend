@@ -5,7 +5,7 @@ import { IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
 import { Dropzone, MIME_TYPES, MS_POWERPOINT_MIME_TYPE, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from '@mantine/dropzone'
 import { useRouter } from 'next/router';
 
-import { addEdgeConfigItem } from '~/pages/api/UIUC-api/addCourseEdgeConfig';
+import { addEdgeConfigItem, addConfigV2 } from '~/pages/api/UIUC-api/addCourseEdgeConfig';
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -137,6 +137,42 @@ const ingestFile = async (file: File | null) => {
   }
 }
 
+const createEdgeConfigKey = async (courseName: string) => {
+  console.log('createEdgeConfigKey.....:', courseName)
+  if (!courseName) return
+  const queryParams = new URLSearchParams({
+    courseName: courseName,
+  }).toString();
+
+  
+  const requestObject = {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    query: {
+      courseName: courseName,
+    }
+  };
+  
+  console.log('right before fetch.....')
+  // Actually we CAN await here, just don't await this function.
+  const response = await fetch(`/api/UIUC-api/sosad?${queryParams}`, requestObject)
+  console.log('right after fetch.....')
+  
+  // check if the response was ok 
+  if (response.ok) {
+    const data = await response.json()
+    // console.log(file.name as string + ' ingested successfully!!')
+    console.log('Response:', data)
+    return data
+  } else {
+    console.log('Error during ingest:', response.statusText)
+    console.log('Full Response message:', response)
+    return response
+  }
+}
+
   const { classes, theme } = useStyles()
   const openRef = useRef<() => void>(null)
 
@@ -146,10 +182,9 @@ const ingestFile = async (file: File | null) => {
         openRef={openRef}
         onDrop={(files) => {
           // Make course exist in EdgeConfig
-          console.log('Adding course to EdgeConfig, named:', NewGetCurrentPageName() as string);
-
+          console.log('about to add EdgeConfig...');
           (async () => {
-            await addEdgeConfigItem(NewGetCurrentPageName() as string)
+            await createEdgeConfigKey(NewGetCurrentPageName() as string)
           })();
 
 
