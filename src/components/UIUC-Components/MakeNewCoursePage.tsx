@@ -1,6 +1,8 @@
 import Head from 'next/head'
 import { DropzoneS3Upload } from '~/components/Upload_S3'
 
+import { Montserrat, Inter, Rubik_Puddles, Audiowide } from "next/font/google"
+
 import {
   Card,
   Image,
@@ -17,10 +19,24 @@ import {
   rem,
 } from '@mantine/core'
 
+const rubik_puddles = Rubik_Puddles({
+  weight: '400',
+  subsets: ['latin'],
+});
+
+const montserrat = Montserrat({
+  weight: '700',
+  subsets: ['latin'],
+});
+
 import Link from 'next/link'
 import React from 'react'
+import { useRouter } from 'next/router'
 
 const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
+  const router = useRouter()
+  // const { course_name: course_name_param } = router.query
+
   return (
     <>
       <Head>
@@ -32,19 +48,23 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="items-left justify-left; course-page-main flex min-h-screen flex-col">
+      <main className="rubik_puddles.className items-left justify-left; course-page-main flex min-h-screen flex-col">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
           <Link href="/">
-            <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-              UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
-            </h1>
+            <div className={montserrat.className}>
+            <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
+              UIUC Course <span className="${inter.style.fontFamily} text-[hsl(280,100%,70%)]">AI</span>
+            </h2>
+            </div>
           </Link>
         </div>
         <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
-          <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            Course does not exist,{' '}
-            <span className="text-[hsl(280,100%,70%)]">&nbsp;yet!</span>
-          </h2>
+          <h5 className="text-5xl font-extrabold tracking-tight text-white xs:text-[5rem]">
+            
+            <Text className={montserrat.className} variant="gradient" gradient={{ from: 'gold', to: 'white', deg: 20 }} >{course_name}</Text>
+            is available, claim this domain.
+            
+          </h5>
           <Title order={2}></Title>
           <Flex direction="column" align="center" justify="center">
             <Title style={{ color: 'White' }} order={3} p="md">
