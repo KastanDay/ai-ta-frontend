@@ -41,6 +41,10 @@ const useStyles = createStyles((theme) => ({
 
 
 export function DropzoneS3Upload({ course_name }: { course_name: string }) {
+
+  // upload active
+  const [active, setActive] = useState(false);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -255,38 +259,61 @@ const ingestFile = async (file: File | null) => {
     <div className={classes.wrapper} style={{ maxWidth: '220px' }}>
       <Dropzone
         openRef={openRef}
-        onDrop={(files) => {
+        loading={active}
+        onDrop={async (files) => {
+          // set loading property 
+          setActive(true)
+
           // Make course exist in EdgeConfig
           console.log('about to add EdgeConfig...');
           (async () => {
             await createEdgeConfigKey(NewGetCurrentPageName() as string)
           })();
 
+          
+          // This did parallel uploads. 
+          // files.forEach((file, index) => {
+          //   // This async () => {} is a self-executing function. Makes things run in parallel. 
+          //   void (async () => {
+          //     console.log("Index: " + index);
+              
+          //     // UPLOAD TO S3
+          //     await uploadToS3(file).catch((error) => {
+          //       console.error('Error during file upload:', error)
+          //     })
+          //     // Ingest into Qdrant (time consuming). No await.
+          //     await ingestFile(file).catch((error) => {
+          //       console.error('Error during file upload:', error)
+          //     })
+          //     console.log('Ingested a file.')
+          //   }
+          //   )()
+          // })
 
-          // UPLOAD TO S3
-          files.forEach((file, index) => {
-            void (async () => {
-              await uploadToS3(file).catch((error) => {
-                console.error('Error during file upload:', error)
-              })
-
-              // console.log('About to call ingestFile...')
-
-              // console.log("no await...")
-              await delay(4000);
+            // this does sequential uploads.
+            for (const [index, file] of files.entries()) {
               console.log("Index: " + index);
 
-              // Ingest into Qdrant (time consuming). No await.
-              ingestFile(file).catch((error) => {
-                console.error('Error during file upload:', error)
-              })
-              console.log('Ingested a file.')
+              try {
+                // UPLOAD TO S3
+                await uploadToS3(file).catch((error) => {
+                  console.error('Error during file upload:', error)
+                });
 
+                // Ingest into Qdrant (time consuming).
+                await ingestFile(file).catch((error) => {
+                  console.error('Error during file upload:', error)
+                });
+
+                console.log('Ingested a file.');
+              } catch (error) {
+                console.error('Error during file processing:', error);
+              }
             }
-            )()
-          })
+
           
           console.log('Done ingesting everything! Now refreshing the page...')
+          setActive(false)
           refreshPage();
           // console.log('Got your upload! And saved it!')
           // console.log(files)
