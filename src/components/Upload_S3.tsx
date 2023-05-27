@@ -5,7 +5,13 @@ import { IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
 import { Dropzone, MIME_TYPES, MS_POWERPOINT_MIME_TYPE, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from '@mantine/dropzone'
 import { useRouter } from 'next/router';
 
+
+
 import { addEdgeConfigItem, addConfigV2 } from '~/pages/api/UIUC-api/addCourseEdgeConfig';
+
+// artifical delay
+const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -258,15 +264,17 @@ const ingestFile = async (file: File | null) => {
 
 
           // UPLOAD TO S3
-          files.forEach((file) => {
+          files.forEach((file, index) => {
             void (async () => {
               await uploadToS3(file).catch((error) => {
                 console.error('Error during file upload:', error)
               })
 
-              console.log('About to call ingestFile...')
+              // console.log('About to call ingestFile...')
 
-              console.log("no await...")
+              // console.log("no await...")
+              await delay(4000);
+              console.log("Index: " + index);
 
               // Ingest into Qdrant (time consuming). No await.
               ingestFile(file).catch((error) => {
