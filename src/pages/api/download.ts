@@ -8,6 +8,8 @@ const aws_config = {
   region: 'us-east-1',
   accessKeyId: process.env.AWS_KEY,
   secretAccessKey: process.env.AWS_SECRET,
+  ContentDisposition:"inline",
+  ContentType:"application/pdf"
 }
 
 const s3Client = new S3Client({
@@ -27,6 +29,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const command = new GetObjectCommand({
       Bucket: aws_config.bucketName,
       Key: filePath,
+      ResponseContentDisposition:"inline",
+      ResponseContentType:"application/pdf"
     });
 
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
