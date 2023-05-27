@@ -126,7 +126,6 @@ const handler = async (req: Request): Promise<Response> => {
 
 
 
-
       const stream = await OpenAIStream(
         model,
         promptToSend,
