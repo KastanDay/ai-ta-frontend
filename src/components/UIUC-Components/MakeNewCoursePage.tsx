@@ -48,14 +48,12 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="rubik_puddles.className items-left justify-left; course-page-main flex min-h-screen flex-col">
+      <main className="items-left justify-left; course-page-main flex min-h-screen flex-col">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
           <Link href="/">
-            <div className={montserrat.className}>
             <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
               UIUC Course <span className="${inter.style.fontFamily} text-[hsl(280,100%,70%)]">AI</span>
             </h2>
-            </div>
           </Link>
         </div>
         <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
