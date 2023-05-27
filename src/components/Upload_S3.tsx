@@ -256,7 +256,8 @@ const ingestFile = async (file: File | null) => {
   const openRef = useRef<() => void>(null)
 
   return (
-    <div className={classes.wrapper} style={{ maxWidth: '220px' }}>
+    // 220px
+    <div className={classes.wrapper} style={{ maxWidth: '320px' }}> 
       <Dropzone
         openRef={openRef}
         loading={active}
