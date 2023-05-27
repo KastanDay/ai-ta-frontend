@@ -84,7 +84,7 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
             </Title>
             <DropzoneS3Upload course_name={course_name} />
           <Title order={4}>Stay on page until loading is complete or ingest will fail.</Title>
-          <Title order={5}>The page will auto-refresh when your AI Assistant is ready.</Title>
+          <Title order={4}>The page will auto-refresh when your AI Assistant is ready.</Title>
           </Flex>
         </div>
       </main>
