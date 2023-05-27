@@ -122,6 +122,7 @@ const ingestFile = async (file: File | null) => {
   };
 
   // Actually we CAN await here, just don't await this function.
+  console.log('right before call /ingest...')
   const response = await fetch(`/api/UIUC-api/ingest?${queryParams}`, requestObject)
 
   // check if the response was ok 
@@ -265,8 +266,10 @@ const ingestFile = async (file: File | null) => {
 
               console.log('About to call ingestFile...')
 
-              // UPLOAD TO SupaBase
-              await ingestFile(file).catch((error) => {
+              console.log("no await...")
+
+              // Ingest into Qdrant (time consuming). No await.
+              ingestFile(file).catch((error) => {
                 console.error('Error during file upload:', error)
               })
               console.log('Ingested a file.')
