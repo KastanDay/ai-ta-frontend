@@ -60,17 +60,17 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
           <h5 className="text-5xl font-extrabold tracking-tight text-white xs:text-[5rem]">
             
             <Text className={montserrat.className} variant="gradient" gradient={{ from: 'gold', to: 'white', deg: 20 }} >{course_name}</Text>
-            is available, claim this domain.
+            is available, create an AI assistant.
             
           </h5>
-          <Title order={2}></Title>
+          
           <Flex direction="column" align="center" justify="center">
             <Title style={{ color: 'White' }} order={3} p="md">
-              To create course, simply upload your course materials and on
-              will be created for you!
+              Just one step: 
+              upload your textbooks, lecture slides, video recordings and any other files.
             </Title>
             <Title style={{ color: 'White' }} order={3} variant="normal">
-              The course will be named:
+              Claim your URL:
             </Title>
             <Title
               style={{ color: 'White' }}
@@ -83,6 +83,8 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
               {course_name}
             </Title>
             <DropzoneS3Upload course_name={course_name} />
+          <Title order={4}>Stay on page until loading is complete or ingest will fail.</Title>
+          <Title order={5}>The page will auto-refresh when your AI Assistant is ready.</Title>
           </Flex>
         </div>
       </main>
