@@ -359,13 +359,8 @@ export const ChatMessage: FC<Props> = memo(
                         : ''
                     }`}
                   </MemoizedReactMarkdown>
-                  <Divider my="sm" variant="solid" />
-                  <h4 className="font-bold">Sources from the course</h4>
                   <Group variant="row" spacing="xs">
                     <BuildContextCards />
-                    {/* <script async type="application/javascript" src="https://cdn.scite.ai/badge/scite-badge-latest.min.js"></script>
-                    <div className="scite-badge" data-doi="10.1016/j.biopsych.2005.08.012" data-tally-show='true' data-show-labels='true' data-section-tally-show='false' /> */}
-
                   </Group>
                 </div>
 
