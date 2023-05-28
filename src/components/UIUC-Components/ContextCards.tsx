@@ -30,8 +30,7 @@ import { useChatContext } from "./StatefulSearchQuery";
 async function fetchPresignedUrl(filePath: string, ResponseContentType: string) {
   try {
 
-    const response = await axios.post('/api/download', { filePath });
-    // return response.data.url;
+    const response = await axios.post('/api/download', { filePath, ResponseContentType });
     return response.data.url;
   } catch (error) {
     console.error('Error fetching presigned URL:', error);
@@ -136,7 +135,7 @@ function DynamicMaterialsCard({
 
   useEffect(() => {
     fetchPresignedUrl(s3_path, "application/pdf").then((url) => {
-      setPresignedUrl(url + "&page=" + pagenumber_or_timestamp);
+      setPresignedUrl(url + "#page=" + pagenumber_or_timestamp);
     });
 
     const s3_thumbnail_path = s3_path.replace('.pdf', '-pg1-thumb.png')
