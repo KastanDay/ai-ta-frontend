@@ -10,8 +10,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }    
     
     const s3_filepath = `courses/${courseName}/${fileName}`
+
+    const local_url = 'http://127.0.0.1:8000'
     
-    const response: AxiosResponse = await axios.get(process.env.RAILWAY_URL + '/ingest', {
+    // process.env.RAILWAY_URL
+    const response: AxiosResponse = await axios.get(local_url + '/ingest', {
       params: {
         course_name: courseName,
         s3_paths: s3_filepath,

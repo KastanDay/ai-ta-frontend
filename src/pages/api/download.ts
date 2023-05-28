@@ -22,15 +22,16 @@ const s3Client = new S3Client({
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const { filePath } = req.body as {
+    const { filePath, ResponseContentType } = req.body as {
       filePath: string,
+      ResponseContentType: string,
     }
 
     const command = new GetObjectCommand({
       Bucket: aws_config.bucketName,
       Key: filePath,
       ResponseContentDisposition:"inline",
-      ResponseContentType:"application/pdf"
+      ResponseContentType: ResponseContentType
     });
 
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
