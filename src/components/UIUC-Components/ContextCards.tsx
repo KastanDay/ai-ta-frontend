@@ -27,7 +27,7 @@ import { useRouter } from 'next/router';
 import { useChatContext } from "./StatefulSearchQuery";
 
 
-async function fetchPresignedUrl(filePath: string) {
+async function fetchPresignedUrl(filePath: string, ResponseContentType: string) {
   try {
 
     const response = await axios.post('/api/download', { filePath });
@@ -132,10 +132,16 @@ function DynamicMaterialsCard({
   pagenumber_or_timestamp,
 }: getTopContextsResponse) {
   const [presignedUrl, setPresignedUrl] = useState<string | null>(null);
+  const [presignedUrlPng, setPresignedUrlPng] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPresignedUrl(s3_path).then((url) => {
+    fetchPresignedUrl(s3_path, "application/pdf").then((url) => {
       setPresignedUrl(url);
+    });
+
+    const s3_thumbnail_path = s3_path.replace('.pdf', '-pg1-thumb.png')
+    fetchPresignedUrl(s3_thumbnail_path, "application/png").then((url) => {
+      setPresignedUrlPng(url);
     });
   }, [s3_path]);
 
@@ -157,9 +163,10 @@ function DynamicMaterialsCard({
       >
         <Card.Section>
           <Image
-            src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
+            // &auto=format&fit=crop&w=720&q=80
+            src={presignedUrlPng || "https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"}
             height={'7rem'}
-            alt="Norway"
+            alt="Thumbnail image of the PDF or video"
           />
         </Card.Section>
 
