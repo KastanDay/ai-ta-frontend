@@ -18,6 +18,21 @@ import {
 } from '@tabler/icons-react'
 import { FC, memo, useContext, useEffect, useRef, useState } from 'react'
 
+// Google font usage: className={montserrat.className}
+import { Montserrat } from "next/font/google"
+// Rubik_Puddles, Audiowide, Inter,
+
+const montserrat = Montserrat({
+  weight: '600',
+  subsets: ['latin'],
+});
+
+// const rubik_puddles = Rubik_Puddles({
+//   weight: '400',
+//   subsets: ['latin'],
+// });
+
+
 import { useTranslation } from 'next-i18next'
 
 import { updateConversation } from '@/utils/app/conversation'

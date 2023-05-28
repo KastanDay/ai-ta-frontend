@@ -97,3 +97,18 @@ pre:has(div.codeblock) {
   height: 1.2em;
   background: linear-gradient(to right, rgba(255, 255, 255, 0), #0e1116 80%);
 }
+
+/* Standard list properties. Didn't work before manually adding this. */
+ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+ol {
+  list-style-type: decimal;
+  padding-left: 20px;
+}
+
+li {
+  margin-bottom: 5px;
+}
