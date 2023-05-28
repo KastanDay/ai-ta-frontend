@@ -136,7 +136,7 @@ function DynamicMaterialsCard({
 
   useEffect(() => {
     fetchPresignedUrl(s3_path, "application/pdf").then((url) => {
-      setPresignedUrl(url);
+      setPresignedUrl(url + "&page=" + pagenumber_or_timestamp);
     });
 
     const s3_thumbnail_path = s3_path.replace('.pdf', '-pg1-thumb.png')
