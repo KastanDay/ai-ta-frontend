@@ -57,7 +57,8 @@ const handler = async (req: Request): Promise<Response> => {
       // TODO -- move this semewhere else, and run it before we trim the context limit
       console.log('COURSE NAME ------------ ', course_name)
 
-      // update the last message.content with the prompt injection
+      if (course_name != 'gpt4') {
+              // update the last message.content with the prompt injection
       const original_message = messages[messages.length - 1]?.content
       const search_query = original_message || ""
 
@@ -84,6 +85,10 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("......................")
       console.log('Stuffed prompt', stuffedPrompt)
       console.log("RIGHT BEFORE OPENAI STREAM .........")
+      } else {
+        console.log("NO CONTEXT STUFFING FOR /gpt4 slug")
+      }
+
 
 
       
