@@ -253,7 +253,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           }
           homeDispatch({
             field: 'selectedConversation',
-            value: updateConversation,
+            value: updatedConversation,  // kastan fixed tiny bug here from original template code
           })
           saveConversation(updatedConversation)
           const updatedConversations: Conversation[] = conversations.map(
@@ -506,7 +506,6 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                       handleSend(
                         editedMessage,
                         selectedConversation?.messages.length - index,
-                        null,
                       )
                     }}
                   />
