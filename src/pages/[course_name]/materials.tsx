@@ -7,32 +7,32 @@ import dynamic from 'next/dynamic'
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 
 import {
-  // Textarea,
   Card,
   Image,
   Text,
   Title,
   Badge,
-  MantineProvider,
   Button,
   Group,
-  Stack,
-  createStyles,
-  FileInput,
-  rem,
 } from '@mantine/core'
-
-// import { IconUpload } from '@tabler/icons-react'
-// import { api } from '~/utils/api'
 
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 
-// trying to do supabase connection on edge function.
-// export const config = {
-//     runtime: 'experimental-edge', // this is a pre-requisite
-//   };
+
+import { kv } from '@vercel/kv';
+
+async function checkIfCourseExists( course_name: string) {
+  try {
+    const courseExists = await kv.get(course_name);
+    // console.log(courseExists);
+    return courseExists as boolean;
+  } catch (error) {
+    console.log(error)
+    return false;
+  }
+}
 
 // run on server side
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -46,29 +46,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   console.log('params ----------------------', params)
   const course_name = params['course_name']
 
-  const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET)
-  async function checkCourseExists() {
-    const { data } = await supabase
-      .from('courses')
-      .select('*')
-      .eq('name', course_name)
-      .single()
-
-    if (!data) {
-      console.log('Course not found ☹️')
-    } else {
-      console.log('Course found 😍')
-    }
-    return data
-  }
-
-  const course_data = await checkCourseExists()
-  console.log('course_data')
-  console.log(course_data)
+  const course_exists: boolean = await checkIfCourseExists(course_name as string)
   return {
     props: {
-      course_data,
       course_name,
+      course_exists
     },
   }
 }
