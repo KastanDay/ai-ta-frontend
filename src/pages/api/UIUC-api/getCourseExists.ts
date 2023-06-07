@@ -13,3 +13,4 @@ export async function checkIfCourseExists( course_name: string) {
     return false;
   }
 }
+
