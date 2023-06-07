@@ -5,18 +5,7 @@ import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import {Text } from '@mantine/core';
 
-// TODO make this a more normal API function so no duplicate in materials.tsx
-import { kv } from '@vercel/kv';
-export async function checkIfCourseExists( course_name: string) {
-  try {
-    const courseExists = await kv.get(course_name);
-    // console.log(courseExists);
-    return courseExists as boolean;
-  } catch (error) {
-    console.log(error)
-    return false;
-  }
-}
+import { checkIfCourseExists } from '~/pages/api/UIUC-api/getCourseExists';
 
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -27,15 +16,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       course_name: null,
     }
   }
-
-  async function checkExists (courseName: string): Promise<boolean> {
-    // get the param "courseName" from the request
-    console.log('IN THE CHECKCOURSEEXISTS ---- courseName', courseName)
-    const courseExists = await checkIfCourseExists(courseName)
-    console.log('RESULT -- courseExists: ', courseExists)
-    return true ? courseExists : false;
-  };
-
 
   console.log('params ----------------------', params)
   const course_name = params['course_name']
@@ -59,11 +39,6 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
   const router = useRouter();
   const course_name = props.course_name;
   const course_exists = props.course_exists;
-  if (course_exists) {
-    console.log("Course exists, redirecting to gpt4 page...............")
-  } else {
-    console.log("ELSE STATEMENT...............")
-  }
 
   useEffect(() => {
     if (course_exists) {
