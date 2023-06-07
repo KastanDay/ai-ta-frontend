@@ -1,12 +1,23 @@
 import { GetServerSidePropsContext } from 'next' // GetServerSideProps, GetServerSideProps,
-import { has } from '@vercel/edge-config';
 import { NextPage } from 'next';
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage';
-import MainChat from './gpt4';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
-import { Stack, Text } from '@mantine/core';
-// import { checkExists } from '~/pages/api/UIUC-api/checkCourseExists'
+import {Text } from '@mantine/core';
+
+// TODO make this a more normal API function so no duplicate in materials.tsx
+import { kv } from '@vercel/kv';
+export async function checkIfCourseExists( course_name: string) {
+  try {
+    const courseExists = await kv.get(course_name);
+    // console.log(courseExists);
+    return courseExists as boolean;
+  } catch (error) {
+    console.log(error)
+    return false;
+  }
+}
+
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { params } = context
@@ -20,7 +31,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   async function checkExists (courseName: string): Promise<boolean> {
     // get the param "courseName" from the request
     console.log('IN THE CHECKCOURSEEXISTS ---- courseName', courseName)
-    const courseExists = await has(courseName)
+    const courseExists = await checkIfCourseExists(courseName)
     console.log('RESULT -- courseExists: ', courseExists)
     return true ? courseExists : false;
   };
@@ -44,7 +55,7 @@ interface CourseMainProps {
 }
 
 const IfCourseExists: NextPage<CourseMainProps> = (props) => {
-  console.log('PROPS IN COURSE_MAIN', props)
+  console.log('PROPS IN COURSE_MAIN index.tsx', props)
   const router = useRouter();
   const course_name = props.course_name;
   const course_exists = props.course_exists;
