@@ -60,6 +60,7 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
   const refreshPage = () => {
     router.replace(router.asPath);
   };
+
   const NewGetCurrentPageName = () => {
     // /CS-125/materials --> CS-125
     return router.asPath.slice(1).split("/")[0]
@@ -165,9 +166,7 @@ const ingestFile = async (file: File | null) => {
 
           // Make course exist in EdgeConfig
           console.log('about to add EdgeConfig...');
-          (async () => {
-            await setCourseExists(NewGetCurrentPageName() as string)
-          })();
+          await setCourseExists(NewGetCurrentPageName() as string)
 
           
           // This did parallel uploads. 

@@ -37,6 +37,9 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
   const router = useRouter()
   // const { course_name: course_name_param } = router.query
 
+  console.log('WERE IN MAKE A NEW COURSE PAGE', course_name)
+  console.log('course_name', course_name)
+
   return (
     <>
       <Head>
