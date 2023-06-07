@@ -1,7 +1,8 @@
 import Head from 'next/head'
 import { DropzoneS3Upload } from '~/components/Upload_S3'
 
-import { Montserrat, Inter, Rubik_Puddles, Audiowide } from "next/font/google"
+// import { Montserrat, Inter, Rubik_Puddles, Audiowide } from "next/font/google"
+import { Montserrat } from "next/font/google"
 
 import {
   Card,
@@ -19,10 +20,10 @@ import {
   rem,
 } from '@mantine/core'
 
-const rubik_puddles = Rubik_Puddles({
-  weight: '400',
-  subsets: ['latin'],
-});
+// const rubik_puddles = Rubik_Puddles({
+//   weight: '400',
+//   subsets: ['latin'],
+// });
 
 const montserrat = Montserrat({
   weight: '700',
@@ -31,10 +32,10 @@ const montserrat = Montserrat({
 
 import Link from 'next/link'
 import React from 'react'
-import { useRouter } from 'next/router'
+// import { useRouter } from 'next/router'
 
 const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
-  const router = useRouter()
+  // const router = useRouter()
   // const { course_name: course_name_param } = router.query
 
   console.log('WERE IN MAKE A NEW COURSE PAGE', course_name)

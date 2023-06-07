@@ -5,6 +5,7 @@ import { IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
 import { Dropzone, MIME_TYPES, MS_POWERPOINT_MIME_TYPE, MS_WORD_MIME_TYPE, PDF_MIME_TYPE } from '@mantine/dropzone'
 import { useRouter } from 'next/router';
 
+
 const useStyles = createStyles((theme) => ({
   wrapper: {
     position: 'relative',
@@ -31,89 +32,77 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-import { setCourseExists } from '~/pages/api/UIUC-api/setCourseExists';
-import { checkIfCourseExists } from '~/pages/api/UIUC-api/getCourseExists';
-
 export function DropzoneS3Upload({ course_name }: { course_name: string }) {
-
-  // upload active
-  const [active, setActive] = useState(false);
-
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      if (e.target.files[0]) setSelectedFile(e.target.files[0])
-    }
-  }
+  // upload-in-progress spinner control
+  const [uploadInProgress, setUploadInProgress] = useState(false);
 
   const router = useRouter();
 
-  const refreshPage = () => {
-    router.replace(router.asPath);
+  const redirectToGPT4 = () => {
+    router.push(`/${course_name}/gpt4`);
   };
 
-  const NewGetCurrentPageName = () => {
+  const getCurrentPageName = () => {
     // /CS-125/materials --> CS-125
     return router.asPath.slice(1).split("/")[0]
   }
 
   const uploadToS3 = async (file: File | null) => {
-  if (!file) return
+    if (!file) return
 
-  const requestObject = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      fileName: file.name,
-      fileType: file.type,
-      courseName: course_name,
-    }),
-  }
+    const requestObject = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        fileName: file.name,
+        fileType: file.type,
+        courseName: course_name,
+      }),
+    }
 
-  try {
-    interface PresignedPostResponse {
-      post: {
+    try {
+      interface PresignedPostResponse {
+        post: {
+          url: string
+          fields: { [key: string]: string }
+        }
+      }
+
+      // Then, update the lines where you fetch the response and parse the JSON
+      const response = await fetch('/api/UIUC-api/uploadToS3', requestObject)
+      const data = (await response.json()) as PresignedPostResponse
+
+      const { url, fields } = data.post as {
         url: string
         fields: { [key: string]: string }
       }
+      const formData = new FormData()
+
+      Object.entries(fields).forEach(([key, value]) => {
+        formData.append(key, value)
+      })
+
+      formData.append('file', file)
+
+      await fetch(url, {
+        method: 'POST',
+        body: formData,
+      })
+
+      console.log(file.name as string + 'uploaded to S3 successfully!!')
+    } catch (error) {
+      console.error('Error uploading file:', error)
     }
-
-    // Then, update the lines where you fetch the response and parse the JSON
-    const response = await fetch('/api/UIUC-api/uploadToS3', requestObject)
-    const data = (await response.json()) as PresignedPostResponse
-
-    const { url, fields } = data.post as {
-      url: string
-      fields: { [key: string]: string }
-    }
-    const formData = new FormData()
-
-    Object.entries(fields).forEach(([key, value]) => {
-      formData.append(key, value)
-    })
-
-    formData.append('file', file)
-
-    await fetch(url, {
-      method: 'POST',
-      body: formData,
-    })
-
-    console.log(file.name as string + 'uploaded to S3 successfully!!')
-  } catch (error) {
-    console.error('Error uploading file:', error)
   }
-}
 
-const ingestFile = async (file: File | null) => {
-  if (!file) return
-  const queryParams = new URLSearchParams({
-    courseName: course_name,
-    fileName: file.name,
-  }).toString();
+  const ingestFile = async (file: File | null) => {
+    if (!file) return
+    const queryParams = new URLSearchParams({
+      courseName: course_name,
+      fileName: file.name,
+    }).toString();
 
   const requestObject = {
     method: 'GET',
@@ -146,76 +135,105 @@ const ingestFile = async (file: File | null) => {
   const { classes, theme } = useStyles()
   const openRef = useRef<() => void>(null)
 
+  // Get and Set course exist in KV store
+  const setCourseExistsAPI = async (courseName  : string) => {
+    try {
+      console.log("inside setCourseExistsAPI()...")
+      const response = await fetch(`/api/UIUC-api/setCourseExists`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ course_name: courseName }),
+      });
+      const data = await response.json();
+      return data.success;
+    } catch (error) {
+      console.error('Error setting course data:', error);
+      return false;
+    }
+  };
+
+  const getCourseExistsAPI = async (courseName  : string) => {
+    try {
+      // const response = await fetch(`/api/UIUC-api/getCourseExists?course_name=${courseName}`);
+      const response = await fetch(`/api/UIUC-api/getCourseExists?course_name=${courseName}`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching course data:', error);
+      return false;
+    }
+  };
+
   return (
-    // 220px
-    <div className={classes.wrapper} style={{ maxWidth: '320px' }}> 
+    <div className={classes.wrapper} style={{ maxWidth: '320px' }}>
       <Dropzone
         openRef={openRef}
-        loading={active}
+        loading={uploadInProgress}
         onDrop={async (files) => {
           // set loading property 
-          setActive(true)
-
-          // Make course exist in EdgeConfig
-          console.log('about to setCourseExists in kv store...');
-          await setCourseExists(NewGetCurrentPageName() as string)
-          console.log('Right after setCourseExists in kv store...');
-          const ifexists = await checkIfCourseExists(NewGetCurrentPageName() as string)
-          console.log('does it exist now? ', ifexists);
-
+          setUploadInProgress(true)
+          
+          // Make course exist in kv store
+          console.log('about to setCourseExists in kv store...', getCurrentPageName() as string);
+          await setCourseExistsAPI(getCurrentPageName() as string);
+          // console.log('Right after setCourseExists in kv store...');
+          // const ifexists = await getCourseExistsAPI(getCurrentPageName() as string);
+          // console.log('does course exist now? ', ifexists);
+          
           
           // This did parallel uploads. 
           // files.forEach((file, index) => {
           //   // This async () => {} is a self-executing function. Makes things run in parallel. 
           //   void (async () => {
-          //     console.log("Index: " + index);
+            //     console.log("Index: " + index);
               
-          //     // UPLOAD TO S3
-          //     await uploadToS3(file).catch((error) => {
-          //       console.error('Error during file upload:', error)
-          //     })
-          //     // Ingest into Qdrant (time consuming). No await.
-          //     await ingestFile(file).catch((error) => {
-          //       console.error('Error during file upload:', error)
-          //     })
-          //     console.log('Ingested a file.')
-          //   }
-          //   )()
-          // })
-
-            // this does sequential uploads.
-            for (const [index, file] of files.entries()) {
-              console.log("Index: " + index);
-
-              try {
-                // UPLOAD TO S3
-                await uploadToS3(file).catch((error) => {
-                  console.error('Error during file upload:', error)
-                });
-
-                // Ingest into Qdrant (time consuming).
-                await ingestFile(file).catch((error) => {
-                  console.error('Error during file upload:', error)
-                });
-
-                console.log('Ingested a file.');
-              } catch (error) {
-                console.error('Error during file processing:', error);
-              }
-            }
-
-          
-          console.log('Done ingesting everything! Now refreshing the page...')
-          setActive(false)
-          refreshPage();
-          // console.log('Got your upload! And saved it!')
-          // console.log(files)
-        }}
-        className={classes.dropzone}
-        radius="md"
-        bg="#0E1116"
-        // maxSize={30 * 1024 ** 2} max file size
-      >
+            //     // UPLOAD TO S3
+            //     await uploadToS3(file).catch((error) => {
+              //       console.error('Error during file upload:', error)
+              //     })
+              //     // Ingest into Qdrant (time consuming). No await.
+              //     await ingestFile(file).catch((error) => {
+                //       console.error('Error during file upload:', error)
+                //     })
+                //     console.log('Ingested a file.')
+                //   }
+                //   )()
+                // })
+                
+                // this does sequential uploads.
+                for (const [index, file] of files.entries()) {
+                  console.log("Index: " + index);
+                  
+                  try {
+                    // UPLOAD TO S3
+                    await uploadToS3(file).catch((error) => {
+                      console.error('Error during file upload:', error)
+                    });
+                    
+                    // Ingest into Qdrant (time consuming).
+                    await ingestFile(file).catch((error) => {
+                      console.error('Error during file upload:', error)
+                    });
+                    
+                    console.log('Ingested a file.');
+                  } catch (error) {
+                    console.error('Error during file processing:', error);
+                  }
+                }
+                
+                console.log('Done ingesting everything! Now refreshing the page...')
+                setUploadInProgress(false)
+                redirectToGPT4();
+                // console.log('Got your upload! And saved it!')
+                // console.log(files)
+              }}
+              className={classes.dropzone}
+              radius="md"
+              bg="#0E1116"
+              // maxSize={30 * 1024 ** 2} max file size
+              >
         <div style={{ pointerEvents: 'none' }}>
           <Group position="center">
             <Dropzone.Accept>
@@ -233,11 +251,11 @@ const ingestFile = async (file: File | null) => {
                 size={rem(50)}
                 color={
                   theme.colorScheme === 'dark'
-                    ? theme.colors.dark[0]
-                    : theme.black
+                  ? theme.colors.dark[0]
+                  : theme.black
                 }
                 stroke={1.5}
-              />
+                />
             </Dropzone.Idle>
           </Group>
 
