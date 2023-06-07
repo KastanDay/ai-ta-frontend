@@ -1,12 +1,12 @@
 import { GetServerSidePropsContext } from 'next' // GetServerSideProps, GetServerSideProps,
-import { has } from '@vercel/edge-config';
 import { NextPage } from 'next';
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage';
-import MainChat from './gpt4';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
-import { Stack, Text } from '@mantine/core';
-// import { checkExists } from '~/pages/api/UIUC-api/checkCourseExists'
+import {Text } from '@mantine/core';
+
+import { checkIfCourseExists } from '~/pages/api/UIUC-api/getCourseExists';
+
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { params } = context
@@ -17,18 +17,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  async function checkExists (courseName: string): Promise<boolean> {
-    // get the param "courseName" from the request
-    console.log('IN THE CHECKCOURSEEXISTS ---- courseName', courseName)
-    const courseExists = await has(courseName)
-    console.log('RESULT -- courseExists: ', courseExists)
-    return true ? courseExists : false;
-  };
-
-
   console.log('params ----------------------', params)
   const course_name = params['course_name']
-  const course_exists = await checkExists(course_name as string)
+  const course_exists = await checkIfCourseExists(course_name as string)
 
   return {
     props: {
@@ -44,14 +35,19 @@ interface CourseMainProps {
 }
 
 const IfCourseExists: NextPage<CourseMainProps> = (props) => {
-  console.log('PROPS IN COURSE_MAIN', props)
+  console.log('PROPS IN COURSE_MAIN index.tsx', props)
   const router = useRouter();
   const course_name = props.course_name;
   const course_exists = props.course_exists;
 
   useEffect(() => {
     if (course_exists) {
+      console.log("Course exists, redirecting to gpt4 page")
       router.push(`/${course_name}/gpt4`);
+    }
+    else {
+      console.log("Course does not exist, redirecting to materials page")
+      router.push(`/${course_name}/materials`);
     }
   }, [course_exists, course_name, router]);
 

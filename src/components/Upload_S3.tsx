@@ -31,16 +31,8 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-import { kv } from '@vercel/kv';
-
-async function setCourseExists(course_name: string ) {
-  // View storage: https://vercel.com/uiuc-chatbot-team/uiuc-chat/stores/kv/store_VAj1mEGlDPewhKM1/cli
-  try {
-    await kv.set(course_name, true);
-  } catch (error) {
-    console.error(error);
-  }
-}
+import { setCourseExists } from '~/pages/api/UIUC-api/setCourseExists';
+import { checkIfCourseExists } from '~/pages/api/UIUC-api/getCourseExists';
 
 export function DropzoneS3Upload({ course_name }: { course_name: string }) {
 
@@ -60,6 +52,7 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
   const refreshPage = () => {
     router.replace(router.asPath);
   };
+
   const NewGetCurrentPageName = () => {
     // /CS-125/materials --> CS-125
     return router.asPath.slice(1).split("/")[0]
@@ -164,10 +157,11 @@ const ingestFile = async (file: File | null) => {
           setActive(true)
 
           // Make course exist in EdgeConfig
-          console.log('about to add EdgeConfig...');
-          (async () => {
-            await setCourseExists(NewGetCurrentPageName() as string)
-          })();
+          console.log('about to setCourseExists in kv store...');
+          await setCourseExists(NewGetCurrentPageName() as string)
+          console.log('Right after setCourseExists in kv store...');
+          const ifexists = await checkIfCourseExists(NewGetCurrentPageName() as string)
+          console.log('does it exist now? ', ifexists);
 
           
           // This did parallel uploads. 
