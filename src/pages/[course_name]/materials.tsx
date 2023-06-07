@@ -23,7 +23,7 @@ import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 
 import { kv } from '@vercel/kv';
 
-async function checkIfCourseExists( course_name: string) {
+export async function checkIfCourseExists( course_name: string) {
   try {
     const courseExists = await kv.get(course_name);
     // console.log(courseExists);
@@ -62,7 +62,7 @@ interface CourseMainProps {
 
 // run on client side
 const CourseMain: NextPage<CourseMainProps> = (props) => {
-  console.log('PROPS IN COURSE_MAIN', props)
+  console.log('PROPS IN materials.tsx', props)
   const course_name = props.course_name
   const currentPageName = GetCurrentPageName()
 
