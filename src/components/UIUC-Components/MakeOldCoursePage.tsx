@@ -6,13 +6,8 @@ const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'], });
 const montserrat = Montserrat({ weight: '700', subsets: ['latin'], });
 import Link from 'next/link'
 import React from 'react'
-import { useRouter } from 'next/router'
 import axios from 'axios';
 const MakeOldCoursePage = ({ course_name, course_data }: { course_name: string, course_data: any }) => {
-    const router = useRouter()
-    // const { course_name: course_name_param } = router.query
-
-    const courseFiles = course_data
 
     return (
         <>
@@ -21,18 +16,18 @@ const MakeOldCoursePage = ({ course_name, course_data }: { course_name: string, 
                 <meta name="description" content="The AI teaching assistant built for students at UIUC." />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-            <main className="items-left justify-left; course-page-main flex min-h-screen flex-col">
+            <main className="items-center justify-left; course-page-main flex min-h-screen flex-col">
                 <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
                     <Link href="/">
                         <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]"> UIUC Course <span className="${inter.style.fontFamily} text-[hsl(280,100%,70%)]">AI</span> </h2>
                     </Link>
                 </div>
-                <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
-                    {/*<h5 className="text-5xl font-extrabold tracking-tight text-white xs:text-[5rem]"> <Text className={montserrat.className} variant="gradient" gradient={{ from: 'gold', to: 'white', deg: 20 }} >{course_name}</Text></h5>*/}
+                <div className="items-center container flex flex-col justify-center gap-12 py-2 ">
                     <Flex direction="column" align="center" justify="center">
-
+                        <Title className={montserrat.className} variant="gradient" gradient={{ from: 'gold', to: 'white', deg: 50 }} order={2} p="xl"> Want to upload more materials? </Title>
+                        <DropzoneS3Upload course_name={course_name} />
                         <Title className={montserrat.className} variant="gradient" gradient={{ from: 'gold', to: 'white', deg: 50 }} order={2} p="xl"> {course_name} Course Files  </Title>
-                        <CourseFilesList files={courseFiles} />
+                        <CourseFilesList files={course_data} />
                     </Flex>
                 </div>
             </main>
