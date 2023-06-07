@@ -39,7 +39,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   console.log('params ----------------------', params)
   const course_name = params['course_name']
-  const course_exists = await checkExists(course_name as string)
+  const course_exists = await checkIfCourseExists(course_name as string)
 
   return {
     props: {
@@ -59,10 +59,20 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
   const router = useRouter();
   const course_name = props.course_name;
   const course_exists = props.course_exists;
+  if (course_exists) {
+    console.log("Course exists, redirecting to gpt4 page...............")
+  } else {
+    console.log("ELSE STATEMENT...............")
+  }
 
   useEffect(() => {
     if (course_exists) {
+      console.log("Course exists, redirecting to gpt4 page")
       router.push(`/${course_name}/gpt4`);
+    }
+    else {
+      console.log("Course does not exist, redirecting to materials page")
+      router.push(`/${course_name}/materials`);
     }
   }, [course_exists, course_name, router]);
 
