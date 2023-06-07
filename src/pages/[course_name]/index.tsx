@@ -4,9 +4,7 @@ import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import {Text } from '@mantine/core';
-
-import { checkIfCourseExists } from '~/pages/api/UIUC-api/getCourseExists';
-
+import { kv } from '@vercel/kv';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { params } = context
@@ -18,8 +16,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   console.log('params ----------------------', params)
-  const course_name = params['course_name']
-  const course_exists = await checkIfCourseExists(course_name as string)
+  const course_name = params['course_name'] as string
+  const course_exists = await kv.get(course_name); // only works server-side. Otherwise use fetch, as in Upload_S3.tsx
 
   return {
     props: {

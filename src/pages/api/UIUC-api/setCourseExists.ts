@@ -1,12 +1,20 @@
 import { kv } from '@vercel/kv';
 
-export const runtime = "edge";
+// export const runtime = "edge";
+// doesn't seem to work...
 
-export async function setCourseExists(course_name: string ) {
-  // View storage: https://vercel.com/uiuc-chatbot-team/uiuc-chat/stores/kv/store_VAj1mEGlDPewhKM1/cli
+const setCourseExists = async (req : any, res : any) => {
+  console.log("the req body:")
+  console.log(req.body)
+  const { course_name } = req.body;
+
   try {
     await kv.set(course_name, true);
+    res.status(200).json({ success: true });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ success: false });
   }
-}
+};
+
+export default setCourseExists;
