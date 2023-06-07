@@ -3,8 +3,10 @@ import Head from 'next/head'
 import { env } from '~/env.mjs'
 import { DropzoneS3Upload } from '~/components/Upload_S3'
 import dynamic from 'next/dynamic'
+import axios from 'axios';
 
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
+import MakeOldCoursePage from '~/components/UIUC-Components/MakeOldCoursePage'
 
 import {
   Card,
@@ -34,6 +36,22 @@ async function checkIfCourseExists( course_name: string) {
   }
 }
 
+// method to call flask backend api to get course data
+async function getCourseData(course_name: string) {
+  const API_URL = 'https://flask-production-751b.up.railway.app';
+
+  try {
+    const response = await axios.get(`${API_URL}/getAll`, { params: { course_name } });
+
+    // return response.data.url;
+    console.log('response.data', response.data)
+    return response.data.all_s3_paths;
+  } catch (error) {
+    console.error('Error fetching course files:', error);
+    return null;
+  }
+}
+
 // run on server side
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { params } = context
@@ -47,6 +65,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const course_name = params['course_name']
 
   const course_exists: boolean = await checkIfCourseExists(course_name as string)
+  if (course_exists != null) {
+    // call flask backend to get course data
+    const course_data = await getCourseData(course_name as string)
+    if (course_data != null) {
+      console.log('course_data', course_data)
+      return {
+        props: {
+          course_name,
+          course_data,
+        },
+      }
+    }
+  }
   return {
     props: {
       course_name,
@@ -56,14 +87,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface CourseMainProps {
-  course_data: any
   course_name: string
+  course_data: any
 }
 
 // run on client side
 const CourseMain: NextPage<CourseMainProps> = (props) => {
   console.log('PROPS IN COURSE_MAIN', props)
   const course_name = props.course_name
+  const course_data = props.course_data
   const currentPageName = GetCurrentPageName()
 
   // MAKE A NEW COURSE PAGE
@@ -75,103 +107,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
 
   // COURSE PAGE
   return (
-    <>
-      <Head>
-        <title>{currentPageName}</title>
-        <meta
-          name="description"
-          content="The AI teaching assistant built for students at UIUC."
-        />
-        <link rel="icon" href="/favicon.ico" />
-        {/* <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora"/>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat"/>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide"/> */}
-      </Head>
-
-      <main className="items-left justify-left; course-page-main flex min-h-screen flex-col">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-          <Link href="/">
-            <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-              UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
-            </h1>
-          </Link>
-        </div>
-        <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
-          <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            UIUC{' '}
-            <span className="text-[hsl(280,100%,70%)]">{currentPageName}</span>
-          </h2>
-          <Text style={{ fontFamily: 'Montserrat' }} size="md" color="white">
-            Taught by{' '}
-            <Text style={{ display: 'inline' }} color="skyblue">
-              Prof. Volodymyr (Vlad) Kindratenko
-            </Text>
-            , Director of the Center for Artificial Intelligence Innovation at
-            NCSA, in{' '}
-            <Text style={{ display: 'inline' }} color="skyblue">
-              Spring 2022
-            </Text>
-            .
-          </Text>
-        </div>
-
-        {/* CHATBOT CONTAINER */}
-        {/* style={{border: '1px solid white', borderRadius: '10px'}} */}
-        <Container size="xl" px="md" py="md">
-          <AShortChat />
-          <InputWithButton pb="md" />
-          <ChatSettings />
-        </Container>
-
-        {/* MAIN WEEKLY CONTENT */}
-        <Container size="xl" px="md" py="md">
-          <Title order={2}>Course Overview</Title>
-          <Flex
-            mih={50}
-            // bg="rgba(0, 0, 0, .3)"
-            justify="flex-start"
-            align="flex-start"
-            direction="row"
-            wrap="wrap"
-          >
-            <div className="item">
-              <MaterialsCard />
-            </div>
-            <div className="item">
-              <MaterialsCard />
-            </div>
-            <div className="item">
-              <MaterialsCard />
-            </div>
-            <div className="item-wide">
-              <DropzoneS3Upload course_name={course_name} />
-            </div>
-          </Flex>
-
-          <Title order={2}>Week 1: Finite State Machines</Title>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <DropzoneS3Upload course_name={course_name} />
-          </div>
-          <Title order={2}>Week 2: Circuit Diagrams</Title>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <DropzoneS3Upload course_name={course_name} />
-          </div>
-          <Title order={2}>Week 3: LC-3 ISA</Title>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <DropzoneS3Upload course_name={course_name} />
-          </div>
-
-          <TextInput
-            placeholder="Add another content section here! (testing different ways of making the titles editable by the professors)"
-            variant="unstyled"
-            size="xl"
-            withAsterisk
-          />
-        </Container>
-
-        {/* <BuildContextCards /> */}
-      </main>
-    </>
+      <MakeOldCoursePage course_name={currentPageName || ""} course_data={course_data}/>
   )
 }
 export default CourseMain
