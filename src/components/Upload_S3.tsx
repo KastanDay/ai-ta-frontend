@@ -32,14 +32,18 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-export function DropzoneS3Upload({ course_name }: { course_name: string }) {
+export function DropzoneS3Upload({ course_name, redirect_to_gpt_4 = true}: { course_name: string, redirect_to_gpt_4?: boolean }) {
   // upload-in-progress spinner control
   const [uploadInProgress, setUploadInProgress] = useState(false);
 
   const router = useRouter();
 
-  const redirectToGPT4 = () => {
-    router.push(`/${course_name}/gpt4`);
+  const refreshOrRedirect = (redirect_to_gpt_4: boolean) => {
+    if (redirect_to_gpt_4) {
+      router.push(`/${course_name}/gpt4`);
+    }
+    //   refresh current page
+    router.push(router.asPath);
   };
 
   const getCurrentPageName = () => {
@@ -225,7 +229,7 @@ export function DropzoneS3Upload({ course_name }: { course_name: string }) {
                 
                 console.log('Done ingesting everything! Now refreshing the page...')
                 setUploadInProgress(false)
-                redirectToGPT4();
+                refreshOrRedirect(redirect_to_gpt_4);
                 // console.log('Got your upload! And saved it!')
                 // console.log(files)
               }}
