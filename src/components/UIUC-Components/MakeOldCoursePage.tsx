@@ -25,8 +25,10 @@ const MakeOldCoursePage = ({ course_name, course_data }: { course_name: string, 
                 <div className="items-left container flex flex-col justify-center gap-12 py-2">
                     <Flex direction="column" align="center" justify="center">
                         <Title className={montserrat.className} variant="gradient" gradient={{ from: 'gold', to: 'white', deg: 50 }} order={2} p="xl"> Want to upload more materials? </Title>
-                        <DropzoneS3Upload course_name={course_name} />
-                        <Title className={montserrat.className} variant="gradient" gradient={{ from: 'gold', to: 'white', deg: 50 }} order={2} p="xl"> {course_name} Course Files  </Title>
+                        <DropzoneS3Upload course_name={course_name} redirect_to_gpt_4={false} />
+                        <Title order={4}>Stay on page until loading is complete or ingest will fail.</Title>
+                        <Title order={4}>The page will auto-refresh when your AI Assistant is ready.</Title>
+                        <Title className={montserrat.className} variant="gradient" gradient={{ from: 'gold', to: 'white', deg: 50 }} order={2} p="xl" style={{ marginTop: '4rem' }}> {course_name} Course Files  </Title>
                         <CourseFilesList files={course_data} />
                     </Flex>
                 </div>
@@ -63,14 +65,14 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
     };
 
     return (
-        <div className="w-full mx-auto justify-center bg-violet-200 border border-violet-950 shadow-md shadow-amber-100 rounded-xl p-5">
+        <div className="w-full mx-auto justify-center bg-violet-200 border border-violet-950 shadow-md shadow-amber-100 rounded-3xl p-5">
             <ul role="list" className="divide-y divide-gray-100">
                 {files.map((file) => (
-                    <li key={file.s3_path} className={`flex justify-between items-center gap-x-6 py-5 bg-violet-950 bg border border-violet-700 shadow-md shadow-amber-100 rounded-2xl`}>
+                    <li key={file.s3_path} className={`flex justify-between items-center gap-x-6 py-5 bg-violet-950 bg border border-violet-700 shadow-md shadow-amber-100 rounded-3xl`}>
                         <div className="flex gap-x-4">
                             <div className="min-w-0 flex-auto">
-                                <p className="px-4 text-xl font-semibold leading-6 text-white">{file.readable_filename}</p>
-                                <p className="px-4 mt-1 truncate text-xs leading-5 text-white">{file.course_name}</p>
+                                <p className="px-6 text-xl font-semibold leading-6 text-white">{file.readable_filename}</p>
+                                <p className="px-6 mt-1 truncate text-xs leading-5 text-white">{file.course_name}</p>
                             </div>
                         </div>
                         <button onClick={() => handleDelete(file.s3_path as string)} className="bg-red-600 hover:bg-red-800 cursor-pointer text-white w-6 h-6 flex items-center justify-center rounded-full mr-4">
