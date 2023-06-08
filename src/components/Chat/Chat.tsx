@@ -16,7 +16,7 @@ import {
   useState,
 } from 'react'
 import toast from 'react-hot-toast'
-
+import { Text } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -479,9 +479,12 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               ) : (
                 <>
                   <div className="sticky top-0 z-10 flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                    {t('Model')}: {selectedConversation?.model.name} |{' '}
-                    {t('Temp')}: {selectedConversation?.temperature} |
-                    <button
+                    {t('Model')}: {selectedConversation?.model.name}
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    {t('Temp')}: {selectedConversation?.temperature}
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    {/* BUTTONS for (1) Chaning Models, and (2) clearing current conversation. */}
+                    {/* <button
                       className="ml-2 cursor-pointer hover:opacity-50"
                       onClick={handleSettings}
                     >
@@ -493,14 +496,23 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                     >
                       <IconClearAll size={18} />
                     </button>
-                    {/* Span of 2 rem width for spacing */}
-                    <span className="w-8" />
+                    &nbsp;&nbsp;&nbsp;| */}
+                    {/* <span className="w-3" /> */}
                     <button
                       className="ml-2 cursor-pointer hover:opacity-50"
                       onClick={redirectToMaterialsPage}
                     >
                       <div className="flex items-center">
-                        <span>Upload materials&nbsp;&nbsp;</span>
+                        <span>
+                          <Text
+                            variant="gradient"
+                            weight={600}
+                            gradient={{ from: 'gold', to: 'white', deg: 50 }}
+                          >
+                            Upload materials
+                          </Text>
+                        </span>
+                        &nbsp;&nbsp;
                         <IconCloudUpload size={18} />
                       </div>
                     </button>
