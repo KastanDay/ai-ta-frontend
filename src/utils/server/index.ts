@@ -1,8 +1,6 @@
 import { Message } from '@/types/chat'
 import { OpenAIModel } from '@/types/openai'
 
-
-
 import {
   AZURE_DEPLOYMENT_ID,
   OPENAI_API_HOST,
@@ -21,7 +19,7 @@ export class OpenAIError extends Error {
   type: string
   param: string
   code: string
-  
+
   constructor(message: string, type: string, param: string, code: string) {
     super(message)
     this.name = 'OpenAIError'
@@ -31,11 +29,10 @@ export class OpenAIError extends Error {
   }
 }
 
-
-// get contexts from message 
+// get contexts from message
 import { fetchContexts, getTopContextsResponse } from '~/pages/api/getContexts'
 
-// missing course_name... 
+// missing course_name...
 // got search_query... from messages
 
 export const OpenAIStream = async (
@@ -45,7 +42,6 @@ export const OpenAIStream = async (
   key: string,
   messages: Message[],
 ) => {
-
   // get contexts from message
   // const contexts = messages.map((message) => {}
 

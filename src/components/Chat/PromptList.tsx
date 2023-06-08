@@ -10,8 +10,6 @@ interface Props {
   promptListRef: MutableRefObject<HTMLUListElement | null>
 }
 
-
-
 export const PromptList: FC<Props> = ({
   prompts,
   activePromptIndex,

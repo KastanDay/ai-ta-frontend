@@ -19,19 +19,18 @@ import {
 import { FC, memo, useContext, useEffect, useRef, useState } from 'react'
 
 // Google font usage: className={montserrat.className}
-import { Montserrat } from "next/font/google"
+import { Montserrat } from 'next/font/google'
 // Rubik_Puddles, Audiowide, Inter,
 
 const montserrat = Montserrat({
   weight: '600',
   subsets: ['latin'],
-});
+})
 
 // const rubik_puddles = Rubik_Puddles({
 //   weight: '400',
 //   subsets: ['latin'],
 // });
-
 
 import { useTranslation } from 'next-i18next'
 
@@ -58,7 +57,7 @@ const Timer: React.FC<{ timerVisible: boolean }> = ({ timerVisible }) => {
   const [timer, setTimer] = useState(0)
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: NodeJS.Timeout
     if (timerVisible) {
       interval = setInterval(() => {
         setTimer((prevTimer) => prevTimer + 1)
@@ -72,7 +71,11 @@ const Timer: React.FC<{ timerVisible: boolean }> = ({ timerVisible }) => {
     }
   }, [timerVisible])
 
-  return <Text fz="sm" c="dimmed" mt="sm">{timer} s.</Text>
+  return (
+    <Text fz="sm" c="dimmed" mt="sm">
+      {timer} s.
+    </Text>
+  )
 }
 
 export interface Props {
@@ -82,7 +85,6 @@ export interface Props {
   sources?: string[] // Add this line
 }
 
-
 // export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) => {
 export const ChatMessage: FC<Props> = memo(
   ({ message, messageIndex, onEdit, sources }) => {
@@ -90,7 +92,7 @@ export const ChatMessage: FC<Props> = memo(
 
     const GetCurrentPageName = () => {
       // /CS-125/materials --> CS-125
-      return useRouter().asPath.slice(1).split("/")[0]
+      return useRouter().asPath.slice(1).split('/')[0]
     }
 
     const {
@@ -114,7 +116,10 @@ export const ChatMessage: FC<Props> = memo(
     const [timerVisible, setTimerVisible] = useState(false)
     useEffect(() => {
       if (message.role === 'assistant') {
-        if (messageIsStreaming && messageIndex == (selectedConversation?.messages.length ?? 0) - 1) {
+        if (
+          messageIsStreaming &&
+          messageIndex == (selectedConversation?.messages.length ?? 0) - 1
+        ) {
           setTimerVisible(true)
         } else {
           setTimerVisible(false)
@@ -216,9 +221,9 @@ export const ChatMessage: FC<Props> = memo(
           <div className="min-w-[40px] text-left">
             {message.role === 'assistant' ? (
               <>
-              <IconRobot size={30} />
-              <Timer timerVisible={timerVisible} />
-            </>
+                <IconRobot size={30} />
+                <Timer timerVisible={timerVisible} />
+              </>
             ) : (
               <IconUser size={30} />
             )}
@@ -381,7 +386,7 @@ export const ChatMessage: FC<Props> = memo(
                 </div>
               </div>
             )}
-          {/* {message.role === 'assistant' && <Timer timerVisible={timerVisible} />} */}
+            {/* {message.role === 'assistant' && <Timer timerVisible={timerVisible} />} */}
           </div>
         </div>
       </div>

@@ -3,52 +3,45 @@ import Head from 'next/head'
 import { env } from '~/env.mjs'
 import { DropzoneS3Upload } from '~/components/Upload_S3'
 import dynamic from 'next/dynamic'
-import axios from 'axios';
+import axios from 'axios'
 
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import MakeOldCoursePage from '~/components/UIUC-Components/MakeOldCoursePage'
 
-import {
-  Card,
-  Image,
-  Text,
-  Title,
-  Badge,
-  Button,
-  Group,
-} from '@mantine/core'
+import { Card, Image, Text, Title, Badge, Button, Group } from '@mantine/core'
 
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 
+import { kv } from '@vercel/kv'
 
-import { kv } from '@vercel/kv';
-
-export async function checkIfCourseExists( course_name: string) {
+export async function checkIfCourseExists(course_name: string) {
   try {
-    const courseExists = await kv.get(course_name);
+    const courseExists = await kv.get(course_name)
     // console.log(courseExists);
-    return courseExists as boolean;
+    return courseExists as boolean
   } catch (error) {
     console.log(error)
-    return false;
+    return false
   }
 }
 
 // method to call flask backend api to get course data
 async function getCourseData(course_name: string) {
-  const API_URL = 'https://flask-production-751b.up.railway.app';
+  const API_URL = 'https://flask-production-751b.up.railway.app'
 
   try {
-    const response = await axios.get(`${API_URL}/getAll`, { params: { course_name } });
+    const response = await axios.get(`${API_URL}/getAll`, {
+      params: { course_name },
+    })
 
     // return response.data.url;
     console.log('response.data', response.data)
-    return response.data.all_s3_paths;
+    return response.data.all_s3_paths
   } catch (error) {
-    console.error('Error fetching course files:', error);
-    return null;
+    console.error('Error fetching course files:', error)
+    return null
   }
 }
 
@@ -64,7 +57,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   console.log('params ----------------------', params)
   const course_name = params['course_name']
 
-  const course_exists: boolean = await checkIfCourseExists(course_name as string)
+  const course_exists: boolean = await checkIfCourseExists(
+    course_name as string,
+  )
   if (course_exists != null) {
     // call flask backend to get course data
     const course_data = await getCourseData(course_name as string)
@@ -81,7 +76,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       course_name,
-      course_exists
+      course_exists,
     },
   }
 }
@@ -100,14 +95,15 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
 
   // MAKE A NEW COURSE PAGE
   if (props.course_data == null) {
-    return (
-      <MakeNewCoursePage course_name={currentPageName || ""} />
-    )
+    return <MakeNewCoursePage course_name={currentPageName || ''} />
   }
 
   // COURSE PAGE
   return (
-      <MakeOldCoursePage course_name={currentPageName || ""} course_data={course_data}/>
+    <MakeOldCoursePage
+      course_name={currentPageName || ''}
+      course_data={course_data}
+    />
   )
 }
 export default CourseMain
@@ -144,7 +140,7 @@ import { useRouter } from 'next/router'
 import SciteBadge from '~/components/UIUC-Components/SciteBadge'
 export const GetCurrentPageName = () => {
   // /CS-125/materials --> CS-125
-  return useRouter().asPath.slice(1).split("/")[0]
+  return useRouter().asPath.slice(1).split('/')[0]
 }
 
 const initialValues = [
