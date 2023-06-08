@@ -1,7 +1,7 @@
 import { type NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
-import { Montserrat, Lora, Audiowide  } from 'next/font/google'
+import { Montserrat, Lora, Audiowide } from 'next/font/google'
 // import { signIn, signOut, useSession } from "next-auth/react";
 
 import {
@@ -52,10 +52,65 @@ const Home: NextPage = () => {
             </Link>
           </h1>
 
-          <FeaturesCards />
+          <Container
+            size="lg"
+            py="xl"
+            style={{ position: 'relative', minHeight: '100%' }}
+          >
+            <Title
+              color="#57534e"
+              order={2}
+              variant="gradient"
+              weight={800}
+              // gradient={{ from: 'indigo', to: 'cyan', deg: 45 }}
+              gradient={{ from: 'pink', to: 'blue', deg: 45 }}
+              ta="center"
+              mt="md"
+            >
+              Upload anything. Search everything. 
+              <br></br>
+              Discover more.
+            </Title>
 
-          <Title color="white" order={1}>
-            Check out the Courses{' '}
+            <br></br>
+            <Title
+              color="white"
+              order={4}
+              ta="center"
+              mt="sm"
+            >
+              AI Teaching Assistant crafted for UIUC students,
+              <br></br>
+              by UIUC students.
+            </Title>
+
+            <Text
+              color="#57534e"
+              c="dimmed"
+              ta="center"
+              mt="md"
+            >
+              *Factuality not guaranteed.
+              <br></br>
+              Test it in your area of expertise to best assess its capabilities.
+            </Text>
+
+            <Text
+              color="white"
+              ta="center"
+              mt="md"
+              weight={500}
+              size="lg"
+            >
+              {/* Add bold span */}
+              <span className="font-bold">Upload</span> your videos, any number of PDFs, PowerPoint, Word, Excel and almost anything other document to chat with your knowledge base.
+              <br></br>
+              Coming soon: Students can contribute content to enhance the AI's knowledge.
+            </Text>
+          </Container>
+
+          <Title color="white" order={3}>
+            Explore the Courses
           </Title>
 
           {/* Main courses */}
@@ -208,42 +263,15 @@ export function FeaturesCards() {
 
   return (
     // <Container size="lg" py="xl" style={{ position: 'relative' }}>
-    <Container size="lg" py="xl" style={{ position: 'relative', minHeight: '100%' }}>
-      {/* <Group position="center">
-        <Badge variant="filled" size="lg">
-          Features
-        </Badge>
-      </Group> */}
 
-      <Title
-        color="white"
-        order={2}
-        className={classes.title}
-        ta="center"
-        mt="sm"
-      >
-        AI Teaching Assistant built for UIUC students,<br></br>by UIUC students.
-      </Title>
-
-      <Text
-        color="#57534e"
-        c="dimmed"
-        className={classes.description}
-        ta="center"
-        mt="md"
-      >
-        Upload anything, search everything. Get factual answers.
-      </Text>
-
-      <SimpleGrid
-        cols={3}
-        spacing="xl"
-        mt={50}
-        breakpoints={[{ maxWidth: 'md', cols: 1 }]}
-      >
-        {features}
-      </SimpleGrid>
-    </Container>
+    <SimpleGrid
+      cols={3}
+      spacing="xl"
+      mt={50}
+      breakpoints={[{ maxWidth: 'md', cols: 1 }]}
+    >
+      {features}
+    </SimpleGrid>
   )
 }
 
