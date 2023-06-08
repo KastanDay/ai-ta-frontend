@@ -2,7 +2,7 @@ import Head from 'next/head'
 import { DropzoneS3Upload } from '~/components/Upload_S3'
 
 // import { Montserrat, Inter, Rubik_Puddles, Audiowide } from "next/font/google"
-import { Montserrat } from "next/font/google"
+import { Montserrat } from 'next/font/google'
 
 import {
   Card,
@@ -28,7 +28,7 @@ import {
 const montserrat = Montserrat({
   weight: '700',
   subsets: ['latin'],
-});
+})
 
 import Link from 'next/link'
 import React from 'react'
@@ -56,22 +56,29 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
           <Link href="/">
             <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-              UIUC Course <span className="${inter.style.fontFamily} text-[hsl(280,100%,70%)]">AI</span>
+              UIUC Course{' '}
+              <span className="${inter.style.fontFamily} text-[hsl(280,100%,70%)]">
+                AI
+              </span>
             </h2>
           </Link>
         </div>
         <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 ">
-          <h5 className="text-5xl font-extrabold tracking-tight text-white xs:text-[5rem]">
-            
-            <Text className={montserrat.className} variant="gradient" gradient={{ from: 'gold', to: 'white', deg: 20 }} >{course_name}</Text>
+          <h5 className="xs:text-[5rem] text-5xl font-extrabold tracking-tight text-white">
+            <Text
+              className={montserrat.className}
+              variant="gradient"
+              gradient={{ from: 'gold', to: 'white', deg: 20 }}
+            >
+              {course_name}
+            </Text>
             is available, create an AI assistant.
-            
           </h5>
-          
+
           <Flex direction="column" align="center" justify="center">
             <Title style={{ color: 'White' }} order={3} p="md">
-              Just one step: 
-              upload your textbooks, lecture slides, video recordings and any other files.
+              Just one step: upload your textbooks, lecture slides, video
+              recordings and any other files.
             </Title>
             <Title style={{ color: 'White' }} order={3} variant="normal">
               Claim your URL:
@@ -87,8 +94,12 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
               {course_name}
             </Title>
             <DropzoneS3Upload course_name={course_name} />
-          <Title order={4}>Stay on page until loading is complete or ingest will fail.</Title>
-          <Title order={4}>The page will auto-refresh when your AI Assistant is ready.</Title>
+            <Title order={4}>
+              Stay on page until loading is complete or ingest will fail.
+            </Title>
+            <Title order={4}>
+              The page will auto-refresh when your AI Assistant is ready.
+            </Title>
           </Flex>
         </div>
       </main>

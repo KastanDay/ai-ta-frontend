@@ -17,21 +17,20 @@
 //   }
 // }
 
+import { kv } from '@vercel/kv'
 
-import { kv } from '@vercel/kv';
+export const runtime = 'edge'
 
-export const runtime = "edge";
-
-const getCourseExists = async (req : any, res : any) => {
-  const { course_name } = req.query;
+const getCourseExists = async (req: any, res: any) => {
+  const { course_name } = req.query
 
   try {
-    const courseExists = await kv.get(course_name);
-    res.status(200).json(courseExists as boolean);
+    const courseExists = await kv.get(course_name)
+    res.status(200).json(courseExists as boolean)
   } catch (error) {
-    console.log(error);
-    res.status(500).json(false);
+    console.log(error)
+    res.status(500).json(false)
   }
-};
+}
 
-export default getCourseExists;
+export default getCourseExists

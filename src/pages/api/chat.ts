@@ -16,8 +16,7 @@ import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
 
 import { fetchContextsNOAXIOS } from '~/pages/api/getContexts'
 
-
-import log from 'next/dist/build/output/log'; // logging to next.js web gui
+import log from 'next/dist/build/output/log' // logging to next.js web gui
 
 export const config = {
   runtime: 'edge',
@@ -31,116 +30,113 @@ const handler = async (req: Request): Promise<Response> => {
     await init((imports) => WebAssembly.instantiate(wasm, imports))
     const encoding = new Tiktoken(
       tiktokenModel.bpe_ranks,
-        tiktokenModel.special_tokens,
-        tiktokenModel.pat_str,
-      )
+      tiktokenModel.special_tokens,
+      tiktokenModel.pat_str,
+    )
 
-      let promptToSend = prompt
-      if (!promptToSend) {
-        promptToSend = DEFAULT_SYSTEM_PROMPT
-      }
+    let promptToSend = prompt
+    if (!promptToSend) {
+      promptToSend = DEFAULT_SYSTEM_PROMPT
+    }
 
-      let temperatureToUse = temperature
-      if (temperatureToUse == null) {
-        temperatureToUse = DEFAULT_TEMPERATURE
-      }
+    let temperatureToUse = temperature
+    if (temperatureToUse == null) {
+      temperatureToUse = DEFAULT_TEMPERATURE
+    }
 
+    // ! A BUNCH OF CRAP TO DO PROMPT STUFFING WITH CONTEXTS
+    // TODO -- move this semewhere else, and run it before we trim the context limit
+    console.log('COURSE NAME ------------ ', course_name)
 
-
-
-
-
-
-      
-
-      // ! A BUNCH OF CRAP TO DO PROMPT STUFFING WITH CONTEXTS
-      // TODO -- move this semewhere else, and run it before we trim the context limit
-      console.log('COURSE NAME ------------ ', course_name)
-
-      if (course_name != 'gpt4') {
-              // update the last message.content with the prompt injection
+    if (course_name != 'gpt4') {
+      // update the last message.content with the prompt injection
       const original_message = messages[messages.length - 1]?.content
-      const search_query = original_message || ""
+      const search_query = original_message || ''
 
       // SEND THE QUERY TO THE CONTEXT_CARD.tsx
       // const { searchQuery, updateSearchQuery } = useSearchQuery(); // ERROR
       // updateSearchQuery(search_query);
 
-      const context_text = await fetchContextsNOAXIOS(course_name, search_query).then((context_arr) => {
-        const separator = "--------------------------" // between each context
-        const all_texts = context_arr.map((context) => `Document: ${context.readable_filename}, page number (if exists): ${context.pagenumber_or_timestamp}\n${context.text}\n`).join(separator + "\n");
-        
-        // log.warn('all_texts', context_arr[0]?.course_name);
-        // log.warn('all_texts', context_arr[0]?.text);
-        console.log('all_texts', all_texts)
-        return all_texts
-      }).catch((err) => {console.log('ERROR IN FETCH CONTEXT CALL', err); return ""});
+      const context_text = await fetchContextsNOAXIOS(course_name, search_query)
+        .then((context_arr) => {
+          const separator = '--------------------------' // between each context
+          const all_texts = context_arr
+            .map(
+              (context) =>
+                `Document: ${context.readable_filename}, page number (if exists): ${context.pagenumber_or_timestamp}\n${context.text}\n`,
+            )
+            .join(separator + '\n')
 
-      const stuffedPrompt = "Please answer the following question. Use the context below, called 'official course materials,' only if it's helpful and don't use parts that are very irrelevant. It's good to quote the official course materials directly, something like 'from ABS source it says XYZ' Feel free to say you don't know. \nHere's a few passages of high quality official course materials:\n" + context_text + "\n\nNow please respond to my query: " + original_message
+          // log.warn('all_texts', context_arr[0]?.course_name);
+          // log.warn('all_texts', context_arr[0]?.text);
+          console.log('all_texts', all_texts)
+          return all_texts
+        })
+        .catch((err) => {
+          console.log('ERROR IN FETCH CONTEXT CALL', err)
+          return ''
+        })
+
+      const stuffedPrompt =
+        "Please answer the following question. Use the context below, called 'official course materials,' only if it's helpful and don't use parts that are very irrelevant. It's good to quote the official course materials directly, something like 'from ABS source it says XYZ' Feel free to say you don't know. \nHere's a few passages of high quality official course materials:\n" +
+        context_text +
+        '\n\nNow please respond to my query: ' +
+        original_message
 
       if (messages && messages.length > 0 && messages[messages.length - 1]) {
-        messages[messages.length - 1]!.content = stuffedPrompt || ""
+        messages[messages.length - 1]!.content = stuffedPrompt || ''
       }
 
-      console.log("......................")
+      console.log('......................')
       console.log('Stuffed prompt', stuffedPrompt)
-      console.log("RIGHT BEFORE OPENAI STREAM .........")
-      } else {
-        console.log("NO CONTEXT STUFFING FOR /gpt4 slug")
-      }
+      console.log('RIGHT BEFORE OPENAI STREAM .........')
+    } else {
+      console.log('NO CONTEXT STUFFING FOR /gpt4 slug')
+    }
 
+    //  COMPRESS TO PROPER SIZE
+    const prompt_tokens = encoding.encode(promptToSend)
 
+    let tokenCount = prompt_tokens.length
+    let messagesToSend: Message[] = []
 
-      
-      //  COMPRESS TO PROPER SIZE
-      const prompt_tokens = encoding.encode(promptToSend)
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i]
+      if (message) {
+        const tokens = encoding.encode(message.content)
 
-      let tokenCount = prompt_tokens.length
-      let messagesToSend: Message[] = []
-
-      for (let i = messages.length - 1; i >= 0; i--) {
-        const message = messages[i];
-        if (message) {
-          const tokens = encoding.encode(message.content);
-
-          if (tokenCount + tokens.length + 1000 > model.tokenLimit) {
-            break;
-          }
-          tokenCount += tokens.length;
-          messagesToSend = [message, ...messagesToSend];
+        if (tokenCount + tokens.length + 1000 > model.tokenLimit) {
+          break
         }
+        tokenCount += tokens.length
+        messagesToSend = [message, ...messagesToSend]
       }
+    }
 
-      for (let i = messages.length - 1; i >= 0; i--) {
-        const message = messages[i];
-        if (message) {
-          const tokens = encoding.encode(message.content);
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i]
+      if (message) {
+        const tokens = encoding.encode(message.content)
 
-          if (tokenCount + tokens.length + 1000 > model.tokenLimit) {
-            break;
-          }
-          tokenCount += tokens.length;
-          messagesToSend = [message, ...messagesToSend];
+        if (tokenCount + tokens.length + 1000 > model.tokenLimit) {
+          break
         }
+        tokenCount += tokens.length
+        messagesToSend = [message, ...messagesToSend]
       }
-      encoding.free() // keep this, idk what it does
+    }
+    encoding.free() // keep this, idk what it does
 
+    const stream = await OpenAIStream(
+      model,
+      promptToSend,
+      temperatureToUse,
+      key,
+      messagesToSend,
+    )
 
-
-
-
-
-
-      const stream = await OpenAIStream(
-        model,
-        promptToSend,
-        temperatureToUse,
-        key,
-        messagesToSend,
-      )
-
-      return new Response(stream)
-    } catch (error) {
+    return new Response(stream)
+  } catch (error) {
     console.error(error)
     if (error instanceof OpenAIError) {
       return new Response('Error', { status: 500, statusText: error.message })

@@ -1,15 +1,15 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext } from 'react'
 
 interface ChatContextData {
-  searchQuery: string;
-  setSearchQuery: (searchQuery: string) => void;
+  searchQuery: string
+  setSearchQuery: (searchQuery: string) => void
 }
 
 const SearchQuery = createContext<ChatContextData>({
-  searchQuery: "",
+  searchQuery: '',
   setSearchQuery: () => {}, // ignore: @typescript-eslint/no-empty-function
-});
+})
 
-export const useChatContext = () => useContext(SearchQuery);
+export const useChatContext = () => useContext(SearchQuery)
 
-export default SearchQuery;
+export default SearchQuery

@@ -1,4 +1,3 @@
-
 // import { NextRequest, NextResponse } from 'next/server';
 // import { get, getAll } from '@vercel/edge-config';
 // const configItems = await getAll();

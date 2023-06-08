@@ -21,8 +21,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
     // const userMessage = messages[messages.length - 1]
     // const query = encodeURIComponent(userMessage.content.trim())
 
-    console.log("WARNING: I switch google results to 3 QUERY ONLY. (Was 5 before... &num=5)")
-    console.warn("WARNING: I switch google results to 3 QUERY ONLY. (Was 5 before... &num=5)")
+    console.log(
+      'WARNING: I switch google results to 3 QUERY ONLY. (Was 5 before... &num=5)',
+    )
+    console.warn(
+      'WARNING: I switch google results to 3 QUERY ONLY. (Was 5 before... &num=5)',
+    )
 
     const googleRes = await fetch(
       `https://customsearch.googleapis.com/customsearch/v1?key=${
@@ -30,7 +34,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
       }&cx=${
         googleCSEId ? googleCSEId : process.env.GOOGLE_CSE_ID
       }&q=${query}&num=3`,
-      )
+    )
 
     const googleData = await googleRes.json()
 
