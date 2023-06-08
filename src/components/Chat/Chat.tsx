@@ -1,5 +1,11 @@
 // src/components/Chat/Chat.tsx
-import { IconClearAll, IconSettings } from '@tabler/icons-react'
+import {
+  IconCloudUpload,
+  IconX,
+  IconDownload,
+  IconClearAll,
+  IconSettings,
+} from '@tabler/icons-react'
 import {
   MutableRefObject,
   memo,
@@ -54,9 +60,13 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
 
   // how to get the current route inside ANY component
   const router = useRouter()
-  const NewGetCurrentPageName = () => {
+  const getCurrentPageName = () => {
     // /CS-125/materials --> CS-125
     return router.asPath.slice(1).split('/')[0]
+  }
+
+  const redirectToMaterialsPage = () => {
+    router.push(`/${getCurrentPageName()}/materials`)
   }
 
   const {
@@ -122,7 +132,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           key: apiKey,
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
-          course_name: NewGetCurrentPageName() || '',
+          course_name: getCurrentPageName() || '',
           // context_text: GetContextText(),
         }
         const endpoint = getEndpoint(plugin)
@@ -482,6 +492,17 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                       onClick={onClearAll}
                     >
                       <IconClearAll size={18} />
+                    </button>
+                    {/* Span of 2 rem width for spacing */}
+                    <span className="w-8" />
+                    <button
+                      className="ml-2 cursor-pointer hover:opacity-50"
+                      onClick={redirectToMaterialsPage}
+                    >
+                      <div className="flex items-center">
+                        <span>Upload materials&nbsp;&nbsp;</span>
+                        <IconCloudUpload size={18} />
+                      </div>
                     </button>
                   </div>
                   {showSettings && (
