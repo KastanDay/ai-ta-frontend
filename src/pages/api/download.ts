@@ -36,12 +36,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       expiresIn: 3600,
     })
 
-    res
-      .status(200)
-      .json({
-        message: 'Presigned URL generated successfully',
-        url: presignedUrl,
-      })
+    res.status(200).json({
+      message: 'Presigned URL generated successfully',
+      url: presignedUrl,
+    })
   } catch (error) {
     console.error('Error generating presigned URL:', error)
     res.status(500).json({ message: 'Error generating presigned URL', error })
