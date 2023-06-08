@@ -67,45 +67,32 @@ const Home: NextPage = () => {
               ta="center"
               mt="md"
             >
-              Upload anything. Search everything. 
+              Upload anything. Search everything.
               <br></br>
               Discover more.
             </Title>
 
             <br></br>
-            <Title
-              color="white"
-              order={4}
-              ta="center"
-              mt="sm"
-            >
+            <Title color="white" order={4} ta="center" mt="sm">
               AI Teaching Assistant crafted for UIUC students,
               <br></br>
               by UIUC students.
             </Title>
 
-            <Text
-              color="#57534e"
-              c="dimmed"
-              ta="center"
-              mt="md"
-            >
+            <Text color="#57534e" c="dimmed" ta="center" mt="md">
               *Factuality not guaranteed.
               <br></br>
               Test it in your area of expertise to best assess its capabilities.
             </Text>
 
-            <Text
-              color="white"
-              ta="center"
-              mt="md"
-              weight={500}
-              size="lg"
-            >
+            <Text color="white" ta="center" mt="md" weight={500} size="lg">
               {/* Add bold span */}
-              <span className="font-bold">Upload</span> your videos, any number of PDFs, PowerPoint, Word, Excel and almost anything other document to chat with your knowledge base.
+              <span className="font-bold">Upload</span> your videos, any number
+              of PDFs, PowerPoint, Word, Excel and almost anything other
+              document to chat with your knowledge base.
               <br></br>
-              Coming soon: Students can contribute content to enhance the AI's knowledge.
+              Coming soon: Students can contribute content to enhance the AI&apos;s
+              knowledge.
             </Text>
           </Container>
 
