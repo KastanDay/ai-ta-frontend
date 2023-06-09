@@ -45,7 +45,7 @@ import { MemoizedChatMessage } from './MemoizedChatMessage'
 // import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
 import SearchQuery from '~/components/UIUC-Components/StatefulSearchQuery'
 
-import { logConvoToSupabase } from '~/pages/api/UIUC-api/logConversationToSupabase'
+// import { logConvoToSupabase } from '~/pages/api/UIUC-api/logConversationToSupabase'
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>
@@ -99,15 +99,23 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Kastan here -- trying to log the latest message
-  // Add this function to handle saving the message to a separate database
-
   const onMessageReceived = async (conversation: Conversation) => {
-    // Save the message to a separate database here
-    console.log("Message received and ready to be saved:", conversation);
-
-    // TODO -- call our API for logConversation
-    logConvoToSupabase(conversation)
+    // Kastan here -- Save the message to a separate database here
+    try {
+      console.log('inside logConversationToSupabase fetch()...')
+      const response = await fetch(`/api/UIUC-api/logConversationToSupabase`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ course_name: getCurrentPageName() || NaN, conversation: conversation }),
+      })
+      const data = await response.json()
+      return data.success
+    } catch (error) {
+      console.error('Error setting course data:', error)
+      return false
+    }
     
   };
 
