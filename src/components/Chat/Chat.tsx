@@ -32,6 +32,7 @@ import { Plugin } from '@/types/plugin'
 
 import HomeContext from '~/pages/api/home/home.context'
 
+
 import Spinner from '../Spinner'
 import { ChatInput } from './ChatInput'
 import { ChatLoader } from './ChatLoader'
@@ -43,6 +44,8 @@ import { MemoizedChatMessage } from './MemoizedChatMessage'
 
 // import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
 import SearchQuery from '~/components/UIUC-Components/StatefulSearchQuery'
+
+import { logConvoToSupabase } from '~/pages/api/UIUC-api/logConversationToSupabase'
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>
@@ -95,6 +98,24 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Kastan here -- trying to log the latest message
+  // Add this function to handle saving the message to a separate database
+
+  const onMessageReceived = async (conversation: Conversation) => {
+    // Save the message to a separate database here
+    console.log("Message received and ready to be saved:", conversation);
+
+    // TODO -- call our API for logConversation
+    logConvoToSupabase(conversation)
+    
+  };
+
+  // Add this function to handle saving the answer to a separate database
+  const onAnswerReceived = (answer: string) => {
+    // Save the answer to a separate database here
+    console.log("<><><><><><><><><><><><> Answer received and ready to be saved:", answer);
+  };
 
   // THIS IS WHERE MESSAGES ARE SENT.
   const handleSend = useCallback(
@@ -233,6 +254,8 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             }
           }
           saveConversation(updatedConversation)
+          console.log('updatedConversation: ', updatedConversation)
+          onMessageReceived(updatedConversation); // kastan here, trying to save message AFTER done streaming. This only saves the user message...
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
@@ -240,15 +263,16 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               }
               return conversation
             },
-          )
-          if (updatedConversations.length === 0) {
-            updatedConversations.push(updatedConversation)
-          }
-          homeDispatch({ field: 'conversations', value: updatedConversations })
-          saveConversations(updatedConversations)
-          homeDispatch({ field: 'messageIsStreaming', value: false })
-        } else {
-          const { answer } = await response.json()
+            )
+            if (updatedConversations.length === 0) {
+              updatedConversations.push(updatedConversation)
+            }
+            homeDispatch({ field: 'conversations', value: updatedConversations })
+            saveConversations(updatedConversations)
+            homeDispatch({ field: 'messageIsStreaming', value: false })
+          } else {
+            const { answer } = await response.json()
+            onAnswerReceived(answer); // kastan here, trying to save message AFTER done streaming. This should save the assistant message...
           const updatedMessages: Message[] = [
             ...updatedConversation.messages,
             { role: 'assistant', content: answer },
@@ -262,6 +286,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             value: updatedConversation, // kastan fixed tiny bug here from original template code
           })
           saveConversation(updatedConversation)
+          onAnswerReceived(answer); // kastan here, trying to save message AFTER done streaming. This should save the assistant message...
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
