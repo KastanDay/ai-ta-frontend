@@ -48,6 +48,10 @@ pre:has(div.codeblock) {
   padding: 0;
 }
 
+.courseCardHeroImage {
+  object-fit: cover;
+}
+
 .flex-container {
   display: flex;
   flex-wrap: wrap;

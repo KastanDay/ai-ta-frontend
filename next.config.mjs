@@ -26,6 +26,9 @@ const config = {
   //   locales: ['en'],
   //   defaultLocale: 'en',
   // },
+  images: {
+    domains: ['images.unsplash.com', 'github.com'],
+  },
   experimental: {
     esmExternals: false, // To make upload thing work with /pages router.
   },
