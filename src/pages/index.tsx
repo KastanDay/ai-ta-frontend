@@ -1,24 +1,24 @@
 import { type NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
-import { Montserrat, Lora, Audiowide } from 'next/font/google'
+// import { Montserrat, Lora, Audiowide } from 'next/font/google'
 // import { signIn, signOut, useSession } from "next-auth/react";
 
 import {
-  FileInput,
+  // MantineProvider,
+  // Image,
   rem,
   Card,
-  Image,
   Text,
   Title,
   Badge,
-  MantineProvider,
   Button,
   Group,
 } from '@mantine/core'
-import { IconUpload } from '@tabler/icons-react'
 
-import { api } from '~/utils/api'
+import Image from 'next/image'
+
+// import { api } from '~/utils/api'
 
 const Home: NextPage = () => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
@@ -32,17 +32,6 @@ const Home: NextPage = () => {
           content="The AI teaching assistant built for students at UIUC."
         />
         <link rel="icon" href="/favicon.ico" />
-        {/* Preload images for improved CLS score */}
-        <link
-          rel="preload"
-          href="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
-          as="image"
-        />
-        <link
-          rel="preload"
-          href="https://github.com/KastanDay/learning-t3/blob/dd33e38bc801f4f6bbfc3b3a826a09d805f9bf65/media/Toy_University_students_walking_walter_wick_StableDiffusion-xl-beta-v2-2-2.png?raw=true"
-          as="image"
-        />
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
@@ -276,10 +265,21 @@ function CourseCard() {
           withBorder
         >
           <Card.Section>
+            {/* &auto=format&w=720&q=80&height=160&fit=contain */}
             <Image
-              src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
-              height={160}
+              src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fit=contain"
+              width={720}
+              height={100}
+              quality={80}
+              layout='responsive'
               alt="Norway"
+              style={{
+                objectFit: 'cover',
+                minWidth: '50px',
+                maxWidth: '100%',
+                minHeight: '50px',
+                maxHeight: '150px',
+              }}
             />
           </Card.Section>
 
@@ -329,8 +329,18 @@ function MoreCoursesSoonCard() {
           <Card.Section>
             <Image
               src="https://github.com/KastanDay/learning-t3/blob/dd33e38bc801f4f6bbfc3b3a826a09d805f9bf65/media/Toy_University_students_walking_walter_wick_StableDiffusion-xl-beta-v2-2-2.png?raw=true"
-              height={300}
+              width={720}
+              height={100}
+              quality={80}
+              layout='responsive'
               alt="Students walking to school"
+              style={{
+                objectFit: 'cover',
+                minWidth: '50px',
+                maxWidth: '100%',
+                minHeight: '50px',
+                maxHeight: '150px',
+              }}
             />
           </Card.Section>
 
