@@ -14,6 +14,8 @@ import React, { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 
+import Header from '~/components/UIUC-Components/GlobalHeader'
+
 import { kv } from '@vercel/kv'
 
 export async function checkIfCourseExists(course_name: string) {
@@ -25,6 +27,13 @@ export async function checkIfCourseExists(course_name: string) {
     console.log(error)
     return false
   }
+}
+
+import { useRouter } from 'next/router'
+
+export const GetCurrentPageName = () => {
+  // /CS-125/materials --> CS-125
+  return useRouter().asPath.slice(1).split('/')[0]
 }
 
 // method to call flask backend api to get course data
@@ -86,6 +95,10 @@ interface CourseMainProps {
   course_data: any
 }
 
+import { UserButton, SignIn, SignedIn, SignInButton} from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
+
+
 // run on client side
 const CourseMain: NextPage<CourseMainProps> = (props) => {
   console.log('PROPS IN materials.tsx', props)
@@ -98,331 +111,22 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
     return <MakeNewCoursePage course_name={currentPageName || ''} />
   }
 
-  // COURSE PAGE
-  return (
-    <MakeOldCoursePage
-      course_name={currentPageName || ''}
-      course_data={course_data}
-    />
-  )
-}
-export default CourseMain
+  // const { userId } = getAuth();
+  const { isLoaded, userId, sessionId, getToken } = useAuth();
+  
+  // In case the user signs out while on the page.
+  if (!isLoaded || !userId) {
+    return <div> You must sign in to create or edit courses. <SignInButton /> </div>;
+  }
 
-import {
-  Switch,
-  Flex,
-  Container,
-  TextInput,
-  TextInputProps,
-  ActionIcon,
-  useMantineTheme,
-  Checkbox,
-} from '@mantine/core'
-import {
-  IconSearch,
-  IconArrowRight,
-  IconArrowLeft,
-  IconExternalLink,
-} from '@tabler/icons-react'
-import { useListState, randomId } from '@mantine/hooks'
-// import { useRef } from 'react'
-// import { Dropzone, MIME_TYPES } from '@mantine/dropzone'
-import Link from 'next/link'
-// import { UploadDropzone } from '@uploadthing/react'
-// import { Interface } from 'readline'
-
-import { fetchContexts, getTopContextsResponse } from '~/pages/api/getContexts'
-
-/// START OF COMPONENTS
-import { BuildContextCards } from '~/components/UIUC-Components/ContextCards'
-
-import { useRouter } from 'next/router'
-import SciteBadge from '~/components/UIUC-Components/SciteBadge'
-export const GetCurrentPageName = () => {
-  // /CS-125/materials --> CS-125
-  return useRouter().asPath.slice(1).split('/')[0]
-}
-
-const initialValues = [
-  { label: 'Week 1: Finite State Machines', checked: true, key: randomId() },
-  { label: 'Week 2: Circuit Diagrams', checked: true, key: randomId() },
-  { label: 'Week 3: LC-3 ISA', checked: true, key: randomId() },
-]
-
-export function IndeterminateCheckbox() {
-  const [values, handlers] = useListState(initialValues)
-
-  const allChecked = values.every((value) => value.checked)
-  const indeterminate = values.some((value) => value.checked) && !allChecked
-
-  const items = values.map((value, index) => (
-    <Checkbox
-      mt="xs"
-      ml={33}
-      color="cyan"
-      label={value.label}
-      key={value.key}
-      checked={value.checked}
-      onChange={(event) =>
-        handlers.setItemProp(index, 'checked', event.currentTarget.checked)
-      }
-    />
-  ))
-
+  
+  // https://clerk.com/docs/nextjs/read-session-and-user-data
   return (
     <>
-      <Text
-        size="lg"
-        pb=".2rem"
-        weight={700}
-        variant="gradient"
-        gradient={{ from: 'cyan', to: 'indigo', deg: 0 }}
-      >
-        Optionally refine your search space
-      </Text>
-      <Checkbox
-        checked={allChecked}
-        indeterminate={indeterminate}
-        label="Include content from all weeks"
-        color="cyan"
-        transitionDuration={0}
-        onChange={() =>
-          handlers.setState((current) =>
-            current.map((value) => ({ ...value, checked: !allChecked })),
-          )
-        }
+    <Header />
+    <MakeOldCoursePage course_name={currentPageName || ''} course_data={course_data}
       />
-      {items}
     </>
   )
 }
-
-function ChatSettings() {
-  return (
-    <div>
-      <Flex
-        mih={50}
-        // bg="rgba(0, 0, 0, .3)"
-        gap="sm"
-        justify="flex-start"
-        align="flex-start"
-        direction="row"
-        wrap="wrap"
-      >
-        <PublicChatSwitch />
-        <GPT4Switch />
-      </Flex>
-      <IndeterminateCheckbox />
-    </div>
-  )
-}
-
-function AShortChat() {
-  return (
-    <Container size="lg" px="md" py="md">
-      <div className="chat chat-end">
-        <div className="chat-image avatar">
-          <div className="w-10 rounded-full">
-            <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
-          </div>
-        </div>
-        <div className="chat-header">
-          Anakin
-          <time className="text-xs opacity-50"> 12:46</time>
-        </div>
-        <div className="chat-bubble">What is a Finite State machine?</div>
-        <div className="chat-footer opacity-50">Seen at 12:46</div>
-      </div>
-
-      <div className="chat chat-start">
-        <div className="chat-image avatar">
-          <div className="w-10 rounded-full">
-            <img
-              className="mask mask-hexagon-2"
-              src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
-            />
-          </div>
-        </div>
-        <div className="chat-header">
-          Obi-Wan Kenobi
-          <time className="text-xs opacity-50">12:46</time>
-        </div>
-        <div className="chat-bubble to-blue-600">
-          A Finite State Machine (FSM) is a mathematical model used to represent
-          and analyze systems that can be in a finite number of states and can
-          transition between these states in response to external inputs. It is
-          also known as a Finite Automaton or a State Transition System.
-        </div>
-        <div className="chat-footer to-blue-600 opacity-50 ">Delivered</div>
-      </div>
-      <Text size="lg" weight={800} p={6}>
-        From the course
-      </Text>
-      <Group variant="row" spacing="xs">
-        {/* <MaterialsCard /> */}
-        {/* <MaterialsCard /> */}
-        <MaterialsCardSmall />
-        <MaterialsCardSmall />
-      </Group>
-
-      <div className="chat chat-end">
-        <div className="chat-image avatar">
-          <div className="w-10 rounded-full">
-            <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
-          </div>
-        </div>
-        <div className="chat-header">
-          Anakin
-          <time className="text-xs opacity-50"> 12:47</time>
-        </div>
-        <div className="chat-bubble">Why are they useful??</div>
-        <div className="chat-footer opacity-50">Seen at 12:47</div>
-      </div>
-    </Container>
-  )
-}
-
-function PublicChatSwitch() {
-  return (
-    <Switch
-      label="Share chat publicly"
-      description="Chat history appears on your profile"
-      color="cyan"
-    />
-  )
-}
-function GPT4Switch() {
-  return (
-    <Switch
-      label="Use GPT-4 (instead of 3.5)"
-      description="Best for extremely long contexts "
-      color="cyan"
-    />
-  )
-}
-
-export function InputWithButton(props: TextInputProps) {
-  const theme = useMantineTheme()
-
-  return (
-    <TextInput
-      icon={<IconSearch size="1.1rem" stroke={1.5} />}
-      radius="xl"
-      size="md"
-      rightSection={
-        <ActionIcon
-          size={32}
-          radius="xl"
-          color={theme.primaryColor}
-          variant="filled"
-        >
-          {theme.dir === 'ltr' ? (
-            <IconArrowRight size="1.1rem" stroke={1.5} />
-          ) : (
-            <IconArrowLeft size="1.1rem" stroke={1.5} />
-          )}
-        </ActionIcon>
-      }
-      placeholder="Search questions"
-      rightSectionWidth={42}
-      {...props}
-    />
-  )
-}
-
-function MaterialsCard() {
-  return (
-    <div className="box-sizing: border-box; border: 100px solid #ccc;">
-      <Card
-        bg="#0E1116"
-        style={{ maxWidth: '100%' }}
-        shadow="sm"
-        padding="lg"
-        radius="md"
-        withBorder
-      >
-        <Card.Section>
-          <Image
-            src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
-            height={160}
-            alt="Norway"
-          />
-        </Card.Section>
-
-        <Group position="apart" mt="md" mb="xs">
-          <Text style={{ fontFamily: 'Montserrat' }} size="xl" weight={800}>
-            Finite State Machine Readings
-          </Text>
-          <Badge size="xl" color="pink" variant="light">
-            ECE
-          </Badge>
-        </Group>
-
-        <Text size="sm" color="dimmed">
-          Crucial for any learning endeavour.
-        </Text>
-
-        <Button variant="light" color="blue" fullWidth mt="md" radius="md">
-          View
-        </Button>
-      </Card>
-    </div>
-  )
-}
-
-// In the chat box
-function MaterialsCardSmall() {
-  return (
-    <div className="box-sizing: border-box; border: 100px solid #ccc;">
-      <Card
-        bg="#0E1116"
-        style={{ maxWidth: '20rem' }}
-        shadow="sm"
-        padding="md"
-        radius="md"
-        withBorder
-      >
-        <Card.Section>
-          <Image
-            src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80"
-            height={'7rem'}
-            alt="Norway"
-          />
-        </Card.Section>
-
-        <Group position="apart" mt="md" mb="xs">
-          <Text style={{ fontFamily: 'Montserrat' }} size="xl" weight={800}>
-            Finite State Machine Readings
-          </Text>
-          {/* <Badge size="xl" color="pink" variant="light">
-          ECE
-        </Badge> */}
-        </Group>
-
-        <Text
-          size="sm"
-          variant="gradient"
-          weight={600}
-          gradient={{ from: 'yellow', to: 'green', deg: 0 }}
-        >
-          AI summary
-        </Text>
-        {/* style={{'font-family': 'Lora'}} */}
-        <Text className="fade" size="md" color="dimmed">
-          In a FSM, each state represents a specific condition or mode that the
-          system can be in, and each transition represents a change of state
-          triggered by a specific input or event. The FSM can be defined by a
-          set of states, a set of input symbols or events, a set of output
-          symbols or actions, and a transition function that maps each state and
-          input to a next state and output.
-        </Text>
-        {/* <Button size="xs" variant="dimmed">Show full paragraph</Button> */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button size="xs" variant="dimmed" pb="0">
-            Show full paragraph
-          </Button>
-        </div>
-      </Card>
-    </div>
-  )
-}
+export default CourseMain
