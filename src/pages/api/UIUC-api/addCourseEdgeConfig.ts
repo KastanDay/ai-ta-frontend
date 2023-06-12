@@ -69,31 +69,3 @@ export const addConfigV2 = async (course_name: string) => {
     return []
   }
 }
-
-// export async function addEdgeConfigItem(options: AddEdgeConfigItemOptions): Promise<void> {
-//   const { value } = options;
-
-//   const edgeConfigId = "ecfg_oz1kwxi1tuz7w6tdxmqkawkmcmil"
-
-//   const apiUrl = `https://api.vercel.com/v1/edge-config/${process.env.EDGE_CONFIG_ID}/items?`;
-//   const headers = {
-//     'Content-Type': 'application/json',
-//     Authorization: `Bearer ${process.env.VERCEL_API_TOKEN}`,
-//   };
-
-//   try {
-//     const response = await fetch(apiUrl, {
-//       method: 'POST',
-//       headers,
-//       body: JSON.stringify({ value }),
-//     });
-
-//     if (!response.ok) {
-//       throw new Error(`Error adding value to edge config: ${response.statusText}`);
-//     }
-
-//     console.log('Value added to edge config');
-//   } catch (error) {
-//     console.error('Error adding value to edge config:', error);
-//   }
-// }

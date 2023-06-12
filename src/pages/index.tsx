@@ -73,11 +73,11 @@ const Home: NextPage = () => {
             </Title>
 
             <br></br>
-            <Title color="white" order={4} ta="center" mt="sm">
+            {/* <Title color="white" order={4} ta="center" mt="sm">
               AI Teaching Assistant crafted for UIUC students,
               <br></br>
-              by UIUC students :&#41;
-            </Title>
+              by UIUC students.
+            </Title> */}
 
             <Text color="#57534e" c="dimmed" ta="center" mt="md">
               *Factuality not guaranteed.
