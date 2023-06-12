@@ -8,3 +8,14 @@
 //   const greeting = await get('greeting');
 //   return NextResponse.json(greeting);
 // }
+
+
+
+import { authMiddleware } from "@clerk/nextjs";
+
+export default authMiddleware();
+
+// Stop Middleware from running on static files
+export const config = {
+  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+};

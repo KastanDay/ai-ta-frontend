@@ -21,6 +21,13 @@ const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 import Link from 'next/link'
 import React from 'react'
 import axios from 'axios'
+
+// import Header from '~/components/UIUC-Components/GlobalHeader'
+// import { ClerkProvider, SignedIn } from '@clerk/nextjs'
+// import { auth } from '@clerk/nextjs';
+
+
+
 const MakeOldCoursePage = ({
   course_name,
   course_data,
@@ -37,9 +44,10 @@ const MakeOldCoursePage = ({
           content="The AI teaching assistant built for students at UIUC."
         />
         <link rel="icon" href="/favicon.ico" />
+        {/* <Header /> */}
       </Head>
       <main className="justify-center; course-page-main flex min-h-screen flex-col items-center">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
+        <div className="container flex flex-col items-center justify-center gap-8 px-4 py-8 ">
           <Link href="/">
             <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
               {' '}
@@ -50,7 +58,7 @@ const MakeOldCoursePage = ({
             </h2>
           </Link>
         </div>
-        <div className="items-left container flex flex-col justify-center gap-12 py-2">
+        <div className="items-left container flex flex-col justify-center gap-2 py-0">
           <Flex direction="column" align="center" justify="center">
             <Title
               className={montserrat.className}
@@ -60,7 +68,7 @@ const MakeOldCoursePage = ({
               p="xl"
             >
               {' '}
-              Want to upload more materials?{' '}
+              Upload more materials{' '}
             </Title>
             <DropzoneS3Upload
               course_name={course_name}

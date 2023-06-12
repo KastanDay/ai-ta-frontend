@@ -4,6 +4,9 @@ import Link from 'next/link'
 // import { Montserrat, Lora, Audiowide } from 'next/font/google'
 // import { signIn, signOut, useSession } from "next-auth/react";
 
+// import { UserButton, SignIn } from "@clerk/nextjs";
+
+
 import {
   // MantineProvider,
   // Image,
@@ -18,10 +21,16 @@ import {
 
 import Image from 'next/image'
 
+import SignInPage from '~/pages/sign-in/[[...index]]'
+
 // import { api } from '~/utils/api'
+import Header from '~/components/UIUC-Components/GlobalHeader'
 
 const Home: NextPage = () => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
+
+  // const user = userUser();
+  // const router = useRouter();
 
   return (
     <>
@@ -33,17 +42,28 @@ const Home: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      {/* "My user" login button */}
+      <Header />
+      {/* <header style={{ backgroundColor: '#2e026d', display: 'flex', justifyContent: 'flex-end', padding: '1em'}}>
+				<UserButton
+          afterSignOutUrl="/"
+        />
+        
+        
+
+			</header> */}
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
+        <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 ">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            <Link href="/">
-              UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
-            </Link>
+
+            {/* <Link href="/"> */}
+            UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
+            {/* </Link> */}
           </h1>
 
           <Container
             size="lg"
-            py="xl"
+            py="l"
             style={{ position: 'relative', minHeight: '100%' }}
           >
             <Title
@@ -143,6 +163,7 @@ export default Home
 
 import { createStyles, SimpleGrid, Container } from '@mantine/core'
 import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
+import { useRouter } from 'next/router';
 
 const mockdata = [
   {
