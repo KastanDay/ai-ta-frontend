@@ -271,9 +271,11 @@ function CourseCard() {
               width={720}
               height={100}
               quality={80}
-              layout='responsive'
               alt="Norway"
               style={{
+                display: 'block',
+                width: '100%',
+                height: '100%',
                 objectFit: 'cover',
                 minWidth: '50px',
                 maxWidth: '100%',
@@ -332,9 +334,11 @@ function MoreCoursesSoonCard() {
               width={720}
               height={100}
               quality={80}
-              layout='responsive'
               alt="Students walking to school"
               style={{
+                display: 'block',
+                width: '100%',
+                height: '100%',
                 objectFit: 'cover',
                 minWidth: '50px',
                 maxWidth: '100%',
