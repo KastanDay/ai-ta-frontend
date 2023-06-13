@@ -55,7 +55,7 @@ export const CannotEditGPT4Page = ({
               {' '}
               You cannot edit the gpt4 page. 
               <br></br>
-              It's for using GPT-4 by itself with no extra knowledge base.
+              It&apos;s for using GPT-4 by itself with no extra knowledge base.
             </Title>
 
             <Title
