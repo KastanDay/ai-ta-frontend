@@ -118,7 +118,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
   }
 
   // Don't edit GPT4 page.
-  if (props.course_name == 'gpt4') {
+  if (props.course_name.toLowerCase() == 'gpt4' || props.course_name.toLowerCase() == 'global') {
     return <CannotEditGPT4Page course_name={currentPageName || ''} />
   }
 
