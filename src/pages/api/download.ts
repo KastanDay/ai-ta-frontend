@@ -3,10 +3,6 @@ import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-export const config = {
-  runtime: 'edge',
-};
-
 const aws_config = {
   bucketName: 'uiuc-chatbot',
   region: 'us-east-1',
