@@ -32,6 +32,7 @@ const montserrat = Montserrat({
 
 import Link from 'next/link'
 import React from 'react'
+import GlobalHeader from './GlobalHeader'
 // import { useRouter } from 'next/router'
 
 const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
@@ -51,6 +52,7 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <GlobalHeader />
 
       <main className="items-left justify-left; course-page-main flex min-h-screen flex-col">
         <div className="container flex flex-col items-center justify-center gap-8 px-4 py-5 ">

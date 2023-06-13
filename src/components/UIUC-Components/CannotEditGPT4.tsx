@@ -21,11 +21,10 @@ import {
   Title,
   Flex,
 } from '@mantine/core'
-import { SignInButton } from '@clerk/nextjs'
 const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 // const rubikpuddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 
-export const AuthComponent = ({
+export const CannotEditGPT4Page = ({
   course_name,
 }: {
   course_name: string
@@ -54,14 +53,21 @@ export const AuthComponent = ({
               p="xl"
             >
               {' '}
-              You must sign in to create or edit content.
+              You cannot edit the gpt4 page. 
+              <br></br>
+              It's for using GPT-4 by itself with no extra knowledge base.
             </Title>
-            {/* Wrapping a button makes it easy to style the sign-in link. */}
-            <SignInButton mode="modal">
-              <Button className="btn kas-gradient-text" style={{fontSize: '24px'}}>
-                Sign in →
-              </Button>
-            </SignInButton>
+
+            <Title
+              className={montserrat.className}
+              variant="gradient"
+              gradient={{ from: 'gold', to: 'white', deg: 50 }}
+              order={3}
+              p="xl"
+            >
+              {' '}
+              Go to any other ULR, like <Link href={'/your-awesome-course'}>uiuc.chat/your-awesome-course</Link>, to make a new page.
+            </Title>
           </Flex>
         </div>
       </main>
