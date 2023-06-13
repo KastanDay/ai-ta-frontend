@@ -1,6 +1,10 @@
 import { ChatBody, Conversation, Message } from '@/types/chat'
 import { createClient } from '@supabase/supabase-js'
 
+export const config = {
+  runtime: 'edge',
+};
+
 // const supa_url = process.env.SUPABASE_URL as string
 // const supa_key = process.env.SUPABASE_SECRET as string
 const supabase = createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_SECRET as string)
