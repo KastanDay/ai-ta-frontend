@@ -7,6 +7,7 @@ import axios from 'axios'
 
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import MakeOldCoursePage from '~/components/UIUC-Components/MakeOldCoursePage'
+// import { cannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
 
 // import { Card, Image, Text, Title, Badge, Button, Group } from '@mantine/core'
 
@@ -98,6 +99,8 @@ interface CourseMainProps {
 import { UserButton, SignIn, SignedIn, SignInButton} from "@clerk/nextjs";
 import { useAuth } from "@clerk/nextjs";
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
+import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
+import { Title } from '@mantine/core'
 
 
 // run on client side
@@ -106,21 +109,25 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
   const course_name = props.course_name
   const course_data = props.course_data
   const currentPageName = GetCurrentPageName() as string
-  const { isLoaded, userId, sessionId, getToken } = useAuth(); // Clerk
-
-  // MAKE A NEW COURSE PAGE
-  if (props.course_data == null) {
-    return <MakeNewCoursePage course_name={currentPageName || ''} />
-  }
-
-  // In case the user signs out while on the page.
+  const { isLoaded, userId, sessionId, getToken } = useAuth(); // Clerk Auth
+  
+  // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   if (!isLoaded || !userId) {
     return <AuthComponent course_name={currentPageName} />
     // return <div> You must sign in to create or edit courses. <SignInButton /> </div>;
   }
 
-  
-  // https://clerk.com/docs/nextjs/read-session-and-user-data
+  // Don't edit GPT4 page.
+  if (props.course_name == 'gpt4') {
+    return <CannotEditGPT4Page course_name={currentPageName || ''} />
+  }
+
+  // NEW COURSE
+  if (props.course_data == null) {
+    return <MakeNewCoursePage course_name={currentPageName || ''} />
+  }
+
+  // EDIT EXISTING COURSE
   return (
     <>
     <Header />
