@@ -1,22 +1,27 @@
 import Head from 'next/head'
 import { DropzoneS3Upload } from '~/components/Upload_S3'
-import { Montserrat, Inter, Rubik_Puddles, Audiowide } from 'next/font/google'
+import { 
+  Montserrat, 
+  // Inter, 
+  // Rubik_Puddles, 
+  // Audiowide,
+} from 'next/font/google'
 import {
-  Card,
-  Image,
-  Text,
+  // Card,
+  // Image,
+  // Text,
+  // Badge,
+  // MantineProvider,
+  // Button,
+  // Group,
+  // Stack,
+  // createStyles,
+  // FileInput,
+  // rem,
   Title,
-  Badge,
-  MantineProvider,
-  Button,
-  Group,
-  Stack,
-  createStyles,
-  FileInput,
   Flex,
-  rem,
 } from '@mantine/core'
-const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
+// const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 import Link from 'next/link'
 import React from 'react'
