@@ -1,17 +1,17 @@
 import { type NextPage } from 'next'
-import Head from 'next/head'
-import { env } from '~/env.mjs'
-import { DropzoneS3Upload } from '~/components/Upload_S3'
-import dynamic from 'next/dynamic'
+// import Head from 'next/head'
+// import { env } from '~/env.mjs'
+// import { DropzoneS3Upload } from '~/components/Upload_S3'
+// import dynamic from 'next/dynamic'
 import axios from 'axios'
 
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import MakeOldCoursePage from '~/components/UIUC-Components/MakeOldCoursePage'
 
-import { Card, Image, Text, Title, Badge, Button, Group } from '@mantine/core'
+// import { Card, Image, Text, Title, Badge, Button, Group } from '@mantine/core'
 
-import React, { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import React from 'react'
+// import { createClient } from '@supabase/supabase-js'
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 
 import Header from '~/components/UIUC-Components/GlobalHeader'
@@ -97,6 +97,7 @@ interface CourseMainProps {
 
 import { UserButton, SignIn, SignedIn, SignInButton} from "@clerk/nextjs";
 import { useAuth } from "@clerk/nextjs";
+import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 
 
 // run on client side
@@ -104,19 +105,18 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
   console.log('PROPS IN materials.tsx', props)
   const course_name = props.course_name
   const course_data = props.course_data
-  const currentPageName = GetCurrentPageName()
+  const currentPageName = GetCurrentPageName() as string
+  const { isLoaded, userId, sessionId, getToken } = useAuth(); // Clerk
 
   // MAKE A NEW COURSE PAGE
   if (props.course_data == null) {
     return <MakeNewCoursePage course_name={currentPageName || ''} />
   }
 
-  // const { userId } = getAuth();
-  const { isLoaded, userId, sessionId, getToken } = useAuth();
-  
   // In case the user signs out while on the page.
   if (!isLoaded || !userId) {
-    return <div> You must sign in to create or edit courses. <SignInButton /> </div>;
+    return <AuthComponent course_name={currentPageName} />
+    // return <div> You must sign in to create or edit courses. <SignInButton /> </div>;
   }
 
   
