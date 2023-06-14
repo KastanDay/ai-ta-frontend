@@ -26,6 +26,7 @@ const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 import Link from 'next/link'
 import React from 'react'
 import axios from 'axios'
+import { useRouter } from 'next/router'
 
 // import Header from '~/components/UIUC-Components/GlobalHeader'
 // import { ClerkProvider, SignedIn } from '@clerk/nextjs'
@@ -117,14 +118,17 @@ interface CourseFilesListProps {
   files: CourseFile[]
 }
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
-  const handleDelete = async (s3_path: string) => {
+  const router = useRouter()
+  const handleDelete = async (s3_path: string, course_name: string) => {
     try {
       const API_URL = 'https://flask-production-751b.up.railway.app'
       const response = await axios.delete(`${API_URL}/delete`, {
-        data: { s3_path },
-      })
+        params: { s3_path, course_name },
+      });
       console.log(response)
       // Handle successful deletion, e.g., remove the item from the list or show a success message
+      // Refresh the page
+      await router.push(router.asPath)
     } catch (error) {
       console.error(error)
       // Handle errors, e.g., show an error message
@@ -150,7 +154,8 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
               </div>
             </div>
             <button
-              onClick={() => handleDelete(file.s3_path as string)}
+              onClick={() => handleDelete(file.s3_path as string, file.course_name as string)}
+
               className="mr-4 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-800"
             >
               <span className="text-xl font-bold">-</span>
