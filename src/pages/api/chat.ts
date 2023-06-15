@@ -17,6 +17,7 @@ import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
 import { fetchContextsNOAXIOS } from '~/pages/api/getContexts'
 
 import log from 'next/dist/build/output/log' // logging to next.js web gui
+import { getExtremePrompt } from './getExtremePrompt'
 
 export const config = {
   runtime: 'edge',
@@ -46,17 +47,25 @@ const handler = async (req: Request): Promise<Response> => {
 
     // ! A BUNCH OF CRAP TO DO PROMPT STUFFING WITH CONTEXTS
     // TODO -- move this semewhere else, and run it before we trim the context limit
-    console.log('COURSE NAME ------------ ', course_name)
-
-    if (course_name != 'gpt4') {
-      // update the last message.content with the prompt injection
-      const original_message = messages[messages.length - 1]?.content
-      const search_query = original_message || ''
-
-      // SEND THE QUERY TO THE CONTEXT_CARD.tsx
-      // const { searchQuery, updateSearchQuery } = useSearchQuery(); // ERROR
-      // updateSearchQuery(search_query);
-
+    const search_query = messages[messages.length - 1]?.content as string // most recent message
+    
+    if (course_name == 'extreme') {
+      promptToSend = await getExtremePrompt(course_name, search_query)
+        .then((final_prompt) => {
+          return final_prompt
+        })
+        .catch((err) => {
+          console.log('ERROR IN FETCH CONTEXT CALL, defaulting to NO SPECIAL PROMPT', err)
+          return search_query
+        })
+    }
+    else if (course_name == 'gpt4') {
+      console.log('NO CONTEXT STUFFING FOR /gpt4 slug')
+    }
+    // else if (course_name == 'global') {
+      // todo
+    // }
+    else {
       const context_text = await fetchContextsNOAXIOS(course_name, search_query)
         .then((context_arr) => {
           const separator = '--------------------------' // between each context
@@ -66,22 +75,18 @@ const handler = async (req: Request): Promise<Response> => {
                 `Document: ${context.readable_filename}, page number (if exists): ${context.pagenumber_or_timestamp}\n${context.text}\n`,
             )
             .join(separator + '\n')
-
-          // log.warn('all_texts', context_arr[0]?.course_name);
-          // log.warn('all_texts', context_arr[0]?.text);
-          console.log('all_texts', all_texts)
           return all_texts
         })
         .catch((err) => {
-          console.log('ERROR IN FETCH CONTEXT CALL', err)
-          return ''
+          console.log('ERROR IN FETCH CONTEXT CALL, defaulting to NO SPECIAL PROMPT', err)
+          return search_query
         })
 
       const stuffedPrompt =
         "Please answer the following question. Use the context below, called 'official course materials,' only if it's helpful and don't use parts that are very irrelevant. It's good to quote the official course materials directly, something like 'from ABS source it says XYZ' Feel free to say you don't know. \nHere's a few passages of high quality official course materials:\n" +
         context_text +
         '\n\nNow please respond to my query: ' +
-        original_message
+        search_query
 
       if (messages && messages.length > 0 && messages[messages.length - 1]) {
         messages[messages.length - 1]!.content = stuffedPrompt || ''
@@ -90,8 +95,6 @@ const handler = async (req: Request): Promise<Response> => {
       console.log('......................')
       console.log('Stuffed prompt', stuffedPrompt)
       console.log('RIGHT BEFORE OPENAI STREAM .........')
-    } else {
-      console.log('NO CONTEXT STUFFING FOR /gpt4 slug')
     }
 
     //  COMPRESS TO PROPER SIZE

@@ -91,28 +91,19 @@ export const BuildContextCards = () => {
         <>
           {/* <Divider my="sm" variant="solid" /> */}
           {/* <h4 className="font-bold">Sources from the course</h4> */}
-  
           <Group variant="row" spacing="xs">
-          <div className="collapse bg-base-300">
-          <input type="checkbox" /> 
-          <div className="collapse-title text-xl font-medium">
-            Sources
-          </div>
-              {contexts.map((context: getTopContextsResponse, index: number) => (
-                <div className="collapse-content"> 
-                  <DynamicMaterialsCard
-                    key={context.id || index}
-                    id={context.id || index} // Add fallback key using index. Not sure why we need a key and an ID.... bad code.
-                    text={context.text}
-                    readable_filename={context.readable_filename}
-                    pagenumber_or_timestamp={context.pagenumber_or_timestamp}
-                    s3_path={context.s3_path}
-                    course_name={context.course_name}
-                    />
-                  </div>
-              ))}
-          </div>
-            </Group>
+            {contexts.map((context: getTopContextsResponse, index: number) => (
+              <DynamicMaterialsCard
+                key={context.id || index}
+                id={context.id || index} // Add fallback key using index. Not sure why we need a key and an ID.... bad code.
+                text={context.text}
+                readable_filename={context.readable_filename}
+                pagenumber_or_timestamp={context.pagenumber_or_timestamp}
+                s3_path={context.s3_path}
+                course_name={context.course_name}
+              />
+            ))}
+          </Group>
         </>
       ) : (
         // Loading state...
