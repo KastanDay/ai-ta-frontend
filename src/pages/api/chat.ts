@@ -48,12 +48,12 @@ const handler = async (req: Request): Promise<Response> => {
     // ! A BUNCH OF CRAP TO DO PROMPT STUFFING WITH CONTEXTS
     // TODO -- move this semewhere else, and run it before we trim the context limit
     const search_query = messages[messages.length - 1]?.content as string // most recent message
+
+    console.log('...................... COURSE NAME', course_name)
     
     if (course_name == 'extreme' || course_name == 'zotero-extreme') {
+      console.log('CONTEXT STUFFING FOR /extreme and /zotero-extreme slugs')
       promptToSend = await getExtremePrompt(course_name, search_query)
-        .then((final_prompt) => {
-          return final_prompt
-        })
         .catch((err) => {
           console.log('ERROR IN FETCH CONTEXT CALL, defaulting to NO SPECIAL PROMPT', err)
           return search_query
