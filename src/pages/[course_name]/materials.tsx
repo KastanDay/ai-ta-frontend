@@ -117,8 +117,8 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
     // return <div> You must sign in to create or edit courses. <SignInButton /> </div>;
   }
 
-  // Don't edit GPT4 page.
-  if (props.course_name.toLowerCase() == 'gpt4' || props.course_name.toLowerCase() == 'global') {
+  // Don't edit certain special pages (no context allowed)
+  if (props.course_name.toLowerCase() == 'gpt4' || props.course_name.toLowerCase() == 'global' || props.course_name.toLowerCase() == 'extreme') {
     return <CannotEditGPT4Page course_name={currentPageName || ''} />
   }
 
