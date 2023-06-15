@@ -49,7 +49,7 @@ const handler = async (req: Request): Promise<Response> => {
     // TODO -- move this semewhere else, and run it before we trim the context limit
     const search_query = messages[messages.length - 1]?.content as string // most recent message
     
-    if (course_name == 'extreme') {
+    if (course_name == 'extreme' || course_name == 'zotero-extreme') {
       promptToSend = await getExtremePrompt(course_name, search_query)
         .then((final_prompt) => {
           return final_prompt
