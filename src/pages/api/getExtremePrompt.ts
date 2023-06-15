@@ -5,7 +5,7 @@ export const config = {
 export async function getExtremePrompt(
   course_name: string,
   search_query: string,
-  top_n = 20, // get 20 contexts
+  top_n = 8, // get 20 contexts. Batch size is 20, so this is the minimum & max for a single call.
   top_k_to_search = 100,
 ) {
   console.log("getExtremePrompt called")
