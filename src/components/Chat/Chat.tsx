@@ -41,6 +41,7 @@ import { ModelSelect } from './ModelSelect'
 import { SystemPrompt } from './SystemPrompt'
 import { TemperatureSlider } from './Temperature'
 import { MemoizedChatMessage } from './MemoizedChatMessage'
+import { ModelParams } from './ModelParams'
 
 // import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
 import SearchQuery from '~/components/UIUC-Components/StatefulSearchQuery'
@@ -416,6 +417,25 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
     }
   }, [messagesEndRef])
 
+  const statements = ['Make a bullet point list of key takeaways of the course.',
+  'What is [your favorite topic] and why is it worth learning about?',
+  'How can I effectively prepare for the upcoming exam?',
+  'How many assignments in the course?'];
+
+// Add this function to create dividers with statements
+  const renderDividers = () => {
+    return statements.map((statement, index) => (
+        <div key={index} className="flex flex-col w-full items-center">
+          <div className="w-3/5 grid h-20 card bg-base-300/50 rounded-box place-items-center text-black text-lg">
+            {statement}
+          </div>
+          {index !== statements.length - 1 && (
+              <div className="w-3/5 divider mx-auto"></div>
+          )}
+        </div>
+    ));
+  };
+
   return (
     <SearchQuery.Provider value={{ searchQuery, setSearchQuery }}>
       <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#343541]">
@@ -482,32 +502,19 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                     </div>
 
                     {models.length > 0 && (
-                      <div className="flex h-full flex-col space-y-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-600">
-                        <ModelSelect />
-
-                        <SystemPrompt
-                          conversation={selectedConversation}
-                          prompts={prompts}
-                          onChangePrompt={(prompt) =>
-                            handleUpdateConversation(selectedConversation, {
-                              key: 'prompt',
-                              value: prompt,
-                            })
-                          }
-                        />
-
-                        <TemperatureSlider
-                          label={t('Temperature')}
-                          onChangeTemperature={(temperature) =>
-                            handleUpdateConversation(selectedConversation, {
-                              key: 'temperature',
-                              value: temperature,
-                            })
-                          }
+                      <div className="flex h-full flex-col space-y-4 rounded-3xl border border-neutral-200 p-4 dark:border-neutral-600 focus:border-t-info/100">
+                        <ModelParams
+                            selectedConversation={selectedConversation}
+                            prompts={prompts}
+                            handleUpdateConversation={handleUpdateConversation}
+                            t={t}
                         />
                       </div>
                     )}
                   </div>
+                  <div className="mt-16">
+                  {renderDividers()}
+                    </div>
                 </>
               ) : (
                 <>
