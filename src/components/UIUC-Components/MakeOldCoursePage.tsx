@@ -120,7 +120,7 @@ import EmailChips from './EmailChips'
 import EmailChipsComponent from './EmailChipsComponent'
 
 const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
-  const [isChecked, setIsChecked] = useState(true)
+  const [isPrivate, setIsPrivate] = useState(true)
 
   const CheckboxIcon: CheckboxProps['icon'] = ({ indeterminate, className }) =>
     indeterminate ? (
@@ -130,9 +130,37 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
     )
 
   const handleCheckboxChange = () => {
-    setIsChecked(!isChecked)
+    // isPrivate == private
+    // not isPrivate == public
+    
+    // TODO: set course to public or private in database
+    const callSetCoursePublicOrPrivate = async (course_name: string, isPrivate: boolean) => {
+      try {
+        const url = new URL(
+          '/api/UIUC-api/setCoursePublicOrPrivate',
+          window.location.origin,
+          )
+        url.searchParams.append('course_name', course_name)
+        url.searchParams.append('isPrivate', String(isPrivate))
+
+        const response = await fetch(url.toString(), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        const data = await response.json()
+        return data.success
+      } catch (error) {
+        console.error('Error removing user from course:', error)
+        return false
+      }
+    }
+    
+    setIsPrivate(!isPrivate) // gui
+    callSetCoursePublicOrPrivate(course_name, !isPrivate) // db
+
   }
-  const [focused, setFocused] = useState(false)
 
   return (
     <>
@@ -150,7 +178,7 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
       <Group className="p-3">
         <Checkbox
           label={`Course is ${
-            isChecked ? 'private' : 'public'
+            isPrivate ? 'private' : 'public'
           }. Click to change.`}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
@@ -171,13 +199,16 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
         Only the below email address are able to access the content. Read our
         strict security policy (in progress).
       </Text>
-      {/* {isChecked && <EmailChips />} */}
-      {/* {isChecked && <EmailChipsComponent course_owner='temp_owner@gmail.com' course_admins={['temp_admin1@gmail.com', 'temp_admin2@gmail.com']} />} */}
-      {/* {isChecked && <EmailChipsComponent course_owner='temp_owner@gmail.com' course_admins={['temp_admin1@gmail.com', 'temp_admin2@gmail.com']} />} */}
-      {EmailChipsComponent(course_name, 'temp_owner@gmail.com', [
-        'temp_admin1@gmail.com',
-        'temp_admin2@gmail.com',
-      ])}
+      {isPrivate && (
+        <EmailChipsComponent
+          course_owner="temp_owner@gmail.com"
+          course_admins={[
+            "temp_admin1@gmail.com",
+            "temp_admin2@gmail.com",
+          ]} 
+          is_private={isPrivate} 
+          course_name={course_name}        />
+      )}
     </>
   )
 }
