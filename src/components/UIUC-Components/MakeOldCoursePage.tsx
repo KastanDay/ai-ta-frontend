@@ -52,35 +52,36 @@ const MakeOldCoursePage = ({
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
   const { isSignedIn, user } = useUser()
-  const [courseMetadata, setCourseMetadata] = useState('')
+  const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(null)
   const [currentEmail, setCurrentEmail] = useState('')
 
   const currentPageName = GetCurrentPageName() as string
 
-  if (!isLoaded || !userId) {
-    return <AuthComponent course_name={currentPageName} />
-  }
-
+  
   useEffect(() => {
     const fetchData = async () => {
       const userEmail = user?.primaryEmailAddress?.emailAddress as string
       setCurrentEmail(userEmail)
 
-      const metadata = await fetchCourseMetadata(currentPageName)
+      const metadata: CourseMetadata | null = await fetchCourseMetadata(currentPageName)
       setCourseMetadata(metadata)
 
       console.log('MakeOldCoursePage - course_metadata', metadata)
       console.log('MakeOldCoursePage - current_email', userEmail)
     }
-
+    
     fetchData()
   }, [currentPageName, user])
+  
+  if (!isLoaded || !userId) {
+    return <AuthComponent course_name={currentPageName} />
+  }
 
-  if (currentEmail !== (courseMetadata.course_owner as string)) {
+  if (courseMetadata && currentEmail !== (courseMetadata.course_owner as string)) {
     return (
       <CannotEditCourseYouDontOwn
         course_name={currentPageName as string}
-        current_email={currentEmail as string}
+        // current_email={currentEmail as string}
       />
     )
   } else {
@@ -159,6 +160,7 @@ import { IconLock } from '@tabler/icons-react'
 import EmailChipsComponent from './EmailChipsComponent'
 import { AuthComponent } from './AuthToEditCourse'
 import { CannotEditCourseYouDontOwn } from './CannotEditCourseYouDontOwn'
+import { CourseMetadata } from '~/types/courseMetadata'
 
 const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
   const [isPrivate, setIsPrivate] = useState(true)
