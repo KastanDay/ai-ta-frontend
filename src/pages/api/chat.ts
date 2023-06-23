@@ -50,20 +50,23 @@ const handler = async (req: Request): Promise<Response> => {
     const search_query = messages[messages.length - 1]?.content as string // most recent message
 
     console.log('...................... COURSE NAME', course_name)
-    
+
     if (course_name == 'extreme' || course_name == 'zotero-extreme') {
       console.log('CONTEXT STUFFING FOR /extreme and /zotero-extreme slugs')
-      promptToSend = await getExtremePrompt(course_name, search_query)
-        .catch((err) => {
-          console.log('ERROR IN FETCH CONTEXT CALL, defaulting to NO SPECIAL PROMPT', err)
+      promptToSend = await getExtremePrompt(course_name, search_query).catch(
+        (err) => {
+          console.log(
+            'ERROR IN FETCH CONTEXT CALL, defaulting to NO SPECIAL PROMPT',
+            err,
+          )
           return search_query
-        })
-    }
-    else if (course_name == 'gpt4') {
+        },
+      )
+    } else if (course_name == 'gpt4') {
       console.log('NO CONTEXT STUFFING FOR /gpt4 slug')
     }
     // else if (course_name == 'global') {
-      // todo
+    // todo
     // }
     else {
       const context_text = await fetchContextsNOAXIOS(course_name, search_query)
@@ -78,7 +81,10 @@ const handler = async (req: Request): Promise<Response> => {
           return all_texts
         })
         .catch((err) => {
-          console.log('ERROR IN FETCH CONTEXT CALL, defaulting to NO SPECIAL PROMPT', err)
+          console.log(
+            'ERROR IN FETCH CONTEXT CALL, defaulting to NO SPECIAL PROMPT',
+            err,
+          )
           return search_query
         })
 

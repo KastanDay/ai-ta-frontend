@@ -1,9 +1,9 @@
 import React from 'react'
 import Link from 'next/link'
-import { 
-  Montserrat, 
-  // Inter, 
-  Rubik_Puddles, 
+import {
+  Montserrat,
+  // Inter,
+  Rubik_Puddles,
   // Audiowide,
 } from 'next/font/google'
 import {
@@ -53,7 +53,7 @@ export const CannotEditGPT4Page = ({
               p="xl"
             >
               {' '}
-              You cannot edit the gpt4 page. 
+              You cannot edit the gpt4 page.
               <br></br>
               It&apos;s for using GPT-4 by itself with no extra knowledge base.
             </Title>
@@ -66,7 +66,11 @@ export const CannotEditGPT4Page = ({
               p="xl"
             >
               {' '}
-              Go to any other ULR, like <Link href={'/your-awesome-course'}>uiuc.chat/your-awesome-course</Link>, to make a new page.
+              Go to any other ULR, like{' '}
+              <Link href={'/your-awesome-course'}>
+                uiuc.chat/your-awesome-course
+              </Link>
+              , to make a new page.
             </Title>
           </Flex>
         </div>

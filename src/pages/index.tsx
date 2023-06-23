@@ -6,7 +6,6 @@ import Link from 'next/link'
 
 // import { UserButton, SignIn } from "@clerk/nextjs";
 
-
 import {
   // MantineProvider,
   // Image,
@@ -55,7 +54,6 @@ const Home: NextPage = () => {
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
         <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 ">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-
             {/* <Link href="/"> */}
             UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
             {/* </Link> */}
@@ -163,7 +161,7 @@ export default Home
 
 import { createStyles, SimpleGrid, Container } from '@mantine/core'
 import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/router'
 
 const mockdata = [
   {

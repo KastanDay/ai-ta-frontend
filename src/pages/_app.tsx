@@ -3,8 +3,8 @@ import { type Session } from 'next-auth'
 import { MantineProvider } from '@mantine/core'
 import { Analytics } from '@vercel/analytics/react'
 import { appWithTranslation } from 'next-i18next'
-import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from '@clerk/themes';
+import { ClerkProvider } from '@clerk/nextjs'
+import { dark } from '@clerk/themes'
 
 import { api } from '~/utils/api'
 
@@ -15,12 +15,12 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   return (
-    <ClerkProvider       
+    <ClerkProvider
       appearance={{
-        baseTheme: dark
+        baseTheme: dark,
       }}
-      {...pageProps}>
-
+      {...pageProps}
+    >
       <MantineProvider
         withGlobalStyles
         withNormalizeCSS
