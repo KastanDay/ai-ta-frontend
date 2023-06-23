@@ -96,11 +96,9 @@ interface CourseMainProps {
   course_data: any
 }
 
-import { UserButton, SignIn, SignedIn, SignInButton } from '@clerk/nextjs'
 import { useAuth } from '@clerk/nextjs'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
-import { Title } from '@mantine/core'
 
 // run on client side
 const CourseMain: NextPage<CourseMainProps> = (props) => {

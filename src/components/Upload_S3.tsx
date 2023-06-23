@@ -10,6 +10,10 @@ import {
   PDF_MIME_TYPE,
 } from '@mantine/dropzone'
 import { useRouter } from 'next/router'
+import { CourseMetadata } from '~/types/courseMetadata'
+
+import { useUser } from '@clerk/nextjs'
+// import EmailChipsComponent from './UIUC-Components/EmailChipsComponent'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -46,8 +50,11 @@ export function DropzoneS3Upload({
 }) {
   // upload-in-progress spinner control
   const [uploadInProgress, setUploadInProgress] = useState(false)
-
   const router = useRouter()
+
+  // Set owner email
+  const { isSignedIn, user } = useUser()
+  const current_user_email = user?.primaryEmailAddress?.emailAddress as string
 
   const refreshOrRedirect = (redirect_to_gpt_4: boolean) => {
     if (redirect_to_gpt_4) {
@@ -186,6 +193,40 @@ export function DropzoneS3Upload({
     }
   }
 
+  const callSetCourseMetadata = async (courseMetadata: CourseMetadata) => {
+    try {
+      const { is_private, course_owner, course_admins, approved_emails_list } =
+        courseMetadata
+      const course_name = getCurrentPageName() as string
+
+      const url = new URL(
+        '/api/UIUC-api/setCourseMetadata',
+        window.location.origin,
+      )
+      url.searchParams.append('is_private', String(is_private))
+      url.searchParams.append('course_name', course_name)
+      url.searchParams.append('course_owner', course_owner)
+      url.searchParams.append('course_admins', JSON.stringify(course_admins))
+      url.searchParams.append(
+        'approved_emails_list',
+        JSON.stringify(approved_emails_list),
+      )
+
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error setting course metadata:', error)
+      return false
+    }
+  }
+
   return (
     <div className={classes.wrapper} style={{ maxWidth: '320px' }}>
       <Dropzone
@@ -196,11 +237,8 @@ export function DropzoneS3Upload({
           setUploadInProgress(true)
 
           // Make course exist in kv store
-          console.log(
-            'about to setCourseExists in kv store...',
-            getCurrentPageName() as string,
-          )
           await setCourseExistsAPI(getCurrentPageName() as string)
+
           // console.log('Right after setCourseExists in kv store...');
           // const ifexists = await getCourseExistsAPI(getCurrentPageName() as string);
           // console.log('does course exist now? ', ifexists);
