@@ -1,25 +1,31 @@
 import { TextInput } from '@mantine/core'
 import { IconAt } from '@tabler/icons-react'
-import React, { useState } from 'react'
+import React, { KeyboardEvent, ChangeEvent, ClipboardEvent } from 'react'
 // import ReactDOM from "react-dom";
 
-export default class EmailChips extends React.Component {
-  state = {
-    // Todo: get from database
-    items: [],
+type State = {
+  email_addresses: string[]
+  value: string
+  error: string | null
+}
+
+export default class EmailChips extends React.Component<object, State> {
+  state: State = {
+    email_addresses: [],
+    
     value: '',
     error: null,
   }
 
-  handleKeyDown = (evt) => {
+  handleKeyDown = (evt: KeyboardEvent<HTMLInputElement>) => {
     if (['Enter', 'Tab', ','].includes(evt.key)) {
       evt.preventDefault()
 
-      var value = this.state.value.trim()
+      const value = this.state.value.trim()
 
       if (value && this.isValid(value)) {
         this.setState({
-          items: [...this.state.items, this.state.value],
+          email_addresses: [...this.state.email_addresses, this.state.value],
           value: '',
         })
 
@@ -29,39 +35,39 @@ export default class EmailChips extends React.Component {
     }
   }
 
-  handleChange = (evt) => {
+  handleChange = (evt: ChangeEvent<HTMLInputElement>) => {
     this.setState({
       value: evt.target.value,
       error: null,
     })
   }
   
-  handleDelete = (item) => {
+  handleDelete = (email_address: string) => {
     this.setState({
-      items: this.state.items.filter((i) => i !== item),
+      email_addresses: this.state.email_addresses.filter((i) => i !== email_address),
     })
-    console.log("Deleting item: ", item)
+    console.log("Deleting email_address: ", email_address)
   }
   
-  handlePaste = (evt) => {
+  handlePaste = (evt: ClipboardEvent<HTMLInputElement>) => {
     evt.preventDefault()
     
-    var paste = evt.clipboardData.getData('text')
-    var emails = paste.match(/[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/g)
+    const paste = evt.clipboardData.getData('text')
+    const emails = paste.match(/[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/g)
     
     if (emails) {
-      var toBeAdded = emails.filter((email) => !this.isInList(email))
+      const toBeAdded = emails.filter((email) => !this.isInList(email))
       
       this.setState({
-        items: [...this.state.items, ...toBeAdded],
+        email_addresses: [...this.state.email_addresses, ...toBeAdded],
       })
       
       // todo: add to database
-      console.log("Pasted items: ", toBeAdded)
+      console.log("Pasted email_addresses: ", toBeAdded)
     }
   }
 
-  isValid(email) {
+  isValid(email: string) {
     let error = null
 
     if (this.isInList(email)) {
@@ -81,11 +87,11 @@ export default class EmailChips extends React.Component {
     return true
   }
 
-  isInList(email) {
-    return this.state.items.includes(email)
+  isInList(item: string) {
+    return this.state.email_addresses.includes(item)
   }
 
-  isEmail(email) {
+  isEmail(email: string) {
     return /[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/.test(email)
   }
 
@@ -106,13 +112,13 @@ export default class EmailChips extends React.Component {
           onChange={this.handleChange}
           onPaste={this.handlePaste}
         />
-        {this.state.items.map((item) => (
-          <div className="tag-item" key={item}>
-            {item}
+        {this.state.email_addresses.map((email_address) => (
+          <div className="tag-item" key={email_address}>
+            {email_address}
             <button
               type="button"
               className="button"
-              onClick={() => this.handleDelete(item)}
+              onClick={() => this.handleDelete(email_address)}
             >
               &times;
             </button>
