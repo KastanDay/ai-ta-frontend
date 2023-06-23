@@ -13,6 +13,7 @@ import { useRouter } from 'next/router'
 import { CourseMetadata } from '~/types/courseMetadata'
 
 import { useUser } from '@clerk/nextjs'
+// import EmailChipsComponent from './UIUC-Components/EmailChipsComponent'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -236,18 +237,7 @@ export function DropzoneS3Upload({
           setUploadInProgress(true)
 
           // Make course exist in kv store
-          console.log(
-            'about to setCourseExists in kv store...',
-            getCurrentPageName() as string,
-          )
           await setCourseExistsAPI(getCurrentPageName() as string)
-
-          callSetCourseMetadata({
-            is_private: false, // todo: enable private courses from the start.
-            course_owner: current_user_email,
-            course_admins: [],
-            approved_emails_list: [],
-          })
 
           // console.log('Right after setCourseExists in kv store...');
           // const ifexists = await getCourseExistsAPI(getCurrentPageName() as string);

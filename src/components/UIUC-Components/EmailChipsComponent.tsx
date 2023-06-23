@@ -13,10 +13,15 @@ const EmailChipsComponent = ({
   course_name,
   course_owner,
   course_admins,
+  onEmailAddressesChange,
 }: {
   course_name: string
   course_owner: string
   course_admins: string[]
+  onEmailAddressesChange?: (
+    new_course_metadata: CourseMetadata,
+    course_name: string,
+  ) => void // Add this prop type
 }) => {
   const [emailAddresses, setEmailAddresses] = useState<string[]>([])
   const [courseName, setCourseName] = useState<string>(course_name)
@@ -44,7 +49,19 @@ const EmailChipsComponent = ({
       const trimmedValue = value.trim()
 
       if (trimmedValue && isValid(trimmedValue)) {
-        setEmailAddresses([...emailAddresses, trimmedValue])
+        // setEmailAddresses([...emailAddresses, trimmedValue])
+        setEmailAddresses((prevEmailAddresses) => {
+          const newEmailAddresses = [...prevEmailAddresses, trimmedValue]
+          const curr_course_metadata = {
+            is_private: isPrivate,
+            course_owner: course_owner,
+            course_admins: course_admins,
+            approved_emails_list: newEmailAddresses,
+          }
+          onEmailAddressesChange &&
+            onEmailAddressesChange(curr_course_metadata, course_name)
+          return newEmailAddresses
+        })
         setValue('')
 
         callSetCourseMetadata({
@@ -63,7 +80,21 @@ const EmailChipsComponent = ({
   }
 
   const handleDelete = (email_address: string) => {
-    setEmailAddresses(emailAddresses.filter((i) => i !== email_address))
+    // setEmailAddresses(emailAddresses.filter((i) => i !== email_address))
+    setEmailAddresses((prevEmailAddresses) => {
+      const newEmailAddresses = prevEmailAddresses.filter(
+        (i) => i !== email_address,
+      )
+      const curr_course_metadata = {
+        is_private: isPrivate,
+        course_owner: course_owner,
+        course_admins: course_admins,
+        approved_emails_list: newEmailAddresses,
+      }
+      onEmailAddressesChange &&
+        onEmailAddressesChange(curr_course_metadata, course_name)
+      return newEmailAddresses
+    })
     callRemoveUserFromCourse(email_address)
   }
 
@@ -76,7 +107,20 @@ const EmailChipsComponent = ({
     if (emails) {
       const toBeAdded = emails.filter((email) => !isInList(email))
 
-      setEmailAddresses([...emailAddresses, ...toBeAdded])
+      // setEmailAddresses([...emailAddresses, ...toBeAdded])
+
+      setEmailAddresses((prevEmailAddresses) => {
+        const newEmailAddresses = [...prevEmailAddresses, ...toBeAdded]
+        const curr_course_metadata = {
+          is_private: isPrivate,
+          course_owner: course_owner,
+          course_admins: course_admins,
+          approved_emails_list: newEmailAddresses,
+        }
+        onEmailAddressesChange &&
+          onEmailAddressesChange(curr_course_metadata, course_name)
+        return newEmailAddresses
+      })
 
       callSetCourseMetadata({
         is_private: isPrivate,

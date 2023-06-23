@@ -39,9 +39,14 @@ import GlobalHeader from './GlobalHeader'
 import EmailChipsComponent from './EmailChipsComponent'
 import { IconLock } from '@tabler/icons-react'
 import { useUser } from '@clerk/nextjs'
-// import { useRouter } from 'next/router'
+import { CourseMetadata } from '~/types/courseMetadata'
+import { GetCurrentPageName } from './MakeOldCoursePage'
 
 const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
+  const { isSignedIn, user } = useUser()
+  console.log('email: ', user?.primaryEmailAddress?.emailAddress)
+  const owner_email = user?.primaryEmailAddress?.emailAddress as string
+
   return (
     <>
       <Head>
@@ -162,6 +167,62 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
     callSetCoursePublicOrPrivate(course_name, !isPrivate) // db
   }
 
+  const callSetCourseMetadata = async (
+    courseMetadata: CourseMetadata,
+    course_name: string,
+  ) => {
+    try {
+      const { is_private, course_owner, course_admins, approved_emails_list } =
+        courseMetadata
+      // const course_name = course_name
+
+      console.log(
+        'IN callSetCourseMetadata in MakeNewCoursePage: ',
+        courseMetadata,
+      )
+
+      const url = new URL(
+        '/api/UIUC-api/setCourseMetadata',
+        window.location.origin,
+      )
+      url.searchParams.append('is_private', String(is_private))
+      url.searchParams.append('course_name', course_name)
+      url.searchParams.append('course_owner', course_owner)
+      url.searchParams.append('course_admins', JSON.stringify(course_admins))
+      url.searchParams.append(
+        'approved_emails_list',
+        JSON.stringify(approved_emails_list),
+      )
+
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error setting course metadata:', error)
+      return false
+    }
+  }
+
+  const handleEmailAddressesChange = (
+    new_course_metadata: CourseMetadata,
+    course_name: string,
+  ) => {
+    console.log('Fresh course metadata:', new_course_metadata)
+    // TODO: update db
+    callSetCourseMetadata(
+      {
+        ...new_course_metadata,
+      },
+      course_name,
+    )
+  }
+
   return (
     <>
       <Title
@@ -202,8 +263,9 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
       {isPrivate && (
         <EmailChipsComponent
           course_owner={owner_email}
-          course_admins={['temp_admin1@gmail.com', 'temp_admin2@gmail.com']}
+          course_admins={[]} // TODO: add admin functionality
           course_name={course_name}
+          onEmailAddressesChange={handleEmailAddressesChange}
         />
       )}
     </>
