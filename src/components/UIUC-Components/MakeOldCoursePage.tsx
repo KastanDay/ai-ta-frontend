@@ -148,14 +148,16 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
       </Title>
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${isChecked ? 'private' : 'public'}. Click to change.`}
+          label={`Course is ${
+            isChecked ? 'private' : 'public'
+          }. Click to change.`}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
           className={montserrat.className}
           // style={{ marginTop: '4rem' }}
           size="xl"
           // bg='#020307'
-          color='grape'
+          color="grape"
           icon={CheckboxIcon}
           defaultChecked
           onChange={handleCheckboxChange}
@@ -164,10 +166,11 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
       {/* </Group>
       <Group className="p-3"> */}
 
-      <Text>Only the below email address are able to access the content. Read our strict security policy (in progress).</Text>
-      {isChecked && (
-        <EmailChips />
-      )}
+      <Text>
+        Only the below email address are able to access the content. Read our
+        strict security policy (in progress).
+      </Text>
+      {isChecked && <EmailChips />}
     </>
   )
 }
