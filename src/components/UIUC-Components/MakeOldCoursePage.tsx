@@ -148,29 +148,24 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
       </Title>
       <Group className="p-3">
         <Checkbox
+          label={`Course is ${isChecked ? 'private' : 'public'}. Click to change.`}
+          // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
-          size="lg"
-          bg='#020307'
-          // color='#020307'
+          className={montserrat.className}
+          // style={{ marginTop: '4rem' }}
+          size="xl"
+          // bg='#020307'
+          color='grape'
           icon={CheckboxIcon}
           defaultChecked
           onChange={handleCheckboxChange}
         />
-        <Title order={4}>Course is {isChecked ? 'private' : 'public'}.</Title>
       </Group>
       {/* </Group>
       <Group className="p-3"> */}
 
-      <Text>Only the below email address are able to access the content. Read our strict security policy.</Text>
+      <Text>Only the below email address are able to access the content. Read our strict security policy (in progress).</Text>
       {isChecked && (
-        // <Input
-        //   size='md'
-        //   width={300}
-        //   icon={<IconAt />}
-        //   placeholder="List of allowed email addresses, comma separated."
-        //   />
-        // label="TextInput with tooltip"
-        // description="Tooltip will be relative to the input"
         <EmailChips />
       )}
     </>
