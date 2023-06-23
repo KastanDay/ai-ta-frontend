@@ -108,15 +108,9 @@ const MakeOldCoursePage = ({
 }
 
 import { Checkbox, CheckboxProps } from '@mantine/core'
-import {
-  IconLock,
-  IconBiohazard,
-  IconRadioactive,
-  IconAt,
-} from '@tabler/icons-react'
+import { IconLock } from '@tabler/icons-react'
 
-import { Input } from '@mantine/core'
-import EmailChips from './EmailChips'
+// import { Input } from '@mantine/core'
 import EmailChipsComponent from './EmailChipsComponent'
 
 const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
@@ -130,18 +124,17 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
     )
 
   const handleCheckboxChange = () => {
-    // isPrivate == private
-    // not isPrivate == public
-    
-    // TODO: set course to public or private in database
-    const callSetCoursePublicOrPrivate = async (course_name: string, isPrivate: boolean) => {
+    const callSetCoursePublicOrPrivate = async (
+      course_name: string,
+      is_private: boolean,
+    ) => {
       try {
         const url = new URL(
           '/api/UIUC-api/setCoursePublicOrPrivate',
           window.location.origin,
-          )
+        )
         url.searchParams.append('course_name', course_name)
-        url.searchParams.append('isPrivate', String(isPrivate))
+        url.searchParams.append('is_private', String(is_private))
 
         const response = await fetch(url.toString(), {
           method: 'POST',
@@ -156,10 +149,9 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
         return false
       }
     }
-    
+
     setIsPrivate(!isPrivate) // gui
     callSetCoursePublicOrPrivate(course_name, !isPrivate) // db
-
   }
 
   return (
@@ -202,12 +194,9 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
       {isPrivate && (
         <EmailChipsComponent
           course_owner="temp_owner@gmail.com"
-          course_admins={[
-            "temp_admin1@gmail.com",
-            "temp_admin2@gmail.com",
-          ]} 
-          is_private={isPrivate} 
-          course_name={course_name}        />
+          course_admins={['temp_admin1@gmail.com', 'temp_admin2@gmail.com']}
+          course_name={course_name}
+        />
       )}
     </>
   )

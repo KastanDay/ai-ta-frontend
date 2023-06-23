@@ -29,8 +29,7 @@ const removeUserFromCourse = async (req: any, res: any) => {
     ].filter((i) => i !== email_to_remove)
 
     const updated_course_metadata: CourseMetadata = {
-      course_owner: course_metadata['course_owner'],
-      course_admins: course_metadata['course_admins'],
+      ...course_metadata,
       approved_emails_list: remaining_email_addresses,
     }
 

@@ -10,12 +10,10 @@ import React, {
 import { CourseMetadata } from '~/types/courseMetadata'
 
 const EmailChipsComponent = ({
-  is_private,
   course_name,
   course_owner,
   course_admins,
 }: {
-  is_private: boolean
   course_name: string
   course_owner: string
   course_admins: string[]
@@ -50,7 +48,7 @@ const EmailChipsComponent = ({
         setValue('')
 
         callSetCourseMetadata({
-          isPrivate: isPrivate,
+          is_private: isPrivate,
           course_owner: course_owner, // Replace with the appropriate course_owner value
           course_admins: course_admins, // Replace with the appropriate course_admins value (array of strings)
           approved_emails_list: [...emailAddresses, trimmedValue],
@@ -81,6 +79,7 @@ const EmailChipsComponent = ({
       setEmailAddresses([...emailAddresses, ...toBeAdded])
 
       callSetCourseMetadata({
+        is_private: isPrivate,
         course_owner: course_owner,
         course_admins: course_admins,
         approved_emails_list: [...emailAddresses, ...toBeAdded],
@@ -117,7 +116,7 @@ const EmailChipsComponent = ({
 
   const callSetCourseMetadata = async (courseMetadata: CourseMetadata) => {
     try {
-      const { course_owner, course_admins, approved_emails_list } =
+      const { is_private, course_owner, course_admins, approved_emails_list } =
         courseMetadata
       const course_name = courseName
 
@@ -125,7 +124,7 @@ const EmailChipsComponent = ({
         '/api/UIUC-api/setCourseMetadata',
         window.location.origin,
       )
-      url.searchParams.append('isPrivate', isPrivate)
+      url.searchParams.append('is_private', String(is_private))
       url.searchParams.append('course_name', course_name)
       url.searchParams.append('course_owner', course_owner)
       url.searchParams.append('course_admins', JSON.stringify(course_admins))
