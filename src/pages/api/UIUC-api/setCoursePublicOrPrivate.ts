@@ -6,10 +6,10 @@ export const runtime = 'edge'
 
 const setCoursePublicOrPrivate = async (req: any, res: any) => {
   const course_name = req.nextUrl.searchParams.get('course_name')
-  const isPrivate = req.nextUrl.searchParams.get('isPrivate')
-  
+  const is_private = req.nextUrl.searchParams.get('is_private')
+
   console.log('removeUserFromCourse: course_name', course_name)
-  console.log('removeUserFromCourse: isPrivate', isPrivate)
+  console.log('removeUserFromCourse: is_private', is_private)
 
   try {
     const course_metadata = (await kv.get(
@@ -23,7 +23,7 @@ const setCoursePublicOrPrivate = async (req: any, res: any) => {
 
     const updated_course_metadata: CourseMetadata = {
       ...course_metadata,
-      isPrivate, // ONLY CHANGE
+      is_private, // ONLY CHANGE
     }
 
     await kv.set(course_name + '_metadata', updated_course_metadata)
@@ -36,5 +36,3 @@ const setCoursePublicOrPrivate = async (req: any, res: any) => {
   }
 }
 export default setCoursePublicOrPrivate
-
-

@@ -15,7 +15,7 @@ const setCourseMetadata = async (req: any, res: any) => {
 
   const course_name = req.nextUrl.searchParams.get('course_name')
   const course_owner = req.nextUrl.searchParams.get('course_owner')
-  const isPrivate = req.nextUrl.searchParams.get('isPrivate')
+  const is_private = req.nextUrl.searchParams.get('is_private')
   const course_admins = JSON.parse(
     req.nextUrl.searchParams.get('course_admins') || '[]',
   )
@@ -25,7 +25,7 @@ const setCourseMetadata = async (req: any, res: any) => {
 
   try {
     const course_metadata: CourseMetadata = {
-      isPrivate: isPrivate,
+      is_private: is_private,
       course_owner: course_owner,
       course_admins: course_admins,
       approved_emails_list: approved_emails_list,
