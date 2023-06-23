@@ -9,29 +9,37 @@ import React, {
 } from 'react'
 import { CourseMetadata } from '~/types/courseMetadata'
 
-const EmailChipsComponent = (
-  course_name: string,
-  course_owner: string,
-  course_admins: string[],
-) => {
+const EmailChipsComponent = ({
+  is_private,
+  course_name,
+  course_owner,
+  course_admins,
+}: {
+  is_private: boolean
+  course_name: string
+  course_owner: string
+  course_admins: string[]
+}) => {
   const [emailAddresses, setEmailAddresses] = useState<string[]>([])
   const [courseName, setCourseName] = useState<string>(course_name)
   const [value, setValue] = useState<string>('')
+  const [isPrivate, setIsPrivate] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
   // fetch metadata on mount
   useEffect(() => {
     fetchCourseMetadata(course_name).then((metadata) => {
       if (metadata) {
-        console.log('Course metadata:', metadata)
+        // console.log('Course metadata:', metadata)
         setEmailAddresses(metadata.approved_emails_list)
+        setIsPrivate(metadata.isPrivate)
       } else {
         console.log('Failed to fetch course metadata')
       }
     })
   }, [])
 
-  const handleKeyDown = (evt: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown_users = (evt: KeyboardEvent<HTMLInputElement>) => {
     if (['Enter', 'Tab', ','].includes(evt.key)) {
       evt.preventDefault()
 
@@ -42,6 +50,7 @@ const EmailChipsComponent = (
         setValue('')
 
         callSetCourseMetadata({
+          isPrivate: isPrivate,
           course_owner: course_owner, // Replace with the appropriate course_owner value
           course_admins: course_admins, // Replace with the appropriate course_admins value (array of strings)
           approved_emails_list: [...emailAddresses, trimmedValue],
@@ -50,7 +59,7 @@ const EmailChipsComponent = (
     }
   }
 
-  const handleChange = (evt: ChangeEvent<HTMLInputElement>) => {
+  const handleChange_users = (evt: ChangeEvent<HTMLInputElement>) => {
     setValue(evt.target.value)
     setError(null)
   }
@@ -60,7 +69,7 @@ const EmailChipsComponent = (
     callRemoveUserFromCourse(email_address)
   }
 
-  const handlePaste = (evt: ClipboardEvent<HTMLInputElement>) => {
+  const handlePaste_users = (evt: ClipboardEvent<HTMLInputElement>) => {
     evt.preventDefault()
 
     const paste = evt.clipboardData.getData('text')
@@ -116,6 +125,7 @@ const EmailChipsComponent = (
         '/api/UIUC-api/setCourseMetadata',
         window.location.origin,
       )
+      url.searchParams.append('isPrivate', isPrivate)
       url.searchParams.append('course_name', course_name)
       url.searchParams.append('course_owner', course_owner)
       url.searchParams.append('course_admins', JSON.stringify(course_admins))
@@ -198,9 +208,9 @@ const EmailChipsComponent = (
         placeholder="Type or paste email addresses, even messy lists from Outlook"
         className={'p-3 ' + (error && 'border-color: tomato')}
         value={value}
-        onKeyDown={handleKeyDown}
-        onChange={handleChange}
-        onPaste={handlePaste}
+        onKeyDown={handleKeyDown_users}
+        onChange={handleChange_users}
+        onPaste={handlePaste_users}
       />
       {emailAddresses.map((email_address) => (
         <div className="tag-item" key={email_address}>
