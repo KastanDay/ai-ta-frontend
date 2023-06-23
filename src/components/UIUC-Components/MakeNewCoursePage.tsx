@@ -5,19 +5,22 @@ import { DropzoneS3Upload } from '~/components/Upload_S3'
 import { Montserrat } from 'next/font/google'
 
 import {
-  Card,
-  Image,
+  // Card,
+  // Image,
   Text,
   Title,
-  Badge,
-  MantineProvider,
-  Button,
-  Group,
-  Stack,
-  createStyles,
-  FileInput,
+  // Badge,
+  // MantineProvider,
+  // Button,
+  // Group,
+  // Stack,
+  // createStyles,
+  // FileInput,
   Flex,
-  rem,
+  Group,
+  Checkbox,
+  CheckboxProps,
+  // rem,
 } from '@mantine/core'
 
 // const rubik_puddles = Rubik_Puddles({
@@ -31,17 +34,14 @@ const montserrat = Montserrat({
 })
 
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
 import GlobalHeader from './GlobalHeader'
+import EmailChipsComponent from './EmailChipsComponent'
+import { IconLock } from '@tabler/icons-react'
+import { useUser } from '@clerk/nextjs'
 // import { useRouter } from 'next/router'
 
 const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
-  // const router = useRouter()
-  // const { course_name: course_name_param } = router.query
-
-  console.log('WERE IN MAKE A NEW COURSE PAGE', course_name)
-  console.log('course_name', course_name)
-
   return (
     <>
       <Head>
@@ -95,16 +95,117 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
             >
               {course_name}
             </Title>
+
+            {/* !! MAIN UPLOAD COMPONENT !! */}
             <DropzoneS3Upload course_name={course_name} />
+
             <Title order={4}>
               Stay on page until loading is complete or ingest will fail.
             </Title>
             <Title order={4}>
               The page will auto-refresh when your AI Assistant is ready.
             </Title>
+
+            <PrivateOrPublicCourse course_name={course_name} />
           </Flex>
         </div>
       </main>
+    </>
+  )
+}
+
+const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
+  const [isPrivate, setIsPrivate] = useState(false)
+
+  const { isSignedIn, user } = useUser()
+  console.log('email: ', user?.primaryEmailAddress?.emailAddress)
+  const owner_email = user?.primaryEmailAddress?.emailAddress as string
+
+  const CheckboxIcon: CheckboxProps['icon'] = ({ indeterminate, className }) =>
+    indeterminate ? (
+      <IconLock className={className} />
+    ) : (
+      <IconLock className={className} />
+    )
+
+  const handleCheckboxChange = () => {
+    const callSetCoursePublicOrPrivate = async (
+      course_name: string,
+      is_private: boolean,
+    ) => {
+      try {
+        const url = new URL(
+          '/api/UIUC-api/setCoursePublicOrPrivate',
+          window.location.origin,
+        )
+        url.searchParams.append('course_name', course_name)
+        url.searchParams.append('is_private', String(is_private))
+
+        const response = await fetch(url.toString(), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        const data = await response.json()
+        return data.success
+      } catch (error) {
+        console.error(
+          'Error changing course from public to private (or vice versa):',
+          error,
+        )
+        return false
+      }
+    }
+
+    setIsPrivate(!isPrivate) // gui
+    callSetCoursePublicOrPrivate(course_name, !isPrivate) // db
+  }
+
+  return (
+    <>
+      <Title
+        className={montserrat.className}
+        variant="gradient"
+        gradient={{ from: 'gold', to: 'white', deg: 50 }}
+        order={2}
+        p="xl"
+        style={{ marginTop: '4rem' }}
+      >
+        {' '}
+        Course Visibility{' '}
+      </Title>
+      <Group className="p-3">
+        <Checkbox
+          label={`Course is ${
+            isPrivate ? 'private' : 'public'
+          }. Click to change.`}
+          // description="Course is private by default."
+          aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
+          className={montserrat.className}
+          // style={{ marginTop: '4rem' }}
+          size="xl"
+          // bg='#020307'
+          color="grape"
+          icon={CheckboxIcon}
+          defaultChecked={isPrivate}
+          onChange={handleCheckboxChange}
+        />
+      </Group>
+      {/* </Group>
+      <Group className="p-3"> */}
+
+      <Text>
+        Only the below email address are able to access the content. Read our
+        strict security policy (in progress).
+      </Text>
+      {isPrivate && (
+        <EmailChipsComponent
+          course_owner={owner_email}
+          course_admins={['temp_admin1@gmail.com', 'temp_admin2@gmail.com']}
+          course_name={course_name}
+        />
+      )}
     </>
   )
 }
