@@ -32,7 +32,6 @@ import { Plugin } from '@/types/plugin'
 
 import HomeContext from '~/pages/api/home/home.context'
 
-
 import Spinner from '../Spinner'
 import { ChatInput } from './ChatInput'
 import { ChatLoader } from './ChatLoader'
@@ -109,7 +108,10 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ course_name: getCurrentPageName() || NaN, conversation: conversation }),
+        body: JSON.stringify({
+          course_name: getCurrentPageName() || NaN,
+          conversation: conversation,
+        }),
       })
       const data = await response.json()
       return data.success
@@ -117,14 +119,16 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
       console.error('Error setting course data:', error)
       return false
     }
-    
-  };
+  }
 
   // Add this function to handle saving the answer to a separate database
   const onAnswerReceived = (answer: string) => {
     // Save the answer to a separate database here
-    console.log("<><><><><><><><><><><><> Answer received and ready to be saved:", answer);
-  };
+    console.log(
+      '<><><><><><><><><><><><> Answer received and ready to be saved:',
+      answer,
+    )
+  }
 
   // THIS IS WHERE MESSAGES ARE SENT.
   const handleSend = useCallback(
@@ -264,7 +268,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           }
           saveConversation(updatedConversation)
           console.log('updatedConversation: ', updatedConversation)
-          onMessageReceived(updatedConversation); // kastan here, trying to save message AFTER done streaming. This only saves the user message...
+          onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
@@ -272,16 +276,16 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               }
               return conversation
             },
-            )
-            if (updatedConversations.length === 0) {
-              updatedConversations.push(updatedConversation)
-            }
-            homeDispatch({ field: 'conversations', value: updatedConversations })
-            saveConversations(updatedConversations)
-            homeDispatch({ field: 'messageIsStreaming', value: false })
-          } else {
-            const { answer } = await response.json()
-            onAnswerReceived(answer); // kastan here, trying to save message AFTER done streaming. This should save the assistant message...
+          )
+          if (updatedConversations.length === 0) {
+            updatedConversations.push(updatedConversation)
+          }
+          homeDispatch({ field: 'conversations', value: updatedConversations })
+          saveConversations(updatedConversations)
+          homeDispatch({ field: 'messageIsStreaming', value: false })
+        } else {
+          const { answer } = await response.json()
+          onAnswerReceived(answer) // kastan here, trying to save message AFTER done streaming. This should save the assistant message...
           const updatedMessages: Message[] = [
             ...updatedConversation.messages,
             { role: 'assistant', content: answer },
@@ -295,7 +299,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             value: updatedConversation, // kastan fixed tiny bug here from original template code
           })
           saveConversation(updatedConversation)
-          onAnswerReceived(answer); // kastan here, trying to save message AFTER done streaming. This should save the assistant message...
+          onAnswerReceived(answer) // kastan here, trying to save message AFTER done streaming. This should save the assistant message...
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
@@ -417,24 +421,26 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
     }
   }, [messagesEndRef])
 
-  const statements = ['Make a bullet point list of key takeaways of the course.',
-  'What is [your favorite topic] and why is it worth learning about?',
-  'How can I effectively prepare for the upcoming exam?',
-  'How many assignments in the course?'];
+  const statements = [
+    'Make a bullet point list of key takeaways of the course.',
+    'What is [your favorite topic] and why is it worth learning about?',
+    'How can I effectively prepare for the upcoming exam?',
+    'How many assignments in the course?',
+  ]
 
-// Add this function to create dividers with statements
+  // Add this function to create dividers with statements
   const renderDividers = () => {
     return statements.map((statement, index) => (
-        <div key={index} className="flex flex-col w-full items-center">
-          <div className="w-3/5 grid h-20 card bg-base-300/50 rounded-box place-items-center text-black text-lg">
-            {statement}
-          </div>
-          {index !== statements.length - 1 && (
-              <div className="w-3/5 divider mx-auto"></div>
-          )}
+      <div key={index} className="flex w-full flex-col items-center">
+        <div className="card rounded-box grid h-20 w-3/5 place-items-center bg-base-300/50 text-lg text-black">
+          {statement}
         </div>
-    ));
-  };
+        {index !== statements.length - 1 && (
+          <div className="divider mx-auto w-3/5"></div>
+        )}
+      </div>
+    ))
+  }
 
   return (
     <SearchQuery.Provider value={{ searchQuery, setSearchQuery }}>
@@ -502,19 +508,17 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                     </div>
 
                     {models.length > 0 && (
-                      <div className="flex h-full flex-col space-y-4 rounded-3xl border border-neutral-200 p-4 dark:border-neutral-600 focus:border-t-info/100">
+                      <div className="flex h-full flex-col space-y-4 rounded-3xl border border-neutral-200 p-4 focus:border-t-info/100 dark:border-neutral-600">
                         <ModelParams
-                            selectedConversation={selectedConversation}
-                            prompts={prompts}
-                            handleUpdateConversation={handleUpdateConversation}
-                            t={t}
+                          selectedConversation={selectedConversation}
+                          prompts={prompts}
+                          handleUpdateConversation={handleUpdateConversation}
+                          t={t}
                         />
                       </div>
                     )}
                   </div>
-                  <div className="mt-16">
-                  {renderDividers()}
-                    </div>
+                  <div className="mt-16">{renderDividers()}</div>
                 </>
               ) : (
                 <>

@@ -96,12 +96,11 @@ interface CourseMainProps {
   course_data: any
 }
 
-import { UserButton, SignIn, SignedIn, SignInButton} from "@clerk/nextjs";
-import { useAuth } from "@clerk/nextjs";
+import { UserButton, SignIn, SignedIn, SignInButton } from '@clerk/nextjs'
+import { useAuth } from '@clerk/nextjs'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
 import { Title } from '@mantine/core'
-
 
 // run on client side
 const CourseMain: NextPage<CourseMainProps> = (props) => {
@@ -109,8 +108,8 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
   const course_name = props.course_name
   const course_data = props.course_data
   const currentPageName = GetCurrentPageName() as string
-  const { isLoaded, userId, sessionId, getToken } = useAuth(); // Clerk Auth
-  
+  const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
+
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   if (!isLoaded || !userId) {
     return <AuthComponent course_name={currentPageName} />
@@ -118,7 +117,11 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
   }
 
   // Don't edit certain special pages (no context allowed)
-  if (props.course_name.toLowerCase() == 'gpt4' || props.course_name.toLowerCase() == 'global' || props.course_name.toLowerCase() == 'extreme') {
+  if (
+    props.course_name.toLowerCase() == 'gpt4' ||
+    props.course_name.toLowerCase() == 'global' ||
+    props.course_name.toLowerCase() == 'extreme'
+  ) {
     return <CannotEditGPT4Page course_name={currentPageName || ''} />
   }
 
@@ -130,8 +133,10 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
   // EDIT EXISTING COURSE
   return (
     <>
-    <Header />
-    <MakeOldCoursePage course_name={currentPageName || ''} course_data={course_data}
+      <Header />
+      <MakeOldCoursePage
+        course_name={currentPageName || ''}
+        course_data={course_data}
       />
     </>
   )

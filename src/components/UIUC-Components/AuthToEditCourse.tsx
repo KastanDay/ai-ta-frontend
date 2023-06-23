@@ -1,9 +1,9 @@
 import React from 'react'
 import Link from 'next/link'
-import { 
-  Montserrat, 
-  // Inter, 
-  Rubik_Puddles, 
+import {
+  Montserrat,
+  // Inter,
+  Rubik_Puddles,
   // Audiowide,
 } from 'next/font/google'
 import {
@@ -25,11 +25,7 @@ import { SignInButton } from '@clerk/nextjs'
 const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 // const rubikpuddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 
-export const AuthComponent = ({
-  course_name,
-}: {
-  course_name: string
-}) => {
+export const AuthComponent = ({ course_name }: { course_name: string }) => {
   return (
     <>
       <main className="justify-center; course-page-main flex min-h-screen flex-col items-center">
@@ -58,7 +54,10 @@ export const AuthComponent = ({
             </Title>
             {/* Wrapping a button makes it easy to style the sign-in link. */}
             <SignInButton mode="modal">
-              <Button className="btn kas-gradient-text" style={{fontSize: '24px'}}>
+              <Button
+                className="kas-gradient-text btn"
+                style={{ fontSize: '24px' }}
+              >
                 Sign in →
               </Button>
             </SignInButton>

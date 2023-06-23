@@ -8,7 +8,7 @@ export async function getExtremePrompt(
   top_n = 8, // get 20 contexts. Batch size is 20, so this is the minimum & max for a single call.
   top_k_to_search = 100,
 ) {
-  console.log("getExtremePrompt called")
+  console.log('getExtremePrompt called')
   const API_URL = 'https://flask-production-751b.up.railway.app'
   const res = await fetch(
     `${API_URL}/getContextStuffedPrompt?course_name=${course_name}&search_query=${search_query}&top_n=${top_n}&top_k_to_search=${top_k_to_search}`,

@@ -1,9 +1,9 @@
 import Head from 'next/head'
 import { DropzoneS3Upload } from '~/components/Upload_S3'
-import { 
-  Montserrat, 
-  // Inter, 
-  // Rubik_Puddles, 
+import {
+  Montserrat,
+  // Inter,
+  // Rubik_Puddles,
   // Audiowide,
 } from 'next/font/google'
 import {
@@ -31,8 +31,6 @@ import { useRouter } from 'next/router'
 // import Header from '~/components/UIUC-Components/GlobalHeader'
 // import { ClerkProvider, SignedIn } from '@clerk/nextjs'
 // import { auth } from '@clerk/nextjs';
-
-
 
 const MakeOldCoursePage = ({
   course_name,
@@ -124,7 +122,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
       const API_URL = 'https://flask-production-751b.up.railway.app'
       const response = await axios.delete(`${API_URL}/delete`, {
         params: { s3_path, course_name },
-      });
+      })
       console.log(response)
       // Handle successful deletion, e.g., remove the item from the list or show a success message
       // Refresh the page
@@ -154,8 +152,9 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
               </div>
             </div>
             <button
-              onClick={() => handleDelete(file.s3_path as string, file.course_name as string)}
-
+              onClick={() =>
+                handleDelete(file.s3_path as string, file.course_name as string)
+              }
               className="mr-4 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-800"
             >
               <span className="text-xl font-bold">-</span>
