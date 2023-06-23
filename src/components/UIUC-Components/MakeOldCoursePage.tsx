@@ -20,11 +20,14 @@ import {
   // rem,
   Title,
   Flex,
+  Group,
+  TextInput,
+  Tooltip,
 } from '@mantine/core'
 // const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 
@@ -84,6 +87,7 @@ const MakeOldCoursePage = ({
             <Title order={4}>
               The page will auto-refresh when your AI Assistant is ready.
             </Title>
+            <PrivateOrPublicCourse course_name={course_name} />
             <Title
               className={montserrat.className}
               variant="gradient"
@@ -99,6 +103,70 @@ const MakeOldCoursePage = ({
           </Flex>
         </div>
       </main>
+    </>
+  )
+}
+
+import { Checkbox, CheckboxProps } from '@mantine/core'
+import {
+  IconLock,
+  IconBiohazard,
+  IconRadioactive,
+  IconAt,
+} from '@tabler/icons-react'
+
+import { Input } from '@mantine/core'
+import EmailChips from './EmailChips'
+
+const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
+  const [isChecked, setIsChecked] = useState(true)
+
+  const CheckboxIcon: CheckboxProps['icon'] = ({ indeterminate, className }) =>
+    indeterminate ? (
+      <IconLock className={className} />
+    ) : (
+      <IconLock className={className} />
+    )
+
+  const handleCheckboxChange = () => {
+    setIsChecked(!isChecked)
+  }
+  const [focused, setFocused] = useState(false)
+
+  return (
+    <>
+      <Title
+        className={montserrat.className}
+        variant="gradient"
+        gradient={{ from: 'gold', to: 'white', deg: 50 }}
+        order={2}
+        p="xl"
+        style={{ marginTop: '4rem' }}
+      >
+        {' '}
+        Course Visibility{' '}
+      </Title>
+      <Group className="p-3">
+        <Checkbox
+          aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
+          size="lg"
+          icon={CheckboxIcon}
+          defaultChecked
+          onChange={handleCheckboxChange}
+        />
+        <Title order={4}>Course is {isChecked ? 'private' : 'public'}.</Title>
+      </Group>
+      {isChecked && (
+        // <Input
+        //   size='md'
+        //   width={300}
+        //   icon={<IconAt />}
+        //   placeholder="List of allowed email addresses, comma separated."
+        //   />
+        // label="TextInput with tooltip"
+        // description="Tooltip will be relative to the input"
+        <EmailChips />
+      )}
     </>
   )
 }
