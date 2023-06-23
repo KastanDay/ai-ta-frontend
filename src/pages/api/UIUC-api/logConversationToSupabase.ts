@@ -11,20 +11,18 @@ const supabase = createClient(
 const logConversationToSupabase = async (req: any, res: any) => {
   const { course_name, conversation } = req.body
 
-  const { data, error } = await supabase
-    .from('llm-convo-monitor')
-    .upsert(
-      [
-        {
-          convo: conversation,
-          convo_id: conversation.id,
-          course_name: course_name,
-        },
-      ],
+  const { data, error } = await supabase.from('llm-convo-monitor').upsert(
+    [
       {
-        onConflict: 'convo_id',
+        convo: conversation,
+        convo_id: conversation.id,
+        course_name: course_name,
       },
-    )
+    ],
+    {
+      onConflict: 'convo_id',
+    },
+  )
   if (error) {
     console.log('error form supabase:', error)
   }

@@ -8,7 +8,7 @@ import HomeContext from '~/pages/api/home/home.context'
 export const ModelSelect = () => {
   const { t } = useTranslation('chat')
   const [isOpen, setIsOpen] = useState(false)
-  const wrapperRef = useRef(null)
+  const wrapperRef = useRef<HTMLDivElement | null>(null)
 
   const {
     state: { selectedConversation, models, defaultModelId },
@@ -16,7 +16,7 @@ export const ModelSelect = () => {
     dispatch: homeDispatch,
   } = useContext(HomeContext)
 
-  const handleModelClick = (modelId) => {
+  const handleModelClick = (modelId: string) => {
     setIsOpen(false)
     selectedConversation &&
       handleUpdateConversation(selectedConversation, {
@@ -25,8 +25,11 @@ export const ModelSelect = () => {
       })
   }
 
-  const handleClickOutside = (event) => {
-    if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      wrapperRef.current &&
+      !wrapperRef.current.contains(event.target as Node)
+    ) {
       setIsOpen(false)
     }
   }
