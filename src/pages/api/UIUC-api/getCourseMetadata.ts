@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 export const runtime = 'edge'
 
 const getCourseMetadata = async (req: any, res: any) => {
-  console.log('in api getCourseMetadata: req', req)
+  // console.log('in api getCourseMetadata: req', req)
   // const { course_name } = req.nextUrl.searchParams
   const course_name = req.nextUrl.searchParams.get('course_name')
 

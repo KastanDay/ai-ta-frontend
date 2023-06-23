@@ -52,41 +52,44 @@ const MakeOldCoursePage = ({
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
   const { isSignedIn, user } = useUser()
-  const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(null)
+  const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
+    null,
+  )
   const [currentEmail, setCurrentEmail] = useState('')
 
   const currentPageName = GetCurrentPageName() as string
 
-  
   useEffect(() => {
     const fetchData = async () => {
       const userEmail = user?.primaryEmailAddress?.emailAddress as string
       setCurrentEmail(userEmail)
 
-      const metadata: CourseMetadata | null = await fetchCourseMetadata(currentPageName)
+      const metadata: CourseMetadata | null = await fetchCourseMetadata(
+        currentPageName,
+      )
       setCourseMetadata(metadata)
 
       console.log('MakeOldCoursePage - course_metadata', metadata)
       console.log('MakeOldCoursePage - current_email', userEmail)
     }
-    
+
     fetchData()
   }, [currentPageName, user])
-  
+
   if (!isLoaded || !userId) {
     return <AuthComponent course_name={currentPageName} />
   }
 
-  if (courseMetadata && currentEmail !== (courseMetadata.course_owner as string)) {
+  if (
+    courseMetadata &&
+    currentEmail !== (courseMetadata.course_owner as string)
+  ) {
     return (
       <CannotEditCourseYouDontOwn
         course_name={currentPageName as string}
         // current_email={currentEmail as string}
       />
     )
-  } else {
-    console.log('current_email == courseMetadata.course_owner')
-    console.log('MakeOldCoursePage - course_metadata', courseMetadata)
   }
 
   return (
@@ -247,7 +250,7 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
       {isPrivate && (
         <EmailChipsComponent
           course_owner={owner_email}
-          course_admins={['temp_admin1@gmail.com', 'temp_admin2@gmail.com']}
+          course_admins={[]}
           course_name={course_name}
         />
       )}
