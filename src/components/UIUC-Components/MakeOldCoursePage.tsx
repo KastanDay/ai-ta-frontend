@@ -117,6 +117,7 @@ import {
 
 import { Input } from '@mantine/core'
 import EmailChips from './EmailChips'
+import EmailChipsComponent from './EmailChipsComponent'
 
 const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
   const [isChecked, setIsChecked] = useState(true)
@@ -170,7 +171,13 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
         Only the below email address are able to access the content. Read our
         strict security policy (in progress).
       </Text>
-      {isChecked && <EmailChips />}
+      {/* {isChecked && <EmailChips />} */}
+      {/* {isChecked && <EmailChipsComponent course_owner='temp_owner@gmail.com' course_admins={['temp_admin1@gmail.com', 'temp_admin2@gmail.com']} />} */}
+      {/* {isChecked && <EmailChipsComponent course_owner='temp_owner@gmail.com' course_admins={['temp_admin1@gmail.com', 'temp_admin2@gmail.com']} />} */}
+      {EmailChipsComponent(course_name, 'temp_owner@gmail.com', [
+        'temp_admin1@gmail.com',
+        'temp_admin2@gmail.com',
+      ])}
     </>
   )
 }
