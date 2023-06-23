@@ -9,7 +9,7 @@ import {
 import {
   // Card,
   // Image,
-  // Text,
+  Text,
   // Badge,
   // MantineProvider,
   // Button,
@@ -150,12 +150,18 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
         <Checkbox
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
           size="lg"
+          bg='#020307'
+          // color='#020307'
           icon={CheckboxIcon}
           defaultChecked
           onChange={handleCheckboxChange}
         />
         <Title order={4}>Course is {isChecked ? 'private' : 'public'}.</Title>
       </Group>
+      {/* </Group>
+      <Group className="p-3"> */}
+
+      <Text>Only the below email address are able to access the content. Read our strict security policy.</Text>
       {isChecked && (
         // <Input
         //   size='md'
