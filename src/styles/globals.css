@@ -126,3 +126,50 @@ li {
   -webkit-text-fill-color: transparent;
   -moz-text-fill-color: transparent;
 }
+
+/* 👇 FOR EmailChips.tsx -- to make nice email input fields. 👇 */
+.input:focus {
+  border-color: cornflowerblue;
+  outline: none;
+}
+
+.input.has-error {
+  border-color: tomato;
+  outline: none;
+}
+
+.error {
+  /* margin: 0; */
+  font-size: 90%;
+  color: tomato;
+}
+
+.tag-item {
+  background-color: #020307;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 30px;
+  height: 30px;
+  padding: 0 4px 0 1rem;
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0.3rem 0.3rem 0;
+}
+
+.tag-item > .button {
+  background-color: blueviolet;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  margin-left: 10px;
+  font-weight: bold;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 👆 FOR EmailChips.tsx -- to make nice email input fields. 👆 */
