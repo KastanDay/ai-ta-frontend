@@ -3,15 +3,26 @@ import { ModelSelect } from './ModelSelect'
 import { SystemPrompt } from './SystemPrompt'
 import { TemperatureSlider } from './Temperature'
 
+// Define the types for the component props
+interface ModelParamsProps {
+  selectedConversation: any // Replace 'any' with the appropriate type
+  prompts: any // Replace 'any' with the appropriate type
+  handleUpdateConversation: (
+    conversation: any,
+    update: { key: string; value: any },
+  ) => void // Replace 'any' with the appropriate types
+  t: (key: string) => string
+}
+
 export const ModelParams = ({
   selectedConversation,
   prompts,
   handleUpdateConversation,
   t,
-}) => {
+}: ModelParamsProps) => {
   const [isChecked, setIsChecked] = useState(false)
 
-  const handleCheckboxChange = (event) => {
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsChecked(event.target.checked)
   }
 
