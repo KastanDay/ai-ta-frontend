@@ -1,10 +1,17 @@
 import { kv } from '@vercel/kv'
+import { NextResponse } from 'next/server'
 import { CourseMetadata } from '~/types/courseMetadata'
 
 export const runtime = 'edge'
 
 const removeUserFromCourse = async (req: any, res: any) => {
-  const { course_name, email_to_remove } = req.query
+  // const { course_name, email_to_remove } = req.query
+
+  const course_name = req.nextUrl.searchParams.get('course_name')
+  const email_to_remove = req.nextUrl.searchParams.get('email_to_remove')
+
+  console.log('removeUserFromCourse: course_name', course_name)
+  console.log('removeUserFromCourse: email_to_remove', email_to_remove)
 
   try {
     const course_metadata = (await kv.get(
@@ -28,10 +35,14 @@ const removeUserFromCourse = async (req: any, res: any) => {
     }
 
     await kv.set(course_name + '_metadata', updated_course_metadata)
-    res.status(200).json({ success: true })
+    // res.status(200).json({ success: true })
+    console.log('removeUserFromCourse about to return success')
+    return NextResponse.json({ success: true })
   } catch (error) {
     console.log(error)
-    res.status(500).json({ success: false })
+    // res.status(500).json({ success: false })
+    console.log('removeUserFromCourse FAILURE')
+    return NextResponse.json({ success: false })
   }
 }
 export default removeUserFromCourse
