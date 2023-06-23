@@ -21,19 +21,26 @@ import {
   Title,
   Flex,
   Group,
-  TextInput,
-  Tooltip,
+  // TextInput,
+  // Tooltip,
 } from '@mantine/core'
 // const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 
 // import Header from '~/components/UIUC-Components/GlobalHeader'
 // import { ClerkProvider, SignedIn } from '@clerk/nextjs'
 // import { auth } from '@clerk/nextjs';
+
+import { useAuth, useUser } from '@clerk/nextjs'
+
+export const GetCurrentPageName = () => {
+  // /CS-125/materials --> CS-125
+  return useRouter().asPath.slice(1).split('/')[0]
+}
 
 const MakeOldCoursePage = ({
   course_name,
@@ -42,6 +49,45 @@ const MakeOldCoursePage = ({
   course_name: string
   course_data: any
 }) => {
+  // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
+  const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
+  const { isSignedIn, user } = useUser()
+  const [courseMetadata, setCourseMetadata] = useState('')
+  const [currentEmail, setCurrentEmail] = useState('')
+
+  const currentPageName = GetCurrentPageName() as string
+
+  if (!isLoaded || !userId) {
+    return <AuthComponent course_name={currentPageName} />
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const userEmail = user?.primaryEmailAddress?.emailAddress as string
+      setCurrentEmail(userEmail)
+
+      const metadata = await fetchCourseMetadata(currentPageName)
+      setCourseMetadata(metadata)
+
+      console.log('MakeOldCoursePage - course_metadata', metadata)
+      console.log('MakeOldCoursePage - current_email', userEmail)
+    }
+
+    fetchData()
+  }, [currentPageName, user])
+
+  if (currentEmail !== (courseMetadata.course_owner as string)) {
+    return (
+      <CannotEditCourseYouDontOwn
+        course_name={currentPageName as string}
+        current_email={currentEmail as string}
+      />
+    )
+  } else {
+    console.log('current_email == courseMetadata.course_owner')
+    console.log('MakeOldCoursePage - course_metadata', courseMetadata)
+  }
+
   return (
     <>
       <Head>
@@ -110,11 +156,16 @@ const MakeOldCoursePage = ({
 import { Checkbox, CheckboxProps } from '@mantine/core'
 import { IconLock } from '@tabler/icons-react'
 
-// import { Input } from '@mantine/core'
 import EmailChipsComponent from './EmailChipsComponent'
+import { AuthComponent } from './AuthToEditCourse'
+import { CannotEditCourseYouDontOwn } from './CannotEditCourseYouDontOwn'
 
 const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
   const [isPrivate, setIsPrivate] = useState(true)
+
+  const { isSignedIn, user } = useUser()
+  console.log('email: ', user?.primaryEmailAddress?.emailAddress)
+  const owner_email = user?.primaryEmailAddress?.emailAddress as string
 
   const CheckboxIcon: CheckboxProps['icon'] = ({ indeterminate, className }) =>
     indeterminate ? (
@@ -193,7 +244,7 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
       </Text>
       {isPrivate && (
         <EmailChipsComponent
-          course_owner="temp_owner@gmail.com"
+          course_owner={owner_email}
           course_admins={['temp_admin1@gmail.com', 'temp_admin2@gmail.com']}
           course_name={course_name}
         />
@@ -225,6 +276,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
       console.log(response)
       // Handle successful deletion, e.g., remove the item from the list or show a success message
       // Refresh the page
+      console.log('about to refresh to: ', router.asPath)
       await router.push(router.asPath)
     } catch (error) {
       console.error(error)
@@ -263,6 +315,29 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
       </ul>
     </div>
   )
+}
+
+async function fetchCourseMetadata(course_name: string) {
+  try {
+    const response = await fetch(
+      `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success === false) {
+        console.error('An error occurred while fetching course metadata')
+        return null
+      }
+      return data.course_metadata
+    } else {
+      console.error(`Error fetching course metadata: ${response.status}`)
+      return null
+    }
+  } catch (error) {
+    console.error('Error fetching course metadata:', error)
+    return null
+  }
 }
 
 export default MakeOldCoursePage
