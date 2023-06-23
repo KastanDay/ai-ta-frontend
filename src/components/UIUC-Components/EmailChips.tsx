@@ -3,10 +3,9 @@ import { IconAt } from '@tabler/icons-react'
 import React, { useState } from 'react'
 // import ReactDOM from "react-dom";
 
-// import "./email_chips_styles.css";
-
 export default class EmailChips extends React.Component {
   state = {
+    // Todo: get from database
     items: [],
     value: '',
     error: null,
@@ -23,6 +22,9 @@ export default class EmailChips extends React.Component {
           items: [...this.state.items, this.state.value],
           value: '',
         })
+
+        // todo: add to database
+        console.log("Key down: ", value)
       }
     }
   }
@@ -33,25 +35,29 @@ export default class EmailChips extends React.Component {
       error: null,
     })
   }
-
+  
   handleDelete = (item) => {
     this.setState({
       items: this.state.items.filter((i) => i !== item),
     })
+    console.log("Deleting item: ", item)
   }
-
+  
   handlePaste = (evt) => {
     evt.preventDefault()
-
+    
     var paste = evt.clipboardData.getData('text')
     var emails = paste.match(/[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/g)
-
+    
     if (emails) {
       var toBeAdded = emails.filter((email) => !this.isInList(email))
-
+      
       this.setState({
         items: [...this.state.items, ...toBeAdded],
       })
+      
+      // todo: add to database
+      console.log("Pasted items: ", toBeAdded)
     }
   }
 
@@ -92,14 +98,10 @@ export default class EmailChips extends React.Component {
           withAsterisk={true}
           icon={<IconAt />}
           size="md"
-          style={{ minWidth: '50%', maxWidth: '80%' }}
-          className="p-3"
-          placeholder="Type or paste email addresses and press `Enter`..."
-          // onFocus={() => setFocused(true)}
-          // onBlur={() => setFocused(false)}
-          // className={"input " + (this.state.error && " has-error")}
+          style={{ minWidth: '38rem', maxWidth: '80%' }}
+          placeholder="Type or paste email addresses, even messy lists from Outlook"
+          className={"p-3 " + (this.state.error && "border-color: tomato")}
           value={this.state.value}
-          // placeholder="Type or paste email addresses and press `Enter`..."
           onKeyDown={this.handleKeyDown}
           onChange={this.handleChange}
           onPaste={this.handlePaste}
@@ -116,21 +118,8 @@ export default class EmailChips extends React.Component {
             </button>
           </div>
         ))}
-
-        {/* <input
-          className={"input " + (this.state.error && " has-error")}
-          value={this.state.value}
-          placeholder="Type or paste email addresses and press `Enter`..."
-          onKeyDown={this.handleKeyDown}
-          onChange={this.handleChange}
-          onPaste={this.handlePaste}
-        /> */}
-
         {this.state.error && <p className="error">{this.state.error}</p>}
       </>
     )
   }
 }
-
-// const rootElement = document.getElementById("root");
-// ReactDOM.render(<App />, rootElement);
