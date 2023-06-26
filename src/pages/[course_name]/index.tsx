@@ -5,24 +5,38 @@ import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import { Text } from '@mantine/core'
 import { kv } from '@vercel/kv'
+import { CourseMetadata } from '~/types/courseMetadata'
+import { useAuth, useUser } from '@clerk/nextjs'
+import { CannotEditCourseYouDontOwn } from '~/components/UIUC-Components/CannotEditCourseYouDontOwn'
+import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { params } = context
   if (!params) {
     return {
-      course_data: null,
       course_name: null,
+      course_exists: null,
+      course_metadata: null,
     }
   }
 
-  console.log('params ----------------------', params)
   const course_name = params['course_name'] as string
-  const course_exists = await kv.get(course_name) // only works server-side. Otherwise use fetch, as in Upload_S3.tsx
+
+  const course_exists = await kv.get(course_name) // kv.get() only works server-side. Otherwise use fetch.
+  const course_metadata: CourseMetadata | null = await kv.get(
+    course_name + '_metadata',
+  )
+  console.log('metadata', course_metadata)
+  console.log(
+    'approved_emails_list',
+    course_metadata?.['approved_emails_list'] ?? [],
+  )
 
   return {
     props: {
       course_name,
       course_exists,
+      course_metadata,
     },
   }
 }
@@ -30,6 +44,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 interface CourseMainProps {
   course_name: string
   course_exists: boolean
+  course_metadata: CourseMetadata
 }
 
 const IfCourseExists: NextPage<CourseMainProps> = (props) => {
@@ -37,16 +52,70 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
   const router = useRouter()
   const course_name = props.course_name
   const course_exists = props.course_exists
+  const course_metadata = props.course_metadata
+
+  const clerk_user = useUser()
 
   useEffect(() => {
     if (course_exists) {
       console.log('Course exists, redirecting to gpt4 page')
-      router.push(`/${course_name}/gpt4`)
+
+      // Check if user is authorized (owner, admin or student)
+      const curr_user_email = clerk_user.user?.primaryEmailAddress
+        ?.emailAddress as string
+      if (
+        course_metadata?.['approved_emails_list']?.includes(curr_user_email) ||
+        course_metadata?.['course_admins']?.includes(curr_user_email) ||
+        course_metadata?.['course_owner'] === curr_user_email
+      ) {
+        router.push(`/${course_name}/gpt4`)
+      } else {
+        // user has no access
+        router.push(`/${course_name}/not_authorized`)
+      }
     } else {
       console.log('Course does not exist, redirecting to materials page')
       router.push(`/${course_name}/materials`)
     }
-  }, [course_exists, course_name, router])
+  }, [course_exists, course_name, router, clerk_user.user, course_metadata])
+
+  // Outcomes:
+  // 1. Course exists, user is authorized -> redirect to gpt4 page
+  // 2. Course exists, user is not authorized -> redirect to not_authorized page
+  // 3. Course !exists -> redirect to materials page
+  // 4. Course exists, user is not logged in -> redirect to materials page
+  // 5. Course does not exist, user is not logged in -> redirect to materials page
+  return (
+    <>
+      {course_exists ? (
+        <main className="items-left justify-left; course-page-main flex min-h-screen flex-col">
+          <div className="container flex flex-col items-center justify-center px-4 py-16 ">
+            <Text weight={800}>Checking if course exists...</Text>
+            <br></br>
+            <br></br>
+            <LoadingSpinner />
+          </div>
+        </main>
+      ) : (
+        <MakeNewCoursePage course_name={course_name} />
+      )}
+      {!(
+        course_metadata?.['approved_emails_list']?.includes(
+          clerk_user.user?.primaryEmailAddress?.emailAddress as string,
+        ) ||
+        course_metadata?.['course_admins']?.includes(
+          clerk_user.user?.primaryEmailAddress?.emailAddress as string,
+        ) ||
+        course_metadata?.['course_owner'] ===
+          clerk_user.user?.primaryEmailAddress?.emailAddress
+      ) && (
+        <CannotEditCourseYouDontOwn
+          course_name={course_name as string}
+          // current_email={currentEmail as string}
+        />
+      )}
+    </>
+  )
 
   if (course_exists) {
     return (
