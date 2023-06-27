@@ -219,7 +219,6 @@ const PrivateOrPublicCourse = ({
         url.searchParams.append('course_name', course_name)
         url.searchParams.append('is_private', String(is_private))
 
-
         const response = await fetch(url.toString(), {
           method: 'POST',
           headers: {

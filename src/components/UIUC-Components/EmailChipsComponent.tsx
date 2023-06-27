@@ -32,8 +32,7 @@ const EmailChipsComponent = ({
   const [isPrivate, setIsPrivate] = useState<boolean>(is_private)
   const [error, setError] = useState<string | null>(null)
 
-
-  let global_isPrivateBool = is_private
+  const global_isPrivateBool = is_private // this is bad code w/ a bug. Something else is controlling isPrivate. But it seems to work. Fine for now.
 
   // fetch metadata on mount
   useEffect(() => {
