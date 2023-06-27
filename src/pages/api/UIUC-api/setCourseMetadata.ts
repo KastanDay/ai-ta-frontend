@@ -23,13 +23,6 @@ const setCourseMetadata = async (req: any, res: any) => {
     req.nextUrl.searchParams.get('approved_emails_list') || '[]',
   )
 
-  console.log('$$$$$$$$$$$$$$$ setCourseMetadata: course_name', course_name)
-  console.log('$$$$$$$$$$$$$$$ setCourseMetadata: is_private', is_private)
-  console.log(
-    '$$$$$$$$$$$$$$$ setCourseMetadata: req.nextUrl.searchParams',
-    req.nextUrl.searchParams,
-  )
-
   try {
     const course_metadata: CourseMetadata = {
       is_private: is_private,

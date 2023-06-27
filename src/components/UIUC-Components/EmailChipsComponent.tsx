@@ -32,8 +32,6 @@ const EmailChipsComponent = ({
   const [isPrivate, setIsPrivate] = useState<boolean>(is_private)
   const [error, setError] = useState<string | null>(null)
 
-  const global_isPrivateBool = is_private // this is bad code w/ a bug. Something else is controlling isPrivate. But it seems to work. Fine for now.
-
   // fetch metadata on mount
   useEffect(() => {
     fetchCourseMetadata(course_name).then((metadata) => {
@@ -57,7 +55,7 @@ const EmailChipsComponent = ({
         setEmailAddresses((prevEmailAddresses) => {
           const newEmailAddresses = [...prevEmailAddresses, trimmedValue]
           const curr_course_metadata = {
-            is_private: global_isPrivateBool,
+            is_private: isPrivate,
             course_owner: course_owner,
             course_admins: course_admins,
             approved_emails_list: newEmailAddresses,
@@ -69,7 +67,7 @@ const EmailChipsComponent = ({
         setValue('')
 
         callSetCourseMetadata({
-          is_private: global_isPrivateBool,
+          is_private: isPrivate,
           course_owner: course_owner, // Replace with the appropriate course_owner value
           course_admins: course_admins, // Replace with the appropriate course_admins value (array of strings)
           approved_emails_list: [...emailAddresses, trimmedValue],
@@ -90,7 +88,7 @@ const EmailChipsComponent = ({
         (i) => i !== email_address,
       )
       const curr_course_metadata = {
-        is_private: global_isPrivateBool,
+        is_private: isPrivate,
         course_owner: course_owner,
         course_admins: course_admins,
         approved_emails_list: newEmailAddresses,
@@ -116,7 +114,7 @@ const EmailChipsComponent = ({
       setEmailAddresses((prevEmailAddresses) => {
         const newEmailAddresses = [...prevEmailAddresses, ...toBeAdded]
         const curr_course_metadata = {
-          is_private: global_isPrivateBool,
+          is_private: isPrivate,
           course_owner: course_owner,
           course_admins: course_admins,
           approved_emails_list: newEmailAddresses,
@@ -127,7 +125,7 @@ const EmailChipsComponent = ({
       })
 
       callSetCourseMetadata({
-        is_private: global_isPrivateBool,
+        is_private: isPrivate,
         course_owner: course_owner,
         course_admins: course_admins,
         approved_emails_list: [...emailAddresses, ...toBeAdded],

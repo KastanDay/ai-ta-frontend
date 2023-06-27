@@ -191,7 +191,6 @@ const PrivateOrPublicCourse = ({
   course_name: string
   course_metadata: CourseMetadata
 }) => {
-  // TODO: fix default state of this... get it from KV store.
   const [isPrivate, setIsPrivate] = useState(
     course_metadata.is_private as boolean,
   )
