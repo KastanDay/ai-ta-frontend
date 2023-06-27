@@ -7,6 +7,7 @@ import React, {
   ChangeEvent,
   ClipboardEvent,
 } from 'react'
+// import { set } from 'zod'
 import { CourseMetadata } from '~/types/courseMetadata'
 
 const EmailChipsComponent = ({
@@ -31,38 +32,24 @@ const EmailChipsComponent = ({
   const [isPrivate, setIsPrivate] = useState<boolean>(is_private)
   const [error, setError] = useState<string | null>(null)
 
+
+  let global_isPrivateBool = is_private
+
   // fetch metadata on mount
   useEffect(() => {
     fetchCourseMetadata(course_name).then((metadata) => {
       if (metadata) {
-        console.log('Course metadata in emailchips--:', metadata)
         setEmailAddresses(metadata.approved_emails_list)
-        setIsPrivate(metadata.isPrivate as boolean)
+        setIsPrivate(metadata.isPrivate)
       } else {
         console.log('Failed to fetch course metadata')
       }
     })
   }, [])
 
-  useEffect(() => {
-    // fetchCourseMetadata(course_name).then((metadata) => {
-    //   if (metadata) {
-    //     console.log('Course metadata in emailchips--:', metadata)
-    //     setEmailAddresses(metadata.approved_emails_list)
-    //     setIsPrivate(metadata.isPrivate)
-    //   } else {
-    //     console.log('Failed to fetch course metadata')
-    //   }
-    // })
-
-    console.log('!email_chips -- IS PRIVATE CHANGED', isPrivate)
-  }, [isPrivate])
-
   const handleKeyDown_users = (evt: KeyboardEvent<HTMLInputElement>) => {
     if (['Enter', 'Tab', ','].includes(evt.key)) {
       evt.preventDefault()
-
-      console.log('!!emailchips -- isPrivate state:', isPrivate)
 
       const trimmedValue = value.trim()
 
@@ -71,7 +58,7 @@ const EmailChipsComponent = ({
         setEmailAddresses((prevEmailAddresses) => {
           const newEmailAddresses = [...prevEmailAddresses, trimmedValue]
           const curr_course_metadata = {
-            is_private: isPrivate,
+            is_private: global_isPrivateBool,
             course_owner: course_owner,
             course_admins: course_admins,
             approved_emails_list: newEmailAddresses,
@@ -82,15 +69,8 @@ const EmailChipsComponent = ({
         })
         setValue('')
 
-        if (is_private === undefined) {
-          console.log(
-            'NEW^^^^^^^^^^^^^^^^^^^^^^^^^^^^ IN EMAIL CHIPS callSetCourseMeta-- is_private is undefined',
-          )
-          return
-        }
-
         callSetCourseMetadata({
-          is_private: isPrivate,
+          is_private: global_isPrivateBool,
           course_owner: course_owner, // Replace with the appropriate course_owner value
           course_admins: course_admins, // Replace with the appropriate course_admins value (array of strings)
           approved_emails_list: [...emailAddresses, trimmedValue],
@@ -111,7 +91,7 @@ const EmailChipsComponent = ({
         (i) => i !== email_address,
       )
       const curr_course_metadata = {
-        is_private: isPrivate,
+        is_private: global_isPrivateBool,
         course_owner: course_owner,
         course_admins: course_admins,
         approved_emails_list: newEmailAddresses,
@@ -137,7 +117,7 @@ const EmailChipsComponent = ({
       setEmailAddresses((prevEmailAddresses) => {
         const newEmailAddresses = [...prevEmailAddresses, ...toBeAdded]
         const curr_course_metadata = {
-          is_private: isPrivate,
+          is_private: global_isPrivateBool,
           course_owner: course_owner,
           course_admins: course_admins,
           approved_emails_list: newEmailAddresses,
@@ -148,7 +128,7 @@ const EmailChipsComponent = ({
       })
 
       callSetCourseMetadata({
-        is_private: isPrivate,
+        is_private: global_isPrivateBool,
         course_owner: course_owner,
         course_admins: course_admins,
         approved_emails_list: [...emailAddresses, ...toBeAdded],
@@ -194,14 +174,7 @@ const EmailChipsComponent = ({
         window.location.origin,
       )
 
-      if (is_private === undefined) {
-        console.log(
-          '^^^^^^^^^^^^^^^^^^^^^^^^^^^^ IN EMAIL CHIPS callSetCourseMeta-- is_private is undefined',
-        )
-        return
-      }
-
-      // url.searchParams.append('is_private', String(is_private))
+      url.searchParams.append('is_private', String(is_private))
       url.searchParams.append('course_name', course_name)
       url.searchParams.append('course_owner', course_owner)
       url.searchParams.append('course_admins', JSON.stringify(course_admins))
