@@ -98,7 +98,6 @@ interface CourseMainProps {
 }
 
 import { useAuth, useUser } from '@clerk/nextjs'
-// import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
@@ -132,10 +131,10 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
     )
     // return ("In the if statement biiii")
     return (
-      <MainPageBackground>
-        <Title style={{ textAlign: 'center' }}>KASTAN HERE IN MATERIALS.</Title>
-        <LoadingSpinner />
-      </MainPageBackground>
+      // <MainPageBackground>
+      <AuthComponent />
+      // <LoadingSpinner />
+      // </MainPageBackground>
     )
   }
 

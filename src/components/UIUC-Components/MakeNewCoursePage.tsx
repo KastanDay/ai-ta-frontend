@@ -40,8 +40,8 @@ import EmailChipsComponent from './EmailChipsComponent'
 import { IconLock } from '@tabler/icons-react'
 import { useUser } from '@clerk/nextjs'
 import { CourseMetadata } from '~/types/courseMetadata'
-import { GetCurrentPageName } from './MakeOldCoursePage'
-import { boolean } from 'zod'
+// import { GetCurrentPageName } from './MakeOldCoursePage'
+// import { boolean } from 'zod'
 
 const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
   const { isSignedIn, user } = useUser()
@@ -187,13 +187,6 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
         window.location.origin,
       )
 
-      if (is_private === undefined) {
-        console.log(
-          '^^^^^^^^^^^^^^^^^^^^^^^^^^^^ IN EMAIL CHIPS callSetCourseMeta-- is_private is undefined',
-        )
-        return
-      }
-
       url.searchParams.append('is_private', String(is_private))
       url.searchParams.append('course_name', course_name)
       url.searchParams.append('course_owner', course_owner)
@@ -223,7 +216,6 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
     course_name: string,
   ) => {
     console.log('Fresh course metadata:', new_course_metadata)
-    // TODO: update db
     callSetCourseMetadata(
       {
         ...new_course_metadata,
