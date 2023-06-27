@@ -10,6 +10,7 @@ import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackgro
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { CourseMetadata } from '~/types/courseMetadata'
 
+
 const NotAuthorizedPage: NextPage = (props) => {
   const router = useRouter()
   const clerk_user = useUser()
