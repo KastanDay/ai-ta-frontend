@@ -28,6 +28,14 @@ const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 import React, { useState, useEffect } from 'react'
 import Spinner from '../Spinner'
 import { LoadingSpinner } from './LoadingSpinner'
+import { useRouter } from 'next/router'
+import { useUser } from '@clerk/nextjs'
+import { CannotEditCourse } from './CannotEditCourse'
+
+export const GetCurrentPageName = () => {
+  // /CS-125/materials --> CS-125
+  return useRouter().asPath.slice(1).split('/')[0] as string
+}
 
 export const CannotViewCourse = ({
   course_name,
@@ -38,7 +46,11 @@ export const CannotViewCourse = ({
   // creator_email_address: string
   // admins_email_addresses: string
 }) => {
-  console.log('course_name in CannotViewCourse: ', course_name)
+  // console.log('course_name in CannotViewCourse: ', course_name)
+  const currentPageName = GetCurrentPageName()
+
+  const { isSignedIn, user } = useUser()
+  const curr_user_email = user?.primaryEmailAddress?.emailAddress as string
 
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
@@ -73,9 +85,31 @@ export const CannotViewCourse = ({
       console.log('metadata: ', courseMetadata)
       setCourseMetadata(metadata)
     })
-  }, [course_name]) // Add dependencies if needed
+  }, [course_name])
 
-  // if
+  // if user is not signed in or is not the creator or an admin, then they cannot view the course
+
+  if (!courseMetadata) {
+    return <></>
+  }
+
+  if (
+    courseMetadata.course_owner === curr_user_email ||
+    courseMetadata.course_admins.includes(curr_user_email)
+  ) {
+    // CAN view course
+    // Cannot edit course
+    console.log('CAN view course, cannot EDIT course')
+    console.log('curr_user_email: ', curr_user_email)
+    console.log('courseMetadata.course_owner: ', courseMetadata.course_owner)
+    console.log('courseMetadata.course_admins: ', courseMetadata.course_admins)
+
+    return (
+      <>
+        <CannotEditCourse course_name={GetCurrentPageName()} />
+      </>
+    )
+  }
 
   return (
     <>

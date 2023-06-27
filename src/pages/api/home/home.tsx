@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from 'react-query'
 
-import { GetServerSideProps } from 'next'
+import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import Head from 'next/head'
@@ -41,17 +41,25 @@ import HomeContext from './home.context'
 import { HomeInitialState, initialState } from './home.state'
 
 import { v4 as uuidv4 } from 'uuid'
+import { CourseMetadata } from '~/types/courseMetadata'
+import { kv } from '@vercel/kv'
+import { useUser } from '@clerk/nextjs'
+import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
+import { router } from '@trpc/server'
+import { useRouter } from 'next/router'
 
 interface Props {
   serverSideApiKeyIsSet: boolean
   serverSidePluginKeysSet: boolean
   defaultModelId: OpenAIModelID
+  course_metadata: CourseMetadata
 }
 
 const Home = ({
   serverSideApiKeyIsSet,
   serverSidePluginKeysSet,
   defaultModelId,
+  course_metadata,
 }: Props) => {
   const { t } = useTranslation('chat')
   const { getModels } = useApiService()
@@ -77,13 +85,37 @@ const Home = ({
 
   const stopConversationRef = useRef<boolean>(false)
 
-  // ORIGINAL
-  // const [error, setError] = useState(null)
-  // const [data, setData] = useState(null)
+  const router = useRouter()
+  const course_name = router.query.course_name
 
-  // from AI
+  // Check auth & redirect
+  const clerk_obj = useUser()
+
+  useEffect(() => {
+    if (!clerk_obj.isLoaded) return
+
+    if (course_metadata == null) {
+      // Course doesn't exist, make new
+      router.push(`/${course_name}/materials`)
+      // return {
+      // redirect: {
+      //   destination: `/${course_name}/materials`,
+      //   permanent: false,
+      // },
+
+      // };
+    } else {
+      // Course exists, check if user is authenticated
+      const permission_str = get_user_permission(
+        course_metadata,
+        clerk_obj,
+        router,
+      )
+      console.log('Permission str: ', permission_str)
+    }
+  }, [clerk_obj.isLoaded])
+
   const [data, setData] = useState(null) // using the original version.
-  // const [data, setData] = useState<Model[] | null>(null); // Replace Model with the correct type for a single model
   const [error, setError] = useState<unknown>(null) // Update the type of the error state variable
 
   // Add a new state variable to track whether models have been fetched
@@ -413,7 +445,36 @@ const Home = ({
 }
 export default Home
 
-export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+// import { useAuth, useUser } from '@clerk/nextjs'
+
+// import { useAuth } from '@clerk/nextjs'
+// import { withAuth } from '@clerk/nextjs/api'
+
+// import { getAuth, buildClerkProps } from '@clerk/nextjs/server'
+// import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
+
+export const getServerSideProps: GetServerSideProps = async (
+  context: GetServerSidePropsContext,
+) => {
+  console.log('ServerSideProps: ', context.params)
+  const { locale } = context
+  const course_name = context.params?.course_name as string
+
+  // const { userId } = getAuth(context.req)
+  // if (!userId) {
+  //   return {
+  //     redirect: {
+  //       destination: '/sign-in?redirect_url=' + context.resolvedUrl,
+  //       permanent: false,
+  //     },
+  //   }
+  // }
+
+  // Check course authed users
+  const course_metadata: CourseMetadata | null = await kv.get(
+    course_name + '_metadata',
+  )
+
   const defaultModelId =
     (process.env.DEFAULT_MODEL &&
       Object.values(OpenAIModelID).includes(
@@ -423,7 +484,6 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
     fallbackModelID
 
   let serverSidePluginKeysSet = false
-
   const googleApiKey = process.env.GOOGLE_API_KEY
   const googleCSEId = process.env.GOOGLE_CSE_ID
 
@@ -436,6 +496,8 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
 
   return {
     props: {
+      // ...buildClerkProps(context.req), // https://clerk.com/docs/nextjs/getserversideprops
+      course_metadata: course_metadata,
       serverSideApiKeyIsSet: !!process.env.OPENAI_API_KEY,
       defaultModelId,
       serverSidePluginKeysSet,

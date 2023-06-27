@@ -39,7 +39,7 @@ import { useAuth, useUser } from '@clerk/nextjs'
 
 export const GetCurrentPageName = () => {
   // /CS-125/materials --> CS-125
-  return useRouter().asPath.slice(1).split('/')[0]
+  return useRouter().asPath.slice(1).split('/')[0] as string
 }
 
 const MakeOldCoursePage = ({
@@ -57,7 +57,9 @@ const MakeOldCoursePage = ({
   )
   const [currentEmail, setCurrentEmail] = useState('')
 
-  const currentPageName = GetCurrentPageName() as string
+  const router = useRouter()
+
+  const currentPageName = GetCurrentPageName()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,15 +82,26 @@ const MakeOldCoursePage = ({
     return <AuthComponent course_name={currentPageName} />
   }
 
+  // TODO: update this check to consider Admins & participants.
+  // If participant, say "You cannot edit this course (because you're not an admin) but you can view it.
   if (
     courseMetadata &&
-    currentEmail !== (courseMetadata.course_owner as string)
+    currentEmail !== (courseMetadata.course_owner as string) &&
+    courseMetadata.course_admins.indexOf(currentEmail) === -1
   ) {
+    router.push(`/${course_name}/not_authorized`)
+
     return (
-      <CannotEditCourseYouDontOwn
+      <>
+        <CannotEditCourse
+          course_name={currentPageName as string}
+          // current_email={currentEmail as string}
+        />
+        {/* <CannotViewCourse
         course_name={currentPageName as string}
         // current_email={currentEmail as string}
-      />
+        /> */}
+      </>
     )
   }
 
@@ -162,8 +175,9 @@ import { IconLock } from '@tabler/icons-react'
 
 import EmailChipsComponent from './EmailChipsComponent'
 import { AuthComponent } from './AuthToEditCourse'
-import { CannotEditCourseYouDontOwn } from './CannotEditCourseYouDontOwn'
+import { CannotEditCourse } from './CannotEditCourse'
 import { CourseMetadata } from '~/types/courseMetadata'
+import { CannotViewCourse } from './CannotViewCourse'
 
 const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
   const [isPrivate, setIsPrivate] = useState(true)
