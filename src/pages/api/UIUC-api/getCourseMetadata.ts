@@ -14,6 +14,15 @@ const getCourseMetadata = async (req: any, res: any) => {
     const course_metadata = (await kv.get(
       course_name + '_metadata',
     )) as CourseMetadata
+
+    if (course_metadata == null) {
+      return NextResponse.json({
+        success: true,
+        course_metadata: null,
+        course_exists: false,
+      })
+    }
+
     course_metadata.is_private = JSON.parse(
       course_metadata.is_private as unknown as string,
     )

@@ -68,10 +68,15 @@ const MakeOldCoursePage = ({
         ?.emailAddress as string
       setCurrentEmail(userEmail)
 
-      const metadata: CourseMetadata = (await fetchCourseMetadata(
-        currentPageName,
-      )) as CourseMetadata
-      setCourseMetadata(metadata)
+      try {
+        const metadata: CourseMetadata = (await fetchCourseMetadata(
+          currentPageName,
+        )) as CourseMetadata
+        setCourseMetadata(metadata)
+      } catch (error) {
+        console.error(error)
+        // alert('An error occurred while fetching course metadata. Please try again later.')
+      }
     }
 
     fetchData()
@@ -353,20 +358,21 @@ async function fetchCourseMetadata(course_name: string) {
       `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
     )
 
+    console.log('MakeOldCoursePage.tsx -- response', response)
+    console.log('MakeOldCoursePage.tsx -- course_name', course_name)
+
     if (response.ok) {
       const data = await response.json()
       if (data.success === false) {
-        console.error('An error occurred while fetching course metadata')
-        return null
+        throw new Error('An error occurred while fetching course metadata')
       }
       return data.course_metadata
     } else {
-      console.error(`Error fetching course metadata: ${response.status}`)
-      return null
+      throw new Error(`Error fetching course metadata: ${response.status}`)
     }
   } catch (error) {
     console.error('Error fetching course metadata:', error)
-    return null
+    throw error
   }
 }
 
