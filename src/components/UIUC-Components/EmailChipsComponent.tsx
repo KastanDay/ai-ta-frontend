@@ -7,7 +7,6 @@ import React, {
   ChangeEvent,
   ClipboardEvent,
 } from 'react'
-// import { set } from 'zod'
 import { CourseMetadata } from '~/types/courseMetadata'
 
 const EmailChipsComponent = ({
@@ -29,17 +28,17 @@ const EmailChipsComponent = ({
   const [emailAddresses, setEmailAddresses] = useState<string[]>([])
   const [courseName, setCourseName] = useState<string>(course_name)
   const [value, setValue] = useState<string>('')
-  const [isPrivate, setIsPrivate] = useState<boolean>(is_private)
   const [error, setError] = useState<string | null>(null)
+  const isPrivate = is_private
 
   // fetch metadata on mount
   useEffect(() => {
     fetchCourseMetadata(course_name).then((metadata) => {
       if (metadata) {
+        metadata.is_private = JSON.parse(
+          metadata.is_private as unknown as string,
+        )
         setEmailAddresses(metadata.approved_emails_list)
-        setIsPrivate(metadata.isPrivate)
-      } else {
-        console.log('Failed to fetch course metadata')
       }
     })
   }, [])
