@@ -92,7 +92,7 @@ const MakeOldCoursePage = ({
   //   return <AuthComponent course_name={currentPageName} />
   // }
   if (!isLoaded || !userId || !courseMetadata) {
-    return <AuthComponent course_name={currentPageName} />
+    return <AuthComponent />
   }
 
   // TODO: update this check to consider Admins & participants.
