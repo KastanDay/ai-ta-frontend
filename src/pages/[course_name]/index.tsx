@@ -25,8 +25,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const course_name = params['course_name'] as string
 
   // const course_exists = await kv.get(course_name) // kv.get() only works server-side. Otherwise use fetch.
-  const course_metadata: CourseMetadata | null = await kv.get(
+  const course_metadata: CourseMetadata = (await kv.get(
     course_name + '_metadata',
+  )) as CourseMetadata
+
+  console.log('in [course_name]/index.tsx -- course_name: ', course_name)
+  console.log(
+    'in [course_name]/index.tsx -- course_metadata: ',
+    course_metadata,
   )
 
   if (course_metadata != null) {
