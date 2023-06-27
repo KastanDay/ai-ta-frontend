@@ -12,6 +12,7 @@ import {
 import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
 import { CourseMetadata } from '~/types/courseMetadata'
+import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -224,14 +225,15 @@ export function DropzoneS3Upload({
           // Make course exist in kv store
           await setCourseExistsAPI(getCurrentPageName() as string)
 
-          // TODO: FIGURE out how to set the course exists from S3 upload component.
-          // !IMPORTANT: FIGURE out how to set the course exists from S3 upload component.
-          // await callSetCourseMetadata({
-          //   is_private: isPrivate,
-          //   course_owner: course_owner,
-          //   course_admins: course_admins,
-          //   approved_emails_list: [...emailAddresses, ...toBeAdded],
-          // })
+          // set course exists in new metadata endpoint. Works great.
+          await callUpsertCourseMetadata(course_name, {
+            course_owner: current_user_email,
+
+            // Don't set properties we don't know about. We'll just upsert and use the defaults.
+            course_admins: undefined,
+            approved_emails_list: undefined,
+            is_private: undefined,
+          })
 
           // console.log('Right after setCourseExists in kv store...');
           // const ifexists = await getCourseExistsAPI(getCurrentPageName() as string);
