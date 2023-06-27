@@ -6,21 +6,29 @@ import { CanViewOnlyCourse } from '~/components/UIUC-Components/CanViewOnlyCours
 import { CannotEditCourse } from '~/components/UIUC-Components/CannotEditCourse'
 import { CannotViewCourse } from '~/components/UIUC-Components/CannotViewCourse'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
+import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { CourseMetadata } from '~/types/courseMetadata'
 
 const NotAuthorizedPage: NextPage = (props) => {
   const router = useRouter()
   const clerk_user = useUser()
+
+  console.log('in not_authorized.tsx -- props: ', props)
+
   const getCurrentPageName = () => {
     // /CS-125/materials --> CS-125
+    console.log('in not_auth router: ', router)
+    console.log('in not_auth router.asPath: ', router.asPath)
     return router.asPath.slice(1).split('/')[0] as string
   }
 
-  const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
-    null,
-  )
+  const [courseMetadata, setCourseMetadata] = useState<CourseMetadata>()
+  const [loading, setLoading] = useState<boolean>(true) // Add loading state
   const course_name = getCurrentPageName()
+  // const course_name = router.query.course_name as string
+
+  console.log('not_authorized.tsx -- Course name?? ', course_name)
 
   // Get CourseMetadata
   useEffect(() => {
@@ -48,33 +56,34 @@ const NotAuthorizedPage: NextPage = (props) => {
       }
     }
     fetchCourseMetadata(course_name).then((metadata) => {
-      console.log('metadata: ', courseMetadata)
+      console.log('in not_authorized.tsx -- metadata: ', courseMetadata)
       setCourseMetadata(metadata)
+      setLoading(false) // Update loading state when metadata is fetched
     })
   }, [course_name])
 
-  const curr_user_email_addresses = clerk_user.user?.emailAddresses?.map(
-    (email) => email.emailAddress,
-  ) as string[]
-
-  if (courseMetadata) {
+  if (courseMetadata != null) {
     console.log('in NOT_AUTHED -- Course meatadata', courseMetadata)
 
-    const user_permission = get_user_permission(courseMetadata, clerk_user, router)
-
+    const user_permission = get_user_permission(
+      courseMetadata,
+      clerk_user,
+      router,
+    )
+    console.log('in NOT_AUTHED -- user_permission: ', user_permission)
     if (user_permission === 'edit') {
       // You are the course owner or an admin
       // Can edit and view.
       console.log('CAN view course, AND EDIT course')
-      console.log('curr_user_email: ', curr_user_email_addresses)
+      // console.log('curr_user_email: ', curr_user_email_addresses)
       console.log('courseMetadata.course_owner: ', courseMetadata.course_owner)
       console.log(
         'courseMetadata.course_admins: ',
         courseMetadata.course_admins,
       )
 
-      // redirect to materials page to edit.
-      router.push(`/${course_name}/materials`)
+      // redirect to course
+      router.push(`/${course_name}/gpt4`)
     } else if (user_permission === 'view') {
       // Not owner or admin, can't edit. But is USER so CAN VIEW
       // console.log('CAN view course, cannot EDIT course')
@@ -88,6 +97,7 @@ const NotAuthorizedPage: NextPage = (props) => {
       )
     } else {
       // Cannot edit or view
+      console.log('in NOT_AUTHED -- Cannot view course')
       return (
         <>
           <CannotViewCourse course_name={course_name} />
@@ -95,9 +105,20 @@ const NotAuthorizedPage: NextPage = (props) => {
       )
     }
   }
+
+  // if (loading) {
+  //   return (
+  //     <>
+  //       <LoadingSpinner />
+  //     </>
+  //   );
+  // }
+
   return (
     <>
-      <LoadingSpinner />
+      <MainPageBackground>
+        <LoadingSpinner />
+      </MainPageBackground>
     </>
   )
 }

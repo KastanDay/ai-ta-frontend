@@ -51,7 +51,8 @@ const MakeOldCoursePage = ({
 }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
-  const { isSignedIn, user } = useUser()
+  // const { isSignedIn, user } = useUser()
+  const clerk_user = useUser()
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
@@ -63,22 +64,23 @@ const MakeOldCoursePage = ({
 
   useEffect(() => {
     const fetchData = async () => {
-      const userEmail = user?.primaryEmailAddress?.emailAddress as string
+      const userEmail = clerk_user.user?.primaryEmailAddress
+        ?.emailAddress as string
       setCurrentEmail(userEmail)
 
-      const metadata: CourseMetadata | null = await fetchCourseMetadata(
+      const metadata: CourseMetadata = (await fetchCourseMetadata(
         currentPageName,
-      )
+      )) as CourseMetadata
       setCourseMetadata(metadata)
-
-      console.log('MakeOldCoursePage - course_metadata', metadata)
-      console.log('MakeOldCoursePage - current_email', userEmail)
     }
 
     fetchData()
-  }, [currentPageName, user])
+  }, [currentPageName, clerk_user.isLoaded])
 
-  if (!isLoaded || !userId) {
+  // if (!isLoaded || !userId) {
+  //   return <AuthComponent course_name={currentPageName} />
+  // }
+  if (!isLoaded || !userId || !courseMetadata) {
     return <AuthComponent course_name={currentPageName} />
   }
 
@@ -150,7 +152,10 @@ const MakeOldCoursePage = ({
             <Title order={4}>
               The page will auto-refresh when your AI Assistant is ready.
             </Title>
-            <PrivateOrPublicCourse course_name={course_name} />
+            <PrivateOrPublicCourse
+              course_name={course_name}
+              course_metadata={courseMetadata as CourseMetadata}
+            />
             <Title
               className={montserrat.className}
               variant="gradient"
@@ -179,8 +184,17 @@ import { CannotEditCourse } from './CannotEditCourse'
 import { CourseMetadata } from '~/types/courseMetadata'
 import { CannotViewCourse } from './CannotViewCourse'
 
-const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
-  const [isPrivate, setIsPrivate] = useState(true)
+const PrivateOrPublicCourse = ({
+  course_name,
+  course_metadata,
+}: {
+  course_name: string
+  course_metadata: CourseMetadata
+}) => {
+  // TODO: fix default state of this... get it from KV store.
+  const [isPrivate, setIsPrivate] = useState(
+    course_metadata.is_private as boolean,
+  )
 
   const { isSignedIn, user } = useUser()
   console.log('email: ', user?.primaryEmailAddress?.emailAddress)
@@ -250,7 +264,7 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
           // bg='#020307'
           color="grape"
           icon={CheckboxIcon}
-          defaultChecked
+          defaultChecked={isPrivate}
           onChange={handleCheckboxChange}
         />
       </Group>
@@ -264,8 +278,9 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
       {isPrivate && (
         <EmailChipsComponent
           course_owner={owner_email}
-          course_admins={[]}
+          course_admins={[]} // todo enable this feature
           course_name={course_name}
+          is_private={isPrivate}
         />
       )}
     </>

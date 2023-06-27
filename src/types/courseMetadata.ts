@@ -1,4 +1,6 @@
 // all values are email addresses
+
+// courseMetadata.ts
 export interface CourseMetadata {
   is_private: boolean
   course_owner: string

@@ -89,31 +89,69 @@ const Home = ({
   const course_name = router.query.course_name
 
   // Check auth & redirect
-  const clerk_obj = useUser()
+  const clerk_user_outer = useUser()
+  // const course_exists = course_metadata != null
 
+  // ------------------- 👇 MOST BASIC AUTH CHECK 👇 -------------------
+
+  // DO AUTH-based redirect!
   useEffect(() => {
-    if (!clerk_obj.isLoaded) return
+    if (clerk_user_outer.isLoaded) {
+      if (course_metadata != null) {
+        console.log(
+          'in api/home.tsx -- Calling get_user_permission... course_metadata: ',
+          course_metadata,
+        )
+        const permission_str = get_user_permission(
+          course_metadata,
+          clerk_user_outer,
+          router,
+        )
 
-    if (course_metadata == null) {
-      // Course doesn't exist, make new
-      router.push(`/${course_name}/materials`)
-      // return {
-      // redirect: {
-      //   destination: `/${course_name}/materials`,
-      //   permanent: false,
-      // },
+        console.log('in api/home.tsx -- permission_str', permission_str)
 
-      // };
-    } else {
-      // Course exists, check if user is authenticated
-      const permission_str = get_user_permission(
-        course_metadata,
-        clerk_obj,
-        router,
-      )
-      console.log('Permission str: ', permission_str)
+        if (permission_str == 'edit' || permission_str == 'view') {
+          // ✅ AUTHED
+          console.log(
+            'in api/home.tsx - Course exists & user is properly authed, redirecting to gpt4 page',
+          )
+          // router.push(`/${course_name}/gpt4`)
+        } else {
+          // 🚫 NOT AUTHED
+          router.push(`/${course_name}/not_authorized`)
+        }
+      } else {
+        // 🆕 MAKE A NEW COURSE
+        console.log('Course does not exist, redirecting to materials page')
+        router.push(`/${course_name}/materials`)
+      }
     }
-  }, [clerk_obj.isLoaded])
+  }, [clerk_user_outer.isLoaded])
+  // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
+
+  // useEffect(() => {
+  //   if (!clerk_obj.isLoaded) return
+
+  //   if (course_metadata == null) {
+  //     // Course doesn't exist, make new
+  //     router.push(`/${course_name}/materials`)
+  //     // return {
+  //     // redirect: {
+  //     //   destination: `/${course_name}/materials`,
+  //     //   permanent: false,
+  //     // },
+
+  //     // };
+  //   } else {
+  //     // Course exists, check if user is authenticated
+  //     const permission_str = get_user_permission(
+  //       course_metadata,
+  //       clerk_obj,
+  //       router,
+  //     )
+  //     console.log('Permission str: ', permission_str)
+  //   }
+  // }, [clerk_obj.isLoaded])
 
   const [data, setData] = useState(null) // using the original version.
   const [error, setError] = useState<unknown>(null) // Update the type of the error state variable
@@ -470,10 +508,15 @@ export const getServerSideProps: GetServerSideProps = async (
   //   }
   // }
 
-  // Check course authed users
-  const course_metadata: CourseMetadata | null = await kv.get(
+  // Check course authed users -- the JSON.parse is CRUCIAL to avoid bugs with the stringified JSON 😭
+  const course_metadata: CourseMetadata | null = (await kv.get(
     course_name + '_metadata',
+  )) as CourseMetadata
+  course_metadata.is_private = JSON.parse(
+    course_metadata.is_private as unknown as string,
   )
+
+  console.log('home.tsx -- Course metadata in serverside: ', course_metadata)
 
   const defaultModelId =
     (process.env.DEFAULT_MODEL &&

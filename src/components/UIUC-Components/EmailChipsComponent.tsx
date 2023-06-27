@@ -13,11 +13,13 @@ const EmailChipsComponent = ({
   course_name,
   course_owner,
   course_admins,
+  is_private,
   onEmailAddressesChange,
 }: {
   course_name: string
   course_owner: string
   course_admins: string[]
+  is_private: boolean
   onEmailAddressesChange?: (
     new_course_metadata: CourseMetadata,
     course_name: string,
@@ -26,25 +28,41 @@ const EmailChipsComponent = ({
   const [emailAddresses, setEmailAddresses] = useState<string[]>([])
   const [courseName, setCourseName] = useState<string>(course_name)
   const [value, setValue] = useState<string>('')
-  const [isPrivate, setIsPrivate] = useState<boolean>(false)
+  const [isPrivate, setIsPrivate] = useState<boolean>(is_private)
   const [error, setError] = useState<string | null>(null)
 
   // fetch metadata on mount
   useEffect(() => {
     fetchCourseMetadata(course_name).then((metadata) => {
       if (metadata) {
-        // console.log('Course metadata:', metadata)
+        console.log('Course metadata in emailchips--:', metadata)
         setEmailAddresses(metadata.approved_emails_list)
-        setIsPrivate(metadata.isPrivate)
+        setIsPrivate(metadata.isPrivate as boolean)
       } else {
         console.log('Failed to fetch course metadata')
       }
     })
   }, [])
 
+  useEffect(() => {
+    // fetchCourseMetadata(course_name).then((metadata) => {
+    //   if (metadata) {
+    //     console.log('Course metadata in emailchips--:', metadata)
+    //     setEmailAddresses(metadata.approved_emails_list)
+    //     setIsPrivate(metadata.isPrivate)
+    //   } else {
+    //     console.log('Failed to fetch course metadata')
+    //   }
+    // })
+
+    console.log('!email_chips -- IS PRIVATE CHANGED', isPrivate)
+  }, [isPrivate])
+
   const handleKeyDown_users = (evt: KeyboardEvent<HTMLInputElement>) => {
     if (['Enter', 'Tab', ','].includes(evt.key)) {
       evt.preventDefault()
+
+      console.log('!!emailchips -- isPrivate state:', isPrivate)
 
       const trimmedValue = value.trim()
 
@@ -63,6 +81,13 @@ const EmailChipsComponent = ({
           return newEmailAddresses
         })
         setValue('')
+
+        if (is_private === undefined) {
+          console.log(
+            'NEW^^^^^^^^^^^^^^^^^^^^^^^^^^^^ IN EMAIL CHIPS callSetCourseMeta-- is_private is undefined',
+          )
+          return
+        }
 
         callSetCourseMetadata({
           is_private: isPrivate,
@@ -168,7 +193,15 @@ const EmailChipsComponent = ({
         '/api/UIUC-api/setCourseMetadata',
         window.location.origin,
       )
-      url.searchParams.append('is_private', String(is_private))
+
+      if (is_private === undefined) {
+        console.log(
+          '^^^^^^^^^^^^^^^^^^^^^^^^^^^^ IN EMAIL CHIPS callSetCourseMeta-- is_private is undefined',
+        )
+        return
+      }
+
+      // url.searchParams.append('is_private', String(is_private))
       url.searchParams.append('course_name', course_name)
       url.searchParams.append('course_owner', course_owner)
       url.searchParams.append('course_admins', JSON.stringify(course_admins))
