@@ -36,7 +36,9 @@ const NotAuthorizedPage: NextPage = (props) => {
         if (response.ok) {
           const data = await response.json()
           if (data.success === false) {
-            console.error('An error occurred while fetching course metadata')
+            console.error(
+              'not_authorized.tsx -- An error occurred while fetching course metadata',
+            )
             return null
           }
           return data.course_metadata
@@ -50,7 +52,7 @@ const NotAuthorizedPage: NextPage = (props) => {
       }
     }
     fetchCourseMetadata(course_name).then((metadata) => {
-      console.log('in not_authorized.tsx -- metadata: ', courseMetadata)
+      console.log('in not_authorized.tsx -- metadata: ', metadata)
       setCourseMetadata(metadata)
     })
   }, [course_name])

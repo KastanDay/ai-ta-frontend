@@ -28,6 +28,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const course_metadata: CourseMetadata = (await kv.get(
     course_name + '_metadata',
   )) as CourseMetadata
+  course_metadata.is_private = JSON.parse(
+    course_metadata.is_private as unknown as string,
+  )
 
   console.log('in [course_name]/index.tsx -- course_name: ', course_name)
   console.log(

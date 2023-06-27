@@ -509,7 +509,7 @@ export const getServerSideProps: GetServerSideProps = async (
   // }
 
   // Check course authed users -- the JSON.parse is CRUCIAL to avoid bugs with the stringified JSON 😭
-  const course_metadata: CourseMetadata | null = (await kv.get(
+  const course_metadata: CourseMetadata = (await kv.get(
     course_name + '_metadata',
   )) as CourseMetadata
   course_metadata.is_private = JSON.parse(
