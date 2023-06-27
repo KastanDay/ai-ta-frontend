@@ -197,7 +197,6 @@ const PrivateOrPublicCourse = ({
   )
 
   const { isSignedIn, user } = useUser()
-  console.log('email: ', user?.primaryEmailAddress?.emailAddress)
   const owner_email = user?.primaryEmailAddress?.emailAddress as string
 
   const CheckboxIcon: CheckboxProps['icon'] = ({ indeterminate, className }) =>
@@ -219,6 +218,7 @@ const PrivateOrPublicCourse = ({
         )
         url.searchParams.append('course_name', course_name)
         url.searchParams.append('is_private', String(is_private))
+
 
         const response = await fetch(url.toString(), {
           method: 'POST',
@@ -307,10 +307,8 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
       const response = await axios.delete(`${API_URL}/delete`, {
         params: { s3_path, course_name },
       })
-      console.log(response)
       // Handle successful deletion, e.g., remove the item from the list or show a success message
       // Refresh the page
-      console.log('about to refresh to: ', router.asPath)
       await router.push(router.asPath)
     } catch (error) {
       console.error(error)
