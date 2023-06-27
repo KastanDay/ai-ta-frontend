@@ -59,7 +59,6 @@ export const CannotViewCourse = ({
   useEffect(() => {
     async function fetchCourseMetadata(course_name: string) {
       try {
-        console.log('course_name in fetchmetadta: ', course_name)
         const response = await fetch(
           `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
         )
@@ -82,7 +81,6 @@ export const CannotViewCourse = ({
     }
 
     fetchCourseMetadata(course_name).then((metadata) => {
-      console.log('metadata: ', courseMetadata)
       setCourseMetadata(metadata)
     })
   }, [course_name])
