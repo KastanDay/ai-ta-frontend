@@ -99,6 +99,7 @@ interface CourseMainProps {
 import { useAuth } from '@clerk/nextjs'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
+import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 
 // run on client side
 const CourseMain: NextPage<CourseMainProps> = (props) => {
@@ -109,6 +110,10 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
+  if (!isLoaded) {
+    return <LoadingSpinner />
+  }
+
   if (!isLoaded || !userId) {
     return <AuthComponent course_name={currentPageName} />
     // return <div> You must sign in to create or edit courses. <SignInButton /> </div>;
@@ -128,7 +133,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
     return <MakeNewCoursePage course_name={currentPageName || ''} />
   }
 
-  // EDIT EXISTING COURSE
+  // return <LoadingSpinner />;
   return (
     <>
       <Header />
@@ -138,5 +143,16 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
       />
     </>
   )
+
+  // // EDIT EXISTING COURSE
+  // return (
+  //   <>
+  //     <Header />
+  //     <MakeOldCoursePage
+  //       course_name={currentPageName || ''}
+  //       course_data={course_data}
+  //     />
+  //   </>
+  // )
 }
 export default CourseMain
