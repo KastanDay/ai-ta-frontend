@@ -120,6 +120,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
   }
 
   if (!isLoaded || !userId) {
+    console.log('User not logged in', userId, isLoaded, currentPageName)
     return <AuthComponent course_name={currentPageName} />
     // return <div> You must sign in to create or edit courses. <SignInButton /> </div>;
   }
@@ -138,7 +139,6 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
     return <MakeNewCoursePage course_name={currentPageName || ''} />
   }
 
-  // return <LoadingSpinner />;
   return (
     <>
       <Header />
@@ -148,16 +148,5 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
       />
     </>
   )
-
-  // // EDIT EXISTING COURSE
-  // return (
-  //   <>
-  //     <Header />
-  //     <MakeOldCoursePage
-  //       course_name={currentPageName || ''}
-  //       course_data={course_data}
-  //     />
-  //   </>
-  // )
 }
 export default CourseMain
