@@ -30,7 +30,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   )
 
   if (course_metadata != null) {
-    console.log('course_metadata', course_metadata)
+    console.log(
+      'in [course_name]/index.tsx -- course_metadata',
+      course_metadata,
+    )
     return {
       props: {
         course_name,
@@ -40,7 +43,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  console.log('index.tsx - metadata', course_metadata)
+  console.log('in [course_name]/index.tsx - metadata', course_metadata)
   // console.log(
   //   'approved_emails_list',
   //   course_metadata?.['approved_emails_list'] ?? [],
@@ -62,29 +65,35 @@ interface CourseMainProps {
 }
 
 const IfCourseExists: NextPage<CourseMainProps> = (props) => {
-  console.log('PROPS IN COURSE_MAIN index.tsx', props)
+  console.log('PROPS IN IfCourseExists in [course_name]/index.tsx', props)
+
+  // ------------------- 👇 MOST BASIC AUTH CHECK 👇 -------------------
   const course_name = props.course_name as string
-  const course_exists = props.course_exists as boolean
   const course_metadata = props.course_metadata as CourseMetadata
+  const course_exists = course_metadata != null
 
   const router = useRouter()
-
   const clerk_user_outer = useUser()
 
   // DO AUTH-based redirect!
   useEffect(() => {
     if (clerk_user_outer.isLoaded) {
-      if (course_exists) {
+      if (course_metadata != null) {
         const permission_str = get_user_permission(
           course_metadata,
           clerk_user_outer,
           router,
         )
 
+        console.log(
+          'in [course_name]/index.tsx -- permission_str',
+          permission_str,
+        )
+
         if (permission_str == 'edit' || permission_str == 'view') {
           // ✅ AUTHED
           console.log(
-            'Course exists & user is properly authed, redirecting to gpt4 page',
+            'in [course_name]/index.tsx - Course exists & user is properly authed, redirecting to gpt4 page',
           )
           router.push(`/${course_name}/gpt4`)
         } else {
@@ -97,7 +106,8 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
         router.push(`/${course_name}/materials`)
       }
     }
-  }, [clerk_user_outer, course_exists])
+  }, [clerk_user_outer.isLoaded])
+  // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
 
   // here we redirect depending on Auth.
   return (

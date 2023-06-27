@@ -1,19 +1,16 @@
 // upload.tsx
 import React, { useState, useRef } from 'react'
-import { Text, Group, createStyles, FileInput, rem } from '@mantine/core'
+import { Text, Group, createStyles, rem } from '@mantine/core'
 import { IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
 import {
   Dropzone,
-  MIME_TYPES,
-  MS_POWERPOINT_MIME_TYPE,
-  MS_WORD_MIME_TYPE,
-  PDF_MIME_TYPE,
+  // MIME_TYPES,
+  // MS_POWERPOINT_MIME_TYPE,
+  // MS_WORD_MIME_TYPE,
+  // PDF_MIME_TYPE,
 } from '@mantine/dropzone'
 import { useRouter } from 'next/router'
-import { CourseMetadata } from '~/types/courseMetadata'
-
 import { useUser } from '@clerk/nextjs'
-// import EmailChipsComponent from './UIUC-Components/EmailChipsComponent'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -175,54 +172,6 @@ export function DropzoneS3Upload({
       return data.success
     } catch (error) {
       console.error('Error setting course data:', error)
-      return false
-    }
-  }
-
-  const getCourseExistsAPI = async (courseName: string) => {
-    try {
-      // const response = await fetch(`/api/UIUC-api/getCourseExists?course_name=${courseName}`);
-      const response = await fetch(
-        `/api/UIUC-api/getCourseExists?course_name=${courseName}`,
-      )
-      const data = await response.json()
-      return data
-    } catch (error) {
-      console.error('Error fetching course data:', error)
-      return false
-    }
-  }
-
-  const callSetCourseMetadata = async (courseMetadata: CourseMetadata) => {
-    try {
-      const { is_private, course_owner, course_admins, approved_emails_list } =
-        courseMetadata
-      const course_name = getCurrentPageName() as string
-
-      const url = new URL(
-        '/api/UIUC-api/setCourseMetadata',
-        window.location.origin,
-      )
-      url.searchParams.append('is_private', String(is_private))
-      url.searchParams.append('course_name', course_name)
-      url.searchParams.append('course_owner', course_owner)
-      url.searchParams.append('course_admins', JSON.stringify(course_admins))
-      url.searchParams.append(
-        'approved_emails_list',
-        JSON.stringify(approved_emails_list),
-      )
-
-      const response = await fetch(url.toString(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      const data = await response.json()
-      return data
-    } catch (error) {
-      console.error('Error setting course metadata:', error)
       return false
     }
   }

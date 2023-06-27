@@ -8,8 +8,14 @@ const setCoursePublicOrPrivate = async (req: any, res: any) => {
   const course_name = req.nextUrl.searchParams.get('course_name')
   const is_private = req.nextUrl.searchParams.get('is_private')
 
-  console.log('removeUserFromCourse: course_name', course_name)
-  console.log('removeUserFromCourse: is_private', is_private)
+  console.log(
+    '$$$$$$$$$$$$$$$ setCoursePublicOrPrivate: course_name',
+    course_name,
+  )
+  console.log(
+    '$$$$$$$$$$$$$$$ setCoursePublicOrPrivate: is_private',
+    is_private,
+  )
 
   try {
     const course_metadata = (await kv.get(
@@ -27,7 +33,6 @@ const setCoursePublicOrPrivate = async (req: any, res: any) => {
     }
 
     await kv.set(course_name + '_metadata', updated_course_metadata)
-    console.log('removeUserFromCourse about to return success')
     return NextResponse.json({ success: true })
   } catch (error) {
     console.log(error)

@@ -73,7 +73,7 @@ export const CanViewOnlyCourse = ({
             >
               {' '}
               You cannot edit this page, but you <i>can</i> chat here:{' '}
-              <Link href={`/${course_name}`}>
+              <Link href={`/${course_name}/gpt4`}>
                 <u
                   style={{
                     textDecoration: 'underline',
