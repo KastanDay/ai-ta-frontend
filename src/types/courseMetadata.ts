@@ -7,3 +7,10 @@ export interface CourseMetadata {
   course_admins: string[]
   approved_emails_list: string[]
 }
+
+export interface CourseMetadataOptionalForUpsert {
+  is_private: boolean | undefined
+  course_owner: string | undefined
+  course_admins: string[] | undefined
+  approved_emails_list: string[] | undefined
+}
