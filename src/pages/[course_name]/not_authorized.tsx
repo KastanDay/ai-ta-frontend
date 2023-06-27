@@ -53,34 +53,40 @@ const NotAuthorizedPage: NextPage = (props) => {
     })
   }, [course_name])
 
-  if (courseMetadata != null && clerk_user.isLoaded) {
-    const user_permission = get_user_permission(
-      courseMetadata,
-      clerk_user,
-      router,
-    )
-    if (user_permission === 'edit') {
-      // Can edit and view. You are the course owner or an admin
-      // redirect to course
-      router.push(`/${course_name}/gpt4`)
-    } else if (user_permission === 'view') {
-      // Not owner or admin, can't edit. But is USER so CAN VIEW
-      return (
-        <>
-          <CanViewOnlyCourse
-            course_name={course_name}
-            course_metadata={courseMetadata}
-          />
-        </>
+  const [userPermission, setUserPermission] = useState<string>('')
+
+  useEffect(() => {
+    if (courseMetadata != null && clerk_user.isLoaded) {
+      const user_permission = get_user_permission(
+        courseMetadata,
+        clerk_user,
+        router,
       )
-    } else {
-      // Cannot edit or view
-      return (
-        <>
-          <CannotViewCourse course_name={course_name} />
-        </>
-      )
+      setUserPermission(user_permission)
     }
+  }, [courseMetadata, clerk_user.isLoaded])
+
+  if (userPermission === 'edit') {
+    // Can edit and view. You are the course owner or an admin
+    // redirect to course
+    router.push(`/${course_name}/gpt4`)
+  } else if (userPermission === 'view') {
+    // Not owner or admin, can't edit. But is USER so CAN VIEW
+    return (
+      <>
+        <CanViewOnlyCourse
+          course_name={course_name}
+          course_metadata={courseMetadata as CourseMetadata}
+        />
+      </>
+    )
+  } else if (userPermission === 'no_permission') {
+    // Cannot edit or view
+    return (
+      <>
+        <CannotViewCourse course_name={course_name} />
+      </>
+    )
   }
 
   return (
