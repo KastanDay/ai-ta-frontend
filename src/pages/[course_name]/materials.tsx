@@ -100,6 +100,7 @@ import { useAuth } from '@clerk/nextjs'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
+import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 
 // run on client side
 const CourseMain: NextPage<CourseMainProps> = (props) => {
@@ -111,7 +112,11 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   if (!isLoaded) {
-    return <LoadingSpinner />
+    return (
+      <MainPageBackground>
+        <LoadingSpinner />
+      </MainPageBackground>
+    )
   }
 
   if (!isLoaded || !userId) {

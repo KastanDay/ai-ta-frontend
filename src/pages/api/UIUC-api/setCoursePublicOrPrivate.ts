@@ -8,15 +8,6 @@ const setCoursePublicOrPrivate = async (req: any, res: any) => {
   const course_name = req.nextUrl.searchParams.get('course_name')
   const is_private = req.nextUrl.searchParams.get('is_private')
 
-  console.log(
-    '$$$$$$$$$$$$$$$ setCoursePublicOrPrivate: course_name',
-    course_name,
-  )
-  console.log(
-    '$$$$$$$$$$$$$$$ setCoursePublicOrPrivate: is_private',
-    is_private,
-  )
-
   try {
     const course_metadata = (await kv.get(
       course_name + '_metadata',
