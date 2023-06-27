@@ -72,6 +72,12 @@ const MakeOldCoursePage = ({
         const metadata: CourseMetadata = (await fetchCourseMetadata(
           currentPageName,
         )) as CourseMetadata
+
+        if (metadata && metadata.is_private) {
+          metadata.is_private = JSON.parse(
+            metadata.is_private as unknown as string,
+          )
+        }
         setCourseMetadata(metadata)
       } catch (error) {
         console.error(error)
@@ -99,16 +105,10 @@ const MakeOldCoursePage = ({
     router.push(`/${course_name}/not_authorized`)
 
     return (
-      <>
-        <CannotEditCourse
-          course_name={currentPageName as string}
-          // current_email={currentEmail as string}
-        />
-        {/* <CannotViewCourse
+      <CannotEditCourse
         course_name={currentPageName as string}
         // current_email={currentEmail as string}
-        /> */}
-      </>
+      />
     )
   }
 
@@ -187,7 +187,7 @@ import EmailChipsComponent from './EmailChipsComponent'
 import { AuthComponent } from './AuthToEditCourse'
 import { CannotEditCourse } from './CannotEditCourse'
 import { CourseMetadata } from '~/types/courseMetadata'
-import { CannotViewCourse } from './CannotViewCourse'
+// import { CannotViewCourse } from './CannotViewCourse'
 
 const PrivateOrPublicCourse = ({
   course_name,
@@ -357,9 +357,6 @@ async function fetchCourseMetadata(course_name: string) {
     const response = await fetch(
       `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
     )
-
-    console.log('MakeOldCoursePage.tsx -- response', response)
-    console.log('MakeOldCoursePage.tsx -- course_name', course_name)
 
     if (response.ok) {
       const data = await response.json()

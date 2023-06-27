@@ -11,6 +11,7 @@ import {
 } from '@mantine/dropzone'
 import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
+import { CourseMetadata } from '~/types/courseMetadata'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -63,7 +64,7 @@ export function DropzoneS3Upload({
 
   const getCurrentPageName = () => {
     // /CS-125/materials --> CS-125
-    return router.asPath.slice(1).split('/')[0]
+    return router.asPath.slice(1).split('/')[0] as string
   }
 
   const uploadToS3 = async (file: File | null) => {
@@ -176,6 +177,41 @@ export function DropzoneS3Upload({
     }
   }
 
+  const callSetCourseMetadata = async (courseMetadata: CourseMetadata) => {
+    try {
+      const { is_private, course_owner, course_admins, approved_emails_list } =
+        courseMetadata
+      const course_name = getCurrentPageName()
+
+      const url = new URL(
+        '/api/UIUC-api/setCourseMetadata',
+        window.location.origin,
+      )
+
+      url.searchParams.append('is_private', String(is_private))
+      url.searchParams.append('course_name', course_name)
+      url.searchParams.append('course_owner', course_owner)
+      url.searchParams.append('course_admins', JSON.stringify(course_admins))
+      url.searchParams.append(
+        'approved_emails_list',
+        JSON.stringify(approved_emails_list),
+      )
+
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error setting course metadata:', error)
+      return false
+    }
+  }
+
   return (
     <div className={classes.wrapper} style={{ maxWidth: '320px' }}>
       <Dropzone
@@ -187,6 +223,15 @@ export function DropzoneS3Upload({
 
           // Make course exist in kv store
           await setCourseExistsAPI(getCurrentPageName() as string)
+
+          // TODO: FIGURE out how to set the course exists from S3 upload component.
+          // !IMPORTANT: FIGURE out how to set the course exists from S3 upload component.
+          // await callSetCourseMetadata({
+          //   is_private: isPrivate,
+          //   course_owner: course_owner,
+          //   course_admins: course_admins,
+          //   approved_emails_list: [...emailAddresses, ...toBeAdded],
+          // })
 
           // console.log('Right after setCourseExists in kv store...');
           // const ifexists = await getCourseExistsAPI(getCurrentPageName() as string);

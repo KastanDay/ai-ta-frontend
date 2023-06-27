@@ -28,27 +28,42 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const course_metadata: CourseMetadata = (await kv.get(
     course_name + '_metadata',
   )) as CourseMetadata
-  course_metadata.is_private = JSON.parse(
-    course_metadata.is_private as unknown as string,
-  )
-
-  console.log('in [course_name]/index.tsx -- course_name: ', course_name)
   console.log(
     'in [course_name]/index.tsx -- course_metadata: ',
     course_metadata,
   )
 
-  if (course_metadata != null) {
+  if (course_metadata == null) {
     console.log(
-      'in [course_name]/index.tsx -- course_metadata',
+      'in [course_name]/index.tsx -- course_metadata is null. course_name: ',
+      course_name,
+    )
+    console.log(
+      'in [course_name]/index.tsx -- course_metadata: ',
       course_metadata,
     )
-    return {
-      props: {
-        course_name,
-        course_exists: true,
+  } else {
+    console.log('in we expect no null today! -- course_metadata: ', course_name)
+
+    if (course_metadata != null) {
+      if (course_metadata.is_private == null) {
+        console.log('TODO: Remove this hack once is_private is fixed.')
+        course_metadata.is_private = false
+      }
+      course_metadata.is_private = JSON.parse(
+        course_metadata.is_private as unknown as string,
+      )
+      console.log(
+        'in [course_name]/index.tsx -- course_metadata',
         course_metadata,
-      },
+      )
+      return {
+        props: {
+          course_name,
+          course_exists: true,
+          course_metadata,
+        },
+      }
     }
   }
 

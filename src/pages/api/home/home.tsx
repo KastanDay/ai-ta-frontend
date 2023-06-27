@@ -498,20 +498,17 @@ export const getServerSideProps: GetServerSideProps = async (
   const { locale } = context
   const course_name = context.params?.course_name as string
 
-  // const { userId } = getAuth(context.req)
-  // if (!userId) {
-  //   return {
-  //     redirect: {
-  //       destination: '/sign-in?redirect_url=' + context.resolvedUrl,
-  //       permanent: false,
-  //     },
-  //   }
-  // }
-
   // Check course authed users -- the JSON.parse is CRUCIAL to avoid bugs with the stringified JSON 😭
   const course_metadata: CourseMetadata = (await kv.get(
     course_name + '_metadata',
   )) as CourseMetadata
+
+  // TODO: FIX THIS PARSE DOESN'T SEEM RIGHT
+  //   if (course_metadata && course_metadata.is_private) {
+  //   course_metadata.is_private = typeof course_metadata.is_private === 'string'
+  //     ? JSON.parse(course_metadata.is_private)
+  //     : course_metadata.is_private;
+  // }
   course_metadata.is_private = JSON.parse(
     course_metadata.is_private as unknown as string,
   )
