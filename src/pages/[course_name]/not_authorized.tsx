@@ -14,8 +14,6 @@ const NotAuthorizedPage: NextPage = (props) => {
   const router = useRouter()
   const clerk_user = useUser()
 
-  console.log('in not_authorized.tsx -- props: ', props)
-
   const getCurrentPageName = () => {
     // /CS-125/materials --> CS-125
     return router.asPath.slice(1).split('/')[0] as string
@@ -28,7 +26,6 @@ const NotAuthorizedPage: NextPage = (props) => {
   useEffect(() => {
     async function fetchCourseMetadata(course_name: string) {
       try {
-        console.log('course_name in fetchmetadta: ', course_name)
         const response = await fetch(
           `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
         )
@@ -52,12 +49,11 @@ const NotAuthorizedPage: NextPage = (props) => {
       }
     }
     fetchCourseMetadata(course_name).then((metadata) => {
-      console.log('in not_authorized.tsx -- metadata: ', metadata)
       setCourseMetadata(metadata)
     })
   }, [course_name])
 
-  if (courseMetadata != null) {
+  if (courseMetadata != null && clerk_user.isLoaded) {
     const user_permission = get_user_permission(
       courseMetadata,
       clerk_user,
