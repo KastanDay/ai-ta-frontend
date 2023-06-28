@@ -3,7 +3,7 @@ import Link from 'next/link'
 import {
   Montserrat,
   // Inter,
-  Rubik_Puddles,
+  // Rubik_Puddles,
   // Audiowide,
 } from 'next/font/google'
 import {
@@ -25,7 +25,7 @@ import { SignInButton } from '@clerk/nextjs'
 const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 // const rubikpuddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 
-export const AuthComponent = ({ course_name }: { course_name: string }) => {
+export const AuthComponent = () => {
   return (
     <>
       <main className="justify-center; course-page-main flex min-h-screen flex-col items-center">

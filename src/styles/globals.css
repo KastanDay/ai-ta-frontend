@@ -173,3 +173,9 @@ li {
   justify-content: center;
 }
 /* 👆 FOR EmailChips.tsx -- to make nice email input fields. 👆 */
+
+.goldUnderline {
+  text-decoration: underline;
+  text-decoration-color: gold;
+  color: inherit;
+}

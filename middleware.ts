@@ -15,5 +15,10 @@ export default authMiddleware()
 
 // Stop Middleware from running on static files
 export const config = {
-  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
+  matcher: [
+    '/((?!.*\\..*|_next).*)',
+    '/',
+    '/(api|trpc)(.*)',
+    '/\\[course_name\\]/gpt4', // Add this line to match the route
+  ],
 }

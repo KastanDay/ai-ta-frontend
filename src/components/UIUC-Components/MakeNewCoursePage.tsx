@@ -40,7 +40,8 @@ import EmailChipsComponent from './EmailChipsComponent'
 import { IconLock } from '@tabler/icons-react'
 import { useUser } from '@clerk/nextjs'
 import { CourseMetadata } from '~/types/courseMetadata'
-import { GetCurrentPageName } from './MakeOldCoursePage'
+// import { GetCurrentPageName } from './MakeOldCoursePage'
+// import { boolean } from 'zod'
 
 const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
   const { isSignedIn, user } = useUser()
@@ -185,6 +186,7 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
         '/api/UIUC-api/setCourseMetadata',
         window.location.origin,
       )
+
       url.searchParams.append('is_private', String(is_private))
       url.searchParams.append('course_name', course_name)
       url.searchParams.append('course_owner', course_owner)
@@ -214,7 +216,6 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
     course_name: string,
   ) => {
     console.log('Fresh course metadata:', new_course_metadata)
-    // TODO: update db
     callSetCourseMetadata(
       {
         ...new_course_metadata,
@@ -265,6 +266,7 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
           course_owner={owner_email}
           course_admins={[]} // TODO: add admin functionality
           course_name={course_name}
+          is_private={isPrivate}
           onEmailAddressesChange={handleEmailAddressesChange}
         />
       )}
