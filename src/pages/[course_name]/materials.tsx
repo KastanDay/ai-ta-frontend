@@ -131,7 +131,6 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
   // EDIT EXISTING COURSE
   return (
     <>
-      <Header />
       <MakeOldCoursePage
         course_name={currentPageName || ''}
         course_data={course_data}
