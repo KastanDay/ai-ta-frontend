@@ -1,19 +1,18 @@
 // upload.tsx
 import React, { useState, useRef } from 'react'
-import { Text, Group, createStyles, FileInput, rem } from '@mantine/core'
+import { Text, Group, createStyles, rem } from '@mantine/core'
 import { IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
 import {
   Dropzone,
-  MIME_TYPES,
-  MS_POWERPOINT_MIME_TYPE,
-  MS_WORD_MIME_TYPE,
-  PDF_MIME_TYPE,
+  // MIME_TYPES,
+  // MS_POWERPOINT_MIME_TYPE,
+  // MS_WORD_MIME_TYPE,
+  // PDF_MIME_TYPE,
 } from '@mantine/dropzone'
 import { useRouter } from 'next/router'
-import { CourseMetadata } from '~/types/courseMetadata'
-
 import { useUser } from '@clerk/nextjs'
-// import EmailChipsComponent from './UIUC-Components/EmailChipsComponent'
+import { CourseMetadata } from '~/types/courseMetadata'
+import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -87,7 +86,7 @@ export function DropzoneS3Upload({
 
   const getCurrentPageName = () => {
     // /CS-125/materials --> CS-125
-    return router.asPath.slice(1).split('/')[0]
+    return router.asPath.slice(1).split('/')[0] as string
   }
 
   const uploadToS3 = async (file: File | null) => {
@@ -200,30 +199,17 @@ export function DropzoneS3Upload({
     }
   }
 
-  const getCourseExistsAPI = async (courseName: string) => {
-    try {
-      // const response = await fetch(`/api/UIUC-api/getCourseExists?course_name=${courseName}`);
-      const response = await fetch(
-        `/api/UIUC-api/getCourseExists?course_name=${courseName}`,
-      )
-      const data = await response.json()
-      return data
-    } catch (error) {
-      console.error('Error fetching course data:', error)
-      return false
-    }
-  }
-
   const callSetCourseMetadata = async (courseMetadata: CourseMetadata) => {
     try {
       const { is_private, course_owner, course_admins, approved_emails_list } =
         courseMetadata
-      const course_name = getCurrentPageName() as string
+      const course_name = getCurrentPageName()
 
       const url = new URL(
         '/api/UIUC-api/setCourseMetadata',
         window.location.origin,
       )
+
       url.searchParams.append('is_private', String(is_private))
       url.searchParams.append('course_name', course_name)
       url.searchParams.append('course_owner', course_owner)
@@ -263,6 +249,16 @@ export function DropzoneS3Upload({
 
           // Make course exist in kv store
           await setCourseExistsAPI(getCurrentPageName() as string)
+
+          // set course exists in new metadata endpoint. Works great.
+          await callUpsertCourseMetadata(course_name, {
+            course_owner: current_user_email,
+
+            // Don't set properties we don't know about. We'll just upsert and use the defaults.
+            course_admins: undefined,
+            approved_emails_list: undefined,
+            is_private: undefined,
+          })
 
           // console.log('Right after setCourseExists in kv store...');
           // const ifexists = await getCourseExistsAPI(getCurrentPageName() as string);

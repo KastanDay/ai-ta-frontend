@@ -1,28 +1,15 @@
-# Create T3 App
+# [uiuc.chat]([uiuc.chat](https://www.uiuc.chat/)) frontend
+A Next.js + React app enabeling the vision of **upload anything, search everything, get answers.**
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+👉 See the backend here: https://github.com/UIUC-Chatbot/ai-teaching-assistant-uiuc
 
-## What's next? How do I make an app with this?
+👉 See the version 1 (a Gradio app) for our inspiration: https://github.com/UIUC-Chatbot/ai-teaching-assistant-uiuc
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
-
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Architecture 
+![image](https://github.com/KastanDay/ai-ta-frontend/assets/13607221/ac748045-fd91-4ab2-a0b7-e7dc8bbc22d7)
 
 - [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
+- [Clerk](https://clerk.com/)
 - [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
 
-## Learn More
-
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
-
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
-
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
-
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+The architecture follows the [T3 Stack](https://create.t3.gg/).
