@@ -13,11 +13,13 @@ const EmailChipsComponent = ({
   course_name,
   course_owner,
   course_admins,
+  is_private,
   onEmailAddressesChange,
 }: {
   course_name: string
   course_owner: string
   course_admins: string[]
+  is_private: boolean
   onEmailAddressesChange?: (
     new_course_metadata: CourseMetadata,
     course_name: string,
@@ -26,18 +28,17 @@ const EmailChipsComponent = ({
   const [emailAddresses, setEmailAddresses] = useState<string[]>([])
   const [courseName, setCourseName] = useState<string>(course_name)
   const [value, setValue] = useState<string>('')
-  const [isPrivate, setIsPrivate] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
+  const isPrivate = is_private
 
   // fetch metadata on mount
   useEffect(() => {
     fetchCourseMetadata(course_name).then((metadata) => {
       if (metadata) {
-        // console.log('Course metadata:', metadata)
+        metadata.is_private = JSON.parse(
+          metadata.is_private as unknown as string,
+        )
         setEmailAddresses(metadata.approved_emails_list)
-        setIsPrivate(metadata.isPrivate)
-      } else {
-        console.log('Failed to fetch course metadata')
       }
     })
   }, [])
@@ -168,6 +169,7 @@ const EmailChipsComponent = ({
         '/api/UIUC-api/setCourseMetadata',
         window.location.origin,
       )
+
       url.searchParams.append('is_private', String(is_private))
       url.searchParams.append('course_name', course_name)
       url.searchParams.append('course_owner', course_owner)

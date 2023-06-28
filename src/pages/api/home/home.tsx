@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from 'react-query'
 
-import { GetServerSideProps } from 'next'
+import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import Head from 'next/head'
@@ -41,17 +41,25 @@ import HomeContext from './home.context'
 import { HomeInitialState, initialState } from './home.state'
 
 import { v4 as uuidv4 } from 'uuid'
+import { CourseMetadata } from '~/types/courseMetadata'
+import { kv } from '@vercel/kv'
+import { useUser } from '@clerk/nextjs'
+import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
+import { router } from '@trpc/server'
+import { useRouter } from 'next/router'
 
 interface Props {
   serverSideApiKeyIsSet: boolean
   serverSidePluginKeysSet: boolean
   defaultModelId: OpenAIModelID
+  course_metadata: CourseMetadata
 }
 
 const Home = ({
   serverSideApiKeyIsSet,
   serverSidePluginKeysSet,
   defaultModelId,
+  course_metadata,
 }: Props) => {
   const { t } = useTranslation('chat')
   const { getModels } = useApiService()
@@ -77,13 +85,75 @@ const Home = ({
 
   const stopConversationRef = useRef<boolean>(false)
 
-  // ORIGINAL
-  // const [error, setError] = useState(null)
-  // const [data, setData] = useState(null)
+  const router = useRouter()
+  const course_name = router.query.course_name
 
-  // from AI
+  // Check auth & redirect
+  const clerk_user_outer = useUser()
+  // const course_exists = course_metadata != null
+
+  // ------------------- 👇 MOST BASIC AUTH CHECK 👇 -------------------
+
+  // DO AUTH-based redirect!
+  useEffect(() => {
+    if (clerk_user_outer.isLoaded) {
+      if (course_metadata != null) {
+        console.log(
+          'in api/home.tsx -- Calling get_user_permission... course_metadata: ',
+          course_metadata,
+        )
+        const permission_str = get_user_permission(
+          course_metadata,
+          clerk_user_outer,
+          router,
+        )
+
+        console.log('in api/home.tsx -- permission_str', permission_str)
+
+        if (permission_str == 'edit' || permission_str == 'view') {
+          // ✅ AUTHED
+          console.log(
+            'in api/home.tsx - Course exists & user is properly authed, redirecting to gpt4 page',
+          )
+          // router.push(`/${course_name}/gpt4`)
+        } else {
+          // 🚫 NOT AUTHED
+          router.push(`/${course_name}/not_authorized`)
+        }
+      } else {
+        // 🆕 MAKE A NEW COURSE
+        console.log('Course does not exist, redirecting to materials page')
+        router.push(`/${course_name}/materials`)
+      }
+    }
+  }, [clerk_user_outer.isLoaded])
+  // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
+
+  // useEffect(() => {
+  //   if (!clerk_obj.isLoaded) return
+
+  //   if (course_metadata == null) {
+  //     // Course doesn't exist, make new
+  //     router.push(`/${course_name}/materials`)
+  //     // return {
+  //     // redirect: {
+  //     //   destination: `/${course_name}/materials`,
+  //     //   permanent: false,
+  //     // },
+
+  //     // };
+  //   } else {
+  //     // Course exists, check if user is authenticated
+  //     const permission_str = get_user_permission(
+  //       course_metadata,
+  //       clerk_obj,
+  //       router,
+  //     )
+  //     console.log('Permission str: ', permission_str)
+  //   }
+  // }, [clerk_obj.isLoaded])
+
   const [data, setData] = useState(null) // using the original version.
-  // const [data, setData] = useState<Model[] | null>(null); // Replace Model with the correct type for a single model
   const [error, setError] = useState<unknown>(null) // Update the type of the error state variable
 
   // Add a new state variable to track whether models have been fetched
@@ -413,7 +483,38 @@ const Home = ({
 }
 export default Home
 
-export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+// import { useAuth, useUser } from '@clerk/nextjs'
+
+// import { useAuth } from '@clerk/nextjs'
+// import { withAuth } from '@clerk/nextjs/api'
+
+// import { getAuth, buildClerkProps } from '@clerk/nextjs/server'
+// import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
+
+export const getServerSideProps: GetServerSideProps = async (
+  context: GetServerSidePropsContext,
+) => {
+  console.log('ServerSideProps: ', context.params)
+  const { locale } = context
+  const course_name = context.params?.course_name as string
+
+  // Check course authed users -- the JSON.parse is CRUCIAL to avoid bugs with the stringified JSON 😭
+  const course_metadata: CourseMetadata = (await kv.get(
+    course_name + '_metadata',
+  )) as CourseMetadata
+
+  // TODO: FIX THIS PARSE DOESN'T SEEM RIGHT
+  //   if (course_metadata && course_metadata.is_private) {
+  //   course_metadata.is_private = typeof course_metadata.is_private === 'string'
+  //     ? JSON.parse(course_metadata.is_private)
+  //     : course_metadata.is_private;
+  // }
+  course_metadata.is_private = JSON.parse(
+    course_metadata.is_private as unknown as string,
+  )
+
+  console.log('home.tsx -- Course metadata in serverside: ', course_metadata)
+
   const defaultModelId =
     (process.env.DEFAULT_MODEL &&
       Object.values(OpenAIModelID).includes(
@@ -423,7 +524,6 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
     fallbackModelID
 
   let serverSidePluginKeysSet = false
-
   const googleApiKey = process.env.GOOGLE_API_KEY
   const googleCSEId = process.env.GOOGLE_CSE_ID
 
@@ -436,6 +536,8 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
 
   return {
     props: {
+      // ...buildClerkProps(context.req), // https://clerk.com/docs/nextjs/getserversideprops
+      course_metadata: course_metadata,
       serverSideApiKeyIsSet: !!process.env.OPENAI_API_KEY,
       defaultModelId,
       serverSidePluginKeysSet,

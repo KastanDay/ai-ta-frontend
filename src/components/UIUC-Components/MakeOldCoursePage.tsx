@@ -39,7 +39,7 @@ import { useAuth, useUser } from '@clerk/nextjs'
 
 export const GetCurrentPageName = () => {
   // /CS-125/materials --> CS-125
-  return useRouter().asPath.slice(1).split('/')[0]
+  return useRouter().asPath.slice(1).split('/')[0] as string
 }
 
 const MakeOldCoursePage = ({
@@ -51,41 +51,61 @@ const MakeOldCoursePage = ({
 }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
-  const { isSignedIn, user } = useUser()
+  // const { isSignedIn, user } = useUser()
+  const clerk_user = useUser()
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
   const [currentEmail, setCurrentEmail] = useState('')
 
-  const currentPageName = GetCurrentPageName() as string
+  const router = useRouter()
+
+  const currentPageName = GetCurrentPageName()
 
   useEffect(() => {
     const fetchData = async () => {
-      const userEmail = user?.primaryEmailAddress?.emailAddress as string
+      const userEmail = clerk_user.user?.primaryEmailAddress
+        ?.emailAddress as string
       setCurrentEmail(userEmail)
 
-      const metadata: CourseMetadata | null = await fetchCourseMetadata(
-        currentPageName,
-      )
-      setCourseMetadata(metadata)
+      try {
+        const metadata: CourseMetadata = (await fetchCourseMetadata(
+          currentPageName,
+        )) as CourseMetadata
 
-      console.log('MakeOldCoursePage - course_metadata', metadata)
-      console.log('MakeOldCoursePage - current_email', userEmail)
+        if (metadata && metadata.is_private) {
+          metadata.is_private = JSON.parse(
+            metadata.is_private as unknown as string,
+          )
+        }
+        setCourseMetadata(metadata)
+      } catch (error) {
+        console.error(error)
+        // alert('An error occurred while fetching course metadata. Please try again later.')
+      }
     }
 
     fetchData()
-  }, [currentPageName, user])
+  }, [currentPageName, clerk_user.isLoaded])
 
-  if (!isLoaded || !userId) {
-    return <AuthComponent course_name={currentPageName} />
+  // if (!isLoaded || !userId) {
+  //   return <AuthComponent course_name={currentPageName} />
+  // }
+  if (!isLoaded || !userId || !courseMetadata) {
+    return <AuthComponent />
   }
 
+  // TODO: update this check to consider Admins & participants.
+  // If participant, say "You cannot edit this course (because you're not an admin) but you can view it.
   if (
     courseMetadata &&
-    currentEmail !== (courseMetadata.course_owner as string)
+    currentEmail !== (courseMetadata.course_owner as string) &&
+    courseMetadata.course_admins.indexOf(currentEmail) === -1
   ) {
+    router.push(`/${course_name}/not_authorized`)
+
     return (
-      <CannotEditCourseYouDontOwn
+      <CannotEditCourse
         course_name={currentPageName as string}
         // current_email={currentEmail as string}
       />
@@ -137,7 +157,10 @@ const MakeOldCoursePage = ({
             <Title order={4}>
               The page will auto-refresh when your AI Assistant is ready.
             </Title>
-            <PrivateOrPublicCourse course_name={course_name} />
+            <PrivateOrPublicCourse
+              course_name={course_name}
+              course_metadata={courseMetadata as CourseMetadata}
+            />
             <Title
               className={montserrat.className}
               variant="gradient"
@@ -162,14 +185,22 @@ import { IconLock } from '@tabler/icons-react'
 
 import EmailChipsComponent from './EmailChipsComponent'
 import { AuthComponent } from './AuthToEditCourse'
-import { CannotEditCourseYouDontOwn } from './CannotEditCourseYouDontOwn'
+import { CannotEditCourse } from './CannotEditCourse'
 import { CourseMetadata } from '~/types/courseMetadata'
+// import { CannotViewCourse } from './CannotViewCourse'
 
-const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
-  const [isPrivate, setIsPrivate] = useState(true)
+const PrivateOrPublicCourse = ({
+  course_name,
+  course_metadata,
+}: {
+  course_name: string
+  course_metadata: CourseMetadata
+}) => {
+  const [isPrivate, setIsPrivate] = useState(
+    course_metadata.is_private as boolean,
+  )
 
   const { isSignedIn, user } = useUser()
-  console.log('email: ', user?.primaryEmailAddress?.emailAddress)
   const owner_email = user?.primaryEmailAddress?.emailAddress as string
 
   const CheckboxIcon: CheckboxProps['icon'] = ({ indeterminate, className }) =>
@@ -236,7 +267,7 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
           // bg='#020307'
           color="grape"
           icon={CheckboxIcon}
-          defaultChecked
+          defaultChecked={isPrivate}
           onChange={handleCheckboxChange}
         />
       </Group>
@@ -250,8 +281,9 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
       {isPrivate && (
         <EmailChipsComponent
           course_owner={owner_email}
-          course_admins={[]}
+          course_admins={[]} // todo enable this feature
           course_name={course_name}
+          is_private={isPrivate}
         />
       )}
     </>
@@ -278,10 +310,8 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
       const response = await axios.delete(`${API_URL}/delete`, {
         params: { s3_path, course_name },
       })
-      console.log(response)
       // Handle successful deletion, e.g., remove the item from the list or show a success message
       // Refresh the page
-      console.log('about to refresh to: ', router.asPath)
       await router.push(router.asPath)
     } catch (error) {
       console.error(error)
@@ -331,17 +361,15 @@ async function fetchCourseMetadata(course_name: string) {
     if (response.ok) {
       const data = await response.json()
       if (data.success === false) {
-        console.error('An error occurred while fetching course metadata')
-        return null
+        throw new Error('An error occurred while fetching course metadata')
       }
       return data.course_metadata
     } else {
-      console.error(`Error fetching course metadata: ${response.status}`)
-      return null
+      throw new Error(`Error fetching course metadata: ${response.status}`)
     }
   } catch (error) {
     console.error('Error fetching course metadata:', error)
-    return null
+    throw error
   }
 }
 
