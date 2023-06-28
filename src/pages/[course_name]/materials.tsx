@@ -47,7 +47,7 @@ async function getCourseData(course_name: string) {
     })
 
     // return response.data.url;
-    console.log('response.data', response.data)
+    // console.log('response.data', response.data)
     return response.data.all_s3_paths
   } catch (error) {
     console.error('Error fetching course files:', error)
@@ -59,6 +59,7 @@ async function getCourseData(course_name: string) {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { params } = context
   if (!params) {
+    console.log('no params')
     return {
       course_data: null,
       course_name: null,
@@ -74,7 +75,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     // call flask backend to get course data
     const course_data = await getCourseData(course_name as string)
     if (course_data != null) {
-      console.log('course_data', course_data)
+      // console.log('materials.tsx -- course_data', course_data)
       return {
         props: {
           course_name,
@@ -96,22 +97,45 @@ interface CourseMainProps {
   course_data: any
 }
 
-import { useAuth } from '@clerk/nextjs'
-import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
+import { useAuth, useUser } from '@clerk/nextjs'
 import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
+import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
+import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
+import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
+import { Title } from '@mantine/core'
 
 // run on client side
 const CourseMain: NextPage<CourseMainProps> = (props) => {
-  console.log('PROPS IN materials.tsx', props)
+  // console.log('PROPS IN materials.tsx', props)
   const course_name = props.course_name
   const course_data = props.course_data
   const currentPageName = GetCurrentPageName() as string
-  const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
+  // const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
+  const clerk_user = useUser()
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!isLoaded || !userId) {
-    return <AuthComponent course_name={currentPageName} />
-    // return <div> You must sign in to create or edit courses. <SignInButton /> </div>;
+  if (!clerk_user.isLoaded) {
+    return (
+      <MainPageBackground>
+        <LoadingSpinner />
+      </MainPageBackground>
+    )
+  }
+
+  if (!clerk_user.isSignedIn) {
+    console.log(
+      'User not logged in',
+      clerk_user.isSignedIn,
+      clerk_user.isLoaded,
+      currentPageName,
+    )
+    // return ("In the if statement biiii")
+    return (
+      // <MainPageBackground>
+      <AuthComponent />
+      // <LoadingSpinner />
+      // </MainPageBackground>
+    )
   }
 
   // Don't edit certain special pages (no context allowed)
@@ -128,7 +152,6 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
     return <MakeNewCoursePage course_name={currentPageName || ''} />
   }
 
-  // EDIT EXISTING COURSE
   return (
     <>
       <MakeOldCoursePage
