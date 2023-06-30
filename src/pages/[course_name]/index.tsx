@@ -101,29 +101,43 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
   const router = useRouter()
   const clerk_user = useUser()
 
-  if (!clerk_user.isLoaded) {
-    return (
-      <MainPageBackground>
-        <LoadingSpinner />
-      </MainPageBackground>
-    )
-  }
+  // if (!clerk_user.isLoaded) {
+  //   return (
+  //     <MainPageBackground>
+  //       <LoadingSpinner />
+  //     </MainPageBackground>
+  //   )
+  // }
 
-  // course is private & not signed in, must sign in
-  if (course_metadata.is_private && !clerk_user.isSignedIn) {
-    console.log(
-      'User not logged in',
-      clerk_user.isSignedIn,
-      clerk_user.isLoaded,
-      course_name,
-    )
-    return (
-      <AuthComponent />
-    )
-  }
+  // // course is private & not signed in, must sign in
+  // if (course_metadata.is_private && !clerk_user.isSignedIn) {
+  //   console.log(
+  //     'User not logged in',
+  //     clerk_user.isSignedIn,
+  //     clerk_user.isLoaded,
+  //     course_name,
+  //   )
+  //   return (
+  //     <AuthComponent />
+  //   )
+  // }
 
   // DO AUTH-based redirect!
   useEffect(() => {
+    if (!clerk_user.isLoaded) {
+      return;
+    }
+    // course is private & not signed in, must sign in
+    if (course_metadata.is_private && !clerk_user.isSignedIn) {
+      console.log(
+        'User not logged in',
+        clerk_user.isSignedIn,
+        clerk_user.isLoaded,
+        course_name,
+      )
+      router.replace('/auth') // replace with your auth route
+      return;
+    }
     if (clerk_user.isLoaded) {
       console.log("in [course_name]/index.tsx -- clerk_user loaded and working :)")
       if (course_metadata != null) {
@@ -157,6 +171,14 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
       console.log("in [course_name]/index.tsx -- clerk_user NOT LOADED yet...")
     }
   }, [clerk_user.isLoaded])
+
+  if (!clerk_user.isLoaded || (course_metadata.is_private && !clerk_user.isSignedIn)) {
+  return (
+    <MainPageBackground>
+      <LoadingSpinner />
+    </MainPageBackground>
+  )
+}
   // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
 
   // here we redirect depending on Auth.
