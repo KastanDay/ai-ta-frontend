@@ -11,7 +11,7 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
     <header
       // style={{ display: "flex", justifyContent: "space-between", padding: 20 }}
       style={{
-        backgroundColor: isNavbar? '#15162c' : '#2e026d',
+        backgroundColor: isNavbar ? '#15162c' : '#2e026d',
         display: 'flex',
         justifyContent: 'flex-end',
         padding: '1em',

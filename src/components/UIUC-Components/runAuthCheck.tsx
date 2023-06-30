@@ -23,7 +23,7 @@ export const get_user_permission = (
       if (!clerk_user.isSignedIn) {
         return 'view'
       }
-      
+
       if (
         // clerk_user must be be signed in now.
         curr_user_email_addresses.includes(course_metadata.course_owner) ||
