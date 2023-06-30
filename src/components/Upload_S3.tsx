@@ -26,13 +26,13 @@ const useStyles = createStyles((theme) => ({
     width: '100%',
     borderWidth: rem(1),
     paddingBottom: rem(20),
-    height: "auto",
-    justifyContent: "center",
+    height: 'auto',
+    justifyContent: 'center',
   },
   button: {
     width: '100%',
-    border:'none',
-    outline:'solid 1.5px',
+    border: 'none',
+    outline: 'solid 1.5px',
     outlineColor: theme.colors.grape[8],
     display: 'flex',
     flexDirection: 'row',
@@ -43,7 +43,7 @@ const useStyles = createStyles((theme) => ({
     cursor: 'pointer',
     transition: 'background-color 0.2s ease-in-out',
     '--btn-text-case': 'none',
-    height: "48px",
+    height: '48px',
   },
 
   icon: {
@@ -235,11 +235,14 @@ export function DropzoneS3Upload({
   }
 
   return (
-      <div className={classes.wrapper} style={{
+    <div
+      className={classes.wrapper}
+      style={{
         maxWidth: '320px',
-        display: "flex",
-        alignItems: "center",
-      }}>
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
       <Dropzone
         openRef={openRef}
         loading={uploadInProgress}
@@ -311,78 +314,84 @@ export function DropzoneS3Upload({
           // console.log(files)
         }}
         className={redirect_to_gpt_4 ? classes.dropzone : classes.button}
-        radius={redirect_to_gpt_4 ? "md" : "50%"}
-        bg={redirect_to_gpt_4 ? "#0E1116" : "transparent"}
-
+        radius={redirect_to_gpt_4 ? 'md' : '50%'}
+        bg={redirect_to_gpt_4 ? '#0E1116' : 'transparent'}
         onMouseEnter={(e) => {
           if (!redirect_to_gpt_4) {
-            e.currentTarget.style.backgroundColor = theme.colors.grape[8];
+            e.currentTarget.style.backgroundColor = theme.colors.grape[8]
           }
         }}
         onMouseLeave={(e) => {
           if (!redirect_to_gpt_4) {
-            e.currentTarget.style.backgroundColor = "transparent";
+            e.currentTarget.style.backgroundColor = 'transparent'
           }
         }}
         // maxSize={30 * 1024 ** 2} max file size
       >
         {redirect_to_gpt_4 ? (
-            <div style={{ pointerEvents: "none" }}>
-              <Group position="center">
-                <Dropzone.Accept>
-                  <IconDownload
-                      size={rem(50)}
-                      color={theme.primaryColor[6]}
-                      stroke={1.5}
-                  />
-                </Dropzone.Accept>
-                <Dropzone.Reject>
-                  <IconX size={rem(50)} color={theme.colors.red[6]} stroke={1.5} />
-                </Dropzone.Reject>
-                <Dropzone.Idle>
-                  <IconCloudUpload
-                      size={rem(50)}
-                      color={
-                        theme.colorScheme === 'dark'
-                            ? theme.colors.dark[0]
-                            : theme.black
-                      }
-                      stroke={1.5}
-                  />
-                </Dropzone.Idle>
-              </Group>
-
-              <Text ta="center" fw={400} fz="lg" mt="sm">
-                <Dropzone.Accept>Drop files here</Dropzone.Accept>
-                <Dropzone.Reject>
-                  Upload rejected, not proper file type or too large.
-                </Dropzone.Reject>
-                <Dropzone.Idle>Upload materials</Dropzone.Idle>
-              </Text>
-              <Text ta="center" fz="sm" mt="xs" c="bold">
-                Supported file types: PDF, Word, PPT, Excel, MP4, and SRT.
-              </Text>
-            </div>
-        ) : (
-            <Dropzone.Idle>
-              <Group position="center" align="center" >
-                <Text ta="center" style={{color:theme.white, fontWeight:600}} size={theme.fontSizes.sm}>
-                  Upload materials
-                </Text>
-                <IconCloudUpload
-                    size={rem(24)}
-                    color={
-                      theme.colorScheme === 'dark'
-                          ? theme.colors.gray[0]
-                          : theme.colors.gray[1]
-                    }
-                    stroke={2}
-                    strokeLinecap={'round'}
-                    strokeLinejoin={'round'}
+          <div style={{ pointerEvents: 'none' }}>
+            <Group position="center">
+              <Dropzone.Accept>
+                <IconDownload
+                  size={rem(50)}
+                  color={theme.primaryColor[6]}
+                  stroke={1.5}
                 />
-              </Group>
-            </Dropzone.Idle>
+              </Dropzone.Accept>
+              <Dropzone.Reject>
+                <IconX
+                  size={rem(50)}
+                  color={theme.colors.red[6]}
+                  stroke={1.5}
+                />
+              </Dropzone.Reject>
+              <Dropzone.Idle>
+                <IconCloudUpload
+                  size={rem(50)}
+                  color={
+                    theme.colorScheme === 'dark'
+                      ? theme.colors.dark[0]
+                      : theme.black
+                  }
+                  stroke={1.5}
+                />
+              </Dropzone.Idle>
+            </Group>
 
+            <Text ta="center" fw={400} fz="lg" mt="sm">
+              <Dropzone.Accept>Drop files here</Dropzone.Accept>
+              <Dropzone.Reject>
+                Upload rejected, not proper file type or too large.
+              </Dropzone.Reject>
+              <Dropzone.Idle>Upload materials</Dropzone.Idle>
+            </Text>
+            <Text ta="center" fz="sm" mt="xs" c="bold">
+              Supported file types: PDF, Word, PPT, Excel, MP4, and SRT.
+            </Text>
+          </div>
+        ) : (
+          <Dropzone.Idle>
+            <Group position="center" align="center">
+              <Text
+                ta="center"
+                style={{ color: theme.white, fontWeight: 600 }}
+                size={theme.fontSizes.sm}
+              >
+                Upload materials
+              </Text>
+              <IconCloudUpload
+                size={rem(24)}
+                color={
+                  theme.colorScheme === 'dark'
+                    ? theme.colors.gray[0]
+                    : theme.colors.gray[1]
+                }
+                stroke={2}
+                strokeLinecap={'round'}
+                strokeLinejoin={'round'}
+              />
+            </Group>
+          </Dropzone.Idle>
         )}
       </Dropzone>
     </div>
