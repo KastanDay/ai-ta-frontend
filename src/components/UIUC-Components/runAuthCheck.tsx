@@ -20,7 +20,12 @@ export const get_user_permission = (
 
     if (course_metadata.is_private == false) {
       // Course is public
+      if (!clerk_user.isSignedIn) {
+        return 'view'
+      }
+      
       if (
+        // clerk_user must be be signed in now.
         curr_user_email_addresses.includes(course_metadata.course_owner) ||
         course_metadata.course_admins.some((email) =>
           curr_user_email_addresses.includes(email),
@@ -34,6 +39,10 @@ export const get_user_permission = (
       }
     } else {
       // Course is Private
+      if (!clerk_user.isSignedIn) {
+        return 'no_permission'
+      }
+
       if (
         curr_user_email_addresses.includes(course_metadata.course_owner) ||
         course_metadata.course_admins.some((email) =>
