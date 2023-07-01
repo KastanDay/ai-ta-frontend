@@ -6,15 +6,15 @@ import {
   UserButton,
 } from '@clerk/nextjs'
 
-export default function Header() {
+export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
   return (
     <header
       // style={{ display: "flex", justifyContent: "space-between", padding: 20 }}
       style={{
-        backgroundColor: '#2e026d',
+        backgroundColor: isNavbar ? '#15162c' : '#2e026d',
         display: 'flex',
         justifyContent: 'flex-end',
-        padding: '2em',
+        padding: '1em',
       }}
       className="py-16"
     >

@@ -11,6 +11,8 @@ import { useAuth, useUser } from '@clerk/nextjs'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { CannotViewCourse } from '~/components/UIUC-Components/CannotViewCourse'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
+import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
+import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { params } = context
@@ -97,15 +99,37 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
   const course_exists = course_metadata != null
 
   const router = useRouter()
-  const clerk_user_outer = useUser()
+  const clerk_user = useUser()
 
   // DO AUTH-based redirect!
   useEffect(() => {
-    if (clerk_user_outer.isLoaded) {
+    if (!clerk_user.isLoaded) {
+      return
+    }
+    if (course_metadata == null) {
+      console.log('Course does not exist, redirecting to materials page')
+      router.replace(`/${course_name}/materials`)
+      return
+    }
+    // course is private & not signed in, must sign in
+    if (course_metadata.is_private && !clerk_user.isSignedIn) {
+      console.log(
+        'User not logged in',
+        clerk_user.isSignedIn,
+        clerk_user.isLoaded,
+        course_name,
+      )
+      router.replace('/sign-in') // replace with your auth route
+      return
+    }
+    if (clerk_user.isLoaded) {
+      console.log(
+        'in [course_name]/index.tsx -- clerk_user loaded and working :)',
+      )
       if (course_metadata != null) {
         const permission_str = get_user_permission(
           course_metadata,
-          clerk_user_outer,
+          clerk_user,
           router,
         )
 
@@ -129,22 +153,33 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
         console.log('Course does not exist, redirecting to materials page')
         router.push(`/${course_name}/materials`)
       }
+    } else {
+      console.log('in [course_name]/index.tsx -- clerk_user NOT LOADED yet...')
     }
-  }, [clerk_user_outer.isLoaded])
+  }, [clerk_user.isLoaded])
+
+  if (
+    !clerk_user.isLoaded ||
+    course_metadata == null ||
+    (course_metadata.is_private && !clerk_user.isSignedIn)
+  ) {
+    return (
+      <MainPageBackground>
+        <LoadingSpinner />
+      </MainPageBackground>
+    )
+  }
   // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
 
   // here we redirect depending on Auth.
   return (
     <>
       {course_exists ? (
-        <main className="items-left justify-left; course-page-main flex min-h-screen flex-col">
-          <div className="container flex flex-col items-center justify-center px-4 py-16 ">
-            <Text weight={800}>Checking if course exists...</Text>
-            <br></br>
-            <br></br>
-            <LoadingSpinner />
-          </div>
-        </main>
+        <MainPageBackground>
+          <LoadingSpinner />
+          <br></br>
+          <Text weight={800}>Checking if course exists...</Text>
+        </MainPageBackground>
       ) : (
         <MakeNewCoursePage course_name={course_name} />
       )}

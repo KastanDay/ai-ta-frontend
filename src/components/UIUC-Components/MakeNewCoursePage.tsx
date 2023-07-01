@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { DropzoneS3Upload } from '~/components/Upload_S3'
+import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
 
 // import { Montserrat, Inter, Rubik_Puddles, Audiowide } from "next/font/google"
 import { Montserrat } from 'next/font/google'
@@ -40,6 +40,7 @@ import EmailChipsComponent from './EmailChipsComponent'
 import { IconLock } from '@tabler/icons-react'
 import { useUser } from '@clerk/nextjs'
 import { CourseMetadata } from '~/types/courseMetadata'
+import LargeDropzone from './LargeDropzone'
 // import { GetCurrentPageName } from './MakeOldCoursePage'
 // import { boolean } from 'zod'
 
@@ -103,14 +104,15 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
             </Title>
 
             {/* !! MAIN UPLOAD COMPONENT !! */}
-            <DropzoneS3Upload course_name={course_name} />
+            {/* <DropzoneS3Upload course_name={course_name} /> */}
+            <LargeDropzone course_name={course_name} />
 
-            <Title order={4}>
+            {/* <Title order={4}>
               Stay on page until loading is complete or ingest will fail.
             </Title>
             <Title order={4}>
               The page will auto-refresh when your AI Assistant is ready.
-            </Title>
+            </Title> */}
 
             <PrivateOrPublicCourse course_name={course_name} />
           </Flex>
