@@ -20,9 +20,19 @@ const s3Client = new S3Client({
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const { filePath, ResponseContentType } = req.body as {
+    const { filePath } = req.body as {
       filePath: string
-      ResponseContentType: string
+    }
+    // only set ResponseContentType if it's PDF, cuz that's the only one we need to open a preview
+
+    let ResponseContentType = undefined
+
+    if (filePath.endsWith('.pdf')) {
+      ResponseContentType = 'application/pdf'
+    }
+
+    if (filePath.endsWith('.png')) {
+      ResponseContentType = 'application/png'
     }
 
     const command = new GetObjectCommand({

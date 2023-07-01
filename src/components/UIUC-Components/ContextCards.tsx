@@ -27,14 +27,10 @@ import { useRouter } from 'next/router'
 // My way to manage content
 import { useChatContext } from './StatefulSearchQuery'
 
-async function fetchPresignedUrl(
-  filePath: string,
-  ResponseContentType: string,
-) {
+async function fetchPresignedUrl(filePath: string) {
   try {
     const response = await axios.post('/api/download', {
       filePath,
-      ResponseContentType,
     })
     return response.data.url
   } catch (error) {
@@ -148,12 +144,12 @@ function DynamicMaterialsCard({
   const [presignedUrlPng, setPresignedUrlPng] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchPresignedUrl(s3_path, 'application/pdf').then((url) => {
+    fetchPresignedUrl(s3_path).then((url) => {
       setPresignedUrl(url + '#page=' + pagenumber_or_timestamp)
     })
 
     const s3_thumbnail_path = s3_path.replace('.pdf', '-pg1-thumb.png')
-    fetchPresignedUrl(s3_thumbnail_path, 'application/png').then((url) => {
+    fetchPresignedUrl(s3_thumbnail_path).then((url) => {
       setPresignedUrlPng(url)
     })
   }, [s3_path])

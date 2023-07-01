@@ -493,14 +493,13 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 </p>
               </div>
             </div>
-            <div className="me-4 flex justify-end space-x-4">
+            <div className="me-4 flex justify-end space-x-2">
+              {/* Download button */}
               <button
                 onClick={() =>
-                  fetchPresignedUrl(file.s3_path, 'application/pdf').then(
-                    (url) => {
-                      window.open(url, '_blank')
-                    },
-                  )
+                  fetchPresignedUrl(file.s3_path).then((url) => {
+                    window.open(url, '_blank')
+                  })
                 }
                 className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
@@ -519,6 +518,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
               >
                 <IconDownload className="h-5 w-5 text-gray-800" />
               </button>
+              {/* Delete button */}
               <button
                 onClick={() =>
                   handleDelete(
@@ -574,12 +574,15 @@ async function fetchCourseMetadata(course_name: string) {
 
 async function fetchPresignedUrl(
   filePath: string,
-  ResponseContentType: string,
+  // ResponseContentType: string,
 ) {
   try {
+    console.log('filePath', filePath)
+    // if filepath ends with .pdf, then ResponseContentType = 'application/pdf'
+
     const response = await axios.post('/api/download', {
       filePath,
-      ResponseContentType,
+      // ResponseContentType,
     })
     return response.data.url
   } catch (error) {
