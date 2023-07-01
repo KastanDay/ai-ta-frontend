@@ -494,15 +494,16 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
               </div>
             </div>
             <div className="me-4 flex justify-end space-x-4">
-              {/* <button
+              <button
                 onClick={() =>
-                  handleDelete(
-                    file.s3_path as string,
-                    file.course_name as string,
+                  fetchPresignedUrl(file.s3_path, 'application/pdf').then(
+                    (url) => {
+                      window.open(url, '_blank')
+                    },
                   )
                 }
                 className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
-                style={{ outline: 'solid 1px', outlineColor: 'white' }}
+                // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
                   ;(e.currentTarget.children[0] as HTMLElement).style.color =
@@ -513,11 +514,11 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
                   ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colors.red[6]
+                    theme.colors.gray[8]
                 }}
               >
-                <IconDownload className="h-5 w-5 text-red-600" />
-              </button> */}
+                <IconDownload className="h-5 w-5 text-gray-800" />
+              </button>
               <button
                 onClick={() =>
                   handleDelete(
@@ -526,7 +527,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                   )
                 }
                 className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
-                style={{ outline: 'solid 1px', outlineColor: theme.white }}
+                // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
                   ;(e.currentTarget.children[0] as HTMLElement).style.color =
@@ -568,6 +569,22 @@ async function fetchCourseMetadata(course_name: string) {
   } catch (error) {
     console.error('Error fetching course metadata:', error)
     throw error
+  }
+}
+
+async function fetchPresignedUrl(
+  filePath: string,
+  ResponseContentType: string,
+) {
+  try {
+    const response = await axios.post('/api/download', {
+      filePath,
+      ResponseContentType,
+    })
+    return response.data.url
+  } catch (error) {
+    console.error('Error fetching presigned URL:', error)
+    return null
   }
 }
 
