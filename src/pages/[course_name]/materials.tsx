@@ -130,12 +130,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
       currentPageName,
     )
     // return ("In the if statement biiii")
-    return (
-      // <MainPageBackground>
-      <AuthComponent />
-      // <LoadingSpinner />
-      // </MainPageBackground>
-    )
+    return <AuthComponent />
   }
 
   // Don't edit certain special pages (no context allowed)

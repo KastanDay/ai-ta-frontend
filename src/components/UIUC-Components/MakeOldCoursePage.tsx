@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { DropzoneS3Upload } from '~/components/Upload_S3'
+import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
 import {
   Montserrat,
   // Inter,
@@ -22,6 +22,7 @@ import {
   Flex,
   Group,
   createStyles,
+  Divider,
   // TextInput,
   // Tooltip,
 } from '@mantine/core'
@@ -129,12 +130,6 @@ const MakeOldCoursePage = ({
               </Link>
             </div>
             <Flex direction="row" align="center" justify="center">
-              {/*<div className="flex flex-row items-center justify-center gap-2 mt-4">*/}
-              {/*  <DropzoneS3Upload*/}
-              {/*      course_name={course_name}*/}
-              {/*      redirect_to_gpt_4={false}*/}
-              {/*  />*/}
-              {/*</div>*/}
               <div className="ms-4 mt-4 flex flex-row items-center justify-center gap-2">
                 <ResumeToChat course_name={course_name} />
               </div>
@@ -239,10 +234,10 @@ const MakeOldCoursePage = ({
               </svg>
             </button>
             <Header isNavbar={true} />
-            {/*// ... the rest of the existing code*/}
           </div>
         </div>
       </div>
+
       <Head>
         <title>{course_name}</title>
         <meta
@@ -252,7 +247,7 @@ const MakeOldCoursePage = ({
         <link rel="icon" href="/favicon.ico" />
         {/* <Header /> */}
       </Head>
-      <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center justify-center">
+      <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center">
         <div className="items-left flex w-full flex-col justify-center py-0">
           <Flex direction="column" align="center" w="100%">
             <div className="flex flex-col items-center justify-center">
@@ -261,16 +256,27 @@ const MakeOldCoursePage = ({
                 course_metadata={courseMetadata as CourseMetadata}
               />
             </div>
-            <div className="flex flex-col items-center justify-center">
-              <Title order={4} style={{ marginTop: 80, alignItems: 'center' }}>
-                Stay on page until loading is complete or ingest will fail.
-              </Title>
-              <Title order={4}>
-                The page will auto-refresh when your AI Assistant is ready.
-              </Title>
-            </div>
+
+            {/* <Divider my="sm" style={{width: '35%', backgroundColor: 'grey', height: '1.5px'}} /> */}
+            <br></br>
+
+            <Title
+              className={montserrat.className}
+              variant="gradient"
+              gradient={{ from: 'gold', to: 'white', deg: 50 }}
+              order={2}
+              // p="xl"
+              style={{ marginTop: '1rem' }}
+            >
+              {' '}
+              Upload new materials
+            </Title>
+
+            <LargeDropzone course_name={course_name} />
+            <br></br>
+
             <div
-              className="mt-6 w-[90%] items-center justify-center rounded-2xl shadow-md shadow-purple-600"
+              className="mx-auto mt-6 w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
             >
               <Flex direction="row" justify="space-between">
@@ -303,7 +309,6 @@ const MakeOldCoursePage = ({
                 </div>
               </Flex>
             </div>
-
             <div className="mt-2 flex w-[80%] flex-col items-center justify-center">
               <CourseFilesList files={course_data} />
             </div>
@@ -379,6 +384,7 @@ const PrivateOrPublicCourse = ({
 
   return (
     <>
+      {/* className="mt-6 w-[90%] mx-auto flex flex-col rounded-2xl shadow-md shadow-purple-600" */}
       <Title
         className={montserrat.className}
         variant="gradient"
@@ -407,20 +413,19 @@ const PrivateOrPublicCourse = ({
           onChange={handleCheckboxChange}
         />
       </Group>
-      {/* </Group>
-      <Group className="p-3"> */}
-
-      <Text>
-        Only the below email address are able to access the content. Read our
-        strict security policy (in progress).
-      </Text>
       {isPrivate && (
-        <EmailChipsComponent
-          course_owner={owner_email}
-          course_admins={[]} // todo enable this feature
-          course_name={course_name}
-          is_private={isPrivate}
-        />
+        <>
+          <Text>
+            Only the below email address are able to access the content. Read
+            our strict security policy (in progress).
+          </Text>
+          <EmailChipsComponent
+            course_owner={owner_email}
+            course_admins={[]} // todo enable this feature
+            course_name={course_name}
+            is_private={isPrivate}
+          />
+        </>
       )}
     </>
   )
@@ -439,6 +444,7 @@ interface CourseFilesListProps {
   files: CourseFile[]
 }
 import { IconTrash } from '@tabler/icons-react'
+import LargeDropzone from './LargeDropzone'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
