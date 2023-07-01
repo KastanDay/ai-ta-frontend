@@ -467,8 +467,8 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
 
   return (
     <div
-      className="mx-auto w-full justify-center rounded-md bg-violet-100 p-5 shadow-md"
-      style={{ marginTop: '-1rem' }}
+      className="mx-auto w-full justify-center rounded-md  bg-violet-100 p-5 shadow-md" // bg-violet-100
+      style={{ marginTop: '-1rem', backgroundColor: '#0F1116' }}
     >
       <ul role="list" className="grid grid-cols-2 gap-4">
         {files.map((file, index) => (
@@ -476,16 +476,16 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
             key={file.s3_path}
             className="hover:shadow-xs flex cursor-pointer items-center justify-between gap-x-6 rounded-xl bg-violet-300 py-4 pl-4 pr-1 transition duration-200 ease-in-out hover:bg-violet-200 hover:shadow-violet-200"
             onMouseEnter={(e) => {
-              e.currentTarget.style.border = 'solid 1px'
+              e.currentTarget.style.border = 'solid 1.5px'
               e.currentTarget.style.borderColor = theme.colors.violet[8]
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.border = ''
+              e.currentTarget.style.border = 'solid 1.5px'
             }}
           >
             <div className="flex gap-x-4">
               <div className="min-w-0 flex-auto">
-                <p className="text-xl font-semibold leading-6 text-gray-700">
+                <p className="text-xl font-semibold leading-6 text-gray-800">
                   {file.readable_filename}
                 </p>
                 <p className="mt-1 truncate text-xs leading-5 text-gray-600">
@@ -502,7 +502,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                   )
                 }
                 className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
-                style={{ outline: 'solid 1px', outlineColor: theme.white }}
+                style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
                   ;(e.currentTarget.children[0] as HTMLElement).style.color =
