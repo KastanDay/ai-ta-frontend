@@ -300,7 +300,7 @@ const MakeOldCoursePage = ({
                     }}
                   >
                     {' '}
-                    Course Files: {course_name}{' '}
+                    Course Files
                   </Title>
                 </div>
                 <div className="me-6 mt-4 flex flex-row items-end justify-end">
