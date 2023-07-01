@@ -154,7 +154,6 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
 
   return (
     <>
-      <Header />
       <MakeOldCoursePage
         course_name={currentPageName || ''}
         course_data={course_data}
