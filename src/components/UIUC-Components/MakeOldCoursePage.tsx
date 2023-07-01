@@ -494,7 +494,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
               </div>
             </div>
             <div className="me-4 flex justify-end space-x-4">
-              <button
+              {/* <button
                 onClick={() =>
                   handleDelete(
                     file.s3_path as string,
@@ -517,7 +517,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 }}
               >
                 <IconDownload className="h-5 w-5 text-red-600" />
-              </button>
+              </button> */}
               <button
                 onClick={() =>
                   handleDelete(
