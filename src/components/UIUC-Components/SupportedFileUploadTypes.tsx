@@ -94,7 +94,7 @@ const SupportedFileUploadTypes = () => {
         p="xl"
         // style={{ marginTop: '1rem' }}
       >
-        Supported File Upload Types
+        Supported File Types
       </Title>
       <Flex>
         <Image
