@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
+// import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
 
 // import { Montserrat, Inter, Rubik_Puddles, Audiowide } from "next/font/google"
 import { Montserrat } from 'next/font/google'
@@ -45,10 +45,6 @@ import LargeDropzone from './LargeDropzone'
 // import { boolean } from 'zod'
 
 const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
-  const { isSignedIn, user } = useUser()
-  console.log('email: ', user?.primaryEmailAddress?.emailAddress)
-  const owner_email = user?.primaryEmailAddress?.emailAddress as string
-
   return (
     <>
       <Head>
