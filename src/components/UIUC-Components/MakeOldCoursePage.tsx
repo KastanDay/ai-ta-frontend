@@ -133,7 +133,9 @@ const MakeOldCoursePage = ({
                 <ResumeToChat course_name={course_name} />
               </div>
             </Flex>
-            <button
+
+            {/* THIS BUTTON IS FOR "GPT4" CHAT */}
+            {/* <button
               className={`btn-circle btn mb-1 ms-4`}
               style={{
                 position: 'relative',
@@ -213,7 +215,7 @@ const MakeOldCoursePage = ({
                 GPT4
               </span>{' '}
               {/* Adjusted the vertical position of the text */}
-              <svg
+            {/* <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="currentColor"
@@ -231,7 +233,7 @@ const MakeOldCoursePage = ({
                   clipRule="evenodd"
                 />
               </svg>
-            </button>
+            </button> */}
             <Header isNavbar={true} />
           </div>
         </div>
@@ -319,7 +321,7 @@ const MakeOldCoursePage = ({
 }
 
 import { Checkbox, CheckboxProps } from '@mantine/core'
-import { IconBookDownload, IconLock } from '@tabler/icons-react'
+import { IconDownload, IconLock } from '@tabler/icons-react'
 
 import EmailChipsComponent from './EmailChipsComponent'
 import { AuthComponent } from './AuthToEditCourse'
@@ -512,7 +514,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                     theme.colors.red[6]
                 }}
               >
-                <IconBookDownload className="h-5 w-5 text-red-600" />
+                <IconDownload className="h-5 w-5 text-red-600" />
               </button>
               <button
                 onClick={() =>
