@@ -106,6 +106,11 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
     if (!clerk_user.isLoaded) {
       return
     }
+    if (course_metadata == null) {
+      console.log('Course does not exist, redirecting to materials page')
+      router.replace(`/${course_name}/materials`)
+      return
+    }
     // course is private & not signed in, must sign in
     if (course_metadata.is_private && !clerk_user.isSignedIn) {
       console.log(
@@ -114,7 +119,7 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
         clerk_user.isLoaded,
         course_name,
       )
-      router.replace('/auth') // replace with your auth route
+      router.replace('/sign-in') // replace with your auth route
       return
     }
     if (clerk_user.isLoaded) {
@@ -155,6 +160,7 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
 
   if (
     !clerk_user.isLoaded ||
+    course_metadata == null ||
     (course_metadata.is_private && !clerk_user.isSignedIn)
   ) {
     return (
