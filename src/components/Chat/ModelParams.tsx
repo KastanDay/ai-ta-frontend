@@ -33,12 +33,12 @@ export const ModelParams = ({
         checked={isChecked}
         onChange={handleCheckboxChange}
       />
-      <div className="collapse-title text-xl font-medium text-black">
+      <div className="collapse-title text-xl font-medium text-black dark:text-white">
         Model Parameters
       </div>
       {isChecked && (
         <div className="collapse-content">
-          <div className="flex h-full flex-col space-y-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-600">
+          <div className="flex h-full flex-col space-y-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-600 ">
             <ModelSelect />
 
             <SystemPrompt
