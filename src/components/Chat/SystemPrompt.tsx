@@ -1,6 +1,6 @@
 import {
-  FC,
-  KeyboardEvent,
+  type FC,
+  type KeyboardEvent,
   useCallback,
   useEffect,
   useRef,
@@ -11,8 +11,8 @@ import { useTranslation } from 'next-i18next'
 
 import { DEFAULT_SYSTEM_PROMPT } from '@/utils/app/const'
 
-import { Conversation } from '@/types/chat'
-import { Prompt } from '@/types/prompt'
+import { type Conversation } from '@/types/chat'
+import { type Prompt } from '@/types/prompt'
 
 import { PromptList } from './PromptList'
 import { VariableModal } from './VariableModal'
@@ -203,7 +203,7 @@ export const SystemPrompt: FC<Props> = ({
       </label>
       <textarea
         ref={textareaRef}
-        className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-neutral-900 dark:border-neutral-600 dark:text-neutral-100"
+        className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-neutral-900 dark:border-neutral-600 dark:text-neutral-100 dark:bg-neutral-900"
         style={{
           resize: 'none',
           bottom: `${textareaRef?.current?.scrollHeight}px`,
