@@ -1,23 +1,16 @@
 // src/pages/api/chat.ts
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const'
 import { OpenAIError, OpenAIStream } from '@/utils/server'
-
-// import { useState, useEffect } from 'react'
-
 import { ChatBody, Message } from '@/types/chat'
-
 // @ts-expect-error - no types
 import wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module'
-
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
-
-import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
-
 import { fetchContextsNOAXIOS } from '~/pages/api/getContexts'
-
-import log from 'next/dist/build/output/log' // logging to next.js web gui
 import { getExtremePrompt } from './getExtremePrompt'
+
+// TODO: maybe this is why searchQuery is running so many times?
+// import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
 
 export const config = {
   runtime: 'edge',
@@ -66,7 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
     } else if (course_name == 'gpt4') {
       console.log('NO CONTEXT STUFFING FOR /gpt4 slug')
     }
-    // else if (course_name == 'global') {
+    // else if (course_name == 'global' || course_name == 'search-all') {
     // todo
     // }
     else {
