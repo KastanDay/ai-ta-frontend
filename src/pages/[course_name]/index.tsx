@@ -27,6 +27,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const course_name = params['course_name'] as string
 
   // const course_exists = await kv.get(course_name) // kv.get() only works server-side. Otherwise use fetch.
+
+  // TODO turn this into a fetch, not a kv.get. Remove entire ServerSideProps thing 
+
   const course_metadata: CourseMetadata = (await kv.get(
     course_name + '_metadata',
   )) as CourseMetadata
