@@ -62,6 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
           return search_query
         },
       )
+      console.log("EXTREME STUFFED PROMPT\n:", promptToSend)
     } else if (course_name == 'gpt4') {
       console.log('NO CONTEXT STUFFING FOR /gpt4 slug')
     }
