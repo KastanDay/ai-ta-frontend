@@ -38,13 +38,16 @@ import React, { useState } from 'react'
 import GlobalHeader from './GlobalHeader'
 import EmailChipsComponent from './EmailChipsComponent'
 import { IconLock } from '@tabler/icons-react'
-import { useUser } from '@clerk/nextjs'
 import { CourseMetadata } from '~/types/courseMetadata'
 import LargeDropzone from './LargeDropzone'
-// import { GetCurrentPageName } from './MakeOldCoursePage'
-// import { boolean } from 'zod'
 
-const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
+const MakeNewCoursePage = ({
+  course_name,
+  current_user_email,
+}: {
+  course_name: string
+  current_user_email: string
+}) => {
   return (
     <>
       <Head>
@@ -101,7 +104,11 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
 
             {/* !! MAIN UPLOAD COMPONENT !! */}
             {/* <DropzoneS3Upload course_name={course_name} /> */}
-            <LargeDropzone course_name={course_name} />
+            <LargeDropzone
+              course_name={course_name}
+              current_user_email={current_user_email}
+              redirect_to_gpt_4={false}
+            />
 
             {/* <Title order={4}>
               Stay on page until loading is complete or ingest will fail.
@@ -110,7 +117,10 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
               The page will auto-refresh when your AI Assistant is ready.
             </Title> */}
 
-            <PrivateOrPublicCourse course_name={course_name} />
+            <PrivateOrPublicCourse
+              course_name={course_name}
+              current_user_email={current_user_email}
+            />
           </Flex>
         </div>
       </main>
@@ -118,12 +128,17 @@ const MakeNewCoursePage = ({ course_name }: { course_name: string }) => {
   )
 }
 
-const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
+const PrivateOrPublicCourse = ({
+  course_name,
+  current_user_email,
+}: {
+  course_name: string
+  current_user_email: string
+}) => {
   const [isPrivate, setIsPrivate] = useState(false)
-
-  const { isSignedIn, user } = useUser()
-  console.log('email: ', user?.primaryEmailAddress?.emailAddress)
-  const owner_email = user?.primaryEmailAddress?.emailAddress as string
+  // const { user, isSignedIn, isLoaded } = useUser()
+  // const user_emails = extractEmailsFromClerk(user)
+  // console.log("in MakeNewCoursePage.tsx user email list: ", user_emails )
 
   const CheckboxIcon: CheckboxProps['icon'] = ({ indeterminate, className }) =>
     indeterminate ? (
@@ -162,7 +177,7 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
       }
     }
 
-    setIsPrivate(!isPrivate) // gui
+    setIsPrivate(!isPrivate) // react gui
     callSetCoursePublicOrPrivate(course_name, !isPrivate) // db
   }
 
@@ -173,7 +188,6 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
     try {
       const { is_private, course_owner, course_admins, approved_emails_list } =
         courseMetadata
-      // const course_name = course_name
 
       console.log(
         'IN callSetCourseMetadata in MakeNewCoursePage: ',
@@ -261,7 +275,7 @@ const PrivateOrPublicCourse = ({ course_name }: { course_name: string }) => {
       </Text>
       {isPrivate && (
         <EmailChipsComponent
-          course_owner={owner_email}
+          course_owner={current_user_email}
           course_admins={[]} // TODO: add admin functionality
           course_name={course_name}
           is_private={isPrivate}

@@ -49,7 +49,7 @@ export const ModelSelect = () => {
       <div
         ref={wrapperRef}
         tabIndex={0}
-        className="relative w-full rounded-lg border-neutral-200 bg-neutral-50 text-neutral-900 dark:border-neutral-600 dark:text-neutral-100 dark:bg-neutral-900 pr-2"
+        className="relative w-full rounded-lg border-neutral-200 bg-neutral-50 pr-2 text-neutral-900 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
         onFocus={() => setIsOpen(true)}
         onBlur={() => setIsOpen(false)}
       >
@@ -62,18 +62,22 @@ export const ModelSelect = () => {
           <IconChevronDown size={18} />
         </div>
         {isOpen && (
-            <ul className="menu rounded-box absolute z-[1] w-full bg-base-100 p-2 shadow ">
-              {models.map((model, index, array) => (
-                  <li
-                      key={model.id}
-                      className={`dark:text-white ${index < array.length - 1 ? 'border-b pb-2 border-neutral-200 dark:border-neutral-600' : ''}`}
-                  >
-                    <a onClick={() => handleModelClick(model.id)}>
-                      {model.id === defaultModelId ? model.name : model.name}
-                    </a>
-                  </li>
-              ))}
-            </ul>
+          <ul className="menu rounded-box absolute z-[1] w-full bg-base-100 p-2 shadow ">
+            {models.map((model, index, array) => (
+              <li
+                key={model.id}
+                className={`dark:text-white ${
+                  index < array.length - 1
+                    ? 'border-b border-neutral-200 pb-2 dark:border-neutral-600'
+                    : ''
+                }`}
+              >
+                <a onClick={() => handleModelClick(model.id)}>
+                  {model.id === defaultModelId ? model.name : model.name}
+                </a>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
       <div className="mt-3 flex w-full items-center text-left text-neutral-700 dark:text-neutral-400">

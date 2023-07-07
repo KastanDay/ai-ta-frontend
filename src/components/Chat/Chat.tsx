@@ -431,14 +431,14 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   // Add this function to create dividers with statements
   const renderDividers = () => {
     return statements.map((statement, index) => (
-        <div key={index} className="flex w-full flex-col items-center px-1">
-          <div className="card rounded-box grid h-20 w-3/5 place-items-center justify-items-center bg-base-300/50 text-lg text-black dark:text-white">
-            <p className="text-center">{statement}</p>
-          </div>
-          {index !== statements.length - 1 && (
-              <div className="divider mx-auto w-3/5"></div>
-          )}
+      <div key={index} className="flex w-full flex-col items-center px-1">
+        <div className="card rounded-box grid h-20 w-3/5 place-items-center justify-items-center bg-base-300/50 text-lg text-black dark:text-white">
+          <p className="text-center">{statement}</p>
         </div>
+        {index !== statements.length - 1 && (
+          <div className="divider mx-auto w-3/5"></div>
+        )}
+      </div>
     ))
   }
 

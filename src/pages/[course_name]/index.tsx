@@ -13,6 +13,7 @@ import { CannotViewCourse } from '~/components/UIUC-Components/CannotViewCourse'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
+import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { params } = context
@@ -28,7 +29,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   // const course_exists = await kv.get(course_name) // kv.get() only works server-side. Otherwise use fetch.
 
-  // TODO turn this into a fetch, not a kv.get. Remove entire ServerSideProps thing 
+  // TODO turn this into a fetch, not a kv.get. Remove entire ServerSideProps thing
 
   const course_metadata: CourseMetadata = (await kv.get(
     course_name + '_metadata',
@@ -174,6 +175,8 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
   }
   // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
 
+  const curr_user_emails = extractEmailsFromClerk(clerk_user.user)
+
   // here we redirect depending on Auth.
   return (
     <>
@@ -184,7 +187,10 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
           <Text weight={800}>Checking if course exists...</Text>
         </MainPageBackground>
       ) : (
-        <MakeNewCoursePage course_name={course_name} />
+        <MakeNewCoursePage
+          course_name={course_name}
+          current_user_email={curr_user_emails[0] as string}
+        />
       )}
     </>
   )
