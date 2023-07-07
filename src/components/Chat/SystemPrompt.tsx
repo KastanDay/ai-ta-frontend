@@ -203,7 +203,7 @@ export const SystemPrompt: FC<Props> = ({
       </label>
       <textarea
         ref={textareaRef}
-        className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-neutral-900 dark:border-neutral-600 dark:text-neutral-100 dark:bg-neutral-900"
+        className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-neutral-900 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
         style={{
           resize: 'none',
           bottom: `${textareaRef?.current?.scrollHeight}px`,
