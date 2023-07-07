@@ -277,6 +277,7 @@ const MakeOldCoursePage = ({
             <LargeDropzone
               course_name={course_name}
               current_user_email={currentEmail}
+              redirect_to_gpt_4={false}
             />
             <br></br>
 

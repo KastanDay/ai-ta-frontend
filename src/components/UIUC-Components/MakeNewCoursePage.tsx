@@ -107,6 +107,7 @@ const MakeNewCoursePage = ({
             <LargeDropzone
               course_name={course_name}
               current_user_email={current_user_email}
+              redirect_to_gpt_4={false}
             />
 
             {/* <Title order={4}>
