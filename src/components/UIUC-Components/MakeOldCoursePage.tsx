@@ -68,9 +68,8 @@ const MakeOldCoursePage = ({
 
   useEffect(() => {
     const fetchData = async () => {
-      const userEmail = clerk_user.user?.primaryEmailAddress
-        ?.emailAddress as string
-      setCurrentEmail(userEmail)
+      const userEmail = extractEmailsFromClerk(clerk_user.user)
+      setCurrentEmail(userEmail[0] as string)
 
       try {
         const metadata: CourseMetadata = (await fetchCourseMetadata(
@@ -92,15 +91,16 @@ const MakeOldCoursePage = ({
     fetchData()
   }, [currentPageName, clerk_user.isLoaded])
 
-  // if (!isLoaded || !userId) {
-  //   return <AuthComponent course_name={currentPageName} />
-  // }
-  if (!isLoaded || !userId || !courseMetadata) {
-    return <AuthComponent />
+  if (!isLoaded || !courseMetadata) {
+    // return <AuthComponent course_name={currentPageName} />
+    return (
+      <MainPageBackground>
+        <LoadingSpinner />
+      </MainPageBackground>
+    )
   }
 
   // TODO: update this check to consider Admins & participants.
-  // If participant, say "You cannot edit this course (because you're not an admin) but you can view it.
   if (
     courseMetadata &&
     currentEmail !== (courseMetadata.course_owner as string) &&
@@ -274,7 +274,10 @@ const MakeOldCoursePage = ({
               Upload new materials
             </Title>
 
-            <LargeDropzone course_name={course_name} />
+            <LargeDropzone
+              course_name={course_name}
+              current_user_email={currentEmail}
+            />
             <br></br>
 
             <div
@@ -447,6 +450,9 @@ interface CourseFilesListProps {
 }
 import { IconTrash } from '@tabler/icons-react'
 import LargeDropzone from './LargeDropzone'
+import { MainPageBackground } from './MainPageBackground'
+import { LoadingSpinner } from './LoadingSpinner'
+import { extractEmailsFromClerk } from './clerkHelpers'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()

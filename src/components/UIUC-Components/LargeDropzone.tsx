@@ -43,9 +43,11 @@ const useStyles = createStyles((theme) => ({
 
 export function LargeDropzone({
   course_name,
+  current_user_email,
   redirect_to_gpt_4 = true,
 }: {
   course_name: string
+  current_user_email: string
   redirect_to_gpt_4?: boolean
 }) {
   // upload-in-progress spinner control
@@ -53,8 +55,11 @@ export function LargeDropzone({
   const router = useRouter()
 
   // Set owner email
-  const { isSignedIn, user } = useUser()
-  const current_user_email = user?.primaryEmailAddress?.emailAddress as string
+  // const { isSignedIn, user } = useUser()
+  // const current_user_email = user?.primaryEmailAddress?.emailAddress as string
+
+  // console.log("in LargeDropzone.tsx primaryEmailAddress: ", user?.primaryEmailAddress?.emailAddress as string)
+  // console.log("in LargeDropzone.tsx ALL emailAddresses: ", user?.emailAddresses )
 
   const refreshOrRedirect = (redirect_to_gpt_4: boolean) => {
     if (redirect_to_gpt_4) {

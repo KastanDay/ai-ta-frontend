@@ -15,7 +15,12 @@ import React from 'react'
 // import { createClient } from '@supabase/supabase-js'
 import { GetServerSideProps, GetServerSidePropsContext } from 'next'
 
-import Header from '~/components/UIUC-Components/GlobalHeader'
+// import Header from '~/components/UIUC-Components/GlobalHeader'
+import { Montserrat } from 'next/font/google'
+const montserrat = Montserrat({
+  weight: '700',
+  subsets: ['latin'],
+})
 
 import { kv } from '@vercel/kv'
 
@@ -67,13 +72,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
   console.log('params ----------------------', params)
   const course_name = params['course_name']
+  console.log('materials.tsx -- Acter course name', course_name)
 
   const course_exists: boolean = await checkIfCourseExists(
     course_name as string,
   )
+  console.log('materials.tsx -- after course_exists', course_exists)
   if (course_exists != null) {
     // call flask backend to get course data
+
+    // TODO: FIX COURSE DATA TO ASYNC
+    console.log('materials.tsx before course_data')
     const course_data = await getCourseData(course_name as string)
+    // const course_data = 'hi'
+    console.log('materials.tsx after course data ', course_data)
     if (course_data != null) {
       // console.log('materials.tsx -- course_data', course_data)
       return {
@@ -103,6 +115,7 @@ import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { Title } from '@mantine/core'
+import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 
 // run on client side
 const CourseMain: NextPage<CourseMainProps> = (props) => {
@@ -111,10 +124,10 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
   const course_data = props.course_data
   const currentPageName = GetCurrentPageName() as string
   // const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
-  const clerk_user = useUser()
+  const { user, isLoaded, isSignedIn } = useUser()
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!clerk_user.isLoaded) {
+  if (!isLoaded) {
     return (
       <MainPageBackground>
         <LoadingSpinner />
@@ -122,15 +135,33 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
     )
   }
 
-  if (!clerk_user.isSignedIn) {
-    console.log(
-      'User not logged in',
-      clerk_user.isSignedIn,
-      clerk_user.isLoaded,
-      currentPageName,
-    )
-    // return ("In the if statement biiii")
+  if (!isSignedIn) {
+    console.log('User not logged in', isSignedIn, isLoaded, currentPageName)
     return <AuthComponent />
+  }
+
+  const user_emails = extractEmailsFromClerk(user)
+
+  // if their account is somehow broken (with no email address)
+  if (user_emails.length == 0) {
+    return (
+      <MainPageBackground>
+        <Title
+          className={montserrat.className}
+          variant="gradient"
+          gradient={{ from: 'gold', to: 'white', deg: 50 }}
+          order={3}
+          p="xl"
+          style={{ marginTop: '4rem' }}
+        >
+          You&aposve encountered a software bug!<br></br>Your account has no
+          email address. Please shoot me an email so I can fix it for you:{' '}
+          <a className="goldUnderline" href="mailto:kvday2@illinois.edu">
+            kvday2@illinois.edu
+          </a>
+        </Title>
+      </MainPageBackground>
+    )
   }
 
   // Don't edit certain special pages (no context allowed)
@@ -139,19 +170,25 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
     props.course_name.toLowerCase() == 'global' ||
     props.course_name.toLowerCase() == 'extreme'
   ) {
-    return <CannotEditGPT4Page course_name={currentPageName || ''} />
+    return <CannotEditGPT4Page course_name={currentPageName as string} />
   }
 
   // NEW COURSE
   if (props.course_data == null) {
-    return <MakeNewCoursePage course_name={currentPageName || ''} />
+    return (
+      <MakeNewCoursePage
+        course_name={currentPageName as string}
+        current_user_email={user_emails[0] as string}
+      />
+    )
   }
 
   return (
     <>
       <MakeOldCoursePage
-        course_name={currentPageName || ''}
+        course_name={currentPageName as string}
         course_data={course_data}
+        // current_user_email={user_emails[0] as string}
       />
     </>
   )
