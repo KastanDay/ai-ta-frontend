@@ -86,13 +86,29 @@ pre:has(div.codeblock) {
   background-repeat: no-repeat;
 }
 
-.fade {
+.fade-2-lines {
   overflow: hidden;
   position: relative;
   max-height: 1.525em; /* exactly one lines */
   max-height: 3.05em; /* exactly two lines */
 }
-.fade::after {
+.fade-3-lines {
+  overflow: hidden;
+  position: relative;
+  max-height: 1.525em; /* exactly one lines */
+  max-height: 4.575em; /* exactly two lines */
+}
+.fade-2-lines::after {
+  content: '';
+  text-align: right;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 40%;
+  height: 1.2em;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), #0e1116 90%);
+}
+.fade-3-lines::after {
   content: '';
   text-align: right;
   position: absolute;
