@@ -46,6 +46,17 @@ export const CanViewOnlyCourse = ({
 }) => {
   // const { isSignedIn, user } = useUser()
   // const curr_user_email = user?.primaryEmailAddress?.emailAddress as string
+  const router = useRouter()
+
+  const getCurrentPageName = () => {
+    // /CS-125/materials --> CS-125
+    return router.asPath.slice(1).split('/')[0]
+  }
+
+  if (course_metadata == null || course_name == null) {
+    // if you refresh the not_authorized page
+    router.push(`${getCurrentPageName}/materials`)
+  }
 
   return (
     <>
@@ -64,27 +75,6 @@ export const CanViewOnlyCourse = ({
         </div>
         <div className="items-left container flex flex-col justify-center gap-2 py-0">
           <Flex direction="column" align="center" justify="center">
-            <Title
-              className={montserrat.className}
-              variant="gradient"
-              gradient={{ from: 'gold', to: 'white', deg: 50 }}
-              order={2}
-              p="xl"
-            >
-              {' '}
-              You cannot edit this page, but you <i>can</i> chat here:{' '}
-              <Link href={`/${course_name}/gpt4`}>
-                <u
-                  style={{
-                    textDecoration: 'underline',
-                    textDecorationColor: 'gold',
-                    color: 'inherit',
-                  }}
-                >
-                  uiuc.chat/{course_name}
-                </u>
-              </Link>
-            </Title>
             <div
               style={{
                 display: 'inline-block',
@@ -93,65 +83,88 @@ export const CanViewOnlyCourse = ({
                 padding: '1rem',
               }}
             >
-              <Flex direction="column" align="center" justify="center">
-                {/* SHOW CREATOR AND ADMINS */}
-                <Title
+              <Title
+                className={montserrat.className}
+                variant="gradient"
+                gradient={{ from: 'gold', to: 'white', deg: 50 }}
+                order={2}
+                p="xl"
+              >
+                {' '}
+                You cannot edit this page, but you <i>can</i> chat here:{' '}
+                <Link href={`/${course_name}/gpt4`}>
+                  <u
+                    style={{
+                      textDecoration: 'underline',
+                      textDecorationColor: 'gold',
+                      color: 'inherit',
+                    }}
+                  >
+                    uiuc.chat/{course_name}
+                  </u>
+                </Link>
+              </Title>
+            </div>
+
+            <Flex direction="column" align="center" justify="center">
+              {/* SHOW CREATOR AND ADMINS */}
+              <Title
+                className={montserrat.className}
+                variant="gradient"
+                gradient={{ from: 'gold', to: 'white', deg: 50 }}
+                order={3}
+                p="lg"
+              >
+                For Admin permissions to edit the content, email the creator or
+                admins to request access:
+              </Title>
+              <>
+                <Text
                   className={montserrat.className}
                   variant="gradient"
                   gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                  order={3}
-                  p="lg"
+                  // py={8}
+                  pb={10}
+                  pt={2}
+                  size={20}
                 >
-                  For Admin permissions to edit the content, email the creator
-                  or admins to request access:
-                </Title>
-                <>
-                  <Text
-                    className={montserrat.className}
-                    variant="gradient"
-                    gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                    // py={8}
-                    pb={10}
-                    pt={2}
-                    size={20}
-                  >
-                    Creator:{' '}
-                    <a href={`mailto:${course_metadata['course_owner']}`}>
-                      <u
-                        style={{
-                          textDecoration: 'underline',
-                          textDecorationColor: 'gold',
-                          color: 'inherit',
-                        }}
+                  Creator:{' '}
+                  <a href={`mailto:${course_metadata['course_owner']}`}>
+                    <u
+                      style={{
+                        textDecoration: 'underline',
+                        textDecorationColor: 'gold',
+                        color: 'inherit',
+                      }}
+                    >
+                      {course_metadata['course_owner']}
+                    </u>
+                  </a>
+                  {course_metadata['course_admins'].length > 0 && (
+                    <>
+                      <br></br>
+                      Admins:{' '}
+                      <a
+                        href={`mailto:${course_metadata['course_admins'].join(
+                          ', ',
+                        )}`}
                       >
-                        {course_metadata['course_owner']}
-                      </u>
-                    </a>
-                    {course_metadata['course_admins'].length > 0 && (
-                      <>
-                        <br></br>
-                        Admins:{' '}
-                        <a
-                          href={`mailto:${course_metadata['course_admins'].join(
-                            ', ',
-                          )}`}
+                        <u
+                          style={{
+                            textDecoration: 'underline',
+                            textDecorationColor: 'gold',
+                            color: 'inherit',
+                          }}
                         >
-                          <u
-                            style={{
-                              textDecoration: 'underline',
-                              textDecorationColor: 'gold',
-                              color: 'inherit',
-                            }}
-                          >
-                            {course_metadata['course_admins'].join(', ')}
-                          </u>
-                        </a>
-                      </>
-                    )}
-                  </Text>
-                </>
-              </Flex>
-            </div>
+                          {course_metadata['course_admins'].join(', ')}
+                        </u>
+                      </a>
+                    </>
+                  )}
+                </Text>
+              </>
+            </Flex>
+
             <Title
               className={montserrat.className}
               variant="gradient"

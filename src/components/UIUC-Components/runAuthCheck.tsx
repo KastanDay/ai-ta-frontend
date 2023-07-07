@@ -1,4 +1,5 @@
 import { CourseMetadata } from '~/types/courseMetadata'
+import { extractEmailsFromClerk } from './clerkHelpers'
 
 export const get_user_permission = (
   course_metadata: CourseMetadata,
@@ -14,9 +15,8 @@ export const get_user_permission = (
       return 'no_permission'
     }
 
-    const curr_user_email_addresses = clerk_user.user?.emailAddresses?.map(
-      (email: { emailAddress: any }) => email.emailAddress,
-    ) as string[]
+    // GET ALL ASSOCIATED EMAIL ADDRESSES (could have multiple from different socials.)
+    const curr_user_email_addresses = extractEmailsFromClerk(clerk_user)
 
     if (course_metadata.is_private == false) {
       // Course is public

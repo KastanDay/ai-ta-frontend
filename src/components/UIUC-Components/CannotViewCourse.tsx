@@ -169,7 +169,10 @@ export const CannotViewCourse = ({
                       size={23}
                     >
                       Creator:{' '}
-                      <a href={`mailto:${courseMetadata['course_owner']}`}>
+                      <a
+                        className="goldUnderline"
+                        href={`mailto:${courseMetadata['course_owner']}`}
+                      >
                         {courseMetadata['course_owner']}
                       </a>
                       {courseMetadata['course_admins'].length > 0 && (
@@ -177,6 +180,7 @@ export const CannotViewCourse = ({
                           <br></br>
                           Admins:{' '}
                           <a
+                            className="goldUnderline"
                             href={`mailto:${courseMetadata[
                               'course_admins'
                             ].join(', ')}`}
