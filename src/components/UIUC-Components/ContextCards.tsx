@@ -194,17 +194,17 @@ function DynamicMaterialsCard({
           )}
 
           <Text
-            className="fade"
+            className="fade-2-lines"
             style={{ fontFamily: 'Montserrat' }}
-            size="md"
-            weight={600}
+            size="sm"
+            weight={500}
           >
             {readable_filename}
           </Text>
 
           <Group position="apart">
             <Text
-              size="sm"
+              size="xs"
               variant="gradient"
               weight={600}
               gradient={{ from: 'gold', to: 'white', deg: 0 }}
@@ -216,7 +216,7 @@ function DynamicMaterialsCard({
                 <Text
                   pb="0"
                   className="justify-end"
-                  size="sm"
+                  size="xs"
                   variant="dimmed"
                   weight={400}
                 >
@@ -228,7 +228,7 @@ function DynamicMaterialsCard({
             </Text>
           </Group>
 
-          <Text p="0px" className="fade" size="md" color="dimmed">
+          <Text p="0px" className="fade-3-lines" size="xs" color="dimmed">
             {/* AI summary // pdf full text */}
             {text}
           </Text>
