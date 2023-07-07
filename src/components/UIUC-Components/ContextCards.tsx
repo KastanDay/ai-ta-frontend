@@ -26,6 +26,7 @@ import { useRouter } from 'next/router'
 
 // My way to manage content
 import { useChatContext } from './StatefulSearchQuery'
+import { IconExternalLink } from '@tabler/icons-react'
 
 async function fetchPresignedUrl(filePath: string) {
   try {
@@ -148,11 +149,19 @@ function DynamicMaterialsCard({
       setPresignedUrl(url + '#page=' + pagenumber_or_timestamp)
     })
 
-    const s3_thumbnail_path = s3_path.replace('.pdf', '-pg1-thumb.png')
-    fetchPresignedUrl(s3_thumbnail_path).then((url) => {
-      setPresignedUrlPng(url)
-    })
+    // ONLY PDFs have thumbnail images
+    if (s3_path.endsWith('.pdf')) {
+      const s3_thumbnail_path = s3_path.replace('.pdf', '-pg1-thumb.png')
+      fetchPresignedUrl(s3_thumbnail_path).then((url) => {
+        setPresignedUrlPng(url)
+      })
+    } else {
+      // No thumbnail for non-PDFs
+      setPresignedUrlPng(null)
+    }
   }, [s3_path])
+
+  console.log('DynamicMaterialsCard presignedUrlPng:', presignedUrlPng)
 
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
@@ -163,69 +172,74 @@ function DynamicMaterialsCard({
       >
         <Card
           bg="#0E1116"
-          style={{ maxWidth: '20rem' }}
+          style={{ maxWidth: '20rem' }} // maxHeight: '15rem'
           shadow="sm"
-          padding="md"
+          padding="sm"
           radius="md"
           withBorder
         >
-          <Card.Section>
-            <Image
-              // &auto=format&fit=crop&w=720&q=80
-              src={
-                presignedUrlPng ||
-                'https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80'
-              }
-              height={'3rem'}
-              alt="Thumbnail image of the PDF or video"
-            />
-          </Card.Section>
+          {presignedUrlPng && (
+            <Card.Section>
+              <Image
+                // &auto=format&fit=crop&w=720&q=80
+                pb={'3px'}
+                src={
+                  presignedUrlPng ||
+                  'https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=720&q=80'
+                }
+                height={'4rem'}
+                alt="Thumbnail image of the PDF cover page. Only available for PDFs, not Word or other filetypes."
+              />
+            </Card.Section>
+          )}
 
-          <Group position="apart" mt="xs" mb="xs">
-            <Text style={{ fontFamily: 'Montserrat' }} size="md" weight={600}>
-              {readable_filename}
-            </Text>
-          </Group>
+          <Text
+            className="fade"
+            style={{ fontFamily: 'Montserrat' }}
+            size="md"
+            weight={600}
+          >
+            {readable_filename}
+          </Text>
 
-          <Group>
-            {/* <IconExternalLink size={20} strokeWidth={2} color={'white'} /> */}
+          <Group position="apart">
             <Text
-              size="xs"
-              variant="dimmed"
-              weight={4300}
-              // gradient={{ from: 'yellow', to: 'green', deg: 0 }}
+              size="sm"
+              variant="gradient"
+              weight={600}
+              gradient={{ from: 'gold', to: 'white', deg: 0 }}
             >
-              {/* if page number exists, use it, otherwise skip this field */}
+              AI summary
+            </Text>
+            <Text size="sm" variant="dimmed" weight={4300}>
               {pagenumber_or_timestamp !== '' ? (
-                <Text size="sm" variant="dimmed" weight={600}>
+                <Text
+                  pb="0"
+                  className="justify-end"
+                  size="sm"
+                  variant="dimmed"
+                  weight={400}
+                >
                   Page {pagenumber_or_timestamp}
                 </Text>
               ) : (
-                <></>
-                //   <Text size="sm" variant="dimmed" weight={600}>
-                //     NO PAGE NUMBER sorry :(
-                //   </Text>
+                <>{/* NO PAGE NUMBER sorry :( */}</>
               )}
             </Text>
           </Group>
 
-          <Text
-            size="sm"
-            variant="gradient"
-            weight={600}
-            gradient={{ from: 'yellow', to: 'green', deg: 0 }}
-          >
-            AI summary
-          </Text>
-          <Text className="fade" size="md" color="dimmed">
+          <Text p="0px" className="fade" size="md" color="dimmed">
+            {/* AI summary // pdf full text */}
             {text}
           </Text>
+          {/* <IconExternalLink className='center-align' size={20} strokeWidth={2} color={'white'} /> */}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            {/* <Button size="xs" variant="dimmed" pb="0">
-            Show full paragraph
-          </Button> */}
-          </div>
+          {/* <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button size="xs" variant="dimmed" pb="0">
+              Show full paragraph
+            </Button>
+          </div> */}
+
           {/* <SciteBadge /> */}
         </Card>
       </Link>
