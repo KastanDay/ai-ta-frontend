@@ -25,7 +25,7 @@ import { SignInButton } from '@clerk/nextjs'
 const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 // const rubikpuddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 
-export const AuthComponent = () => {
+export const AuthComponent = ({ course_name }: { course_name: string }) => {
   return (
     <>
       <main className="justify-center; course-page-main flex min-h-screen flex-col items-center">
@@ -53,7 +53,10 @@ export const AuthComponent = () => {
               You must sign in to create or edit content.
             </Title>
             {/* Wrapping a button makes it easy to style the sign-in link. */}
-            <SignInButton mode="modal">
+            <SignInButton
+              mode="modal"
+              redirectUrl={`/${course_name}/materials`} // post sign-in redirect
+            >
               <Button
                 className="kas-gradient-text btn"
                 style={{ fontSize: '24px' }}
