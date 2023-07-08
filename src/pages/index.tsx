@@ -20,7 +20,7 @@ import {
 
 import Image from 'next/image'
 
-import SignInPage from '~/pages/sign-in/[[...index]]'
+// import SignInPage from '~/pages/sign-in.tsx'
 
 // import { api } from '~/utils/api'
 import Header from '~/components/UIUC-Components/GlobalHeader'
