@@ -508,7 +508,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                     </div>
 
                     {models.length > 0 && (
-                      <div className="flex h-full flex-col space-y-4 rounded-3xl border border-neutral-200 p-4 focus:border-t-info/100 dark:border-neutral-600">
+                      <div className="flex h-full flex-col space-y-4 rounded-3xl p-4 focus:border-t-info/100 dark:border-neutral-600">
                         <ModelParams
                           selectedConversation={selectedConversation}
                           prompts={prompts}

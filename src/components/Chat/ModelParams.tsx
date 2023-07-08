@@ -27,7 +27,7 @@ export const ModelParams = ({
   }
 
   return (
-    <div className="collapse-arrow collapse rounded-2xl border border-base-300 bg-base-200">
+    <div className="collapse-arrow collapse rounded-2xl bg-base-200">
       <input
         type="checkbox"
         checked={isChecked}
@@ -38,7 +38,7 @@ export const ModelParams = ({
       </div>
       {isChecked && (
         <div className="collapse-content">
-          <div className="flex h-full flex-col space-y-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-600 ">
+          <div className="flex h-full flex-col space-y-4 rounded-lg p-4">
             <ModelSelect />
 
             <SystemPrompt
