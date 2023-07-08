@@ -14,6 +14,7 @@ import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
+import { Query } from 'react-query'
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { params } = context
@@ -123,7 +124,7 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
         clerk_user.isLoaded,
         course_name,
       )
-      router.replace('/sign-in') // replace with your auth route
+      router.replace(`/sign-in?${course_name}`) // replace with your auth route
       return
     }
     if (clerk_user.isLoaded) {
