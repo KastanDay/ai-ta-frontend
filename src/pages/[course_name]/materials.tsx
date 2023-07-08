@@ -137,7 +137,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
 
   if (!isSignedIn) {
     console.log('User not logged in', isSignedIn, isLoaded, currentPageName)
-    return <AuthComponent />
+    return <AuthComponent course_name={course_name} />
   }
 
   const user_emails = extractEmailsFromClerk(user)

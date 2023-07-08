@@ -92,7 +92,6 @@ const MakeOldCoursePage = ({
   }, [currentPageName, clerk_user.isLoaded])
 
   if (!isLoaded || !courseMetadata) {
-    // return <AuthComponent course_name={currentPageName} />
     return (
       <MainPageBackground>
         <LoadingSpinner />
