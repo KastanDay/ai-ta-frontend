@@ -399,7 +399,8 @@ export const ChatInput = ({
           )}
         </div>
       </div>
-      <div className="px-3 pb-3 pt-2 text-center text-[12px] text-black/50 dark:text-white/50 md:px-4 md:pb-6 md:pt-3">
+      {/* Small title below the main chat input bar */}
+      {/* <div className="px-3 pb-3 pt-2 text-center text-[12px] text-black/50 dark:text-white/50 md:px-4 md:pb-6 md:pt-3">
         {t('Advanced version of ChatGPT, built for UIUC. Forked from ')}
         <a
           href="https://github.com/mckaywrigley/chatbot-ui"
@@ -410,7 +411,7 @@ export const ChatInput = ({
           ChatBot UI
         </a>
         .{' '}
-      </div>
+      </div> */}
     </div>
   )
 }
