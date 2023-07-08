@@ -1,3 +1,7 @@
+import { IconWorldDownload } from '@tabler/icons-react'
+// import {
+//   IconWorldDownload,
+// } from 'tabler-icons-react'
 import Image from 'next/image'
 import {
   Montserrat,
@@ -6,8 +10,12 @@ import {
   // Audiowide,
 } from 'next/font/google'
 import {
-  // Card,
   Text,
+  rem,
+  Title,
+  Flex,
+  createStyles,
+  // Card,
   // Badge,
   // MantineProvider,
   // Button,
@@ -15,61 +23,30 @@ import {
   // Stack,
   // createStyles,
   // FileInput,
-  rem,
-  Title,
-  Flex,
-  Group,
-  createStyles,
-  Divider,
+  // Group,
+  // Divider,
   // TextInput,
   // Tooltip,
 } from '@mantine/core'
 // const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 const montserrat_non_bold = Montserrat({ weight: '500', subsets: ['latin'] })
-import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
-import axios from 'axios'
-import { useRouter } from 'next/router'
-import { object } from 'zod'
-import { ThemeContext } from '@emotion/react'
-import { grayscale } from 'react-syntax-highlighter/dist/esm/styles/hljs'
+// import Link from 'next/link'
+import React from 'react'
 
 const useStyles = createStyles((theme) => ({
   logos: {
-    // width: rem(550),
     // width: '30%',
-    aspectRatio: '5/2',
+    aspectRatio: '3/2',
     objectFit: 'contain',
-    minWidth: '70px',
-    maxWidth: '150px',
-    // minHeight: '50px',
-    // maxHeight: '200px',
-    // mixBlendMode: 'multiply',
+    width: '100px',
   },
 
   smallLogos: {
-    // width: rem(550),
     // width: '30%',
-    aspectRatio: '5/2',
+    aspectRatio: '1/1',
     objectFit: 'contain',
-    minWidth: '70px',
-    maxWidth: '120px',
-    // minHeight: '50px',
-    // maxHeight: '200px',
-    // mixBlendMode: 'multiply',
-  },
-
-  greyedOutLogo: {
-    // width: '25%',
-    aspectRatio: '3/2',
-    objectFit: 'contain',
-    width: rem(550),
-    // minWidth: rem(250),
-    // maxWidth: '100px',
-    // mixBlendMode: 'multiply',
-    opacity: '0.4',
-    filter: 'grayscale(100%)',
+    width: '45px',
   },
 
   control: {
@@ -96,13 +73,14 @@ const SupportedFileUploadTypes = () => {
       >
         Supported File Types
       </Title>
-      <Flex>
+
+      <Flex className="space-x-10">
         <Image
           src="/media/pdf_logo.png"
           width={720}
           height={100}
           quality={60}
-          alt="Powerpoint logo"
+          alt="PDF icon"
           className={classes.logos}
         />
         <Image
@@ -110,7 +88,7 @@ const SupportedFileUploadTypes = () => {
           width={720}
           height={100}
           quality={60}
-          alt="Powerpoint logo"
+          alt="Word logo"
           className={classes.logos}
         />
         <Image
@@ -127,7 +105,7 @@ const SupportedFileUploadTypes = () => {
         Under development...
       </Text>
 
-      <Flex>
+      <Flex className="space-x-5">
         <Image
           src="/media/video_logo.png"
           width={720}
@@ -144,13 +122,36 @@ const SupportedFileUploadTypes = () => {
           alt="Generic audio logo"
           className={classes.smallLogos}
         />
-
+        <IconWorldDownload
+          className={classes.smallLogos}
+          stroke={rem(1.25)}
+          color={'white'}
+          size={50}
+        />
+        <Image
+          src="/media/notion_logo.png"
+          width={720}
+          height={100}
+          quality={60}
+          alt="Notion logo"
+          className={classes.smallLogos}
+          // style={{mixBlendMode: 'multiply' }}
+        />
+        <Image
+          src="/media/github_logo_darkmode.jpg"
+          width={720}
+          height={100}
+          quality={60}
+          alt="Github logo"
+          className={classes.smallLogos}
+          // style={{mixBlendMode: 'multiply' }}
+        />
         <Image
           src="/media/coursera_logo_cutout.png"
           width={720}
           height={100}
           quality={60}
-          alt="Generic audio logo"
+          alt="Coursera logo"
           className={classes.smallLogos}
           // style={{mixBlendMode: 'multiply' }}
         />
