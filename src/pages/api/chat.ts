@@ -83,7 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
         })
 
       const stuffedPrompt =
-        "Please answer the following question. Use the context below, called 'official course materials,' only if it's helpful and don't use parts that are very irrelevant. It's good to quote the official course materials directly, something like 'from ABS source it says XYZ' Feel free to say you don't know. \nHere's a few passages of high quality official course materials:\n" +
+        "Please answer the following question. Use the context below, called 'your documents,' only if it's helpful and don't use parts that are very irrelevant. It's good to quote 'your documents' directly, something like 'from ABS source it says XYZ' Feel free to say you don't know. \nHere's a few passages of the high quality 'your documents':\n" +
         context_text +
         '\n\nNow please respond to my query: ' +
         search_query
