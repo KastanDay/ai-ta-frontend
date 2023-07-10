@@ -45,10 +45,12 @@ export function LargeDropzone({
   course_name,
   current_user_email,
   redirect_to_gpt_4 = true,
+  isDisabled = false,
 }: {
   course_name: string
   current_user_email: string
   redirect_to_gpt_4?: boolean
+  isDisabled?: boolean
 }) {
   // upload-in-progress spinner control
   const [uploadInProgress, setUploadInProgress] = useState(false)
@@ -66,7 +68,7 @@ export function LargeDropzone({
       router.push(`/${course_name}/gpt4`)
     }
     //   refresh current page
-    router.push(router.asPath)
+    router.push(`/${course_name}/materials`)
   }
 
   const getCurrentPageName = () => {
@@ -187,7 +189,7 @@ export function LargeDropzone({
   return (
     <>
       {/* START LEFT COLUMN */}
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         {/* <div className={classes.wrapper} style={{ maxWidth: '320px' }}> */}
         <div
           className={classes.wrapper}
@@ -202,7 +204,7 @@ export function LargeDropzone({
         >
           <Dropzone
             openRef={openRef}
-            style={{ width: rem(330), height: rem(225) }}
+            style={{ width: rem(330), height: rem(225), ...(isDisabled ? { backgroundColor: '#2A2F36' } : {}), cursor: isDisabled ? 'not-allowed' : 'pointer' }}
             loading={uploadInProgress}
             onDrop={async (files) => {
               // set loading property
@@ -219,6 +221,8 @@ export function LargeDropzone({
                 course_admins: undefined,
                 approved_emails_list: undefined,
                 is_private: undefined,
+                banner_image_s3: undefined,
+                course_intro_message: undefined
               })
 
               // this does sequential uploads.
@@ -251,9 +255,10 @@ export function LargeDropzone({
             className={classes.dropzone}
             radius="md"
             bg="#0E1116"
+            disabled={isDisabled}
             // #0E1116 -- nice dark
           >
-            <div style={{ pointerEvents: 'none' }}>
+            <div style={{ pointerEvents: 'none', opacity: isDisabled ? 0.6 : 1 }}>
               <Group position="center" pt={'md'}>
                 <Dropzone.Accept>
                   <IconDownload
@@ -283,15 +288,21 @@ export function LargeDropzone({
               </Group>
 
               <Text ta="center" fw={700} fz="lg" mt="xl">
-                <Dropzone.Accept>Drop files here</Dropzone.Accept>
-                <Dropzone.Reject>
-                  Upload rejected, not proper file type or too large.
-                </Dropzone.Reject>
-                <Dropzone.Idle>Upload materials</Dropzone.Idle>
+                {isDisabled ?
+                    'Choose an available course name to create a course' :
+                    <>
+                      <Dropzone.Accept>Drop files here</Dropzone.Accept>
+                      <Dropzone.Reject>
+                        Upload rejected, not proper file type or too large.
+                      </Dropzone.Reject>
+                      <Dropzone.Idle>Upload materials</Dropzone.Idle>
+                    </>
+                }
               </Text>
+              {isDisabled ? '' :
               <Text ta="center" fz="sm" mt="xs" c="dimmed">
-                Drag&apos;n&apos;drop files or a whole folder here
-              </Text>
+                 Drag&apos;n&apos;drop files or a whole folder here
+              </Text>}
             </div>
           </Dropzone>
           {uploadInProgress && (
@@ -328,15 +339,14 @@ export function LargeDropzone({
 
         {/* START RIGHT COLUMN */}
         <div
-          style={{
-            flex: 1,
-            marginLeft: '10px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexDirection: 'column',
-            textAlign: 'center',
-          }}
+            style={{
+              flex: 1,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column',
+              textAlign: 'center',
+            }}
         >
           <SupportedFileUploadTypes />
         </div>

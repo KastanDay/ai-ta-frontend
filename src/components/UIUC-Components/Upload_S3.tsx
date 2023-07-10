@@ -11,7 +11,7 @@ import {
 } from '@mantine/dropzone'
 import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
-import { CourseMetadata } from '~/types/courseMetadata'
+import { type CourseMetadata } from '~/types/courseMetadata'
 import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 
 const useStyles = createStyles((theme) => ({
@@ -261,6 +261,8 @@ export function DropzoneS3Upload({
             course_admins: undefined,
             approved_emails_list: undefined,
             is_private: undefined,
+            banner_image_s3: undefined,
+            course_intro_message: undefined
           })
 
           // console.log('Right after setCourseExists in kv store...');
