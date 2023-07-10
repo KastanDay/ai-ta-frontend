@@ -133,7 +133,7 @@ const EditCourseCard = ({course_name, current_user_email, is_new_course = false,
                                 onChange={(e) => setCourseName(e.target.value)}
                                 disabled={!is_new_course}
                                 className={`input input-bordered lg:w-[50%] w-[80%] border-solid border-2 bg-gray-800 rounded-xl 
-                                ${isCourseAvailable ? 'border-2 border-green-500 focus:border-green-500 text-green-500' : 'border-red-800 focus:border-red-800 text-red-600'} ${montserrat.className}`}
+                                ${isCourseAvailable && courseName != '' ? 'border-2 border-green-500 focus:border-green-500 text-green-500' : 'border-red-800 focus:border-red-800 text-red-600'} ${montserrat.className}`}
                             />
                         )}
                         <Title order={4} className={`text-center w-full ${montserrat.className}`}>Just one step: upload your
