@@ -434,26 +434,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
   }, [messagesEndRef])
 
-  // Parse intro_message from courseMetadata and update statements
-  let statements = [
-    'Make a bullet point list of key takeaways of the course.',
-    'What is [your favorite topic] and why is it worth learning about?',
-    'How can I effectively prepare for the upcoming exam?',
-    'How many assignments in the course?',
-  ]
-
-  if (courseMetadata?.course_intro_message) {
-    const messages = courseMetadata.course_intro_message.split(':\n')
-    let firstMessage = ''
-    let remainingMessages: string[] = []
-    if (messages[0]) {
-      firstMessage = messages[0] + ':'
-    }
-    if (messages[1]) {
-      remainingMessages = messages[1].split('\n')
-    }
-    statements = [firstMessage, ...remainingMessages]
-  }
+  const statements = courseMetadata?.course_intro_message
+      ? courseMetadata.course_intro_message.split('\n')
+      : [
+        'Make a bullet point list of key takeaways of the course.',
+        'What is [your favorite topic] and why is it worth learning about?',
+        'How can I effectively prepare for the upcoming exam?',
+        'How many assignments in the course?',
+      ];
 
   // Add this function to create dividers with statements
   const renderDividers = () => {
