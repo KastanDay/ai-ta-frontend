@@ -195,9 +195,10 @@ const EditCourseCard = ({course_name, current_user_email, is_new_course = false,
                                         setCourseBannerUrl(e.target.value);
                                         if (e.target.files?.length) {
                                             console.log("Uploading to s3")
-                                            const banner_url = await uploadToS3(e.target.files?.[0] ?? null);
-                                            if (banner_url) {
-                                                setCourseBannerUrl(banner_url);
+                                            const banner_s3_image = await uploadToS3(e.target.files?.[0] ?? null);
+                                            if (banner_s3_image && courseMetadata) {
+                                                courseMetadata.banner_image_s3 = banner_s3_image;
+                                                await callUpsertCourseMetadata(course_name, courseMetadata).then(() => setCourseBannerUrl(banner_s3_image))// Update the courseMetadata object
                                             }
                                         }
                                     }}

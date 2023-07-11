@@ -41,19 +41,21 @@ import { SystemPrompt } from './SystemPrompt'
 import { TemperatureSlider } from './Temperature'
 import { MemoizedChatMessage } from './MemoizedChatMessage'
 import { ModelParams } from './ModelParams'
+import { fetchPresignedUrl } from '~/components/UIUC-Components/ContextCards'
 
 // import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
 import SearchQuery from '~/components/UIUC-Components/StatefulSearchQuery'
-
+import { type CourseMetadata } from "~/types/courseMetadata";
 // import { logConvoToSupabase } from '~/pages/api/UIUC-api/logConversationToSupabase'
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>
+  courseMetadata: CourseMetadata
 }
 
 import { useRouter } from 'next/router'
 
-export const Chat = memo(({ stopConversationRef }: Props) => {
+export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
 
   // KASTAN HERE -- grabbing the latest message from selected converation
@@ -63,6 +65,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
 
   // how to get the current route inside ANY component
   const router = useRouter()
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null)
   const getCurrentPageName = () => {
     // /CS-125/materials --> CS-125
     return router.asPath.slice(1).split('/')[0]
@@ -71,6 +74,16 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   const redirectToMaterialsPage = () => {
     router.push(`/${getCurrentPageName()}/materials`)
   }
+
+  useEffect(() => {
+    if (courseMetadata?.banner_image_s3) {
+      console.log("Fetching course banner url")
+      fetchPresignedUrl(courseMetadata.banner_image_s3).then((url) => {
+        console.log("Setting course banner url")
+        setBannerUrl(url)
+      })
+    }
+  }, [courseMetadata])
 
   const {
     state: {
@@ -421,24 +434,40 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
     }
   }, [messagesEndRef])
 
-  const statements = [
+  // Parse intro_message from courseMetadata and update statements
+  let statements = [
     'Make a bullet point list of key takeaways of the course.',
     'What is [your favorite topic] and why is it worth learning about?',
     'How can I effectively prepare for the upcoming exam?',
     'How many assignments in the course?',
   ]
 
+  if (courseMetadata?.course_intro_message) {
+    const messages = courseMetadata.course_intro_message.split(':\n')
+    let firstMessage = ''
+    let remainingMessages: string[] = []
+    if (messages[0]) {
+      firstMessage = messages[0] + ':'
+    }
+    if (messages[1]) {
+      remainingMessages = messages[1].split('\n')
+    }
+    statements = [firstMessage, ...remainingMessages]
+  }
+
   // Add this function to create dividers with statements
   const renderDividers = () => {
     return statements.map((statement, index) => (
-      <div key={index} className="flex w-full flex-col items-center px-1">
-        <div className="card rounded-box grid h-20 w-3/5 place-items-center justify-items-center bg-base-300/50 text-lg text-black dark:text-white">
-          <p className="text-center">{statement}</p>
+        <div key={index} className="flex flex-col items-center px-1 w-full">
+          <div className="card rounded-box grid place-items-center min-h-[6rem] justify-items-center bg-base-300/50 text-lg text-black dark:text-white w-full sm:w-3/5">
+            <div className="text-center p-4 overflow-auto">
+              <p>{statement}</p>
+            </div>
+          </div>
+          {index !== statements.length - 1 && (
+              <div className="divider mx-auto w-full sm:w-3/5"></div>
+          )}
         </div>
-        {index !== statements.length - 1 && (
-          <div className="divider mx-auto w-3/5"></div>
-        )}
-      </div>
     ))
   }
 
@@ -496,6 +525,9 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             >
               {selectedConversation?.messages.length === 0 ? (
                 <>
+                  <div style={{ height: '8vh' }}>
+                    <img src={bannerUrl || ''} alt="Banner" style={{ width: '100%', height:'100%'}}/>
+                  </div>
                   <div className="mx-auto flex flex-col space-y-5 px-3 pt-5 sm:max-w-[600px] md:space-y-10 md:pt-12">
                     <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
                       {models.length === 0 ? (
@@ -522,44 +554,49 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                 </>
               ) : (
                 <>
-                  <div className="sticky top-0 z-10 flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                    {t('Model')}: {selectedConversation?.model.name}
-                    &nbsp;&nbsp;|&nbsp;&nbsp;
-                    {t('Temp')}: {selectedConversation?.temperature}
-                    &nbsp;&nbsp;|&nbsp;&nbsp;
-                    {/* BUTTONS for (1) Chaning Models, and (2) clearing current conversation. */}
-                    {/* <button
-                      className="ml-2 cursor-pointer hover:opacity-50"
-                      onClick={handleSettings}
-                    >
-                      <IconSettings size={18} />
-                    </button>
-                    <button
-                      className="ml-2 cursor-pointer hover:opacity-50"
-                      onClick={onClearAll}
-                    >
-                      <IconClearAll size={18} />
-                    </button>
-                    &nbsp;&nbsp;&nbsp;| */}
-                    {/* <span className="w-3" /> */}
-                    <button
-                      className="ml-2 cursor-pointer hover:opacity-50"
-                      onClick={redirectToMaterialsPage}
-                    >
-                      <div className="flex items-center">
-                        <span>
-                          <Text
-                            variant="gradient"
-                            weight={600}
-                            gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                          >
-                            Upload materials
-                          </Text>
-                        </span>
-                        &nbsp;&nbsp;
-                        <IconCloudUpload size={18} />
-                      </div>
-                    </button>
+                  <div className="sticky top-0 z-10 w-full flex flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
+                    <div style={{ height: '8vh' , width:'100%'}}>
+                      <img src={bannerUrl || ''} alt="Banner" style={{ width: '100%', height:'100%'}}/>
+                    </div>
+                    <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
+                      {t('Model')}: {selectedConversation?.model.name}
+                      &nbsp;&nbsp;|&nbsp;&nbsp;
+                      {t('Temp')}: {selectedConversation?.temperature}
+                      &nbsp;&nbsp;|&nbsp;&nbsp;
+                      {/* BUTTONS for (1) Chaning Models, and (2) clearing current conversation. */}
+                      {/* <button
+                        className="ml-2 cursor-pointer hover:opacity-50"
+                        onClick={handleSettings}
+                      >
+                        <IconSettings size={18} />
+                      </button>
+                      <button
+                        className="ml-2 cursor-pointer hover:opacity-50"
+                        onClick={onClearAll}
+                      >
+                        <IconClearAll size={18} />
+                      </button>
+                      &nbsp;&nbsp;&nbsp;| */}
+                      {/* <span className="w-3" /> */}
+                      <button
+                        className="ml-2 cursor-pointer hover:opacity-50"
+                        onClick={redirectToMaterialsPage}
+                      >
+                        <div className="flex items-center">
+                          <span>
+                            <Text
+                              variant="gradient"
+                              weight={600}
+                              gradient={{ from: 'gold', to: 'white', deg: 50 }}
+                            >
+                              Upload materials
+                            </Text>
+                          </span>
+                          &nbsp;&nbsp;
+                          <IconCloudUpload size={18} />
+                        </div>
+                      </button>
+                    </div>
                   </div>
                   {showSettings && (
                     <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
