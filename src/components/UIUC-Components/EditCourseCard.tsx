@@ -130,7 +130,7 @@ const EditCourseCard = ({course_name, current_user_email, is_new_course = false,
                                 type="text"
                                 placeholder="Enter the desired course name"
                                 value={courseName}
-                                onChange={(e) => setCourseName(e.target.value)}
+                                onChange={(e) => setCourseName((e.target.value).replaceAll(' ', '-'))}
                                 disabled={!is_new_course}
                                 className={`input input-bordered lg:w-[50%] w-[80%] border-solid border-2 bg-gray-800 rounded-xl 
                                 ${isCourseAvailable && courseName != '' ? 'border-2 border-green-500 focus:border-green-500 text-green-500' : 'border-red-800 focus:border-red-800 text-red-600'} ${montserrat.className}`}
@@ -138,10 +138,10 @@ const EditCourseCard = ({course_name, current_user_email, is_new_course = false,
                         )}
                         <Title order={4} className={`text-center w-full ${montserrat.className}`}>Just one step: upload your
                             textbooks, lecture slides, video recordings, and any other files.</Title>
-                        <LargeDropzone course_name={course_name}
+                        <LargeDropzone course_name={courseName}
                                        current_user_email={current_user_email}
                                        redirect_to_gpt_4={false}
-                                       isDisabled={is_new_course && (!isCourseAvailable || course_name === '')}/>
+                                       isDisabled={is_new_course && (!isCourseAvailable || courseName === '')}/>
                     </Group>
                 </div>
                 {!is_new_course && (
