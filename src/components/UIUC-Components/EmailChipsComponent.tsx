@@ -271,7 +271,7 @@ const EmailChipsComponent = ({
         onPaste={handlePaste_users}
       />
       {emailAddresses.map((email_address) => (
-        <div className="tag-item" key={email_address}>
+        <div className="tag-item self-center" key={email_address}>
           {email_address}
           <button
             type="button"
