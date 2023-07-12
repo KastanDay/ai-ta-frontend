@@ -513,9 +513,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             >
               {selectedConversation?.messages.length === 0 ? (
                 <>
-                  <div style={{ height: '8vh' }}>
-                    <img src={bannerUrl || ''} alt="Banner" style={{ width: '100%', height:'100%'}}/>
-                  </div>
+                  {bannerUrl && (
+                      <div style={{ height: '8vh' }}>
+                        <img src={bannerUrl} alt="Banner" style={{ width: '100%', height:'100%'}}/>
+                      </div>
+                  )}
                   <div className="mx-auto flex flex-col space-y-5 px-3 pt-5 sm:max-w-[600px] md:space-y-10 md:pt-12">
                     <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
                       {models.length === 0 ? (
@@ -543,9 +545,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               ) : (
                 <>
                   <div className="sticky top-0 z-10 w-full flex flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                    <div style={{ height: '8vh' , width:'100%'}}>
-                      <img src={bannerUrl || ''} alt="Banner" style={{ width: '100%', height:'100%'}}/>
-                    </div>
+                    {bannerUrl && (
+                        <div style={{ height: '8vh' , width:'100%'}}>
+                          <img src={bannerUrl} alt="Banner" style={{ width: '100%', height:'100%'}}/>
+                        </div>
+                    )}
                     <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
                       {t('Model')}: {selectedConversation?.model.name}
                       &nbsp;&nbsp;|&nbsp;&nbsp;
