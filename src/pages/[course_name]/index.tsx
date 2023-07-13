@@ -124,7 +124,7 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
         clerk_user.isLoaded,
         course_name,
       )
-      router.replace(`/sign-in?${course_name}`) // replace with your auth route
+      router.replace(`/sign-in?${course_name}`)
       return
     }
     if (clerk_user.isLoaded) {
@@ -151,6 +151,12 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
           router.push(`/${course_name}/gpt4`)
         } else {
           // 🚫 NOT AUTHED
+          console.log(
+            'NOT AUTHED: ',
+            permission_str,
+            clerk_user,
+            course_metadata,
+          )
           router.push(`/${course_name}/not_authorized`)
         }
       } else {

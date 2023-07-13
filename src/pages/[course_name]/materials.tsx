@@ -154,7 +154,7 @@ const CourseMain: NextPage<CourseMainProps> = (props) => {
           p="xl"
           style={{ marginTop: '4rem' }}
         >
-          You&aposve encountered a software bug!<br></br>Your account has no
+          You&apos;ve encountered a software bug!<br></br>Your account has no
           email address. Please shoot me an email so I can fix it for you:{' '}
           <a className="goldUnderline" href="mailto:kvday2@illinois.edu">
             kvday2@illinois.edu
