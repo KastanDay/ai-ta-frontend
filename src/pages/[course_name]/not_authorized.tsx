@@ -3,27 +3,31 @@ import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { CanViewOnlyCourse } from '~/components/UIUC-Components/CanViewOnlyCourse'
-import { CannotEditCourse } from '~/components/UIUC-Components/CannotEditCourse'
+// import { CannotEditCourse } from '~/components/UIUC-Components/CannotEditCourse'
 import { CannotViewCourse } from '~/components/UIUC-Components/CannotViewCourse'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { CourseMetadata } from '~/types/courseMetadata'
 
-const NotAuthorizedPage: NextPage = (props) => {
+const NotAuthorizedPage: NextPage = () => {
   const router = useRouter()
   const clerk_user = useUser()
+  const [componentToRender, setComponentToRender] =
+    useState<React.ReactNode>(null)
 
   const getCurrentPageName = () => {
-    // /CS-125/materials --> CS-125
     return router.asPath.slice(1).split('/')[0] as string
   }
 
-  const [courseMetadata, setCourseMetadata] = useState<CourseMetadata>()
   const course_name = getCurrentPageName()
+  console.log('not_auth.tsx -- course_name:', course_name)
 
-  // Get CourseMetadata
   useEffect(() => {
+    if (!clerk_user.isLoaded) {
+      return
+    }
+
     async function fetchCourseMetadata(course_name: string) {
       try {
         const response = await fetch(
@@ -48,53 +52,78 @@ const NotAuthorizedPage: NextPage = (props) => {
         return null
       }
     }
-    fetchCourseMetadata(course_name).then((metadata) => {
-      setCourseMetadata(metadata)
+
+    fetchCourseMetadata(course_name).then((courseMetadata) => {
+      if (courseMetadata == null) {
+        console.log('Course does not exist, redirecting to materials page')
+        router.replace(`/${course_name}/materials`)
+        return
+      }
+
+      if (courseMetadata.is_private && !clerk_user.isSignedIn) {
+        console.log(
+          'User not logged in',
+          clerk_user.isSignedIn,
+          clerk_user.isLoaded,
+          course_name,
+        )
+        router.replace(`/sign-in?${course_name}`)
+        return
+      }
+
+      if (clerk_user.isLoaded) {
+        console.log(
+          'in [course_name]/index.tsx -- clerk_user loaded and working :)',
+        )
+        if (courseMetadata != null) {
+          const permission_str = get_user_permission(
+            courseMetadata,
+            clerk_user,
+            router,
+          )
+
+          console.log(
+            'in [course_name]/index.tsx -- permission_str',
+            permission_str,
+          )
+
+          if (permission_str == 'edit') {
+            console.log(
+              'in [course_name]/index.tsx - Course exists & user is properly authed, CanViewOnlyCourse',
+            )
+            router.push(`/${course_name}/materials`)
+          } else if (permission_str == 'view') {
+            setComponentToRender(
+              <CanViewOnlyCourse
+                course_name={course_name}
+                course_metadata={courseMetadata as CourseMetadata}
+              />,
+            )
+          } else {
+            setComponentToRender(<CannotViewCourse course_name={course_name} />)
+          }
+        } else {
+          console.log('Course does not exist, redirecting to materials page')
+          router.push(`/${course_name}/materials`)
+        }
+      } else {
+        console.log(
+          'in [course_name]/index.tsx -- clerk_user NOT LOADED yet...',
+        )
+      }
     })
-  }, [course_name])
+  }, [clerk_user.isLoaded])
 
-  const [userPermission, setUserPermission] = useState<string>('')
-
-  useEffect(() => {
-    if (courseMetadata != null && clerk_user.isLoaded) {
-      const user_permission = get_user_permission(
-        courseMetadata,
-        clerk_user,
-        router,
-      )
-      setUserPermission(user_permission)
-    }
-  }, [courseMetadata, clerk_user.isLoaded])
-
-  if (userPermission === 'edit') {
-    // Can edit and view. You are the course owner or an admin
-    // redirect to course
-    router.push(`/${course_name}/gpt4`)
-  } else if (userPermission === 'view') {
-    // Not owner or admin, can't edit. But is USER so CAN VIEW
+  if (!clerk_user.isLoaded) {
+    console.log('not_authorized.tsx -- Loading spinner')
     return (
-      <>
-        <CanViewOnlyCourse
-          course_name={course_name}
-          course_metadata={courseMetadata as CourseMetadata}
-        />
-      </>
-    )
-  } else if (userPermission === 'no_permission') {
-    // Cannot edit or view
-    return (
-      <>
-        <CannotViewCourse course_name={course_name} />
-      </>
-    )
-  }
-
-  return (
-    <>
       <MainPageBackground>
         <LoadingSpinner />
       </MainPageBackground>
-    </>
-  )
+    )
+  }
+
+  return componentToRender
 }
+
 export default NotAuthorizedPage
