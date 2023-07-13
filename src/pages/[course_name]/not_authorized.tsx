@@ -14,7 +14,7 @@ const NotAuthorizedPage: NextPage = () => {
   const router = useRouter()
   const clerk_user = useUser()
   const [componentToRender, setComponentToRender] =
-    useState<React.ReactNode>(null)
+    useState<React.ReactNode | null>(null)
 
   const getCurrentPageName = () => {
     return router.asPath.slice(1).split('/')[0] as string
@@ -114,7 +114,7 @@ const NotAuthorizedPage: NextPage = () => {
     })
   }, [clerk_user.isLoaded])
 
-  if (!clerk_user.isLoaded) {
+  if (!clerk_user.isLoaded || !componentToRender) {
     console.log('not_authorized.tsx -- Loading spinner')
     return (
       <MainPageBackground>
@@ -123,7 +123,7 @@ const NotAuthorizedPage: NextPage = () => {
     )
   }
 
-  return componentToRender
+  return <>{componentToRender}</>
 }
 
 export default NotAuthorizedPage
