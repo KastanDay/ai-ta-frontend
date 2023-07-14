@@ -45,7 +45,7 @@ import { fetchPresignedUrl } from '~/components/UIUC-Components/ContextCards'
 
 // import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
 import SearchQuery from '~/components/UIUC-Components/StatefulSearchQuery'
-import { type CourseMetadata } from "~/types/courseMetadata";
+import { type CourseMetadata } from '~/types/courseMetadata'
 // import { logConvoToSupabase } from '~/pages/api/UIUC-api/logConversationToSupabase'
 
 interface Props {
@@ -54,6 +54,7 @@ interface Props {
 }
 
 import { useRouter } from 'next/router'
+import CustomBanner from '../UIUC-Components/CustomBanner'
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
@@ -77,9 +78,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   useEffect(() => {
     if (courseMetadata?.banner_image_s3) {
-      console.log("Fetching course banner url")
+      console.log('Fetching course banner url')
       fetchPresignedUrl(courseMetadata.banner_image_s3).then((url) => {
-        console.log("Setting course banner url")
+        console.log('Setting course banner url')
         setBannerUrl(url)
       })
     }
@@ -435,27 +436,27 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }, [messagesEndRef])
 
   const statements = courseMetadata?.course_intro_message
-      ? courseMetadata.course_intro_message.split('\n')
-      : [
+    ? courseMetadata.course_intro_message.split('\n')
+    : [
         'Make a bullet point list of key takeaways of the course.',
         'What is [your favorite topic] and why is it worth learning about?',
         'How can I effectively prepare for the upcoming exam?',
         'How many assignments in the course?',
-      ];
+      ]
 
   // Add this function to create dividers with statements
   const renderDividers = () => {
     return statements.map((statement, index) => (
-        <div key={index} className="flex flex-col items-center px-1 w-full">
-          <div className="card rounded-box grid place-items-center min-h-[6rem] justify-items-center bg-base-300/50 text-lg text-black dark:text-white w-full sm:w-3/5">
-            <div className="text-center p-4 overflow-auto">
-              <p>{statement}</p>
-            </div>
+      <div key={index} className="flex w-full flex-col items-center px-1">
+        <div className="card rounded-box grid min-h-[6rem] w-full place-items-center justify-items-center bg-base-300/50 text-lg text-black dark:text-white sm:w-3/5">
+          <div className="overflow-auto p-4 text-center">
+            <p>{statement}</p>
           </div>
-          {index !== statements.length - 1 && (
-              <div className="divider mx-auto w-full sm:w-3/5"></div>
-          )}
         </div>
+        {index !== statements.length - 1 && (
+          <div className="divider mx-auto w-full sm:w-3/5"></div>
+        )}
+      </div>
     ))
   }
 
@@ -513,10 +514,15 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             >
               {selectedConversation?.messages.length === 0 ? (
                 <>
+                  {/* <CustomBanner bannerUrl={bannerUrl as string} /> Banner on fresh chat page */}
                   {bannerUrl && (
-                      <div style={{ height: '8vh' }}>
-                        <img src={bannerUrl} alt="Banner" style={{ width: '100%', height:'100%'}}/>
-                      </div>
+                    <div style={{ width: '100%' }}>
+                      <img
+                        src={bannerUrl}
+                        alt="Banner"
+                        style={{ width: '100%' }}
+                      />
+                    </div>
                   )}
                   <div className="mx-auto flex flex-col space-y-5 px-3 pt-5 sm:max-w-[600px] md:space-y-10 md:pt-12">
                     <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
@@ -544,12 +550,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 </>
               ) : (
                 <>
-                  <div className="sticky top-0 z-10 w-full flex flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                    {bannerUrl && (
+                  <div className="sticky top-0 z-10 flex w-full flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
+                    {/* {bannerUrl && (
                         <div style={{ height: '8vh' , width:'100%'}}>
-                          <img src={bannerUrl} alt="Banner" style={{ width: '100%', height:'100%'}}/>
+                          <img src={bannerUrl} alt="Banner" style={{ width: '100%'}}/>
                         </div>
-                    )}
+                    )} */}
                     <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
                       {t('Model')}: {selectedConversation?.model.name}
                       &nbsp;&nbsp;|&nbsp;&nbsp;
@@ -597,7 +603,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                       </div>
                     </div>
                   )}
-
+                  <CustomBanner bannerUrl={bannerUrl as string} />{' '}
+                  {/* Banner on "chat with messages" page (not fresh chat) */}
                   {selectedConversation?.messages.map((message, index) => (
                     <MemoizedChatMessage
                       key={index}
@@ -613,9 +620,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                       }}
                     />
                   ))}
-
                   {loading && <ChatLoader />}
-
                   <div
                     className="h-[162px] bg-white dark:bg-[#343541]"
                     ref={messagesEndRef}
