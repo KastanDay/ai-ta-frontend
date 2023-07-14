@@ -3,11 +3,11 @@ import { IconAt } from '@tabler/icons-react'
 import React, {
   useState,
   useEffect,
-  KeyboardEvent,
-  ChangeEvent,
-  ClipboardEvent,
+  type KeyboardEvent,
+  type ChangeEvent,
+  type ClipboardEvent,
 } from 'react'
-import { CourseMetadata } from '~/types/courseMetadata'
+import { type CourseMetadata } from '~/types/courseMetadata'
 
 const EmailChipsComponent = ({
   course_name,
@@ -15,6 +15,8 @@ const EmailChipsComponent = ({
   course_admins,
   is_private,
   onEmailAddressesChange,
+  banner_image_s3,
+  course_intro_message
 }: {
   course_name: string
   course_owner: string
@@ -24,6 +26,8 @@ const EmailChipsComponent = ({
     new_course_metadata: CourseMetadata,
     course_name: string,
   ) => void // Add this prop type
+  banner_image_s3: string
+  course_intro_message: string
 }) => {
   const [emailAddresses, setEmailAddresses] = useState<string[]>([])
   const [courseName, setCourseName] = useState<string>(course_name)
@@ -58,6 +62,9 @@ const EmailChipsComponent = ({
             course_owner: course_owner,
             course_admins: course_admins,
             approved_emails_list: newEmailAddresses,
+            course_intro_message: course_intro_message,
+            banner_image_s3: banner_image_s3
+
           }
           onEmailAddressesChange &&
             onEmailAddressesChange(curr_course_metadata, course_name)
@@ -70,6 +77,7 @@ const EmailChipsComponent = ({
           course_owner: course_owner, // Replace with the appropriate course_owner value
           course_admins: course_admins, // Replace with the appropriate course_admins value (array of strings)
           approved_emails_list: [...emailAddresses, trimmedValue],
+          banner_image_s3: banner_image_s3, course_intro_message: course_intro_message
         })
       }
     }
@@ -91,6 +99,8 @@ const EmailChipsComponent = ({
         course_owner: course_owner,
         course_admins: course_admins,
         approved_emails_list: newEmailAddresses,
+        course_intro_message: course_intro_message,
+        banner_image_s3: banner_image_s3
       }
       onEmailAddressesChange &&
         onEmailAddressesChange(curr_course_metadata, course_name)
@@ -117,6 +127,8 @@ const EmailChipsComponent = ({
           course_owner: course_owner,
           course_admins: course_admins,
           approved_emails_list: newEmailAddresses,
+          course_intro_message: course_intro_message,
+          banner_image_s3: banner_image_s3
         }
         onEmailAddressesChange &&
           onEmailAddressesChange(curr_course_metadata, course_name)
@@ -128,6 +140,7 @@ const EmailChipsComponent = ({
         course_owner: course_owner,
         course_admins: course_admins,
         approved_emails_list: [...emailAddresses, ...toBeAdded],
+        banner_image_s3: banner_image_s3, course_intro_message: course_intro_message,
       })
     }
   }
@@ -258,7 +271,7 @@ const EmailChipsComponent = ({
         onPaste={handlePaste_users}
       />
       {emailAddresses.map((email_address) => (
-        <div className="tag-item" key={email_address}>
+        <div className="tag-item self-center" key={email_address}>
           {email_address}
           <button
             type="button"

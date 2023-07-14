@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from 'react-query'
 
-import { GetServerSideProps, GetServerSidePropsContext } from 'next'
+import { type GetServerSideProps, type GetServerSidePropsContext } from 'next'
 import { useTranslation } from 'next-i18next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import Head from 'next/head'
@@ -26,11 +26,11 @@ import { saveFolders } from '@/utils/app/folders'
 import { savePrompts } from '@/utils/app/prompts'
 import { getSettings } from '@/utils/app/settings'
 
-import { Conversation } from '@/types/chat'
-import { KeyValuePair } from '@/types/data'
-import { FolderInterface, FolderType } from '@/types/folder'
+import { type Conversation } from '@/types/chat'
+import { type KeyValuePair } from '@/types/data'
+import { type FolderInterface, type FolderType } from '@/types/folder'
 import { OpenAIModelID, OpenAIModels, fallbackModelID } from '@/types/openai'
-import { Prompt } from '@/types/prompt'
+import { type Prompt } from '@/types/prompt'
 
 import { Chat } from '@/components/Chat/Chat'
 import { Chatbar } from '@/components/Chatbar/Chatbar'
@@ -38,10 +38,10 @@ import { Navbar } from '@/components/Mobile/Navbar'
 import Promptbar from '@/components/Promptbar'
 
 import HomeContext from './home.context'
-import { HomeInitialState, initialState } from './home.state'
+import { type HomeInitialState, initialState } from './home.state'
 
 import { v4 as uuidv4 } from 'uuid'
-import { CourseMetadata } from '~/types/courseMetadata'
+import { type CourseMetadata } from '~/types/courseMetadata'
 import { kv } from '@vercel/kv'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
@@ -471,7 +471,7 @@ const Home = ({
             <Chatbar />
 
             <div className="flex flex-1">
-              <Chat stopConversationRef={stopConversationRef} />
+              <Chat stopConversationRef={stopConversationRef} courseMetadata={course_metadata}/>
             </div>
 
             <Promptbar />

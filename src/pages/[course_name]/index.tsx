@@ -1,11 +1,11 @@
-import { GetServerSidePropsContext } from 'next' // GetServerSideProps, GetServerSideProps,
-import { NextPage } from 'next'
+import { type GetServerSidePropsContext } from 'next' // GetServerSideProps, GetServerSideProps,
+import { type NextPage } from 'next'
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import { Text } from '@mantine/core'
 import { kv } from '@vercel/kv'
-import { CourseMetadata } from '~/types/courseMetadata'
+import { type CourseMetadata } from '~/types/courseMetadata'
 import { useAuth, useUser } from '@clerk/nextjs'
 // import { CannotEditCourse } from '~/components/UIUC-Components/CannotEditCourse'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
@@ -112,8 +112,8 @@ const IfCourseExists: NextPage<CourseMainProps> = (props) => {
       return
     }
     if (course_metadata == null) {
-      console.log('Course does not exist, redirecting to materials page')
-      router.replace(`/${course_name}/materials`)
+      console.log('Course does not exist, redirecting to new course page')
+      router.replace(`/new?course_name=${course_name}`)
       return
     }
     // course is private & not signed in, must sign in
