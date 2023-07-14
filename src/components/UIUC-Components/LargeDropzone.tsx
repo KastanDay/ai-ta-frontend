@@ -70,12 +70,6 @@ export function LargeDropzone({
     //   refresh current page
     router.push(`/${course_name}/materials`)
   }
-
-  const getCurrentPageName = () => {
-    // /CS-125/materials --> CS-125
-    return router.asPath.slice(1).split('/')[0] as string
-  }
-
   const uploadToS3 = async (file: File | null) => {
     if (!file) return
 
@@ -211,7 +205,7 @@ export function LargeDropzone({
               setUploadInProgress(true)
 
               // Make course exist in kv store
-              await setCourseExistsAPI(getCurrentPageName() as string)
+              await setCourseExistsAPI(course_name)
 
               // set course exists in new metadata endpoint. Works great.
               await callUpsertCourseMetadata(course_name, {
