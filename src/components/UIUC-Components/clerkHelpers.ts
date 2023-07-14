@@ -1,4 +1,5 @@
-import { UserResource } from '@clerk/types'
+
+import { type UserResource } from '@clerk/types'
 
 export function extractEmailsFromClerk(
   clerk_user: UserResource | undefined | null,

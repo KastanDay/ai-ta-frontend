@@ -1,8 +1,8 @@
 import { kv } from '@vercel/kv'
 import { NextResponse } from 'next/server'
 import {
-  CourseMetadata,
-  CourseMetadataOptionalForUpsert,
+  type CourseMetadata,
+  type CourseMetadataOptionalForUpsert,
 } from '~/types/courseMetadata'
 
 export const runtime = 'edge'
@@ -26,6 +26,10 @@ const setCourseMetadata = async (req: any, res: any) => {
   const approved_emails_list = JSON.parse(
     req.nextUrl.searchParams.get('approved_emails_list') || '[]',
   )
+  const banner_image_s3 =
+      req.nextUrl.searchParams.get('banner_image_s3') || ''
+  const course_intro_message =
+      req.nextUrl.searchParams.get('course_intro_message') || ''
 
   try {
     // Fetch existing metadata
@@ -39,6 +43,8 @@ const setCourseMetadata = async (req: any, res: any) => {
       course_owner: course_owner,
       course_admins: course_admins,
       approved_emails_list: approved_emails_list,
+      banner_image_s3: banner_image_s3,
+      course_intro_message: course_intro_message
     }
 
     console.log('Right before setting course_metadata with: ', course_metadata)
@@ -60,6 +66,8 @@ export const callUpsertCourseMetadata = async (
     const {
       is_private = false,
       course_owner = '',
+      course_intro_message = '',
+      banner_image_s3 = '',
       course_admins = ['kvday2@illinois.edu'],
       approved_emails_list = [],
     } = courseMetadata
@@ -72,6 +80,8 @@ export const callUpsertCourseMetadata = async (
     url.searchParams.append('is_private', String(is_private))
     url.searchParams.append('course_name', courseName)
     url.searchParams.append('course_owner', course_owner)
+    url.searchParams.append('banner_image_s3', banner_image_s3)
+    url.searchParams.append('course_intro_message', course_intro_message)
     url.searchParams.append('course_admins', JSON.stringify(course_admins))
     url.searchParams.append(
       'approved_emails_list',

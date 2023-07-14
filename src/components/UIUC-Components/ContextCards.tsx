@@ -17,7 +17,7 @@ import {
 } from '@mantine/core'
 
 import React, { useState, useEffect } from 'react'
-import { fetchContexts, getTopContextsResponse } from '~/pages/api/getContexts'
+import { fetchContexts, type getTopContextsResponse } from '~/pages/api/getContexts'
 import Link from 'next/link'
 import axios from 'axios'
 import { set } from 'zod'
@@ -28,7 +28,7 @@ import { useRouter } from 'next/router'
 import { useChatContext } from './StatefulSearchQuery'
 import { IconExternalLink } from '@tabler/icons-react'
 
-async function fetchPresignedUrl(filePath: string) {
+export async function fetchPresignedUrl(filePath: string) {
   try {
     const response = await axios.post('/api/download', {
       filePath,

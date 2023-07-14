@@ -31,7 +31,7 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-export function ResumeToChat({ course_name }: { course_name: string }) {
+export function ResumeToChat({ course_name }: { course_name?: string }) {
   const router = useRouter()
   const { classes, theme } = useStyles()
   const [isLoading, setIsLoading] = useState(false)
@@ -39,6 +39,10 @@ export function ResumeToChat({ course_name }: { course_name: string }) {
   const handleClick = () => {
     setIsLoading(true)
     router.push(`/${course_name}/gpt4`)
+  }
+
+  if (!course_name) {
+    return null;
   }
 
   return (
