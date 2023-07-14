@@ -15,7 +15,9 @@ const setCourseMetadata = async (req: any, res: any) => {
 
   const course_name = req.nextUrl.searchParams.get('course_name')
   const course_owner = req.nextUrl.searchParams.get('course_owner')
-  const course_intro_message = req.nextUrl.searchParams.get('course_intro_message')
+  const course_intro_message = req.nextUrl.searchParams.get(
+    'course_intro_message',
+  )
   const banner_image_s3 = req.nextUrl.searchParams.get('banner_image_s3')
   const is_private = req.nextUrl.searchParams.get('is_private')
   const course_admins = JSON.parse(
@@ -32,7 +34,7 @@ const setCourseMetadata = async (req: any, res: any) => {
       course_admins: course_admins,
       approved_emails_list: approved_emails_list,
       course_intro_message: course_intro_message,
-      banner_image_s3: banner_image_s3
+      banner_image_s3: banner_image_s3,
     }
     console.log('Right before setting course_metadata with: ', course_metadata)
     await kv.set(course_name + '_metadata', course_metadata)

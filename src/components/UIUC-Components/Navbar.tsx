@@ -1,29 +1,27 @@
-import Link from 'next/link';
+import Link from 'next/link'
 import Header from '~/components/UIUC-Components/GlobalHeader'
-import { Flex } from '@mantine/core';
-import { ResumeToChat } from './ResumeToChat';
+import { Flex } from '@mantine/core'
+import { ResumeToChat } from './ResumeToChat'
 
 const Navbar = ({ course_name = '' }) => (
+  <div className="flex flex-col items-center bg-[#2e026d]">
+    <div className="mt-4 w-full max-w-[95%]">
+      <div className="navbar rounded-badge h-24 min-h-fit bg-[#15162c] shadow-lg shadow-purple-800">
+        <div className="flex-1">
+          <Link href="/">
+            <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
+              UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
+            </h2>
+          </Link>
+        </div>
+        <Flex direction="row" align="center" justify="center">
+          <div className="ms-4 mt-4 flex flex-row items-center justify-center gap-2">
+            <ResumeToChat course_name={course_name} />
+          </div>
+        </Flex>
 
-    <div className="flex flex-col items-center bg-[#2e026d]">
-        <div className="mt-4 w-full max-w-[95%]">
-            <div className="navbar rounded-badge h-24 min-h-fit bg-[#15162c] shadow-lg shadow-purple-800">
-                <div className="flex-1">
-                    <Link href="/">
-                        <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
-                            UIUC Course{' '}
-                            <span className="text-[hsl(280,100%,70%)]">AI</span>
-                        </h2>
-                    </Link>
-                </div>
-                <Flex direction="row" align="center" justify="center">
-                    <div className="ms-4 mt-4 flex flex-row items-center justify-center gap-2">
-                        <ResumeToChat course_name={course_name} />
-                    </div>
-                </Flex>
-
-                {/* THIS BUTTON IS FOR "GPT4" CHAT */}
-                {/* <button
+        {/* THIS BUTTON IS FOR "GPT4" CHAT */}
+        {/* <button
               className={`btn-circle btn mb-1 ms-4`}
               style={{
                 position: 'relative',
@@ -103,7 +101,7 @@ const Navbar = ({ course_name = '' }) => (
                 GPT4
               </span>{' '}
               {/* Adjusted the vertical position of the text */}
-                {/* <svg
+        {/* <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="currentColor"
@@ -123,10 +121,10 @@ const Navbar = ({ course_name = '' }) => (
               </svg>
             </button> */}
 
-                <Header isNavbar={true} />
-            </div>
-        </div>
+        <Header isNavbar={true} />
+      </div>
     </div>
-);
+  </div>
+)
 
-export default Navbar;
+export default Navbar

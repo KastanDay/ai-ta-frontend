@@ -16,7 +16,7 @@ const EmailChipsComponent = ({
   is_private,
   onEmailAddressesChange,
   banner_image_s3,
-  course_intro_message
+  course_intro_message,
 }: {
   course_name: string
   course_owner: string
@@ -63,8 +63,7 @@ const EmailChipsComponent = ({
             course_admins: course_admins,
             approved_emails_list: newEmailAddresses,
             course_intro_message: course_intro_message,
-            banner_image_s3: banner_image_s3
-
+            banner_image_s3: banner_image_s3,
           }
           onEmailAddressesChange &&
             onEmailAddressesChange(curr_course_metadata, course_name)
@@ -77,7 +76,8 @@ const EmailChipsComponent = ({
           course_owner: course_owner, // Replace with the appropriate course_owner value
           course_admins: course_admins, // Replace with the appropriate course_admins value (array of strings)
           approved_emails_list: [...emailAddresses, trimmedValue],
-          banner_image_s3: banner_image_s3, course_intro_message: course_intro_message
+          banner_image_s3: banner_image_s3,
+          course_intro_message: course_intro_message,
         })
       }
     }
@@ -100,7 +100,7 @@ const EmailChipsComponent = ({
         course_admins: course_admins,
         approved_emails_list: newEmailAddresses,
         course_intro_message: course_intro_message,
-        banner_image_s3: banner_image_s3
+        banner_image_s3: banner_image_s3,
       }
       onEmailAddressesChange &&
         onEmailAddressesChange(curr_course_metadata, course_name)
@@ -128,7 +128,7 @@ const EmailChipsComponent = ({
           course_admins: course_admins,
           approved_emails_list: newEmailAddresses,
           course_intro_message: course_intro_message,
-          banner_image_s3: banner_image_s3
+          banner_image_s3: banner_image_s3,
         }
         onEmailAddressesChange &&
           onEmailAddressesChange(curr_course_metadata, course_name)
@@ -140,7 +140,8 @@ const EmailChipsComponent = ({
         course_owner: course_owner,
         course_admins: course_admins,
         approved_emails_list: [...emailAddresses, ...toBeAdded],
-        banner_image_s3: banner_image_s3, course_intro_message: course_intro_message,
+        banner_image_s3: banner_image_s3,
+        course_intro_message: course_intro_message,
       })
     }
   }

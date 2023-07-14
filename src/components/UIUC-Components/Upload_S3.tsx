@@ -262,7 +262,7 @@ export function DropzoneS3Upload({
             approved_emails_list: undefined,
             is_private: undefined,
             banner_image_s3: undefined,
-            course_intro_message: undefined
+            course_intro_message: undefined,
           })
 
           // console.log('Right after setCourseExists in kv store...');
