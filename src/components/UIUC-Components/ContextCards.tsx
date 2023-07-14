@@ -4,16 +4,16 @@ import {
   Card,
   Image,
   Text,
-  Title,
-  Badge,
-  MantineProvider,
-  Button,
   Group,
-  Stack,
-  createStyles,
-  FileInput,
-  rem,
-  Divider,
+  // Title,
+  // Badge,
+  // MantineProvider,
+  // Button,
+  // Stack,
+  // createStyles,
+  // FileInput,
+  // rem,
+  // Divider,
 } from '@mantine/core'
 
 import React, { useState, useEffect } from 'react'
@@ -23,13 +23,12 @@ import {
 } from '~/pages/api/getContexts'
 import Link from 'next/link'
 import axios from 'axios'
-import { set } from 'zod'
-import SciteBadge from './SciteBadge'
+// import SciteBadge from './SciteBadge'
 import { useRouter } from 'next/router'
 
 // My way to manage content
 import { useChatContext } from './StatefulSearchQuery'
-import { IconExternalLink } from '@tabler/icons-react'
+// import { IconExternalLink } from '@tabler/icons-react'
 
 export async function fetchPresignedUrl(filePath: string) {
   try {
@@ -62,10 +61,6 @@ export const BuildContextCards = () => {
   const router = useRouter()
   const getCurrentPageName = (): string => {
     // /CS-125/materials --> CS-125
-    console.log(
-      'curr page name:',
-      router.asPath.slice(1).split('/')[0] || 'DEFAULTPAGE',
-    )
     return router.asPath.slice(1).split('/')[0] || 'DEFAULTPAGE' // Kastan as default
   }
 
@@ -73,17 +68,27 @@ export const BuildContextCards = () => {
   const { searchQuery } = useChatContext()
   useEffect(() => {
     if (searchQuery) {
-      // Perform your action when the searchQuery changes
+      if (getCurrentPageName() == 'gpt4') {
+        // No context search for GPT-4 page.
+        return
+      } 
+
+      console.log('From ContextCards.tsx:')
+      console.log('contexts: ', contexts)
+      console.log('currentPageName: ', getCurrentPageName())
+      console.log('searchQuery: ', searchQuery)
+
+      // Fetch contexts when the searchQuery changes
       fetchContexts(getCurrentPageName(), searchQuery).then((data) => {
         setContexts(data)
       })
     }
   }, [searchQuery])
 
-  console.log('From ContextCards.tsx:')
-  console.log('contexts: ', contexts)
-  console.log('currentPageName: ', getCurrentPageName())
-  console.log('searchQuery: ', searchQuery)
+
+  if (getCurrentPageName() == 'gpt4') {
+    return null
+  }
 
   return (
     <>
@@ -163,8 +168,6 @@ function DynamicMaterialsCard({
       setPresignedUrlPng(null)
     }
   }, [s3_path])
-
-  console.log('DynamicMaterialsCard presignedUrlPng:', presignedUrlPng)
 
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
