@@ -27,7 +27,11 @@ const config = {
   //   defaultLocale: 'en',
   // },
   images: {
-    domains: ['images.unsplash.com', 'github.com'],
+    domains: [
+      'images.unsplash.com',
+      'github.com',
+      'uiuc-chatbot.s3.us-east-1.amazonaws.com',
+    ],
   },
   experimental: {
     esmExternals: false, // To make upload thing work with /pages router.
