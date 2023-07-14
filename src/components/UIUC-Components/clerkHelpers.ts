@@ -1,4 +1,3 @@
-
 import { type UserResource } from '@clerk/types'
 
 export function extractEmailsFromClerk(

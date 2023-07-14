@@ -131,7 +131,11 @@ const MakeOldCoursePage = ({
       <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center">
         <div className="items-left flex w-full flex-col justify-center py-0">
           <Flex direction="column" align="center" w="100%">
-            <EditCourseCard course_name={course_name} current_user_email={currentEmail} courseMetadata={courseMetadata} />
+            <EditCourseCard
+              course_name={course_name}
+              current_user_email={currentEmail}
+              courseMetadata={courseMetadata}
+            />
             <div
               className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
@@ -182,7 +186,6 @@ import { CannotEditCourse } from './CannotEditCourse'
 import { type CourseMetadata } from '~/types/courseMetadata'
 // import { CannotViewCourse } from './CannotViewCourse'
 
-
 interface CourseFile {
   name: string
   s3_path: string
@@ -200,8 +203,8 @@ import LargeDropzone from './LargeDropzone'
 import { MainPageBackground } from './MainPageBackground'
 import { LoadingSpinner } from './LoadingSpinner'
 import { extractEmailsFromClerk } from './clerkHelpers'
-import Navbar from "~/components/UIUC-Components/Navbar";
-import EditCourseCard from "~/components/UIUC-Components/EditCourseCard";
+import Navbar from '~/components/UIUC-Components/Navbar'
+import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
@@ -238,14 +241,22 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
               e.currentTarget.style.border = 'solid 1.5px'
             }}
           >
-              <div className="min-w-0 flex-auto" style={{ maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div
+              className="min-w-0 flex-auto"
+              style={{
+                maxWidth: '80%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
               <p className="text-xl font-semibold leading-6 text-gray-800">
-                  {file.readable_filename}
-                </p>
-                <p className="mt-1 truncate text-xs leading-5 text-gray-600">
-                  {file.course_name}
-                </p>
-              </div>
+                {file.readable_filename}
+              </p>
+              <p className="mt-1 truncate text-xs leading-5 text-gray-600">
+                {file.course_name}
+              </p>
+            </div>
             <div className="me-4 flex justify-end space-x-2">
               {/* Download button */}
               <button

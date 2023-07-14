@@ -42,7 +42,7 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
   }
 
   if (!course_name) {
-    return null;
+    return null
   }
 
   return (

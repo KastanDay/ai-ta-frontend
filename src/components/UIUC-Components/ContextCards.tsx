@@ -17,7 +17,10 @@ import {
 } from '@mantine/core'
 
 import React, { useState, useEffect } from 'react'
-import { fetchContexts, type getTopContextsResponse } from '~/pages/api/getContexts'
+import {
+  fetchContexts,
+  type getTopContextsResponse,
+} from '~/pages/api/getContexts'
 import Link from 'next/link'
 import axios from 'axios'
 import { set } from 'zod'

@@ -471,7 +471,10 @@ const Home = ({
             <Chatbar />
 
             <div className="flex flex-1">
-              <Chat stopConversationRef={stopConversationRef} courseMetadata={course_metadata}/>
+              <Chat
+                stopConversationRef={stopConversationRef}
+                courseMetadata={course_metadata}
+              />
             </div>
 
             <Promptbar />
