@@ -282,6 +282,7 @@ const EditCourseCard = ({
                   course_intro_message={
                     courseMetadata?.course_intro_message || ''
                   }
+                  is_private={courseMetadata?.is_private || false}
                   banner_image_s3={courseBannerUrl}
                 />
               </div>
@@ -298,13 +299,15 @@ const PrivateOrPublicCourse = ({
   current_user_email,
   course_intro_message,
   banner_image_s3,
+  is_private,
 }: {
   course_name: string
   current_user_email: string
   course_intro_message: string
   banner_image_s3: string
+  is_private: boolean
 }) => {
-  const [isPrivate, setIsPrivate] = useState(false)
+  const [isPrivate, setIsPrivate] = useState(is_private)
   // const { user, isSignedIn, isLoaded } = useUser()
   // const user_emails = extractEmailsFromClerk(user)
   // console.log("in MakeNewCoursePage.tsx user email list: ", user_emails )
@@ -355,7 +358,7 @@ const PrivateOrPublicCourse = ({
     course_name: string,
   ) => {
     try {
-      const { is_private, course_owner, course_admins, approved_emails_list } =
+      const { is_private, course_owner, course_admins, approved_emails_list , course_intro_message, banner_image_s3 } =
         courseMetadata
 
       console.log(
@@ -371,6 +374,8 @@ const PrivateOrPublicCourse = ({
       url.searchParams.append('is_private', String(is_private))
       url.searchParams.append('course_name', course_name)
       url.searchParams.append('course_owner', course_owner)
+      url.searchParams.append('course_intro_message', course_intro_message || '')
+      url.searchParams.append('banner_image_s3', banner_image_s3 || '')
       url.searchParams.append('course_admins', JSON.stringify(course_admins))
       url.searchParams.append(
         'approved_emails_list',
