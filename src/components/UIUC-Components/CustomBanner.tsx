@@ -31,9 +31,9 @@ function BannerComponent({ bannerUrl }: { bannerUrl: string }) {
     >
       <NextImage
         src={bannerUrl}
-        width={720}
-        height={100}
-        quality={80}
+        width={1440}
+        height={640}
+        quality={90}
         alt="Banner image of course"
         style={{
           width: '100%',

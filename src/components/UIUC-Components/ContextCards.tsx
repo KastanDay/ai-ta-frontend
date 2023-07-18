@@ -71,7 +71,7 @@ export const BuildContextCards = () => {
       if (getCurrentPageName() == 'gpt4') {
         // No context search for GPT-4 page.
         return
-      } 
+      }
 
       console.log('From ContextCards.tsx:')
       console.log('contexts: ', contexts)
@@ -84,7 +84,6 @@ export const BuildContextCards = () => {
       })
     }
   }, [searchQuery])
-
 
   if (getCurrentPageName() == 'gpt4') {
     return null

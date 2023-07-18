@@ -138,7 +138,7 @@ const SupportedFileUploadTypes = () => {
           // style={{mixBlendMode: 'multiply' }}
         />
         <Image
-          src="/media/github_logo_darkmode.jpg"
+          src="/media/github-mark-white.png"
           width={720}
           height={100}
           quality={60}
