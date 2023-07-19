@@ -5,6 +5,7 @@ export interface Message {
   role: Role
   content: string
   contexts?: ContextWithMetadata[] // todo: make sure things works.
+  responseTimeSec?: number
 }
 
 export interface OpenAIChatMessage {
@@ -42,4 +43,5 @@ export interface Conversation {
   prompt: string
   temperature: number
   folderId: string | null
+  user_email?: string
 }

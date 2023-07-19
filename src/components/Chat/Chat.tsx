@@ -1,10 +1,10 @@
 // src/components/Chat/Chat.tsx
 import {
   IconCloudUpload,
-  IconX,
-  IconDownload,
-  IconClearAll,
-  IconSettings,
+  // IconX,
+  // IconDownload,
+  // IconClearAll,
+  // IconSettings,
 } from '@tabler/icons-react'
 import {
   type MutableRefObject,
@@ -61,14 +61,13 @@ interface Props {
 import { useRouter } from 'next/router'
 import CustomBanner from '../UIUC-Components/CustomBanner'
 import { fetchContexts } from '~/pages/api/getContexts'
+import { useUser } from '@clerk/nextjs'
+import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
 
-  // KASTAN HERE -- grabbing the latest message from selected converation
-  // const [searchQuery, setSearchQuery] = useState('')
-  // const [message, setMessage] = useState("");
-  // const { searchQuery, updateSearchQuery } = useSearchQuery();
+  const clerk_obj = useUser()
 
   // how to get the current route inside ANY component
   const router = useRouter()
@@ -122,7 +121,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const onMessageReceived = async (conversation: Conversation) => {
     // Kastan here -- Save the message to a separate database here
     try {
-      // console.log('inside logConversationToSupabase fetch()...')
       const response = await fetch(`/api/UIUC-api/logConversationToSupabase`, {
         method: 'POST',
         headers: {
@@ -140,30 +138,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       return false
     }
   }
-
-  // Add this function to handle saving the answer to a separate database
-  const onAnswerReceived = (answer: string) => {
-    // Save the answer to a separate database here
-    console.log(
-      '<><><><><><><><><><><><> Answer received and ready to be saved:',
-      answer,
-    )
-  }
-
-  // const [contexts, setContexts] = useState<ContextWithMetadata[]>([])
-
-  // todo: make async? Or do this FIRST and pass to chat.ts api?
-  // const buildContexts = (searchQuery: string) => {
-  //   console.log('From ChatMessage.tsx, about to build context cards:')
-  //   console.log('currentPageName: ', getCurrentPageName())
-  //   console.log('search_string: ', searchQuery)
-
-  //   // Fetch contexts when the searchQuery changes
-  //   fetchContexts(getCurrentPageName(), searchQuery).then((data) => {
-  //     setContexts(data)
-  //     return data as ContextWithMetadata[]
-  //   })
-  // }
 
   // THIS IS WHERE MESSAGES ARE SENT.
   const handleSend = useCallback(
@@ -200,11 +174,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
         // Run context search, attach to Message object.
         if (getCurrentPageName() != 'gpt4') {
+          // THE ONLY place we fetch contexts (except ExtremePromptStuffing is still in api/chat.ts)
           await fetchContexts(getCurrentPageName(), searchQuery).then(
             (curr_contexts) => {
               message.contexts = curr_contexts as ContextWithMetadata[]
-              // console.log("FETCHING contexts from top of Handle Send")
-              // console.log(message.contexts)
             },
           )
         }
@@ -305,6 +278,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                     return {
                       ...message,
                       content: text,
+                      // responseTimeSec: // TODO: try to track this.. mostly in ChatMessage.tsx
                     }
                   }
                   return message
@@ -321,7 +295,16 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           }
           saveConversation(updatedConversation)
           // todo: add clerk user info to onMessagereceived for logging.
-          onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
+          if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
+            console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
+            const emails = extractEmailsFromClerk(clerk_obj.user)
+            updatedConversation.user_email = emails[0]
+            onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
+          } else {
+            console.log('NOT LOADED OR SIGNED IN')
+            onMessageReceived(updatedConversation)
+          }
+
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
@@ -338,7 +321,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           homeDispatch({ field: 'messageIsStreaming', value: false })
         } else {
           const { answer } = await response.json()
-          onAnswerReceived(answer) // kastan here, trying to save message AFTER done streaming. This should save the assistant message...
           const updatedMessages: Message[] = [
             ...updatedConversation.messages,
             { role: 'assistant', content: answer, contexts: message.contexts },
@@ -352,7 +334,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             value: updatedConversation, // kastan fixed tiny bug here from original template code
           })
           saveConversation(updatedConversation)
-          onAnswerReceived(answer) // kastan here, trying to save message AFTER done streaming. This should save the assistant message...
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
