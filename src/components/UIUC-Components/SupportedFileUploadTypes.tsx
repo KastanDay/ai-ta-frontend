@@ -50,6 +50,15 @@ const useStyles = createStyles((theme) => ({
     width: '45px',
   },
 
+  codeStyledText: {
+    backgroundColor: '#020307',
+    borderRadius: '5px',
+    padding: '1px 5px',
+    fontFamily: 'monospace',
+    alignItems: 'center',
+    justifyItems: 'center',
+  },
+
   control: {
     position: 'absolute',
     width: rem(250),
@@ -140,21 +149,18 @@ const SupportedFileUploadTypes = () => {
               }}
             />
             <Text>
-              <code
-                style={{
-                  borderRadius: '5px',
-                  padding: '2px 5px',
-                  fontFamily: 'monospace',
-                  alignItems: 'center',
-                  justifyItems: 'center',
-                }}
-              >
-                .srt & .vtt
-              </code>
+              <code className={classes.codeStyledText}>.srt</code> &{' '}
+              <code className={classes.codeStyledText}>.vtt</code>
             </Text>
           </Group>
         </>
       </Flex>
+
+      <Text style={{paddingTop: '8px'}}>
+        We also support <code className={classes.codeStyledText}>.txt</code>,{' '}
+        <code className={classes.codeStyledText}>.py</code>, and{' '}
+        <code className={classes.codeStyledText}>.html</code>
+      </Text>
 
       <Text size={'lg'} p={rem(20)} className={montserrat_non_bold.className}>
         Under development...
