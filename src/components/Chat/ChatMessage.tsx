@@ -69,9 +69,13 @@ const Timer: React.FC<{ timerVisible: boolean }> = ({ timerVisible }) => {
   }, [timerVisible])
 
   return (
-    <Text fz="sm" c="dimmed" mt="sm">
-      {timer} s.
-    </Text>
+    timer > 0 ? (
+      <Text fz="sm" c="dimmed" mt="sm">
+        {timer} s.
+      </Text>
+    ) : (
+      <></>
+    )
   )
 }
 
@@ -116,24 +120,24 @@ export const ChatMessage: FC<Props> = memo(
           setTimerVisible(false)
 
           // save time to Message
-          const updatedMessages: Message[] =
-            selectedConversation?.messages.map((message, index) => {
-              if (index === messageIndex) {
-                return {
-                  ...message,
-                  responseTimeSec: Timer.timer as number, // todo: get the timer value out of that component.
-                }
-              }
-              return message
-            })
-          const updatedConversation = {
-            ...updatedConversation,
-            messages: updatedMessages,
-          }
-          homeDispatch({
-            field: 'selectedConversation',
-            value: updatedConversation,
-          })
+          // const updatedMessages: Message[] =
+          //   selectedConversation?.messages.map((message, index) => {
+          //     if (index === messageIndex) {
+          //       return {
+          //         ...message,
+          //         responseTimeSec: Timer.timer as number, // todo: get the timer value out of that component.
+          //       }
+          //     }
+          //     return message
+          //   })
+          // const updatedConversation = {
+          //   ...updatedConversation,
+          //   messages: updatedMessages,
+          // }
+          // homeDispatch({
+          //   field: 'selectedConversation',
+          //   value: updatedConversation,
+          // })
         }
       }
     }, [message.role, messageIsStreaming, messageIndex, selectedConversation])
