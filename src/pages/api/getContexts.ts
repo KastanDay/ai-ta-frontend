@@ -1,15 +1,8 @@
 import axios, { AxiosResponse } from 'axios'
+import { ContextWithMetadata } from '~/types/chat'
 
 export const config = {
   runtime: 'edge',
-}
-export interface getTopContextsResponse {
-  id: number
-  text: string
-  readable_filename: string
-  course_name: string
-  s3_path: string
-  pagenumber_or_timestamp: string
 }
 
 export const fetchContexts = async (
@@ -19,7 +12,7 @@ export const fetchContexts = async (
 ) => {
   const API_URL = 'https://flask-production-751b.up.railway.app'
   try {
-    const response: AxiosResponse<getTopContextsResponse[]> = await axios.get(
+    const response: AxiosResponse<ContextWithMetadata[]> = await axios.get(
       `${API_URL}/getTopContexts`,
       {
         params: {
@@ -56,7 +49,7 @@ export async function fetchContextsNOAXIOS(
     throw new Error('Failed to fetch contexts. Err status:' + res.status)
   }
 
-  const data: getTopContextsResponse[] = await res.json()
+  const data: ContextWithMetadata[] = await res.json()
   console.log('fetchContextsNOAXIOS things', data)
   return data
 }

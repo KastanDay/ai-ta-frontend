@@ -1,4 +1,4 @@
-import { Message } from '@/types/chat'
+import { Message, OpenAIChatMessage } from '@/types/chat'
 import { OpenAIModel } from '@/types/openai'
 
 import {
@@ -29,9 +29,6 @@ export class OpenAIError extends Error {
   }
 }
 
-// get contexts from message
-import { fetchContexts, getTopContextsResponse } from '~/pages/api/getContexts'
-
 // missing course_name...
 // got search_query... from messages
 
@@ -40,7 +37,7 @@ export const OpenAIStream = async (
   systemPrompt: string,
   temperature: number,
   key: string,
-  messages: Message[],
+  messages: OpenAIChatMessage[],
 ) => {
   let url = `${OPENAI_API_HOST}/v1/chat/completions`
   if (OPENAI_API_TYPE === 'azure') {

@@ -17,7 +17,6 @@ export const get_user_permission = (
 
     // GET ALL ASSOCIATED EMAIL ADDRESSES (could have multiple from different socials.)
     const curr_user_email_addresses = extractEmailsFromClerk(clerk_user.user)
-    console.log('curr_user_email_addresses:', curr_user_email_addresses)
 
     if (course_metadata.is_private == false) {
       // Course is public

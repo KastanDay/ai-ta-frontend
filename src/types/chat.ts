@@ -1,17 +1,24 @@
 import { OpenAIModel } from './openai'
 
-// export interface Message {
-//   role: Role;
-//   content: string;
-// }
-// '@/types/chat'
-
-// adding this for Sources
 export interface Message {
   // id: string;
   role: Role
   content: string
-  sources?: string[]
+  contexts?: ContextWithMetadata[] // todo: make sure things works.
+}
+
+export interface OpenAIChatMessage {
+  role: Role
+  content: string
+}
+
+export interface ContextWithMetadata {
+  id: number
+  text: string
+  readable_filename: string
+  course_name: string
+  s3_path: string
+  pagenumber_or_timestamp: string
 }
 
 export type Role = 'assistant' | 'user'
