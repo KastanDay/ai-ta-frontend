@@ -15,6 +15,8 @@ import EmailChipsComponent from './EmailChipsComponent'
 import { useMediaQuery } from '@mantine/hooks'
 import { Montserrat } from 'next/font/google'
 import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
+import { GetCurrentPageName } from './CanViewOnlyCourse'
+import { useRouter } from 'next/router'
 
 const montserrat = Montserrat({
   weight: '700',
@@ -52,27 +54,37 @@ const EditCourseCard = ({
     setIsCourseAvailable(!courseExists)
   }
 
+  const router = useRouter()
+  const checkIfNewCoursePage = () => {
+    // `/new` --> `new`
+    // `/new?course_name=mycourse` --> `new`
+    return router.asPath.split('/')[1]?.split('?')[0] as string
+  }
+
   useEffect(() => {
-    async function fetchGetAllCourseNames() {
-      const response = await fetch(`/api/UIUC-api/getAllCourseNames`)
+    // only run when creating new courses.. otherwise VERY wasteful on DB.
+    if (checkIfNewCoursePage() == 'new') {
+      async function fetchGetAllCourseNames() {
+        const response = await fetch(`/api/UIUC-api/getAllCourseNames`)
 
-      if (response.ok) {
-        const data = await response.json()
-        return data.all_course_names
-      } else {
-        console.error(`Error fetching course metadata: ${response.status}`)
-        return null
+        if (response.ok) {
+          const data = await response.json()
+          return data.all_course_names
+        } else {
+          console.error(`Error fetching course metadata: ${response.status}`)
+          return null
+        }
       }
-    }
 
-    fetchGetAllCourseNames()
-      .then((result) => {
-        console.log('in materials.tsx getAllCourseNames', result)
-        setAllExistingCourseNames(result)
-      })
-      .catch((error) => {
-        console.error(error)
-      })
+      fetchGetAllCourseNames()
+        .then((result) => {
+          console.log('Running getAllCourseNames()', result)
+          setAllExistingCourseNames(result)
+        })
+        .catch((error) => {
+          console.error(error)
+        })
+    }
   }, [])
 
   useEffect(() => {
