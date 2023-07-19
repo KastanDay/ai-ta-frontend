@@ -68,14 +68,12 @@ const Timer: React.FC<{ timerVisible: boolean }> = ({ timerVisible }) => {
     }
   }, [timerVisible])
 
-  return (
-    timer > 0 ? (
-      <Text fz="sm" c="dimmed" mt="sm">
-        {timer} s.
-      </Text>
-    ) : (
-      <></>
-    )
+  return timer > 0 ? (
+    <Text fz="sm" c="dimmed" mt="sm">
+      {timer} s.
+    </Text>
+  ) : (
+    <></>
   )
 }
 
