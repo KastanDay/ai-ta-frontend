@@ -114,6 +114,26 @@ export const ChatMessage: FC<Props> = memo(
           setTimerVisible(true)
         } else {
           setTimerVisible(false)
+
+          // save time to Message
+          const updatedMessages: Message[] =
+            selectedConversation?.messages.map((message, index) => {
+              if (index === messageIndex) {
+                return {
+                  ...message,
+                  responseTimeSec: Timer.timer as number, // todo: get the timer value out of that component.
+                }
+              }
+              return message
+            })
+          const updatedConversation = {
+            ...updatedConversation,
+            messages: updatedMessages,
+          }
+          homeDispatch({
+            field: 'selectedConversation',
+            value: updatedConversation,
+          })
         }
       }
     }, [message.role, messageIsStreaming, messageIndex, selectedConversation])
