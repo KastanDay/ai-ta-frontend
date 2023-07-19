@@ -15,6 +15,7 @@ import {
   Title,
   Flex,
   createStyles,
+  Group,
   // Card,
   // Badge,
   // MantineProvider,
@@ -39,7 +40,7 @@ const useStyles = createStyles((theme) => ({
     // width: '30%',
     aspectRatio: '3/2',
     objectFit: 'contain',
-    width: '100px',
+    width: '60px',
   },
 
   smallLogos: {
@@ -69,12 +70,11 @@ const SupportedFileUploadTypes = () => {
         gradient={{ from: 'gold', to: 'white', deg: 50 }}
         order={4}
         p="xl"
-        // style={{ marginTop: '1rem' }}
       >
         Supported File Types
       </Title>
 
-      <Flex className="space-x-10">
+      <Flex className="space-x-4">
         <Image
           src="/media/pdf_logo.png"
           width={720}
@@ -82,11 +82,12 @@ const SupportedFileUploadTypes = () => {
           quality={60}
           alt="PDF icon"
           className={classes.logos}
+          // className="logos w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 object-contain"
         />
         <Image
           src="/media/word_logo.png"
-          width={720}
-          height={100}
+          width={2000}
+          height={2000}
           quality={60}
           alt="Word logo"
           className={classes.logos}
@@ -99,6 +100,60 @@ const SupportedFileUploadTypes = () => {
           alt="Powerpoint logo"
           className={classes.logos}
         />
+        <Image
+          src="/media/video_logo.png"
+          width={720}
+          height={100}
+          quality={60}
+          alt="Generic video icon"
+          className={classes.logos}
+        />
+        <Image
+          src="/media/audio_logo.png"
+          width={720}
+          height={100}
+          quality={60}
+          alt="Generic audio icon"
+          className={classes.logos}
+        />
+        <>
+          <Group
+            style={{
+              justifyContent: 'center',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            <Image
+              src="/media/cc_logo.jpg"
+              width={720}
+              height={100}
+              quality={60}
+              alt="Generic audio icon"
+              // className={classes.logos}
+              style={{
+                // aspectRatio: '6/2',
+                objectFit: 'contain',
+                width: '55px',
+                alignItems: 'center',
+                justifyItems: 'center',
+              }}
+            />
+            <Text>
+              <code
+                style={{
+                  borderRadius: '5px',
+                  padding: '2px 5px',
+                  fontFamily: 'monospace',
+                  alignItems: 'center',
+                  justifyItems: 'center',
+                }}
+              >
+                .srt & .vtt
+              </code>
+            </Text>
+          </Group>
+        </>
       </Flex>
 
       <Text size={'lg'} p={rem(20)} className={montserrat_non_bold.className}>
@@ -106,22 +161,6 @@ const SupportedFileUploadTypes = () => {
       </Text>
 
       <Flex className="space-x-5">
-        <Image
-          src="/media/video_logo.png"
-          width={720}
-          height={100}
-          quality={60}
-          alt="Generic video icon"
-          className={classes.smallLogos}
-        />
-        <Image
-          src="/media/audio_logo.png"
-          width={720}
-          height={100}
-          quality={60}
-          alt="Generic audio logo"
-          className={classes.smallLogos}
-        />
         <IconWorldDownload
           className={classes.smallLogos}
           stroke={rem(1.25)}
