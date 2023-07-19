@@ -27,7 +27,12 @@ import {
 } from '@/utils/app/conversation'
 import { throttle } from '@/utils/data/throttle'
 
-import { type ChatBody, type Conversation, type Message } from '@/types/chat'
+import {
+  ContextWithMetadata,
+  type ChatBody,
+  type Conversation,
+  type Message,
+} from '@/types/chat'
 import { type Plugin } from '@/types/plugin'
 
 import HomeContext from '~/pages/api/home/home.context'
@@ -44,7 +49,7 @@ import { ModelParams } from './ModelParams'
 import { fetchPresignedUrl } from '~/components/UIUC-Components/ContextCards'
 
 // import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
-import SearchQuery from '~/components/UIUC-Components/StatefulSearchQuery'
+// import SearchQuery from '~/components/UIUC-Components/StatefulSearchQuery'
 import { type CourseMetadata } from '~/types/courseMetadata'
 // import { logConvoToSupabase } from '~/pages/api/UIUC-api/logConversationToSupabase'
 
@@ -55,12 +60,13 @@ interface Props {
 
 import { useRouter } from 'next/router'
 import CustomBanner from '../UIUC-Components/CustomBanner'
+import { fetchContexts } from '~/pages/api/getContexts'
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
 
   // KASTAN HERE -- grabbing the latest message from selected converation
-  const [searchQuery, setSearchQuery] = useState('')
+  // const [searchQuery, setSearchQuery] = useState('')
   // const [message, setMessage] = useState("");
   // const { searchQuery, updateSearchQuery } = useSearchQuery();
 
@@ -69,7 +75,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
   const getCurrentPageName = () => {
     // /CS-125/materials --> CS-125
-    return router.asPath.slice(1).split('/')[0]
+    return router.asPath.slice(1).split('/')[0] as string
   }
 
   const redirectToMaterialsPage = () => {
@@ -116,14 +122,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const onMessageReceived = async (conversation: Conversation) => {
     // Kastan here -- Save the message to a separate database here
     try {
-      console.log('inside logConversationToSupabase fetch()...')
+      // console.log('inside logConversationToSupabase fetch()...')
       const response = await fetch(`/api/UIUC-api/logConversationToSupabase`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          course_name: getCurrentPageName() || NaN,
+          course_name: getCurrentPageName(),
           conversation: conversation,
         }),
       })
@@ -144,12 +150,29 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     )
   }
 
+  // const [contexts, setContexts] = useState<ContextWithMetadata[]>([])
+
+  // todo: make async? Or do this FIRST and pass to chat.ts api?
+  // const buildContexts = (searchQuery: string) => {
+  //   console.log('From ChatMessage.tsx, about to build context cards:')
+  //   console.log('currentPageName: ', getCurrentPageName())
+  //   console.log('search_string: ', searchQuery)
+
+  //   // Fetch contexts when the searchQuery changes
+  //   fetchContexts(getCurrentPageName(), searchQuery).then((data) => {
+  //     setContexts(data)
+  //     return data as ContextWithMetadata[]
+  //   })
+  // }
+
   // THIS IS WHERE MESSAGES ARE SENT.
   const handleSend = useCallback(
     async (message: Message, deleteCount = 0, plugin: Plugin | null = null) => {
       // New way with React Context API
-      console.log('IN handleSend: ', message)
-      setSearchQuery(message.content)
+      // TODO: MOVE THIS INTO ChatMessage
+      // console.log('IN handleSend: ', message)
+      // setSearchQuery(message.content)
+      const searchQuery = message.content
 
       if (selectedConversation) {
         let updatedConversation: Conversation
@@ -174,16 +197,27 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         })
         homeDispatch({ field: 'loading', value: true })
         homeDispatch({ field: 'messageIsStreaming', value: true })
+
+        // Run context search, attach to Message object.
+        if (getCurrentPageName() != 'gpt4') {
+          await fetchContexts(getCurrentPageName(), searchQuery).then(
+            (curr_contexts) => {
+              message.contexts = curr_contexts as ContextWithMetadata[]
+              // console.log("FETCHING contexts from top of Handle Send")
+              // console.log(message.contexts)
+            },
+          )
+        }
+
         const chatBody: ChatBody = {
           model: updatedConversation.model,
           messages: updatedConversation.messages,
           key: apiKey,
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
-          course_name: getCurrentPageName() || '',
-          // context_text: GetContextText(),
+          course_name: getCurrentPageName(),
         }
-        const endpoint = getEndpoint(plugin)
+        const endpoint = getEndpoint(plugin) // THIS is where we could support EXTREME prompt stuffing.
         let body
         if (!plugin) {
           body = JSON.stringify(chatBody)
@@ -246,10 +280,15 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             const chunkValue = decoder.decode(value)
             text += chunkValue
             if (isFirst) {
+              // isFirst refers to the first chunk of data received from the API (happens once for each new message from API)
               isFirst = false
               const updatedMessages: Message[] = [
                 ...updatedConversation.messages,
-                { role: 'assistant', content: chunkValue },
+                {
+                  role: 'assistant',
+                  content: chunkValue,
+                  contexts: message.contexts,
+                },
               ]
               updatedConversation = {
                 ...updatedConversation,
@@ -281,7 +320,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             }
           }
           saveConversation(updatedConversation)
-          console.log('updatedConversation: ', updatedConversation)
+          // todo: add clerk user info to onMessagereceived for logging.
           onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
@@ -302,7 +341,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           onAnswerReceived(answer) // kastan here, trying to save message AFTER done streaming. This should save the assistant message...
           const updatedMessages: Message[] = [
             ...updatedConversation.messages,
-            { role: 'assistant', content: answer },
+            { role: 'assistant', content: answer, contexts: message.contexts },
           ]
           updatedConversation = {
             ...updatedConversation,
@@ -461,108 +500,105 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   return (
-    <SearchQuery.Provider value={{ searchQuery, setSearchQuery }}>
-      <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#343541]">
-        {!(apiKey || serverSideApiKeyIsSet) ? (
-          <div className="mx-auto flex h-full w-[300px] flex-col justify-center space-y-6 sm:w-[600px]">
-            <div className="text-center text-4xl font-bold text-black dark:text-white">
-              Welcome to Chatbot UI
-            </div>
-            <div className="text-center text-lg text-black dark:text-white">
-              <div className="mb-8">{`Chatbot UI is an open source clone of OpenAI's ChatGPT UI.`}</div>
-              <div className="mb-2 font-bold">
-                Important: Chatbot UI is 100% unaffiliated with OpenAI.
-              </div>
-            </div>
-            <div className="text-center text-gray-500 dark:text-gray-400">
-              <div className="mb-2">
-                Chatbot UI allows you to plug in your API key to use this UI
-                with their API.
-              </div>
-              <div className="mb-2">
-                It is <span className="italic">only</span> used to communicate
-                with their API.
-              </div>
-              <div className="mb-2">
-                {t(
-                  'Please set your OpenAI API key in the bottom left of the sidebar.',
-                )}
-              </div>
-              <div>
-                {t(
-                  "If you don't have an OpenAI API key, you can get one here: ",
-                )}
-                <a
-                  href="https://platform.openai.com/account/api-keys"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-blue-500 hover:underline"
-                >
-                  openai.com
-                </a>
-              </div>
+    <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#343541]">
+      {!(apiKey || serverSideApiKeyIsSet) ? (
+        <div className="mx-auto flex h-full w-[300px] flex-col justify-center space-y-6 sm:w-[600px]">
+          <div className="text-center text-4xl font-bold text-black dark:text-white">
+            Welcome to Chatbot UI
+          </div>
+          <div className="text-center text-lg text-black dark:text-white">
+            <div className="mb-8">{`Chatbot UI is an open source clone of OpenAI's ChatGPT UI.`}</div>
+            <div className="mb-2 font-bold">
+              Important: Chatbot UI is 100% unaffiliated with OpenAI.
             </div>
           </div>
-        ) : modelError ? (
-          <ErrorMessageDiv error={modelError} />
-        ) : (
-          <>
-            <div
-              className="max-h-full overflow-x-hidden"
-              ref={chatContainerRef}
-              onScroll={handleScroll}
-            >
-              {selectedConversation?.messages.length === 0 ? (
-                <>
-                  {/* <CustomBanner bannerUrl={bannerUrl as string} /> Banner on fresh chat page */}
-                  {bannerUrl && (
-                    <div style={{ width: '100%' }}>
-                      <img
-                        src={bannerUrl}
-                        alt="Banner"
-                        style={{ width: '100%' }}
+          <div className="text-center text-gray-500 dark:text-gray-400">
+            <div className="mb-2">
+              Chatbot UI allows you to plug in your API key to use this UI with
+              their API.
+            </div>
+            <div className="mb-2">
+              It is <span className="italic">only</span> used to communicate
+              with their API.
+            </div>
+            <div className="mb-2">
+              {t(
+                'Please set your OpenAI API key in the bottom left of the sidebar.',
+              )}
+            </div>
+            <div>
+              {t("If you don't have an OpenAI API key, you can get one here: ")}
+              <a
+                href="https://platform.openai.com/account/api-keys"
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-500 hover:underline"
+              >
+                openai.com
+              </a>
+            </div>
+          </div>
+        </div>
+      ) : modelError ? (
+        <ErrorMessageDiv error={modelError} />
+      ) : (
+        <>
+          <div
+            className="max-h-full overflow-x-hidden"
+            ref={chatContainerRef}
+            onScroll={handleScroll}
+          >
+            {selectedConversation?.messages.length === 0 ? (
+              <>
+                {/* <CustomBanner bannerUrl={bannerUrl as string} /> Banner on fresh chat page */}
+                {bannerUrl && (
+                  <div style={{ width: '100%' }}>
+                    <img
+                      src={bannerUrl}
+                      alt="Banner"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                )}
+                <div className="mx-auto flex flex-col space-y-5 px-3 pt-5 sm:max-w-[600px] md:space-y-10 md:pt-12">
+                  <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
+                    {models.length === 0 ? (
+                      <div>
+                        <Spinner size="16px" className="mx-auto" />
+                      </div>
+                    ) : (
+                      'UIUC Course AI'
+                    )}
+                  </div>
+
+                  {models.length > 0 && (
+                    <div className="flex h-full flex-col space-y-4 rounded-3xl p-4 focus:border-t-info/100 dark:border-neutral-600">
+                      <ModelParams
+                        selectedConversation={selectedConversation}
+                        prompts={prompts}
+                        handleUpdateConversation={handleUpdateConversation}
+                        t={t}
                       />
                     </div>
                   )}
-                  <div className="mx-auto flex flex-col space-y-5 px-3 pt-5 sm:max-w-[600px] md:space-y-10 md:pt-12">
-                    <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
-                      {models.length === 0 ? (
-                        <div>
-                          <Spinner size="16px" className="mx-auto" />
-                        </div>
-                      ) : (
-                        'UIUC Course AI'
-                      )}
-                    </div>
-
-                    {models.length > 0 && (
-                      <div className="flex h-full flex-col space-y-4 rounded-3xl p-4 focus:border-t-info/100 dark:border-neutral-600">
-                        <ModelParams
-                          selectedConversation={selectedConversation}
-                          prompts={prompts}
-                          handleUpdateConversation={handleUpdateConversation}
-                          t={t}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-16">{renderDividers()}</div>
-                </>
-              ) : (
-                <>
-                  <div className="sticky top-0 z-10 flex w-full flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                    {/* {bannerUrl && (
+                </div>
+                <div className="mt-16">{renderDividers()}</div>
+              </>
+            ) : (
+              <>
+                <div className="sticky top-0 z-10 flex w-full flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
+                  {/* {bannerUrl && (
                         <div style={{ height: '8vh' , width:'100%'}}>
                           <img src={bannerUrl} alt="Banner" style={{ width: '100%'}}/>
                         </div>
                     )} */}
-                    <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                      {t('Model')}: {selectedConversation?.model.name}
-                      &nbsp;&nbsp;|&nbsp;&nbsp;
-                      {t('Temp')}: {selectedConversation?.temperature}
-                      &nbsp;&nbsp;|&nbsp;&nbsp;
-                      {/* BUTTONS for (1) Chaning Models, and (2) clearing current conversation. */}
-                      {/* <button
+                  <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
+                    {t('Model')}: {selectedConversation?.model.name}
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    {t('Temp')}: {selectedConversation?.temperature}
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    {/* BUTTONS for (1) Chaning Models, and (2) clearing current conversation. */}
+                    {/* <button
                         className="ml-2 cursor-pointer hover:opacity-50"
                         onClick={handleSettings}
                       >
@@ -575,79 +611,78 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                         <IconClearAll size={18} />
                       </button>
                       &nbsp;&nbsp;&nbsp;| */}
-                      {/* <span className="w-3" /> */}
-                      <button
-                        className="ml-2 cursor-pointer hover:opacity-50"
-                        onClick={redirectToMaterialsPage}
-                      >
-                        <div className="flex items-center">
-                          <span>
-                            <Text
-                              variant="gradient"
-                              weight={600}
-                              gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                            >
-                              Upload materials
-                            </Text>
-                          </span>
-                          &nbsp;&nbsp;
-                          <IconCloudUpload size={18} />
-                        </div>
-                      </button>
+                    {/* <span className="w-3" /> */}
+                    <button
+                      className="ml-2 cursor-pointer hover:opacity-50"
+                      onClick={redirectToMaterialsPage}
+                    >
+                      <div className="flex items-center">
+                        <span>
+                          <Text
+                            variant="gradient"
+                            weight={600}
+                            gradient={{ from: 'gold', to: 'white', deg: 50 }}
+                          >
+                            Upload materials
+                          </Text>
+                        </span>
+                        &nbsp;&nbsp;
+                        <IconCloudUpload size={18} />
+                      </div>
+                    </button>
+                  </div>
+                </div>
+                {showSettings && (
+                  <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
+                    <div className="flex h-full flex-col space-y-4 border-b border-neutral-200 p-4 dark:border-neutral-600 md:rounded-lg md:border">
+                      <ModelSelect />
                     </div>
                   </div>
-                  {showSettings && (
-                    <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
-                      <div className="flex h-full flex-col space-y-4 border-b border-neutral-200 p-4 dark:border-neutral-600 md:rounded-lg md:border">
-                        <ModelSelect />
-                      </div>
-                    </div>
-                  )}
-                  <CustomBanner bannerUrl={bannerUrl as string} />{' '}
-                  {/* Banner on "chat with messages" page (not fresh chat) */}
-                  {selectedConversation?.messages.map((message, index) => (
-                    <MemoizedChatMessage
-                      key={index}
-                      message={message}
-                      messageIndex={index}
-                      onEdit={(editedMessage) => {
-                        setCurrentMessage(editedMessage)
-                        // discard edited message and the ones that come after then resend
-                        handleSend(
-                          editedMessage,
-                          selectedConversation?.messages.length - index,
-                        )
-                      }}
-                    />
-                  ))}
-                  {loading && <ChatLoader />}
-                  <div
-                    className="h-[162px] bg-white dark:bg-[#343541]"
-                    ref={messagesEndRef}
+                )}
+                <CustomBanner bannerUrl={bannerUrl as string} />{' '}
+                {/* Banner on "chat with messages" page (not fresh chat) */}
+                {selectedConversation?.messages.map((message, index) => (
+                  <MemoizedChatMessage
+                    key={index}
+                    message={message}
+                    messageIndex={index}
+                    onEdit={(editedMessage) => {
+                      setCurrentMessage(editedMessage)
+                      // discard edited message and the ones that come after then resend
+                      handleSend(
+                        editedMessage,
+                        selectedConversation?.messages.length - index,
+                      )
+                    }}
                   />
-                </>
-              )}
-            </div>
+                ))}
+                {loading && <ChatLoader />}
+                <div
+                  className="h-[162px] bg-white dark:bg-[#343541]"
+                  ref={messagesEndRef}
+                />
+              </>
+            )}
+          </div>
 
-            <ChatInput
-              stopConversationRef={stopConversationRef}
-              textareaRef={textareaRef}
-              onSend={(message, plugin) => {
-                setCurrentMessage(message)
-                handleSend(message, 0, plugin)
-              }}
-              onScrollDownClick={handleScrollDown}
-              onRegenerate={() => {
-                if (currentMessage) {
-                  handleSend(currentMessage, 2, null)
-                }
-              }}
-              showScrollDownButton={showScrollDownButton}
-            />
-          </>
-        )}
-      </div>
-    </SearchQuery.Provider>
+          <ChatInput
+            stopConversationRef={stopConversationRef}
+            textareaRef={textareaRef}
+            onSend={(message, plugin) => {
+              setCurrentMessage(message)
+              handleSend(message, 0, plugin)
+            }}
+            onScrollDownClick={handleScrollDown}
+            onRegenerate={() => {
+              if (currentMessage) {
+                handleSend(currentMessage, 2, null)
+              }
+            }}
+            showScrollDownButton={showScrollDownButton}
+          />
+        </>
+      )}
+    </div>
   )
 })
 Chat.displayName = 'Chat'

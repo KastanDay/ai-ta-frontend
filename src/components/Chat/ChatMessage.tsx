@@ -1,12 +1,13 @@
+// ChatMessage.tsx
 import {
-  Card,
-  Image,
   Text,
-  MantineProvider,
-  Button,
   Group,
-  Stack,
-  Divider,
+  // Card,
+  // Image,
+  // MantineProvider,
+  // Button,
+  // Stack,
+  // Divider,
 } from '@mantine/core'
 import {
   IconCheck,
@@ -19,13 +20,11 @@ import {
 import { FC, memo, useContext, useEffect, useRef, useState } from 'react'
 
 // Google font usage: className={montserrat.className}
-import { Montserrat } from 'next/font/google'
-// Rubik_Puddles, Audiowide, Inter,
-
-const montserrat = Montserrat({
-  weight: '600',
-  subsets: ['latin'],
-})
+// import { Montserrat } from 'next/font/google'
+// const montserrat = Montserrat({
+//   weight: '600',
+//   subsets: ['latin'],
+// })
 
 // const rubik_puddles = Rubik_Puddles({
 //   weight: '400',
@@ -33,13 +32,9 @@ const montserrat = Montserrat({
 // });
 
 import { useTranslation } from 'next-i18next'
-
 import { updateConversation } from '@/utils/app/conversation'
-
-import { Message } from '@/types/chat'
-
+import { ContextWithMetadata, Message } from '@/types/chat'
 import HomeContext from '~/pages/api/home/home.context'
-
 import { CodeBlock } from '../Markdown/CodeBlock'
 import { MemoizedReactMarkdown } from '../Markdown/MemoizedReactMarkdown'
 
@@ -48,10 +43,12 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
 // Kastan
-import { BuildContextCards } from '~/components/UIUC-Components/ContextCards'
+import { ContextCards } from '~/components/UIUC-Components/ContextCards'
 
+// import SciteBadge from '../UIUC-Components/SciteBadge'
 import { useRouter } from 'next/router'
-import SciteBadge from '../UIUC-Components/SciteBadge'
+// import { fetchContexts, ContextWithMetadata } from '~/pages/api/getContexts'
+
 // Component that's the Timer for GPT's response duration.
 const Timer: React.FC<{ timerVisible: boolean }> = ({ timerVisible }) => {
   const [timer, setTimer] = useState(0)
@@ -82,18 +79,12 @@ export interface Props {
   message: Message
   messageIndex: number
   onEdit?: (editedMessage: Message) => void
-  sources?: string[] // Add this line
+  context?: ContextWithMetadata[]
 }
 
-// export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) => {
 export const ChatMessage: FC<Props> = memo(
-  ({ message, messageIndex, onEdit, sources }) => {
+  ({ message, messageIndex, onEdit }) => {
     const { t } = useTranslation('chat')
-
-    const GetCurrentPageName = () => {
-      // /CS-125/materials --> CS-125
-      return useRouter().asPath.slice(1).split('/')[0]
-    }
 
     const {
       state: {
@@ -199,6 +190,14 @@ export const ChatMessage: FC<Props> = memo(
 
     useEffect(() => {
       setMessageContent(message.content)
+
+      // RIGHT HERE, run context search.
+
+      // WARNING! Kastan trying to set message context.
+      // console.log('IN handleSend: ', message)
+      // if (message.role === 'user') {
+      //   buildContexts(message.content)
+      // }
     }, [message.content])
 
     useEffect(() => {
@@ -364,9 +363,11 @@ export const ChatMessage: FC<Props> = memo(
                         : ''
                     }`}
                   </MemoizedReactMarkdown>
-                  <Group variant="row" spacing="xs">
-                    <BuildContextCards />
-                  </Group>
+                  {message.contexts && message.contexts.length > 0 && (
+                    <Group variant="row" spacing="xs">
+                      <ContextCards contexts={message.contexts} />
+                    </Group>
+                  )}
                 </div>
 
                 <div className="ml-1 flex flex-col items-center justify-end gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-start md:gap-1">

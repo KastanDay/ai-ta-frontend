@@ -98,24 +98,14 @@ const Home = ({
   useEffect(() => {
     if (clerk_user_outer.isLoaded) {
       if (course_metadata != null) {
-        console.log(
-          'in api/home.tsx -- Calling get_user_permission... course_metadata: ',
-          course_metadata,
-        )
         const permission_str = get_user_permission(
           course_metadata,
           clerk_user_outer,
           router,
         )
 
-        console.log('in api/home.tsx -- permission_str', permission_str)
-
         if (permission_str == 'edit' || permission_str == 'view') {
           // ✅ AUTHED
-          console.log(
-            'in api/home.tsx - Course exists & user is properly authed, redirecting to gpt4 page',
-          )
-          // router.push(`/${course_name}/gpt4`)
         } else {
           // 🚫 NOT AUTHED
           router.push(`/${course_name}/not_authorized`)
@@ -128,30 +118,6 @@ const Home = ({
     }
   }, [clerk_user_outer.isLoaded])
   // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
-
-  // useEffect(() => {
-  //   if (!clerk_obj.isLoaded) return
-
-  //   if (course_metadata == null) {
-  //     // Course doesn't exist, make new
-  //     router.push(`/${course_name}/materials`)
-  //     // return {
-  //     // redirect: {
-  //     //   destination: `/${course_name}/materials`,
-  //     //   permanent: false,
-  //     // },
-
-  //     // };
-  //   } else {
-  //     // Course exists, check if user is authenticated
-  //     const permission_str = get_user_permission(
-  //       course_metadata,
-  //       clerk_obj,
-  //       router,
-  //     )
-  //     console.log('Permission str: ', permission_str)
-  //   }
-  // }, [clerk_obj.isLoaded])
 
   const [data, setData] = useState(null) // using the original version.
   const [error, setError] = useState<unknown>(null) // Update the type of the error state variable

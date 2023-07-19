@@ -1,13 +1,19 @@
 // src/pages/api/chat.ts
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const'
 import { OpenAIError, OpenAIStream } from '@/utils/server'
-import { ChatBody, Message } from '@/types/chat'
+import {
+  ChatBody,
+  ContextWithMetadata,
+  Message,
+  OpenAIChatMessage,
+} from '@/types/chat'
 // @ts-expect-error - no types
 import wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module'
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 import { fetchContextsNOAXIOS } from '~/pages/api/getContexts'
 import { getExtremePrompt } from './getExtremePrompt'
+import { Context } from 'react-markdown/lib/ast-to-react'
 
 // TODO: maybe this is why searchQuery is running so many times?
 // import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
@@ -38,18 +44,18 @@ const handler = async (req: Request): Promise<Response> => {
       temperatureToUse = DEFAULT_TEMPERATURE
     }
 
-    // ! A BUNCH OF CRAP TO DO PROMPT STUFFING WITH CONTEXTS
+    // ! PROMPT STUFFING
     // TODO -- move this semewhere else, and run it before we trim the context limit
     const search_query = messages[messages.length - 1]?.content as string // most recent message
-
-    console.log('...................... COURSE NAME', course_name)
+    const contexts_arr = messages[messages.length - 1]
+      ?.contexts as ContextWithMetadata[]
 
     if (course_name == 'extreme' || course_name == 'zotero-extreme') {
       console.log('CONTEXT STUFFING FOR /extreme and /zotero-extreme slugs')
       promptToSend = await getExtremePrompt(course_name, search_query).catch(
         (err) => {
           console.log(
-            'ERROR IN FETCH CONTEXT CALL, defaulting to NO SPECIAL PROMPT',
+            'ERROR IN FETCH CONTEXT CALL for EXTREME prompt stuffing, defaulting to NO PROMPT STUFFING :( SAD!',
             err,
           )
           return search_query
@@ -63,24 +69,13 @@ const handler = async (req: Request): Promise<Response> => {
     // todo
     // }
     else {
-      const context_text = await fetchContextsNOAXIOS(course_name, search_query)
-        .then((context_arr) => {
-          const separator = '--------------------------' // between each context
-          const all_texts = context_arr
-            .map(
-              (context) =>
-                `Document: ${context.readable_filename}, page number (if exists): ${context.pagenumber_or_timestamp}\n${context.text}\n`,
-            )
-            .join(separator + '\n')
-          return all_texts
-        })
-        .catch((err) => {
-          console.log(
-            'ERROR IN FETCH CONTEXT CALL, defaulting to NO SPECIAL PROMPT',
-            err,
-          )
-          return search_query
-        })
+      const separator = '--------------------------' // between each context
+      const context_text = contexts_arr
+        .map(
+          (context) =>
+            `Document: ${context.readable_filename}, page number (if exists): ${context.pagenumber_or_timestamp}\n${context.text}\n`,
+        )
+        .join(separator + '\n')
 
       const stuffedPrompt =
         "Please answer the following question. Use the context below, called 'your documents,' only if it's helpful and don't use parts that are very irrelevant. It's good to quote 'your documents' directly, something like 'from ABS source it says XYZ' Feel free to say you don't know. \nHere's a few passages of the high quality 'your documents':\n" +
@@ -88,9 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
         '\n\nNow please respond to my query: ' +
         search_query
 
-      if (messages && messages.length > 0 && messages[messages.length - 1]) {
-        messages[messages.length - 1]!.content = stuffedPrompt || ''
-      }
+      messages[messages.length - 1]!.content = stuffedPrompt as string
 
       console.log('......................')
       console.log('Stuffed prompt', stuffedPrompt)
@@ -101,7 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
     const prompt_tokens = encoding.encode(promptToSend)
 
     let tokenCount = prompt_tokens.length
-    let messagesToSend: Message[] = []
+    let messagesToSend: OpenAIChatMessage[] = []
 
     for (let i = messages.length - 1; i >= 0; i--) {
       const message = messages[i]
@@ -112,7 +105,10 @@ const handler = async (req: Request): Promise<Response> => {
           break
         }
         tokenCount += tokens.length
-        messagesToSend = [message, ...messagesToSend]
+        messagesToSend = [
+          { role: message.role, content: message.content },
+          ...messagesToSend,
+        ]
       }
     }
 
@@ -125,7 +121,10 @@ const handler = async (req: Request): Promise<Response> => {
           break
         }
         tokenCount += tokens.length
-        messagesToSend = [message, ...messagesToSend]
+        messagesToSend = [
+          { role: message.role, content: message.content },
+          ...messagesToSend,
+        ]
       }
     }
     encoding.free() // keep this, idk what it does
@@ -137,8 +136,16 @@ const handler = async (req: Request): Promise<Response> => {
       key,
       messagesToSend,
     )
+    // let response = new Response(stream)
+    // let newResponse = new Response(stream, {
+    //   headers: {
+    //     'X-Contexts': messages[messages.length - 1]!.contexts as ContextWithMetadata[]
+    //   }
+    // });
+    // response.extraData = { contexts: messages[messages.length - 1]!.contexts }
 
     return new Response(stream)
+    // return { response: new Response(stream), context_arr };
   } catch (error) {
     console.error(error)
     if (error instanceof OpenAIError) {

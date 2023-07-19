@@ -358,8 +358,14 @@ const PrivateOrPublicCourse = ({
     course_name: string,
   ) => {
     try {
-      const { is_private, course_owner, course_admins, approved_emails_list , course_intro_message, banner_image_s3 } =
-        courseMetadata
+      const {
+        is_private,
+        course_owner,
+        course_admins,
+        approved_emails_list,
+        course_intro_message,
+        banner_image_s3,
+      } = courseMetadata
 
       console.log(
         'IN callSetCourseMetadata in MakeNewCoursePage: ',
@@ -374,7 +380,10 @@ const PrivateOrPublicCourse = ({
       url.searchParams.append('is_private', String(is_private))
       url.searchParams.append('course_name', course_name)
       url.searchParams.append('course_owner', course_owner)
-      url.searchParams.append('course_intro_message', course_intro_message || '')
+      url.searchParams.append(
+        'course_intro_message',
+        course_intro_message || '',
+      )
       url.searchParams.append('banner_image_s3', banner_image_s3 || '')
       url.searchParams.append('course_admins', JSON.stringify(course_admins))
       url.searchParams.append(

@@ -17,17 +17,11 @@ import {
 } from '@mantine/core'
 
 import React, { useState, useEffect } from 'react'
-import {
-  fetchContexts,
-  type getTopContextsResponse,
-} from '~/pages/api/getContexts'
 import Link from 'next/link'
 import axios from 'axios'
+import { ContextWithMetadata } from '~/types/chat'
 // import SciteBadge from './SciteBadge'
-import { useRouter } from 'next/router'
 
-// My way to manage content
-import { useChatContext } from './StatefulSearchQuery'
 // import { IconExternalLink } from '@tabler/icons-react'
 
 export async function fetchPresignedUrl(filePath: string) {
@@ -42,51 +36,14 @@ export async function fetchPresignedUrl(filePath: string) {
   }
 }
 
-// Set "search query" for Qdrant from user's message (in chat.ts)
-export const useSearchQuery = () => {
-  const [searchQuery, setSearchQuery] = useState<string>('kastan')
-
-  const updateSearchQuery = (newSearchQuery: string) => {
-    setSearchQuery(newSearchQuery)
-  }
-
-  return { searchQuery, updateSearchQuery }
-}
-
-export const BuildContextCards = () => {
-  const [contexts, setContexts] = useState<getTopContextsResponse[]>()
-  // const { searchQuery, updateSearchQuery } = useSearchQuery();
-
-  // how to get the current route inside ANY component
-  const router = useRouter()
-  const getCurrentPageName = (): string => {
-    // /CS-125/materials --> CS-125
-    return router.asPath.slice(1).split('/')[0] || 'DEFAULTPAGE' // Kastan as default
-  }
-
-  // My new way to share state with React's Context API
-  const { searchQuery } = useChatContext()
-  useEffect(() => {
-    if (searchQuery) {
-      if (getCurrentPageName() == 'gpt4') {
-        // No context search for GPT-4 page.
-        return
-      }
-
-      console.log('From ContextCards.tsx:')
-      console.log('contexts: ', contexts)
-      console.log('currentPageName: ', getCurrentPageName())
-      console.log('searchQuery: ', searchQuery)
-
-      // Fetch contexts when the searchQuery changes
-      fetchContexts(getCurrentPageName(), searchQuery).then((data) => {
-        setContexts(data)
-      })
-    }
-  }, [searchQuery])
-
-  if (getCurrentPageName() == 'gpt4') {
-    return null
+export const ContextCards = ({
+  contexts,
+}: {
+  contexts: ContextWithMetadata[]
+}) => {
+  if (!Array.isArray(contexts)) {
+    console.error('contexts is not an array:', contexts)
+    return null // or return a loading state or error state
   }
 
   return (
@@ -96,7 +53,7 @@ export const BuildContextCards = () => {
           {/* <Divider my="sm" variant="solid" /> */}
           {/* <h4 className="font-bold">Sources from the course</h4> */}
           <Group variant="row" spacing="xs">
-            {contexts.map((context: getTopContextsResponse, index: number) => (
+            {contexts.map((context: ContextWithMetadata, index: number) => (
               <DynamicMaterialsCard
                 key={context.id || index}
                 id={context.id || index} // Add fallback key using index. Not sure why we need a key and an ID.... bad code.
@@ -147,7 +104,7 @@ function DynamicMaterialsCard({
   course_name,
   s3_path,
   pagenumber_or_timestamp,
-}: getTopContextsResponse) {
+}: ContextWithMetadata) {
   const [presignedUrl, setPresignedUrl] = useState<string | null>(null)
   const [presignedUrlPng, setPresignedUrlPng] = useState<string | null>(null)
 
