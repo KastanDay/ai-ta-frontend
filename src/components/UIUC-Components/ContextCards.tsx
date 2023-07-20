@@ -50,20 +50,20 @@ export const ContextCards = ({
     <>
       {contexts ? (
         <>
-          {/* <Divider my="sm" variant="solid" /> */}
-          {/* <h4 className="font-bold">Sources from the course</h4> */}
           <Group variant="row" spacing="xs">
-            {contexts.map((context: ContextWithMetadata, index: number) => (
-              <DynamicMaterialsCard
-                key={context.id || index}
-                id={context.id || index} // Add fallback key using index. Not sure why we need a key and an ID.... bad code.
-                text={context.text}
-                readable_filename={context.readable_filename}
-                pagenumber_or_timestamp={context.pagenumber_or_timestamp}
-                s3_path={context.s3_path}
-                course_name={context.course_name}
-              />
-            ))}
+            {contexts
+              .slice(0, 4) // only show first 4 cards
+              .map((context: ContextWithMetadata, index: number) => (
+                <DynamicMaterialsCard
+                  key={context.id || index}
+                  id={context.id || index}
+                  text={context.text}
+                  readable_filename={context.readable_filename}
+                  pagenumber_or_timestamp={context.pagenumber_or_timestamp}
+                  s3_path={context.s3_path}
+                  course_name={context.course_name}
+                />
+              ))}
           </Group>
         </>
       ) : (
