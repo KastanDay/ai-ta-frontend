@@ -175,9 +175,7 @@ const EditCourseCard = ({
               gradient={{ from: 'gold', to: 'white', deg: 50 }}
               className={montserrat.className}
             >
-              {!is_new_course
-                ? `${courseName}`
-                : 'Chat with your documents'}
+              {!is_new_course ? `${courseName}` : 'Chat with your documents'}
             </Title>
             {is_new_course && (
               <input
@@ -200,7 +198,8 @@ const EditCourseCard = ({
               order={4}
               className={`w-full text-center ${montserrat.className}`}
             >
-              Just one step: upload any and all materials. More is better, it's fine if they're messy.
+              Just one step: upload any and all materials. More is better,
+              it&apos;s fine if they&apos;re messy.
             </Title>
             <LargeDropzone
               course_name={courseName}
