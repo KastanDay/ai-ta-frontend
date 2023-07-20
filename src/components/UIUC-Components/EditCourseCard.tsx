@@ -176,19 +176,19 @@ const EditCourseCard = ({
               className={montserrat.className}
             >
               {!is_new_course
-                ? `Edit your course: ${courseName}`
-                : 'Claim your Course:'}
+                ? `${courseName}`
+                : 'Chat with your documents'}
             </Title>
             {is_new_course && (
               <input
                 type="text"
-                placeholder="Enter the desired course name"
+                placeholder="Project name"
                 value={courseName}
                 onChange={(e) =>
                   setCourseName(e.target.value.replaceAll(' ', '-'))
                 }
                 disabled={!is_new_course}
-                className={`input-bordered input w-[80%] rounded-xl border-2 border-solid bg-gray-800 lg:w-[50%] 
+                className={`input-bordered input w-[80%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
                                 ${
                                   isCourseAvailable && courseName != ''
                                     ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
@@ -200,8 +200,7 @@ const EditCourseCard = ({
               order={4}
               className={`w-full text-center ${montserrat.className}`}
             >
-              Just one step: upload your textbooks, lecture slides, video
-              recordings, and any other files.
+              Just one step: upload any and all materials. More is better, it's fine if they're messy.
             </Title>
             <LargeDropzone
               course_name={courseName}
