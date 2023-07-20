@@ -40,7 +40,7 @@ const useStyles = createStyles((theme) => ({
     // width: '30%',
     aspectRatio: '3/2',
     objectFit: 'contain',
-    width: '60px',
+    width: '80px',
   },
 
   smallLogos: {
@@ -83,7 +83,7 @@ const SupportedFileUploadTypes = () => {
         Supported File Types
       </Title>
 
-      <Flex className="space-x-4">
+      <Flex className="space-x-3">
         <Image
           src="/media/pdf_logo.png"
           width={720}
@@ -125,7 +125,15 @@ const SupportedFileUploadTypes = () => {
           alt="Generic audio icon"
           className={classes.logos}
         />
-        <>
+        <Image
+          src="/media/cc_logo.jpg"
+          width={720}
+          height={100}
+          quality={60}
+          alt="Closed caption icon"
+          className={classes.logos}
+        />
+        {/* <>
           <Group
             style={{
               justifyContent: 'center',
@@ -138,7 +146,7 @@ const SupportedFileUploadTypes = () => {
               width={720}
               height={100}
               quality={60}
-              alt="Generic audio icon"
+              alt="Closed caption audio icon"
               // className={classes.logos}
               style={{
                 // aspectRatio: '6/2',
@@ -153,13 +161,15 @@ const SupportedFileUploadTypes = () => {
               <code className={classes.codeStyledText}>.vtt</code>
             </Text>
           </Group>
-        </>
+        </> */}
       </Flex>
 
-      <Text style={{paddingTop: '8px'}}>
-        We also support <code className={classes.codeStyledText}>.txt</code>,{' '}
-        <code className={classes.codeStyledText}>.py</code>, and{' '}
-        <code className={classes.codeStyledText}>.html</code>
+      <Text style={{ paddingTop: '8px' }}>
+        And <code className={classes.codeStyledText}>.txt</code>,{' '}
+        <code className={classes.codeStyledText}>.py</code>,{' '}
+        <code className={classes.codeStyledText}>.html</code>,{' '}
+        <code className={classes.codeStyledText}>.srt</code>,{' '}
+        <code className={classes.codeStyledText}>.vtt</code>
       </Text>
 
       <Text size={'lg'} p={rem(20)} className={montserrat_non_bold.className}>
@@ -174,20 +184,20 @@ const SupportedFileUploadTypes = () => {
           size={50}
         />
         <Image
-          src="/media/notion_logo.png"
-          width={720}
-          height={100}
-          quality={60}
-          alt="Notion logo"
-          className={classes.smallLogos}
-          // style={{mixBlendMode: 'multiply' }}
-        />
-        <Image
           src="/media/github-mark-white.png"
           width={720}
           height={100}
           quality={60}
           alt="Github logo"
+          className={classes.smallLogos}
+          // style={{mixBlendMode: 'multiply' }}
+        />
+        <Image
+          src="/media/notion_logo.png"
+          width={720}
+          height={100}
+          quality={60}
+          alt="Notion logo"
           className={classes.smallLogos}
           // style={{mixBlendMode: 'multiply' }}
         />
@@ -206,6 +216,14 @@ const SupportedFileUploadTypes = () => {
           height={100}
           quality={60}
           alt="MIT Open Courseware logo"
+          className={classes.smallLogos}
+        />
+        <Image
+          src="/media/canvas_logo.png"
+          width={720}
+          height={100}
+          quality={60}
+          alt="Canvas logo"
           className={classes.smallLogos}
         />
       </Flex>
