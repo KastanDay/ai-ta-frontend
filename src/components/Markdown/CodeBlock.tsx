@@ -61,6 +61,8 @@ export const CodeBlock: FC<Props> = memo(({ language, value }) => {
   }
   return (
     // <div className="codeblock relative font-sans text-[16px]">
+
+    // TODO: Fix this codeblock so that it doesn't overflow. Add horizontal scroll bar.
     <div
       className="codeblock relative font-sans text-[16px]"
       style={{ maxWidth: '100%', overflowX: 'auto' }}

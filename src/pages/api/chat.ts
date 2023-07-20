@@ -78,7 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
         .join(separator + '\n')
 
       const stuffedPrompt =
-        "Please answer the following question. Use the context below, called 'your documents,' only if it's helpful and don't use parts that are very irrelevant. It's good to quote 'your documents' directly, something like 'from ABS source it says XYZ' Feel free to say you don't know. \nHere's a few passages of the high quality 'your documents':\n" +
+        "Please answer the following question. Use the context below, called your documents, only if it's helpful and don't use parts that are very irrelevant. It's good to quote from your documents directly, when you do always use Markdown footnotes for citations. Use react-markdown superscript to number the sources at the end of sentences (1, 2, 3...) and use react-markdown Footnotes to list the full document names for each number. Use ReactMarkdown aka 'react-markdown' formatting for super script citations, use semi-formal style. Feel free to say you don't know. \nHere's a few passages of the high quality documents:\n" +
         context_text +
         '\n\nNow please respond to my query: ' +
         search_query
@@ -87,7 +87,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log('......................')
       console.log('Stuffed prompt', stuffedPrompt)
-      console.log('RIGHT BEFORE OPENAI STREAM .........')
+      console.log('......................')
     }
 
     //  COMPRESS TO PROPER SIZE
