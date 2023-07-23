@@ -24,7 +24,7 @@ import React from 'react'
 // const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 // const rubikpuddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 
-export const LoadingSpinner = ({ size }: { size: string }) => {
+export const LoadingSpinner = ({ size = 'md' }: { size?: string }) => {
   return (
 
       <div role="status">
