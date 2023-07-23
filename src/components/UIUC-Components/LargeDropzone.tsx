@@ -46,13 +46,15 @@ export function LargeDropzone({
                                 current_user_email,
                                 redirect_to_gpt_4 = true,
                                 isDisabled = false,
-                                courseMetadata
+                                courseMetadata,
+                                is_new_course
                               }: {
   course_name: string,
   current_user_email: string,
   redirect_to_gpt_4?: boolean,
   isDisabled?: boolean,
-  courseMetadata: CourseMetadata
+  courseMetadata: CourseMetadata,
+  is_new_course: boolean
 }) {
   // upload-in-progress spinner control
   const [uploadInProgress, setUploadInProgress] = useState(false)
@@ -188,7 +190,7 @@ export function LargeDropzone({
       <div
         style={{
           display: 'flex',
-          flexDirection: 'column',
+          flexDirection: is_new_course ? 'row' : 'column',
           justifyContent: 'space-between',
         }}
       >
