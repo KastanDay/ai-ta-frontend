@@ -14,6 +14,7 @@ import { useUser } from '@clerk/nextjs'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 import SupportedFileUploadTypes from './SupportedFileUploadTypes'
+import {useMediaQuery} from "@mantine/hooks";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -59,7 +60,7 @@ export function LargeDropzone({
   // upload-in-progress spinner control
   const [uploadInProgress, setUploadInProgress] = useState(false)
   const router = useRouter()
-
+  const isSmallScreen = useMediaQuery('(max-width: 960px)')
   // Set owner email
   // const { isSignedIn, user } = useUser()
   // const current_user_email = user?.primaryEmailAddress?.emailAddress as string
@@ -190,7 +191,7 @@ export function LargeDropzone({
       <div
         style={{
           display: 'flex',
-          flexDirection: is_new_course ? 'row' : 'column',
+          flexDirection: is_new_course && !isSmallScreen ? 'row' : 'column',
           justifyContent: 'space-between',
         }}
       >

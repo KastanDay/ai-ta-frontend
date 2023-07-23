@@ -222,7 +222,12 @@ const EditCourseCard = ({
               courseMetadata={courseMetadata as CourseMetadata}
               is_new_course={is_new_course}
             />
-              <WebScrape is_new_course={is_new_course} courseName={courseName}
+              <WebScrape
+                  is_new_course={is_new_course}
+                  courseName={courseName}
+                  isDisabled={
+                      is_new_course && (!isCourseAvailable || courseName === '')
+                  }
               />
             </Flex>
           </Group>

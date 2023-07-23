@@ -5,10 +5,12 @@ import {Montserrat} from "next/font/google";
 import axios from "axios";
 import {useRouter} from "next/router";
 import {useMediaQuery} from "@mantine/hooks";
+import {LoadingSpinner} from "~/components/UIUC-Components/LoadingSpinner";
 
 interface WebScrapeProps {
     is_new_course: boolean,
-    courseName: string
+    courseName: string,
+    isDisabled: boolean
 }
 
 const montserrat = Montserrat({
@@ -24,7 +26,7 @@ const validateUrl = (url:string) => {
     return courseraRegex.test(url) || mitRegex.test(url) || webScrapingRegex.test(url);
 };
 
-export const WebScrape = ({ is_new_course, courseName }: WebScrapeProps) => {
+export const WebScrape = ({ is_new_course, courseName, isDisabled }: WebScrapeProps) => {
     const [isUrlUpdated, setIsUrlUpdated] = useState(false);
     const [url, setUrl] = useState('');
     const [icon, setIcon] = useState(<IconQuestionMark size={'50%'}/>);
@@ -63,17 +65,21 @@ export const WebScrape = ({ is_new_course, courseName }: WebScrapeProps) => {
                 // MIT API call
                 data = await downloadMITCourse(url, courseName, 'local_dir');
                 console.log(data);
+                if (data?.success) {
+                    alert('Successfully scraped course!');
+                    await router.push(`/${courseName}/gpt4`);
+                }
 
             } else {
                 // Other API call
                 // Move hardcoded values to KV database - any global data structure available?
                 data = await scrapeWeb(url, courseName, 5, 1, 200);
+                if (data?.success) {
+                    alert('Successfully scraped course!');
+                    await router.push(`/${courseName}/materials`);
+                }
             }
             console.log(data);
-            if (data?.success) {
-                alert('Successfully scraped course!');
-                await router.push(`/${courseName}/gpt4`);
-            }
         } else {
             alert('Invalid URL');
         }
@@ -143,17 +149,18 @@ export const WebScrape = ({ is_new_course, courseName }: WebScrapeProps) => {
                     Enter the URL of any <a className={'text-purple-600'} href="https://ocw.mit.edu/" target="_blank"
                                             rel="noopener noreferrer"
                                             style={{textDecoration: 'underline', paddingRight: '5px'}}>OCW
-                    MIT</a> course or any website you want to ingest
+                    MIT</a> course or ANY website you want to ingest
                 </Title>
             )}
             {is_new_course && (
                 <Input
                     icon={icon}
-                    className="w-[70%] lg:w-[50%] mt-4"
+                    className="w-[70%] lg:w-[50%] mt-4 disabled:bg-purple-200"
                     placeholder="Enter URL"
                     radius={'xl'}
                     value={url}
                     size={'lg'}
+                    disabled={isDisabled}
                     onChange={(e) => {
                         setUrl(e.target.value);
                         // Change icon based on URL
@@ -170,14 +177,21 @@ export const WebScrape = ({ is_new_course, courseName }: WebScrapeProps) => {
                     rightSection={
                         <Button onClick={handleSubmit}
                                 size="md"
-                                className={`rounded-e-3xl rounded-s-md ${isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'} text-white hover:bg-indigo-600 hover:border-indigo-600 hover:text-white text-ellipsis overflow-ellipsis p-2`}
+                                radius={'xl'}
+                                className={`rounded-s-md ${isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'} text-white hover:bg-indigo-600 hover:border-indigo-600 hover:text-white text-ellipsis overflow-ellipsis p-2`}
                                 w={`${isSmallScreen ? '90%' : '95%'}}`}
+                                disabled={isDisabled}
                         >
                             Ingest
                         </Button>
                     }
                     rightSectionWidth={isSmallScreen ? '25%' : '20%'}
                 />
+            )}
+            {loadinSpinner && (
+                <div className={'flex justify-center items-center'}>
+                    <LoadingSpinner size={'lg'}/>
+                </div>
             )}
         </>
     )
