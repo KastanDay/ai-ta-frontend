@@ -166,6 +166,7 @@ const MakeOldCoursePage = ({
                   <DropzoneS3Upload
                     course_name={course_name}
                     redirect_to_gpt_4={false}
+                    courseMetadata={courseMetadata}
                   />
                 </div>
               </Flex>

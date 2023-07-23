@@ -6,9 +6,9 @@ import {
   Group,
   Checkbox,
   Title,
-  type CheckboxProps,
+  type CheckboxProps, Paper, Input, Button,
 } from '@mantine/core'
-import { IconLock } from '@tabler/icons-react'
+import {IconLock, IconQuestionMark} from '@tabler/icons-react'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import LargeDropzone from './LargeDropzone'
 import EmailChipsComponent from './EmailChipsComponent'
@@ -17,11 +17,21 @@ import { Montserrat } from 'next/font/google'
 import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 import { GetCurrentPageName } from './CanViewOnlyCourse'
 import { useRouter } from 'next/router'
+import {LoadingSpinner} from "~/components/UIUC-Components/LoadingSpinner";
+import axios from "axios";
 
 const montserrat = Montserrat({
   weight: '700',
   subsets: ['latin'],
 })
+
+const validateUrl = (url:string) => {
+  const courseraRegex = /^https?:\/\/(www\.)?coursera\.org\/learn\/.+/;
+  const mitRegex = /^https?:\/\/ocw\.mit\.edu\/.+/;
+  const webScrapingRegex = /^https?:\/\/.+/;
+
+  return courseraRegex.test(url) || mitRegex.test(url) || webScrapingRegex.test(url);
+};
 
 const EditCourseCard = ({
   course_name,
@@ -45,6 +55,59 @@ const EditCourseCard = ({
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const [courseBannerUrl, setCourseBannerUrl] = useState('')
   const [isIntroMessageUpdated, setIsIntroMessageUpdated] = useState(false)
+  const [isUrlUpdated, setIsUrlUpdated] = useState(false);
+  const [url, setUrl] = useState('');
+  const [icon, setIcon] = useState(<IconQuestionMark size={'50%'}/>);
+  const [loadinSpinner, setLoadinSpinner] = useState(false);
+  const API_URL = 'https://flask-production-751b.up.railway.app';
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newUrl = e.target.value;
+    console.log("newUrl: ", newUrl)
+    setUrl(newUrl);
+    if (newUrl.length > 0 && validateUrl(newUrl)) {
+        setIsUrlUpdated(true);
+    } else {
+        setIsUrlUpdated(false);
+    }
+    // Change icon based on URL
+    if (newUrl.includes('coursera.org')) {
+      setIcon(<img src={'/media/coursera_logo_cutout.png'} alt="Coursera Logo" style={{height: '50%', width: '50%'}}/>);
+    } else if (newUrl.includes('ocw.mit.edu')) {
+      setIcon(<img src={'/media/mitocw_logo.jpg'} alt="MIT OCW Logo" style={{height: '50%', width: '50%'}} />);
+    } else {
+      setIcon(<IconQuestionMark />);
+    }
+
+  };
+
+  const handleSubmit = async () => {
+    if (validateUrl(url)) {
+      setLoadinSpinner(true);
+      let data = null;
+      // Make API call based on URL
+      if (url.includes('coursera.org')) {
+        // Coursera API call
+      } else if (url.includes('ocw.mit.edu')) {
+        // MIT API call
+        data = await downloadMITCourse(url, courseName, 'local_dir');
+        console.log(data);
+
+      } else {
+        // Other API call
+        // Move hardcoded values to KV database - any global data structure available?
+        data = await scrapeWeb(url, courseName, 5, 1, 200);
+      }
+      console.log(data);
+      if (data?.success) {
+        alert('Successfully scraped course!');
+        await router.push(`/${courseName}/gpt4`);
+      }
+    } else {
+      alert('Invalid URL');
+    }
+    setLoadinSpinner(false);
+  };
 
   const checkCourseAvailability = () => {
     const courseExists =
@@ -86,6 +149,16 @@ const EditCourseCard = ({
         })
     }
   }, [])
+
+  useEffect(() => {
+    if (url && url.length > 0 && validateUrl(url)) {
+      console.log("url updated : ", url)
+      setIsUrlUpdated(true);
+    } else {
+      console.log("url empty")
+      setIsUrlUpdated(false);
+    }
+  }, [url]);
 
   useEffect(() => {
     checkCourseAvailability()
@@ -146,6 +219,43 @@ const EditCourseCard = ({
     }
   }
 
+  const scrapeWeb = async (url: string | null, courseName: string | null, maxUrls: number, maxDepth: number, timeout: number) => {
+    try {
+      if (!url || !courseName) return null;
+      const response = await axios.get(`${API_URL}/web-scrape`, {
+        params: {
+          url: encodeURIComponent(url),
+          course_name: courseName,
+          max_urls: maxUrls,
+          max_depth: maxDepth,
+          timeout: timeout,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error during web scraping:', error);
+      return null;
+    }
+  };
+
+  const downloadMITCourse = async (url: string | null, courseName: string | null, localDir: string | null) => {
+    try {
+      if (!url || !courseName || !localDir) return null;
+      console.log("calling downloadMITCourse")
+      const response = await axios.get(`${API_URL}/mit-download`, {
+        params: {
+          url: encodeURIComponent(url),
+          course_name: courseName,
+          local_dir: localDir,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error during MIT course download:', error);
+      return null;
+    }
+  };
+
   return (
     <Card
       shadow="xs"
@@ -163,7 +273,6 @@ const EditCourseCard = ({
           className="min-h-full bg-gradient-to-r from-purple-900 via-indigo-800 to-blue-800"
         >
           <Group
-            variant="row"
             spacing="lg"
             m="3rem"
             align="center"
@@ -175,7 +284,7 @@ const EditCourseCard = ({
               gradient={{ from: 'gold', to: 'white', deg: 50 }}
               className={montserrat.className}
             >
-              {!is_new_course ? `${courseName}` : 'Chat with your documents'}
+              {!is_new_course ? `${courseName}` : 'Create your own course'}
             </Title>
             {is_new_course && (
               <input
@@ -186,7 +295,7 @@ const EditCourseCard = ({
                   setCourseName(e.target.value.replaceAll(' ', '-'))
                 }
                 disabled={!is_new_course}
-                className={`input-bordered input w-[80%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
+                className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
                                 ${
                                   isCourseAvailable && courseName != ''
                                     ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
@@ -201,6 +310,47 @@ const EditCourseCard = ({
               Just one step: upload any and all materials. More is better,
               it&apos;s fine if they&apos;re messy.
             </Title>
+            <Flex direction={'column'} align={'center'} w={'100%'}>
+              {is_new_course && (
+                  <Input
+                      icon={icon}
+                      className="w-[70%] lg:w-[50%]"
+                      placeholder="Enter URL"
+                      radius={'xl'}
+                      value={url}
+                      size={'lg'}
+                      onChange={(e) => {
+                        setUrl(e.target.value);
+                        // Change icon based on URL
+                        if (e.target.value.includes('coursera.org')) {
+                          setIcon(<img src={'/media/coursera_logo_cutout.png'} alt="Coursera Logo"
+                                       style={{height: '50%', width: '50%'}}/>);
+                        } else if (e.target.value.includes('ocw.mit.edu')) {
+                          setIcon(<img src={'/media/mitocw_logo.jpg'} alt="MIT OCW Logo"
+                                       style={{height: '50%', width: '50%'}}/>);
+                        } else {
+                          setIcon(<IconQuestionMark/>);
+                        }
+                      }}
+                      rightSection={
+                        <Button onClick={handleSubmit}
+                                size="md"
+                                className={`rounded-e-3xl rounded-s-md ${isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'} text-white hover:bg-indigo-600 hover:border-indigo-600 hover:text-white text-ellipsis overflow-ellipsis p-2`}
+                                w={`${isSmallScreen ? '90%' : '95%'}}`}
+                        >
+                          Ingest
+                        </Button>
+                      }
+                      rightSectionWidth={isSmallScreen ? '25%' : '20%'}
+                  />
+              )}
+              <div className={'flex flex-row items-center'}>
+                {loadinSpinner &&  (<>
+                    <LoadingSpinner size={'sm'}/>
+                    <Title order={4}>Please wait while the course gets ingested...</Title>
+                    </>
+                )}
+              </div>
             <LargeDropzone
               course_name={courseName}
               current_user_email={current_user_email}
@@ -208,7 +358,9 @@ const EditCourseCard = ({
               isDisabled={
                 is_new_course && (!isCourseAvailable || courseName === '')
               }
+              courseMetadata={courseMetadata as CourseMetadata}
             />
+            </Flex>
           </Group>
         </div>
         {!is_new_course && (
@@ -289,11 +441,12 @@ const EditCourseCard = ({
                 <PrivateOrPublicCourse
                   course_name={course_name}
                   current_user_email={current_user_email}
-                  course_intro_message={
-                    courseMetadata?.course_intro_message || ''
-                  }
-                  is_private={courseMetadata?.is_private || false}
-                  banner_image_s3={courseBannerUrl}
+                  courseMetadata={courseMetadata as CourseMetadata}
+                  // course_intro_message={
+                  //   courseMetadata?.course_intro_message || ''
+                  // }
+                  // is_private={courseMetadata?.is_private || false}
+                  // banner_image_s3={courseBannerUrl}
                 />
               </div>
             </div>
@@ -305,19 +458,15 @@ const EditCourseCard = ({
 }
 
 const PrivateOrPublicCourse = ({
-  course_name,
-  current_user_email,
-  course_intro_message,
-  banner_image_s3,
-  is_private,
-}: {
-  course_name: string
-  current_user_email: string
-  course_intro_message: string
-  banner_image_s3: string
-  is_private: boolean
+                                 course_name,
+                                 current_user_email,
+                                 courseMetadata
+                               }: {
+  course_name: string,
+  current_user_email: string,
+  courseMetadata: CourseMetadata
 }) => {
-  const [isPrivate, setIsPrivate] = useState(is_private)
+  const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
   // const { user, isSignedIn, isLoaded } = useUser()
   // const user_emails = extractEmailsFromClerk(user)
   // console.log("in MakeNewCoursePage.tsx user email list: ", user_emails )
@@ -473,8 +622,8 @@ const PrivateOrPublicCourse = ({
           course_name={course_name}
           is_private={isPrivate}
           onEmailAddressesChange={handleEmailAddressesChange}
-          course_intro_message={course_intro_message}
-          banner_image_s3={banner_image_s3}
+          course_intro_message={courseMetadata.course_intro_message || ''}
+          banner_image_s3={courseMetadata.banner_image_s3 || ''}
         />
       )}
     </>

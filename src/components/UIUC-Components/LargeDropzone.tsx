@@ -11,7 +11,7 @@ import {
 } from '@mantine/dropzone'
 import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
-import { CourseMetadata } from '~/types/courseMetadata'
+import { type CourseMetadata } from '~/types/courseMetadata'
 import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 import SupportedFileUploadTypes from './SupportedFileUploadTypes'
 
@@ -42,15 +42,17 @@ const useStyles = createStyles((theme) => ({
 }))
 
 export function LargeDropzone({
-  course_name,
-  current_user_email,
-  redirect_to_gpt_4 = true,
-  isDisabled = false,
-}: {
-  course_name: string
-  current_user_email: string
-  redirect_to_gpt_4?: boolean
-  isDisabled?: boolean
+                                course_name,
+                                current_user_email,
+                                redirect_to_gpt_4 = true,
+                                isDisabled = false,
+                                courseMetadata
+                              }: {
+  course_name: string,
+  current_user_email: string,
+  redirect_to_gpt_4?: boolean,
+  isDisabled?: boolean,
+  courseMetadata: CourseMetadata
 }) {
   // upload-in-progress spinner control
   const [uploadInProgress, setUploadInProgress] = useState(false)
@@ -219,7 +221,7 @@ export function LargeDropzone({
               await setCourseExistsAPI(course_name)
 
               // set course exists in new metadata endpoint. Works great.
-              await callUpsertCourseMetadata(course_name, {
+              await callUpsertCourseMetadata(course_name, courseMetadata || {
                 course_owner: current_user_email,
 
                 // Don't set properties we don't know about. We'll just upsert and use the defaults.

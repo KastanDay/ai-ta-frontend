@@ -16,8 +16,6 @@ const useStyles = createStyles((theme) => ({
   button: {
     width: '100%',
     border: 'none',
-    outline: 'solid 1.5px',
-    outlineColor: theme.colors.grape[8],
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -50,7 +48,7 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
       <button
         onClick={handleClick}
         className={`btn rounded-full ${classes.button}`}
-        style={{ backgroundColor: 'transparent' }}
+        style={{ backgroundColor: 'transparent', outline: `solid 1.5px ${theme.colors.grape[8]}`, overflow: 'hidden', textOverflow: 'ellipsis'}}
         onMouseEnter={(e) =>
           (e.currentTarget.style.backgroundColor = theme.colors.grape[8])
         }
