@@ -11,7 +11,9 @@ const bundleAnalyzerConfig = {
   enabled: process.env.ANALYZE === 'true',
 }
 
-const { withAxiom } = require('next-axiom');
+// const { withAxiom } = require('next-axiom');
+
+import { withAxiom } from 'next-axiom';
 
 /** @type {import("next").NextConfig} */
 const config = {
