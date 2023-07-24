@@ -5,12 +5,13 @@
  */
 await import('./src/env.mjs')
 import nextI18NextConfig from './next-i18next.config.mjs'
-import path from 'path'
 import withBundleAnalyzer from '@next/bundle-analyzer'
 
 const bundleAnalyzerConfig = {
   enabled: process.env.ANALYZE === 'true',
 }
+
+const { withAxiom } = require('next-axiom');
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -38,4 +39,5 @@ const config = {
   },
 }
 
-export default withBundleAnalyzer(bundleAnalyzerConfig)(config)
+// Trying to add axiom: https://vercel.com/integrations/axiom
+export default withAxiom(withBundleAnalyzer(bundleAnalyzerConfig)(config))

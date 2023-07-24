@@ -62,6 +62,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
   )
 }
 
-// export default .withTRPC(MyApp)
+import { useReportWebVitals } from 'next-axiom';
+export { useReportWebVitals as reportWebVitals };
 
 export default api.withTRPC(appWithTranslation(MyApp))
+
