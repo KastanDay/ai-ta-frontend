@@ -192,6 +192,8 @@ const EmailChipsComponent = ({
         'approved_emails_list',
         JSON.stringify(approved_emails_list),
       )
+      url.searchParams.append('banner_image_s3', banner_image_s3)
+      url.searchParams.append('course_intro_message', course_intro_message)
 
       const response = await fetch(url.toString(), {
         method: 'POST',
