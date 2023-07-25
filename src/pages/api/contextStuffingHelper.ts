@@ -3,13 +3,13 @@ import { ContextWithMetadata } from '~/types/chat';
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 
-export async function getStuffedPrompt(searchQuery: string, contexts: ContextWithMetadata[], tokenLimit = 6999) {
+export async function getStuffedPrompt(searchQuery: string, contexts: ContextWithMetadata[], tokenLimit = 8000) {
   try {
     if (contexts.length === 0) {
       return searchQuery;
     }
 
-    tokenLimit = Math.min(tokenLimit, 5_500);
+    tokenLimit = tokenLimit - 1001; // for the completion. We always reserve 1k.
 
     const encoding = new Tiktoken(
       tiktokenModel.bpe_ranks,
@@ -40,13 +40,8 @@ export async function getStuffedPrompt(searchQuery: string, contexts: ContextWit
 
     const stuffedPrompt = prePrompt + contextText + '\n\nNow please respond to my query: ' + searchQuery;
     const totalNumTokens = encoding.encode(stuffedPrompt).length;
-
-    // console.log('......................');
     console.log('Stuffed prompt', stuffedPrompt.substring(0, 3700));
-    // console.log('......................');
-    console.log(`Total number of tokens: ${totalNumTokens}`);
-    // length of docs vs valid docs
-    console.log(`Number of docs: ${contexts.length}, number of valid docs: ${validDocs.length}`);
+    console.log(`Total number of tokens: ${totalNumTokens}. Number of docs: ${contexts.length}, number of valid docs: ${validDocs.length}`);
 
     return stuffedPrompt;
   } catch (e) {
