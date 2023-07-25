@@ -7,8 +7,11 @@ import {
   Checkbox,
   Title,
   type CheckboxProps,
+  Paper,
+  Input,
+  Button,
 } from '@mantine/core'
-import { IconLock } from '@tabler/icons-react'
+import { IconLock, IconQuestionMark } from '@tabler/icons-react'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import LargeDropzone from './LargeDropzone'
 import EmailChipsComponent from './EmailChipsComponent'
@@ -17,6 +20,9 @@ import { Montserrat } from 'next/font/google'
 import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 import { GetCurrentPageName } from './CanViewOnlyCourse'
 import { useRouter } from 'next/router'
+import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
+import axios from 'axios'
+import { WebScrape } from '~/components/UIUC-Components/WebScrape'
 
 const montserrat = Montserrat({
   weight: '700',
@@ -45,6 +51,7 @@ const EditCourseCard = ({
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const [courseBannerUrl, setCourseBannerUrl] = useState('')
   const [isIntroMessageUpdated, setIsIntroMessageUpdated] = useState(false)
+  const [loadinSpinner, setLoadinSpinner] = useState(false)
 
   const checkCourseAvailability = () => {
     const courseExists =
@@ -163,8 +170,7 @@ const EditCourseCard = ({
           className="min-h-full bg-gradient-to-r from-purple-900 via-indigo-800 to-blue-800"
         >
           <Group
-            variant="row"
-            spacing="lg"
+            // spacing="lg"
             m="3rem"
             align="center"
             style={{ justifyContent: 'center' }}
@@ -175,40 +181,64 @@ const EditCourseCard = ({
               gradient={{ from: 'gold', to: 'white', deg: 50 }}
               className={montserrat.className}
             >
-              {!is_new_course ? `${courseName}` : 'Chat with your documents'}
+              {!is_new_course ? `${courseName}` : 'Create your own course'}
             </Title>
             {is_new_course && (
-              <input
-                type="text"
-                placeholder="Project name"
-                value={courseName}
-                onChange={(e) =>
-                  setCourseName(e.target.value.replaceAll(' ', '-'))
-                }
-                disabled={!is_new_course}
-                className={`input-bordered input w-[80%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
+              <>
+                <input
+                  type="text"
+                  placeholder="Project name"
+                  value={courseName}
+                  onChange={(e) =>
+                    setCourseName(e.target.value.replaceAll(' ', '-'))
+                  }
+                  disabled={!is_new_course}
+                  className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
                                 ${
                                   isCourseAvailable && courseName != ''
                                     ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
                                     : 'border-red-800 text-red-600 focus:border-red-800'
                                 } ${montserrat.className}`}
-              />
+                />
+                <Title
+                  order={4}
+                  className={`w-full text-center ${montserrat.className} mt-4`}
+                >
+                  Just one step: upload any and all materials. More is better,
+                  it&apos;s fine if they&apos;re messy.
+                </Title>
+              </>
             )}
-            <Title
-              order={4}
-              className={`w-full text-center ${montserrat.className}`}
-            >
-              Just one step: upload any and all materials. More is better,
-              it&apos;s fine if they&apos;re messy.
-            </Title>
-            <LargeDropzone
-              course_name={courseName}
-              current_user_email={current_user_email}
-              redirect_to_gpt_4={false}
-              isDisabled={
-                is_new_course && (!isCourseAvailable || courseName === '')
-              }
-            />
+            <Flex direction={'column'} align={'center'} w={'100%'}>
+              <div className={'flex flex-row items-center'}>
+                {loadinSpinner && (
+                  <>
+                    <LoadingSpinner size={'sm'} />
+                    <Title order={4}>
+                      Please wait while the course is ingested...
+                    </Title>
+                  </>
+                )}
+              </div>
+              <LargeDropzone
+                course_name={courseName}
+                current_user_email={current_user_email}
+                redirect_to_gpt_4={false}
+                isDisabled={
+                  is_new_course && (!isCourseAvailable || courseName === '')
+                }
+                courseMetadata={courseMetadata as CourseMetadata}
+                is_new_course={is_new_course}
+              />
+              <WebScrape
+                is_new_course={is_new_course}
+                courseName={courseName}
+                isDisabled={
+                  is_new_course && (!isCourseAvailable || courseName === '')
+                }
+                current_user_email={current_user_email}
+              />
+            </Flex>
           </Group>
         </div>
         {!is_new_course && (
@@ -289,11 +319,12 @@ const EditCourseCard = ({
                 <PrivateOrPublicCourse
                   course_name={course_name}
                   current_user_email={current_user_email}
-                  course_intro_message={
-                    courseMetadata?.course_intro_message || ''
-                  }
-                  is_private={courseMetadata?.is_private || false}
-                  banner_image_s3={courseBannerUrl}
+                  courseMetadata={courseMetadata as CourseMetadata}
+                  // course_intro_message={
+                  //   courseMetadata?.course_intro_message || ''
+                  // }
+                  // is_private={courseMetadata?.is_private || false}
+                  // banner_image_s3={courseBannerUrl}
                 />
               </div>
             </div>
@@ -307,17 +338,13 @@ const EditCourseCard = ({
 const PrivateOrPublicCourse = ({
   course_name,
   current_user_email,
-  course_intro_message,
-  banner_image_s3,
-  is_private,
+  courseMetadata,
 }: {
   course_name: string
   current_user_email: string
-  course_intro_message: string
-  banner_image_s3: string
-  is_private: boolean
+  courseMetadata: CourseMetadata
 }) => {
-  const [isPrivate, setIsPrivate] = useState(is_private)
+  const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
   // const { user, isSignedIn, isLoaded } = useUser()
   // const user_emails = extractEmailsFromClerk(user)
   // console.log("in MakeNewCoursePage.tsx user email list: ", user_emails )
@@ -473,8 +500,8 @@ const PrivateOrPublicCourse = ({
           course_name={course_name}
           is_private={isPrivate}
           onEmailAddressesChange={handleEmailAddressesChange}
-          course_intro_message={course_intro_message}
-          banner_image_s3={banner_image_s3}
+          course_intro_message={courseMetadata.course_intro_message || ''}
+          banner_image_s3={courseMetadata.banner_image_s3 || ''}
         />
       )}
     </>

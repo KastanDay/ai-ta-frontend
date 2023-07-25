@@ -64,9 +64,11 @@ const useStyles = createStyles((theme) => ({
 export function DropzoneS3Upload({
   course_name,
   redirect_to_gpt_4 = true,
+  courseMetadata,
 }: {
   course_name: string
   redirect_to_gpt_4?: boolean
+  courseMetadata: CourseMetadata | null
 }) {
   // upload-in-progress spinner control
   const [uploadInProgress, setUploadInProgress] = useState(false)
@@ -180,29 +182,16 @@ export function DropzoneS3Upload({
   const { classes, theme } = useStyles()
   const openRef = useRef<() => void>(null)
 
-  // Get and Set course exist in KV store
-  const setCourseExistsAPI = async (courseName: string) => {
-    try {
-      console.log('inside setCourseExistsAPI()...')
-      const response = await fetch(`/api/UIUC-api/setCourseExists`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ course_name: courseName }),
-      })
-      const data = await response.json()
-      return data.success
-    } catch (error) {
-      console.error('Error setting course data:', error)
-      return false
-    }
-  }
-
   const callSetCourseMetadata = async (courseMetadata: CourseMetadata) => {
     try {
-      const { is_private, course_owner, course_admins, approved_emails_list } =
-        courseMetadata
+      const {
+        is_private,
+        course_owner,
+        course_admins,
+        approved_emails_list,
+        course_intro_message,
+        banner_image_s3,
+      } = courseMetadata
       const course_name = getCurrentPageName()
 
       const url = new URL(
@@ -218,6 +207,11 @@ export function DropzoneS3Upload({
         'approved_emails_list',
         JSON.stringify(approved_emails_list),
       )
+      url.searchParams.append(
+        'course_intro_message',
+        course_intro_message || '',
+      )
+      url.searchParams.append('banner_image_s3', banner_image_s3 || '')
 
       const response = await fetch(url.toString(), {
         method: 'POST',
@@ -253,17 +247,19 @@ export function DropzoneS3Upload({
           // Make course exist in kv store
           await setCourseExistsAPI(getCurrentPageName() as string)
 
-          // set course exists in new metadata endpoint. Works great.
-          await callUpsertCourseMetadata(course_name, {
-            course_owner: current_user_email,
+          await callSetCourseMetadata(courseMetadata as CourseMetadata)
 
-            // Don't set properties we don't know about. We'll just upsert and use the defaults.
-            course_admins: undefined,
-            approved_emails_list: undefined,
-            is_private: undefined,
-            banner_image_s3: undefined,
-            course_intro_message: undefined,
-          })
+          // set course exists in new metadata endpoint. Works great.
+          // await callUpsertCourseMetadata(course_name, {
+          //   course_owner: current_user_email,
+          //
+          //   // Don't set properties we don't know about. We'll just upsert and use the defaults.
+          //   course_admins: undefined,
+          //   approved_emails_list: undefined,
+          //   is_private: undefined,
+          //   banner_image_s3: undefined,
+          //   course_intro_message: undefined,
+          // })
 
           // console.log('Right after setCourseExists in kv store...');
           // const ifexists = await getCourseExistsAPI(getCurrentPageName() as string);
@@ -398,6 +394,25 @@ export function DropzoneS3Upload({
       </Dropzone>
     </div>
   )
+}
+
+export const setCourseExistsAPI = async (courseName: string) => {
+  // Get and Set course exist in KV store
+  try {
+    console.log('inside setCourseExistsAPI()...')
+    const response = await fetch(`/api/UIUC-api/setCourseExists`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ course_name: courseName }),
+    })
+    const data = await response.json()
+    return data.success
+  } catch (error) {
+    console.error('Error setting course data:', error)
+    return false
+  }
 }
 
 export default DropzoneS3Upload
