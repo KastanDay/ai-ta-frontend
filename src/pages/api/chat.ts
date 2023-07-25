@@ -31,7 +31,6 @@ const handler = async (req: Request): Promise<Response> => {
     )
 
     const token_limit = OpenAIModels[model.id as OpenAIModelID].tokenLimit
-    console.log('chat API tokenLimit: ', token_limit)
 
     let promptToSend = prompt
     if (!promptToSend) {
@@ -44,7 +43,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // ! PROMPT STUFFING
-    // TODO -- move this semewhere else, and run it before we trim the context limit
     const search_query = messages[messages.length - 1]?.content as string // most recent message
     const contexts_arr = messages[messages.length - 1]
       ?.contexts as ContextWithMetadata[]
@@ -70,9 +68,6 @@ const handler = async (req: Request): Promise<Response> => {
     else {
       // regular context stuffing
       const stuffedPrompt = await getStuffedPrompt(search_query, contexts_arr, token_limit) as string
-      console.log("After stuffed prompt...")
-      console.log("Token limit in chat.ts api:", token_limit)
-
       messages[messages.length - 1]!.content = stuffedPrompt
     }
 
@@ -97,7 +92,7 @@ const handler = async (req: Request): Promise<Response> => {
         ]
       }
     }
-    encoding.free() // keep this, idk what it does
+    encoding.free() // keep this
 
     const stream = await OpenAIStream(
       model,
@@ -106,8 +101,6 @@ const handler = async (req: Request): Promise<Response> => {
       key,
       messagesToSend,
     )
-
-    console.log('messagesToSend', messagesToSend)
 
     return new Response(stream)
   } catch (error) {
