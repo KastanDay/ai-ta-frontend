@@ -48,7 +48,12 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
       <button
         onClick={handleClick}
         className={`btn rounded-full ${classes.button}`}
-        style={{ backgroundColor: 'transparent', outline: `solid 1.5px ${theme.colors.grape[8]}`, overflow: 'hidden', textOverflow: 'ellipsis'}}
+        style={{
+          backgroundColor: 'transparent',
+          outline: `solid 1.5px ${theme.colors.grape[8]}`,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
         onMouseEnter={(e) =>
           (e.currentTarget.style.backgroundColor = theme.colors.grape[8])
         }

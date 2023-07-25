@@ -62,12 +62,12 @@ const useStyles = createStyles((theme) => ({
 }))
 
 export function DropzoneS3Upload({
-                                   course_name,
-                                   redirect_to_gpt_4 = true,
-                                   courseMetadata
-                                 }: {
-  course_name: string,
-  redirect_to_gpt_4?: boolean,
+  course_name,
+  redirect_to_gpt_4 = true,
+  courseMetadata,
+}: {
+  course_name: string
+  redirect_to_gpt_4?: boolean
   courseMetadata: CourseMetadata | null
 }) {
   // upload-in-progress spinner control
@@ -203,8 +203,14 @@ export function DropzoneS3Upload({
 
   const callSetCourseMetadata = async (courseMetadata: CourseMetadata) => {
     try {
-      const { is_private, course_owner, course_admins, approved_emails_list, course_intro_message, banner_image_s3 } =
-        courseMetadata
+      const {
+        is_private,
+        course_owner,
+        course_admins,
+        approved_emails_list,
+        course_intro_message,
+        banner_image_s3,
+      } = courseMetadata
       const course_name = getCurrentPageName()
 
       const url = new URL(
@@ -220,7 +226,10 @@ export function DropzoneS3Upload({
         'approved_emails_list',
         JSON.stringify(approved_emails_list),
       )
-      url.searchParams.append('course_intro_message', course_intro_message || '')
+      url.searchParams.append(
+        'course_intro_message',
+        course_intro_message || '',
+      )
       url.searchParams.append('banner_image_s3', banner_image_s3 || '')
 
       const response = await fetch(url.toString(), {

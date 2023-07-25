@@ -26,8 +26,7 @@ import React from 'react'
 
 export const LoadingSpinner = ({ size = 'md' }: { size?: string }) => {
   return (
-
-      <div role="status">
+    <div role="status">
       {/*<svg*/}
       {/*  aria-hidden="true"*/}
       {/*  className="mr-2 h-8 w-8 animate-spin fill-purple-600 text-gray-200 dark:text-gray-600"*/}
@@ -44,7 +43,9 @@ export const LoadingSpinner = ({ size = 'md' }: { size?: string }) => {
       {/*    fill="currentFill"*/}
       {/*  />*/}
       {/*</svg>*/}
-        <span className={`loading loading-spinner loading-${size} text-purple-600`}></span>
+      <span
+        className={`loading-spinner loading loading-${size} text-purple-600`}
+      ></span>
     </div>
   )
 }

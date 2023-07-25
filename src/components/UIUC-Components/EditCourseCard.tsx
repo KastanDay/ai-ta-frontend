@@ -6,9 +6,12 @@ import {
   Group,
   Checkbox,
   Title,
-  type CheckboxProps, Paper, Input, Button,
+  type CheckboxProps,
+  Paper,
+  Input,
+  Button,
 } from '@mantine/core'
-import {IconLock, IconQuestionMark} from '@tabler/icons-react'
+import { IconLock, IconQuestionMark } from '@tabler/icons-react'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import LargeDropzone from './LargeDropzone'
 import EmailChipsComponent from './EmailChipsComponent'
@@ -17,9 +20,9 @@ import { Montserrat } from 'next/font/google'
 import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 import { GetCurrentPageName } from './CanViewOnlyCourse'
 import { useRouter } from 'next/router'
-import {LoadingSpinner} from "~/components/UIUC-Components/LoadingSpinner";
-import axios from "axios";
-import {WebScrape} from "~/components/UIUC-Components/WebScrape";
+import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
+import axios from 'axios'
+import { WebScrape } from '~/components/UIUC-Components/WebScrape'
 
 const montserrat = Montserrat({
   weight: '700',
@@ -48,7 +51,7 @@ const EditCourseCard = ({
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const [courseBannerUrl, setCourseBannerUrl] = useState('')
   const [isIntroMessageUpdated, setIsIntroMessageUpdated] = useState(false)
-  const [loadinSpinner, setLoadinSpinner] = useState(false);
+  const [loadinSpinner, setLoadinSpinner] = useState(false)
 
   const checkCourseAvailability = () => {
     const courseExists =
@@ -206,28 +209,31 @@ const EditCourseCard = ({
             </Title>
             <Flex direction={'column'} align={'center'} w={'100%'}>
               <div className={'flex flex-row items-center'}>
-                {loadinSpinner &&  (<>
-                    <LoadingSpinner size={'sm'}/>
-                    <Title order={4}>Please wait while the course gets ingested...</Title>
-                    </>
+                {loadinSpinner && (
+                  <>
+                    <LoadingSpinner size={'sm'} />
+                    <Title order={4}>
+                      Please wait while the course gets ingested...
+                    </Title>
+                  </>
                 )}
               </div>
-            <LargeDropzone
-              course_name={courseName}
-              current_user_email={current_user_email}
-              redirect_to_gpt_4={false}
-              isDisabled={
-                is_new_course && (!isCourseAvailable || courseName === '')
-              }
-              courseMetadata={courseMetadata as CourseMetadata}
-              is_new_course={is_new_course}
-            />
+              <LargeDropzone
+                course_name={courseName}
+                current_user_email={current_user_email}
+                redirect_to_gpt_4={false}
+                isDisabled={
+                  is_new_course && (!isCourseAvailable || courseName === '')
+                }
+                courseMetadata={courseMetadata as CourseMetadata}
+                is_new_course={is_new_course}
+              />
               <WebScrape
-                  is_new_course={is_new_course}
-                  courseName={courseName}
-                  isDisabled={
-                      is_new_course && (!isCourseAvailable || courseName === '')
-                  }
+                is_new_course={is_new_course}
+                courseName={courseName}
+                isDisabled={
+                  is_new_course && (!isCourseAvailable || courseName === '')
+                }
               />
             </Flex>
           </Group>
@@ -327,12 +333,12 @@ const EditCourseCard = ({
 }
 
 const PrivateOrPublicCourse = ({
-                                 course_name,
-                                 current_user_email,
-                                 courseMetadata
-                               }: {
-  course_name: string,
-  current_user_email: string,
+  course_name,
+  current_user_email,
+  courseMetadata,
+}: {
+  course_name: string
+  current_user_email: string
   courseMetadata: CourseMetadata
 }) => {
   const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
