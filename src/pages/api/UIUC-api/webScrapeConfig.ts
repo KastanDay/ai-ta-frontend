@@ -7,9 +7,11 @@ export const config = {
     runtime: 'edge',
 };
 
-export const fetchWebScrapeConfig = async (request: NextRequest) => {
-  const exampleValue1 = await get('web_scrape_config');
+// https://vercel.com/docs/storage/edge-config/edge-config-sdk#use-connection-strings
+export const fetchWebScrapeConfig = async () => {
+  const exampleValue1 = await get('web_scrape_config') as any;
   console.log("-------------- CONFIG", exampleValue1)
+  return exampleValue1.json();
   return NextResponse.json({
     exampleValue1,
   });
