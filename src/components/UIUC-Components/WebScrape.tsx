@@ -1,17 +1,19 @@
 import { Button, Input, Title } from '@mantine/core'
-import { IconQuestionMark } from '@tabler/icons-react'
+import { IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
 import { Montserrat } from 'next/font/google'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import { useMediaQuery } from '@mantine/hooks'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
-import { fetchWebScrapeConfig } from '~/pages/api/UIUC-api/webScrapeConfig'
+import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
+import { setCourseExistsAPI } from './Upload_S3'
 
 interface WebScrapeProps {
   is_new_course: boolean
   courseName: string
   isDisabled: boolean
+  current_user_email: string
 }
 
 const montserrat = Montserrat({
@@ -33,14 +35,16 @@ export const WebScrape = ({
   is_new_course,
   courseName,
   isDisabled,
+  current_user_email,
 }: WebScrapeProps) => {
   const [isUrlUpdated, setIsUrlUpdated] = useState(false)
   const [url, setUrl] = useState('')
-  const [icon, setIcon] = useState(<IconQuestionMark size={'50%'} />)
+  const [icon, setIcon] = useState(<IconWorldDownload size={'50%'} />)
   const [loadinSpinner, setLoadinSpinner] = useState(false)
   const API_URL = 'https://flask-production-751b.up.railway.app'
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
+
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newUrl = e.target.value
     console.log('newUrl: ', newUrl)
@@ -68,7 +72,7 @@ export const WebScrape = ({
         />,
       )
     } else {
-      setIcon(<IconQuestionMark />)
+      setIcon(<IconWorldDownload />)
     }
   }
 
@@ -90,22 +94,43 @@ export const WebScrape = ({
       } else {
         // Other API call
         // Move hardcoded values to KV database - any global data structure available?
-        const webScrapeConfig = await fetchWebScrapeConfig()
-        data = await scrapeWeb(
+        // const webScrapeConfig = await fetchWebScrapeConfig()
+
+        const response = await fetch('/api/UIUC-api/webScrapeConfig')
+        let webScrapeConfig = await response.json()
+        webScrapeConfig = webScrapeConfig.config
+        console.log('FETCH RESULT', webScrapeConfig)
+
+        data = scrapeWeb(
           url,
           courseName,
           webScrapeConfig.num_sites,
           webScrapeConfig.recursive_depth,
           webScrapeConfig.timeout_sec,
         )
-        if (data?.success) {
-          alert('Successfully scraped course!')
-          await router.push(`/${courseName}/materials`)
-        }
+
+        // todo: consolidate both KV stores into one (remove setCourseExistsAPI).
+        // todo: use KV store instead of /get-all to check if course exists.
+
+        // Make course exist in kv store
+        await setCourseExistsAPI(courseName)
+
+        // set course exists in new metadata endpoint. Works great.
+        await callUpsertCourseMetadata(courseName, {
+          course_owner: current_user_email,
+
+          // Don't set properties we don't know about. We'll just upsert and use the defaults.
+          course_admins: undefined,
+          approved_emails_list: undefined,
+          is_private: undefined,
+          banner_image_s3: undefined,
+          course_intro_message: undefined,
+        })
+
+        router.push(`/${courseName}/materials`)
       }
-      console.log(data)
     } else {
-      alert('Invalid URL')
+      alert('Invalid URL (please include https://)')
     }
     setLoadinSpinner(false)
   }
@@ -224,7 +249,7 @@ export const WebScrape = ({
                 />,
               )
             } else {
-              setIcon(<IconQuestionMark />)
+              setIcon(<IconWorldDownload />)
             }
           }}
           rightSection={

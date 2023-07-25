@@ -234,6 +234,7 @@ const EditCourseCard = ({
                 isDisabled={
                   is_new_course && (!isCourseAvailable || courseName === '')
                 }
+                current_user_email={current_user_email}
               />
             </Flex>
           </Group>

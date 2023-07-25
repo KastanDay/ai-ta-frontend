@@ -182,25 +182,6 @@ export function DropzoneS3Upload({
   const { classes, theme } = useStyles()
   const openRef = useRef<() => void>(null)
 
-  // Get and Set course exist in KV store
-  const setCourseExistsAPI = async (courseName: string) => {
-    try {
-      console.log('inside setCourseExistsAPI()...')
-      const response = await fetch(`/api/UIUC-api/setCourseExists`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ course_name: courseName }),
-      })
-      const data = await response.json()
-      return data.success
-    } catch (error) {
-      console.error('Error setting course data:', error)
-      return false
-    }
-  }
-
   const callSetCourseMetadata = async (courseMetadata: CourseMetadata) => {
     try {
       const {
@@ -413,6 +394,25 @@ export function DropzoneS3Upload({
       </Dropzone>
     </div>
   )
+}
+
+export const setCourseExistsAPI = async (courseName: string) => {
+  // Get and Set course exist in KV store
+  try {
+    console.log('inside setCourseExistsAPI()...')
+    const response = await fetch(`/api/UIUC-api/setCourseExists`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ course_name: courseName }),
+    })
+    const data = await response.json()
+    return data.success
+  } catch (error) {
+    console.error('Error setting course data:', error)
+    return false
+  }
 }
 
 export default DropzoneS3Upload
