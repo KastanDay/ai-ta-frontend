@@ -31,6 +31,13 @@ const validateUrl = (url: string) => {
   )
 }
 
+const formatUrl = (url: string) => {
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'http://' + url
+  }
+  return url
+}
+
 export const WebScrape = ({
   is_new_course,
   courseName,
@@ -140,6 +147,8 @@ export const WebScrape = ({
   ) => {
     try {
       if (!url || !courseName) return null
+      url = formatUrl(url) // ensure we have http://
+      console.log('SCRAPING', url)
       const response = await axios.get(`${API_URL}/web-scrape`, {
         params: {
           url: url,
@@ -206,7 +215,7 @@ export const WebScrape = ({
         order={6}
         className={`w-full text-center ${montserrat.className} mt-2`}
       >
-        It&apos;s amazing when combined with{' '}
+        It&aposs amazing when combined with{' '}
         <a
           className={'text-purple-600'}
           href="https://ocw.mit.edu/"
@@ -233,6 +242,7 @@ export const WebScrape = ({
         disabled={isDisabled}
         onChange={(e) => {
           setUrl(e.target.value)
+          // setUrl(formatUrl(e.target.value))
           // Change icon based on URL
           if (e.target.value.includes('coursera.org')) {
             setIcon(
@@ -273,9 +283,12 @@ export const WebScrape = ({
         rightSectionWidth={isSmallScreen ? '25%' : '20%'}
       />
       {loadinSpinner && (
-        <div className={'flex items-center justify-center'}>
-          <LoadingSpinner size={'lg'} />
-        </div>
+        <>
+          <br></br>
+          <div className={'flex items-center justify-center'}>
+            <LoadingSpinner size={'lg'} />
+          </div>
+        </>
       )}
     </>
   )
