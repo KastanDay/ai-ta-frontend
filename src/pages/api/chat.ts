@@ -12,6 +12,7 @@ import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 import { getExtremePrompt } from './getExtremePrompt'
 import { getStuffedPrompt } from './contextStuffingHelper'
+import { OpenAIModels } from '~/types/openai'
 
 export const config = {
   runtime: 'edge',
@@ -28,6 +29,10 @@ const handler = async (req: Request): Promise<Response> => {
       tiktokenModel.special_tokens,
       tiktokenModel.pat_str,
     )
+
+    // const token_limit = 
+    const token_limit = OpenAIModels[model.id as OpenAIModelID].tokenLimit
+    console.log('chat API tokenLimit: ', token_limit)
 
     let promptToSend = prompt
     if (!promptToSend) {
@@ -65,9 +70,9 @@ const handler = async (req: Request): Promise<Response> => {
     // }
     else {
       // regular context stuffing
-      const stuffedPrompt = await getStuffedPrompt(search_query, contexts_arr, model.tokenLimit) as string
+      const stuffedPrompt = await getStuffedPrompt(search_query, contexts_arr, token_limit) as string
       console.log("After stuffed prompt...")
-      console.log("Token limit in chat.ts api:", model.tokenLimit)
+      console.log("Token limit in chat.ts api:", token_limit)
 
       messages[messages.length - 1]!.content = stuffedPrompt
     }
@@ -83,7 +88,7 @@ const handler = async (req: Request): Promise<Response> => {
       if (message) {
         const tokens = encoding.encode(message.content)
 
-        if (tokenCount + tokens.length + 1000 > model.tokenLimit) {
+        if (tokenCount + tokens.length + 1000 > token_limit) {
           break
         }
         tokenCount += tokens.length
