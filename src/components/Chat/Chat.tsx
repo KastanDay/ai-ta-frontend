@@ -63,6 +63,7 @@ import CustomBanner from '../UIUC-Components/CustomBanner'
 import { fetchContexts } from '~/pages/api/getContexts'
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
+import { OpenAIModelID, OpenAIModels } from '~/types/openai'
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
@@ -175,7 +176,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         // Run context search, attach to Message object.
         if (getCurrentPageName() != 'gpt4') {
           // THE ONLY place we fetch contexts (except ExtremePromptStuffing is still in api/chat.ts)
-          await fetchContexts(getCurrentPageName(), searchQuery).then(
+          console.log('selectedConversation.model.tokenLimit: ', OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit)
+          await fetchContexts(getCurrentPageName(), searchQuery, selectedConversation.model.tokenLimit).then(
             (curr_contexts) => {
               message.contexts = curr_contexts as ContextWithMetadata[]
             },
