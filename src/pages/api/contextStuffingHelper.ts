@@ -10,7 +10,7 @@ export async function getStuffedPrompt(searchQuery: string, contexts: ContextWit
       return searchQuery;
     }
 
-    await init((imports) => WebAssembly.instantiate(wasm, imports))
+    // await init((imports) => WebAssembly.instantiate(wasm, imports))
     const encoding = new Tiktoken(
       tiktokenModel.bpe_ranks,
       tiktokenModel.special_tokens,
