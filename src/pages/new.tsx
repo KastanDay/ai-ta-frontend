@@ -26,7 +26,7 @@ const NewCoursePage = () => {
 
   if (!isSignedIn) {
     console.log('User not logged in', isSignedIn, isLoaded, 'NewCoursePage')
-    return <AuthComponent course_name="" />
+    return <AuthComponent course_name="new" />
   }
 
   const user_emails = extractEmailsFromClerk(user)
