@@ -1,28 +1,50 @@
 // Return webScrapeConfig from Edge
 
-export async function fetchWebScrapeConfig(): Promise<{ num_sites: number; recursive_depth: number; timeout_sec: number }> {
-    try {
-        const edgeConfigVar = process.env.EDGE_CONFIG;
-        const vercelTeamID = process.env.VERCEL_TEAM_ID;
-        console.log('edgeConfigVar', edgeConfigVar);
-        console.log('vercelTeamID', vercelTeamID);
-        const readSingleWithAuth = await fetch(
-            `${edgeConfigVar}/item/web_scrape_config`,
-            {
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${process.env.VERCEL_API_TOKEN}`,
-                },
-            }
-        );
-        const result = await readSingleWithAuth.json();
-        console.log(result);
-        return result
-    } catch (error) {
-        console.log(error);
-        return { num_sites: 100, recursive_depth: 1, timeout_sec: 1 }
-    }
-}
+import { get } from "@vercel/edge-config";
+import { NextRequest, NextResponse } from "next/server";
+
+export const config = {
+    runtime: 'edge',
+};
+
+export const fetchWebScrapeConfig = async (request: NextRequest) => {
+  const exampleValue1 = await get('web_scrape_config');
+  console.log("-------------- CONFIG", exampleValue1)
+  return NextResponse.json({
+    exampleValue1,
+  });
+};
+
+// export async function fetchWebScrapeConfig(): Promise<{ num_sites: number; recursive_depth: number; timeout_sec: number }> {
+//     try {
+//         const edgeConfigVar = process.env.EDGE_CONFIG;
+//         const vercelTeamID = process.env.VERCEL_TEAM_ID;
+//         console.log('edgeConfigVar', edgeConfigVar);
+//         console.log('vercelTeamID', vercelTeamID);
+//         const readSingleWithAuth = await fetch(
+//             `${edgeConfigVar}/item/web_scrape_config`,
+//             {
+//                 method: 'GET',
+//                 headers: {
+//                     Authorization: `Bearer ${process.env.VERCEL_API_TOKEN}`,
+//                 },
+//             }
+//         );
+//         const result = await readSingleWithAuth.json();
+//         console.log(result);
+//         return result
+//     } catch (error) {
+//         console.log(error);
+//         return { num_sites: 100, recursive_depth: 1, timeout_sec: 1 }
+//     }
+// }
+
+// export const fetchWebScrapeConfig(request: NextRequest) => {
+//   const exampleValue1 = await get('web_scrape_config');
+//   return NextResponse.json({
+//     example: `This is the value of "example_key_1" in my Edge Config: ${exampleValue1}!`,
+//   });
+// };
 
 export async function upsertWebScrapeConfig(
     webScrapeConfig: { num_sites: number; recursive_depth: number; timeout_sec: number }
