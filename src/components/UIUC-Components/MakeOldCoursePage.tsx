@@ -206,6 +206,7 @@ import { LoadingSpinner } from './LoadingSpinner'
 import { extractEmailsFromClerk } from './clerkHelpers'
 import Navbar from '~/components/UIUC-Components/Navbar'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
+import { WebScrape } from './WebScrape'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()

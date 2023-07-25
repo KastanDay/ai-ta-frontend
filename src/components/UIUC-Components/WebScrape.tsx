@@ -24,7 +24,7 @@ const montserrat = Montserrat({
 const validateUrl = (url: string) => {
   const courseraRegex = /^https?:\/\/(www\.)?coursera\.org\/learn\/.+/
   const mitRegex = /^https?:\/\/ocw\.mit\.edu\/.+/
-  const webScrapingRegex = /^https?:\/\/.+/
+  const webScrapingRegex = /^(https?:\/\/)?.+/
 
   return (
     courseraRegex.test(url) || mitRegex.test(url) || webScrapingRegex.test(url)
@@ -92,14 +92,9 @@ export const WebScrape = ({
           await router.push(`/${courseName}/gpt4`)
         }
       } else {
-        // Other API call
-        // Move hardcoded values to KV database - any global data structure available?
-        // const webScrapeConfig = await fetchWebScrapeConfig()
-
         const response = await fetch('/api/UIUC-api/webScrapeConfig')
         let webScrapeConfig = await response.json()
         webScrapeConfig = webScrapeConfig.config
-        console.log('FETCH RESULT', webScrapeConfig)
 
         data = scrapeWeb(
           url,
@@ -111,22 +106,23 @@ export const WebScrape = ({
 
         // todo: consolidate both KV stores into one (remove setCourseExistsAPI).
         // todo: use KV store instead of /get-all to check if course exists.
+        if (is_new_course) {
+          // Make course exist in kv store
+          await setCourseExistsAPI(courseName)
 
-        // Make course exist in kv store
-        await setCourseExistsAPI(courseName)
+          // set course exists in new metadata endpoint. Works great.
+          await callUpsertCourseMetadata(courseName, {
+            course_owner: current_user_email,
 
-        // set course exists in new metadata endpoint. Works great.
-        await callUpsertCourseMetadata(courseName, {
-          course_owner: current_user_email,
-
-          // Don't set properties we don't know about. We'll just upsert and use the defaults.
-          course_admins: undefined,
-          approved_emails_list: undefined,
-          is_private: undefined,
-          banner_image_s3: undefined,
-          course_intro_message: undefined,
-        })
-
+            // Don't set properties we don't know about. We'll just upsert and use the defaults.
+            course_admins: undefined,
+            approved_emails_list: undefined,
+            is_private: undefined,
+            banner_image_s3: undefined,
+            course_intro_message: undefined,
+          })
+          router.replace(`/${courseName}/materials`)
+        }
         router.push(`/${courseName}/materials`)
       }
     } else {
@@ -194,81 +190,88 @@ export const WebScrape = ({
 
   return (
     <>
-      {is_new_course && (
-        <Title
-          order={3}
-          className={`w-full text-center ${montserrat.className} mt-6`}
+      <Title
+        order={3}
+        className={`w-full text-center ${montserrat.className} mt-6`}
+      >
+        OR
+      </Title>
+      <Title
+        order={4}
+        className={`w-full text-center ${montserrat.className} mt-4`}
+      >
+        Web scrape any website that allows it
+      </Title>
+      <Title
+        order={6}
+        className={`w-full text-center ${montserrat.className} mt-2`}
+      >
+        It's amazing when combined with{' '}
+        <a
+          className={'text-purple-600'}
+          href="https://ocw.mit.edu/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: 'underline', paddingRight: '5px' }}
         >
-          OR
-        </Title>
-      )}
-      {is_new_course && (
-        <Title
-          order={4}
-          className={`w-full text-center ${montserrat.className} mt-4`}
-        >
-          Enter the URL of any{' '}
-          <a
-            className={'text-purple-600'}
-            href="https://ocw.mit.edu/"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: 'underline', paddingRight: '5px' }}
-          >
-            OCW MIT
-          </a>{' '}
-          course or ANY website you want to ingest
-        </Title>
-      )}
-      {is_new_course && (
-        <Input
-          icon={icon}
-          className="mt-4 w-[70%] disabled:bg-purple-200 lg:w-[50%]"
-          placeholder="Enter URL"
-          radius={'xl'}
-          value={url}
-          size={'lg'}
-          disabled={isDisabled}
-          onChange={(e) => {
-            setUrl(e.target.value)
-            // Change icon based on URL
-            if (e.target.value.includes('coursera.org')) {
-              setIcon(
-                <img
-                  src={'/media/coursera_logo_cutout.png'}
-                  alt="Coursera Logo"
-                  style={{ height: '50%', width: '50%' }}
-                />,
-              )
-            } else if (e.target.value.includes('ocw.mit.edu')) {
-              setIcon(
-                <img
-                  src={'/media/mitocw_logo.jpg'}
-                  alt="MIT OCW Logo"
-                  style={{ height: '50%', width: '50%' }}
-                />,
-              )
-            } else {
-              setIcon(<IconWorldDownload />)
-            }
-          }}
-          rightSection={
-            <Button
-              onClick={handleSubmit}
-              size="md"
-              radius={'xl'}
-              className={`rounded-s-md ${
-                isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
-              } overflow-ellipsis text-ellipsis p-2 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white`}
-              w={`${isSmallScreen ? '90%' : '95%'}}`}
-              disabled={isDisabled}
-            >
-              Ingest
-            </Button>
+          MIT Open Course Ware
+        </a>
+        <br></br>
+        For Coursera and Canvas ingest please email kvday2@illinois.edu
+      </Title>
+      <Input
+        icon={icon}
+        className="mt-4 w-[70%] disabled:bg-purple-200 lg:w-[50%]"
+        // style={{ backgroundColor: '#020307', borderRadius: 'xl' }}
+        // variant="filled"
+        wrapperProps={{ backgroundColor: '#020307', borderRadius: 'xl' }}
+        placeholder="Enter URL"
+        radius={'xl'}
+        value={url}
+        size={'lg'}
+        // color='#020307'
+        disabled={isDisabled}
+        onChange={(e) => {
+          setUrl(e.target.value)
+          // Change icon based on URL
+          if (e.target.value.includes('coursera.org')) {
+            setIcon(
+              <img
+                src={'/media/coursera_logo_cutout.png'}
+                alt="Coursera Logo"
+                style={{ height: '50%', width: '50%' }}
+              />,
+            )
+          } else if (e.target.value.includes('ocw.mit.edu')) {
+            setIcon(
+              <img
+                src={'/media/mitocw_logo.jpg'}
+                alt="MIT OCW Logo"
+                style={{ height: '50%', width: '50%' }}
+              />,
+            )
+          } else {
+            setIcon(<IconWorldDownload />)
           }
-          rightSectionWidth={isSmallScreen ? '25%' : '20%'}
-        />
-      )}
+        }}
+        rightSection={
+          <Button
+            onClick={handleSubmit}
+            size="md"
+            radius={'xl'}
+            className={`rounded-s-md ${
+              isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
+            } overflow-ellipsis text-ellipsis p-2 ${
+              isUrlUpdated ? 'text-white' : 'text-gray-500'
+            } hover:border-indigo-600 hover:bg-indigo-600 hover:text-white`}
+            w={`${isSmallScreen ? '90%' : '95%'}}`}
+            disabled={isDisabled}
+          >
+            Ingest
+          </Button>
+        }
+        rightSectionWidth={isSmallScreen ? '25%' : '20%'}
+      />
       {loadinSpinner && (
         <div className={'flex items-center justify-center'}>
           <LoadingSpinner size={'lg'} />

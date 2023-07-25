@@ -170,7 +170,7 @@ const EditCourseCard = ({
           className="min-h-full bg-gradient-to-r from-purple-900 via-indigo-800 to-blue-800"
         >
           <Group
-            spacing="lg"
+            // spacing="lg"
             m="3rem"
             align="center"
             style={{ justifyContent: 'center' }}
@@ -184,36 +184,38 @@ const EditCourseCard = ({
               {!is_new_course ? `${courseName}` : 'Create your own course'}
             </Title>
             {is_new_course && (
-              <input
-                type="text"
-                placeholder="Project name"
-                value={courseName}
-                onChange={(e) =>
-                  setCourseName(e.target.value.replaceAll(' ', '-'))
-                }
-                disabled={!is_new_course}
-                className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
+              <>
+                <input
+                  type="text"
+                  placeholder="Project name"
+                  value={courseName}
+                  onChange={(e) =>
+                    setCourseName(e.target.value.replaceAll(' ', '-'))
+                  }
+                  disabled={!is_new_course}
+                  className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
                                 ${
                                   isCourseAvailable && courseName != ''
                                     ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
                                     : 'border-red-800 text-red-600 focus:border-red-800'
                                 } ${montserrat.className}`}
-              />
+                />
+                <Title
+                  order={4}
+                  className={`w-full text-center ${montserrat.className} mt-4`}
+                >
+                  Just one step: upload any and all materials. More is better,
+                  it&apos;s fine if they&apos;re messy.
+                </Title>
+              </>
             )}
-            <Title
-              order={4}
-              className={`w-full text-center ${montserrat.className} mt-4`}
-            >
-              Just one step: upload any and all materials. More is better,
-              it&apos;s fine if they&apos;re messy.
-            </Title>
             <Flex direction={'column'} align={'center'} w={'100%'}>
               <div className={'flex flex-row items-center'}>
                 {loadinSpinner && (
                   <>
                     <LoadingSpinner size={'sm'} />
                     <Title order={4}>
-                      Please wait while the course gets ingested...
+                      Please wait while the course is ingested...
                     </Title>
                   </>
                 )}
