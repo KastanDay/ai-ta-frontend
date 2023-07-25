@@ -175,7 +175,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         // Run context search, attach to Message object.
         if (getCurrentPageName() != 'gpt4') {
           // THE ONLY place we fetch contexts (except ExtremePromptStuffing is still in api/chat.ts)
-          await fetchContexts(getCurrentPageName(), searchQuery).then(
+          await fetchContexts(getCurrentPageName(), searchQuery, selectedConversation.model.tokenLimit).then(
             (curr_contexts) => {
               message.contexts = curr_contexts as ContextWithMetadata[]
             },
