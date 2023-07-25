@@ -166,6 +166,7 @@ const MakeOldCoursePage = ({
                   <DropzoneS3Upload
                     course_name={course_name}
                     redirect_to_gpt_4={false}
+                    courseMetadata={courseMetadata}
                   />
                 </div>
               </Flex>
@@ -205,6 +206,7 @@ import { LoadingSpinner } from './LoadingSpinner'
 import { extractEmailsFromClerk } from './clerkHelpers'
 import Navbar from '~/components/UIUC-Components/Navbar'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
+import { WebScrape } from './WebScrape'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()

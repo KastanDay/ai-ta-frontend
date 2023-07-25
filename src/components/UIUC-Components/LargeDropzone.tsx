@@ -11,9 +11,10 @@ import {
 } from '@mantine/dropzone'
 import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
-import { CourseMetadata } from '~/types/courseMetadata'
+import { type CourseMetadata } from '~/types/courseMetadata'
 import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 import SupportedFileUploadTypes from './SupportedFileUploadTypes'
+import { useMediaQuery } from '@mantine/hooks'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -46,16 +47,20 @@ export function LargeDropzone({
   current_user_email,
   redirect_to_gpt_4 = true,
   isDisabled = false,
+  courseMetadata,
+  is_new_course,
 }: {
   course_name: string
   current_user_email: string
   redirect_to_gpt_4?: boolean
   isDisabled?: boolean
+  courseMetadata: CourseMetadata
+  is_new_course: boolean
 }) {
   // upload-in-progress spinner control
   const [uploadInProgress, setUploadInProgress] = useState(false)
   const router = useRouter()
-
+  const isSmallScreen = useMediaQuery('(max-width: 960px)')
   // Set owner email
   // const { isSignedIn, user } = useUser()
   // const current_user_email = user?.primaryEmailAddress?.emailAddress as string
@@ -186,7 +191,7 @@ export function LargeDropzone({
       <div
         style={{
           display: 'flex',
-          flexDirection: 'column',
+          flexDirection: is_new_course && !isSmallScreen ? 'row' : 'column',
           justifyContent: 'space-between',
         }}
       >
@@ -219,16 +224,19 @@ export function LargeDropzone({
               await setCourseExistsAPI(course_name)
 
               // set course exists in new metadata endpoint. Works great.
-              await callUpsertCourseMetadata(course_name, {
-                course_owner: current_user_email,
+              await callUpsertCourseMetadata(
+                course_name,
+                courseMetadata || {
+                  course_owner: current_user_email,
 
-                // Don't set properties we don't know about. We'll just upsert and use the defaults.
-                course_admins: undefined,
-                approved_emails_list: undefined,
-                is_private: undefined,
-                banner_image_s3: undefined,
-                course_intro_message: undefined,
-              })
+                  // Don't set properties we don't know about. We'll just upsert and use the defaults.
+                  course_admins: undefined,
+                  approved_emails_list: undefined,
+                  is_private: undefined,
+                  banner_image_s3: undefined,
+                  course_intro_message: undefined,
+                },
+              )
 
               // this does sequential uploads.
               for (const [index, file] of files.entries()) {
