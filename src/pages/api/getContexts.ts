@@ -10,7 +10,8 @@ export const fetchContexts = async (
   search_query: string,
   token_limit = 4000,
 ) => {
-  const API_URL = 'https://flask-production-751b.up.railway.app'
+  // const API_URL = 'https://flask-production-751b.up.railway.app'
+  const API_URL = 'https://flask-ai-ta-backend-pr-21.up.railway.app'
   try {
     const response: AxiosResponse<ContextWithMetadata[]> = await axios.get(
       `${API_URL}/getTopContexts`,

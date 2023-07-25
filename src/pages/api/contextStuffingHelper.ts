@@ -1,6 +1,5 @@
 import { ContextWithMetadata } from '~/types/chat';
-// @ts-expect-error - no types
-import wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module'
+
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 
@@ -10,7 +9,6 @@ export async function getStuffedPrompt(searchQuery: string, contexts: ContextWit
       return searchQuery;
     }
 
-    // await init((imports) => WebAssembly.instantiate(wasm, imports))
     const encoding = new Tiktoken(
       tiktokenModel.bpe_ranks,
       tiktokenModel.special_tokens,
