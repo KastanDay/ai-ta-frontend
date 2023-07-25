@@ -6,6 +6,7 @@ import axios from "axios";
 import {useRouter} from "next/router";
 import {useMediaQuery} from "@mantine/hooks";
 import {LoadingSpinner} from "~/components/UIUC-Components/LoadingSpinner";
+import {fetchWebScrapeConfig} from "~/pages/api/UIUC-api/webScrapeConfig";
 
 interface WebScrapeProps {
     is_new_course: boolean,
@@ -73,7 +74,8 @@ export const WebScrape = ({ is_new_course, courseName, isDisabled }: WebScrapePr
             } else {
                 // Other API call
                 // Move hardcoded values to KV database - any global data structure available?
-                data = await scrapeWeb(url, courseName, 5, 1, 200);
+                const webScrapeConfig = await fetchWebScrapeConfig();
+                data = await scrapeWeb(url, courseName, webScrapeConfig.num_sites, webScrapeConfig.recursive_depth, webScrapeConfig.timeout_sec);
                 if (data?.success) {
                     alert('Successfully scraped course!');
                     await router.push(`/${courseName}/materials`);
@@ -91,7 +93,7 @@ export const WebScrape = ({ is_new_course, courseName, isDisabled }: WebScrapePr
             if (!url || !courseName) return null;
             const response = await axios.get(`${API_URL}/web-scrape`, {
                 params: {
-                    url: encodeURIComponent(url),
+                    url: url,
                     course_name: courseName,
                     max_urls: maxUrls,
                     max_depth: maxDepth,
@@ -111,7 +113,7 @@ export const WebScrape = ({ is_new_course, courseName, isDisabled }: WebScrapePr
             console.log("calling downloadMITCourse")
             const response = await axios.get(`${API_URL}/mit-download`, {
                 params: {
-                    url: encodeURIComponent(url),
+                    url: url,
                     course_name: courseName,
                     local_dir: localDir,
                 },
