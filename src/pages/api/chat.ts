@@ -12,7 +12,7 @@ import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 import { getExtremePrompt } from './getExtremePrompt'
 import { getStuffedPrompt } from './contextStuffingHelper'
-import { OpenAIModels } from '~/types/openai'
+import { OpenAIModelID, OpenAIModels } from '~/types/openai'
 
 export const config = {
   runtime: 'edge',
@@ -30,7 +30,6 @@ const handler = async (req: Request): Promise<Response> => {
       tiktokenModel.pat_str,
     )
 
-    // const token_limit = 
     const token_limit = OpenAIModels[model.id as OpenAIModelID].tokenLimit
     console.log('chat API tokenLimit: ', token_limit)
 
