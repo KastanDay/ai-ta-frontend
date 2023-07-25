@@ -7,14 +7,21 @@ export const config = {
     runtime: 'edge',
 };
 
+import { createClient } from '@vercel/edge-config';
+// Fetch a single value from one config
+
+
+
 // https://vercel.com/docs/storage/edge-config/edge-config-sdk#use-connection-strings
 export const fetchWebScrapeConfig = async () => {
-  const exampleValue1 = await get('web_scrape_config') as any;
-  console.log("-------------- CONFIG", exampleValue1)
-  return exampleValue1.json();
-  return NextResponse.json({
-    exampleValue1,
-  });
+    const firstConfig = createClient(process.env.EDGE_CONFIG);
+    const exampleValue1 = await firstConfig.get('web_scrape_config') as any;
+    // const exampleValue1 = await get('web_scrape_config') as any;
+    console.log("-------------- CONFIG", exampleValue1)
+    return exampleValue1.json();
+    // return NextResponse.json({
+    //     exampleValue1,
+    // });
 };
 
 // export async function fetchWebScrapeConfig(): Promise<{ num_sites: number; recursive_depth: number; timeout_sec: number }> {
