@@ -4,19 +4,14 @@ import { OpenAIError, OpenAIStream } from '@/utils/server'
 import {
   ChatBody,
   ContextWithMetadata,
-  Message,
   OpenAIChatMessage,
 } from '@/types/chat'
 // @ts-expect-error - no types
 import wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module'
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
-import { fetchContextsNOAXIOS } from '~/pages/api/getContexts'
 import { getExtremePrompt } from './getExtremePrompt'
-import { Context } from 'react-markdown/lib/ast-to-react'
-
-// TODO: maybe this is why searchQuery is running so many times?
-// import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
+import { getStuffedPrompt } from './contextStuffingHelper'
 
 export const config = {
   runtime: 'edge',
@@ -69,48 +64,18 @@ const handler = async (req: Request): Promise<Response> => {
     // todo
     // }
     else {
-      const separator = '--------------------------' // between each context
-      const context_text = contexts_arr
-        .map(
-          (context) =>
-            `Document: ${context.readable_filename}, page number (if exists): ${context.pagenumber_or_timestamp}\n${context.text}\n`,
-        )
-        .join(separator + '\n')
+      // regular context stuffing
+      const stuffedPrompt = await getStuffedPrompt(search_query, contexts_arr, model.tokenLimit) as string
+      console.log("After stuffed prompt...")
 
-      const stuffedPrompt =
-        "Please answer the following question. Use the context below, called your documents, only if it's helpful and don't use parts that are very irrelevant. It's good to quote from your documents directly, when you do always use Markdown footnotes for citations. Use react-markdown superscript to number the sources at the end of sentences (1, 2, 3...) and use react-markdown Footnotes to list the full document names for each number. Use ReactMarkdown aka 'react-markdown' formatting for super script citations, use semi-formal style. Feel free to say you don't know. \nHere's a few passages of the high quality documents:\n" +
-        context_text +
-        '\n\nNow please respond to my query: ' +
-        search_query
-
-      messages[messages.length - 1]!.content = stuffedPrompt as string
-
-      console.log('......................')
-      console.log('Stuffed prompt', stuffedPrompt)
-      console.log('......................')
+      messages[messages.length - 1]!.content = stuffedPrompt
     }
 
-    //  COMPRESS TO PROPER SIZE
+    // Take most recent N messages that will fit in the context window
     const prompt_tokens = encoding.encode(promptToSend)
 
     let tokenCount = prompt_tokens.length
     let messagesToSend: OpenAIChatMessage[] = []
-
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const message = messages[i]
-      if (message) {
-        const tokens = encoding.encode(message.content)
-
-        if (tokenCount + tokens.length + 1000 > model.tokenLimit) {
-          break
-        }
-        tokenCount += tokens.length
-        messagesToSend = [
-          { role: message.role, content: message.content },
-          ...messagesToSend,
-        ]
-      }
-    }
 
     for (let i = messages.length - 1; i >= 0; i--) {
       const message = messages[i]
@@ -136,16 +101,10 @@ const handler = async (req: Request): Promise<Response> => {
       key,
       messagesToSend,
     )
-    // let response = new Response(stream)
-    // let newResponse = new Response(stream, {
-    //   headers: {
-    //     'X-Contexts': messages[messages.length - 1]!.contexts as ContextWithMetadata[]
-    //   }
-    // });
-    // response.extraData = { contexts: messages[messages.length - 1]!.contexts }
+
+    console.log('messagesToSend', messagesToSend)
 
     return new Response(stream)
-    // return { response: new Response(stream), context_arr };
   } catch (error) {
     console.error(error)
     if (error instanceof OpenAIError) {
