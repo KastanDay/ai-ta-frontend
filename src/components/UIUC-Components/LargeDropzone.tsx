@@ -304,7 +304,7 @@ export function LargeDropzone({
 
               <Text ta="center" fw={700} fz="lg" mt="xl">
                 {isDisabled ? (
-                  'Choose an available course name to create a course'
+                  'Enter an available project name above! 👀'
                 ) : (
                   <>
                     <Dropzone.Accept>Drop files here</Dropzone.Accept>
