@@ -83,7 +83,7 @@ const SupportedFileUploadTypes = () => {
         Supported File Types
       </Title>
 
-      <Flex className="space-x-3">
+      <Flex className="space-x-0">
         <Image
           src="/media/pdf_logo.png"
           width={720}
@@ -177,12 +177,6 @@ const SupportedFileUploadTypes = () => {
       </Text>
 
       <Flex className="space-x-5">
-        <IconWorldDownload
-          className={classes.smallLogos}
-          stroke={rem(1.25)}
-          color={'white'}
-          size={50}
-        />
         <Image
           src="/media/github-mark-white.png"
           width={720}
@@ -210,14 +204,14 @@ const SupportedFileUploadTypes = () => {
           className={classes.smallLogos}
           // style={{mixBlendMode: 'multiply' }}
         />
-        <Image
+        {/* <Image
           src="/media/mitocw_logo.jpg"
           width={720}
           height={100}
           quality={60}
           alt="MIT Open Courseware logo"
           className={classes.smallLogos}
-        />
+        /> */}
         <Image
           src="/media/canvas_logo.png"
           width={720}
