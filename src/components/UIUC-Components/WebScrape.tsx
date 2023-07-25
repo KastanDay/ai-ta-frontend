@@ -229,7 +229,7 @@ export const WebScrape = ({
         order={6}
         className={`w-full text-center ${montserrat.className} mt-2`}
       >
-        It&aposs amazing when combined with{' '}
+        It&apos;s amazing when combined with{' '}
         <a
           className={'text-purple-600'}
           href="https://ocw.mit.edu/"
