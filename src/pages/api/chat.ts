@@ -67,6 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
       // regular context stuffing
       const stuffedPrompt = await getStuffedPrompt(search_query, contexts_arr, model.tokenLimit) as string
       console.log("After stuffed prompt...")
+      console.log("Token limit in chat.ts api:", model.tokenLimit)
 
       messages[messages.length - 1]!.content = stuffedPrompt
     }
