@@ -177,7 +177,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         if (getCurrentPageName() != 'gpt4') {
           // THE ONLY place we fetch contexts (except ExtremePromptStuffing is still in api/chat.ts)
           const token_limit = OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
-          console.log('selectedConversation.model.tokenLimit: ', token_limit)
           await fetchContexts(getCurrentPageName(), searchQuery, token_limit).then(
             (curr_contexts) => {
               message.contexts = curr_contexts as ContextWithMetadata[]
@@ -334,7 +333,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           }
           homeDispatch({
             field: 'selectedConversation',
-            value: updatedConversation, // kastan fixed tiny bug here from original template code
+            value: updatedConversation,
           })
           saveConversation(updatedConversation)
           const updatedConversations: Conversation[] = conversations.map(
