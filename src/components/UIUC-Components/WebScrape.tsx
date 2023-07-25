@@ -89,15 +89,30 @@ export const WebScrape = ({
       let data = null
       // Make API call based on URL
       if (url.includes('coursera.org')) {
-        // Coursera API call
+        // TODO: coursera ingest
+        alert(
+          'Coursera ingest is not yet automated (auth is hard). Please email kvday2@illinois.edu to do it for you',
+        )
       } else if (url.includes('ocw.mit.edu')) {
-        // MIT API call
-        data = await downloadMITCourse(url, courseName, 'local_dir')
-        console.log(data)
-        if (data?.success) {
-          alert('Successfully scraped course!')
-          await router.push(`/${courseName}/gpt4`)
+        data = downloadMITCourse(url, courseName, 'local_dir') // no await -- do in background
+
+        if (is_new_course) {
+          // Make course exist in kv store
+          await setCourseExistsAPI(courseName)
+
+          // set course exists in new metadata endpoint. Works great.
+          await callUpsertCourseMetadata(courseName, {
+            course_owner: current_user_email,
+            // Don't set properties we don't know about. We'll just upsert and use the defaults.
+            course_admins: undefined,
+            approved_emails_list: undefined,
+            is_private: undefined,
+            banner_image_s3: undefined,
+            course_intro_message: undefined,
+          })
+          router.replace(`/${courseName}/materials`)
         }
+        router.push(`/${courseName}/materials`)
       } else {
         const response = await fetch('/api/UIUC-api/webScrapeConfig')
         let webScrapeConfig = await response.json()
@@ -120,7 +135,6 @@ export const WebScrape = ({
           // set course exists in new metadata endpoint. Works great.
           await callUpsertCourseMetadata(courseName, {
             course_owner: current_user_email,
-
             // Don't set properties we don't know about. We'll just upsert and use the defaults.
             course_admins: undefined,
             approved_emails_list: undefined,
