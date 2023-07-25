@@ -3,11 +3,13 @@ import { ContextWithMetadata } from '~/types/chat';
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 
-export async function getStuffedPrompt(searchQuery: string, contexts: ContextWithMetadata[], tokenLimit = 7000) {
+export async function getStuffedPrompt(searchQuery: string, contexts: ContextWithMetadata[], tokenLimit = 6999) {
   try {
     if (contexts.length === 0) {
       return searchQuery;
     }
+
+    tokenLimit = Math.min(tokenLimit, 5_500);
 
     const encoding = new Tiktoken(
       tiktokenModel.bpe_ranks,

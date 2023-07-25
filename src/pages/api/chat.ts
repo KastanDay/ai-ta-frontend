@@ -65,10 +65,10 @@ const handler = async (req: Request): Promise<Response> => {
     // }
     else {
       // regular context stuffing
-      const stuffedPrompt = await getStuffedPrompt(search_query, contexts_arr, model.tokenLimit)
+      const stuffedPrompt = await getStuffedPrompt(search_query, contexts_arr, model.tokenLimit) as string
       console.log("After stuffed prompt...")
 
-      messages[messages.length - 1]!.content = stuffedPrompt as string
+      messages[messages.length - 1]!.content = stuffedPrompt
     }
 
     // Take most recent N messages that will fit in the context window
@@ -101,6 +101,8 @@ const handler = async (req: Request): Promise<Response> => {
       key,
       messagesToSend,
     )
+
+    console.log('messagesToSend', messagesToSend)
 
     return new Response(stream)
   } catch (error) {
