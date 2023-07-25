@@ -40,9 +40,11 @@ export async function getStuffedPrompt(searchQuery: string, contexts: ContextWit
     const totalNumTokens = encoding.encode(stuffedPrompt).length;
 
     // console.log('......................');
-    console.log('Stuffed prompt', stuffedPrompt);
+    console.log('Stuffed prompt', stuffedPrompt.substring(0, 3700));
     // console.log('......................');
     console.log(`Total number of tokens: ${totalNumTokens}`);
+    // length of docs vs valid docs
+    console.log(`Number of docs: ${contexts.length}, number of valid docs: ${validDocs.length}`);
 
     return stuffedPrompt;
   } catch (e) {
