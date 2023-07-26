@@ -9,7 +9,7 @@ export async function getStuffedPrompt(searchQuery: string, contexts: ContextWit
       return searchQuery;
     }
 
-    tokenLimit = tokenLimit - 1001; // for the completion. We always reserve 1k.
+    tokenLimit = tokenLimit - 2001; // for the completion. We always reserve 1k + some for the system prompt I think...
 
     const encoding = new Tiktoken(
       tiktokenModel.bpe_ranks,
