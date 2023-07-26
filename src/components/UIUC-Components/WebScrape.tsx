@@ -189,7 +189,7 @@ export const WebScrape = ({
           closeButton: {
             color: theme.colors.nearlyBlack,
             '&:hover': {
-              backgroundColor: theme.colors.dark[7],
+              backgroundColor: theme.colors.dark[1],
             },
           },
         },
