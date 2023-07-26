@@ -1,6 +1,7 @@
 import { type AppType } from 'next/app'
 import { type Session } from 'next-auth'
 import { MantineProvider } from '@mantine/core'
+import { Notifications } from '@mantine/notifications'
 import { Analytics } from '@vercel/analytics/react'
 import { appWithTranslation } from 'next-i18next'
 import { ClerkProvider } from '@clerk/nextjs'
@@ -31,6 +32,10 @@ const MyApp: AppType<{ session: Session | null }> = ({
             deepBlue: ['#E9EDFC', '#C1CCF6', '#99ABF0' /* ... */],
             lime: ['#a3e635', '#65a30d', '#365314' /* ... */],
             aiPurple: ['#C06BF9'],
+            backgroundColors: ['#2e026d', '#020307'],
+            nearlyBlack: ['#0E1116'],
+            nearlyWhite: ['#F7F7F7'],
+            disabled: ['#2A2F36'],
             // or replace default theme color
             // blue: ['#E9EDFC', '#C1CCF6', '#99ABF0' /* ... */],
           },
@@ -55,6 +60,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
           },
         }}
       >
+        <Notifications position="bottom-center" zIndex={2077} />
         <Component {...pageProps} />
         <Analytics />
       </MantineProvider>
