@@ -63,7 +63,7 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
       >
         {isLoading ? (
           <>
-            <span className="loading-spinner loading-xs loading"></span>
+            <span className="loading loading-spinner loading-xs"></span>
           </>
         ) : (
           <>

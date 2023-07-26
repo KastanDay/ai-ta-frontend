@@ -1,3 +1,5 @@
+import { Notifications, notifications } from '@mantine/notifications'
+import { useMantineTheme, MantineTheme } from '@mantine/core'
 import { Button, Input, Title } from '@mantine/core'
 import { IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
@@ -51,6 +53,7 @@ export const WebScrape = ({
   const API_URL = 'https://flask-production-751b.up.railway.app'
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
+  const theme = useMantineTheme()
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newUrl = e.target.value
@@ -96,6 +99,8 @@ export const WebScrape = ({
       } else if (url.includes('ocw.mit.edu')) {
         data = downloadMITCourse(url, courseName, 'local_dir') // no await -- do in background
 
+        showToast()
+
         if (is_new_course) {
           // Make course exist in kv store
           await setCourseExistsAPI(courseName)
@@ -114,6 +119,8 @@ export const WebScrape = ({
         }
         router.push(`/${courseName}/materials`)
       } else {
+        showToast()
+
         const response = await fetch('/api/UIUC-api/webScrapeConfig')
         let webScrapeConfig = await response.json()
         webScrapeConfig = webScrapeConfig.config
@@ -150,6 +157,45 @@ export const WebScrape = ({
       alert('Invalid URL (please include https://)')
     }
     setLoadinSpinner(false)
+  }
+
+  const showToast = () => {
+    return (
+      // docs: https://mantine.dev/others/notifications/
+
+      notifications.show({
+        id: 'web-scrape-toast',
+        withCloseButton: true,
+        onClose: () => console.log('unmounted'),
+        onOpen: () => console.log('mounted'),
+        autoClose: 15000,
+        // position="top-center",
+        title: 'Web scraping started',
+        message:
+          "It'll scrape in the background, just wait for the results to show up in your project (~3 minutes total).\nThis is early release; I'd love to fix bugs, please shoot me an email with bug reports kvday2@illinois.edu.",
+        icon: <IconWorldDownload />,
+        // className: 'my-notification-class',
+        styles: {
+          root: {
+            backgroundColor: theme.colors.nearlyWhite,
+            borderColor: theme.colors.aiPurple,
+          },
+          title: {
+            color: theme.colors.nearlyBlack,
+          },
+          description: {
+            color: theme.colors.nearlyBlack,
+          },
+          closeButton: {
+            color: theme.colors.nearlyBlack,
+            '&:hover': {
+              backgroundColor: theme.colors.dark[7],
+            },
+          },
+        },
+        loading: false,
+      })
+    )
   }
 
   const scrapeWeb = async (

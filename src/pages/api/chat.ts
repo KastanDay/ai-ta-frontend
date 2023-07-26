@@ -1,11 +1,7 @@
 // src/pages/api/chat.ts
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const'
 import { OpenAIError, OpenAIStream } from '@/utils/server'
-import {
-  ChatBody,
-  ContextWithMetadata,
-  OpenAIChatMessage,
-} from '@/types/chat'
+import { ChatBody, ContextWithMetadata, OpenAIChatMessage } from '@/types/chat'
 // @ts-expect-error - no types
 import wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module'
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
@@ -67,7 +63,11 @@ const handler = async (req: Request): Promise<Response> => {
     // }
     else {
       // regular context stuffing
-      const stuffedPrompt = await getStuffedPrompt(search_query, contexts_arr, token_limit) as string
+      const stuffedPrompt = (await getStuffedPrompt(
+        search_query,
+        contexts_arr,
+        token_limit,
+      )) as string
       messages[messages.length - 1]!.content = stuffedPrompt
     }
 

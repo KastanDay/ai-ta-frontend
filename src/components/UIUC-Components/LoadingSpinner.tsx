@@ -44,7 +44,7 @@ export const LoadingSpinner = ({ size = 'md' }: { size?: string }) => {
       {/*  />*/}
       {/*</svg>*/}
       <span
-        className={`loading-spinner loading loading-${size} text-purple-600`}
+        className={`loading loading-spinner loading-${size} text-purple-600`}
       ></span>
     </div>
   )
