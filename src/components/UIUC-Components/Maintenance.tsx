@@ -1,12 +1,11 @@
 import React from 'react'
 import { Title } from '@mantine/core'
 import Link from 'next/link'
-import { Head } from 'next/document'
 
 const Maintenance = ({
 }: {
-  // use head to...
   // Prevent search engine indexing of Maintenance page (because it'll ruin our entire search results): https://github.com/vercel/next.js/discussions/12850#discussioncomment-3335807 
+  // in _document.tsx
 }) => {
   return (
     <>
