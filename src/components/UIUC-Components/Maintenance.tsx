@@ -1,5 +1,5 @@
 import React from 'react'
-import { Title } from '@mantine/core'
+import { Title, Text } from '@mantine/core'
 import Link from 'next/link'
 
 const Maintenance = ({
@@ -21,7 +21,9 @@ const Maintenance = ({
             </h2>
           </Link>
           <br></br>
-          <Title order={1}>UIUC.chat is down for maintenance</Title>
+          <Title color='#fbbf24' order={1}>UIUC.chat is down for maintenance</Title>
+          <Text size='lg'>Motivation: after enabling web scraping for our users the large volume of data filled up our vector, SQL and KV databases. We are refactoring our data schemas for search efficiency, and scaling our backend servers. We expect to be back online in a day or two. Sorry for the long delay, we are coding as fast as we can.</Text>
+          
         </div>
         <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 "></div>
       </main>
