@@ -9,7 +9,7 @@ type Props = DocumentProps & {
 export default function Document(props: Props) {
   const currentLocale =
     props.__NEXT_DATA__.locale ?? i18nextConfig.i18n.defaultLocale
-  
+
   if (process.env.NEXT_PUBLIC_MAINTENANCE === 'true') {
     return (
       <Html lang={currentLocale}>
