@@ -272,23 +272,6 @@ export const WebScrape = ({
       >
         Web scrape any website that allows it
       </Title>
-      <Title
-        order={6}
-        className={`w-full text-center ${montserrat.className} mt-2`}
-      >
-        It&apos;s amazing when combined with{' '}
-        <a
-          className={'text-purple-600'}
-          href="https://ocw.mit.edu/"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ textDecoration: 'underline', paddingRight: '5px' }}
-        >
-          MIT Open Course Ware
-        </a>
-        <br></br>
-        For Coursera and Canvas ingest please email kvday2@illinois.edu
-      </Title>
       <Input
         icon={icon}
         className="mt-4 w-[70%] min-w-[20rem] disabled:bg-purple-200 lg:w-[50%]"
@@ -346,6 +329,23 @@ export const WebScrape = ({
         }
         rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
       />
+      <Title
+        order={6}
+        className={`w-full text-center ${montserrat.className} mt-2`}
+      >
+        Looking for high quality reference material? We love{' '}
+        <a
+          className={'text-purple-600'}
+          href="https://ocw.mit.edu/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: 'underline', paddingRight: '5px' }}
+        >
+          MIT Open Course Ware
+        </a>
+        <br></br>
+        For Coursera and Canvas ingest please email kvday2@illinois.edu
+      </Title>
     </>
   )
 }
