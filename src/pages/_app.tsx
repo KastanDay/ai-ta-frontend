@@ -17,9 +17,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   if (process.env.NEXT_PUBLIC_MAINTENANCE === 'true') {
-    return <Maintenance />;
-  }
-  else {
+    return <Maintenance />
+  } else {
     return (
       <ClerkProvider
         appearance={{
@@ -45,12 +44,12 @@ const MyApp: AppType<{ session: Session | null }> = ({
               // blue: ['#E9EDFC', '#C1CCF6', '#99ABF0' /* ... */],
             },
             // primaryColor: 'aiPurple',
-  
+
             shadows: {
               // md: '1px 1px 3px rgba(0, 0, 0, .25)',
               // xl: '5px 5px 3px rgba(0, 0, 0, .25)',
             },
-  
+
             headings: {
               fontFamily: 'Montserrat, Roboto, sans-serif',
               sizes: {
@@ -72,7 +71,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
       </ClerkProvider>
     )
   }
-  
 }
 
 // export default .withTRPC(MyApp)

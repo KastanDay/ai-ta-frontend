@@ -157,6 +157,7 @@ export const WebScrape = ({
       alert('Invalid URL (please include https://)')
     }
     setLoadinSpinner(false)
+    setUrl('') // clear url
   }
 
   const showToast = () => {
@@ -290,20 +291,15 @@ export const WebScrape = ({
       </Title>
       <Input
         icon={icon}
-        className="mt-4 w-[70%] disabled:bg-purple-200 lg:w-[50%]"
-        // style={{ backgroundColor: '#020307', borderRadius: 'xl' }}
-        // variant="filled"
+        className="mt-4 w-[70%] min-w-[20rem] disabled:bg-purple-200 lg:w-[50%]"
         wrapperProps={{ backgroundColor: '#020307', borderRadius: 'xl' }}
         placeholder="Enter URL"
         radius={'xl'}
         value={url}
         size={'lg'}
-        // color='#020307'
         disabled={isDisabled}
         onChange={(e) => {
           setUrl(e.target.value)
-          // setUrl(formatUrl(e.target.value))
-          // Change icon based on URL
           if (e.target.value.includes('coursera.org')) {
             setIcon(
               <img
@@ -324,32 +320,32 @@ export const WebScrape = ({
             setIcon(<IconWorldDownload />)
           }
         }}
+        onKeyPress={(event) => {
+          if (event.key === 'Enter') {
+            handleSubmit()
+          }
+        }}
         rightSection={
           <Button
-            onClick={handleSubmit}
+            onClick={(e) => {
+              e.preventDefault()
+              handleSubmit()
+            }}
             size="md"
             radius={'xl'}
             className={`rounded-s-md ${
               isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
             } overflow-ellipsis text-ellipsis p-2 ${
               isUrlUpdated ? 'text-white' : 'text-gray-500'
-            } hover:border-indigo-600 hover:bg-indigo-600 hover:text-white`}
-            w={`${isSmallScreen ? '90%' : '95%'}}`}
+            } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
+            w={`${isSmallScreen ? 'auto' : 'auto'}`}
             disabled={isDisabled}
           >
             Ingest
           </Button>
         }
-        rightSectionWidth={isSmallScreen ? '25%' : '20%'}
+        rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
       />
-      {loadinSpinner && (
-        <>
-          <br></br>
-          <div className={'flex items-center justify-center'}>
-            <LoadingSpinner size={'lg'} />
-          </div>
-        </>
-      )}
     </>
   )
 }
