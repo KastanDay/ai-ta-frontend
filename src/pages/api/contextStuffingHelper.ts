@@ -4,6 +4,7 @@ import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 
 export async function getStuffedPrompt(
+  course_name: string,
   searchQuery: string,
   contexts: ContextWithMetadata[],
   tokenLimit = 8000,
@@ -21,8 +22,14 @@ export async function getStuffedPrompt(
       tiktokenModel.pat_str,
     )
 
-    const prePrompt =
-      "Please answer the following question. Use the context below, called your documents, only if it's helpful and don't use parts that are very irrelevant. It's good to quote from your documents directly, when you do always use Markdown footnotes for citations. Use react-markdown superscript to number the sources at the end of sentences (1, 2, 3...) and use react-markdown Footnotes to list the full document names for each number. Use ReactMarkdown aka 'react-markdown' formatting for super script citations, use semi-formal style. Feel free to say you don't know. \nHere's a few passages of the high quality documents:\n"
+    let prePrompt = ''
+    if (course_name == 'Law794-TransactionalDraftingAlam') {
+      prePrompt =
+        "Please answer the following question. Use the documents below, and ONLY the documents below, to answer the question. This is for the law domain and we train law students to stick to facts that are in the record. Do not improvise or use your world knowledge, stick to only the information provided and make heavy use of direct quotes instead of paraphrasing or summarizing. When citing the documents, always use Markdown footnotes in the react-markdown format. Use react-markdown superscript to number the sources at the end of sentences (1, 2, 3...) and use react-markdown Footnotes to list the full document names for each number. Use ReactMarkdown aka 'react-markdown' formatting for super script citations, use semi-formal style. Say that 'the topic is not discussed in these documents' when the answer is not directly available in the documents. If there are related documents, tell the user that they might be able to learn more in that document.\nHere's a few passages of the documents:\n"
+    } else {
+      prePrompt =
+        "Please answer the following question. Use the context below, called your documents, only if it's helpful and don't use parts that are very irrelevant. It's good to quote from your documents directly, when you do always use Markdown footnotes for citations. Use react-markdown superscript to number the sources at the end of sentences (1, 2, 3...) and use react-markdown Footnotes to list the full document names for each number. Use ReactMarkdown aka 'react-markdown' formatting for super script citations, use semi-formal style. Feel free to say you don't know. \nHere's a few passages of the high quality documents:\n"
+    }
 
     let tokenCounter = encoding.encode(
       prePrompt + '\n\nNow please respond to my query: ' + searchQuery,
