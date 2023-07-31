@@ -64,6 +64,7 @@ const handler = async (req: Request): Promise<Response> => {
     else {
       // regular context stuffing
       const stuffedPrompt = (await getStuffedPrompt(
+        course_name,
         search_query,
         contexts_arr,
         token_limit,
