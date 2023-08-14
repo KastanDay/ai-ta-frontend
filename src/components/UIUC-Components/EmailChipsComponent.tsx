@@ -175,33 +175,14 @@ const EmailChipsComponent = ({
 
   const callSetCourseMetadata = async (courseMetadata: CourseMetadata) => {
     try {
-      const { is_private, course_owner, course_admins, approved_emails_list } =
-        courseMetadata
-      const course_name = courseName
-
-      const url = new URL(
-        '/api/UIUC-api/setCourseMetadata',
-        window.location.origin,
-      )
-
-      url.searchParams.append('is_private', String(is_private))
-      url.searchParams.append('course_name', course_name)
-      url.searchParams.append('course_owner', course_owner)
-      url.searchParams.append('course_admins', JSON.stringify(course_admins))
-      url.searchParams.append(
-        'approved_emails_list',
-        JSON.stringify(approved_emails_list),
-      )
-      url.searchParams.append('banner_image_s3', banner_image_s3)
-      url.searchParams.append('course_intro_message', course_intro_message)
-
+      const url = new URL('/api/UIUC-api/upsertCourseMetadata', window.location.origin);
       const response = await fetch(url.toString(), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(courseMetadata),
       })
-
       const data = await response.json()
       return data
     } catch (error) {
@@ -238,24 +219,21 @@ const EmailChipsComponent = ({
 
   async function fetchCourseMetadata(course_name: string) {
     try {
-      const response = await fetch(
-        `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
-      )
-
+      const response = await fetch(`/api/UIUC-api/getCourseMetadata?course_name=${course_name}`);
       if (response.ok) {
-        const data = await response.json()
+        const data = await response.json();
         if (data.success === false) {
-          console.error('An error occurred while fetching course metadata')
-          return null
+          console.error('An error occurred while fetching course metadata');
+          return null;
         }
-        return data.course_metadata
+        return data.course_metadata;
       } else {
-        console.error(`Error fetching course metadata: ${response.status}`)
-        return null
+        console.error(`Error fetching course metadata: ${response.status}`);
+        return null;
       }
     } catch (error) {
-      console.error('Error fetching course metadata:', error)
-      return null
+      console.error('Error fetching course metadata:', error);
+      return null;
     }
   }
 

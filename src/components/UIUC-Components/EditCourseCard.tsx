@@ -390,51 +390,17 @@ const PrivateOrPublicCourse = ({
     callSetCoursePublicOrPrivate(course_name, !isPrivate) // db
   }
 
-  const callSetCourseMetadata = async (
-    courseMetadata: CourseMetadata,
-    course_name: string,
-  ) => {
+  const callSetCourseMetadata = async (courseMetadata: CourseMetadata) => {
     try {
-      const {
-        is_private,
-        course_owner,
-        course_admins,
-        approved_emails_list,
-        course_intro_message,
-        banner_image_s3,
-      } = courseMetadata
-
-      console.log(
-        'IN callSetCourseMetadata in MakeNewCoursePage: ',
-        courseMetadata,
-      )
-
-      const url = new URL(
-        '/api/UIUC-api/setCourseMetadata',
-        window.location.origin,
-      )
-
-      url.searchParams.append('is_private', String(is_private))
-      url.searchParams.append('course_name', course_name)
-      url.searchParams.append('course_owner', course_owner)
-      url.searchParams.append(
-        'course_intro_message',
-        course_intro_message || '',
-      )
-      url.searchParams.append('banner_image_s3', banner_image_s3 || '')
-      url.searchParams.append('course_admins', JSON.stringify(course_admins))
-      url.searchParams.append(
-        'approved_emails_list',
-        JSON.stringify(approved_emails_list),
-      )
-
+      const url = new URL('/api/UIUC-api/upsertCourseMetadata', window.location.origin);
+      
       const response = await fetch(url.toString(), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(courseMetadata),
       })
-
       const data = await response.json()
       return data
     } catch (error) {
@@ -448,11 +414,11 @@ const PrivateOrPublicCourse = ({
     course_name: string,
   ) => {
     console.log('Fresh course metadata:', new_course_metadata)
-    callSetCourseMetadata(
+    callUpsertCourseMetadata(
+      course_name,
       {
         ...new_course_metadata,
-      },
-      course_name,
+      }
     )
   }
 
