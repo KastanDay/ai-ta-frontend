@@ -19,7 +19,7 @@ export interface ContextWithMetadata {
   readable_filename: string
   course_name: string
   s3_path: string
-  pagenumber_or_timestamp: string
+  pagenumber: string
 }
 
 export type Role = 'assistant' | 'user'
