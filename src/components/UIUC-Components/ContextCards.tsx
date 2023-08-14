@@ -59,7 +59,7 @@ export const ContextCards = ({
                   id={context.id || index}
                   text={context.text}
                   readable_filename={context.readable_filename}
-                  pagenumber_or_timestamp={context.pagenumber_or_timestamp}
+                  pagenumber={context.pagenumber}
                   s3_path={context.s3_path}
                   course_name={context.course_name}
                 />
@@ -103,14 +103,14 @@ function DynamicMaterialsCard({
   readable_filename,
   course_name,
   s3_path,
-  pagenumber_or_timestamp,
+  pagenumber,
 }: ContextWithMetadata) {
   const [presignedUrl, setPresignedUrl] = useState<string | null>(null)
   const [presignedUrlPng, setPresignedUrlPng] = useState<string | null>(null)
 
   useEffect(() => {
     fetchPresignedUrl(s3_path).then((url) => {
-      setPresignedUrl(url + '#page=' + pagenumber_or_timestamp)
+      setPresignedUrl(url + '#page=' + pagenumber)
     })
 
     // ONLY PDFs have thumbnail images
@@ -174,7 +174,7 @@ function DynamicMaterialsCard({
               AI summary
             </Text>
             <Text size="sm" variant="dimmed" weight={4300}>
-              {pagenumber_or_timestamp !== '' ? (
+              {pagenumber !== '' ? (
                 <Text
                   pb="0"
                   className="justify-end"
@@ -182,7 +182,7 @@ function DynamicMaterialsCard({
                   variant="dimmed"
                   weight={400}
                 >
-                  Page {pagenumber_or_timestamp}
+                  Page {pagenumber}
                 </Text>
               ) : (
                 <>{/* NO PAGE NUMBER sorry :( */}</>
