@@ -20,6 +20,8 @@ export interface ContextWithMetadata {
   course_name: string
   s3_path: string
   pagenumber: string
+  url: string
+  base_url: string
 }
 
 export type Role = 'assistant' | 'user'
