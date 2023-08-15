@@ -55,13 +55,8 @@ export const ContextCards = ({
               .slice(0, 4) // only show first 4 cards
               .map((context: ContextWithMetadata, index: number) => (
                 <DynamicMaterialsCard
-                  key={context.id || index}
-                  id={context.id || index}
-                  text={context.text}
-                  readable_filename={context.readable_filename}
-                  pagenumber={context.pagenumber}
-                  s3_path={context.s3_path}
-                  course_name={context.course_name}
+                  key={index}
+                  {...context}
                 />
               ))}
           </Group>
@@ -97,25 +92,23 @@ export const ContextCards = ({
   )
 }
 
-function DynamicMaterialsCard({
-  id,
-  text,
-  readable_filename,
-  course_name,
-  s3_path,
-  pagenumber,
-}: ContextWithMetadata) {
+function DynamicMaterialsCard(context: ContextWithMetadata) {
   const [presignedUrl, setPresignedUrl] = useState<string | null>(null)
   const [presignedUrlPng, setPresignedUrlPng] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchPresignedUrl(s3_path).then((url) => {
-      setPresignedUrl(url + '#page=' + pagenumber)
+    fetchPresignedUrl(context.s3_path).then((url) => {
+      setPresignedUrl(url + '#page=' + context.pagenumber)
     })
 
+    // HTML pages have original URLs
+    if (context.url != "") {
+      setPresignedUrl(context.url)
+    }
+
     // ONLY PDFs have thumbnail images
-    if (s3_path.endsWith('.pdf')) {
-      const s3_thumbnail_path = s3_path.replace('.pdf', '-pg1-thumb.png')
+    if (context.s3_path.endsWith('.pdf')) {
+      const s3_thumbnail_path = context.s3_path.replace('.pdf', '-pg1-thumb.png')
       fetchPresignedUrl(s3_thumbnail_path).then((url) => {
         setPresignedUrlPng(url)
       })
@@ -123,7 +116,7 @@ function DynamicMaterialsCard({
       // No thumbnail for non-PDFs
       setPresignedUrlPng(null)
     }
-  }, [s3_path])
+  }, [])
 
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
@@ -161,7 +154,7 @@ function DynamicMaterialsCard({
             size="sm"
             weight={500}
           >
-            {readable_filename}
+            {context.readable_filename}
           </Text>
 
           <Group position="apart">
@@ -174,7 +167,7 @@ function DynamicMaterialsCard({
               AI summary
             </Text>
             <Text size="sm" variant="dimmed" weight={4300}>
-              {pagenumber !== '' ? (
+              {context.pagenumber !== '' ? (
                 <Text
                   pb="0"
                   className="justify-end"
@@ -182,7 +175,7 @@ function DynamicMaterialsCard({
                   variant="dimmed"
                   weight={400}
                 >
-                  Page {pagenumber}
+                  Page {context.pagenumber}
                 </Text>
               ) : (
                 <>{/* NO PAGE NUMBER sorry :( */}</>
@@ -192,7 +185,7 @@ function DynamicMaterialsCard({
 
           <Text p="0px" className="fade-3-lines" size="xs" color="dimmed">
             {/* AI summary // pdf full text */}
-            {text}
+            {context.text}
           </Text>
           {/* <IconExternalLink className='center-align' size={20} strokeWidth={2} color={'white'} /> */}
 
