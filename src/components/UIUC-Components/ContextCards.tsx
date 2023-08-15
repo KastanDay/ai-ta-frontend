@@ -98,11 +98,15 @@ function DynamicMaterialsCard(context: ContextWithMetadata) {
 
   useEffect(() => {
     // HTML pages have original URLs
-    if (context.url != "") {
+    console.log("readable_filename", context.readable_filename, "Context.url", context.url)
+    console.log("Context.url", context.url)
+    if (context.url != "" && context.url != null) {
+      console.log("SETTING CONTEXT URL", context.url)
       setPresignedUrl(context.url)
     }
     else {
       fetchPresignedUrl(context.s3_path).then((url) => {
+        console.log("Using S3", url)
         setPresignedUrl(url + '#page=' + context.pagenumber)
       })
     }
