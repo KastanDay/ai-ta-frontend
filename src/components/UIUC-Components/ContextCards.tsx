@@ -97,13 +97,14 @@ function DynamicMaterialsCard(context: ContextWithMetadata) {
   const [presignedUrlPng, setPresignedUrlPng] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchPresignedUrl(context.s3_path).then((url) => {
-      setPresignedUrl(url + '#page=' + context.pagenumber)
-    })
-
     // HTML pages have original URLs
     if (context.url != "") {
       setPresignedUrl(context.url)
+    }
+    else {
+      fetchPresignedUrl(context.s3_path).then((url) => {
+        setPresignedUrl(url + '#page=' + context.pagenumber)
+      })
     }
 
     // ONLY PDFs have thumbnail images
