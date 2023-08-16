@@ -51,7 +51,8 @@ async function getCourseData(course_name: string) {
       params: { course_name },
     })
 
-    return response.data.distinct_files
+    // return response.data.distinct_files
+    return response.data.all_s3_paths
   } catch (error) {
     console.error('Error fetching course files:', error)
     return null
