@@ -85,7 +85,6 @@ const EditCourseCard = ({
 
       fetchGetAllCourseNames()
         .then((result) => {
-          console.log('Running getAllCourseNames()', result)
           setAllExistingCourseNames(result)
         })
         .catch((error) => {

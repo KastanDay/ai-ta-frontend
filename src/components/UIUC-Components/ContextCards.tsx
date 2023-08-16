@@ -161,6 +161,20 @@ function DynamicMaterialsCard(context: ContextWithMetadata) {
           >
             {context.readable_filename}
           </Text>
+          {/* TODO: Add full link text? */}
+          {/* {context.url != "" && context.url != null && (
+            <Text
+              // className="fade-2-lines"
+              // className="kas-gradient-text"
+              className="ul"
+              style={{ fontFamily: 'Montserrat' }}
+              size="xs"
+              color='white'
+              weight={300}
+            >
+              <u>{context.url}</u>
+            </Text>
+          )} */}
 
           <Group position="apart">
             <Text

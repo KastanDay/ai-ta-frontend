@@ -194,19 +194,18 @@ interface CourseFile {
   readable_filename: string
   type: string
   url: string
+  base_url: string
 }
 
 interface CourseFilesListProps {
   files: CourseFile[]
 }
 import { IconTrash } from '@tabler/icons-react'
-import LargeDropzone from './LargeDropzone'
 import { MainPageBackground } from './MainPageBackground'
 import { LoadingSpinner } from './LoadingSpinner'
 import { extractEmailsFromClerk } from './clerkHelpers'
 import Navbar from '~/components/UIUC-Components/Navbar'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
-import { WebScrape } from './WebScrape'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
@@ -243,6 +242,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
               e.currentTarget.style.border = 'solid 1.5px'
             }}
           >
+            <a href={file.url} target="_blank" rel="noopener noreferrer"> {/* Added this line */}
             <div
               className="min-w-0 flex-auto"
               style={{
@@ -256,9 +256,10 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 {file.readable_filename}
               </p>
               <p className="mt-1 truncate text-xs leading-5 text-gray-600">
-                {file.course_name}
+                {file.url || file.course_name}
               </p>
             </div>
+            </a>
             <div className="me-4 flex justify-end space-x-2">
               {/* Download button */}
               <button
