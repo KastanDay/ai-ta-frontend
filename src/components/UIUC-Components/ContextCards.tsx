@@ -54,10 +54,7 @@ export const ContextCards = ({
             {contexts
               .slice(0, 4) // only show first 4 cards
               .map((context: ContextWithMetadata, index: number) => (
-                <DynamicMaterialsCard
-                  key={index}
-                  {...context}
-                />
+                <DynamicMaterialsCard key={index} {...context} />
               ))}
           </Group>
         </>
@@ -98,22 +95,29 @@ function DynamicMaterialsCard(context: ContextWithMetadata) {
 
   useEffect(() => {
     // HTML pages have original URLs
-    console.log("readable_filename", context.readable_filename, "Context.url", context.url)
-    console.log("Context.url", context.url)
-    if (context.url != "" && context.url != null) {
-      console.log("SETTING CONTEXT URL", context.url)
+    console.log(
+      'readable_filename',
+      context.readable_filename,
+      'Context.url',
+      context.url,
+    )
+    console.log('Context.url', context.url)
+    if (context.url != '' && context.url != null) {
+      console.log('SETTING CONTEXT URL', context.url)
       setPresignedUrl(context.url)
-    }
-    else {
+    } else {
       fetchPresignedUrl(context.s3_path).then((url) => {
-        console.log("Using S3", url)
+        console.log('Using S3', url)
         setPresignedUrl(url + '#page=' + context.pagenumber)
       })
     }
 
     // ONLY PDFs have thumbnail images
     if (context.s3_path.endsWith('.pdf')) {
-      const s3_thumbnail_path = context.s3_path.replace('.pdf', '-pg1-thumb.png')
+      const s3_thumbnail_path = context.s3_path.replace(
+        '.pdf',
+        '-pg1-thumb.png',
+      )
       fetchPresignedUrl(s3_thumbnail_path).then((url) => {
         setPresignedUrlPng(url)
       })
