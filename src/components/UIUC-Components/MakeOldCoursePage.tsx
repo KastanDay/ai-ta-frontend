@@ -253,14 +253,14 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
               <div
                 className="min-w-0 flex-auto"
                 style={{
-                  maxWidth: '80%',
+                  maxWidth: '100%',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                 }}
               >
                 <a href={file.url} target="_blank" rel="noopener noreferrer">
-                  <p className="text-xl font-semibold leading-6 text-gray-800">
+                  <p className="text-xl truncate font-semibold leading-6 text-gray-800">
                     {file.readable_filename}
                   </p>
                   <p className="mt-1 truncate text-xs leading-5 text-gray-600">
