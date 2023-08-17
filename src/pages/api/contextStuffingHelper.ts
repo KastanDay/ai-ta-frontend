@@ -56,9 +56,7 @@ export async function getStuffedPrompt(
       .map(
         (d) =>
           `Document: ${d.readable_filename}${
-            d.pagenumber
-              ? ', page: ' + d.pagenumber
-              : ''
+            d.pagenumber ? ', page: ' + d.pagenumber : ''
           }\n${d.text}\n`,
       )
       .join(separator)
