@@ -22,7 +22,8 @@ import {
   Flex,
   Group,
   createStyles,
-  Divider,
+  // Divider,
+  MantineTheme,
   // TextInput,
   // Tooltip,
 } from '@mantine/core'
@@ -53,13 +54,13 @@ const MakeOldCoursePage = ({
   course_data: any
 }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
+  // const { classes, } = useStyles()
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
   // const { isSignedIn, user } = useUser()
   const clerk_user = useUser()
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
-  const { classes, theme } = useStyles()
   const [currentEmail, setCurrentEmail] = useState('')
 
   const router = useRouter()
@@ -181,7 +182,7 @@ const MakeOldCoursePage = ({
   )
 }
 
-import { IconDownload, IconLock } from '@tabler/icons-react'
+import { IconCheck, IconDownload, IconLock } from '@tabler/icons-react'
 
 import { CannotEditCourse } from './CannotEditCourse'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -194,19 +195,19 @@ interface CourseFile {
   readable_filename: string
   type: string
   url: string
+  base_url: string
 }
 
 interface CourseFilesListProps {
   files: CourseFile[]
 }
 import { IconTrash } from '@tabler/icons-react'
-import LargeDropzone from './LargeDropzone'
 import { MainPageBackground } from './MainPageBackground'
 import { LoadingSpinner } from './LoadingSpinner'
 import { extractEmailsFromClerk } from './clerkHelpers'
 import Navbar from '~/components/UIUC-Components/Navbar'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
-import { WebScrape } from './WebScrape'
+import { notifications } from '@mantine/notifications'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
@@ -217,11 +218,14 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
       const response = await axios.delete(`${API_URL}/delete`, {
         params: { s3_path, course_name },
       })
-      // Handle successful deletion, e.g., remove the item from the list or show a success message
+      // Handle successful deletion, show a success message
+      showToastOnFileDeleted(theme)
       // Refresh the page
       await router.push(router.asPath)
     } catch (error) {
       console.error(error)
+      // Show error message
+      showToastOnFileDeleted(theme, true)
     }
   }
 
@@ -234,31 +238,54 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
         {files.map((file, index) => (
           <li
             key={file.s3_path}
-            className="hover:shadow-xs flex cursor-pointer items-center justify-between gap-x-6 rounded-xl bg-violet-300 py-4 pl-4 pr-1 transition duration-200 ease-in-out hover:bg-violet-200 hover:shadow-violet-200"
+            className="hover:shadow-xs flex items-center justify-between gap-x-6 rounded-xl bg-violet-300 py-4 pl-4 pr-1 transition duration-200 ease-in-out hover:bg-violet-200 hover:shadow-violet-200"
             onMouseEnter={(e) => {
-              e.currentTarget.style.border = 'solid 1.5px'
+              // Removed this because it causes the UI to jump around on mouse enter.
+              // e.currentTarget.style.border = 'solid 1.5px'
               e.currentTarget.style.borderColor = theme.colors.violet[8]
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.border = 'solid 1.5px'
+              // e.currentTarget.style.border = 'solid 1.5px'
             }}
           >
-            <div
-              className="min-w-0 flex-auto"
-              style={{
-                maxWidth: '80%',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <p className="text-xl font-semibold leading-6 text-gray-800">
-                {file.readable_filename}
-              </p>
-              <p className="mt-1 truncate text-xs leading-5 text-gray-600">
-                {file.course_name}
-              </p>
-            </div>
+            {/* Conditionally show link in small text if exists */}
+            {file.url || file.s3_path.endsWith('.pdf') ? (
+              <div
+                className="min-w-0 flex-auto"
+                style={{
+                  maxWidth: '80%',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <a href={file.url} target="_blank" rel="noopener noreferrer">
+                  <p className="text-xl font-semibold leading-6 text-gray-800">
+                    {file.readable_filename}
+                  </p>
+                  <p className="mt-1 truncate text-xs leading-5 text-gray-600">
+                    {file.url || ''}
+                  </p>
+                </a>
+              </div>
+            ) : (
+              <div
+                className="min-w-0 flex-auto"
+                style={{
+                  maxWidth: '80%',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <p className="text-xl font-semibold leading-6 text-gray-800">
+                  {file.readable_filename}
+                </p>
+                <p className="mt-1 truncate text-xs leading-5 text-gray-600">
+                  {file.course_name}
+                </p>
+              </div>
+            )}
             <div className="me-4 flex justify-end space-x-2">
               {/* Download button */}
               <button
@@ -355,6 +382,50 @@ async function fetchPresignedUrl(
     console.error('Error fetching presigned URL:', error)
     return null
   }
+}
+
+const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
+  return (
+    // docs: https://mantine.dev/others/notifications/
+
+    notifications.show({
+      id: 'file-deleted-from-materials',
+      withCloseButton: true,
+      onClose: () => console.log('unmounted'),
+      onOpen: () => console.log('mounted'),
+      autoClose: 6000,
+      // position="top-center",
+      title: was_error ? 'Error deleting file' : 'File deleted',
+      message: was_error
+        ? "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug."
+        : 'That file is 100% purged from our servers and, of course, will no longer be used by the chatbot.',
+      icon: <IconCheck />,
+      // className: 'my-notification-class',
+      styles: {
+        root: {
+          backgroundColor: was_error
+            ? theme.colors.errorBackground
+            : theme.colors.nearlyWhite,
+          borderColor: was_error
+            ? theme.colors.errorBorder
+            : theme.colors.aiPurple,
+        },
+        title: {
+          color: theme.colors.nearlyBlack,
+        },
+        description: {
+          color: theme.colors.nearlyBlack,
+        },
+        closeButton: {
+          color: theme.colors.nearlyBlack,
+          '&:hover': {
+            backgroundColor: theme.colors.dark[1],
+          },
+        },
+      },
+      loading: false,
+    })
+  )
 }
 
 export default MakeOldCoursePage
