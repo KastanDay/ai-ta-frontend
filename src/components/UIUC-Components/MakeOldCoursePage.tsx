@@ -260,7 +260,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 }}
               >
                 <a href={file.url} target="_blank" rel="noopener noreferrer">
-                  <p className="text-xl truncate font-semibold leading-6 text-gray-800">
+                  <p className="truncate text-xl font-semibold leading-6 text-gray-800">
                     {file.readable_filename}
                   </p>
                   <p className="mt-1 truncate text-xs leading-5 text-gray-600">
