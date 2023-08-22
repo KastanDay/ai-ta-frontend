@@ -1,4 +1,7 @@
+import { Group } from '@mantine/core'
+import { IconExternalLink } from '@tabler/icons-react'
 import { NextPage } from 'next'
+import Link from 'next/link'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 // import { Card, Image, Text, Title, Badge, Button, Group } from '@mantine/core'
 
@@ -6,6 +9,19 @@ const DisclaimerPage: NextPage = () => {
   return (
     <MainPageBackground>
       <p style={{ whiteSpace: 'pre-line' }}>{disclaimer_string}</p>
+        <Link href="/terms">
+          <Group>
+            You may read the terms and conditions here
+            <IconExternalLink size={18} />
+          </Group>
+        </Link>
+        
+        <Link href="/privacy">
+          <Group>
+            You may read the privacy policy here
+            <IconExternalLink size={18} />
+          </Group>
+        </Link>
     </MainPageBackground>
   )
 }
