@@ -26,9 +26,9 @@ import { kv } from '@vercel/kv'
 
 export async function checkIfCourseExists(course_name: string) {
   try {
-    const courseExists = await kv.get(course_name)
-    // console.log(courseExists);
-    return courseExists as boolean
+    const courseMetadata = await kv.hget('course_metadatas', course_name)
+    // If courseMetadata exists, the course exists
+    return courseMetadata != null
   } catch (error) {
     console.log(error)
     return false
@@ -53,7 +53,7 @@ async function getCourseData(course_name: string) {
 
     // return response.data.url;
     // console.log('response.data', response.data)
-    return response.data.all_s3_paths
+    return response.data.distinct_files
   } catch (error) {
     console.error('Error fetching course files:', error)
     return null

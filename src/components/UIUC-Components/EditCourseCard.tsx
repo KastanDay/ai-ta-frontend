@@ -17,7 +17,6 @@ import LargeDropzone from './LargeDropzone'
 import EmailChipsComponent from './EmailChipsComponent'
 import { useMediaQuery } from '@mantine/hooks'
 import { Montserrat } from 'next/font/google'
-import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 import { GetCurrentPageName } from './CanViewOnlyCourse'
 import { useRouter } from 'next/router'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
@@ -276,10 +275,28 @@ const EditCourseCard = ({
                           setIsIntroMessageUpdated(false)
                           if (courseMetadata) {
                             courseMetadata.course_intro_message = introMessage
-                            await callUpsertCourseMetadata(
-                              course_name,
-                              courseMetadata,
-                            ) // Update the courseMetadata object
+                            const callUpsertCourseMetadata = async (
+                              course_name: string,
+                              courseMetadata: CourseMetadata,
+                            ) => {
+                              try {
+                                const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  },
+                                  body: JSON.stringify({
+                                    courseName: course_name,
+                                    courseMetadata: courseMetadata,
+                                  }),
+                                })
+                                const data = await response.json()
+                                return data
+                              } catch (error) {
+                                console.error('Error setting course metadata:', error)
+                                return false
+                              }
+                            } // Update the courseMetadata object
                           }
                         }}
                       >
@@ -307,10 +324,20 @@ const EditCourseCard = ({
                         )
                         if (banner_s3_image && courseMetadata) {
                           courseMetadata.banner_image_s3 = banner_s3_image
-                          await callUpsertCourseMetadata(
-                            course_name,
-                            courseMetadata,
-                          ).then(() => setCourseBannerUrl(banner_s3_image)) // Update the courseMetadata object
+                          const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              courseName: course_name,
+                              courseMetadata: courseMetadata,
+                            }),
+                          })
+                          const data = await response.json()
+                          if (data.success) {
+                            setCourseBannerUrl(banner_s3_image)
+                          }
                         }
                       }
                     }}
@@ -409,17 +436,27 @@ const PrivateOrPublicCourse = ({
     }
   }
 
-  const handleEmailAddressesChange = (
+  const handleEmailAddressesChange = async (
     new_course_metadata: CourseMetadata,
     course_name: string,
   ) => {
     console.log('Fresh course metadata:', new_course_metadata)
-    callUpsertCourseMetadata(
-      course_name,
-      {
-        ...new_course_metadata,
-      }
-    )
+    const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        courseName: course_name,
+        courseMetadata: new_course_metadata,
+      }),
+    })
+    const data = await response.json()
+    if (data.success) {
+      console.log('Course metadata updated successfully')
+    } else {
+      console.error('Error updating course metadata')
+    }
   }
 
   return (

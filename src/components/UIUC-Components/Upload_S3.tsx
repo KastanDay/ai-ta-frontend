@@ -12,7 +12,6 @@ import {
 import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
 import { type CourseMetadata } from '~/types/courseMetadata'
-import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -245,7 +244,8 @@ export function DropzoneS3Upload({
           setUploadInProgress(true)
 
           // Make course exist in kv store
-          await setCourseExistsAPI(getCurrentPageName() as string)
+          // Removing this for kv refactor
+          // await setCourseExistsAPI(getCurrentPageName() as string)
 
           await callSetCourseMetadata(courseMetadata as CourseMetadata)
 

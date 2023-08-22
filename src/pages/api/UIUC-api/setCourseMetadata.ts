@@ -2,7 +2,7 @@ import { kv } from '@vercel/kv'
 import { NextResponse } from 'next/server'
 import { type CourseMetadata } from '~/types/courseMetadata'
 
-export const runtime = 'edge'
+
 
 const setCourseMetadata = async (req: any, res: any) => {
   if (req.method !== 'POST') {

@@ -322,15 +322,21 @@ async function fetchCourseMetadata(course_name: string) {
     const response = await fetch(
       `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
     )
-
+    console.log("REsponse received while fetching metadata:", response)
     if (response.ok) {
       const data = await response.json()
       if (data.success === false) {
-        throw new Error('An error occurred while fetching course metadata')
+        throw new Error(data.message || 'An error occurred while fetching course metadata')
+      }
+      // Parse is_private field from string to boolean
+      if (data.course_metadata && data.course_metadata.is_private) {
+        data.course_metadata.is_private = JSON.parse(
+          data.course_metadata.is_private as unknown as string,
+        )
       }
       return data.course_metadata
     } else {
-      throw new Error(`Error fetching course metadata: ${response.status}`)
+      throw new Error(`Error fetching course metadata: ${response.statusText || response.status}`)
     }
   } catch (error) {
     console.error('Error fetching course metadata:', error)

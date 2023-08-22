@@ -12,7 +12,6 @@ import {
 import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
 import { type CourseMetadata } from '~/types/courseMetadata'
-import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 import SupportedFileUploadTypes from './SupportedFileUploadTypes'
 import { useMediaQuery } from '@mantine/hooks'
 
@@ -221,22 +220,30 @@ export function LargeDropzone({
               setUploadInProgress(true)
 
               // Make course exist in kv store
-              await setCourseExistsAPI(course_name)
+              // Removing this for kv refactor
+              // await setCourseExistsAPI(course_name)
 
               // set course exists in new metadata endpoint. Works great.
-              await callUpsertCourseMetadata(
-                course_name,
-                courseMetadata || {
-                  course_owner: current_user_email,
-
-                  // Don't set properties we don't know about. We'll just upsert and use the defaults.
-                  course_admins: undefined,
-                  approved_emails_list: undefined,
-                  is_private: undefined,
-                  banner_image_s3: undefined,
-                  course_intro_message: undefined,
+              const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
                 },
-              )
+                body: JSON.stringify({
+                  courseName: course_name,
+                  courseMetadata: courseMetadata || {
+                    course_owner: current_user_email,
+
+                    // Don't set properties we don't know about. We'll just upsert and use the defaults.
+                    course_admins: undefined,
+                    approved_emails_list: undefined,
+                    is_private: undefined,
+                    banner_image_s3: undefined,
+                    course_intro_message: undefined,
+                  },
+                }),
+              })
+              const data = await response.json()
 
               // this does sequential uploads.
               for (const [index, file] of files.entries()) {

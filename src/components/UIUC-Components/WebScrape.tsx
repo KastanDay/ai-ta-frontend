@@ -103,7 +103,8 @@ export const WebScrape = ({
 
         if (is_new_course) {
           // Make course exist in kv store
-          await setCourseExistsAPI(courseName)
+          // Removing this for kv refactor
+          // await setCourseExistsAPI(courseName) 
 
           // set course exists in new metadata endpoint. Works great.
           await callUpsertCourseMetadata(courseName, {
@@ -137,17 +138,21 @@ export const WebScrape = ({
         // todo: use KV store instead of /get-all to check if course exists.
         if (is_new_course) {
           // Make course exist in kv store
-          await setCourseExistsAPI(courseName)
+          // Removing this for kv refactor
+          // await setCourseExistsAPI(courseName)
 
           // set course exists in new metadata endpoint. Works great.
-          await callUpsertCourseMetadata(courseName, {
-            course_owner: current_user_email,
-            // Don't set properties we don't know about. We'll just upsert and use the defaults.
-            course_admins: undefined,
-            approved_emails_list: undefined,
-            is_private: undefined,
-            banner_image_s3: undefined,
-            course_intro_message: undefined,
+          const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              courseName: courseName,
+              courseMetadata: {
+                course_owner: current_user_email,
+              },
+            }),
           })
           router.replace(`/${courseName}/materials`)
         }

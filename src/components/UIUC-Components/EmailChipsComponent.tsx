@@ -175,16 +175,24 @@ const EmailChipsComponent = ({
 
   const callSetCourseMetadata = async (courseMetadata: CourseMetadata) => {
     try {
-      const url = new URL('/api/UIUC-api/upsertCourseMetadata', window.location.origin);
-      const response = await fetch(url.toString(), {
+      const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(courseMetadata),
+        body: JSON.stringify({
+          courseName: courseName,
+          courseMetadata: courseMetadata,
+        }),
       })
       const data = await response.json()
-      return data
+      if (data.success) {
+        console.log('Course metadata updated successfully')
+        return true
+      } else {
+        console.error('Error setting course metadata:', data.error)
+        return false
+      }
     } catch (error) {
       console.error('Error setting course metadata:', error)
       return false
