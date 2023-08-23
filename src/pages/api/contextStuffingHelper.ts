@@ -37,7 +37,7 @@ export async function getStuffedPrompt(
     const validDocs = []
     for (const d of contexts) {
       const docString = `---\nDocument: ${d.readable_filename}${
-        d.pagenumber_or_timestamp ? ', page: ' + d.pagenumber_or_timestamp : ''
+        d.pagenumber ? ', page: ' + d.pagenumber : ''
       }\n${d.text}\n`
       const numTokens = encoding.encode(docString).length
       console.log(
@@ -56,9 +56,7 @@ export async function getStuffedPrompt(
       .map(
         (d) =>
           `Document: ${d.readable_filename}${
-            d.pagenumber_or_timestamp
-              ? ', page: ' + d.pagenumber_or_timestamp
-              : ''
+            d.pagenumber ? ', page: ' + d.pagenumber : ''
           }\n${d.text}\n`,
       )
       .join(separator)

@@ -51,8 +51,6 @@ async function getCourseData(course_name: string) {
       params: { course_name },
     })
 
-    // return response.data.url;
-    // console.log('response.data', response.data)
     return response.data.distinct_files
   } catch (error) {
     console.error('Error fetching course files:', error)

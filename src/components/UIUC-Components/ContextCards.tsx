@@ -54,15 +54,7 @@ export const ContextCards = ({
             {contexts
               .slice(0, 4) // only show first 4 cards
               .map((context: ContextWithMetadata, index: number) => (
-                <DynamicMaterialsCard
-                  key={context.id || index}
-                  id={context.id || index}
-                  text={context.text}
-                  readable_filename={context.readable_filename}
-                  pagenumber_or_timestamp={context.pagenumber_or_timestamp}
-                  s3_path={context.s3_path}
-                  course_name={context.course_name}
-                />
+                <DynamicMaterialsCard key={index} {...context} />
               ))}
           </Group>
         </>
@@ -97,25 +89,35 @@ export const ContextCards = ({
   )
 }
 
-function DynamicMaterialsCard({
-  id,
-  text,
-  readable_filename,
-  course_name,
-  s3_path,
-  pagenumber_or_timestamp,
-}: ContextWithMetadata) {
+function DynamicMaterialsCard(context: ContextWithMetadata) {
   const [presignedUrl, setPresignedUrl] = useState<string | null>(null)
   const [presignedUrlPng, setPresignedUrlPng] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchPresignedUrl(s3_path).then((url) => {
-      setPresignedUrl(url + '#page=' + pagenumber_or_timestamp)
-    })
+    // HTML pages have original URLs
+    console.log(
+      'readable_filename',
+      context.readable_filename,
+      'Context.url',
+      context.url,
+    )
+    console.log('Context.url', context.url)
+    if (context.url != '' && context.url != null) {
+      console.log('SETTING CONTEXT URL', context.url)
+      setPresignedUrl(context.url)
+    } else {
+      fetchPresignedUrl(context.s3_path).then((url) => {
+        console.log('Using S3', url)
+        setPresignedUrl(url + '#page=' + context.pagenumber)
+      })
+    }
 
     // ONLY PDFs have thumbnail images
-    if (s3_path.endsWith('.pdf')) {
-      const s3_thumbnail_path = s3_path.replace('.pdf', '-pg1-thumb.png')
+    if (context.s3_path.endsWith('.pdf')) {
+      const s3_thumbnail_path = context.s3_path.replace(
+        '.pdf',
+        '-pg1-thumb.png',
+      )
       fetchPresignedUrl(s3_thumbnail_path).then((url) => {
         setPresignedUrlPng(url)
       })
@@ -123,7 +125,7 @@ function DynamicMaterialsCard({
       // No thumbnail for non-PDFs
       setPresignedUrlPng(null)
     }
-  }, [s3_path])
+  }, [])
 
   return (
     <div className="box-sizing: border-box; border: 100px solid #ccc;">
@@ -161,8 +163,22 @@ function DynamicMaterialsCard({
             size="sm"
             weight={500}
           >
-            {readable_filename}
+            {context.readable_filename}
           </Text>
+          {/* TODO: Add full link text? */}
+          {/* {context.url != "" && context.url != null && (
+            <Text
+              // className="fade-2-lines"
+              // className="kas-gradient-text"
+              className="ul"
+              style={{ fontFamily: 'Montserrat' }}
+              size="xs"
+              color='white'
+              weight={300}
+            >
+              <u>{context.url}</u>
+            </Text>
+          )} */}
 
           <Group position="apart">
             <Text
@@ -174,7 +190,7 @@ function DynamicMaterialsCard({
               AI summary
             </Text>
             <Text size="sm" variant="dimmed" weight={4300}>
-              {pagenumber_or_timestamp !== '' ? (
+              {context.pagenumber !== '' ? (
                 <Text
                   pb="0"
                   className="justify-end"
@@ -182,7 +198,7 @@ function DynamicMaterialsCard({
                   variant="dimmed"
                   weight={400}
                 >
-                  Page {pagenumber_or_timestamp}
+                  Page {context.pagenumber}
                 </Text>
               ) : (
                 <>{/* NO PAGE NUMBER sorry :( */}</>
@@ -192,7 +208,7 @@ function DynamicMaterialsCard({
 
           <Text p="0px" className="fade-3-lines" size="xs" color="dimmed">
             {/* AI summary // pdf full text */}
-            {text}
+            {context.text}
           </Text>
           {/* <IconExternalLink className='center-align' size={20} strokeWidth={2} color={'white'} /> */}
 

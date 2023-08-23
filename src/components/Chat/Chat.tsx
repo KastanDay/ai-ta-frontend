@@ -1,6 +1,8 @@
 // src/components/Chat/Chat.tsx
 import {
   IconCloudUpload,
+  IconExternalLink,
+  // IconFileTextAi,
   // IconX,
   // IconDownload,
   // IconClearAll,
@@ -617,6 +619,29 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                         <IconCloudUpload size={18} />
                       </div>
                     </button>
+                    &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;
+                    {/* Disclaimer: it's not perfect (a tag to open in new tab) */}
+                    <a
+                      className="ml-2 cursor-pointer hover:opacity-50"
+                      href="/disclaimer"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {/* Disclaimer */}
+                      <div className="flex items-center">
+                        <span>
+                          <Text
+                            variant="gradient"
+                            weight={400}
+                            gradient={{ from: 'white', to: 'white', deg: 50 }}
+                          >
+                            Disclaimer: it&apos;s not perfect
+                          </Text>
+                        </span>
+                        &nbsp;&nbsp;
+                        <IconExternalLink size={18} />
+                      </div>
+                    </a>
                   </div>
                 </div>
                 {showSettings && (

@@ -95,6 +95,9 @@ const handler = async (req: Request): Promise<Response> => {
     }
     encoding.free() // keep this
 
+    console.log('Prompt being sent to OpenAI: ', promptToSend)
+    console.log('Message history being sent to OpenAI: ', messagesToSend)
+
     const stream = await OpenAIStream(
       model,
       promptToSend,
