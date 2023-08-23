@@ -9,19 +9,19 @@ const DisclaimerPage: NextPage = () => {
   return (
     <MainPageBackground>
       <p style={{ whiteSpace: 'pre-line' }}>{disclaimer_string}</p>
-        <Link href="/terms">
-          <Group>
-            You may read the terms and conditions here
-            <IconExternalLink size={18} />
-          </Group>
-        </Link>
-        
-        <Link href="/privacy">
-          <Group>
-            You may read the privacy policy here
-            <IconExternalLink size={18} />
-          </Group>
-        </Link>
+      <Link href="/terms">
+        <Group>
+          You may read the terms and conditions here
+          <IconExternalLink size={18} />
+        </Group>
+      </Link>
+
+      <Link href="/privacy">
+        <Group>
+          You may read the privacy policy here
+          <IconExternalLink size={18} />
+        </Group>
+      </Link>
     </MainPageBackground>
   )
 }
