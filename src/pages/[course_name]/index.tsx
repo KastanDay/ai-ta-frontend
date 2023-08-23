@@ -1,31 +1,35 @@
 // src/pages/[course_name]/index.tsx
-import {type NextPage} from 'next'
+import { type NextPage } from 'next'
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
-import {useRouter} from 'next/router'
-import {useEffect, useState} from 'react'
-import {Text} from '@mantine/core'
-import {type CourseMetadata} from '~/types/courseMetadata'
-import {useUser} from '@clerk/nextjs'
-import {LoadingSpinner} from '~/components/UIUC-Components/LoadingSpinner'
-import {get_user_permission} from '~/components/UIUC-Components/runAuthCheck'
-import {MainPageBackground} from '~/components/UIUC-Components/MainPageBackground'
-import {extractEmailsFromClerk} from '~/components/UIUC-Components/clerkHelpers'
+import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
+import { Text } from '@mantine/core'
+import { type CourseMetadata } from '~/types/courseMetadata'
+import { useUser } from '@clerk/nextjs'
+import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
+import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
+import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
+import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 
 const IfCourseExists: NextPage = () => {
   const router = useRouter()
   const course_name = router.query.course_name as string
   const clerk_user = useUser()
   const [isLoading, setIsLoading] = useState(true)
-  const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(null)
+  const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
+    null,
+  )
 
   useEffect(() => {
     const fetchCourseMetadata = async () => {
-      const response = await fetch(`/api/UIUC-api/getCourseMetadata?course_name=${course_name}`)
+      const response = await fetch(
+        `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
+      )
       const data = await response.json()
       setCourseMetadata(data.course_metadata)
       setIsLoading(false)
     }
-  
+
     fetchCourseMetadata()
   }, [course_name])
 
@@ -91,7 +95,8 @@ const IfCourseExists: NextPage = () => {
     }
   }, [clerk_user.isLoaded, course_metadata, isLoading])
 
-  if (isLoading || 
+  if (
+    isLoading ||
     !clerk_user.isLoaded ||
     course_metadata == null ||
     (course_metadata.is_private && !clerk_user.isSignedIn)

@@ -202,21 +202,23 @@ const EmailChipsComponent = ({
 
   async function fetchCourseMetadata(course_name: string) {
     try {
-      const response = await fetch(`/api/UIUC-api/getCourseMetadata?course_name=${course_name}`);
+      const response = await fetch(
+        `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
+      )
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json()
         if (data.success === false) {
-          console.error('An error occurred while fetching course metadata');
-          return null;
+          console.error('An error occurred while fetching course metadata')
+          return null
         }
-        return data.course_metadata;
+        return data.course_metadata
       } else {
-        console.error(`Error fetching course metadata: ${response.status}`);
-        return null;
+        console.error(`Error fetching course metadata: ${response.status}`)
+        return null
       }
     } catch (error) {
-      console.error('Error fetching course metadata:', error);
-      return null;
+      console.error('Error fetching course metadata:', error)
+      return null
     }
   }
 

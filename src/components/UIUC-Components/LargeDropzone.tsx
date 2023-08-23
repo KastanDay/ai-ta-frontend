@@ -1,14 +1,13 @@
 // LargeDropzone.tsx
-import React, {useRef, useState} from 'react'
-import {createStyles, Group, rem, Text, Title} from '@mantine/core'
-import {IconCloudUpload, IconDownload, IconX} from '@tabler/icons-react'
-import {Dropzone,} from '@mantine/dropzone'
-import {useRouter} from 'next/router'
-import {type CourseMetadata} from '~/types/courseMetadata'
+import React, { useRef, useState } from 'react'
+import { createStyles, Group, rem, Text, Title } from '@mantine/core'
+import { IconCloudUpload, IconDownload, IconX } from '@tabler/icons-react'
+import { Dropzone } from '@mantine/dropzone'
+import { useRouter } from 'next/router'
+import { type CourseMetadata } from '~/types/courseMetadata'
 import SupportedFileUploadTypes from './SupportedFileUploadTypes'
-import {useMediaQuery} from '@mantine/hooks'
-import {callSetCourseMetadata} from '~/utils/apiUtils'
-
+import { useMediaQuery } from '@mantine/hooks'
+import { callSetCourseMetadata } from '~/utils/apiUtils'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -194,22 +193,29 @@ export function LargeDropzone({
             onDrop={async (files) => {
               // set loading property
               setUploadInProgress(true)
-              console.log("Calling upsert metadata api with courseName & courseMetadata", courseName, courseMetadata)
+              console.log(
+                'Calling upsert metadata api with courseName & courseMetadata',
+                courseName,
+                courseMetadata,
+              )
               // Make course exist in kv store
               // Removing this for kv refactor
               // await setCourseExistsAPI(course_name)
 
               // set course exists in new metadata endpoint. Works great.
-              const upsertCourseMetadataResponse = await callSetCourseMetadata(courseName, courseMetadata || {
-                course_owner: current_user_email,
-      
-                // Don't set properties we don't know about. We'll just upsert and use the defaults.
-                course_admins: undefined,
-                approved_emails_list: undefined,
-                is_private: undefined,
-                banner_image_s3: undefined,
-                course_intro_message: undefined,
-              });
+              const upsertCourseMetadataResponse = await callSetCourseMetadata(
+                courseName,
+                courseMetadata || {
+                  course_owner: current_user_email,
+
+                  // Don't set properties we don't know about. We'll just upsert and use the defaults.
+                  course_admins: undefined,
+                  approved_emails_list: undefined,
+                  is_private: undefined,
+                  banner_image_s3: undefined,
+                  course_intro_message: undefined,
+                },
+              )
 
               // Check if upsertCourseMetadataResponse was successful
               if (upsertCourseMetadataResponse) {

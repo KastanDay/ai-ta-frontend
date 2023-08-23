@@ -1,12 +1,12 @@
-import {notifications} from '@mantine/notifications'
-import {Button, Input, Title, useMantineTheme} from '@mantine/core'
-import {IconWorldDownload} from '@tabler/icons-react'
-import React, {useEffect, useState} from 'react'
-import {Montserrat} from 'next/font/google'
+import { notifications } from '@mantine/notifications'
+import { Button, Input, Title, useMantineTheme } from '@mantine/core'
+import { IconWorldDownload } from '@tabler/icons-react'
+import React, { useEffect, useState } from 'react'
+import { Montserrat } from 'next/font/google'
 import axios from 'axios'
-import {useRouter} from 'next/router'
-import {useMediaQuery} from '@mantine/hooks'
-import {callSetCourseMetadata} from '~/utils/apiUtils'
+import { useRouter } from 'next/router'
+import { useMediaQuery } from '@mantine/hooks'
+import { callSetCourseMetadata } from '~/utils/apiUtils'
 
 interface WebScrapeProps {
   is_new_course: boolean
@@ -101,8 +101,7 @@ export const WebScrape = ({
         if (is_new_course) {
           // Make course exist in kv store
           // Removing this for kv refactor
-          // await setCourseExistsAPI(courseName) 
-          
+          // await setCourseExistsAPI(courseName)
 
           // set course exists in new metadata endpoint. Works great.
           const response = callSetCourseMetadata(courseName, {
@@ -114,9 +113,9 @@ export const WebScrape = ({
             banner_image_s3: undefined,
             course_intro_message: undefined,
           })
-          
+
           if (!response) {
-            throw new Error("Error while setting course metadata");
+            throw new Error('Error while setting course metadata')
           }
           router.replace(`/${courseName}/materials`)
         }
@@ -153,9 +152,9 @@ export const WebScrape = ({
             banner_image_s3: undefined,
             course_intro_message: undefined,
           })
-          
+
           if (!response) {
-            throw new Error("Error while setting course metadata");
+            throw new Error('Error while setting course metadata')
           }
           router.replace(`/${courseName}/materials`)
         }

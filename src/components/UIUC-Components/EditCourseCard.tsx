@@ -275,11 +275,17 @@ const EditCourseCard = ({
                           setIsIntroMessageUpdated(false)
                           if (courseMetadata) {
                             courseMetadata.course_intro_message = introMessage
-                             // Update the courseMetadata object
+                            // Update the courseMetadata object
 
-                            const resp = await callSetCourseMetadata(course_name, courseMetadata)
+                            const resp = await callSetCourseMetadata(
+                              course_name,
+                              courseMetadata,
+                            )
                             if (!resp) {
-                              console.log("Error upserting course metadata for course: ", course_name)
+                              console.log(
+                                'Error upserting course metadata for course: ',
+                                course_name,
+                              )
                             }
                           }
                         }}
@@ -308,11 +314,17 @@ const EditCourseCard = ({
                         )
                         if (banner_s3_image && courseMetadata) {
                           courseMetadata.banner_image_s3 = banner_s3_image
-                          const response = await callSetCourseMetadata(course_name, courseMetadata)
+                          const response = await callSetCourseMetadata(
+                            course_name,
+                            courseMetadata,
+                          )
                           if (response) {
                             setCourseBannerUrl(banner_s3_image)
                           } else {
-                            console.log("Error upserting course metadata for course: ", course_name)
+                            console.log(
+                              'Error upserting course metadata for course: ',
+                              course_name,
+                            )
                           }
                         }
                       }
@@ -398,7 +410,10 @@ const PrivateOrPublicCourse = ({
     course_name: string,
   ) => {
     console.log('Fresh course metadata:', new_course_metadata)
-    const response = await callSetCourseMetadata(course_name, new_course_metadata)
+    const response = await callSetCourseMetadata(
+      course_name,
+      new_course_metadata,
+    )
     if (response) {
       console.log('Course metadata updated successfully')
     } else {

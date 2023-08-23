@@ -9,7 +9,10 @@ const setCoursePublicOrPrivate = async (req: any, res: any) => {
   const is_private = req.nextUrl.searchParams.get('is_private')
 
   try {
-    const course_metadata = (await kv.hget('course_metadatas', course_name)) as CourseMetadata;
+    const course_metadata = (await kv.hget(
+      'course_metadatas',
+      course_name,
+    )) as CourseMetadata
 
     if (!course_metadata) {
       res.status(500).json({ success: false })
@@ -21,7 +24,9 @@ const setCoursePublicOrPrivate = async (req: any, res: any) => {
       is_private, // ONLY CHANGE
     }
 
-    await kv.hset('course_metadatas', { [course_name]: updated_course_metadata });
+    await kv.hset('course_metadatas', {
+      [course_name]: updated_course_metadata,
+    })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.log(error)

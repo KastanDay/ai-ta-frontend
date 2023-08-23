@@ -1,7 +1,6 @@
-import {kv} from '@vercel/kv'
-import {NextResponse} from 'next/server'
-import {type CourseMetadata} from '~/types/courseMetadata'
-
+import { kv } from '@vercel/kv'
+import { NextResponse } from 'next/server'
+import { type CourseMetadata } from '~/types/courseMetadata'
 
 const setCourseMetadata = async (req: any, res: any) => {
   if (req.method !== 'POST') {
@@ -36,7 +35,7 @@ const setCourseMetadata = async (req: any, res: any) => {
       banner_image_s3: banner_image_s3,
     }
     console.log('Right before setting course_metadata with: ', course_metadata)
-    await kv.hset('course_metadatas', { [course_name]: course_metadata });
+    await kv.hset('course_metadatas', { [course_name]: course_metadata })
 
     return NextResponse.json({ success: true })
   } catch (error) {

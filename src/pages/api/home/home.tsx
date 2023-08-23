@@ -48,7 +48,6 @@ import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { router } from '@trpc/server'
 import { useRouter } from 'next/router'
 
-
 interface Props {
   serverSideApiKeyIsSet: boolean
   serverSidePluginKeysSet: boolean
@@ -86,18 +85,22 @@ const Home = ({
 
   const router = useRouter()
   const course_name = router.query.course_name as string
-  
+
   // Using hook to fetch the latest course_metadata
-  const [isCourseMetadataLoading, setIsCourseMetadataLoading] = useState(true);
-  const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(null)
+  const [isCourseMetadataLoading, setIsCourseMetadataLoading] = useState(true)
+  const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
+    null,
+  )
 
   useEffect(() => {
     const courseMetadata = async () => {
-      const response = await fetch(`/api/UIUC-api/getCourseMetadata?course_name=${course_name}`)
+      const response = await fetch(
+        `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
+      )
       const data = await response.json()
       setCourseMetadata(data.course_metadata)
       // console.log("Course Metadata in home: ", data.course_metadata)
-      setIsCourseMetadataLoading(false); 
+      setIsCourseMetadataLoading(false)
     }
     courseMetadata()
   }, [course_name])
@@ -111,9 +114,9 @@ const Home = ({
   // DO AUTH-based redirect!
   useEffect(() => {
     if (!clerk_user_outer.isLoaded || isCourseMetadataLoading) {
-      return;
+      return
     }
-    if (clerk_user_outer.isLoaded|| isCourseMetadataLoading) {
+    if (clerk_user_outer.isLoaded || isCourseMetadataLoading) {
       if (course_metadata != null) {
         const permission_str = get_user_permission(
           course_metadata,
@@ -454,14 +457,12 @@ const Home = ({
             <Chatbar />
 
             <div className="flex flex-1">
-              {
-                course_metadata && (
-                  <Chat
-                    stopConversationRef={stopConversationRef}
-                    courseMetadata={course_metadata}
-                  />
-                )
-              }
+              {course_metadata && (
+                <Chat
+                  stopConversationRef={stopConversationRef}
+                  courseMetadata={course_metadata}
+                />
+              )}
             </div>
 
             <Promptbar />
