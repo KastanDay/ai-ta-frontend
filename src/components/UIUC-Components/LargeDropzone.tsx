@@ -1,19 +1,14 @@
 // LargeDropzone.tsx
-import React, { useState, useRef } from 'react'
-import { Text, Group, createStyles, rem, Title, Flex } from '@mantine/core'
-import { IconCloudUpload, IconX, IconDownload } from '@tabler/icons-react'
-import {
-  Dropzone,
-  // MIME_TYPES,
-  // MS_POWERPOINT_MIME_TYPE,
-  // MS_WORD_MIME_TYPE,
-  // PDF_MIME_TYPE,
-} from '@mantine/dropzone'
-import { useRouter } from 'next/router'
-import { useUser } from '@clerk/nextjs'
-import { type CourseMetadata } from '~/types/courseMetadata'
+import React, {useRef, useState} from 'react'
+import {createStyles, Group, rem, Text, Title} from '@mantine/core'
+import {IconCloudUpload, IconDownload, IconX} from '@tabler/icons-react'
+import {Dropzone,} from '@mantine/dropzone'
+import {useRouter} from 'next/router'
+import {type CourseMetadata} from '~/types/courseMetadata'
 import SupportedFileUploadTypes from './SupportedFileUploadTypes'
-import { useMediaQuery } from '@mantine/hooks'
+import {useMediaQuery} from '@mantine/hooks'
+import {callSetCourseMetadata} from '~/utils/apiUtils'
+
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -42,14 +37,14 @@ const useStyles = createStyles((theme) => ({
 }))
 
 export function LargeDropzone({
-  course_name,
+  courseName,
   current_user_email,
   redirect_to_gpt_4 = true,
   isDisabled = false,
   courseMetadata,
   is_new_course,
 }: {
-  course_name: string
+  courseName: string
   current_user_email: string
   redirect_to_gpt_4?: boolean
   isDisabled?: boolean
@@ -69,10 +64,10 @@ export function LargeDropzone({
 
   const refreshOrRedirect = (redirect_to_gpt_4: boolean) => {
     if (redirect_to_gpt_4) {
-      router.push(`/${course_name}/gpt4`)
+      router.push(`/${courseName}/gpt4`)
     }
     //   refresh current page
-    router.push(`/${course_name}/materials`)
+    router.push(`/${courseName}/materials`)
   }
   const uploadToS3 = async (file: File | null) => {
     if (!file) return
@@ -85,7 +80,7 @@ export function LargeDropzone({
       body: JSON.stringify({
         fileName: file.name,
         fileType: file.type,
-        courseName: course_name,
+        courseName: courseName,
       }),
     }
 
@@ -127,7 +122,7 @@ export function LargeDropzone({
   const ingestFile = async (file: File | null) => {
     if (!file) return
     const queryParams = new URLSearchParams({
-      courseName: course_name,
+      courseName: courseName,
       fileName: file.name,
     }).toString()
 
@@ -138,7 +133,7 @@ export function LargeDropzone({
       },
       query: {
         fileName: file.name,
-        courseName: course_name,
+        courseName: courseName,
       },
     }
 
@@ -164,25 +159,6 @@ export function LargeDropzone({
 
   const { classes, theme } = useStyles()
   const openRef = useRef<() => void>(null)
-
-  // Get and Set course exist in KV store
-  const setCourseExistsAPI = async (courseName: string) => {
-    try {
-      console.log('inside setCourseExistsAPI()...')
-      const response = await fetch(`/api/UIUC-api/setCourseExists`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ course_name: courseName }),
-      })
-      const data = await response.json()
-      return data.success
-    } catch (error) {
-      console.error('Error setting course data:', error)
-      return false
-    }
-  }
 
   return (
     <>
@@ -218,59 +194,55 @@ export function LargeDropzone({
             onDrop={async (files) => {
               // set loading property
               setUploadInProgress(true)
-
+              console.log("Calling upsert metadata api with courseName & courseMetadata", courseName, courseMetadata)
               // Make course exist in kv store
               // Removing this for kv refactor
               // await setCourseExistsAPI(course_name)
 
               // set course exists in new metadata endpoint. Works great.
-              const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  courseName: course_name,
-                  courseMetadata: courseMetadata || {
-                    course_owner: current_user_email,
+              const upsertCourseMetadataResponse = await callSetCourseMetadata(courseName, courseMetadata || {
+                course_owner: current_user_email,
+      
+                // Don't set properties we don't know about. We'll just upsert and use the defaults.
+                course_admins: undefined,
+                approved_emails_list: undefined,
+                is_private: undefined,
+                banner_image_s3: undefined,
+                course_intro_message: undefined,
+              });
 
-                    // Don't set properties we don't know about. We'll just upsert and use the defaults.
-                    course_admins: undefined,
-                    approved_emails_list: undefined,
-                    is_private: undefined,
-                    banner_image_s3: undefined,
-                    course_intro_message: undefined,
-                  },
-                }),
-              })
-              const data = await response.json()
+              // Check if upsertCourseMetadataResponse was successful
+              if (upsertCourseMetadataResponse) {
+                // this does sequential uploads.
+                for (const [index, file] of files.entries()) {
+                  console.log('Index: ' + index)
 
-              // this does sequential uploads.
-              for (const [index, file] of files.entries()) {
-                console.log('Index: ' + index)
+                  try {
+                    // UPLOAD TO S3
+                    await uploadToS3(file).catch((error) => {
+                      console.error('Error during file upload:', error)
+                    })
 
-                try {
-                  // UPLOAD TO S3
-                  await uploadToS3(file).catch((error) => {
-                    console.error('Error during file upload:', error)
-                  })
+                    // Ingest into Qdrant (time consuming).
+                    await ingestFile(file).catch((error) => {
+                      console.error('Error during file upload:', error)
+                    })
 
-                  // Ingest into Qdrant (time consuming).
-                  await ingestFile(file).catch((error) => {
-                    console.error('Error during file upload:', error)
-                  })
-
-                  console.log('Ingested a file.')
-                } catch (error) {
-                  console.error('Error during file processing:', error)
+                    console.log('Ingested a file.')
+                  } catch (error) {
+                    console.error('Error during file processing:', error)
+                  }
                 }
-              }
 
-              console.log(
-                'Done ingesting everything! Now refreshing the page...',
-              )
-              setUploadInProgress(false)
-              refreshOrRedirect(redirect_to_gpt_4)
+                console.log(
+                  'Done ingesting everything! Now refreshing the page...',
+                )
+                setUploadInProgress(false)
+                refreshOrRedirect(redirect_to_gpt_4)
+              } else {
+                console.error('Upsert metadata failed')
+                setUploadInProgress(false)
+              }
             }}
             className={classes.dropzone}
             radius="md"

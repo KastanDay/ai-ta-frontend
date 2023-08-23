@@ -22,6 +22,7 @@ import { useRouter } from 'next/router'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import axios from 'axios'
 import { WebScrape } from '~/components/UIUC-Components/WebScrape'
+import { callSetCourseMetadata } from '~/utils/apiUtils'
 
 const montserrat = Montserrat({
   weight: '700',
@@ -220,7 +221,7 @@ const EditCourseCard = ({
                 )}
               </div>
               <LargeDropzone
-                course_name={courseName}
+                courseName={courseName}
                 current_user_email={current_user_email}
                 redirect_to_gpt_4={false}
                 isDisabled={
@@ -275,28 +276,12 @@ const EditCourseCard = ({
                           setIsIntroMessageUpdated(false)
                           if (courseMetadata) {
                             courseMetadata.course_intro_message = introMessage
-                            const callUpsertCourseMetadata = async (
-                              course_name: string,
-                              courseMetadata: CourseMetadata,
-                            ) => {
-                              try {
-                                const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                  },
-                                  body: JSON.stringify({
-                                    courseName: course_name,
-                                    courseMetadata: courseMetadata,
-                                  }),
-                                })
-                                const data = await response.json()
-                                return data
-                              } catch (error) {
-                                console.error('Error setting course metadata:', error)
-                                return false
-                              }
-                            } // Update the courseMetadata object
+                             // Update the courseMetadata object
+
+                            const resp = await callSetCourseMetadata(course_name, courseMetadata)
+                            if (!resp) {
+                              console.log("Error upserting course metadata for course: ", course_name)
+                            }
                           }
                         }}
                       >
@@ -324,19 +309,11 @@ const EditCourseCard = ({
                         )
                         if (banner_s3_image && courseMetadata) {
                           courseMetadata.banner_image_s3 = banner_s3_image
-                          const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                              courseName: course_name,
-                              courseMetadata: courseMetadata,
-                            }),
-                          })
-                          const data = await response.json()
-                          if (data.success) {
+                          const response = await callSetCourseMetadata(course_name, courseMetadata)
+                          if (response) {
                             setCourseBannerUrl(banner_s3_image)
+                          } else {
+                            console.log("Error upserting course metadata for course: ", course_name)
                           }
                         }
                       }
@@ -417,42 +394,13 @@ const PrivateOrPublicCourse = ({
     callSetCoursePublicOrPrivate(course_name, !isPrivate) // db
   }
 
-  const callSetCourseMetadata = async (courseMetadata: CourseMetadata) => {
-    try {
-      const url = new URL('/api/UIUC-api/upsertCourseMetadata', window.location.origin);
-      
-      const response = await fetch(url.toString(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(courseMetadata),
-      })
-      const data = await response.json()
-      return data
-    } catch (error) {
-      console.error('Error setting course metadata:', error)
-      return false
-    }
-  }
-
   const handleEmailAddressesChange = async (
     new_course_metadata: CourseMetadata,
     course_name: string,
   ) => {
     console.log('Fresh course metadata:', new_course_metadata)
-    const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        courseName: course_name,
-        courseMetadata: new_course_metadata,
-      }),
-    })
-    const data = await response.json()
-    if (data.success) {
+    const response = await callSetCourseMetadata(course_name, new_course_metadata)
+    if (response) {
       console.log('Course metadata updated successfully')
     } else {
       console.error('Error updating course metadata')
