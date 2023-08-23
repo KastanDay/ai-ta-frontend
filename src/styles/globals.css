@@ -196,3 +196,10 @@ li {
   text-decoration-color: gold;
   color: inherit;
 }
+
+/* todo: make this an inline style if easy */
+.nomic-iframe {
+  height: min(75vh, 50vw);
+  width: 90%;
+  /* width: min(75vh, 66vw); */
+}
