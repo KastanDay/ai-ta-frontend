@@ -76,23 +76,16 @@ const Home: NextPage = () => {
             >
               Upload anything. Search everything.
               <br></br>
-              Discover more.
+              <span className="home-header_text-underline">Discover more.</span>
             </Title>
 
-            <br></br>
-            {/* <Title color="white" order={4} ta="center" mt="sm">
-              AI Teaching Assistant crafted for UIUC students,
-              <br></br>
-              by UIUC students.
-            </Title> */}
-
-            <Text color="#57534e" c="dimmed" ta="center" mt="md">
+            {/* <Text color="#57534e" c="dimmed" ta="center" mt="md">
               *Factuality not guaranteed.
               <br></br>
               Test it in your area of expertise to best assess its capabilities.
-            </Text>
+            </Text> */}
 
-            <Text color="white" ta="center" mt="md" weight={500} size="lg">
+            <Text color="white" ta="center"  weight={500} size="lg">
               {/* Add bold span */}
               <span className="font-bold">Upload</span> your videos, any number
               of PDFs, PowerPoint, Word, Excel and almost anything other

@@ -203,3 +203,14 @@ li {
   width: 90%;
   /* width: min(75vh, 66vw); */
 }
+
+.home-header_text-underline {
+  background-image: url("/media/hero-header-underline-reflow.svg");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: 100%;
+  height: 100px;
+  display: inline-block;
+  overflow: visible;
+}
