@@ -138,66 +138,9 @@ const MakeOldCoursePage = ({
               courseMetadata={courseMetadata}
             />
             <div
-              // Course files header/background
               className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
             >
-              {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
-              <Flex direction="row" justify="space-between">
-                <div className="flex flex-row items-start justify-start">
-                  <Title
-                    className={montserrat.className}
-                    variant="gradient"
-                    gradient={{
-                      from: 'hsl(280,100%,70%)',
-                      to: 'white',
-                      deg: 185,
-                    }}
-                    order={3}
-                    p="xl"
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    {' '}
-                    Questions asked by students of this course
-                  </Title>
-                </div>
-                <div className="me-6 mt-4 flex flex-row items-end justify-end">
-                  {/* Can add more buttons here */}
-                </div>
-              </Flex>
-            </div>
-            <Title
-              order={6}
-              className={`w-full text-center ${montserrat.className} mt-2`}
-            >
-              Read more about{' '}
-              <a
-                className={'text-purple-600'}
-                href="https://home.nomic.ai/about"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ textDecoration: 'underline', paddingRight: '5px' }}
-              >
-                semantic similarity visualizations
-              </a>
-            </Title>
-            {/* NOMIC VISUALIZATION  */}
-            <iframe
-              className="nomic-iframe pl-7 pr-7 pt-4 pt-4"
-              id="iframe1471f7b1-3147-4a55-bf0b-1111389cea26"
-              allow="clipboard-read; clipboard-write"
-              src="https://atlas.nomic.ai/map/efb685d0-707b-431a-83b4-f6a0f5998675/81aa5be8-f8c8-4d73-bbc8-def68765559e"
-            />
-            <div
-              // Course files header/background
-              className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
-              style={{ zIndex: 1, background: '#15162c' }}
-            >
-              {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
               <Flex direction="row" justify="space-between">
                 <div className="flex flex-row items-start justify-start">
                   <Title
@@ -228,8 +171,6 @@ const MakeOldCoursePage = ({
                   />
                 </div>
               </Flex>
-              {/* NOMIC not bad, not great */}
-              {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
             </div>
             <div className="mt-2 flex w-[80%] flex-col items-center justify-center">
               <CourseFilesList files={course_data} />
