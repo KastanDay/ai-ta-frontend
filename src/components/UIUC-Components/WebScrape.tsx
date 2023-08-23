@@ -1,14 +1,12 @@
-import { Notifications, notifications } from '@mantine/notifications'
-import { useMantineTheme, MantineTheme } from '@mantine/core'
-import { Button, Input, Title } from '@mantine/core'
-import { IconWorldDownload } from '@tabler/icons-react'
-import React, { useEffect, useState } from 'react'
-import { Montserrat } from 'next/font/google'
+import {notifications} from '@mantine/notifications'
+import {Button, Input, Title, useMantineTheme} from '@mantine/core'
+import {IconWorldDownload} from '@tabler/icons-react'
+import React, {useEffect, useState} from 'react'
+import {Montserrat} from 'next/font/google'
 import axios from 'axios'
-import { useRouter } from 'next/router'
-import { useMediaQuery } from '@mantine/hooks'
-import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
-import { setCourseExistsAPI } from './Upload_S3'
+import {useRouter} from 'next/router'
+import {useMediaQuery} from '@mantine/hooks'
+import {callSetCourseMetadata} from '~/utils/apiUtils'
 
 interface WebScrapeProps {
   is_new_course: boolean
@@ -104,29 +102,21 @@ export const WebScrape = ({
           // Make course exist in kv store
           // Removing this for kv refactor
           // await setCourseExistsAPI(courseName) 
+          
 
           // set course exists in new metadata endpoint. Works great.
-          const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              courseName: courseName,
-              courseMetadata: {
-                course_owner: current_user_email,
-                // Don't set properties we don't know about. We'll just upsert and use the defaults.
-                course_admins: undefined,
-                approved_emails_list: undefined,
-                is_private: undefined,
-                banner_image_s3: undefined,
-                course_intro_message: undefined,
-              },
-            }),
+          const response = callSetCourseMetadata(courseName, {
+            course_owner: current_user_email,
+            // Don't set properties we don't know about. We'll just upsert and use the defaults.
+            course_admins: [],
+            approved_emails_list: [],
+            is_private: false,
+            banner_image_s3: undefined,
+            course_intro_message: undefined,
           })
-          const data = await response.json();
-          if (!data.success) {
-            throw new Error(data.error);
+          
+          if (!response) {
+            throw new Error("Error while setting course metadata");
           }
           router.replace(`/${courseName}/materials`)
         }
@@ -154,18 +144,19 @@ export const WebScrape = ({
           // await setCourseExistsAPI(courseName)
 
           // set course exists in new metadata endpoint. Works great.
-          const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              courseName: courseName,
-              courseMetadata: {
-                course_owner: current_user_email,
-              },
-            }),
+          const response = callSetCourseMetadata(courseName, {
+            course_owner: current_user_email,
+            // Don't set properties we don't know about. We'll just upsert and use the defaults.
+            course_admins: [],
+            approved_emails_list: [],
+            is_private: false,
+            banner_image_s3: undefined,
+            course_intro_message: undefined,
           })
+          
+          if (!response) {
+            throw new Error("Error while setting course metadata");
+          }
           router.replace(`/${courseName}/materials`)
         }
         router.push(`/${courseName}/materials`)

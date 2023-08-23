@@ -1,7 +1,6 @@
-import { kv } from '@vercel/kv'
-import { NextResponse } from 'next/server'
-import { type CourseMetadata } from '~/types/courseMetadata'
-
+import {kv} from '@vercel/kv'
+import {NextResponse} from 'next/server'
+import {type CourseMetadata} from '~/types/courseMetadata'
 
 
 const setCourseMetadata = async (req: any, res: any) => {
@@ -19,9 +18,9 @@ const setCourseMetadata = async (req: any, res: any) => {
     'course_intro_message',
   )
   const banner_image_s3 = req.nextUrl.searchParams.get('banner_image_s3')
-  const is_private = req.nextUrl.searchParams.get('is_private')
+  const is_private = req.nextUrl.searchParams.get('is_private') || 'false'
   const course_admins = JSON.parse(
-    req.nextUrl.searchParams.get('course_admins') || '[]',
+    req.nextUrl.searchParams.get('course_admins') || '["kvday2@illinois.edu"]',
   )
   const approved_emails_list = JSON.parse(
     req.nextUrl.searchParams.get('approved_emails_list') || '[]',

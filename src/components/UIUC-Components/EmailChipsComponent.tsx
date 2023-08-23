@@ -8,6 +8,7 @@ import React, {
   type ClipboardEvent,
 } from 'react'
 import { type CourseMetadata } from '~/types/courseMetadata'
+import { callSetCourseMetadata } from '~/utils/apiUtils'
 
 const EmailChipsComponent = ({
   course_name,
@@ -42,7 +43,7 @@ const EmailChipsComponent = ({
         metadata.is_private = JSON.parse(
           metadata.is_private as unknown as string,
         )
-        setEmailAddresses(metadata.approved_emails_list)
+        setEmailAddresses(metadata.approved_emails_list || [])
       }
     })
   }, [])
@@ -67,11 +68,11 @@ const EmailChipsComponent = ({
           }
           onEmailAddressesChange &&
             onEmailAddressesChange(curr_course_metadata, course_name)
-          return newEmailAddresses
+          return newEmailAddresses || []
         })
         setValue('')
 
-        callSetCourseMetadata({
+        callSetCourseMetadata(courseName, {
           is_private: isPrivate,
           course_owner: course_owner, // Replace with the appropriate course_owner value
           course_admins: course_admins, // Replace with the appropriate course_admins value (array of strings)
@@ -104,7 +105,7 @@ const EmailChipsComponent = ({
       }
       onEmailAddressesChange &&
         onEmailAddressesChange(curr_course_metadata, course_name)
-      return newEmailAddresses
+      return newEmailAddresses || []
     })
     callRemoveUserFromCourse(email_address)
   }
@@ -132,10 +133,10 @@ const EmailChipsComponent = ({
         }
         onEmailAddressesChange &&
           onEmailAddressesChange(curr_course_metadata, course_name)
-        return newEmailAddresses
+        return newEmailAddresses || []
       })
 
-      callSetCourseMetadata({
+      callSetCourseMetadata(courseName, {
         is_private: isPrivate,
         course_owner: course_owner,
         course_admins: course_admins,
@@ -171,32 +172,6 @@ const EmailChipsComponent = ({
 
   const isEmail = (email: string) => {
     return /[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/.test(email)
-  }
-
-  const callSetCourseMetadata = async (courseMetadata: CourseMetadata) => {
-    try {
-      const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          courseName: courseName,
-          courseMetadata: courseMetadata,
-        }),
-      })
-      const data = await response.json()
-      if (data.success) {
-        console.log('Course metadata updated successfully')
-        return true
-      } else {
-        console.error('Error setting course metadata:', data.error)
-        return false
-      }
-    } catch (error) {
-      console.error('Error setting course metadata:', error)
-      return false
-    }
   }
 
   // Get and Set course exist in KV store
