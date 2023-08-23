@@ -85,8 +85,7 @@ const Home: NextPage = () => {
               Test it in your area of expertise to best assess its capabilities.
             </Text> */}
 
-            <Text color="white" ta="center"  weight={500} size="lg">
-              {/* Add bold span */}
+            <Text color="white" ta="center" weight={500} size="lg">
               <span className="font-bold">Upload</span> your videos, any number
               of PDFs, PowerPoint, Word, Excel and almost anything other
               document to chat with your knowledge base.
