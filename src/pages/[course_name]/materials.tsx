@@ -30,6 +30,9 @@ const CourseMain: NextPage = () => {
 
   useEffect(() => {
     const fetchCourseData = async () => {
+      if (course_name == '[course_name]') {
+        return 
+      }
       const response = await fetch(
         `/api/UIUC-api/getCourseExists?course_name=${course_name}`,
       )
@@ -46,7 +49,7 @@ const CourseMain: NextPage = () => {
       setIsLoading(false)
     }
     fetchCourseData()
-  }, [])
+  }, [course_name])
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   if (!isLoaded || isLoading) {
