@@ -3,8 +3,8 @@ import { kv } from '@vercel/kv'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import { type NextRequest, NextResponse } from 'next/server'
 import { count } from 'console'
-
-export const runtime = 'edge'
+import fs from 'fs'
+// export const runtime = 'edge'
 
 export default async function handler(req: NextRequest, res: NextResponse) {
   try {
@@ -38,14 +38,15 @@ export default async function handler(req: NextRequest, res: NextResponse) {
       console.log('Updating the course metadata in courseName:', courseName)
 
       // Delete the old metadata
-      await kv.del(oldKey)
-      console.log('Deleting key', oldKey)
+      // await kv.del(oldKey)
+      // console.log('Deleting key', oldKey)
 
       // Add the old key to the processedKeys array
       processedKeys.push(oldKey)
     }
 
     // Print all the old keys
+		fs.writeFileSync('processedKeys.json', JSON.stringify(processedKeys))
     console.log('Processed keys:', processedKeys)
 
     return NextResponse.json({ success: true })
