@@ -472,12 +472,6 @@ export const getServerSideProps: GetServerSideProps = async (
     course_name + '_metadata',
   )) as CourseMetadata
 
-  // TODO: FIX THIS PARSE DOESN'T SEEM RIGHT
-  //   if (course_metadata && course_metadata.is_private) {
-  //   course_metadata.is_private = typeof course_metadata.is_private === 'string'
-  //     ? JSON.parse(course_metadata.is_private)
-  //     : course_metadata.is_private;
-  // }
   course_metadata.is_private = JSON.parse(
     course_metadata.is_private as unknown as string,
   )
