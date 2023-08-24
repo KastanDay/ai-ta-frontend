@@ -243,7 +243,7 @@ export function DropzoneS3Upload({
           setUploadInProgress(true)
           await callSetCourseMetadata(courseMetadata as CourseMetadata)
 
-          // This did parallel uploads. TODO: Bring this back once we have a Celeray task queue in the backend. 
+          // This did parallel uploads. TODO: Bring this back once we have a Celeray task queue in the backend.
           // files.forEach((file, index) => {
           //   // This async () => {} is a self-executing function. Makes things run in parallel.
           //   void (async () => {

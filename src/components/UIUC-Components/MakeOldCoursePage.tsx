@@ -67,6 +67,7 @@ const MakeOldCoursePage = ({
 
   const currentPageName = GetCurrentPageName()
 
+  // TODO: remove this hook... we should already have this from the /materials props???
   useEffect(() => {
     const fetchData = async () => {
       const userEmail = extractEmailsFromClerk(clerk_user.user)
@@ -417,8 +418,12 @@ async function fetchCourseMetadata(course_name: string) {
         )
       }
       // Parse is_private field from string to boolean
-      if (data.course_metadata && typeof data.course_metadata.is_private === 'string') {
-        data.course_metadata.is_private = data.course_metadata.is_private.toLowerCase() === 'true';
+      if (
+        data.course_metadata &&
+        typeof data.course_metadata.is_private === 'string'
+      ) {
+        data.course_metadata.is_private =
+          data.course_metadata.is_private.toLowerCase() === 'true'
       }
       return data.course_metadata
     } else {
