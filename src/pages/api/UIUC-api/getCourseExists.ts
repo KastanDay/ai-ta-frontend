@@ -1,5 +1,5 @@
-import {kv} from '@vercel/kv'
-import {NextResponse} from 'next/server'
+import { kv } from '@vercel/kv'
+import { NextResponse } from 'next/server'
 
 export const runtime = 'edge'
 
