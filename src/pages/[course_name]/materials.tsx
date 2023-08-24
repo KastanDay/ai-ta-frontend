@@ -17,11 +17,15 @@ const montserrat = Montserrat({
   subsets: ['latin'],
 })
 
-export const GetCurrentPageName = () => {
-  return useRouter().asPath.slice(1).split('/')[0]
-}
-
 const CourseMain: NextPage = () => {
+  const router = useRouter()
+
+  const GetCurrentPageName = () => {
+    // return router.asPath.slice(1).split('/')[0]
+    // Possible improvement.
+    return router.query.course_name as string // Change this line
+  }
+
   const course_name = GetCurrentPageName() as string
   const { user, isLoaded, isSignedIn } = useUser()
   const [courseData, setCourseData] = useState(null)
@@ -30,8 +34,8 @@ const CourseMain: NextPage = () => {
 
   useEffect(() => {
     const fetchCourseData = async () => {
-      if (course_name == '[course_name]') {
-        return 
+      if (course_name == undefined) {
+        return
       }
       const response = await fetch(
         `/api/UIUC-api/getCourseExists?course_name=${course_name}`,
@@ -49,7 +53,7 @@ const CourseMain: NextPage = () => {
       setIsLoading(false)
     }
     fetchCourseData()
-  }, [course_name])
+  }, [router.isReady])
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   if (!isLoaded || isLoading) {
