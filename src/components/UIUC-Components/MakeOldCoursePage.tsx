@@ -250,7 +250,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
             }}
           >
             {/* Conditionally show link in small text if exists */}
-            {file.url || file.s3_path.endsWith('.pdf') ? (
+            {file.url ? (
               <div
                 className="min-w-0 flex-auto"
                 style={{
@@ -282,9 +282,10 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 <p className="text-xl font-semibold leading-6 text-gray-800">
                   {file.readable_filename}
                 </p>
-                <p className="mt-1 truncate text-xs leading-5 text-gray-600">
+                {/* SMALL LOWER TEXT FOR FILES IN LIST */}
+                {/* <p className="mt-1 truncate text-xs leading-5 text-gray-600">
                   {file.course_name}
-                </p>
+                </p> */}
               </div>
             )}
             <div className="me-4 flex justify-end space-x-2">
