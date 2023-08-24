@@ -6,12 +6,7 @@ import { CourseMetadata } from '~/types/courseMetadata'
 export const runtime = 'edge'
 
 const getCourseMetadata = async (req: any, res: any) => {
-  console.log('in api getCourseMetadata: req', req.searchParams)
-
-  // const { course_name } = req.nextUrl.searchParams
   const course_name = req.nextUrl.searchParams.get('course_name')
-
-  console.log('in api getCourseMetadata: courseName', course_name)
   try {
     const course_metadata = (await kv.hget(
       'course_metadatas',
@@ -33,12 +28,9 @@ const getCourseMetadata = async (req: any, res: any) => {
         course_metadata.is_private as unknown as string,
       )
     }
-
-    // res.status(200).json(course_metadata as JSON)
     return NextResponse.json({ course_metadata: course_metadata })
   } catch (error) {
     console.log('Error occured while fetching courseMetadata', error)
-    // res.status(500).json({})
     return NextResponse.json({ success: false, error: error })
   }
 }
