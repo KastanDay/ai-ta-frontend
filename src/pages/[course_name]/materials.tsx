@@ -1,19 +1,16 @@
-import { type NextPage } from 'next'
-import axios from 'axios'
+import {type NextPage} from 'next'
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import MakeOldCoursePage from '~/components/UIUC-Components/MakeOldCoursePage'
-import React, { useEffect, useState } from 'react'
-import { GetServerSideProps, GetServerSidePropsContext } from 'next'
-import { Montserrat } from 'next/font/google'
-import { kv } from '@vercel/kv'
-import { useRouter } from 'next/router'
-import { useAuth, useUser } from '@clerk/nextjs'
-import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
-import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
-import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
-import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
-import { Title } from '@mantine/core'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
+import React, {useEffect, useState} from 'react'
+import {Montserrat} from 'next/font/google'
+import {useRouter} from 'next/router'
+import {useUser} from '@clerk/nextjs'
+import {CannotEditGPT4Page} from '~/components/UIUC-Components/CannotEditGPT4'
+import {LoadingSpinner} from '~/components/UIUC-Components/LoadingSpinner'
+import {MainPageBackground} from '~/components/UIUC-Components/MainPageBackground'
+import {AuthComponent} from '~/components/UIUC-Components/AuthToEditCourse'
+import {Title} from '@mantine/core'
+import {extractEmailsFromClerk} from '~/components/UIUC-Components/clerkHelpers'
 
 const montserrat = Montserrat({
   weight: '700',
@@ -24,24 +21,24 @@ export const GetCurrentPageName = () => {
   return useRouter().asPath.slice(1).split('/')[0]
 }
 
-
 const CourseMain: NextPage = () => {
-   
   const course_name = GetCurrentPageName() as string
   const { user, isLoaded, isSignedIn } = useUser()
   const [courseData, setCourseData] = useState(null)
   const [courseExists, setCourseExists] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  
-
   useEffect(() => {
     const fetchCourseData = async () => {
-      const response = await fetch(`/api/UIUC-api/getCourseExists?course_name=${course_name}`)
+      const response = await fetch(
+        `/api/UIUC-api/getCourseExists?course_name=${course_name}`,
+      )
       const data = await response.json()
       setCourseExists(data)
       if (data) {
-        const response = await fetch(`https://flask-production-751b.up.railway.app/getAll?course_name=${course_name}`)
+        const response = await fetch(
+          `https://flask-production-751b.up.railway.app/getAll?course_name=${course_name}`,
+        )
         const data = await response.json()
         const courseData = data.distinct_files
         setCourseData(courseData)

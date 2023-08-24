@@ -1,11 +1,9 @@
 // src/pages/api/UIUC-api/restoreOldCourseMetadata.ts
-import { kv } from '@vercel/kv'
-import { type CourseMetadata } from '~/types/courseMetadata'
-import { type NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import { join } from 'path'
-
-
+import {kv} from '@vercel/kv'
+import {type CourseMetadata} from '~/types/courseMetadata'
+import {type NextRequest, NextResponse} from 'next/server'
+import {promises as fs} from 'fs'
+import {join} from 'path'
 
 export default async function handler(req: NextRequest, res: NextResponse) {
   try {

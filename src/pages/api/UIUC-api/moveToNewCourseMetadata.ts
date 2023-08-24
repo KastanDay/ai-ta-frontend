@@ -1,8 +1,7 @@
 // src/pages/api/UIUC-api/moveToNewCourseMetadata.ts
-import { kv } from '@vercel/kv'
-import { type CourseMetadata } from '~/types/courseMetadata'
-import { type NextRequest, NextResponse } from 'next/server'
-import { count } from 'console'
+import {kv} from '@vercel/kv'
+import {type CourseMetadata} from '~/types/courseMetadata'
+import {type NextRequest, NextResponse} from 'next/server'
 import fs from 'fs'
 // export const runtime = 'edge'
 
@@ -46,7 +45,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     }
 
     // Print all the old keys
-		fs.writeFileSync('processedKeys.json', JSON.stringify(processedKeys))
+    fs.writeFileSync('processedKeys.json', JSON.stringify(processedKeys))
     console.log('Processed keys:', processedKeys)
 
     return NextResponse.json({ success: true })
