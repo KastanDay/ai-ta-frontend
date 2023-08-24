@@ -1,7 +1,11 @@
 // src/components/Chat/Chat.tsx
 import {
+  IconBrain,
+  IconClearAll,
   IconCloudUpload,
   IconExternalLink,
+  IconRobot,
+  IconSettings,
   // IconFileTextAi,
   // IconX,
   // IconDownload,
@@ -576,45 +580,43 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ) : (
               <>
                 <div className="sticky top-0 z-10 flex w-full flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                  {/* {bannerUrl && (
-                        <div style={{ height: '8vh' , width:'100%'}}>
-                          <img src={bannerUrl} alt="Banner" style={{ width: '100%'}}/>
-                        </div>
-                    )} */}
                   <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                    {t('Model')}: {selectedConversation?.model.name}
-                    &nbsp;&nbsp;|&nbsp;&nbsp;
-                    {/* {t('Temp')}: {selectedConversation?.temperature}
-                    &nbsp;&nbsp;|&nbsp;&nbsp; */}
-                    {/* BUTTONS for (1) Chaning Models, and (2) clearing current conversation. */}
+                    {/* Clear current conversation. */}
                     {/* <button
-                        className="ml-2 cursor-pointer hover:opacity-50"
-                        onClick={handleSettings}
-                      >
-                        <IconSettings size={18} />
-                      </button>
-                      <button
-                        className="ml-2 cursor-pointer hover:opacity-50"
-                        onClick={onClearAll}
-                      >
-                        <IconClearAll size={18} />
-                      </button>
-                      &nbsp;&nbsp;&nbsp;| */}
-                    {/* <span className="w-3" /> */}
+                      className="ml-2 cursor-pointer hover:opacity-50"
+                      onClick={onClearAll}
+                    >
+                      <IconClearAll size={18} />
+                    </button>
+                    &nbsp;&nbsp;|&nbsp;&nbsp; */}
+                    {/* {t('Temp')}: {selectedConversation?.temperature}*/}
+                    {/* BUTTONS Change Model */}
+                    <button
+                      className="ml-2 cursor-pointer hover:opacity-50"
+                      onClick={handleSettings}
+                    >
+                      <div className="flex items-center">
+                        {t('Model')}: {selectedConversation?.model.name}
+                        <span className="w-2" />
+                        <IconRobot size={18} />
+                      </div>
+                    </button>
+                    <span className="w-3" />
+                    |
+                    <span className="w-3" />
                     <button
                       className="ml-2 cursor-pointer hover:opacity-50"
                       onClick={redirectToMaterialsPage}
                     >
                       <div className="flex items-center">
-                        <span>
-                          <Text
-                            variant="gradient"
-                            weight={600}
-                            gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                          >
-                            Upload materials
-                          </Text>
-                        </span>
+                        <Text
+                          variant="gradient"
+                          weight={600}
+                          gradient={{ from: 'gold', to: 'white', deg: 50 }}
+                          // className={"goldUnderline"}
+                        >
+                          Upload materials
+                        </Text>
                         &nbsp;&nbsp;
                         <IconCloudUpload size={18} />
                       </div>
