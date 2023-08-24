@@ -584,8 +584,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
                     {t('Model')}: {selectedConversation?.model.name}
                     &nbsp;&nbsp;|&nbsp;&nbsp;
-                    {t('Temp')}: {selectedConversation?.temperature}
-                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    {/* {t('Temp')}: {selectedConversation?.temperature}
+                    &nbsp;&nbsp;|&nbsp;&nbsp; */}
                     {/* BUTTONS for (1) Chaning Models, and (2) clearing current conversation. */}
                     {/* <button
                         className="ml-2 cursor-pointer hover:opacity-50"
