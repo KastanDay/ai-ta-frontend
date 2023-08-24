@@ -1,15 +1,12 @@
-import { Notifications, notifications } from '@mantine/notifications'
-import { useMantineTheme, MantineTheme } from '@mantine/core'
-import { Button, Input, Title } from '@mantine/core'
+import { notifications } from '@mantine/notifications'
+import { Button, Input, Title, useMantineTheme } from '@mantine/core'
 import { IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
 import { Montserrat } from 'next/font/google'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import { useMediaQuery } from '@mantine/hooks'
-import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
-import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
-import { setCourseExistsAPI } from './Upload_S3'
+import { callSetCourseMetadata } from '~/utils/apiUtils'
 
 interface WebScrapeProps {
   is_new_course: boolean
@@ -103,18 +100,23 @@ export const WebScrape = ({
 
         if (is_new_course) {
           // Make course exist in kv store
-          await setCourseExistsAPI(courseName)
+          // Removing this for kv refactor
+          // await setCourseExistsAPI(courseName)
 
           // set course exists in new metadata endpoint. Works great.
-          await callUpsertCourseMetadata(courseName, {
+          const response = callSetCourseMetadata(courseName, {
             course_owner: current_user_email,
             // Don't set properties we don't know about. We'll just upsert and use the defaults.
-            course_admins: undefined,
-            approved_emails_list: undefined,
-            is_private: undefined,
+            course_admins: [],
+            approved_emails_list: [],
+            is_private: false,
             banner_image_s3: undefined,
             course_intro_message: undefined,
           })
+
+          if (!response) {
+            throw new Error('Error while setting course metadata')
+          }
           router.replace(`/${courseName}/materials`)
         }
         router.push(`/${courseName}/materials`)
@@ -137,18 +139,23 @@ export const WebScrape = ({
         // todo: use KV store instead of /get-all to check if course exists.
         if (is_new_course) {
           // Make course exist in kv store
-          await setCourseExistsAPI(courseName)
+          // Removing this for kv refactor
+          // await setCourseExistsAPI(courseName)
 
           // set course exists in new metadata endpoint. Works great.
-          await callUpsertCourseMetadata(courseName, {
+          const response = callSetCourseMetadata(courseName, {
             course_owner: current_user_email,
             // Don't set properties we don't know about. We'll just upsert and use the defaults.
-            course_admins: undefined,
-            approved_emails_list: undefined,
-            is_private: undefined,
+            course_admins: [],
+            approved_emails_list: [],
+            is_private: false,
             banner_image_s3: undefined,
             course_intro_message: undefined,
           })
+
+          if (!response) {
+            throw new Error('Error while setting course metadata')
+          }
           router.replace(`/${courseName}/materials`)
         }
         router.push(`/${courseName}/materials`)
