@@ -12,7 +12,6 @@ import {
 import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
 import { type CourseMetadata } from '~/types/courseMetadata'
-import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -241,31 +240,10 @@ export function DropzoneS3Upload({
         openRef={openRef}
         loading={uploadInProgress}
         onDrop={async (files) => {
-          // set loading property
           setUploadInProgress(true)
-
-          // Make course exist in kv store
-          await setCourseExistsAPI(getCurrentPageName() as string)
-
           await callSetCourseMetadata(courseMetadata as CourseMetadata)
 
-          // set course exists in new metadata endpoint. Works great.
-          // await callUpsertCourseMetadata(course_name, {
-          //   course_owner: current_user_email,
-          //
-          //   // Don't set properties we don't know about. We'll just upsert and use the defaults.
-          //   course_admins: undefined,
-          //   approved_emails_list: undefined,
-          //   is_private: undefined,
-          //   banner_image_s3: undefined,
-          //   course_intro_message: undefined,
-          // })
-
-          // console.log('Right after setCourseExists in kv store...');
-          // const ifexists = await getCourseExistsAPI(getCurrentPageName() as string);
-          // console.log('does course exist now? ', ifexists);
-
-          // This did parallel uploads.
+          // This did parallel uploads. TODO: Bring this back once we have a Celeray task queue in the backend.
           // files.forEach((file, index) => {
           //   // This async () => {} is a self-executing function. Makes things run in parallel.
           //   void (async () => {

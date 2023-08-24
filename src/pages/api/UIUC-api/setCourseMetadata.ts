@@ -2,8 +2,6 @@ import { kv } from '@vercel/kv'
 import { NextResponse } from 'next/server'
 import { type CourseMetadata } from '~/types/courseMetadata'
 
-export const runtime = 'edge'
-
 const setCourseMetadata = async (req: any, res: any) => {
   if (req.method !== 'POST') {
     res.status(405).json({ success: false, message: 'Method not allowed' })
@@ -19,9 +17,9 @@ const setCourseMetadata = async (req: any, res: any) => {
     'course_intro_message',
   )
   const banner_image_s3 = req.nextUrl.searchParams.get('banner_image_s3')
-  const is_private = req.nextUrl.searchParams.get('is_private')
+  const is_private = req.nextUrl.searchParams.get('is_private') || 'false'
   const course_admins = JSON.parse(
-    req.nextUrl.searchParams.get('course_admins') || '[]',
+    req.nextUrl.searchParams.get('course_admins') || '["kvday2@illinois.edu"]',
   )
   const approved_emails_list = JSON.parse(
     req.nextUrl.searchParams.get('approved_emails_list') || '[]',
@@ -37,7 +35,8 @@ const setCourseMetadata = async (req: any, res: any) => {
       banner_image_s3: banner_image_s3,
     }
     console.log('Right before setting course_metadata with: ', course_metadata)
-    await kv.set(course_name + '_metadata', course_metadata)
+    await kv.hset('course_metadatas', { [course_name]: course_metadata })
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.log(error)

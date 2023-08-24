@@ -1,105 +1,54 @@
+// upsertCourseMetadata.ts
 import { kv } from '@vercel/kv'
-import { NextResponse } from 'next/server'
 import {
   type CourseMetadata,
   type CourseMetadataOptionalForUpsert,
 } from '~/types/courseMetadata'
+import { type NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'edge'
 
-const setCourseMetadata = async (req: any, res: any) => {
-  if (req.method !== 'POST') {
-    res.status(405).json({ success: false, message: 'Method not allowed' })
-    return NextResponse.json({
-      success: false,
-      message: 'Method not allowed, only POST requests.',
-    })
+export default async function handler(req: NextRequest, res: NextResponse) {
+  const requestBody = await req.text()
+  const {
+    courseName,
+    courseMetadata,
+  }: { courseName: string; courseMetadata: CourseMetadataOptionalForUpsert } =
+    JSON.parse(requestBody)
+
+  console.log('API Request:', requestBody)
+  console.log('courseName:', courseName)
+  console.log('courseMetadata:', courseMetadata)
+
+  // Check if courseName is not null or undefined
+  if (!courseName) {
+    console.error('Error: courseName is null or undefined')
+    return
   }
 
-  const course_name = req.nextUrl.searchParams.get('course_name')
-  const course_owner =
-    req.nextUrl.searchParams.get('course_owner') || 'default_owner'
-  const is_private = req.nextUrl.searchParams.get('is_private') || false
-  const course_admins = JSON.parse(
-    req.nextUrl.searchParams.get('course_admins') || '[]',
-  )
-  const approved_emails_list = JSON.parse(
-    req.nextUrl.searchParams.get('approved_emails_list') || '[]',
-  )
-  const banner_image_s3 = req.nextUrl.searchParams.get('banner_image_s3') || ''
-  const course_intro_message =
-    req.nextUrl.searchParams.get('course_intro_message') || ''
-
   try {
-    // Fetch existing metadata
-    const existing_metadata: CourseMetadata | object =
-      (await kv.get(course_name + '_metadata')) || {}
-
-    // Merge existing metadata with new values
-    const course_metadata: CourseMetadata = {
-      ...existing_metadata,
-      is_private: is_private,
-      course_owner: course_owner,
-      course_admins: course_admins,
-      approved_emails_list: approved_emails_list,
-      banner_image_s3: banner_image_s3,
-      course_intro_message: course_intro_message,
+    // Check if courseMetadata doesn't have anything in the field course_admins
+    if (
+      !courseMetadata.course_admins ||
+      courseMetadata.course_admins.length === 0
+    ) {
+      courseMetadata.course_admins = ['kvday2@illinois.edu']
+      console.log('course_admins field was empty. Added default admin email.')
     }
 
-    console.log('Right before setting course_metadata with: ', course_metadata)
-    await kv.set(course_name + '_metadata', course_metadata)
+    // Check if courseMetadata doesn't have anything in the field is_private
+    if (!courseMetadata.is_private) {
+      courseMetadata.is_private = false
+      console.log('is_private field was empty. Set to false.')
+    }
+
+    const existing_metadata: CourseMetadata | object =
+      (await kv.hget('course_metadatas', courseName)) || {}
+    const updated_metadata = { ...existing_metadata, ...courseMetadata }
+    await kv.hset('course_metadatas', { [courseName]: updated_metadata })
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.log(error)
+    console.error('Error setting course metadata:', error)
     return NextResponse.json({ success: false })
   }
 }
-
-// import { CourseMetadata } from '~/types/courseMetadata'
-
-export const callUpsertCourseMetadata = async (
-  courseName: string,
-  courseMetadata: CourseMetadataOptionalForUpsert,
-) => {
-  try {
-    const {
-      is_private = false,
-      course_owner = '',
-      course_intro_message = '',
-      banner_image_s3 = '',
-      course_admins = ['kvday2@illinois.edu'],
-      approved_emails_list = [],
-    } = courseMetadata
-
-    const url = new URL(
-      '/api/UIUC-api/setCourseMetadata',
-      window.location.origin,
-    )
-
-    url.searchParams.append('is_private', String(is_private))
-    url.searchParams.append('course_name', courseName)
-    url.searchParams.append('course_owner', course_owner)
-    url.searchParams.append('banner_image_s3', banner_image_s3)
-    url.searchParams.append('course_intro_message', course_intro_message)
-    url.searchParams.append('course_admins', JSON.stringify(course_admins))
-    url.searchParams.append(
-      'approved_emails_list',
-      JSON.stringify(approved_emails_list),
-    )
-
-    const response = await fetch(url.toString(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    const data = await response.json()
-    return data
-  } catch (error) {
-    console.error('Error setting course metadata:', error)
-    return false
-  }
-}
-
-export default setCourseMetadata

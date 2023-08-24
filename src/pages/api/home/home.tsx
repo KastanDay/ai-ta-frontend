@@ -52,14 +52,12 @@ interface Props {
   serverSideApiKeyIsSet: boolean
   serverSidePluginKeysSet: boolean
   defaultModelId: OpenAIModelID
-  course_metadata: CourseMetadata
 }
 
 const Home = ({
   serverSideApiKeyIsSet,
   serverSidePluginKeysSet,
   defaultModelId,
-  course_metadata,
 }: Props) => {
   const { t } = useTranslation('chat')
   const { getModels } = useApiService()
@@ -86,7 +84,26 @@ const Home = ({
   const stopConversationRef = useRef<boolean>(false)
 
   const router = useRouter()
-  const course_name = router.query.course_name
+  const course_name = router.query.course_name as string
+
+  // Using hook to fetch the latest course_metadata
+  const [isCourseMetadataLoading, setIsCourseMetadataLoading] = useState(true)
+  const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
+    null,
+  )
+
+  useEffect(() => {
+    const courseMetadata = async () => {
+      const response = await fetch(
+        `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
+      )
+      const data = await response.json()
+      setCourseMetadata(data.course_metadata)
+      // console.log("Course Metadata in home: ", data.course_metadata)
+      setIsCourseMetadataLoading(false)
+    }
+    courseMetadata()
+  }, [course_name])
 
   // Check auth & redirect
   const clerk_user_outer = useUser()
@@ -96,7 +113,10 @@ const Home = ({
 
   // DO AUTH-based redirect!
   useEffect(() => {
-    if (clerk_user_outer.isLoaded) {
+    if (!clerk_user_outer.isLoaded || isCourseMetadataLoading) {
+      return
+    }
+    if (clerk_user_outer.isLoaded || isCourseMetadataLoading) {
       if (course_metadata != null) {
         const permission_str = get_user_permission(
           course_metadata,
@@ -116,7 +136,7 @@ const Home = ({
         router.push(`/${course_name}/materials`)
       }
     }
-  }, [clerk_user_outer.isLoaded])
+  }, [clerk_user_outer.isLoaded, isCourseMetadataLoading])
   // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
 
   const [data, setData] = useState(null) // using the original version.
@@ -437,10 +457,12 @@ const Home = ({
             <Chatbar />
 
             <div className="flex flex-1">
-              <Chat
-                stopConversationRef={stopConversationRef}
-                courseMetadata={course_metadata}
-              />
+              {course_metadata && (
+                <Chat
+                  stopConversationRef={stopConversationRef}
+                  courseMetadata={course_metadata}
+                />
+              )}
             </div>
 
             <Promptbar />
@@ -465,6 +487,7 @@ export const getServerSideProps: GetServerSideProps = async (
 ) => {
   console.log('ServerSideProps: ', context.params)
   const { locale } = context
+
   const course_name = context.params?.course_name as string
 
   // Check course authed users -- the JSON.parse is CRUCIAL to avoid bugs with the stringified JSON 😭
@@ -500,7 +523,6 @@ export const getServerSideProps: GetServerSideProps = async (
   return {
     props: {
       // ...buildClerkProps(context.req), // https://clerk.com/docs/nextjs/getserversideprops
-      course_metadata: course_metadata,
       serverSideApiKeyIsSet: !!process.env.OPENAI_API_KEY,
       defaultModelId,
       serverSidePluginKeysSet,
