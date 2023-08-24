@@ -506,9 +506,17 @@ export const getServerSideProps: GetServerSideProps = async (
     console.log('Google plugin keys not set... will NOT work.')
   }
 
+  // TODO:
+  // kv.hget()
+  // direct server-side call is okay. fetch kv right here, then use that key if exists.
+  // if this exists, use it. otherwise default behavior.
+  // process.env.OPENAI_API_KEY = <<kv value>>  // does this actually work?
+
+
   return {
     props: {
       // ...buildClerkProps(context.req), // https://clerk.com/docs/nextjs/getserversideprops
+      // TODO: here we can fetch the keys...
       serverSideApiKeyIsSet: !!process.env.OPENAI_API_KEY,
       defaultModelId,
       serverSidePluginKeysSet,
