@@ -17,12 +17,12 @@ import LargeDropzone from './LargeDropzone'
 import EmailChipsComponent from './EmailChipsComponent'
 import { useMediaQuery } from '@mantine/hooks'
 import { Montserrat } from 'next/font/google'
-import { callUpsertCourseMetadata } from '~/pages/api/UIUC-api/upsertCourseMetadata'
 import { GetCurrentPageName } from './CanViewOnlyCourse'
 import { useRouter } from 'next/router'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import axios from 'axios'
 import { WebScrape } from '~/components/UIUC-Components/WebScrape'
+import { callSetCourseMetadata } from '~/utils/apiUtils'
 
 const montserrat = Montserrat({
   weight: '700',
@@ -220,7 +220,7 @@ const EditCourseCard = ({
                 )}
               </div>
               <LargeDropzone
-                course_name={courseName}
+                courseName={courseName}
                 current_user_email={current_user_email}
                 redirect_to_gpt_4={false}
                 isDisabled={
@@ -275,10 +275,18 @@ const EditCourseCard = ({
                           setIsIntroMessageUpdated(false)
                           if (courseMetadata) {
                             courseMetadata.course_intro_message = introMessage
-                            await callUpsertCourseMetadata(
+                            // Update the courseMetadata object
+
+                            const resp = await callSetCourseMetadata(
                               course_name,
                               courseMetadata,
-                            ) // Update the courseMetadata object
+                            )
+                            if (!resp) {
+                              console.log(
+                                'Error upserting course metadata for course: ',
+                                course_name,
+                              )
+                            }
                           }
                         }}
                       >
@@ -306,10 +314,18 @@ const EditCourseCard = ({
                         )
                         if (banner_s3_image && courseMetadata) {
                           courseMetadata.banner_image_s3 = banner_s3_image
-                          await callUpsertCourseMetadata(
+                          const response = await callSetCourseMetadata(
                             course_name,
                             courseMetadata,
-                          ).then(() => setCourseBannerUrl(banner_s3_image)) // Update the courseMetadata object
+                          )
+                          if (response) {
+                            setCourseBannerUrl(banner_s3_image)
+                          } else {
+                            console.log(
+                              'Error upserting course metadata for course: ',
+                              course_name,
+                            )
+                          }
                         }
                       }
                     }}
@@ -389,70 +405,20 @@ const PrivateOrPublicCourse = ({
     callSetCoursePublicOrPrivate(course_name, !isPrivate) // db
   }
 
-  const callSetCourseMetadata = async (
-    courseMetadata: CourseMetadata,
-    course_name: string,
-  ) => {
-    try {
-      const {
-        is_private,
-        course_owner,
-        course_admins,
-        approved_emails_list,
-        course_intro_message,
-        banner_image_s3,
-      } = courseMetadata
-
-      console.log(
-        'IN callSetCourseMetadata in MakeNewCoursePage: ',
-        courseMetadata,
-      )
-
-      const url = new URL(
-        '/api/UIUC-api/setCourseMetadata',
-        window.location.origin,
-      )
-
-      url.searchParams.append('is_private', String(is_private))
-      url.searchParams.append('course_name', course_name)
-      url.searchParams.append('course_owner', course_owner)
-      url.searchParams.append(
-        'course_intro_message',
-        course_intro_message || '',
-      )
-      url.searchParams.append('banner_image_s3', banner_image_s3 || '')
-      url.searchParams.append('course_admins', JSON.stringify(course_admins))
-      url.searchParams.append(
-        'approved_emails_list',
-        JSON.stringify(approved_emails_list),
-      )
-
-      const response = await fetch(url.toString(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      const data = await response.json()
-      return data
-    } catch (error) {
-      console.error('Error setting course metadata:', error)
-      return false
-    }
-  }
-
-  const handleEmailAddressesChange = (
+  const handleEmailAddressesChange = async (
     new_course_metadata: CourseMetadata,
     course_name: string,
   ) => {
     console.log('Fresh course metadata:', new_course_metadata)
-    callSetCourseMetadata(
-      {
-        ...new_course_metadata,
-      },
+    const response = await callSetCourseMetadata(
       course_name,
+      new_course_metadata,
     )
+    if (response) {
+      console.log('Course metadata updated successfully')
+    } else {
+      console.error('Error updating course metadata')
+    }
   }
 
   return (

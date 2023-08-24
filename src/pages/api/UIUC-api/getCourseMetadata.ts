@@ -6,14 +6,18 @@ import { CourseMetadata } from '~/types/courseMetadata'
 export const runtime = 'edge'
 
 const getCourseMetadata = async (req: any, res: any) => {
-  // console.log('in api getCourseMetadata: req', req)
+  console.log('in api getCourseMetadata: req', req.searchParams)
+
   // const { course_name } = req.nextUrl.searchParams
   const course_name = req.nextUrl.searchParams.get('course_name')
 
+  console.log('in api getCourseMetadata: courseName', course_name)
   try {
-    const course_metadata = (await kv.get(
-      course_name + '_metadata',
+    const course_metadata = (await kv.hget(
+      'course_metadatas',
+      course_name,
     )) as CourseMetadata
+    console.log('in api getCourseMetadata: course_metadata', course_metadata)
 
     if (course_metadata == null) {
       return NextResponse.json({
@@ -23,15 +27,19 @@ const getCourseMetadata = async (req: any, res: any) => {
       })
     }
 
-    course_metadata.is_private = JSON.parse(
-      course_metadata.is_private as unknown as string,
-    )
+    // Only parse is_private if it exists
+    if (course_metadata.hasOwnProperty('is_private')) {
+      course_metadata.is_private = JSON.parse(
+        course_metadata.is_private as unknown as string,
+      )
+    }
+
     // res.status(200).json(course_metadata as JSON)
     return NextResponse.json({ course_metadata: course_metadata })
   } catch (error) {
-    console.log(error)
+    console.log('Error occured while fetching courseMetadata', error)
     // res.status(500).json({})
-    return NextResponse.json({ success: false })
+    return NextResponse.json({ success: false, error: error })
   }
 }
 
