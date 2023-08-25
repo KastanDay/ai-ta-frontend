@@ -63,6 +63,7 @@ pre:has(div.codeblock) {
   box-sizing: border-box;
   /* border: 1px solid #ccc; */
 }
+
 .item {
   flex: 1;
   padding: 10px;
@@ -73,14 +74,12 @@ pre:has(div.codeblock) {
 /* Make the purple background fade out  */
 .course-page-main {
   /* height: 400px;     */
-  background: -webkit-gradient(
-    linear,
-    left top,
-    left bottom,
-    from(#2e026d),
-    to(#020307),
-    color-stop(0.75, #15162c)
-  );
+  background: -webkit-gradient(linear,
+      left top,
+      left bottom,
+      from(#2e026d),
+      to(#020307),
+      color-stop(0.75, #15162c));
   background-color: #020307;
   background-size: 100% 45%, 0%;
   background-repeat: no-repeat;
@@ -89,15 +88,21 @@ pre:has(div.codeblock) {
 .fade-2-lines {
   overflow: hidden;
   position: relative;
-  max-height: 1.525em; /* exactly one lines */
-  max-height: 3.05em; /* exactly two lines */
+  max-height: 1.525em;
+  /* exactly one lines */
+  max-height: 3.05em;
+  /* exactly two lines */
 }
+
 .fade-3-lines {
   overflow: hidden;
   position: relative;
-  max-height: 1.525em; /* exactly one lines */
-  max-height: 4.575em; /* exactly two lines */
+  max-height: 1.525em;
+  /* exactly one lines */
+  max-height: 4.575em;
+  /* exactly two lines */
 }
+
 .fade-2-lines::after {
   content: '';
   text-align: right;
@@ -108,6 +113,7 @@ pre:has(div.codeblock) {
   height: 1.2em;
   background: linear-gradient(to right, rgba(255, 255, 255, 0), #0e1116 90%);
 }
+
 .fade-3-lines::after {
   content: '';
   text-align: right;
@@ -173,7 +179,7 @@ li {
   margin: 0 0.3rem 0.3rem 0;
 }
 
-.tag-item > .button {
+.tag-item>.button {
   background-color: blueviolet;
   width: 22px;
   height: 22px;
@@ -189,12 +195,21 @@ li {
   align-items: center;
   justify-content: center;
 }
+
 /* 👆 FOR EmailChips.tsx -- to make nice email input fields. 👆 */
 
 .goldUnderline {
   text-decoration: underline;
   text-decoration-color: gold;
   color: inherit;
+}
+
+/* todo: make this an inline style if easy */
+.nomic-iframe {
+  height: min(75vh, 50vw);
+  width: 90%;
+  min-height: 50vw;
+  /* width: min(75vh, 66vw); */
 }
 
 .home-header_text-underline {
@@ -207,3 +222,37 @@ li {
   display: inline-block;
   overflow: visible;
 }
+
+/* FOR NOMIC LOADING BOX */
+.skeleton-box {
+  display: inline-block;
+  height: 1em;
+  position: relative;
+  overflow: hidden;
+  background-color: #020307;
+}
+
+.skeleton-box::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(90deg,
+      rgba(99, 39, 175, 0) 0,
+      rgba(75, 85, 72, 0.2) 20%,
+      rgba(30, 64, 175, 0.5) 60%,
+      rgba(66, 1, 95, 0));
+  /* Changed the primary color to purple-900 */
+  animation: shimmer 5s infinite;
+  content: '';
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* END NOMIC LOADING BOX */
