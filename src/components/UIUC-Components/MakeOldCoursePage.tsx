@@ -231,7 +231,7 @@ const MakeOldCoursePage = ({
               <>
                 <Title
                   order={6}
-                  className={`w-full text-center ${montserrat.className} mt-2`}
+                  className={`w-full text-left ${montserrat.className} mt-2`}
                 >
                   Query visualization requires at least 20 queries to be made...
                   go ask some questions and check back later :)
