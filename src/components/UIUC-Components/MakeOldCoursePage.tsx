@@ -35,10 +35,6 @@ import axios from 'axios'
 import { useRouter } from 'next/router'
 const useStyles = createStyles((theme) => ({}))
 
-// import Header from '~/components/UIUC-Components/GlobalHeader'
-// import { ClerkProvider, SignedIn } from '@clerk/nextjs'
-// import { auth } from '@clerk/nextjs';
-
 import { useAuth, useUser } from '@clerk/nextjs'
 
 export const GetCurrentPageName = () => {
@@ -62,6 +58,7 @@ const MakeOldCoursePage = ({
     null,
   )
   const [currentEmail, setCurrentEmail] = useState('')
+
 
   const router = useRouter()
 
@@ -93,6 +90,32 @@ const MakeOldCoursePage = ({
     fetchData()
   }, [currentPageName, clerk_user.isLoaded])
 
+  const [nomicMapData, setNomicMapData] = useState<NomicMapData | null>(null);
+  const [nomicIsLoading, setNomicIsLoading] = useState(true);
+
+  // fetch nomicMapData
+  useEffect(() => {
+    const fetchNomicMapData = async () => {
+      try {
+        console.log("Trying to fetch nomic!!")
+        const response = await fetch(`/api/getNomicMapForQueries?course_name=${course_name}`)
+        const data = await response.json()
+        const parsedData: NomicMapData = {
+          map_id: data.map_id,
+          map_link: data.map_link
+        }
+        setNomicMapData(parsedData)
+        setNomicIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching nomic map:', error)
+        setNomicIsLoading(false); // Set nomicIsLoading to false even if there is an error
+      }
+    }
+
+    fetchNomicMapData()
+  }, [course_name])
+
+
   if (!isLoaded || !courseMetadata) {
     return (
       <MainPageBackground>
@@ -112,7 +135,7 @@ const MakeOldCoursePage = ({
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-        // current_email={currentEmail as string}
+      // current_email={currentEmail as string}
       />
     )
   }
@@ -139,11 +162,10 @@ const MakeOldCoursePage = ({
               courseMetadata={courseMetadata}
             />
             <div
-            // Course files header/background
+              // Course files header/background
               className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
             >
-            {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
               <Flex direction="row" justify="space-between">
                 <div className="flex flex-row items-start justify-start">
                   <Title
@@ -163,37 +185,70 @@ const MakeOldCoursePage = ({
                     }}
                   >
                     {' '}
-                    Questions asked by students of this course
+                    What Questions are people asking?
                   </Title>
                 </div>
                 <div className="me-6 mt-4 flex flex-row items-end justify-end">
-                {/* Can add more buttons here */}
+                  {/* Can add more buttons here */}
                 </div>
               </Flex>
             </div>
-            <Title
-        order={6}
-        className={`w-full text-center ${montserrat.className} mt-2`}
-      >
-        Read more about{' '}
-        <a
-          className={'text-purple-600'}
-          href="https://home.nomic.ai/about"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ textDecoration: 'underline', paddingRight: '5px' }}
-        >
-          semantic similarity visualizations
-        </a>
-      </Title>
-      {/* NOMIC VISUALIZATION  */}
-            <iframe className="nomic-iframe pl-7 pr-7 pt-4 pt-4" id="iframe1471f7b1-3147-4a55-bf0b-1111389cea26" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/efb685d0-707b-431a-83b4-f6a0f5998675/81aa5be8-f8c8-4d73-bbc8-def68765559e"/>
+            <div className='pt-5'></div>
+            {/* NOMIC VISUALIZATION  */}
+            {/* {false ? ( */}
+            {/* {true ? ( */}
+            {nomicIsLoading ? (
+              <>
+                <span className="nomic-iframe pl-7 pr-7 pt-4 skeleton-box"></span>
+              </>
+            ) : (nomicMapData && nomicMapData.map_id) ? (
+              <>
+                <iframe className="nomic-iframe pl-7 pr-7 pt-4 pt-4" id={nomicMapData.map_id} allow="clipboard-read; clipboard-write" src={nomicMapData.map_link} />
+                <Title
+                  order={6}
+                  className={`w-full text-center ${montserrat.className} mt-2`}
+                >
+                  A conceptual map of the questions asked by users on this page.
+                  <br></br>
+                  Read more about{' '}
+                  <a
+                    className={'text-purple-600'}
+                    href="https://home.nomic.ai/about"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'underline', paddingRight: '5px' }}
+                  >
+                    semantic similarity visualizations
+                  </a>
+                </Title>
+              </>
+            ) : (
+              <>
+                <Title
+                  order={6}
+                  className={`w-full text-center ${montserrat.className} mt-2`}
+                >
+                  Query visualization requires at least 20 queries to be made... go ask some questions and check back later :)
+                  <br></br>
+                  Read more about{' '}
+                  <a
+                    className={'text-purple-600'}
+                    href="https://home.nomic.ai/about"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'underline', paddingRight: '5px' }}
+                  >
+                    semantic similarity visualizations
+                  </a>
+                </Title>
+              </>
+            )}
+
+            {/* Course files header/background */}
             <div
-            // Course files header/background
               className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
             >
-            {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
               <Flex direction="row" justify="space-between">
                 <div className="flex flex-row items-start justify-start">
                   <Title
@@ -354,15 +409,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colorScheme === 'dark'
-                      ? theme.colors.gray[2]
-                      : theme.colors.gray[1]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colorScheme === 'dark'
+                        ? theme.colors.gray[2]
+                        : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colors.gray[8]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colors.gray[8]
                 }}
               >
                 <IconDownload className="h-5 w-5 text-gray-800" />
@@ -379,15 +434,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colorScheme === 'dark'
-                      ? theme.colors.gray[2]
-                      : theme.colors.gray[1]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colorScheme === 'dark'
+                        ? theme.colors.gray[2]
+                        : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colors.red[6]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colors.red[6]
                 }}
               >
                 <IconTrash className="h-5 w-5 text-red-600" />
@@ -424,8 +479,7 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${
-          response.statusText || response.status
+        `Error fetching course metadata: ${response.statusText || response.status
         }`,
       )
     }
