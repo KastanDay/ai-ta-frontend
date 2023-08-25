@@ -59,7 +59,6 @@ const MakeOldCoursePage = ({
   )
   const [currentEmail, setCurrentEmail] = useState('')
 
-
   const router = useRouter()
 
   const currentPageName = GetCurrentPageName()
@@ -90,31 +89,32 @@ const MakeOldCoursePage = ({
     fetchData()
   }, [currentPageName, clerk_user.isLoaded])
 
-  const [nomicMapData, setNomicMapData] = useState<NomicMapData | null>(null);
-  const [nomicIsLoading, setNomicIsLoading] = useState(true);
+  const [nomicMapData, setNomicMapData] = useState<NomicMapData | null>(null)
+  const [nomicIsLoading, setNomicIsLoading] = useState(true)
 
   // fetch nomicMapData
   useEffect(() => {
     const fetchNomicMapData = async () => {
       try {
-        console.log("Trying to fetch nomic!!")
-        const response = await fetch(`/api/getNomicMapForQueries?course_name=${course_name}`)
+        console.log('Trying to fetch nomic!!')
+        const response = await fetch(
+          `/api/getNomicMapForQueries?course_name=${course_name}`,
+        )
         const data = await response.json()
         const parsedData: NomicMapData = {
           map_id: data.map_id,
-          map_link: data.map_link
+          map_link: data.map_link,
         }
         setNomicMapData(parsedData)
-        setNomicIsLoading(false);
+        setNomicIsLoading(false)
       } catch (error) {
         console.error('Error fetching nomic map:', error)
-        setNomicIsLoading(false); // Set nomicIsLoading to false even if there is an error
+        setNomicIsLoading(false) // Set nomicIsLoading to false even if there is an error
       }
     }
 
     fetchNomicMapData()
   }, [course_name])
-
 
   if (!isLoaded || !courseMetadata) {
     return (
@@ -135,7 +135,7 @@ const MakeOldCoursePage = ({
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-      // current_email={currentEmail as string}
+        // current_email={currentEmail as string}
       />
     )
   }
@@ -185,7 +185,7 @@ const MakeOldCoursePage = ({
                     }}
                   >
                     {' '}
-                    What Questions are people asking?
+                    What questions are people asking?
                   </Title>
                 </div>
                 <div className="me-6 mt-4 flex flex-row items-end justify-end">
@@ -193,17 +193,22 @@ const MakeOldCoursePage = ({
                 </div>
               </Flex>
             </div>
-            <div className='pt-5'></div>
+            <div className="pt-5"></div>
             {/* NOMIC VISUALIZATION  */}
             {/* {false ? ( */}
             {/* {true ? ( */}
             {nomicIsLoading ? (
               <>
-                <span className="nomic-iframe pl-7 pr-7 pt-4 skeleton-box"></span>
+                <span className="nomic-iframe skeleton-box pl-7 pr-7 pt-4"></span>
               </>
-            ) : (nomicMapData && nomicMapData.map_id) ? (
+            ) : nomicMapData && nomicMapData.map_id ? (
               <>
-                <iframe className="nomic-iframe pl-7 pr-7 pt-4 pt-4" id={nomicMapData.map_id} allow="clipboard-read; clipboard-write" src={nomicMapData.map_link} />
+                <iframe
+                  className="nomic-iframe pl-7 pr-7 pt-4 pt-4"
+                  id={nomicMapData.map_id}
+                  allow="clipboard-read; clipboard-write"
+                  src={nomicMapData.map_link}
+                />
                 <Title
                   order={6}
                   className={`w-full text-center ${montserrat.className} mt-2`}
@@ -228,7 +233,8 @@ const MakeOldCoursePage = ({
                   order={6}
                   className={`w-full text-center ${montserrat.className} mt-2`}
                 >
-                  Query visualization requires at least 20 queries to be made... go ask some questions and check back later :)
+                  Query visualization requires at least 20 queries to be made...
+                  go ask some questions and check back later :)
                   <br></br>
                   Read more about{' '}
                   <a
@@ -409,15 +415,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.gray[2]
-                        : theme.colors.gray[1]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colorScheme === 'dark'
+                      ? theme.colors.gray[2]
+                      : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colors.gray[8]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colors.gray[8]
                 }}
               >
                 <IconDownload className="h-5 w-5 text-gray-800" />
@@ -434,15 +440,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.gray[2]
-                        : theme.colors.gray[1]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colorScheme === 'dark'
+                      ? theme.colors.gray[2]
+                      : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colors.red[6]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colors.red[6]
                 }}
               >
                 <IconTrash className="h-5 w-5 text-red-600" />
@@ -479,7 +485,8 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${response.statusText || response.status
+        `Error fetching course metadata: ${
+          response.statusText || response.status
         }`,
       )
     }
@@ -519,10 +526,10 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
       onOpen: () => console.log('mounted'),
       autoClose: 6000,
       // position="top-center",
-      title: was_error ? 'Error deleting file' : 'File deleted',
+      title: was_error ? 'Error deleting file' : 'Deleting file...',
       message: was_error
         ? "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug."
-        : 'That file is 100% purged from our servers and, of course, will no longer be used by the chatbot.',
+        : 'The file will be delted in the background. After about 10 seconds, it will be 100% purged from our servers and, of course, will no longer be used by the chatbot.',
       icon: <IconCheck />,
       // className: 'my-notification-class',
       styles: {
