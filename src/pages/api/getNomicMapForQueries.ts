@@ -10,12 +10,14 @@ export default async function handler(req: NextRequest, res: NextResponse) {
   try {
     const course_name = req.nextUrl.searchParams.get('course_name')
 
-    const response = await fetch(`${API_URL}/getNomicMap?course_name=${course_name}`)
+    const response = await fetch(
+      `${API_URL}/getNomicMap?course_name=${course_name}`,
+    )
     const data = await response.json()
 
     const parsedData: NomicMapData = {
       map_id: data.map_id,
-      map_link: data.map_link
+      map_link: data.map_link,
     }
     return NextResponse.json(parsedData)
   } catch (error) {
@@ -23,4 +25,3 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     return NextResponse.json({ success: false })
   }
 }
-
