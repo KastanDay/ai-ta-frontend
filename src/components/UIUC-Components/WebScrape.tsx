@@ -112,6 +112,7 @@ export const WebScrape = ({
             is_private: false,
             banner_image_s3: undefined,
             course_intro_message: undefined,
+            openai_api_key: undefined
           })
 
           if (!response) {
@@ -151,6 +152,7 @@ export const WebScrape = ({
             is_private: false,
             banner_image_s3: undefined,
             course_intro_message: undefined,
+            openai_api_key: undefined
           })
 
           if (!response) {

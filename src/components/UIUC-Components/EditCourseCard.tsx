@@ -572,6 +572,7 @@ const PrivateOrPublicCourse = ({
           onEmailAddressesChange={handleEmailAddressesChange}
           course_intro_message={courseMetadata.course_intro_message || ''}
           banner_image_s3={courseMetadata.banner_image_s3 || ''}
+          openai_api_key={courseMetadata.openai_api_key as string}
         />
       )}
     </>
