@@ -11,7 +11,7 @@ import {
   Input,
   Button,
 } from '@mantine/core'
-import { IconLock, IconQuestionMark } from '@tabler/icons-react'
+import {IconArrowUpRight, IconEdit, IconKey, IconLock, IconQuestionMark} from '@tabler/icons-react'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import LargeDropzone from './LargeDropzone'
 import EmailChipsComponent from './EmailChipsComponent'
@@ -52,6 +52,9 @@ const EditCourseCard = ({
   const [courseBannerUrl, setCourseBannerUrl] = useState('')
   const [isIntroMessageUpdated, setIsIntroMessageUpdated] = useState(false)
   const [loadinSpinner, setLoadinSpinner] = useState(false)
+  const [isEditing, setIsEditing] = useState(false);
+  const [apiKey, setApiKey] = useState(courseMetadata?.openai_api_key as string);
+  const [isKeyUpdated, setIsKeyUpdated] = useState(false);
 
   const checkCourseAvailability = () => {
     const courseExists =
@@ -99,6 +102,7 @@ const EditCourseCard = ({
 
   useEffect(() => {
     setIntroMessage(courseMetadata?.course_intro_message || '')
+    setApiKey(courseMetadata?.openai_api_key as string)
   }, [courseMetadata])
 
   const uploadToS3 = async (file: File | null) => {
@@ -251,6 +255,107 @@ const EditCourseCard = ({
           >
             <div className="card flex h-full flex-col justify-center">
               <div className="card-body">
+                <div className="form-control relative">
+                  <label className={`label ${montserrat.className}`}>
+                    <span className="label-text text-lg text-neutral-200">
+                      Course Wide Open AI Key
+                    </span>
+                  </label>
+                  {apiKey && !isEditing ? (
+                    <>
+                      <Input
+                        icon={<IconKey />}
+                        className="mt-4 w-full min-w-[20rem]"
+                        placeholder="sk-**********"
+                        type="password"
+                        radius={"xl"}
+                        size={"md"}
+                        variant={"default"}
+                        id="openai-api-key-input"
+                        disabled={!isKeyUpdated}
+                        rightSection={
+                          <Button
+                            onClick={() => {
+                              setIsEditing(true);
+                              setIsKeyUpdated(false);
+                            }}
+                            size="sm"
+                            radius={"xl"}
+                            className="rounded-s-md bg-purple-800 text-white min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
+                            w={"auto"}
+                          >
+                            <IconEdit />
+                          </Button>
+                        }
+                        rightSectionWidth={"auto"}
+                      />
+                    </>
+                  ) : (
+                    <Input
+                      icon={<IconKey />}
+                      className="mt-4 w-full min-w-[20rem]"
+                      placeholder="Enter your OpenAI API key"
+                      type="password"
+                      radius={"xl"}
+                      size={"md"}
+                      variant={"default"}
+                      id="openai-api-key-input"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          if (courseMetadata) {
+                            courseMetadata.openai_api_key = (e.target as HTMLInputElement).value;
+                          }
+                          callSetCourseMetadata(courseName, courseMetadata as CourseMetadata).then(resp => {
+                            if (!resp) {
+                              console.error(
+                                'Error upserting course metadata for course: ',
+                                course_name,
+                              )
+                            } else {
+                              setIsEditing(false); // Reset isEditing to false after successful submission
+                              setIsKeyUpdated(true); // Set isKeyUpdated to true after successful submission
+                            }
+                          })
+                        }
+                      }}
+                      rightSection={
+                        <Button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            const apiKeyInput = document.getElementById('openai-api-key-input') as HTMLInputElement;
+                            if (courseMetadata && apiKeyInput) {
+                              courseMetadata.openai_api_key = apiKeyInput.value;
+                              setApiKey(apiKeyInput.value); // Update the apiKey state
+                            }
+                            callSetCourseMetadata(courseName, courseMetadata as CourseMetadata).then(resp => {
+                              if (!resp) {
+                                console.error(
+                                  'Error upserting course metadata for course: ',
+                                  course_name,
+                                )
+                              } else {
+                                setIsEditing(false); // Reset isEditing to false after successful submission
+                                setIsKeyUpdated(true); // Set isKeyUpdated to true after successful submission
+                              }
+                            })
+                          }}
+                          size="sm"
+                          radius={"xl"}
+                          className="rounded-s-md bg-purple-800 text-white min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
+                          w={"auto"}
+                        >
+                          Submit
+                        </Button>
+                      }
+                      rightSectionWidth={"auto"}
+                    />
+                  )}
+                  <Input.Description className="text-right p-2">
+                    <a href="https://platform.openai.com/account/api-keys" target="_blank" className="hover:underline">
+                      Get your own api key here<IconArrowUpRight size={12} className={"inline mb-2"} /></a>
+                  </Input.Description>
+                </div>
+
                 <div className="form-control relative">
                   <label className={`label ${montserrat.className}`}>
                     <span className="label-text text-lg text-neutral-200">

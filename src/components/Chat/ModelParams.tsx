@@ -27,7 +27,7 @@ export const ModelParams = ({
   }
 
   return (
-    <div className="collapse-arrow collapse rounded-2xl bg-base-200">
+    <div className="collapse-arrow collapse rounded-2xl bg-transparent border-indigo-500 border-2">
       <input
         type="checkbox"
         checked={isChecked}

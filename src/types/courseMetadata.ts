@@ -8,6 +8,7 @@ export interface CourseMetadata {
   approved_emails_list: string[]
   banner_image_s3: string | undefined
   course_intro_message: string | undefined
+  openai_api_key: string | undefined
 }
 
 export interface CourseMetadataOptionalForUpsert {
@@ -17,4 +18,5 @@ export interface CourseMetadataOptionalForUpsert {
   approved_emails_list: string[] | undefined
   banner_image_s3: string | undefined
   course_intro_message: string | undefined
+  openai_api_key: string | undefined
 }

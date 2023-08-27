@@ -506,6 +506,26 @@ export const getServerSideProps: GetServerSideProps = async (
     console.log('Google plugin keys not set... will NOT work.')
   }
 
+  const course_name = context.query.course_name as string;
+  let openai_api_key = null
+  let serverSideApiKeyIsSet = false
+  
+  if (course_name) {
+    const course_metadata = await kv.hget('course_metadatas', course_name) as CourseMetadata
+    if (course_metadata?.openai_api_key) {
+      openai_api_key = course_metadata.openai_api_key
+      serverSideApiKeyIsSet = true
+    }  
+  }
+  
+  // If openai_api_key is not present in course_metadata, use the one from process.env - fallback needed for models api.
+  if (!openai_api_key && process.env.OPENAI_API_KEY) {
+    openai_api_key = process.env.OPENAI_API_KEY
+    serverSideApiKeyIsSet = false
+  }
+  console.log("Final serverSideApiKeyIsSet", serverSideApiKeyIsSet)
+  
+
   // TODO:
   // kv.hget()
   // direct server-side call is okay. fetch kv right here, then use that key if exists.
@@ -517,7 +537,7 @@ export const getServerSideProps: GetServerSideProps = async (
     props: {
       // ...buildClerkProps(context.req), // https://clerk.com/docs/nextjs/getserversideprops
       // TODO: here we can fetch the keys...
-      serverSideApiKeyIsSet: !!process.env.OPENAI_API_KEY,
+      serverSideApiKeyIsSet,
       defaultModelId,
       serverSidePluginKeysSet,
       ...(await serverSideTranslations(locale ?? 'en', [
