@@ -46,8 +46,8 @@ export default function Footer({ isNavbar = false }: { isNavbar?: boolean }) {
             rel="noopener noreferrer"
           >
             backend
-          </Link>
-          {' '}code.
+          </Link>{' '}
+          code.
         </span>
       </div>
     </footer>
