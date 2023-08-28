@@ -72,11 +72,12 @@ const Home: NextPage = () => {
               // gradient={{ from: 'indigo', to: 'cyan', deg: 45 }}
               gradient={{ from: 'pink', to: 'blue', deg: 45 }}
               ta="center"
+
               mt="md"
             >
               Upload anything. Search everything.
               <br></br>
-              <span className="home-header_text-underline">Discover more.</span>
+              <span className="home-header_text-underline">Hello Hello.</span>
             </Title>
 
             {/* <Text color="#57534e" c="dimmed" ta="center" mt="md">
@@ -203,9 +204,8 @@ const useStyles = createStyles((theme) => ({
   },
 
   card: {
-    border: `${rem(1)} solid ${
-      theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
-    }`,
+    border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
+      }`,
   },
 
   cardTitle: {
