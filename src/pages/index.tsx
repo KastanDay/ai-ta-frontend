@@ -1,11 +1,7 @@
+import Image from 'next/image'
 import { type NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
-// import { Montserrat, Lora, Audiowide } from 'next/font/google'
-// import { signIn, signOut, useSession } from "next-auth/react";
-
-// import { UserButton, SignIn } from "@clerk/nextjs";
-
 import {
   // MantineProvider,
   // Image,
@@ -18,20 +14,10 @@ import {
   Group,
 } from '@mantine/core'
 
-import Image from 'next/image'
-
-// import SignInPage from '~/pages/sign-in/[[...index]]'
-
-// import { api } from '~/utils/api'
 import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
 import GlobalFooter from '~/components/UIUC-Components/GlobalFooter'
 
 const Home: NextPage = () => {
-  // const hello = api.example.hello.useQuery({ text: "from tRPC" });
-
-  // const user = userUser();
-  // const router = useRouter();
-
   return (
     <>
       <Head>
@@ -205,9 +191,8 @@ const useStyles = createStyles((theme) => ({
   },
 
   card: {
-    border: `${rem(1)} solid ${
-      theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
-    }`,
+    border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
+      }`,
   },
 
   cardTitle: {
