@@ -2,7 +2,6 @@ import Link from 'next/link'
 import React, { ReactNode } from 'react'
 import GlobalHeader from './GlobalHeader'
 
-
 interface MainPageBackgroundProps {
   children: ReactNode
 }

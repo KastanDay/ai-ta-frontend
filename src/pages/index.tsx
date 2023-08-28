@@ -26,7 +26,6 @@ import SignInPage from '~/pages/sign-in/[[...index]]'
 import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
 import GlobalFooter from '~/components/UIUC-Components/GlobalFooter'
 
-
 const Home: NextPage = () => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
