@@ -491,16 +491,27 @@ export const getServerSideProps: GetServerSideProps = async (
   const course_name = context.params?.course_name as string
 
   // Check course authed users -- the JSON.parse is CRUCIAL to avoid bugs with the stringified JSON 😭
-  const course_metadata: CourseMetadata = (await kv.get(
-    course_name + '_metadata',
-  )) as CourseMetadata
+  try {
+    const course_metadata = (await kv.hget(
+      'course_metadatas',
+      course_name,
+    )) as CourseMetadata
+    console.log('in api getCourseMetadata: course_metadata', course_metadata)
 
-  course_metadata.is_private = JSON.parse(
-    course_metadata.is_private as unknown as string,
-  )
+    if (course_metadata == null) {
+      console.log('Course metadata not found in serverside')
+    }
 
-  console.log('home.tsx -- Course metadata in serverside: ', course_metadata)
-
+    // Only parse is_private if it exists
+    if (course_metadata.hasOwnProperty('is_private')) {
+      course_metadata.is_private = JSON.parse(
+        course_metadata.is_private as unknown as string,
+      )
+    }
+    console.log('home.tsx -- Course metadata in serverside: ', course_metadata)
+  } catch (error) {
+    console.error('Error occured while fetching courseMetadata', error)
+  }
   const defaultModelId =
     (process.env.DEFAULT_MODEL &&
       Object.values(OpenAIModelID).includes(
@@ -523,7 +534,7 @@ export const getServerSideProps: GetServerSideProps = async (
   return {
     props: {
       // ...buildClerkProps(context.req), // https://clerk.com/docs/nextjs/getserversideprops
-      serverSideApiKeyIsSet: !!process.env.OPENAI_API_KEY,
+      serverSideApiKeyIsSet: !process.env.OPENAI_API_KEY,
       defaultModelId,
       serverSidePluginKeysSet,
       ...(await serverSideTranslations(locale ?? 'en', [
