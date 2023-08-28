@@ -534,7 +534,7 @@ export const getServerSideProps: GetServerSideProps = async (
   return {
     props: {
       // ...buildClerkProps(context.req), // https://clerk.com/docs/nextjs/getserversideprops
-      serverSideApiKeyIsSet: !process.env.OPENAI_API_KEY,
+      serverSideApiKeyIsSet: !!process.env.OPENAI_API_KEY,
       defaultModelId,
       serverSidePluginKeysSet,
       ...(await serverSideTranslations(locale ?? 'en', [
