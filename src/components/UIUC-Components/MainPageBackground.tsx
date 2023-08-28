@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import React, { ReactNode } from 'react'
 import GlobalHeader from './GlobalHeader'
-import GlobalFooter from './GlobalFooter'
 
 
 interface MainPageBackgroundProps {

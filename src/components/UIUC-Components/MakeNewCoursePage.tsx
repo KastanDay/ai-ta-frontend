@@ -1,34 +1,32 @@
 import Head from 'next/head'
 import { Montserrat } from 'next/font/google'
-import {
-  Card,
-  Text,
-  Flex,
-  Group,
-  Checkbox,
-  Col,
-  Paper,
-  Input,
-  Textarea,
-  FileInput,
-  MediaQuery,
-  type CheckboxProps,
-  Title,
-} from '@mantine/core'
+// import {
+//   Card,
+//   Text,
+//   Flex,
+//   Group,
+//   Checkbox,
+//   Col,
+//   Paper,
+//   Input,
+//   Textarea,
+//   FileInput,
+//   MediaQuery,
+//   type CheckboxProps,
+//   Title,
+// } from '@mantine/core'
 
 const montserrat = Montserrat({
   weight: '700',
   subsets: ['latin'],
 })
 
-import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
-import GlobalHeader from './GlobalHeader'
-import GlobalFooter from './GlobalFooter'
-import EmailChipsComponent from './EmailChipsComponent'
-import { IconLock } from '@tabler/icons-react'
-import { type CourseMetadata } from '~/types/courseMetadata'
-import LargeDropzone from './LargeDropzone'
+import React, { useState } from 'react'
+// import GlobalHeader from './GlobalHeader'
+// import GlobalFooter from './GlobalFooter'
+// import EmailChipsComponent from './EmailChipsComponent'
+// import { type CourseMetadata } from '~/types/courseMetadata'
+// import LargeDropzone from './LargeDropzone'
 import Navbar from '~/components/UIUC-Components/Navbar'
 import { useMediaQuery } from '@mantine/hooks'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
