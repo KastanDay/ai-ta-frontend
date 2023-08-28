@@ -24,6 +24,7 @@ const montserrat = Montserrat({
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import GlobalHeader from './GlobalHeader'
+import GlobalFooter from './GlobalFooter'
 import EmailChipsComponent from './EmailChipsComponent'
 import { IconLock } from '@tabler/icons-react'
 import { type CourseMetadata } from '~/types/courseMetadata'

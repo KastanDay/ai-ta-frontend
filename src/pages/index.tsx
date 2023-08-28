@@ -23,7 +23,9 @@ import Image from 'next/image'
 import SignInPage from '~/pages/sign-in/[[...index]]'
 
 // import { api } from '~/utils/api'
-import Header from '~/components/UIUC-Components/GlobalHeader'
+import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
+import GlobalFooter from '~/components/UIUC-Components/GlobalFooter'
+
 
 const Home: NextPage = () => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
@@ -42,7 +44,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {/* "My user" login button */}
-      <Header />
+      <GlobalHeader />
       {/* <header style={{ backgroundColor: '#2e026d', display: 'flex', justifyContent: 'flex-end', padding: '1em'}}>
 				<UserButton
           afterSignOutUrl="/"
@@ -50,7 +52,7 @@ const Home: NextPage = () => {
         
         
 
-			</header> */}
+			</GlobalHeader> */}
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
         <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 ">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
@@ -144,6 +146,7 @@ const Home: NextPage = () => {
         {/* <script async src="https://cse.google.com/cse.js?cx=2616b82a523e047b2">
         </script>
         <div className="gcse-search"></div> */}
+        <GlobalFooter />
       </main>
     </>
   )
