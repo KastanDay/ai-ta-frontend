@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import React, { ReactNode } from 'react'
 import GlobalHeader from './GlobalHeader'
+// import GlobalFooter from './GlobalFooter'
 
 interface MainPageBackgroundProps {
   children: ReactNode
@@ -33,7 +34,7 @@ export const MainPageBackground: React.FC<MainPageBackgroundProps> = ({
           {children}
         </div>
         <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 "></div>
-        <GlobalFooter />
+        {/* <GlobalFooter /> */}
       </main>
     </>
   )

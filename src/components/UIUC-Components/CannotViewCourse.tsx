@@ -26,11 +26,11 @@ import { CourseMetadata } from '~/types/courseMetadata'
 const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 // const rubikpuddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 import React, { useState, useEffect } from 'react'
-import Spinner from '../Spinner'
 import { LoadingSpinner } from './LoadingSpinner'
 import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
 import { CannotEditCourse } from './CannotEditCourse'
+import GlobalFooter from './GlobalFooter'
 
 export const GetCurrentPageName = () => {
   // /CS-125/materials --> CS-125

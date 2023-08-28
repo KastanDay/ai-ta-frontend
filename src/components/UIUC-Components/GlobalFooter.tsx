@@ -13,8 +13,6 @@ export default function Footer({ isNavbar = false }: { isNavbar?: boolean }) {
         <Link href="/privacy" className="link-hover link text-blue-500">
           Privacy
         </Link>
-      </div>
-      <div>
         <Link
           href="https://github.com/kastanday/ai-ta-frontend"
           className="link-hover link text-blue-500"
