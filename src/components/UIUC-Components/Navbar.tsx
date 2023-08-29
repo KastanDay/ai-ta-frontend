@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import Header from '~/components/UIUC-Components/GlobalHeader'
+import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
 import { Flex } from '@mantine/core'
 import { ResumeToChat } from './ResumeToChat'
 
@@ -121,7 +121,7 @@ const Navbar = ({ course_name = '' }) => (
               </svg>
             </button> */}
 
-        <Header isNavbar={true} />
+        <GlobalHeader isNavbar={true} />
       </div>
     </div>
   </div>

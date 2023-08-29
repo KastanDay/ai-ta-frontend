@@ -35,10 +35,6 @@ import axios from 'axios'
 import { useRouter } from 'next/router'
 const useStyles = createStyles((theme) => ({}))
 
-// import Header from '~/components/UIUC-Components/GlobalHeader'
-// import { ClerkProvider, SignedIn } from '@clerk/nextjs'
-// import { auth } from '@clerk/nextjs';
-
 import { useAuth, useUser } from '@clerk/nextjs'
 
 export const GetCurrentPageName = () => {
@@ -93,6 +89,33 @@ const MakeOldCoursePage = ({
     fetchData()
   }, [currentPageName, clerk_user.isLoaded])
 
+  const [nomicMapData, setNomicMapData] = useState<NomicMapData | null>(null)
+  const [nomicIsLoading, setNomicIsLoading] = useState(true)
+
+  // fetch nomicMapData
+  useEffect(() => {
+    const fetchNomicMapData = async () => {
+      try {
+        console.log('Trying to fetch nomic!!')
+        const response = await fetch(
+          `/api/getNomicMapForQueries?course_name=${course_name}`,
+        )
+        const data = await response.json()
+        const parsedData: NomicMapData = {
+          map_id: data.map_id,
+          map_link: data.map_link,
+        }
+        setNomicMapData(parsedData)
+        setNomicIsLoading(false)
+      } catch (error) {
+        console.error('Error fetching nomic map:', error)
+        setNomicIsLoading(false) // Set nomicIsLoading to false even if there is an error
+      }
+    }
+
+    fetchNomicMapData()
+  }, [course_name])
+
   if (!isLoaded || !courseMetadata) {
     return (
       <MainPageBackground>
@@ -139,6 +162,96 @@ const MakeOldCoursePage = ({
               courseMetadata={courseMetadata}
             />
             <div
+              // Course files header/background
+              className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
+              style={{ zIndex: 1, background: '#15162c' }}
+            >
+              <Flex direction="row" justify="space-between">
+                <div className="flex flex-row items-start justify-start">
+                  <Title
+                    className={montserrat.className}
+                    variant="gradient"
+                    gradient={{
+                      from: 'hsl(280,100%,70%)',
+                      to: 'white',
+                      deg: 185,
+                    }}
+                    order={3}
+                    p="xl"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {' '}
+                    What questions are people asking?
+                  </Title>
+                </div>
+                <div className="me-6 mt-4 flex flex-row items-end justify-end">
+                  {/* Can add more buttons here */}
+                </div>
+              </Flex>
+            </div>
+            <div className="pt-5"></div>
+            {/* NOMIC VISUALIZATION  */}
+            {/* {false ? ( */}
+            {/* {true ? ( */}
+            {nomicIsLoading ? (
+              <>
+                <span className="nomic-iframe skeleton-box pl-7 pr-7 pt-4"></span>
+              </>
+            ) : nomicMapData && nomicMapData.map_id ? (
+              <>
+                <iframe
+                  className="nomic-iframe pl-7 pr-7 pt-4 pt-4"
+                  id={nomicMapData.map_id}
+                  allow="clipboard-read; clipboard-write"
+                  src={nomicMapData.map_link}
+                />
+                <Title
+                  order={6}
+                  className={`w-full text-center ${montserrat.className} mt-2`}
+                >
+                  A conceptual map of the questions asked by users on this page.
+                  <br></br>
+                  Read more about{' '}
+                  <a
+                    className={'text-purple-600'}
+                    href="https://home.nomic.ai/about"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'underline', paddingRight: '5px' }}
+                  >
+                    semantic similarity visualizations
+                  </a>
+                </Title>
+              </>
+            ) : (
+              <>
+                <Title
+                  order={6}
+                  className={`w-full text-center ${montserrat.className} mt-2`}
+                >
+                  Query visualization requires at least 20 queries to be made...
+                  go ask some questions and check back later :)
+                  <br></br>
+                  Read more about{' '}
+                  <a
+                    className={'text-purple-600'}
+                    href="https://home.nomic.ai/about"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'underline', paddingRight: '5px' }}
+                  >
+                    semantic similarity visualizations
+                  </a>
+                </Title>
+              </>
+            )}
+
+            {/* Course files header/background */}
+            <div
               className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
             >
@@ -172,12 +285,15 @@ const MakeOldCoursePage = ({
                   />
                 </div>
               </Flex>
+              {/* NOMIC not bad, not great */}
+              {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
             </div>
             <div className="mt-2 flex w-[80%] flex-col items-center justify-center">
               <CourseFilesList files={course_data} />
             </div>
           </Flex>
         </div>
+        <GlobalFooter />
       </main>
     </>
   )
@@ -209,6 +325,7 @@ import { extractEmailsFromClerk } from './clerkHelpers'
 import Navbar from '~/components/UIUC-Components/Navbar'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
 import { notifications } from '@mantine/notifications'
+import GlobalFooter from './GlobalFooter'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
@@ -250,7 +367,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
             }}
           >
             {/* Conditionally show link in small text if exists */}
-            {file.url || file.s3_path.endsWith('.pdf') ? (
+            {file.url ? (
               <div
                 className="min-w-0 flex-auto"
                 style={{
@@ -282,9 +399,10 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 <p className="text-xl font-semibold leading-6 text-gray-800">
                   {file.readable_filename}
                 </p>
-                <p className="mt-1 truncate text-xs leading-5 text-gray-600">
+                {/* SMALL LOWER TEXT FOR FILES IN LIST */}
+                {/* <p className="mt-1 truncate text-xs leading-5 text-gray-600">
                   {file.course_name}
-                </p>
+                </p> */}
               </div>
             )}
             <div className="me-4 flex justify-end space-x-2">
@@ -410,10 +528,10 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
       onOpen: () => console.log('mounted'),
       autoClose: 6000,
       // position="top-center",
-      title: was_error ? 'Error deleting file' : 'File deleted',
+      title: was_error ? 'Error deleting file' : 'Deleting file...',
       message: was_error
         ? "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug."
-        : 'That file is 100% purged from our servers and, of course, will no longer be used by the chatbot.',
+        : 'The file will be delted in the background. After about 10 seconds, it will be 100% purged from our servers and, of course, will no longer be used by the chatbot.',
       icon: <IconCheck />,
       // className: 'my-notification-class',
       styles: {
