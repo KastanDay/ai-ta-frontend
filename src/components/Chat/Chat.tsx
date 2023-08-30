@@ -487,7 +487,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const renderIntroductoryStatements = () => {
     return (
       <div className="lg:mx-auto md:mx-auto mt-4 gap-3 last:mb-2 max-w-3xl px-4 sm:mx-4 xs:mx-2 ">
-        <div className="rounded-lg p-6 bg-[rgba(42,42,64,0.4)] backdrop-filter-[blur(10px)] border border-[rgba(42,42,120,0.55)]">
+        <div className="rounded-lg p-6 bg-[rgba(42,42,64,0.4)] backdrop-filter-[blur(10px)] border border-2 border-[rgba(42,42,120,0.55)]">
           <h1 className="mb-2 text-lg font-semibold text-gray-300">
             You can start a conversation here or try the following examples:
           </h1>
@@ -517,7 +517,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         <div className="relative min-w-screen flex-1 overflow-hidden min-h-screen">
           <Navbar />
           <div className="absolute inset-0 flex items-center justify-center flex-col">
-            <div className=" text-2xl font-bold text-black dark:text-white p-10 border-2 border-indigo-500 rounded-box flex-col items-center max-w-4xl mx-auto">
+            <div className=" text-2xl font-bold text-black dark:text-white p-10 bg-[rgba(42,42,64,0.3)] backdrop-filter-[blur(10px)] border border-[rgba(42,42,120,0.8)] border-2 rounded-box flex-col items-center max-w-4xl mx-auto">
               <div className="mb-2 flex flex-col items-center text-center">
                 <IconAlertTriangle size={'54'} className="mr-2 block text-orange-400 " />
                 <div className='text-left mt-4'> {t(
