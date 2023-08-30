@@ -181,8 +181,9 @@ const useStyles = createStyles((theme) => ({
   },
 
   card: {
-    border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
-      }`,
+    border: `${rem(1)} solid ${
+      theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
+    }`,
   },
 
   cardTitle: {
@@ -243,54 +244,63 @@ export function FeaturesCards() {
 function CourseCard() {
   const cards = [
     {
-      course_slug: "ece120",
-      imageSrc: "/media/hero_courses_banners/ECE_logo.jpg",
-      title: "ECE 120",
-      badge: "ECE @ UIUC",
-      description: "Prof. Volodymyr (Vlad) Kindratenko, Director of the Center for Artificial Intelligence Innovation at NCSA, in Spring 2022",
+      course_slug: 'ece120',
+      imageSrc: '/media/hero_courses_banners/ECE_logo.jpg',
+      title: 'ECE 120',
+      badge: 'ECE @ UIUC',
+      description:
+        'Prof. Volodymyr (Vlad) Kindratenko, Director of the Center for Artificial Intelligence Innovation at NCSA, in Spring 2022',
     },
     {
-      course_slug: "NCSA",
-      imageSrc: "/media/hero_courses_banners/NCSA_more_than_imagine.jpg",
-      title: "NCSA",
-      badge: "ECE @ UIUC",
-      description: "Using all of NCSA's public information, get answers for detailed questions about the organization.",
+      course_slug: 'NCSA',
+      imageSrc: '/media/hero_courses_banners/NCSA_more_than_imagine.jpg',
+      title: 'NCSA',
+      badge: 'ECE @ UIUC',
+      description:
+        "Using all of NCSA's public information, get answers for detailed questions about the organization.",
     },
     {
-      course_slug: "NCSADelta",
-      imageSrc: "/media/hero_courses_banners/delta_hero.jpg",
-      title: "NCSA Delta Documentation",
-      badge: "NCSA Docs",
-      description: "Using all of Delta's documentation, get detailed examples, advice and information about how to use the Delta supercomputer.",
+      course_slug: 'NCSADelta',
+      imageSrc: '/media/hero_courses_banners/delta_hero.jpg',
+      title: 'NCSA Delta Documentation',
+      badge: 'NCSA Docs',
+      description:
+        "Using all of Delta's documentation, get detailed examples, advice and information about how to use the Delta supercomputer.",
     },
     {
-      course_slug: "clowder-docs",
-      imageSrc: "/media/hero_courses_banners/clowder_logo.png",
-      title: "Clowder docs",
-      badge: "NCSA Docs",
-      description: "Using all of Ansible's documentation, this bot will write excellent Ansible scripts. Just ask it to program whatever you'd like.",
+      course_slug: 'clowder-docs',
+      imageSrc: '/media/hero_courses_banners/clowder_logo.png',
+      title: 'Clowder docs',
+      badge: 'NCSA Docs',
+      description:
+        "Using all of Ansible's documentation, this bot will write excellent Ansible scripts. Just ask it to program whatever you'd like.",
     },
     {
-      course_slug: "langchain-docs",
+      course_slug: 'langchain-docs',
       // imageSrc: "https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fit=contain",
-      title: "Langchain",
-      badge: "Coding",
-      description: "Using all of Langchain's documentation, this bot will write excellent LangChain code. Just ask it to program whatever you'd like.",
+      title: 'Langchain',
+      badge: 'Coding',
+      description:
+        "Using all of Langchain's documentation, this bot will write excellent LangChain code. Just ask it to program whatever you'd like.",
     },
     {
-      course_slug: "ansible",
+      course_slug: 'ansible',
       // imageSrc: "https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fit=contain",
-      title: "Ansible",
-      badge: "Coding",
-      description: "Using all of Ansible's documentation, this bot will write excellent Ansible scripts. Just ask it to program whatever you'd like.",
+      title: 'Ansible',
+      badge: 'Coding',
+      description:
+        "Using all of Ansible's documentation, this bot will write excellent Ansible scripts. Just ask it to program whatever you'd like.",
     },
     // Add more cards here
-  ];
+  ]
 
   return (
     <>
       {cards.map((card) => (
-        <div key={card.course_slug} className="box-sizing: border-box; border: 100px solid #ccc;">
+        <div
+          key={card.course_slug}
+          className="box-sizing: border-box; border: 100px solid #ccc;"
+        >
           <Link href={`/${card.course_slug}/gpt4`}>
             <Card
               bg="#0E1116"
@@ -321,9 +331,13 @@ function CourseCard() {
                   />
                 </Card.Section>
               )}
-              <Card.Section className="pt-2 pb-2 pl-4 pr-4">
+              <Card.Section className="pb-2 pl-4 pr-4 pt-2">
                 <Group position="apart" mt="md" mb="xs">
-                  <Text style={{ fontFamily: 'Montserrat' }} size="xl" weight={800}>
+                  <Text
+                    style={{ fontFamily: 'Montserrat' }}
+                    size="xl"
+                    weight={800}
+                  >
                     {card.title}
                   </Text>
                   <Badge size="xl" color="pink" variant="light">
@@ -335,7 +349,13 @@ function CourseCard() {
                   {card.description}
                 </Text>
 
-                <Button variant="light" color="blue" fullWidth mt="md" radius="md">
+                <Button
+                  variant="light"
+                  color="blue"
+                  fullWidth
+                  mt="md"
+                  radius="md"
+                >
                   View
                 </Button>
               </Card.Section>
@@ -344,5 +364,5 @@ function CourseCard() {
         </div>
       ))}
     </>
-  );
+  )
 }
