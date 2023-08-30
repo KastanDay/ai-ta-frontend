@@ -1,7 +1,11 @@
 // src/components/Chat/Chat.tsx
 import {
+  IconArrowRight,
   IconCloudUpload,
   IconExternalLink,
+  IconAlertTriangle,
+  IconArrowLeft,
+  IconArrowUpRight
   // IconFileTextAi,
   // IconX,
   // IconDownload,
@@ -18,7 +22,7 @@ import {
   useState,
 } from 'react'
 import toast from 'react-hot-toast'
-import { Text } from '@mantine/core'
+import { Button, Text } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -84,6 +88,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const redirectToMaterialsPage = () => {
     router.push(`/${getCurrentPageName()}/materials`)
   }
+  
+  const [inputContent, setInputContent] = useState<string>('');
 
   useEffect(() => {
     if (courseMetadata?.banner_image_s3) {
@@ -474,45 +480,63 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       ]
 
   // Add this function to create dividers with statements
-  const renderDividers = () => {
-    return statements.map((statement, index) => (
-      <div key={index} className="flex w-full flex-col items-center px-1">
-        <div className="card rounded-box grid min-h-[6rem] w-full place-items-center justify-items-center bg-transparent text-lg text-black dark:text-white sm:w-3/5 border-2 border-indigo-500">
-          <div className="overflow-auto p-4 text-center">
-            <p>{statement}</p>
+  const renderIntroductoryStatements = () => {
+    return (
+      <div className="lg:mx-auto md:mx-auto mt-4 gap-3 last:mb-2 max-w-3xl px-4 sm:mx-4 xs:mx-2 ">
+        <div className="rounded-lg p-6 bg-[rgba(42,42,64,0.4)] backdrop-filter-[blur(10px)] border border-[rgba(42,42,120,0.55)]">
+          <h1 className="mb-2 text-lg font-semibold text-gray-300">
+            You can start a conversation here or try the following examples:
+          </h1>
+          <div className="mt-4 flex flex-col items-start space-y-2 overflow-hidden">
+            {statements.map((statement, index) => (
+              <div 
+              className="border-b-2 border-[rgba(42,42,64,0.4)] w-full hover:bg-[rgba(42,42,64,0.9)] hover:cursor-pointer rounded-lg" 
+              onClick={() => setInputContent(statement)}>
+                <Button
+                  key={index}
+                  variant="link"
+                  className="h-auto p-2 font-bold text-white text-md leading-relaxed hover:underline "
+                >
+                  <IconArrowRight className="mr-2" />
+                  <p className='whitespace-break-spaces'>{statement}</p>
+                </Button>
+              </div>
+            ))}
           </div>
         </div>
-        {index !== statements.length - 1 && (
-          <div className="divider mx-auto w-full sm:w-3/5"></div>
-        )}
       </div>
-    ))
+    )
   }
-
   return (
     <div className="relative flex-1 overflow-wrap bg-white dark:bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]">
       {!(apiKey || serverSideApiKeyIsSet) ? (
         <div className="relative min-w-screen flex-1 overflow-hidden min-h-screen">
         <Navbar />
-          <div className="absolute inset-0 flex items-center justify-center ">
-            <div className="text-center text-2xl font-bold text-black dark:text-white p-10 border-2 border-indigo-500 rounded-box">
-              <div className="mb-2">
-                {t(
+          <div className="absolute inset-0 flex items-center justify-center flex-col">
+            <div className=" text-xl font-bold text-black dark:text-white p-10 border-2 border-indigo-500 rounded-box flex-col items-center max-w-4xl mx-auto"> 
+              <div className="mb-2 flex flex-col items-center text-center"> 
+                <IconAlertTriangle size={'54'} className="mr-2 block text-orange-400 " />
+                <div className='text-left mt-4'> {t(
                   'Please set your OpenAI API key in the bottom left of the sidebar.'
-                )}
+                )}</div>
               </div>
-              <div>
+              <div className="flex flex-col text-left"> 
                 {t("If you don't have an OpenAI API key, you can get one here: ")}
-                <a
-                  href="https://platform.openai.com/account/api-keys"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-blue-500 hover:underline"
-                >
-                  openai.com
-                </a>
+                <div className="mt-2 items-center text-center">
+                  <a
+                    href="https://platform.openai.com/account/api-keys"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-purple-500 hover:underline"
+                  >
+                    Api Key <IconArrowUpRight className='mr-2 inline-block'></IconArrowUpRight>
+                  </a>
+                </div>
               </div>
             </div>
+            <div className="mt-4 flex-col place-items-start text-left absolute bottom-4 left-0 ml-4 animate-ping">
+                <IconArrowLeft size={'36'} className="mr-2 text-purple-500 transform transition-transform duration-500 ease-in-out hover:-translate-x-1"/>
+              </div>
           </div>
       </div>
       
@@ -521,26 +545,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       ) : (
         <>
           <div
-            className="max-h-full overflow-x-hidden"
+            className="max-h-full overflow-hidden"
             ref={chatContainerRef}
             onScroll={handleScroll}
           >
             {selectedConversation?.messages.length === 0 ? (
               <>
                 {/* <CustomBanner bannerUrl={bannerUrl as string} /> Banner on fresh chat page */}
-                {bannerUrl && (
-                  <div style={{ width: '100%' }}>
-                    <img
-                      src={bannerUrl}
-                      alt="Banner"
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                )}
-                <Navbar />
-                <div className="mx-auto flex flex-col space-y-5 px-3 pt-5 sm:max-w-[600px] md:space-y-10 md:pt-12">
+                <Navbar bannerUrl={bannerUrl as string} />
+                <div className="lg:mx-auto md:mx-auto mt-4 gap-3 last:mb-2 max-w-3xl sm:mx-4 xs:mx-2 mt-8 gap-3 flex flex-col space-y-5 p-4 md:space-y-10 md:pt-12">
                   {models.length > 0 && (
-                    <div className="flex h-full flex-col space-y-4 rounded-3xl p-4 focus:border-t-info/100 dark:border-neutral-600">
+                    <div className="flex h-full flex-col space-y-4 focus:border-t-info/100 dark:border-neutral-600">
                       <ModelParams
                         selectedConversation={selectedConversation}
                         prompts={prompts}
@@ -550,7 +565,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                     </div>
                   )}
                 </div>
-                <div className="mt-16">{renderDividers()}</div>
+                <div className="mt-16">{renderIntroductoryStatements()}</div>
               </>
             ) : (
               <>
@@ -670,6 +685,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               }
             }}
             showScrollDownButton={showScrollDownButton}
+            inputContent={inputContent}
+            setInputContent={setInputContent}
           />
         </>
       )}

@@ -2,8 +2,9 @@ import Link from 'next/link'
 import Header from '~/components/UIUC-Components/GlobalHeader'
 import { Flex } from '@mantine/core'
 import { ResumeToChat } from './ResumeToChat'
+import Image from 'next/image'
 
-const Navbar = ({ course_name = '' }) => (
+const Navbar = ({ course_name = '' , bannerUrl = '' }) => (
   <div className="flex flex-col items-center bg-[#2e026d]">
     <div className="mt-4 w-full max-w-[95%]">
       <div className="navbar rounded-badge h-24 min-h-fit bg-[#15162c] shadow-lg shadow-purple-800">
@@ -13,7 +14,13 @@ const Navbar = ({ course_name = '' }) => (
               UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
             </h2>
           </Link>
+          {bannerUrl && (
+          <div className="ms-4 border-l-2 pl-4 border-purple-500">
+            <Image src={bannerUrl} alt="Banner" width={36} height={36} />
+          </div>
+        )}
         </div>
+        
         <Flex direction="row" align="center" justify="center">
           <div className="ms-4 mt-4 flex flex-row items-center justify-center gap-2">
             <ResumeToChat course_name={course_name} />

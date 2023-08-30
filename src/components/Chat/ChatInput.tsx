@@ -35,6 +35,8 @@ interface Props {
   stopConversationRef: MutableRefObject<boolean>
   textareaRef: MutableRefObject<HTMLTextAreaElement | null>
   showScrollDownButton: boolean
+  inputContent: string
+  setInputContent: (content: string) => void;
 }
 
 export const ChatInput = ({
@@ -44,6 +46,8 @@ export const ChatInput = ({
   stopConversationRef,
   textareaRef,
   showScrollDownButton,
+  inputContent,
+  setInputContent
 }: Props) => {
   const { t } = useTranslation('chat')
 
@@ -240,6 +244,10 @@ export const ChatInput = ({
       textareaRef.current.focus()
     }
   }
+
+  useEffect(() => {
+    setContent(inputContent);
+  }, [inputContent]);
 
   useEffect(() => {
     if (promptListRef.current) {
