@@ -494,10 +494,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           <div className="mt-4 flex flex-col items-start space-y-2 overflow-hidden">
             {statements.map((statement, index) => (
               <div
+              key={index} // Added key prop here to fix the error
               className="border-b-2 border-[rgba(42,42,64,0.4)] w-full hover:bg-[rgba(42,42,64,0.9)] hover:cursor-pointer rounded-lg"
               onClick={() => setInputContent(statement)}>
                 <Button
-                  key={index}
                   variant="link"
                   className="h-auto p-2 font-bold text-white text-md leading-relaxed hover:underline "
                 >
