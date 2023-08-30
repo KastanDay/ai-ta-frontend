@@ -181,9 +181,8 @@ const useStyles = createStyles((theme) => ({
   },
 
   card: {
-    border: `${rem(1)} solid ${
-      theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
-    }`,
+    border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
+      }`,
   },
 
   cardTitle: {
@@ -246,16 +245,16 @@ function CourseCard() {
     {
       course_slug: 'ece120',
       imageSrc: '/media/hero_courses_banners/ECE_logo.jpg',
-      title: 'ECE 120',
+      title: 'Electrical & Computer Engineering, ECE 120',
       badge: 'ECE @ UIUC',
       description:
-        'Prof. Volodymyr (Vlad) Kindratenko, Director of the Center for Artificial Intelligence Innovation at NCSA, in Spring 2022',
+        'Prof. Volodymyr (Vlad) Kindratenko, Director of the Center for Artificial Intelligence Innovation at NCSA, in Fall 2023. We also have <a href="/ECE220FA23/gpt4">ECE 220</a> & <a href="/ECE408FA23/gpt4">ECE 408</a>.',
     },
     {
       course_slug: 'NCSA',
       imageSrc: '/media/hero_courses_banners/NCSA_more_than_imagine.jpg',
       title: 'NCSA',
-      badge: 'ECE @ UIUC',
+      badge: 'NCSA Docs',
       description:
         "Using all of NCSA's public information, get answers for detailed questions about the organization.",
     },
@@ -291,6 +290,14 @@ function CourseCard() {
       description:
         "Using all of Ansible's documentation, this bot will write excellent Ansible scripts. Just ask it to program whatever you'd like.",
     },
+    {
+      course_slug: 'ansible',
+      // imageSrc: "https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fit=contain",
+      title: 'Ansible',
+      badge: 'Coding',
+      description:
+        "Using all of Ansible's documentation, this bot will write excellent Ansible scripts. Just ask it to program whatever you'd like.",
+    },
     // Add more cards here
   ]
 
@@ -301,21 +308,21 @@ function CourseCard() {
           key={card.course_slug}
           className="box-sizing: border-box; border: 100px solid #ccc;"
         >
-          <Link href={`/${card.course_slug}/gpt4`}>
-            <Card
-              bg="#0E1116"
-              style={{
-                width: '80vw',
-                height: 'auto',
-              }}
-              shadow="sm"
-              padding="lg"
-              radius="md"
-              withBorder
-            >
-              {card.imageSrc && (
-                // <Card.Section style={{ height: 'auto' }}>
-                <Card.Section style={{ height: '15vw' }}>
+          <Card
+            bg="#0E1116"
+            style={{
+              width: '80vw',
+              height: 'auto',
+            }}
+            shadow="sm"
+            padding="lg"
+            radius="md"
+            withBorder
+          >
+            {card.imageSrc && (
+              // <Card.Section style={{ height: 'auto' }}>
+              <Card.Section style={{ height: '15vw' }}>
+                <Link href={`/${card.course_slug}/gpt4`}>
                   <Image
                     src={card.imageSrc}
                     width={720}
@@ -329,26 +336,35 @@ function CourseCard() {
                       objectFit: 'cover',
                     }}
                   />
-                </Card.Section>
-              )}
-              <Card.Section className="pb-2 pl-4 pr-4 pt-2">
-                <Group position="apart" mt="md" mb="xs">
-                  <Text
-                    style={{ fontFamily: 'Montserrat' }}
-                    size="xl"
-                    weight={800}
-                  >
-                    {card.title}
-                  </Text>
-                  <Badge size="xl" color="pink" variant="light">
-                    {card.badge}
-                  </Badge>
-                </Group>
-
-                <Text size="sm" color="dimmed">
-                  {card.description}
+                </Link>
+              </Card.Section>
+            )}
+            <Card.Section className="pb-2 pl-4 pr-4 pt-2">
+              <Group position="apart" mt="md" mb="xs">
+                <Text
+                  style={{ fontFamily: 'Montserrat' }}
+                  size="xl"
+                  weight={800}
+                >
+                  {card.title}
                 </Text>
+                <Badge size="xl" color="pink" variant="light">
+                  {card.badge}
+                </Badge>
+              </Group>
 
+              <Text size="sm" color="dimmed">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: card.description.replace(
+                      /<a/g,
+                      '<a style="color: lightblue; text-decoration: underline;"',
+                    ),
+                  }}
+                />
+              </Text>
+
+              <Link href={`/${card.course_slug}/gpt4`}>
                 <Button
                   variant="light"
                   color="blue"
@@ -358,9 +374,9 @@ function CourseCard() {
                 >
                   View
                 </Button>
-              </Card.Section>
-            </Card>
-          </Link>
+              </Link>
+            </Card.Section>
+          </Card>
         </div>
       ))}
     </>
