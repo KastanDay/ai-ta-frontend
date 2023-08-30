@@ -515,34 +515,35 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     <div className="relative flex-1 overflow-wrap bg-white dark:bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]">
       {!(apiKey || serverSideApiKeyIsSet) ? (
         <div className="relative min-w-screen flex-1 overflow-hidden min-h-screen">
-        <Navbar />
+          <Navbar />
           <div className="absolute inset-0 flex items-center justify-center flex-col">
-            <div className=" text-xl font-bold text-black dark:text-white p-10 border-2 border-indigo-500 rounded-box flex-col items-center max-w-4xl mx-auto">
+            <div className=" text-2xl font-bold text-black dark:text-white p-10 border-2 border-indigo-500 rounded-box flex-col items-center max-w-4xl mx-auto">
               <div className="mb-2 flex flex-col items-center text-center">
                 <IconAlertTriangle size={'54'} className="mr-2 block text-orange-400 " />
                 <div className='text-left mt-4'> {t(
                   'Please set your OpenAI API key in the bottom left of the sidebar.'
-                )}</div>
-              </div>
-              <div className="flex flex-col text-left">
-                {t("If you don't have an OpenAI API key, you can get one here: ")}
-                <div className="mt-2 items-center text-center">
-                  <a
-                    href="https://platform.openai.com/account/api-keys"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-purple-500 hover:underline"
-                  >
-                    Api Key <IconArrowUpRight className='mr-2 inline-block'></IconArrowUpRight>
-                  </a>
+                )}
+                  <div className='font-semibold'>
+                    {t("If you don't have an OpenAI API key, you can get one here: ")}
+                    <a
+                      href="https://platform.openai.com/account/api-keys"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-purple-500 hover:underline text-xl"
+                    >
+                      Api Key <IconArrowUpRight className='mr-2 inline-block'></IconArrowUpRight>
+                    </a>
+                  </div>
                 </div>
+
               </div>
+
             </div>
             <div className="mt-4 flex-col place-items-start text-left absolute bottom-4 left-0 ml-4 animate-ping">
-                <IconArrowLeft size={'36'} className="mr-2 text-purple-500 transform transition-transform duration-500 ease-in-out hover:-translate-x-1"/>
-              </div>
+              <IconArrowLeft size={'36'} className="mr-2 text-purple-500 transform transition-transform duration-500 ease-in-out hover:-translate-x-1" />
+            </div>
           </div>
-      </div>
+        </div>
       
       ) : modelError ? (
         <ErrorMessageDiv error={modelError} />
