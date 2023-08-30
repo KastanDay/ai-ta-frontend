@@ -1,8 +1,12 @@
 // src/components/Chat/Chat.tsx
 import {
+  IconBrain,
+  IconClearAll,
   IconArrowRight,
   IconCloudUpload,
   IconExternalLink,
+  IconRobot,
+  IconSettings,
   IconAlertTriangle,
   IconArrowLeft,
   IconArrowUpRight
@@ -88,7 +92,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const redirectToMaterialsPage = () => {
     router.push(`/${getCurrentPageName()}/materials`)
   }
-  
+
   const [inputContent, setInputContent] = useState<string>('');
 
   useEffect(() => {
@@ -489,8 +493,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           </h1>
           <div className="mt-4 flex flex-col items-start space-y-2 overflow-hidden">
             {statements.map((statement, index) => (
-              <div 
-              className="border-b-2 border-[rgba(42,42,64,0.4)] w-full hover:bg-[rgba(42,42,64,0.9)] hover:cursor-pointer rounded-lg" 
+              <div
+              className="border-b-2 border-[rgba(42,42,64,0.4)] w-full hover:bg-[rgba(42,42,64,0.9)] hover:cursor-pointer rounded-lg"
               onClick={() => setInputContent(statement)}>
                 <Button
                   key={index}
@@ -513,14 +517,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         <div className="relative min-w-screen flex-1 overflow-hidden min-h-screen">
         <Navbar />
           <div className="absolute inset-0 flex items-center justify-center flex-col">
-            <div className=" text-xl font-bold text-black dark:text-white p-10 border-2 border-indigo-500 rounded-box flex-col items-center max-w-4xl mx-auto"> 
-              <div className="mb-2 flex flex-col items-center text-center"> 
+            <div className=" text-xl font-bold text-black dark:text-white p-10 border-2 border-indigo-500 rounded-box flex-col items-center max-w-4xl mx-auto">
+              <div className="mb-2 flex flex-col items-center text-center">
                 <IconAlertTriangle size={'54'} className="mr-2 block text-orange-400 " />
                 <div className='text-left mt-4'> {t(
                   'Please set your OpenAI API key in the bottom left of the sidebar.'
                 )}</div>
               </div>
-              <div className="flex flex-col text-left"> 
+              <div className="flex flex-col text-left">
                 {t("If you don't have an OpenAI API key, you can get one here: ")}
                 <div className="mt-2 items-center text-center">
                   <a
@@ -549,6 +553,68 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ref={chatContainerRef}
             onScroll={handleScroll}
           >
+            {/* Always render the 'model, upload, disclaimer' banner */}
+            <div className="sticky top-0 z-10 flex w-full flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
+              <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
+                <button
+                  className="ml-2 cursor-pointer hover:opacity-50"
+                  onClick={handleSettings}
+                >
+                  <div className="flex items-center">
+                    {t('Model')}: {selectedConversation?.model.name}
+                    <span className="w-2" />
+                    <IconRobot size={18} />
+                  </div>
+                </button>
+                <span className="w-3" />
+                |
+                <span className="w-3" />
+                <button
+                  className="ml-2 cursor-pointer hover:opacity-50"
+                  onClick={redirectToMaterialsPage}
+                >
+                  <div className="flex items-center">
+                    <Text
+                      variant="gradient"
+                      weight={600}
+                      gradient={{ from: 'gold', to: 'white', deg: 50 }}
+                    >
+                      Upload materials
+                    </Text>
+                    &nbsp;&nbsp;
+                    <IconCloudUpload size={18} />
+                  </div>
+                </button>
+                &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;
+                <a
+                  className="ml-2 cursor-pointer hover:opacity-50"
+                  href="/disclaimer"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <div className="flex items-center">
+                    <span>
+                      <Text
+                        variant="gradient"
+                        weight={400}
+                        gradient={{ from: 'white', to: 'white', deg: 50 }}
+                      >
+                        Disclaimer: it&apos;s not perfect
+                      </Text>
+                    </span>
+                    &nbsp;&nbsp;
+                    <IconExternalLink size={18} />
+                  </div>
+                </a>
+              </div>
+            </div>
+            {showSettings && (
+              <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
+                <div className="flex h-full flex-col space-y-4 border-b border-neutral-200 p-4 dark:border-neutral-600 md:rounded-lg md:border">
+                  <ModelSelect />
+                </div>
+              </div>
+            )}
             {selectedConversation?.messages.length === 0 ? (
               <>
                 {/* <CustomBanner bannerUrl={bannerUrl as string} /> Banner on fresh chat page */}
@@ -646,7 +712,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   </div>
                 )}
                 <CustomBanner bannerUrl={bannerUrl as string} />{' '}
-                {/* Banner on "chat with messages" page (not fresh chat) */}
                 {selectedConversation?.messages.map((message, index) => (
                   <MemoizedChatMessage
                     key={index}
@@ -654,7 +719,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                     messageIndex={index}
                     onEdit={(editedMessage) => {
                       setCurrentMessage(editedMessage)
-                      // discard edited message and the ones that come after then resend
                       handleSend(
                         editedMessage,
                         selectedConversation?.messages.length - index,
