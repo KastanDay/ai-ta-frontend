@@ -530,8 +530,7 @@ export const getServerSideProps: GetServerSideProps = async (
   } else {
     console.log('Google plugin keys not set... will NOT work.')
   }
-
-  const course_name = context.query.course_name as string;
+  
   let openai_api_key = null
   let serverSideApiKeyIsSet = false
   
