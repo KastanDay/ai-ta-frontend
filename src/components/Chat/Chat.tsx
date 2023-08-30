@@ -523,7 +523,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 <div className='text-left mt-4'> {t(
                   'Please set your OpenAI API key in the bottom left of the sidebar.'
                 )}
-                  <div className='font-semibold'>
+                  <div className='font-semibold mt-2'>
                     {t("If you don't have an OpenAI API key, you can get one here: ")}
                     <a
                       href="https://platform.openai.com/account/api-keys"
