@@ -26,7 +26,7 @@ import {
   useState,
 } from 'react'
 import toast from 'react-hot-toast'
-import { Button, Text } from '@mantine/core'
+import { Button, Text, Title } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -477,11 +477,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const statements = courseMetadata?.course_intro_message
     ? courseMetadata.course_intro_message.split('\n')
     : [
-        'Make a bullet point list of key takeaways of the course.',
-        'What is [your favorite topic] and why is it worth learning about?',
-        'How can I effectively prepare for the upcoming exam?',
-        'How many assignments in the course?',
-      ]
+      'Make a bullet point list of key takeaways of the course.',
+      'What is [your favorite topic] and why is it worth learning about?',
+      'How can I effectively prepare for the upcoming exam?',
+      'How many assignments in the course?',
+    ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
@@ -531,7 +531,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   )}
                   <div className="mt-2 font-normal">
                     <Text size={'md'} className="text-gray-400">
-                      If you don't have a key yet, you can get one here:{' '}
+                      If you don&apos;t have a key yet, you can get one here:{' '}
                       <a
                         href="https://platform.openai.com/account/api-keys"
                         target="_blank"
@@ -645,82 +645,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               </>
             ) : (
               <>
-                <div className="sticky top-0 z-10 flex w-full flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                  {/* {bannerUrl && (
-                        <div style={{ height: '8vh' , width:'100%'}}>
-                          <img src={bannerUrl} alt="Banner" style={{ width: '100%'}}/>
-                        </div>
-                    )} */}
-                  <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#15162c] dark:text-neutral-200">
-                    {t('Model')}: {selectedConversation?.model.name}
-                    &nbsp;&nbsp;|&nbsp;&nbsp;
-                    {t('Temp')}: {selectedConversation?.temperature}
-                    &nbsp;&nbsp;|&nbsp;&nbsp;
-                    {/* BUTTONS for (1) Chaning Models, and (2) clearing current conversation. */}
-                    {/* <button
-                        className="ml-2 cursor-pointer hover:opacity-50"
-                        onClick={handleSettings}
-                      >
-                        <IconSettings size={18} />
-                      </button>
-                      <button
-                        className="ml-2 cursor-pointer hover:opacity-50"
-                        onClick={onClearAll}
-                      >
-                        <IconClearAll size={18} />
-                      </button>
-                      &nbsp;&nbsp;&nbsp;| */}
-                    {/* <span className="w-3" /> */}
-                    <button
-                      className="ml-2 cursor-pointer hover:opacity-50"
-                      onClick={redirectToMaterialsPage}
-                    >
-                      <div className="flex items-center">
-                        <span>
-                          <Text
-                            variant="gradient"
-                            weight={600}
-                            gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                          >
-                            Upload materials
-                          </Text>
-                        </span>
-                        &nbsp;&nbsp;
-                        <IconCloudUpload size={18} />
-                      </div>
-                    </button>
-                    &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;
-                    {/* Disclaimer: it's not perfect (a tag to open in new tab) */}
-                    <a
-                      className="ml-2 cursor-pointer hover:opacity-50"
-                      href="/disclaimer"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {/* Disclaimer */}
-                      <div className="flex items-center">
-                        <span>
-                          <Text
-                            variant="gradient"
-                            weight={400}
-                            gradient={{ from: 'white', to: 'white', deg: 50 }}
-                          >
-                            Disclaimer: it&apos;s not perfect
-                          </Text>
-                        </span>
-                        &nbsp;&nbsp;
-                        <IconExternalLink size={18} />
-                      </div>
-                    </a>
-                  </div>
-                </div>
-                {showSettings && (
-                  <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
-                    <div className="flex h-full flex-col space-y-4 border-b border-neutral-200 p-4 dark:border-neutral-600 md:rounded-lg md:border">
-                      <ModelSelect />
-                    </div>
-                  </div>
-                )}
                 <CustomBanner bannerUrl={bannerUrl as string} />{' '}
                 {selectedConversation?.messages.map((message, index) => (
                   <MemoizedChatMessage
