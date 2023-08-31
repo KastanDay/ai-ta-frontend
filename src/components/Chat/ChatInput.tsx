@@ -283,7 +283,7 @@ export const ChatInput = ({
   }, [])
 
   return (
-    <div className="absolute bottom-0 left-0 w-full border-transparent bg-[#15162c] pt-6 dark:border-white/20 md:pt-2">
+    <div className="absolute bottom-0 left-0 w-full border-transparent bg-transparent pt-6 dark:border-white/20 md:pt-2">
       <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
         {messageIsStreaming && (
           <button
@@ -341,7 +341,7 @@ export const ChatInput = ({
 
           <textarea
             ref={textareaRef}
-            className="m-0 w-full resize-none border-0 bg-[#1a1a2e] p-0 py-2 pl-10 pr-8 text-black dark:bg-[#1a1a2e] dark:text-white md:py-3 md:pl-10"
+            className="m-0 w-full resize-none bg-[#070712] p-0 py-2 pl-10 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-3 md:pl-10"
             style={{
               resize: 'none',
               bottom: `${textareaRef?.current?.scrollHeight}px`,

@@ -560,7 +560,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       ) : (
         <>
           <div
-            className="max-h-full overflow-hidden"
+            className="max-h-full overflow-x-hidden"
             ref={chatContainerRef}
             onScroll={handleScroll}
           >
@@ -615,15 +615,15 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   />
                 ))}
                 {loading && <ChatLoader />}
-                {/* <div
-                    // className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"
-                    // reverse the order, go from transparent to the color
-                    // className="h-[162px] bg-gradient-to-t from-[rgba(42,42,64,0.4)] to-transparent"
-                    // className="h-[162px] bg-gradient-to-t from-[rgba(14,14,21,0.4)] to-transparent"
-                    className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
-                    // className="h-[162px] bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]"
-                    ref={messagesEndRef}
-                  /> */}
+                <div
+                  // className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"
+                  // reverse the order, go from transparent to the color
+                  // className="h-[162px] bg-gradient-to-t from-[rgba(42,42,64,0.4)] to-transparent"
+                  // className="h-[162px] bg-gradient-to-t from-[rgba(14,14,21,0.4)] to-transparent"
+                  className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
+                  // className="h-[162px] bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]"
+                  ref={messagesEndRef}
+                />
               </>
             )}
           </div>

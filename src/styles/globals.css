@@ -231,7 +231,8 @@ li {
   height: 1em;
   position: relative;
   overflow: hidden;
-  background-color: #020307;
+  /* background-color: #020307; */
+  background-color: #070712;
 }
 
 .skeleton-box::after {
@@ -260,3 +261,24 @@ li {
 }
 
 /* END NOMIC LOADING BOX */
+
+/* This will apply to all scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  /* For vertical scrollbars */
+  height: 8px;
+  /* For horizontal scrollbars */
+  background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgba(211, 211, 211, 0.5);
+  border-radius: 4px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(211, 211, 211, 0.5);
+  border-radius: 4px;
+}
