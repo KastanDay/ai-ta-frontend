@@ -9,7 +9,7 @@ import {
   IconSettings,
   IconAlertTriangle,
   IconArrowLeft,
-  IconArrowUpRight
+  IconArrowUpRight,
   // IconFileTextAi,
   // IconX,
   // IconDownload,
@@ -93,7 +93,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     router.push(`/${getCurrentPageName()}/materials`)
   }
 
-  const [inputContent, setInputContent] = useState<string>('');
+  const [inputContent, setInputContent] = useState<string>('')
 
   useEffect(() => {
     if (courseMetadata?.banner_image_s3) {
@@ -486,23 +486,24 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
     return (
-      <div className="lg:mx-auto md:mx-auto mt-4 gap-3 last:mb-2 max-w-3xl px-4 sm:mx-4 xs:mx-2 ">
-        <div className="rounded-lg p-6 bg-[rgba(42,42,64,0.4)] backdrop-filter-[blur(10px)] border border-2 border-[rgba(42,42,120,0.55)]">
+      <div className="xs:mx-2 mt-4 max-w-3xl gap-3 px-4 last:mb-2 sm:mx-4 md:mx-auto lg:mx-auto ">
+        <div className="backdrop-filter-[blur(10px)] rounded-lg border border-2 border-[rgba(42,42,120,0.55)] bg-[rgba(42,42,64,0.4)] p-6">
           <h1 className="mb-2 text-lg font-semibold text-gray-300">
             You can start a conversation here or try the following examples:
           </h1>
           <div className="mt-4 flex flex-col items-start space-y-2 overflow-hidden">
             {statements.map((statement, index) => (
               <div
-              key={index}
-              className="border-b-2 border-[rgba(42,42,64,0.4)] w-full hover:bg-[rgba(42,42,64,0.9)] hover:cursor-pointer rounded-lg"
-              onClick={() => setInputContent(statement)}>
+                key={index}
+                className="w-full rounded-lg border-b-2 border-[rgba(42,42,64,0.4)] hover:cursor-pointer hover:bg-[rgba(42,42,64,0.9)]"
+                onClick={() => setInputContent(statement)}
+              >
                 <Button
                   variant="link"
-                  className="h-auto p-2 font-bold text-white text-md leading-relaxed hover:underline "
+                  className="text-md h-auto p-2 font-bold leading-relaxed text-white hover:underline "
                 >
-                  <IconArrowRight className="mr-2" />
-                  <p className='whitespace-break-spaces'>{statement}</p>
+                  <IconArrowRight size={25} className="mr-2" />
+                  <p className="whitespace-break-spaces">{statement}</p>
                 </Button>
               </div>
             ))}
@@ -512,39 +513,47 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     )
   }
   return (
-    <div className="relative flex-1 overflow-wrap bg-white dark:bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]">
+    <div className="overflow-wrap relative flex-1 bg-white dark:bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]">
       {!(apiKey || serverSideApiKeyIsSet) ? (
-        <div className="relative min-w-screen flex-1 overflow-hidden min-h-screen">
+        <div className="min-w-screen relative min-h-screen flex-1 overflow-hidden">
           <Navbar />
-          <div className="absolute inset-0 flex items-center justify-center flex-col">
-            <div className=" text-2xl font-bold text-black dark:text-white p-10 bg-[rgba(42,42,64,0.3)] backdrop-filter-[blur(10px)] border border-[rgba(42,42,120,0.8)] border-2 rounded-box flex-col items-center max-w-4xl mx-auto">
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className=" backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
               <div className="mb-2 flex flex-col items-center text-center">
-                <IconAlertTriangle size={'54'} className="mr-2 block text-orange-400 " />
-                <div className='text-left mt-4'> {t(
-                  'Please set your OpenAI API key in the bottom left of the sidebar.'
-                )}
-                  <div className='font-semibold mt-2'>
-                    {t("If you don't have an OpenAI API key, you can get one here: ")}
-                    <a
-                      href="https://platform.openai.com/account/api-keys"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-purple-500 hover:underline text-xl"
-                    >
-                      Api Key <IconArrowUpRight className='mr-2 inline-block'></IconArrowUpRight>
-                    </a>
+                <IconAlertTriangle
+                  size={'54'}
+                  className="mr-2 block text-orange-400 "
+                />
+                <div className="mt-4 text-left">
+                  {' '}
+                  {t(
+                    'Please set your OpenAI API key in the bottom left of the sidebar.',
+                  )}
+                  <div className="mt-2 font-normal">
+                    <Text size={'md'} className="text-gray-400">
+                      If you don't have a key yet, you can get one here:{' '}
+                      <a
+                        href="https://platform.openai.com/account/api-keys"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-purple-500 hover:underline"
+                      >
+                        OpenAI API key{' '}
+                        <IconExternalLink className="mr-2 inline-block"></IconExternalLink>
+                      </a>
+                    </Text>
                   </div>
                 </div>
-
               </div>
-
             </div>
-            <div className="mt-4 flex-col place-items-start text-left absolute bottom-4 left-0 ml-4 animate-ping">
-              <IconArrowLeft size={'36'} className="mr-2 text-purple-500 transform transition-transform duration-500 ease-in-out hover:-translate-x-1" />
+            <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
+              <IconArrowLeft
+                size={'36'}
+                className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
+              />
             </div>
           </div>
         </div>
-      
       ) : modelError ? (
         <ErrorMessageDiv error={modelError} />
       ) : (
@@ -620,7 +629,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               <>
                 {/* <CustomBanner bannerUrl={bannerUrl as string} /> Banner on fresh chat page */}
                 <Navbar bannerUrl={bannerUrl as string} />
-                <div className="lg:mx-auto md:mx-auto mt-4 gap-3 last:mb-2 max-w-3xl sm:mx-4 xs:mx-2 mt-8 gap-3 flex flex-col space-y-5 p-4 md:space-y-10 md:pt-12">
+                <div className="xs:mx-2 mt-4 mt-8 flex max-w-3xl flex-col gap-3 gap-3 space-y-5 p-4 last:mb-2 sm:mx-4 md:mx-auto md:space-y-10 md:pt-12 lg:mx-auto">
                   {models.length > 0 && (
                     <div className="flex h-full flex-col space-y-4 focus:border-t-info/100 dark:border-neutral-600">
                       <ModelParams
@@ -729,7 +738,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 ))}
                 {loading && <ChatLoader />}
                 <div
-                    className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"
+                  className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"
                   ref={messagesEndRef}
                 />
               </>

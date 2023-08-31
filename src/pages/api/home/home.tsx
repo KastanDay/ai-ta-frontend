@@ -530,32 +530,33 @@ export const getServerSideProps: GetServerSideProps = async (
   } else {
     console.log('Google plugin keys not set... will NOT work.')
   }
-  
+
   let openai_api_key = null
   let serverSideApiKeyIsSet = false
-  
+
   if (course_name) {
-    const course_metadata = await kv.hget('course_metadatas', course_name) as CourseMetadata
+    const course_metadata = (await kv.hget(
+      'course_metadatas',
+      course_name,
+    )) as CourseMetadata
     if (course_metadata?.openai_api_key) {
       openai_api_key = course_metadata.openai_api_key
       serverSideApiKeyIsSet = true
-    }  
+    }
   }
-  
+
   // If openai_api_key is not present in course_metadata, use the one from process.env - fallback needed for models api.
   if (!openai_api_key && process.env.OPENAI_API_KEY) {
     openai_api_key = process.env.OPENAI_API_KEY
     serverSideApiKeyIsSet = false
   }
-  console.log("Final serverSideApiKeyIsSet", serverSideApiKeyIsSet)
-  
+  console.log('Final serverSideApiKeyIsSet', serverSideApiKeyIsSet)
 
   // TODO:
   // kv.hget()
   // direct server-side call is okay. fetch kv right here, then use that key if exists.
   // if this exists, use it. otherwise default behavior.
   // process.env.OPENAI_API_KEY = <<kv value>>  // does this actually work?
-
 
   return {
     props: {

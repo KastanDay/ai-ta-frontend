@@ -18,7 +18,7 @@ const EmailChipsComponent = ({
   onEmailAddressesChange,
   banner_image_s3,
   course_intro_message,
-  openai_api_key
+  openai_api_key,
 }: {
   course_name: string
   course_owner: string
@@ -67,7 +67,7 @@ const EmailChipsComponent = ({
             approved_emails_list: newEmailAddresses,
             course_intro_message: course_intro_message,
             banner_image_s3: banner_image_s3,
-            openai_api_key: openai_api_key
+            openai_api_key: openai_api_key,
           }
           onEmailAddressesChange &&
             onEmailAddressesChange(curr_course_metadata, course_name)
@@ -82,7 +82,7 @@ const EmailChipsComponent = ({
           approved_emails_list: [...emailAddresses, trimmedValue],
           banner_image_s3: banner_image_s3,
           course_intro_message: course_intro_message,
-          openai_api_key: openai_api_key
+          openai_api_key: openai_api_key,
         })
       }
     }
@@ -106,7 +106,7 @@ const EmailChipsComponent = ({
         approved_emails_list: newEmailAddresses,
         course_intro_message: course_intro_message,
         banner_image_s3: banner_image_s3,
-        openai_api_key: openai_api_key
+        openai_api_key: openai_api_key,
       }
       onEmailAddressesChange &&
         onEmailAddressesChange(curr_course_metadata, course_name)
@@ -135,7 +135,7 @@ const EmailChipsComponent = ({
           approved_emails_list: newEmailAddresses,
           course_intro_message: course_intro_message,
           banner_image_s3: banner_image_s3,
-          openai_api_key: openai_api_key
+          openai_api_key: openai_api_key,
         }
         onEmailAddressesChange &&
           onEmailAddressesChange(curr_course_metadata, course_name)
@@ -149,7 +149,7 @@ const EmailChipsComponent = ({
         approved_emails_list: [...emailAddresses, ...toBeAdded],
         banner_image_s3: banner_image_s3,
         course_intro_message: course_intro_message,
-        openai_api_key: openai_api_key
+        openai_api_key: openai_api_key,
       })
     }
   }

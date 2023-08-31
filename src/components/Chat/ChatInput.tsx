@@ -36,7 +36,7 @@ interface Props {
   textareaRef: MutableRefObject<HTMLTextAreaElement | null>
   showScrollDownButton: boolean
   inputContent: string
-  setInputContent: (content: string) => void;
+  setInputContent: (content: string) => void
 }
 
 export const ChatInput = ({
@@ -47,7 +47,7 @@ export const ChatInput = ({
   textareaRef,
   showScrollDownButton,
   inputContent,
-  setInputContent
+  setInputContent,
 }: Props) => {
   const { t } = useTranslation('chat')
 
@@ -246,8 +246,8 @@ export const ChatInput = ({
   }
 
   useEffect(() => {
-    setContent(inputContent);
-  }, [inputContent]);
+    setContent(inputContent)
+  }, [inputContent])
 
   useEffect(() => {
     if (promptListRef.current) {
@@ -284,10 +284,10 @@ export const ChatInput = ({
 
   return (
     <div className="absolute bottom-0 left-0 w-full border-transparent bg-[#15162c] pt-6 dark:border-white/20 md:pt-2">
-    <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
+      <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
         {messageIsStreaming && (
           <button
-          className="absolute left-0 right-0 top-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white px-4 py-2 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#15162c] dark:text-white md:mb-0 md:mt-2"
+            className="absolute left-0 right-0 top-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white px-4 py-2 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#15162c] dark:text-white md:mb-0 md:mt-2"
             onClick={handleStopConversation}
           >
             <IconPlayerStop size={16} /> {t('Stop Generating')}
@@ -317,8 +317,7 @@ export const ChatInput = ({
           </button>
 
           {showPluginSelect && (
-              <div className="absolute bottom-14 left-0 rounded bg-white dark:bg-[#15162c]">
-
+            <div className="absolute bottom-14 left-0 rounded bg-white dark:bg-[#15162c]">
               <PluginSelect
                 plugin={plugin}
                 onKeyDown={(e: any) => {
