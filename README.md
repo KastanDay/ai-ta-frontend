@@ -2,7 +2,7 @@
 
 A Next.js + React app enabeling the vision of **upload anything, search everything, get answers.**
 
-👉 See the backend here: https://github.com/UIUC-Chatbot/ai-teaching-assistant-uiuc
+👉 See the backend here: https://github.com/UIUC-Chatbot/ai-ta-backend
 
 👉 See the version 1 (a Gradio app) for our inspiration: https://github.com/UIUC-Chatbot/ai-teaching-assistant-uiuc
 
