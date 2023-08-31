@@ -69,7 +69,7 @@ interface Props {
 }
 
 import { useRouter } from 'next/router'
-import CustomBanner from '../UIUC-Components/CustomBanner'
+// import CustomBanner from '../UIUC-Components/CustomBanner'
 import { fetchContexts } from '~/pages/api/getContexts'
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
@@ -503,13 +503,23 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   variant="link"
                   className="text-md h-auto p-2 font-bold leading-relaxed text-white hover:underline "
                 >
-                  <IconArrowRight size={25} className="mr-2" />
+                  <IconArrowRight size={25} className="mr-2 min-w-[40px]" />
                   <p className="whitespace-break-spaces">{statement}</p>
                 </Button>
               </div>
             ))}
           </div>
         </div>
+        <div
+          // className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"
+          // reverse the order, go from transparent to the color
+          // className="h-[162px] bg-gradient-to-t from-[rgba(42,42,64,0.4)] to-transparent"
+          // className="h-[162px] bg-gradient-to-t from-[rgba(14,14,21,0.4)] to-transparent"
+          // className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
+          // className="h-[162px] bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]"
+          className="h-[162px]"
+          ref={messagesEndRef}
+        />
       </div>
     )
   }
@@ -592,14 +602,16 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ) : (
               <>
                 {/* MESSAGES IN CHAT */}
-                <TopBarInChat
-                  handleSettings={handleSettings}
-                  showSettings={showSettings}
-                  selectedConversation={selectedConversation}
-                  redirectToMaterialsPage={redirectToMaterialsPage}
-                  isTransparent={false} // transparent when no messages
-                />
-                <CustomBanner bannerUrl={bannerUrl as string} />{' '}
+                <div className="sticky top-0 z-10">
+                  <TopBarInChat
+                    handleSettings={handleSettings}
+                    showSettings={showSettings}
+                    selectedConversation={selectedConversation}
+                    redirectToMaterialsPage={redirectToMaterialsPage}
+                    isTransparent={false} // transparent when no messages
+                  />
+                </div>
+                {/* <CustomBanner bannerUrl={bannerUrl as string} />{' '} */}
                 {selectedConversation?.messages.map((message, index) => (
                   <MemoizedChatMessage
                     key={index}

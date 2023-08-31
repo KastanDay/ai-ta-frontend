@@ -262,23 +262,26 @@ li {
 
 /* END NOMIC LOADING BOX */
 
-/* This will apply to all scrollbars */
+/* This will apply to all scrollbars EXCEPT Firefox*/
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
   /* For vertical scrollbars */
-  height: 8px;
+  height: 6px;
   /* For horizontal scrollbars */
-  background: transparent;
+  background-color: #202134;
 }
 
-/* Handle */
+::-webkit-scrollbar-corner {
+  background-color: #070711;
+}
+
 ::-webkit-scrollbar-thumb {
-  background: rgba(211, 211, 211, 0.5);
-  border-radius: 4px;
+  background-color: #ccc;
+  border-radius: 10px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(211, 211, 211, 0.5);
+  background-color: #807f7f;
   border-radius: 4px;
 }
