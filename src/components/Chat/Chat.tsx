@@ -1,15 +1,15 @@
 // src/components/Chat/Chat.tsx
 import {
-  IconBrain,
-  IconClearAll,
+  // IconBrain,
+  // IconClearAll,
   IconArrowRight,
-  IconCloudUpload,
+  // IconCloudUpload,
   IconExternalLink,
-  IconRobot,
-  IconSettings,
+  // IconRobot,
+  // IconSettings,
   IconAlertTriangle,
   IconArrowLeft,
-  IconArrowUpRight,
+  // IconArrowUpRight,
   // IconFileTextAi,
   // IconX,
   // IconDownload,
@@ -75,6 +75,7 @@ import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
 import Navbar from '../UIUC-Components/Navbar'
+import TopBarInChat from '../Chatbar/TopBarInChat'
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
@@ -477,18 +478,18 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const statements = courseMetadata?.course_intro_message
     ? courseMetadata.course_intro_message.split('\n')
     : [
-      'Make a bullet point list of key takeaways of the course.',
-      'What is [your favorite topic] and why is it worth learning about?',
-      'How can I effectively prepare for the upcoming exam?',
-      'How many assignments in the course?',
-    ]
+        'Make a bullet point list of key takeaways of the course.',
+        'What is [your favorite topic] and why is it worth learning about?',
+        'How can I effectively prepare for the upcoming exam?',
+        'How many assignments in the course?',
+      ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
     return (
       <div className="xs:mx-2 mt-4 max-w-3xl gap-3 px-4 last:mb-2 sm:mx-4 md:mx-auto lg:mx-auto ">
         <div className="backdrop-filter-[blur(10px)] rounded-lg border border-2 border-[rgba(42,42,120,0.55)] bg-[rgba(42,42,64,0.4)] p-6">
-          <h1 className="mb-2 text-lg font-semibold text-gray-300">
+          <h1 className="mb-2 text-lg font-semibold text-white">
             You can start a conversation here or try the following examples:
           </h1>
           <div className="mt-4 flex flex-col items-start space-y-2 overflow-hidden">
@@ -563,70 +564,15 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ref={chatContainerRef}
             onScroll={handleScroll}
           >
-            {/* Always render the 'model, upload, disclaimer' banner */}
-            <div className="sticky top-0 z-10 flex w-full flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-transparent dark:text-neutral-200">
-              <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-transparent dark:text-neutral-200">
-                <button
-                  className="ml-2 cursor-pointer hover:opacity-50"
-                  onClick={handleSettings}
-                >
-                  <div className="flex items-center">
-                    {t('Model')}: {selectedConversation?.model.name}
-                    <span className="w-2" />
-                    <IconRobot size={18} />
-                  </div>
-                </button>
-                <span className="w-3" />
-                |
-                <span className="w-3" />
-                <button
-                  className="ml-2 cursor-pointer hover:opacity-50"
-                  onClick={redirectToMaterialsPage}
-                >
-                  <div className="flex items-center">
-                    <Text
-                      variant="gradient"
-                      weight={600}
-                      gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                    >
-                      Upload materials
-                    </Text>
-                    &nbsp;&nbsp;
-                    <IconCloudUpload size={18} />
-                  </div>
-                </button>
-                &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;
-                <a
-                  className="ml-2 cursor-pointer hover:opacity-50"
-                  href="/disclaimer"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <div className="flex items-center">
-                    <span>
-                      <Text
-                        variant="gradient"
-                        weight={400}
-                        gradient={{ from: 'white', to: 'white', deg: 50 }}
-                      >
-                        Disclaimer: it&apos;s not perfect
-                      </Text>
-                    </span>
-                    &nbsp;&nbsp;
-                    <IconExternalLink size={18} />
-                  </div>
-                </a>
-              </div>
-            </div>
-            {showSettings && (
-              <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
-                <div className="flex h-full flex-col space-y-4 border-b border-neutral-200 p-4 dark:border-neutral-600 md:rounded-lg md:border">
-                  <ModelSelect />
-                </div>
-              </div>
-            )}
             {selectedConversation?.messages.length === 0 ? (
               <>
+                <TopBarInChat
+                  handleSettings={handleSettings}
+                  showSettings={showSettings}
+                  selectedConversation={selectedConversation}
+                  redirectToMaterialsPage={redirectToMaterialsPage}
+                  isTransparent={true} // transparent when no messages
+                />
                 {/* <CustomBanner bannerUrl={bannerUrl as string} /> Banner on fresh chat page */}
                 <Navbar bannerUrl={bannerUrl as string} />
                 <div className="xs:mx-2 mt-4 mt-8 flex max-w-3xl flex-col gap-3 gap-3 space-y-5 p-4 last:mb-2 sm:mx-4 md:mx-auto md:space-y-10 md:pt-12 lg:mx-auto">
@@ -645,6 +591,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               </>
             ) : (
               <>
+                {/* MESSAGES IN CHAT */}
+                <TopBarInChat
+                  handleSettings={handleSettings}
+                  showSettings={showSettings}
+                  selectedConversation={selectedConversation}
+                  redirectToMaterialsPage={redirectToMaterialsPage}
+                  isTransparent={false} // transparent when no messages
+                />
                 <CustomBanner bannerUrl={bannerUrl as string} />{' '}
                 {selectedConversation?.messages.map((message, index) => (
                   <MemoizedChatMessage
@@ -661,10 +615,15 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   />
                 ))}
                 {loading && <ChatLoader />}
-                <div
-                  className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"
-                  ref={messagesEndRef}
-                />
+                {/* <div
+                    // className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"
+                    // reverse the order, go from transparent to the color
+                    // className="h-[162px] bg-gradient-to-t from-[rgba(42,42,64,0.4)] to-transparent"
+                    // className="h-[162px] bg-gradient-to-t from-[rgba(14,14,21,0.4)] to-transparent"
+                    className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
+                    // className="h-[162px] bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]"
+                    ref={messagesEndRef}
+                  /> */}
               </>
             )}
           </div>
