@@ -490,7 +490,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       <div className="xs:mx-2 mt-4 max-w-3xl gap-3 px-4 last:mb-2 sm:mx-4 md:mx-auto lg:mx-auto ">
         <div className="backdrop-filter-[blur(10px)] rounded-lg border border-2 border-[rgba(42,42,120,0.55)] bg-[rgba(42,42,64,0.4)] p-6">
           <h1 className="mb-2 text-lg font-semibold text-white">
-            You can start a conversation here or try the following examples:
+            Start a conversation below or try the following examples
           </h1>
           <div className="mt-4 flex flex-col items-start space-y-2 overflow-hidden">
             {statements.map((statement, index) => (
@@ -511,10 +511,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           </div>
         </div>
         <div
+          // This is critical to keep the scrolling proper. We need padding below the messages for the chat bar to sit.
           // className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"
-          // reverse the order, go from transparent to the color
-          // className="h-[162px] bg-gradient-to-t from-[rgba(42,42,64,0.4)] to-transparent"
-          // className="h-[162px] bg-gradient-to-t from-[rgba(14,14,21,0.4)] to-transparent"
           // className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
           // className="h-[162px] bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]"
           className="h-[162px]"
