@@ -126,7 +126,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const onMessageReceived = async (conversation: Conversation) => {
-    // Kastan here -- Save the message to a separate database here
+    // Log conversation to Supabase
     try {
       const response = await fetch(`/api/UIUC-api/logConversationToSupabase`, {
         method: 'POST',
@@ -139,9 +139,28 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }),
       })
       const data = await response.json()
-      return data.success
+      // return data.success
     } catch (error) {
       console.error('Error setting course data:', error)
+      // return false
+    }
+
+    // Log conversation to our Flask Backend
+    try {
+      const response = await fetch(`/api/UIUC-api/onResponseCompletion`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          course_name: getCurrentPageName(),
+          conversation: conversation,
+        }),
+      })
+      const data = await response.json()
+      return data.success
+    } catch (error) {
+      console.error('Error logging conversation:', error)
       return false
     }
   }
