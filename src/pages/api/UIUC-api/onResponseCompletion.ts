@@ -16,12 +16,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       course_name: course_name,
       conversation: conversation,
     })
-    // console.log('Response from Flask API:', response.data)
-    // return res.status(200).json({ success: true })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error logging conversation:', error)
-    // return res.status(500).json({ success: false })
     return NextResponse.json({ success: false })
   }
 }

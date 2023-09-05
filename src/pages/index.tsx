@@ -181,9 +181,8 @@ const useStyles = createStyles((theme) => ({
   },
 
   card: {
-    border: `${rem(1)} solid ${
-      theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
-    }`,
+    border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
+      }`,
   },
 
   cardTitle: {
@@ -273,7 +272,7 @@ function CourseCard() {
       title: 'Clowder docs',
       badge: 'NCSA Docs',
       description:
-        "Using all of Ansible's documentation, this bot will write excellent Ansible scripts. Just ask it to program whatever you'd like.",
+        "Using all of Clowder's documentation, this bot will answer questions and point you to the right docs and YouTube videos about Clowder.",
     },
     {
       course_slug: 'langchain-docs',
@@ -282,14 +281,6 @@ function CourseCard() {
       badge: 'Coding',
       description:
         "Using all of Langchain's documentation, this bot will write excellent LangChain code. Just ask it to program whatever you'd like.",
-    },
-    {
-      course_slug: 'ansible',
-      // imageSrc: "https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fit=contain",
-      title: 'Ansible',
-      badge: 'Coding',
-      description:
-        "Using all of Ansible's documentation, this bot will write excellent Ansible scripts. Just ask it to program whatever you'd like.",
     },
     {
       course_slug: 'ansible',
