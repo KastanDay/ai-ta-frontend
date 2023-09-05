@@ -70,6 +70,7 @@ import { fetchContexts } from '~/pages/api/getContexts'
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { OpenAIModelID, OpenAIModels } from '~/types/openai'
+import axios from 'axios'
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
@@ -147,7 +148,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
     // Log conversation to our Flask Backend
     try {
-      const response = await fetch(`/api/UIUC-api/onResponseCompletion`, {
+
+      // const API_URL = 'https://flask-production-751b.up.railway.app'
+      const API_URL_PREVIEW = 'https://flask-ai-ta-backend-pr-72.up.railway.app'
+
+      const response = await fetch(`${API_URL_PREVIEW}/onResponseCompletion`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -158,9 +163,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }),
       })
       const data = await response.json()
+      if (!response.ok) throw new Error(data.message)
       return data.success
     } catch (error) {
-      console.error('Error logging conversation:', error)
+      console.error('Error in chat.tsx running onResponseCompletion():', error)
       return false
     }
   }
