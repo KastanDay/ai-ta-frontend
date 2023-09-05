@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import axios, { AxiosResponse } from 'axios'
+import { NextResponse } from 'next/server'
 
 export const runtime = 'edge'
 
@@ -16,10 +17,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       conversation: conversation,
     })
     // console.log('Response from Flask API:', response.data)
-    return res.status(200).json({ success: true })
+    // return res.status(200).json({ success: true })
+    return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error logging conversation:', error)
-    return res.status(500).json({ success: false })
+    // return res.status(500).json({ success: false })
+    return NextResponse.json({ success: false })
   }
 }
 
