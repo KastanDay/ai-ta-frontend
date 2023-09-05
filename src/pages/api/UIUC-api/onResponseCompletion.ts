@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import axios, { AxiosResponse } from 'axios'
 
 // const API_URL = 'https://flask-production-751b.up.railway.app'
-const API_URL_PREVIEW = 'https://flask-ai-ta-backend-pr-72.up.railway.app/'
+const API_URL_PREVIEW = 'https://flask-ai-ta-backend-pr-72.up.railway.app'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { course_name, conversation } = req.body
