@@ -524,7 +524,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     )
   }
   return (
-    <div className="overflow-wrap relative flex-1 bg-white dark:bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]">
+    <div className="overflow-wrap relative flex-1 bg-white dark:bg-[#15162c]">
       {!(apiKey || serverSideApiKeyIsSet) ? (
         <div className="min-w-screen relative min-h-screen flex-1 overflow-hidden">
           <Navbar />
