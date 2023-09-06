@@ -10,6 +10,10 @@ import {
   Paper,
   Input,
   Button,
+  Divider,
+  Accordion,
+  createStyles,
+  rem,
 } from '@mantine/core'
 import {
   IconArrowUpRight,
@@ -39,6 +43,42 @@ const montserrat_light = Montserrat({
   weight: '400',
   subsets: ['latin'],
 })
+
+const useStyles = createStyles((theme) => ({
+  // For Accordion
+  root: {
+    padding: 0,
+    borderRadius: theme.radius.xl,
+    outline: 'none',
+  },
+  item: {
+    backgroundColor: 'bg-transparent',
+    // border: `${rem(1)} solid transparent`,
+    border: `solid transparent`,
+    borderRadius: theme.radius.xl,
+    position: 'relative',
+    zIndex: 0,
+    transition: 'transform 150ms ease',
+    outline: 'none',
+
+    '&[data-active]': {
+      transform: 'scale(1.03)',
+      backgroundColor: 'bg-transparent',
+      // boxShadow: theme.shadows.xl,
+      // borderRadius: theme.radius.lg,
+      zIndex: 1,
+    },
+    '&:hover': {
+      backgroundColor: 'bg-transparent',
+    },
+  },
+
+  chevron: {
+    '&[data-rotate]': {
+      transform: 'rotate(90deg)',
+    },
+  },
+}))
 
 const EditCourseCard = ({
   course_name,
@@ -167,6 +207,8 @@ const EditCourseCard = ({
     }
   }
 
+  const { classes } = useStyles() // for Accordion
+
   return (
     <Card
       shadow="xs"
@@ -208,10 +250,11 @@ const EditCourseCard = ({
                   }
                   disabled={!is_new_course}
                   className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${isCourseAvailable && courseName != ''
-                      ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                      : 'border-red-800 text-red-600 focus:border-red-800'
-                    } ${montserrat.className}`}
+                                ${
+                                  isCourseAvailable && courseName != ''
+                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                                    : 'border-red-800 text-red-600 focus:border-red-800'
+                                } ${montserrat.className}`}
                 />
                 <Title
                   order={4}
@@ -266,7 +309,7 @@ const EditCourseCard = ({
             <div className="card flex h-full flex-col justify-center">
               <div className="card-body">
                 <div className="form-control relative">
-                  <Title
+                  {/* <Title
                     className={montserrat.className}
                     variant="gradient"
                     gradient={{ from: 'gold', to: 'white', deg: 50 }}
@@ -275,29 +318,69 @@ const EditCourseCard = ({
                     style={{ alignSelf: 'center' }}
                   >
                     Customization{' '}
-                  </Title>
-                  {/* <Title
-                    className={montserrat.className}
-                    variant="gradient"
-                    gradient={{ from: 'white', to: 'white', deg: 50 }}
-                    order={3}
-                    p="xs"
-                    style={{ alignSelf: 'center' }}
-                  >
-                    (All optional)
                   </Title> */}
-                  <label className={`label ${montserrat.className}`}>
-                    <span className="label-text text-lg text-neutral-200">
-                      Course-wide OpenAI Key
-                    </span>
-                  </label>
-                  <Text className={`label ${montserrat_light.className}`}>
-                    All users of this course, and only this course, will bill to
-                    the below key while chatting with these documents. Only set
-                    this key if you&apos;re comfortable with paying for their usage,
-                    otherwise each user must bring their own key to chat with
-                    your documents. Use the visibility below to control access.
-                  </Text>
+
+                  <Title
+                    className={`label ${montserrat.className}`}
+                    variant="gradient"
+                    gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                    order={3}
+                  >
+                    Course-wide OpenAI Key{' '}
+                  </Title>
+
+                  <Accordion
+                    pl={27}
+                    pr={27}
+                    pt={40}
+                    pb={40}
+                    m={-40}
+                    // style={{ borderRadius: 'theme.radius.xl', width: '112%', maxWidth: 'min(50rem, )', marginLeft: 'max(-1rem, -10%)' }}
+                    style={{ borderRadius: 'theme.radius.xl' }}
+                    classNames={classes}
+                    className={classes.root}
+                  >
+                    {/* ... Accordion items */}
+                    <Accordion.Item value="openai-key-details">
+                      <Accordion.Control>
+                        <Text
+                          className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+                          size={'md'}
+                        >
+                          If you provide an API key then all users of this
+                          course, and only this course, will bill to the below
+                          key while chatting with your documents.{' '}
+                          <span className={'text-purple-600'}>Read more</span>{' '}
+                          👇
+                        </Text>
+                        {/* <a
+                          className={'text-purple-600'}
+                          // href="/privacy"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ textDecoration: 'underline' }}
+                        >
+                          read more...
+                        </a> */}
+                      </Accordion.Control>
+                      <Accordion.Panel>
+                        <Text
+                          className={`label ${montserrat_light.className} p-0 text-neutral-200`}
+                          size={'sm'}
+                        >
+                          Only set this key if you&apos;re comfortable with
+                          paying the OpenAI bill for users to chat with your
+                          documents. Without this, each user must bring their
+                          own key and enter it before using the app. Providing a
+                          key makes your page free and much simpler for your
+                          users. You can use the visibility controls below to
+                          limit access. Advanced rate-limit features are a work
+                          in progress.
+                        </Text>
+                      </Accordion.Panel>
+                    </Accordion.Item>
+                  </Accordion>
+
                   {apiKey && !isEditing ? (
                     <>
                       <Input
@@ -413,30 +496,31 @@ const EditCourseCard = ({
                   course_name={course_name}
                   current_user_email={current_user_email}
                   courseMetadata={courseMetadata as CourseMetadata}
-                // course_intro_message={
-                //   courseMetadata?.course_intro_message || ''
-                // }
-                // is_private={courseMetadata?.is_private || false}
-                // banner_image_s3={courseBannerUrl}
+                  // course_intro_message={
+                  //   courseMetadata?.course_intro_message || ''
+                  // }
+                  // is_private={courseMetadata?.is_private || false}
+                  // banner_image_s3={courseBannerUrl}
                 />
 
+                <Title
+                  className={`label ${montserrat.className} p-0 pl-1 pt-2`}
+                  variant="gradient"
+                  gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                  order={3}
+                >
+                  Branding{' '}
+                </Title>
                 <div className="form-control relative">
-                  <Title
-                    className={montserrat.className}
-                    variant="gradient"
-                    gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                    order={3}
-                    p="md"
-                    style={{ alignSelf: 'center' }}
-                  >
-                    Branding{' '}
-                  </Title>
                   <label className={`label ${montserrat.className}`}>
                     <span className="label-text text-lg text-neutral-200">
                       Set a greeting
                     </span>
                   </label>
-                  <Text className={`label ${montserrat_light.className}`}>
+                  <Text
+                    className={`label ${montserrat_light.className} pt-0`}
+                    size={'sm'}
+                  >
                     Shown before users send their first chat.
                   </Text>
                   <textarea
@@ -598,25 +682,28 @@ const PrivateOrPublicCourse = ({
 
   return (
     <>
+      <Divider />
       <Title
-        className={montserrat.className}
+        className={`label ${montserrat.className}`}
         variant="gradient"
-        gradient={{ from: 'gold', to: 'white', deg: 50 }}
+        gradient={{ from: 'gold', to: 'white', deg: 170 }}
         order={3}
         p="md"
-        style={{ alignSelf: 'center' }}
+        style={{ alignSelf: 'left' }}
       >
         Visibility{' '}
       </Title>
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${isPrivate ? 'private' : 'public'
-            }. Click to change.`}
+          label={`Course is ${
+            isPrivate ? 'private' : 'public'
+          }. Click to change.`}
+          wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
-          className={montserrat.className}
+          className={`${montserrat.className}`}
           // style={{ marginTop: '4rem' }}
-          size="xl"
+          size="lg"
           // bg='#020307'
           color="grape"
           icon={CheckboxIcon}
@@ -624,13 +711,14 @@ const PrivateOrPublicCourse = ({
           onChange={handleCheckboxChange}
         />
       </Group>
-      {/* </Group>
-      <Group className="p-3"> */}
 
-      <Text className={`label ${montserrat_light.className} inline-block`}>
+      <Text
+        className={`label ${montserrat_light.className} inline-block`}
+        size={'sm'}
+      >
         Only the below email address are able to access the content. That&apos;s
-        useful when setting a Course Wide OpenAI Key (above)to limit usage. Read
-        our{' '}
+        useful when setting a Course Wide OpenAI Key (above) to limit usage.
+        Read our{' '}
         <a
           className={'text-purple-600'}
           href="/privacy"
@@ -655,6 +743,7 @@ const PrivateOrPublicCourse = ({
           openai_api_key={courseMetadata.openai_api_key as string}
         />
       )}
+      <Divider />
     </>
   )
 }
