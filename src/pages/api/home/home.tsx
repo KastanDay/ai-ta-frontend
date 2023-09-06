@@ -49,7 +49,7 @@ import { router } from '@trpc/server'
 import { useRouter } from 'next/router'
 
 interface Props {
-  serverSideApiKeyIsSet: boolean
+  // serverSideApiKeyIsSet: boolean
   serverSidePluginKeysSet: boolean
   defaultModelId: OpenAIModelID
 }
@@ -70,7 +70,7 @@ const Home = ({
 
   const {
     state: {
-      apiKey,
+      // apiKey,
       lightMode,
       folders,
       conversations,
@@ -139,36 +139,21 @@ const Home = ({
   }, [clerk_user_outer.isLoaded, isCourseMetadataLoading])
   // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
 
-  const [data, setData] = useState(null) // using the original version.
-  const [error, setError] = useState<unknown>(null) // Update the type of the error state variable
 
-  // Add a new state variable to track whether models have been fetched
-  const [modelsFetched, setModelsFetched] = useState(false)
-
-  // Update the useEffect hook to fetch models only if they haven't been fetched before
+  // Fetch course metadata from the KV database
   useEffect(() => {
-    if (!apiKey && !serverSideApiKeyIsSet) return
-    if (modelsFetched) return // Add this line to prevent fetching models multiple times
-
-    const fetchData = async () => {
+    const fetchCourseMetadata = async () => {
       try {
-        const data = await getModels({ key: apiKey })
-        dispatch({ field: 'models', value: data })
-        setModelsFetched(true) // Set modelsFetched to true after fetching models
+        const course_metadata = await kv.hget('course_metadatas', course_name) as CourseMetadata
+        console.log('Fetched course metadata: ', course_metadata)
+        dispatch({ field: 'serverSideApiKeyIsSet', value: true })
       } catch (error) {
-        dispatch({ field: 'modelError', value: getModelsError(error) })
+        console.error('Error occurred while fetching course metadata', error)
       }
     }
 
-    fetchData()
-  }, [
-    apiKey,
-    serverSideApiKeyIsSet,
-    getModels,
-    getModelsError,
-    dispatch,
-    modelsFetched,
-  ]) // Add modelsFetched to the dependency array
+    fetchCourseMetadata()
+  }, [course_name])
 
   useEffect(() => {
     if (data) dispatch({ field: 'models', value: data })
@@ -490,8 +475,8 @@ export const getServerSideProps: GetServerSideProps = async (
 
   const course_name = context.params?.course_name as string
 
-  let openai_api_key = null
-  let serverSideApiKeyIsSet = false
+  // let openai_api_key = null
+  // let serverSideApiKeyIsSet = false
 
   // Check course authed users -- the JSON.parse is CRUCIAL to avoid bugs with the stringified JSON 😭
   try {
@@ -502,12 +487,7 @@ export const getServerSideProps: GetServerSideProps = async (
     console.log('in api getCourseMetadata: course_metadata', course_metadata)
 
     if (course_metadata == null) {
-      console.log('Course metadata not found in serverside')
-    }
-
-    if (course_metadata?.openai_api_key) {
-      openai_api_key = course_metadata.openai_api_key
-      serverSideApiKeyIsSet = true
+      console.log('WARNING: Course metadata not found in KV database (its null)')
     }
 
     // Only parse is_private if it exists
@@ -540,17 +520,19 @@ export const getServerSideProps: GetServerSideProps = async (
   }
 
   // If openai_api_key is not present in course_metadata, use the one from process.env - fallback needed for models api.
-  if (!openai_api_key && process.env.OPENAI_API_KEY) {
-    openai_api_key = process.env.OPENAI_API_KEY
-    serverSideApiKeyIsSet = false
-  }
-  console.log('Final serverSideApiKeyIsSet', serverSideApiKeyIsSet)
+  // if (!openai_api_key && process.env.OPENAI_API_KEY) {
+  //   openai_api_key = process.env.OPENAI_API_KEY
+  //   serverSideApiKeyIsSet = false
+  // }
+  // TODO: figure out how to set env vars from the front-end.... or something similar.
+  // console.log('Final serverSideApiKeyIsSet', serverSideApiKeyIsSet)
+  console.log('OpenAI apikey on server side (not client!!)', process.env.OPENAI_API_KEY)
 
   return {
     props: {
       // ...buildClerkProps(context.req), // https://clerk.com/docs/nextjs/getserversideprops
       // TODO: here we can fetch the keys...
-      serverSideApiKeyIsSet,
+      // serverSideApiKeyIsSet,
       defaultModelId,
       serverSidePluginKeysSet,
       ...(await serverSideTranslations(locale ?? 'en', [
