@@ -150,7 +150,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     try {
 
       // const API_URL = 'https://flask-production-751b.up.railway.app'
-      const API_URL_PREVIEW = 'https://flask-ai-ta-backend-pr-72.up.railway.app'
+      // const API_URL_PREVIEW = 'https://flask-ai-ta-backend-pr-72.up.railway.app'
+      const API_URL_PREVIEW = 'https://smee.io/zx6ghuGrFuIIUHSs'
 
       const response = await fetch(`${API_URL_PREVIEW}/onResponseCompletion`, {
         method: 'POST',
