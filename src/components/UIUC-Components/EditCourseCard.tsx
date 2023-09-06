@@ -294,7 +294,7 @@ const EditCourseCard = ({
                   <Text className={`label ${montserrat_light.className}`}>
                     All users of this course, and only this course, will bill to
                     the below key while chatting with these documents. Only set
-                    this key if you&apos;re comfortable with paying for thier usage,
+                    this key if you&apos;re comfortable with paying for their usage,
                     otherwise each user must bring their own key to chat with
                     your documents. Use the visibility below to control access.
                   </Text>
