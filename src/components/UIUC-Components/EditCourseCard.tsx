@@ -35,6 +35,11 @@ const montserrat = Montserrat({
   subsets: ['latin'],
 })
 
+const montserrat_light = Montserrat({
+  weight: '400',
+  subsets: ['latin'],
+})
+
 const EditCourseCard = ({
   course_name,
   current_user_email,
@@ -203,11 +208,10 @@ const EditCourseCard = ({
                   }
                   disabled={!is_new_course}
                   className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${
-                                  isCourseAvailable && courseName != ''
-                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                                    : 'border-red-800 text-red-600 focus:border-red-800'
-                                } ${montserrat.className}`}
+                                ${isCourseAvailable && courseName != ''
+                      ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                      : 'border-red-800 text-red-600 focus:border-red-800'
+                    } ${montserrat.className}`}
                 />
                 <Title
                   order={4}
@@ -262,11 +266,38 @@ const EditCourseCard = ({
             <div className="card flex h-full flex-col justify-center">
               <div className="card-body">
                 <div className="form-control relative">
+                  <Title
+                    className={montserrat.className}
+                    variant="gradient"
+                    gradient={{ from: 'gold', to: 'white', deg: 50 }}
+                    order={2}
+                    p="xs"
+                    style={{ alignSelf: 'center' }}
+                  >
+                    Customization{' '}
+                  </Title>
+                  {/* <Title
+                    className={montserrat.className}
+                    variant="gradient"
+                    gradient={{ from: 'white', to: 'white', deg: 50 }}
+                    order={3}
+                    p="xs"
+                    style={{ alignSelf: 'center' }}
+                  >
+                    (All optional)
+                  </Title> */}
                   <label className={`label ${montserrat.className}`}>
                     <span className="label-text text-lg text-neutral-200">
-                      Course Wide Open AI Key
+                      Course-wide OpenAI Key
                     </span>
                   </label>
+                  <Text className={`label ${montserrat_light.className}`}>
+                    All users of this course, and only this course, will bill to
+                    the below key while chatting with these documents. Only set
+                    this key if you&apos;re comfortable with paying for thier usage,
+                    otherwise each user must bring their own key to chat with
+                    your documents. Use the visibility below to control access.
+                  </Text>
                   {apiKey && !isEditing ? (
                     <>
                       <Input
@@ -378,12 +409,36 @@ const EditCourseCard = ({
                   </Input.Description>
                 </div>
 
+                <PrivateOrPublicCourse
+                  course_name={course_name}
+                  current_user_email={current_user_email}
+                  courseMetadata={courseMetadata as CourseMetadata}
+                // course_intro_message={
+                //   courseMetadata?.course_intro_message || ''
+                // }
+                // is_private={courseMetadata?.is_private || false}
+                // banner_image_s3={courseBannerUrl}
+                />
+
                 <div className="form-control relative">
+                  <Title
+                    className={montserrat.className}
+                    variant="gradient"
+                    gradient={{ from: 'gold', to: 'white', deg: 50 }}
+                    order={3}
+                    p="md"
+                    style={{ alignSelf: 'center' }}
+                  >
+                    Branding{' '}
+                  </Title>
                   <label className={`label ${montserrat.className}`}>
                     <span className="label-text text-lg text-neutral-200">
-                      Introductory Message
+                      Set a greeting
                     </span>
                   </label>
+                  <Text className={`label ${montserrat_light.className}`}>
+                    Shown before users send their first chat.
+                  </Text>
                   <textarea
                     rows={5}
                     placeholder="Enter the introductory message of the chatbot"
@@ -425,9 +480,12 @@ const EditCourseCard = ({
                 <div className="form-control mt-4">
                   <label className={`label ${montserrat.className}`}>
                     <span className="label-text text-lg text-neutral-200">
-                      Upload Banner
+                      Upload your logo
                     </span>
                   </label>
+                  <Text className={`label ${montserrat_light.className}`}>
+                    This logo will appear in the header of the chat page.
+                  </Text>
                   <input
                     type="file"
                     className={`file-input-bordered file-input w-full border-violet-800 bg-violet-800 text-white  shadow-inner hover:border-violet-600 hover:bg-violet-800 ${montserrat.className}`}
@@ -458,16 +516,6 @@ const EditCourseCard = ({
                     }}
                   />
                 </div>
-                <PrivateOrPublicCourse
-                  course_name={course_name}
-                  current_user_email={current_user_email}
-                  courseMetadata={courseMetadata as CourseMetadata}
-                  // course_intro_message={
-                  //   courseMetadata?.course_intro_message || ''
-                  // }
-                  // is_private={courseMetadata?.is_private || false}
-                  // banner_image_s3={courseBannerUrl}
-                />
               </div>
             </div>
           </div>
@@ -554,18 +602,16 @@ const PrivateOrPublicCourse = ({
         className={montserrat.className}
         variant="gradient"
         gradient={{ from: 'gold', to: 'white', deg: 50 }}
-        order={2}
-        p="xl"
-        style={{ marginTop: '4rem', alignSelf: 'center' }}
+        order={3}
+        p="md"
+        style={{ alignSelf: 'center' }}
       >
-        {' '}
-        Course Visibility{' '}
+        Visibility{' '}
       </Title>
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${
-            isPrivate ? 'private' : 'public'
-          }. Click to change.`}
+          label={`Course is ${isPrivate ? 'private' : 'public'
+            }. Click to change.`}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
           className={montserrat.className}
@@ -581,10 +627,22 @@ const PrivateOrPublicCourse = ({
       {/* </Group>
       <Group className="p-3"> */}
 
-      <Text>
-        Only the below email address are able to access the content. Read our
-        strict security policy (in progress).
+      <Text className={`label ${montserrat_light.className} inline-block`}>
+        Only the below email address are able to access the content. That&apos;s
+        useful when setting a Course Wide OpenAI Key (above)to limit usage. Read
+        our{' '}
+        <a
+          className={'text-purple-600'}
+          href="/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: 'underline' }}
+        >
+          strict security policy
+        </a>
+        .
       </Text>
+      {/* <a href="/privacy">strict security policy</a>. Useful when setting a Course Wide OpenAI Key to limit usage. */}
       {isPrivate && (
         <EmailChipsComponent
           course_owner={current_user_email}
