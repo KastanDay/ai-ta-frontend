@@ -525,7 +525,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     <div className="overflow-wrap relative flex-1 bg-white dark:bg-[#15162c]">
       {!(apiKey || serverSideApiKeyIsSet) ? (
         <div className="min-w-screen relative min-h-screen flex-1 overflow-hidden">
-          <Navbar />
+          <Navbar isgpt4={true} />
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <div className=" backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
               <div className="mb-2 flex flex-col items-center text-center">
@@ -579,10 +579,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   showSettings={showSettings}
                   selectedConversation={selectedConversation}
                   redirectToMaterialsPage={redirectToMaterialsPage}
-                  isTransparent={true} // transparent when no messages
                 />
                 {/* <CustomBanner bannerUrl={bannerUrl as string} /> Banner on fresh chat page */}
-                <Navbar bannerUrl={bannerUrl as string} />
+                <Navbar bannerUrl={bannerUrl as string} isgpt4={true} />
                 <div className="xs:mx-2 mt-4 mt-8 flex max-w-3xl flex-col gap-3 gap-3 space-y-5 p-4 last:mb-2 sm:mx-4 md:mx-auto md:space-y-10 md:pt-12 lg:mx-auto">
                   {models.length > 0 && (
                     <div className="flex h-full flex-col space-y-4 focus:border-t-info/100 dark:border-neutral-600">
@@ -606,7 +605,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                     showSettings={showSettings}
                     selectedConversation={selectedConversation}
                     redirectToMaterialsPage={redirectToMaterialsPage}
-                    isTransparent={false} // transparent when no messages
                   />
                 </div>
                 {/* <CustomBanner bannerUrl={bannerUrl as string} />{' '} */}

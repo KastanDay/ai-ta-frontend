@@ -1,13 +1,6 @@
 import {
-  // IconBrain,
-  // IconClearAll,
-  IconArrowRight,
   // IconCloudUpload,
   IconExternalLink,
-  // IconRobot,
-  // IconSettings,
-  IconAlertTriangle,
-  IconArrowLeft,
   IconRobot,
   IconCloudUpload,
   // IconArrowUpRight,
@@ -17,40 +10,28 @@ import {
   // IconClearAll,
   // IconSettings,
 } from '@tabler/icons-react'
-import { Button, Text, Title } from '@mantine/core'
+import { Text } from '@mantine/core'
 import { ModelSelect } from '../Chat/ModelSelect'
 import { Conversation } from '~/types/chat'
-import { ModelParams } from '../Chat/ModelParams'
 
 export default function TopBarInChat({
   handleSettings,
   showSettings,
   selectedConversation,
-  redirectToMaterialsPage,
-  isTransparent,
+  redirectToMaterialsPage
 }: {
   handleSettings: () => void
   showSettings: boolean
   selectedConversation: Conversation | undefined
   redirectToMaterialsPage: () => void
-  isTransparent?: boolean
 }) {
-  console.log('-----------Current transparent value is: ', isTransparent)
   return (
     <>
-      {/* Always render the 'model, upload, disclaimer' banner */}
-      {/* <div
-        className={isTransparent ? 'dark:bg-transparent' : isTransparent ? 'dark:bg-{#070711}' : 'dark:bg-{#131426}'}
-      > */}
       <div
-        className={`sticky top-0 z-10 flex w-full flex-col justify-center ${
-          isTransparent ? 'bg-[#2E026D]' : 'bg-neutral-100 dark:bg-[#131426]'
-        } text-sm text-neutral-500 dark:border-none dark:text-neutral-200`}
+        className={`sticky top-0 z-10 flex w-full flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-[#131426] dark:text-neutral-200`}
       >
         <div
-          className={`flex justify-center border border-b-neutral-300 ${
-            isTransparent ? 'bg-[#2E026D]' : 'bg-neutral-100 dark:bg-[#131426]'
-          } py-2 text-sm text-neutral-500 dark:border-none dark:text-neutral-200`}
+          className={`flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#131426] dark:text-neutral-200`}
         >
           <button
             className="ml-2 cursor-pointer hover:opacity-50"
@@ -112,8 +93,8 @@ export default function TopBarInChat({
         </div>
       </div>
       {showSettings && (
-        <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl ">
-          <div className="flex h-full flex-col space-y-4 border-b border-neutral-200 p-4 dark:border-neutral-600 md:rounded-lg md:border bg-[#15162c]">
+        <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
+          <div className="backdrop-filter-[blur(10px)] flex h-full flex-col space-y-4 rounded-lg border border-2 border-b border-[rgba(42,42,120,0.55)] border-neutral-200 p-4 dark:border-neutral-600 dark:bg-[rgba(42,42,64,1)] md:rounded-lg md:border">
             <ModelSelect />
             {/* TODO: enable temperature & system prompt changes */}
             {/* <ModelParams
@@ -125,7 +106,6 @@ export default function TopBarInChat({
           </div>
         </div>
       )}
-      {/* </div > */}
     </>
   )
 }
