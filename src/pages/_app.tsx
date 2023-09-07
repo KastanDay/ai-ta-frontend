@@ -40,6 +40,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
               nearlyBlack: ['#0E1116'],
               nearlyWhite: ['#F7F7F7'],
               disabled: ['#2A2F36'],
+              errorBackground: ['#fa9147'],
+              errorBorder: ['#fa9147'],
               // or replace default theme color
               // blue: ['#E9EDFC', '#C1CCF6', '#99ABF0' /* ... */],
             },

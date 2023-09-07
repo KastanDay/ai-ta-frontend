@@ -1,14 +1,4 @@
-import { IconWorldDownload } from '@tabler/icons-react'
-// import {
-//   IconWorldDownload,
-// } from 'tabler-icons-react'
 import Image from 'next/image'
-import {
-  Montserrat,
-  // Inter,
-  // Rubik_Puddles,
-  // Audiowide,
-} from 'next/font/google'
 import {
   Text,
   rem,
@@ -30,10 +20,10 @@ import {
   // Tooltip,
 } from '@mantine/core'
 // const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
-const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
-const montserrat_non_bold = Montserrat({ weight: '500', subsets: ['latin'] })
+
 // import Link from 'next/link'
 import React from 'react'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 
 const useStyles = createStyles((theme) => ({
   logos: {
@@ -74,7 +64,7 @@ const SupportedFileUploadTypes = () => {
   return (
     <>
       <Title
-        className={montserrat.className}
+        className={`${montserrat_heading.variable} font-montserratHeading`}
         variant="gradient"
         gradient={{ from: 'gold', to: 'white', deg: 50 }}
         order={4}
@@ -172,7 +162,11 @@ const SupportedFileUploadTypes = () => {
         <code className={classes.codeStyledText}>.vtt</code>
       </Text>
 
-      <Text size={'lg'} p={rem(20)} className={montserrat_non_bold.className}>
+      <Text
+        size={'lg'}
+        p={rem(20)}
+        className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+      >
         Under development...
       </Text>
 

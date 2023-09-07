@@ -1,12 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
 import {
-  Montserrat,
-  // Inter,
-  // Rubik_Puddles,
-  // Audiowide,
-} from 'next/font/google'
-import {
   // Card,
   // Image,
   // Text,
@@ -22,8 +16,7 @@ import {
   Flex,
 } from '@mantine/core'
 import { SignInButton } from '@clerk/nextjs'
-const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
-// const rubikpuddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
+import { montserrat_heading } from 'fonts'
 
 export const AuthComponent = ({ course_name }: { course_name: string }) => {
   return (
@@ -43,7 +36,7 @@ export const AuthComponent = ({ course_name }: { course_name: string }) => {
         <div className="items-left container flex flex-col justify-center gap-2 py-0">
           <Flex direction="column" align="center" justify="center">
             <Title
-              className={montserrat.className}
+              className={`${montserrat_heading.variable} font-montserratHeading`}
               variant="gradient"
               gradient={{ from: 'gold', to: 'white', deg: 50 }}
               order={2}

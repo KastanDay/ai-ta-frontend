@@ -519,11 +519,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const statements = courseMetadata?.course_intro_message
     ? courseMetadata.course_intro_message.split('\n')
     : [
-      'Make a bullet point list of key takeaways of the course.',
-      'What is [your favorite topic] and why is it worth learning about?',
-      'How can I effectively prepare for the upcoming exam?',
-      'How many assignments in the course?',
-    ]
+        'Make a bullet point list of key takeaways of the course.',
+        'What is [your favorite topic] and why is it worth learning about?',
+        'How can I effectively prepare for the upcoming exam?',
+        'How many assignments in the course?',
+      ]
 
   // Add this function to create dividers with statements
   const renderDividers = () => {
@@ -554,7 +554,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               <Title>⚠️</Title>
               <div className="mb-2">
                 <Title
-                  // className={montserrat.className}
                   variant="gradient"
                   gradient={{ from: 'red', to: 'white', deg: 50 }}
                   order={3}
@@ -566,7 +565,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               </div>
               <div>
                 <Text size={'md'}>
-                  If you don&apos;t have an OpenAI API key, you can get one here:{' '}
+                  If you don&apos;t have an OpenAI API key, you can get one
+                  here:{' '}
                   <a
                     href="https://platform.openai.com/account/api-keys"
                     target="_blank"
