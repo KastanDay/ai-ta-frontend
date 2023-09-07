@@ -45,7 +45,6 @@ import { type CourseMetadata } from '~/types/courseMetadata'
 import { kv } from '@vercel/kv'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
-import { router } from '@trpc/server'
 import { useRouter } from 'next/router'
 
 interface Props {
@@ -55,7 +54,7 @@ interface Props {
 }
 
 const Home = ({
-  serverSideApiKeyIsSet,
+  // serverSideApiKeyIsSet,
   serverSidePluginKeysSet,
   defaultModelId,
 }: Props) => {
@@ -105,6 +104,57 @@ const Home = ({
     courseMetadata()
   }, [course_name])
 
+  useEffect(() => {
+    if (course_metadata !== null) {
+      const apiKey = localStorage.getItem('apiKey')
+
+      // 1. Try to use global env key from Vercel .env 
+      // 2. Try to use course-specific key from KV store
+      // 3. No key set; the user will have to enter one
+
+      // if (process.env.OPENAI_API_KEY) {
+      //   // use global env key
+      //   // openai_api_key = process.env.OPENAI_API_KEY
+      //   serverSideApiKeyIsSet = true
+      //   console.log('👉👉👉👉Using global env key...')
+      // } else if (course_metadata?.openai_api_key) {
+      //   // use course-specific key
+      //   process.env.OPENAI_API_KEY = course_metadata.openai_api_key
+      //   serverSideApiKeyIsSet = true
+      //   console.log('👉👉👉👉👉👉Using course-wide API key: ', process.env.OPENAI_API_KEY)
+      // } else {
+      //   // user have to enter one
+      //   console.log('👉👉👉👉👉👉Using NO API KEY AT ALL: ', process.env.OPENAI_API_KEY)
+      //   process.env.OPENAI_API_KEY = ''
+      // }
+
+      // If Course-Wide OpenAI key is set, use it
+      if (course_metadata.openai_api_key && course_metadata.openai_api_key !== '') {
+        dispatch({ field: 'apiKey', value: '' })
+        localStorage.removeItem('apiKey')
+      } else if (apiKey) {
+        // NO course wide, yes local key.
+        if (!apiKey.startsWith('sk-')) {
+          alert(`Error: OpenAI API keys must start with "sk-", but yours is ${apiKey}`);
+        }
+        dispatch({ field: 'apiKey', value: apiKey })
+      } else {
+        // TODO: Which case is this?
+        // Might have to do this on the 'chat.ts' where we invoke the API.
+
+      }
+
+      const pluginKeys = localStorage.getItem('pluginKeys')
+      if (serverSidePluginKeysSet) {
+        dispatch({ field: 'pluginKeys', value: [] })
+        localStorage.removeItem('pluginKeys')
+      } else if (pluginKeys) {
+        dispatch({ field: 'pluginKeys', value: pluginKeys })
+      }
+    }
+  }, [course_metadata, serverSidePluginKeysSet, dispatch])
+
+
   // Check auth & redirect
   const clerk_user_outer = useUser()
   // const course_exists = course_metadata != null
@@ -138,22 +188,6 @@ const Home = ({
     }
   }, [clerk_user_outer.isLoaded, isCourseMetadataLoading])
   // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
-
-
-  // Fetch course metadata from the KV database
-  useEffect(() => {
-    const fetchCourseMetadata = async () => {
-      try {
-        const course_metadata = await kv.hget('course_metadatas', course_name) as CourseMetadata
-        console.log('Fetched course metadata: ', course_metadata)
-        dispatch({ field: 'serverSideApiKeyIsSet', value: true })
-      } catch (error) {
-        console.error('Error occurred while fetching course metadata', error)
-      }
-    }
-
-    fetchCourseMetadata()
-  }, [course_name])
 
   useEffect(() => {
     if (data) dispatch({ field: 'models', value: data })
@@ -323,23 +357,6 @@ const Home = ({
       })
     }
 
-    const apiKey = localStorage.getItem('apiKey')
-
-    if (serverSideApiKeyIsSet) {
-      dispatch({ field: 'apiKey', value: '' })
-
-      localStorage.removeItem('apiKey')
-    } else if (apiKey) {
-      dispatch({ field: 'apiKey', value: apiKey })
-    }
-
-    const pluginKeys = localStorage.getItem('pluginKeys')
-    if (serverSidePluginKeysSet) {
-      dispatch({ field: 'pluginKeys', value: [] })
-      localStorage.removeItem('pluginKeys')
-    } else if (pluginKeys) {
-      dispatch({ field: 'pluginKeys', value: pluginKeys })
-    }
 
     if (window.innerWidth < 640) {
       dispatch({ field: 'showChatbar', value: false })
@@ -404,7 +421,7 @@ const Home = ({
         },
       })
     }
-  }, [defaultModelId, dispatch, serverSideApiKeyIsSet, serverSidePluginKeysSet])
+  }, [defaultModelId, dispatch, serverSidePluginKeysSet]) // serverSideApiKeyIsSet,
 
   return (
     <HomeContext.Provider
