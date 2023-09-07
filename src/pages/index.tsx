@@ -1,6 +1,8 @@
 import { type NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
+import React, { useState } from 'react'
+
 // import { Montserrat, Lora, Audiowide } from 'next/font/google'
 // import { signIn, signOut, useSession } from "next-auth/react";
 
@@ -25,11 +27,16 @@ import SignInPage from '~/pages/sign-in/[[...index]]'
 // import { api } from '~/utils/api'
 import Header from '~/components/UIUC-Components/GlobalHeader'
 
+
+
 const Home: NextPage = () => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
   // const user = userUser();
   // const router = useRouter();
+
+
+  // ...
 
   return (
     <>
@@ -58,7 +65,7 @@ const Home: NextPage = () => {
             UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
             {/* </Link> */}
           </h1>
-
+          <CreateNewProject />
           <Container
             size="lg"
             py="l"
@@ -77,7 +84,7 @@ const Home: NextPage = () => {
             >
               Upload anything. Search everything.
               <br></br>
-              <span className="home-header_text-underline">Hello Hello.</span>
+              <span className="home-header_text-underline">Discover More.</span>
             </Title>
 
             {/* <Text color="#57534e" c="dimmed" ta="center" mt="md">
@@ -99,6 +106,7 @@ const Home: NextPage = () => {
           <Title color="white" order={3}>
             Explore the Courses
           </Title>
+
 
           {/* Main courses */}
           <div className="flex flex-col items-center gap-2">
@@ -155,6 +163,7 @@ export default Home
 import { createStyles, SimpleGrid, Container } from '@mantine/core'
 import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
 import { useRouter } from 'next/router'
+import CreateNewProject from '~/components/UIUC-Components/CreateNewProject'
 
 const mockdata = [
   {

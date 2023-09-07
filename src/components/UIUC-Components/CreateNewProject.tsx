@@ -29,19 +29,16 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-export default function ResumeToChat({ course_name }: { course_name?: string }) {
+export default function CreateNewPorject() {
   const router = useRouter()
   const { classes, theme } = useStyles()
   const [isLoading, setIsLoading] = useState(false)
 
   const handleClick = () => {
     setIsLoading(true)
-    router.push(`/${course_name}/gpt4`)
+    router.push(`/new`)
   }
 
-  if (!course_name) {
-    return null
-  }
 
   return (
     <div className={classes.wrapper}>
@@ -75,7 +72,7 @@ export default function ResumeToChat({ course_name }: { course_name?: string }) 
                   : theme.black
               }
             >
-              Back to Chat with Documents
+              Create New Project
             </Text>
             <svg
               width="24"
@@ -98,3 +95,4 @@ export default function ResumeToChat({ course_name }: { course_name?: string }) 
     </div>
   )
 }
+
