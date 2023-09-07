@@ -16,7 +16,6 @@ import {
   Group,
 } from '@mantine/core'
 
-import Image from 'next/image'
 
 import SignInPage from '~/pages/sign-in/[[...index]]'
 
@@ -144,6 +143,8 @@ import { createStyles, SimpleGrid, Container } from '@mantine/core'
 import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
 import { useRouter } from 'next/router'
 import CreateNewProject from '~/components/UIUC-Components/CreateNewProject'
+import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
+import GlobalFooter from '~/components/UIUC-Components/GlobalFooter'
 
 const mockdata = [
   {
