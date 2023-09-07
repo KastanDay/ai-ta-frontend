@@ -289,7 +289,12 @@ const MakeOldCoursePage = ({
   )
 }
 
-import { IconCheck, IconDownload, IconLock } from '@tabler/icons-react'
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconDownload,
+  IconLock,
+} from '@tabler/icons-react'
 
 import { CannotEditCourse } from './CannotEditCourse'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -522,14 +527,11 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
       title: was_error ? 'Error deleting file' : 'Deleting file...',
       message: was_error
         ? "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug."
-        : 'The file will be delted in the background. After about 10 seconds, it will be 100% purged from our servers and, of course, will no longer be used by the chatbot.',
-      icon: <IconCheck />,
-      // className: 'my-notification-class',
+        : 'The file will be deleted in the background. After about 10 seconds, it will be 100% purged from our servers and, of course, will no longer be used by the chatbot.',
+      icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
       styles: {
         root: {
-          backgroundColor: was_error
-            ? theme.colors.errorBackground
-            : theme.colors.nearlyWhite,
+          backgroundColor: theme.colors.nearlyWhite,
           borderColor: was_error
             ? theme.colors.errorBorder
             : theme.colors.aiPurple,

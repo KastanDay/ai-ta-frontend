@@ -176,9 +176,8 @@ export const WebScrape = ({
         // position="top-center",
         title: 'Web scraping started',
         message:
-          "It'll scrape in the background, just wait for the results to show up in your project (~3 minutes total).\nThis is early release; I'd love to fix bugs, please shoot me an email with bug reports kvday2@illinois.edu.",
+          "It'll scrape in the background, just wait for the results to show up in your project (~3 minutes total).\nThis feature is stable but the web is a messy place. If you have trouble, I'd love to fix it. Just shoot me an email: kvday2@illinois.edu.",
         icon: <IconWorldDownload />,
-        // className: 'my-notification-class',
         styles: {
           root: {
             backgroundColor: theme.colors.nearlyWhite,
