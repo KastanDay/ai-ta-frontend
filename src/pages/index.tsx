@@ -28,16 +28,9 @@ const Home: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      {/* "My user" login button */}
-      <GlobalHeader />
-      {/* <header style={{ backgroundColor: '#2e026d', display: 'flex', justifyContent: 'flex-end', padding: '1em'}}>
-				<UserButton
-          afterSignOutUrl="/"
-        />
-        
-        
 
-			</GlobalHeader> */}
+      <GlobalHeader />
+
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
         <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 ">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
@@ -131,7 +124,7 @@ export default Home
 
 import { createStyles, SimpleGrid, Container } from '@mantine/core'
 import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
-import { useRouter } from 'next/router'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 
 const mockdata = [
   {
@@ -181,8 +174,9 @@ const useStyles = createStyles((theme) => ({
   },
 
   card: {
-    border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
-      }`,
+    border: `${rem(1)} solid ${
+      theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
+    }`,
   },
 
   cardTitle: {
@@ -334,9 +328,7 @@ function CourseCard() {
             <Card.Section className="pb-2 pl-4 pr-4 pt-2">
               <Group position="apart" mt="md" mb="xs">
                 <Text
-                  style={{ fontFamily: 'Montserrat' }}
-                  size="xl"
-                  weight={800}
+                  className={`${montserrat_heading.variable} font-montserratHeading`}
                 >
                   {card.title}
                 </Text>

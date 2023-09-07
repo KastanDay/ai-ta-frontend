@@ -21,7 +21,6 @@ import React from 'react'
 // Title,
 // Flex,
 // } from '@mantine/core'
-// const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 // const rubikpuddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 
 export const LoadingSpinner = ({ size = 'md' }: { size?: string }) => {
