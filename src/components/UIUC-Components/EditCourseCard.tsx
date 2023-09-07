@@ -7,9 +7,9 @@ import {
   Checkbox,
   Title,
   type CheckboxProps,
-  Paper,
-  Input,
-  Button,
+  // Paper,
+  // Input,
+  // Button,
 } from '@mantine/core'
 import { IconLock, IconQuestionMark } from '@tabler/icons-react'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -17,10 +17,10 @@ import LargeDropzone from './LargeDropzone'
 import EmailChipsComponent from './EmailChipsComponent'
 import { useMediaQuery } from '@mantine/hooks'
 import { Montserrat } from 'next/font/google'
-import { GetCurrentPageName } from './CanViewOnlyCourse'
+// import { GetCurrentPageName } from './CanViewOnlyCourse'
 import { useRouter } from 'next/router'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
-import axios from 'axios'
+// import axios from 'axios'
 import { WebScrape } from '~/components/UIUC-Components/WebScrape'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
 
@@ -194,11 +194,10 @@ const EditCourseCard = ({
                   }
                   disabled={!is_new_course}
                   className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${
-                                  isCourseAvailable && courseName != ''
-                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                                    : 'border-red-800 text-red-600 focus:border-red-800'
-                                } ${montserrat.className}`}
+                                ${isCourseAvailable && courseName != ''
+                      ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                      : 'border-red-800 text-red-600 focus:border-red-800'
+                    } ${montserrat.className}`}
                 />
                 <Title
                   order={4}
@@ -336,11 +335,11 @@ const EditCourseCard = ({
                   course_name={course_name}
                   current_user_email={current_user_email}
                   courseMetadata={courseMetadata as CourseMetadata}
-                  // course_intro_message={
-                  //   courseMetadata?.course_intro_message || ''
-                  // }
-                  // is_private={courseMetadata?.is_private || false}
-                  // banner_image_s3={courseBannerUrl}
+                // course_intro_message={
+                //   courseMetadata?.course_intro_message || ''
+                // }
+                // is_private={courseMetadata?.is_private || false}
+                // banner_image_s3={courseBannerUrl}
                 />
               </div>
             </div>
@@ -437,9 +436,8 @@ const PrivateOrPublicCourse = ({
       </Title>
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${
-            isPrivate ? 'private' : 'public'
-          }. Click to change.`}
+          label={`Course is ${isPrivate ? 'private' : 'public'
+            }. Click to change.`}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
           className={montserrat.className}

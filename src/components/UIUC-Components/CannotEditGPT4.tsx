@@ -3,7 +3,7 @@ import Link from 'next/link'
 import {
   Montserrat,
   // Inter,
-  Rubik_Puddles,
+  // Rubik_Puddles,
   // Audiowide,
 } from 'next/font/google'
 import {
@@ -12,7 +12,7 @@ import {
   // Text,
   // Badge,
   // MantineProvider,
-  Button,
+  // Button,
   // Group,
   // Stack,
   // createStyles,
