@@ -1,12 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
 import {
-  Montserrat,
-  // Inter,
-  // Rubik_Puddles,
-  // Audiowide,
-} from 'next/font/google'
-import {
   // Card,
   // Image,
   // Text,
@@ -21,11 +15,7 @@ import {
   Title,
   Flex,
 } from '@mantine/core'
-const montserrat = Montserrat({
-  weight: '700',
-  subsets: ['latin'],
-  display: 'swap',
-})
+import { montserrat_heading } from 'fonts'
 // const rubikpuddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 
 export const CannotEditCourse = ({ course_name }: { course_name: string }) => {
@@ -33,7 +23,7 @@ export const CannotEditCourse = ({ course_name }: { course_name: string }) => {
     <>
       <Flex direction="column" align="center" justify="center">
         <Title
-          className={montserrat.className}
+          className={`${montserrat_heading.variable} font-montserratHeading`}
           variant="gradient"
           gradient={{ from: 'gold', to: 'white', deg: 50 }}
           order={2}
@@ -46,7 +36,7 @@ export const CannotEditCourse = ({ course_name }: { course_name: string }) => {
         </Title>
 
         <Title
-          className={montserrat.className}
+          className={`${montserrat_heading.variable} font-montserratHeading`}
           variant="gradient"
           gradient={{ from: 'gold', to: 'white', deg: 50 }}
           order={3}

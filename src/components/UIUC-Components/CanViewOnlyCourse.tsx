@@ -1,11 +1,4 @@
-// import React from 'react'
 import Link from 'next/link'
-import {
-  Montserrat,
-  // Inter,
-  // Rubik_Puddles,
-  // Audiowide,
-} from 'next/font/google'
 import {
   // Card,
   // Image,
@@ -23,19 +16,10 @@ import {
 } from '@mantine/core'
 import GlobalHeader from './GlobalHeader'
 import { CourseMetadata } from '~/types/courseMetadata'
-const montserrat = Montserrat({
-  weight: '700',
-  subsets: ['latin'],
-  display: 'swap',
-})
-// const rubikpuddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
-import React, { useState, useEffect } from 'react'
-import Spinner from '../Spinner'
-import { LoadingSpinner } from './LoadingSpinner'
+import React from 'react'
 import { useRouter } from 'next/router'
-import { useUser } from '@clerk/nextjs'
-import { CannotEditCourse } from './CannotEditCourse'
 import GlobalFooter from './GlobalFooter'
+import { montserrat_heading } from 'fonts'
 
 export const GetCurrentPageName = () => {
   // /CS-125/materials --> CS-125
@@ -89,7 +73,7 @@ export const CanViewOnlyCourse = ({
               }}
             >
               <Title
-                className={montserrat.className}
+                className={`${montserrat_heading.variable} font-montserratHeading`}
                 variant="gradient"
                 gradient={{ from: 'gold', to: 'white', deg: 50 }}
                 order={2}
@@ -114,7 +98,7 @@ export const CanViewOnlyCourse = ({
             <Flex direction="column" align="center" justify="center">
               {/* SHOW CREATOR AND ADMINS */}
               <Title
-                className={montserrat.className}
+                className={`${montserrat_heading.variable} font-montserratHeading`}
                 variant="gradient"
                 gradient={{ from: 'gold', to: 'white', deg: 50 }}
                 order={3}
@@ -125,7 +109,7 @@ export const CanViewOnlyCourse = ({
               </Title>
               <>
                 <Text
-                  className={montserrat.className}
+                  className={`${montserrat_heading.variable} font-montserratHeading`}
                   variant="gradient"
                   gradient={{ from: 'gold', to: 'white', deg: 50 }}
                   // py={8}
@@ -171,7 +155,7 @@ export const CanViewOnlyCourse = ({
             </Flex>
 
             <Title
-              className={montserrat.className}
+              className={`${montserrat_heading.variable} font-montserratHeading`}
               variant="gradient"
               gradient={{ from: 'gold', to: 'white', deg: 50 }}
               order={3}

@@ -1,12 +1,6 @@
 import Head from 'next/head'
 import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
 import {
-  Montserrat,
-  // Inter,
-  // Rubik_Puddles,
-  // Audiowide,
-} from 'next/font/google'
-import {
   // Card,
   // Image,
   // Badge,
@@ -26,11 +20,6 @@ import {
   // Tooltip,
 } from '@mantine/core'
 // const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
-const montserrat = Montserrat({
-  weight: '700',
-  subsets: ['latin'],
-  display: 'swap',
-})
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
@@ -136,7 +125,7 @@ const MakeOldCoursePage = ({
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-      // current_email={currentEmail as string}
+        // current_email={currentEmail as string}
       />
     )
   }
@@ -170,7 +159,7 @@ const MakeOldCoursePage = ({
               <Flex direction="row" justify="space-between">
                 <div className="flex flex-row items-start justify-start">
                   <Title
-                    className={montserrat.className}
+                    className={`${montserrat_heading.variable} font-montserratHeading`}
                     variant="gradient"
                     gradient={{
                       from: 'hsl(280,100%,70%)',
@@ -212,7 +201,7 @@ const MakeOldCoursePage = ({
                 />
                 <Title
                   order={6}
-                  className={`w-full text-center ${montserrat.className} mt-2`}
+                  className={`w-full text-center ${montserrat_heading.variable} mt-2 font-montserratHeading`}
                 >
                   A conceptual map of the questions asked by users on this page.
                   <br></br>
@@ -232,7 +221,7 @@ const MakeOldCoursePage = ({
               <>
                 <Title
                   order={6}
-                  className={`w-full text-center ${montserrat.className} mt-2`}
+                  className={`w-full text-center ${montserrat_heading.variable} mt-2 font-montserratHeading`}
                 >
                   Query visualization requires at least 20 queries to be made...
                   go ask some questions and check back later :)
@@ -259,7 +248,7 @@ const MakeOldCoursePage = ({
               <Flex direction="row" justify="space-between">
                 <div className="flex flex-row items-start justify-start">
                   <Title
-                    className={montserrat.className}
+                    className={`${montserrat_heading.variable} font-montserratHeading`}
                     variant="gradient"
                     gradient={{
                       from: 'hsl(280,100%,70%)',
@@ -327,6 +316,7 @@ import Navbar from '~/components/UIUC-Components/Navbar'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
+import { montserrat_heading } from 'fonts'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
@@ -418,15 +408,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.gray[2]
-                        : theme.colors.gray[1]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colorScheme === 'dark'
+                      ? theme.colors.gray[2]
+                      : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colors.gray[8]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colors.gray[8]
                 }}
               >
                 <IconDownload className="h-5 w-5 text-gray-800" />
@@ -443,15 +433,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.gray[2]
-                        : theme.colors.gray[1]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colorScheme === 'dark'
+                      ? theme.colors.gray[2]
+                      : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colors.red[6]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colors.red[6]
                 }}
               >
                 <IconTrash className="h-5 w-5 text-red-600" />
@@ -488,7 +478,8 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${response.statusText || response.status
+        `Error fetching course metadata: ${
+          response.statusText || response.status
         }`,
       )
     }

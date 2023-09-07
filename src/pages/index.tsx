@@ -46,6 +46,18 @@ const Home: NextPage = () => {
             {/* </Link> */}
           </h1>
 
+          <Title
+            order={3}
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            HELLO THERE HEADING
+          </Title>
+          <Text
+            className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+          >
+            Hello there paragraph.
+          </Text>
+
           <Container
             size="lg"
             py="l"
@@ -131,7 +143,7 @@ export default Home
 
 import { createStyles, SimpleGrid, Container } from '@mantine/core'
 import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
-import { useRouter } from 'next/router'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 
 const mockdata = [
   {
@@ -335,9 +347,7 @@ function CourseCard() {
             <Card.Section className="pb-2 pl-4 pr-4 pt-2">
               <Group position="apart" mt="md" mb="xs">
                 <Text
-                  style={{ fontFamily: 'Montserrat' }}
-                  size="xl"
-                  weight={800}
+                  className={`${montserrat_heading.variable} font-montserratHeading`}
                 >
                   {card.title}
                 </Text>
