@@ -22,7 +22,7 @@ import {
   useState,
 } from 'react'
 import toast from 'react-hot-toast'
-import { Text } from '@mantine/core'
+import { Text, Title } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -70,6 +70,7 @@ import { fetchContexts } from '~/pages/api/getContexts'
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { OpenAIModelID, OpenAIModels } from '~/types/openai'
+import axios from 'axios'
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
@@ -126,7 +127,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const onMessageReceived = async (conversation: Conversation) => {
-    // Kastan here -- Save the message to a separate database here
+    // Log conversation to Supabase
     try {
       const response = await fetch(`/api/UIUC-api/logConversationToSupabase`, {
         method: 'POST',
@@ -139,9 +140,57 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }),
       })
       const data = await response.json()
-      return data.success
+      // return data.success
     } catch (error) {
       console.error('Error setting course data:', error)
+      // return false
+    }
+
+    // TODO: DELETE ME AFTER PR72 on the backend IS MERGED. Update the one below
+    try {
+      // const API_URL = 'https://flask-production-751b.up.railway.app'
+      // const API_URL_PREVIEW = 'https://flask-ai-ta-backend-pr-72.up.railway.app'
+      const API_URL_PREVIEW = 'https://smee.io/zx6ghuGrFuIIUHSs'
+
+      const response = await fetch(`${API_URL_PREVIEW}/onResponseCompletion`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          course_name: getCurrentPageName(),
+          conversation: conversation,
+        }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.message)
+      // return data.success
+    } catch (error) {
+      console.error('Error in chat.tsx running onResponseCompletion():', error)
+      // return false
+    }
+
+    // Log conversation to our Flask Backend (BOTH ASMITA local && the PR72)
+    try {
+      // TODO: Change me when pr72 is merged
+      // const API_URL = 'https://flask-production-751b.up.railway.app'
+      const API_URL_PREVIEW = 'https://flask-ai-ta-backend-pr-72.up.railway.app'
+
+      const response = await fetch(`${API_URL_PREVIEW}/onResponseCompletion`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          course_name: getCurrentPageName(),
+          conversation: conversation,
+        }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.message)
+      return data.success
+    } catch (error) {
+      console.error('Error in chat.tsx running onResponseCompletion():', error)
       return false
     }
   }
@@ -470,11 +519,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const statements = courseMetadata?.course_intro_message
     ? courseMetadata.course_intro_message.split('\n')
     : [
-        'Make a bullet point list of key takeaways of the course.',
-        'What is [your favorite topic] and why is it worth learning about?',
-        'How can I effectively prepare for the upcoming exam?',
-        'How many assignments in the course?',
-      ]
+      'Make a bullet point list of key takeaways of the course.',
+      'What is [your favorite topic] and why is it worth learning about?',
+      'How can I effectively prepare for the upcoming exam?',
+      'How many assignments in the course?',
+    ]
 
   // Add this function to create dividers with statements
   const renderDividers = () => {
@@ -497,38 +546,37 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       {!(apiKey || serverSideApiKeyIsSet) ? (
         <div className="mx-auto flex h-full w-[300px] flex-col justify-center space-y-6 sm:w-[600px]">
           <div className="text-center text-4xl font-bold text-black dark:text-white">
-            Welcome to Chatbot UI
+            UIUC Course AI
           </div>
-          <div className="text-center text-lg text-black dark:text-white">
-            <div className="mb-8">{`Chatbot UI is an open source clone of OpenAI's ChatGPT UI.`}</div>
-            <div className="mb-2 font-bold">
-              Important: Chatbot UI is 100% unaffiliated with OpenAI.
-            </div>
-          </div>
+          <div className="text-center text-lg text-black dark:text-white"></div>
           <div className="text-center text-gray-500 dark:text-gray-400">
-            <div className="mb-2">
-              Chatbot UI allows you to plug in your API key to use this UI with
-              their API.
-            </div>
-            <div className="mb-2">
-              It is <span className="italic">only</span> used to communicate
-              with their API.
-            </div>
-            <div className="mb-2">
-              {t(
-                'Please set your OpenAI API key in the bottom left of the sidebar.',
-              )}
-            </div>
-            <div>
-              {t("If you don't have an OpenAI API key, you can get one here: ")}
-              <a
-                href="https://platform.openai.com/account/api-keys"
-                target="_blank"
-                rel="noreferrer"
-                className="text-blue-500 hover:underline"
-              >
-                openai.com
-              </a>
+            <div className="rounded border border-2 border-solid border-red-500 p-4">
+              <Title>⚠️</Title>
+              <div className="mb-2">
+                <Title
+                  // className={montserrat.className}
+                  variant="gradient"
+                  gradient={{ from: 'red', to: 'white', deg: 50 }}
+                  order={3}
+                  p="xl"
+                >
+                  Please set your OpenAI API key in the bottom left of the
+                  sidebar.
+                </Title>
+              </div>
+              <div>
+                <Text size={'md'}>
+                  If you don&apos;t have an OpenAI API key, you can get one here:{' '}
+                  <a
+                    href="https://platform.openai.com/account/api-keys"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
+                    openai.com
+                  </a>
+                </Text>
+              </div>
             </div>
           </div>
         </div>

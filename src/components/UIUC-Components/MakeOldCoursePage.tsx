@@ -293,6 +293,7 @@ const MakeOldCoursePage = ({
             </div>
           </Flex>
         </div>
+        <GlobalFooter />
       </main>
     </>
   )
@@ -324,6 +325,7 @@ import { extractEmailsFromClerk } from './clerkHelpers'
 import Navbar from '~/components/UIUC-Components/Navbar'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
 import { notifications } from '@mantine/notifications'
+import GlobalFooter from './GlobalFooter'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()

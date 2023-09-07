@@ -24,11 +24,16 @@ const Maintenance = ({}: {
             UIUC.chat is down for maintenance
           </Title>
           <Text size="lg">
-            Motivation: after enabling web scraping for our users the large
-            volume of data filled up our vector, SQL and KV databases. We are
-            refactoring our data schemas for search efficiency, and scaling our
-            backend servers. We expect to be back online in a day or two. Sorry
-            for the long delay, we are coding as fast as we can.
+            Motivation: Things to explosive product growth, accompanied by the
+            start of the school year with blown pas our OpenAI/GPT-4 maximum
+            budget and most core functionality is on pause while that is
+            resolved. We are implementing two solutions: (1) bring your own
+            OpenAI API keys. You can just enter your own to pay for your usage.
+            We will still cover all other server and database costs because
+            OpenAI is by far the most expensive. And (2) implementing better
+            caching of responses, so simple and repeated queries are free for us
+            to run. But cache invalidation is inherently complex and will take
+            more time to implement properly.
           </Text>
         </div>
         <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 "></div>

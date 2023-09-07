@@ -1,12 +1,8 @@
+import Image from 'next/image'
 import { type NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
 import React, { useState } from 'react'
-
-// import { Montserrat, Lora, Audiowide } from 'next/font/google'
-// import { signIn, signOut, useSession } from "next-auth/react";
-
-// import { UserButton, SignIn } from "@clerk/nextjs";
 
 import {
   // MantineProvider,
@@ -27,14 +23,7 @@ import SignInPage from '~/pages/sign-in/[[...index]]'
 // import { api } from '~/utils/api'
 import Header from '~/components/UIUC-Components/GlobalHeader'
 
-
-
 const Home: NextPage = () => {
-  // const hello = api.example.hello.useQuery({ text: "from tRPC" });
-
-  // const user = userUser();
-  // const router = useRouter();
-
 
   // ...
 
@@ -49,7 +38,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {/* "My user" login button */}
-      <Header />
+      <GlobalHeader />
       {/* <header style={{ backgroundColor: '#2e026d', display: 'flex', justifyContent: 'flex-end', padding: '1em'}}>
 				<UserButton
           afterSignOutUrl="/"
@@ -57,7 +46,7 @@ const Home: NextPage = () => {
         
         
 
-			</header> */}
+			</GlobalHeader> */}
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
         <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 ">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
@@ -109,17 +98,7 @@ const Home: NextPage = () => {
 
 
           {/* Main courses */}
-          <div className="flex flex-col items-center gap-2">
-            {/* <p className="text-2xl text-white">
-              {hello.data ? hello.data.greeting : "Loading tRPC query..."}
-            </p> */}
-            {/* <AuthShowcase /> */}
-            <CourseCard />
-            <MoreCoursesSoonCard />
-
-            {/* <Text variant="gradient" size="xl" >ECE 120</Text>
-            <Text STYLE="font-family: 'Audiowide'" variant="gradient" gradient={{ from: 'indigo', to: 'cyan', deg: 45 }} size="xl" weight="800">ECE 120</Text> */}
-          </div>
+          <CourseCard />
 
           <h4 className="font-extrabold tracking-tight text-white sm:text-[3rem]">
             <Link href="/">
@@ -153,6 +132,7 @@ const Home: NextPage = () => {
         {/* <script async src="https://cse.google.com/cse.js?cx=2616b82a523e047b2">
         </script>
         <div className="gcse-search"></div> */}
+        <GlobalFooter />
       </main>
     </>
   )
@@ -273,152 +253,136 @@ export function FeaturesCards() {
 
 // TODO: USE BETTER CARDS! https://ui.mantine.dev/category/article-cards
 function CourseCard() {
+  const cards = [
+    {
+      course_slug: 'ece120',
+      imageSrc: '/media/hero_courses_banners/ECE_logo.jpg',
+      title: 'Electrical & Computer Engineering, ECE 120',
+      badge: 'ECE @ UIUC',
+      description:
+        'Prof. Volodymyr (Vlad) Kindratenko, Director of the Center for Artificial Intelligence Innovation at NCSA, in Fall 2023. We also have <a href="/ECE220FA23/gpt4">ECE 220</a> & <a href="/ECE408FA23/gpt4">ECE 408</a>.',
+    },
+    {
+      course_slug: 'NCSA',
+      imageSrc: '/media/hero_courses_banners/NCSA_more_than_imagine.jpg',
+      title: 'NCSA',
+      badge: 'NCSA Docs',
+      description:
+        "Using all of NCSA's public information, get answers for detailed questions about the organization.",
+    },
+    {
+      course_slug: 'NCSADelta',
+      imageSrc: '/media/hero_courses_banners/delta_hero.jpg',
+      title: 'NCSA Delta Documentation',
+      badge: 'NCSA Docs',
+      description:
+        "Using all of Delta's documentation, get detailed examples, advice and information about how to use the Delta supercomputer.",
+    },
+    {
+      course_slug: 'clowder-docs',
+      imageSrc: '/media/hero_courses_banners/clowder_logo.png',
+      title: 'Clowder docs',
+      badge: 'NCSA Docs',
+      description:
+        "Using all of Clowder's documentation, this bot will answer questions and point you to the right docs and YouTube videos about Clowder.",
+    },
+    {
+      course_slug: 'langchain-docs',
+      // imageSrc: "https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fit=contain",
+      title: 'Langchain',
+      badge: 'Coding',
+      description:
+        "Using all of Langchain's documentation, this bot will write excellent LangChain code. Just ask it to program whatever you'd like.",
+    },
+    {
+      course_slug: 'ansible',
+      // imageSrc: "https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fit=contain",
+      title: 'Ansible',
+      badge: 'Coding',
+      description:
+        "Using all of Ansible's documentation, this bot will write excellent Ansible scripts. Just ask it to program whatever you'd like.",
+    },
+    // Add more cards here
+  ]
+
   return (
-    <div className="box-sizing: border-box; border: 100px solid #ccc;">
-      <Link href="/ece120">
-        <Card
-          bg="#0E1116"
-          style={{ maxWidth: '100%', position: 'relative', minHeight: '100%' }}
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
+    <>
+      {cards.map((card) => (
+        <div
+          key={card.course_slug}
+          className="box-sizing: border-box; border: 100px solid #ccc;"
         >
-          <Card.Section>
-            {/* &auto=format&w=720&q=80&height=160&fit=contain */}
-            <Image
-              src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fit=contain"
-              width={720}
-              height={100}
-              quality={80}
-              alt="Norway"
-              style={{
-                display: 'block',
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                minWidth: '50px',
-                maxWidth: '100%',
-                minHeight: '50px',
-                maxHeight: '150px',
-              }}
-            />
-          </Card.Section>
+          <Card
+            bg="#0E1116"
+            style={{
+              width: '80vw',
+              height: 'auto',
+            }}
+            shadow="sm"
+            padding="lg"
+            radius="md"
+            withBorder
+          >
+            {card.imageSrc && (
+              // <Card.Section style={{ height: 'auto' }}>
+              <Card.Section style={{ height: '15vw' }}>
+                <Link href={`/${card.course_slug}/gpt4`}>
+                  <Image
+                    src={card.imageSrc}
+                    width={720}
+                    height={100}
+                    quality={80}
+                    alt={`A photo representing ${card.title}`}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                </Link>
+              </Card.Section>
+            )}
+            <Card.Section className="pb-2 pl-4 pr-4 pt-2">
+              <Group position="apart" mt="md" mb="xs">
+                <Text
+                  style={{ fontFamily: 'Montserrat' }}
+                  size="xl"
+                  weight={800}
+                >
+                  {card.title}
+                </Text>
+                <Badge size="xl" color="pink" variant="light">
+                  {card.badge}
+                </Badge>
+              </Group>
 
-          <Group position="apart" mt="md" mb="xs">
-            <Text style={{ fontFamily: 'Montserrat' }} size="xl" weight={800}>
-              ECE 120
-            </Text>
-            <Badge size="xl" color="pink" variant="light">
-              ECE
-            </Badge>
-          </Group>
+              <Text size="sm" color="dimmed">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: card.description.replace(
+                      /<a/g,
+                      '<a style="color: lightblue; text-decoration: underline;"',
+                    ),
+                  }}
+                />
+              </Text>
 
-          <Text size="sm" color="dimmed">
-            Taught by{' '}
-            <Text style={{ display: 'inline' }} color="blue">
-              Prof. Volodymyr (Vlad) Kindratenko
-            </Text>
-            , Director of the Center for Artificial Intelligence Innovation at
-            NCSA, in{' '}
-            <Text style={{ display: 'inline' }} color="blue">
-              Spring 2022
-            </Text>
-            .
-          </Text>
-
-          <Button variant="light" color="blue" fullWidth mt="md" radius="md">
-            View
-          </Button>
-        </Card>
-      </Link>
-    </div>
+              <Link href={`/${card.course_slug}/gpt4`}>
+                <Button
+                  variant="light"
+                  color="blue"
+                  fullWidth
+                  mt="md"
+                  radius="md"
+                >
+                  View
+                </Button>
+              </Link>
+            </Card.Section>
+          </Card>
+        </div>
+      ))}
+    </>
   )
 }
-
-function MoreCoursesSoonCard() {
-  return (
-    <div className="box-sizing: border-box; border: 100px solid #ccc;">
-      <Link href="/ece120">
-        <Card
-          bg="#0E1116"
-          style={{ maxWidth: '100%', minHeight: '100%' }}
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          withBorder
-        >
-          <Card.Section>
-            <Image
-              src="https://github.com/KastanDay/learning-t3/blob/dd33e38bc801f4f6bbfc3b3a826a09d805f9bf65/media/Toy_University_students_walking_walter_wick_StableDiffusion-xl-beta-v2-2-2.png?raw=true"
-              width={720}
-              height={100}
-              quality={80}
-              alt="Students walking to school"
-              style={{
-                display: 'block',
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                minWidth: '50px',
-                maxWidth: '100%',
-                minHeight: '50px',
-                maxHeight: '150px',
-              }}
-            />
-          </Card.Section>
-
-          <Group position="apart" mt="md" mb="xs">
-            <Text style={{ fontFamily: 'Montserrat' }} size="xl" weight={800}>
-              More courses coming soon :)
-            </Text>
-            <Badge size="xl" color="pink" variant="light">
-              ECE
-            </Badge>
-          </Group>
-
-          <Text size="sm" color="dimmed">
-            Taught by{' '}
-            <Text style={{ display: 'inline' }} color="blue">
-              Prof. Volodymyr (Vlad) Kindratenko
-            </Text>
-            , Director of the Center for Artificial Intelligence Innovation at
-            NCSA, in{' '}
-            <Text style={{ display: 'inline' }} color="blue">
-              Spring 2022
-            </Text>
-            .
-          </Text>
-
-          <Button variant="light" color="blue" fullWidth mt="md" radius="md">
-            View
-          </Button>
-        </Card>
-      </Link>
-    </div>
-  )
-}
-
-// const AuthShowcase: React.FC = () => {
-//   const { data: sessionData } = useSession();
-
-//   const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-//     undefined, // no input
-//     { enabled: sessionData?.user !== undefined },
-//   );
-
-//   return (
-//     <div className="flex flex-col items-center justify-center gap-4">
-//       <p className="text-center text-2xl text-white">
-//         {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
-//         {secretMessage && <span> - {secretMessage}</span>}
-//       </p>
-//       <button
-//         className="rounded-full bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
-//         onClick={sessionData ? () => void signOut() : () => void signIn()}
-//       >
-//         {sessionData ? "Sign out" : "Sign in"}
-//       </button>
-//     </div>
-//   );
-// };
