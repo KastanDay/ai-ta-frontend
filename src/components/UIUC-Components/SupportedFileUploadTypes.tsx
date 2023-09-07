@@ -30,8 +30,16 @@ import {
   // Tooltip,
 } from '@mantine/core'
 // const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
-const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
-const montserrat_non_bold = Montserrat({ weight: '500', subsets: ['latin'] })
+const montserrat = Montserrat({
+  weight: '700',
+  subsets: ['latin'],
+  display: 'swap',
+})
+const montserrat_non_bold = Montserrat({
+  weight: '500',
+  subsets: ['latin'],
+  display: 'swap',
+})
 // import Link from 'next/link'
 import React from 'react'
 

@@ -15,6 +15,7 @@ import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelper
 const montserrat = Montserrat({
   weight: '700',
   subsets: ['latin'],
+  display: 'swap',
 })
 
 const CourseMain: NextPage = () => {

@@ -27,6 +27,7 @@ import { callSetCourseMetadata } from '~/utils/apiUtils'
 const montserrat = Montserrat({
   weight: '700',
   subsets: ['latin'],
+  display: 'swap',
 })
 
 const EditCourseCard = ({

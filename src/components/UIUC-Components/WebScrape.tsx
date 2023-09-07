@@ -18,6 +18,7 @@ interface WebScrapeProps {
 const montserrat = Montserrat({
   weight: '700',
   subsets: ['latin'],
+  display: 'swap',
 })
 
 const validateUrl = (url: string) => {

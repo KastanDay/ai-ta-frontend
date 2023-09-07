@@ -21,7 +21,11 @@ import {
   Title,
   Flex,
 } from '@mantine/core'
-const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
+const montserrat = Montserrat({
+  weight: '700',
+  subsets: ['latin'],
+  display: 'swap',
+})
 // const rubikpuddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 
 export const CannotEditCourse = ({ course_name }: { course_name: string }) => {
