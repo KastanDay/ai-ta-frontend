@@ -76,14 +76,10 @@ import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
 import Navbar from '../UIUC-Components/Navbar'
 import TopBarInChat from '../Chatbar/TopBarInChat'
-import axios from 'axios'
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
-
   const clerk_obj = useUser()
-
-  // how to get the current route inside ANY component
   const router = useRouter()
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
   const getCurrentPageName = () => {

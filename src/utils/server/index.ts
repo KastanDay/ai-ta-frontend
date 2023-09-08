@@ -47,9 +47,9 @@ export const OpenAIStream = async (
       process.env.NEXT_PUBLIC_SIGNING_KEY as string,
     )
     apiKey = decryptedText
-    console.log("Decrypted api key for openai chat: ", apiKey)
+    console.log('Decrypted api key for openai chat: ', apiKey)
   } else {
-    console.log("Using client key for openai chat: ", apiKey)
+    console.log('Using client key for openai chat: ', apiKey)
   }
 
   let url = `${OPENAI_API_HOST}/v1/chat/completions`

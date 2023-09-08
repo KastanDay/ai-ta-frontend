@@ -46,6 +46,7 @@ import { kv } from '@vercel/kv'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
+import { log } from 'next-axiom'
 
 interface Props {
   serverSideApiKeyIsSet: boolean
@@ -192,23 +193,17 @@ const Home = ({
   }, [clerk_user_outer.isLoaded, isCourseMetadataLoading])
   // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
 
-  const [data, setData] = useState(null) // using the original version.
-  const [error, setError] = useState<unknown>(null) // Update the type of the error state variable
-  const [hasError, setHasError] = useState(false)
-
-  // Add a new state variable to track whether models have been fetched
-  const [modelsFetched, setModelsFetched] = useState(false)
-
-  // Update the useEffect hook to fetch models only if they haven't been fetched before
-  // Check if serverSideApiKeyIsSet is true then use kv to fetch the key
+  // ---- Set OpenAI API Key (either course-wide or from storage) ----
   useEffect(() => {
-    if (hasError) return // Add this line to prevent fetching models multiple times when an error occurs
+    if (!course_metadata) return
     if (!apiKey && !serverSideApiKeyIsSet) return
-    if (modelsFetched) return // Add this line to prevent fetching models multiple times
     let key = ''
+
     if (serverSideApiKeyIsSet) {
       if (course_metadata && course_metadata.openai_api_key) {
         console.log('Using key from course_metadata')
+        // TODO: add logging for axiom, after merging with main (to get the axiom code)
+        // log.debug('Using Course-Wide OpenAI API Key', { course_metadata: { course_metadata } })
         key = course_metadata.openai_api_key
       } else {
         console.error('No openai_api_key found in course_metadata')
@@ -218,36 +213,32 @@ const Home = ({
       key = apiKey
     }
 
-    const fetchData = async () => {
+    const setOpenaiModel = async () => {
       try {
+        if (!apiKey && !serverSideApiKeyIsSet) return
         const data = await getModels({ key: key })
         dispatch({ field: 'models', value: data })
-        setModelsFetched(true) // Set modelsFetched to true after fetching models
+        // setModelsFetched(true) // Set modelsFetched to true after fetching models
       } catch (error) {
         dispatch({ field: 'modelError', value: getModelsError(error) })
-        setHasError(true) // Set hasError to true when an error occurs
+        // setHasError(true) // Set hasError to true when an error occurs
       }
     }
 
-    fetchData()
-  }, [
-    course_metadata,
-    apiKey,
-    serverSideApiKeyIsSet,
-    getModels,
-    getModelsError,
-    dispatch,
-    modelsFetched,
-    hasError,
-  ]) // Add modelsFetched to the dependency array
+    setOpenaiModel()
+  }, [course_metadata, apiKey])
 
-  useEffect(() => {
-    if (data) dispatch({ field: 'models', value: data })
-  }, [data, dispatch])
+  // I THINK WE CAN DELETE THIS BELOW?? I already commented it out.
+  // const [data, setData] = useState(null) // using the original version.
+  // const [error, setError] = useState<unknown>(null) // Update the type of the error state variable
 
-  useEffect(() => {
-    dispatch({ field: 'modelError', value: getModelsError(error) })
-  }, [dispatch, error, getModelsError])
+  // useEffect(() => {
+  //   if (data) dispatch({ field: 'models', value: data })
+  // }, [data, dispatch])
+
+  // useEffect(() => {
+  //   dispatch({ field: 'modelError', value: getModelsError(error) })
+  // }, [dispatch, error, getModelsError])
 
   // FETCH MODELS ----------------------------------------------
 
@@ -539,14 +530,11 @@ export const getServerSideProps: GetServerSideProps = async (
   context: GetServerSidePropsContext,
 ) => {
   console.log('ServerSideProps: ', context.params)
-  const { locale } = context
-
   const course_name = context.params?.course_name as string
-
-  let openai_api_key = null
+  const { locale } = context
   let serverSideApiKeyIsSet = false
 
-  // Check course authed users -- the JSON.parse is CRUCIAL to avoid bugs with the stringified JSON 😭
+  // Check course authed users
   try {
     const course_metadata = (await kv.hget(
       'course_metadatas',
@@ -554,26 +542,18 @@ export const getServerSideProps: GetServerSideProps = async (
     )) as CourseMetadata
     console.log('in api getCourseMetadata: course_metadata', course_metadata)
 
-    if (course_metadata == null) {
-      console.log(
-        'WARNING: Course metadata not found in KV database (its null)',
+    if (!course_metadata) {
+      // TODO: add axiom warning (could happen when no course exists. )
+      console.warn(
+        'WARNING: Course metadata not found in KV database (its null, could happen when no course exists and ppl go directly to /metadata or /gpt4)',
       )
-    }
-
-    if (course_metadata && course_metadata.openai_api_key) {
-      openai_api_key = course_metadata.openai_api_key
+    } else if (course_metadata && course_metadata.openai_api_key) {
       serverSideApiKeyIsSet = true
     }
 
-    // Only parse is_private if it exists
-    if (course_metadata.hasOwnProperty('is_private')) {
-      course_metadata.is_private = JSON.parse(
-        course_metadata.is_private as unknown as string,
-      )
-    }
-    console.log('home.tsx -- Course metadata in serverside: ', course_metadata)
+    console.log('home.tsx -- Course metadata in server-side: ', course_metadata)
   } catch (error) {
-    console.error('Error occured while fetching courseMetadata', error)
+    console.error('Error occurred while fetching courseMetadata', error)
   }
   const defaultModelId =
     (process.env.DEFAULT_MODEL &&
@@ -595,16 +575,7 @@ export const getServerSideProps: GetServerSideProps = async (
   }
 
   // If openai_api_key is not present in course_metadata, use the one from process.env - fallback needed for models api.
-  if (!openai_api_key && process.env.OPENAI_API_KEY) {
-    openai_api_key = process.env.OPENAI_API_KEY
-    serverSideApiKeyIsSet = false
-  }
-  // TODO: figure out how to set env vars from the front-end.... or something similar.
   console.log('Final serverSideApiKeyIsSet', serverSideApiKeyIsSet)
-  console.log(
-    'OpenAI apikey on server side (not client!!)',
-    process.env.OPENAI_API_KEY,
-  )
 
   return {
     props: {
