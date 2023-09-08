@@ -126,6 +126,7 @@ const Home = () => {
   // ---- Set OpenAI API Key (either course-wide or from storage) ----
   useEffect(() => {
     if (!course_metadata) return
+    const local_api_key = localStorage.getItem('apiKey')
     console.log('apiKey in effect:', apiKey)
     let key = ''
 
@@ -140,20 +141,21 @@ const Home = () => {
         field: 'serverSideApiKeyIsSet',
         value: true,
       })
-
+      dispatch({ field: 'apiKey', value: '' })
       // TODO: add logging for axiom, after merging with main (to get the axiom code)
       // log.debug('Using Course-Wide OpenAI API Key', { course_metadata: { course_metadata } })
-    } else if (apiKey) {
-      if (apiKey.startsWith('sk-')) {
+    } else if (local_api_key) {
+      if (local_api_key.startsWith('sk-')) {
         console.log(
           'No openai_api_key found in course_metadata, but found one in client localStorage',
         )
-        key = apiKey
+        key = local_api_key
         // setServerSideApiKeyIsSet(true)
         dispatch({
           field: 'serverSideApiKeyIsSet',
           value: true,
         })
+        dispatch({ field: 'apiKey', value: local_api_key })
       } else {
         console.error(
           "you have entered an API key that does not start with 'sk-', which indicates it's invalid. Please enter just the key from OpenAI starting with 'sk-'. You entered",
