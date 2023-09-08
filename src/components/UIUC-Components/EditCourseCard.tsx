@@ -7,7 +7,6 @@ import {
   Checkbox,
   Title,
   type CheckboxProps,
-<<<<<<< HEAD
   Paper,
   Input,
   Button,
@@ -23,13 +22,7 @@ import {
   IconLock,
   IconQuestionMark,
 } from '@tabler/icons-react'
-=======
-  // Paper,
-  // Input,
-  // Button,
-} from '@mantine/core'
-import { IconLock } from '@tabler/icons-react'
->>>>>>> main
+
 import { type CourseMetadata } from '~/types/courseMetadata'
 import LargeDropzone from './LargeDropzone'
 import EmailChipsComponent from './EmailChipsComponent'
@@ -315,7 +308,6 @@ const EditCourseCard = ({
             <div className="card flex h-full flex-col justify-center">
               <div className="card-body">
                 <div className="form-control relative">
-<<<<<<< HEAD
                   {/* <Title
                     className={montserrat.className}
                     variant="gradient"
@@ -328,7 +320,8 @@ const EditCourseCard = ({
                   </Title> */}
 
                   <Title
-                    className={`label ${montserrat.className}`}
+                    // className={`label ${montserrat.className}`}
+                    className={`label ${montserrat_heading.variable} font-montserratHeading`}
                     variant="gradient"
                     gradient={{ from: 'gold', to: 'white', deg: 170 }}
                     order={3}
@@ -512,7 +505,7 @@ const EditCourseCard = ({
                 />
 
                 <Title
-                  className={`label ${montserrat.className} p-0 pl-1 pt-2`}
+                  className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
                   variant="gradient"
                   gradient={{ from: 'gold', to: 'white', deg: 170 }}
                   order={3}
@@ -520,12 +513,9 @@ const EditCourseCard = ({
                   Branding{' '}
                 </Title>
                 <div className="form-control relative">
-                  <label className={`label ${montserrat.className}`}>
-=======
                   <label
                     className={`label ${montserrat_heading.variable} font-montserratHeading`}
                   >
->>>>>>> main
                     <span className="label-text text-lg text-neutral-200">
                       Set a greeting
                     </span>
@@ -699,11 +689,7 @@ const PrivateOrPublicCourse = ({
     <>
       <Divider />
       <Title
-<<<<<<< HEAD
-        className={`label ${montserrat.className}`}
-=======
         className={`${montserrat_heading.variable} font-montserratHeading`}
->>>>>>> main
         variant="gradient"
         gradient={{ from: 'gold', to: 'white', deg: 170 }}
         order={3}
@@ -720,11 +706,7 @@ const PrivateOrPublicCourse = ({
           wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
-<<<<<<< HEAD
-          className={`${montserrat.className}`}
-=======
           className={`${montserrat_heading.variable} font-montserratHeading font-bold`}
->>>>>>> main
           // style={{ marginTop: '4rem' }}
           size="lg"
           // bg='#020307'

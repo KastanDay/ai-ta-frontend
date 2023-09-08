@@ -255,7 +255,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           messages: updatedConversation.messages,
           key:
             courseMetadata?.openai_api_key &&
-              courseMetadata?.openai_api_key != ''
+            courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
           prompt: updatedConversation.prompt,
@@ -530,11 +530,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const statements = courseMetadata?.course_intro_message
     ? courseMetadata.course_intro_message.split('\n')
     : [
-      'Make a bullet point list of key takeaways of the course.',
-      'What is [your favorite topic] and why is it worth learning about?',
-      'How can I effectively prepare for the upcoming exam?',
-      'How many assignments in the course?',
-    ]
+        'Make a bullet point list of key takeaways of the course.',
+        'What is [your favorite topic] and why is it worth learning about?',
+        'How can I effectively prepare for the upcoming exam?',
+        'How many assignments in the course?',
+      ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
@@ -609,8 +609,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                     </Text>
                     <Text size={'md'} className="pt-10 text-gray-400">
                       <IconLock className="mr-2 inline-block" />
-                      This key will live securely encrypted in your browser&apos;s
-                      cache. It&apos;s all client-side so our servers never see it.
+                      This key will live securely encrypted in your
+                      browser&apos;s cache. It&apos;s all client-side so our
+                      servers never see it.
                     </Text>
                     <Text size={'md'} className="pt-10 text-gray-400">
                       <IconBrain className="mr-2 inline-block" />
