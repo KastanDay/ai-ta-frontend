@@ -2,11 +2,13 @@
 import { kv } from '@vercel/kv'
 import { NextResponse } from 'next/server'
 import { CourseMetadata } from '~/types/courseMetadata'
+import { log } from 'next-axiom'
 
 export const runtime = 'edge'
 
 const getCourseMetadata = async (req: any, res: any) => {
   const course_name = req.nextUrl.searchParams.get('course_name')
+  log.debug('getCourseMetadata() request', { course_name: course_name })
   try {
     const course_metadata = (await kv.hget(
       'course_metadatas',
@@ -28,9 +30,13 @@ const getCourseMetadata = async (req: any, res: any) => {
         course_metadata.is_private as unknown as string,
       )
     }
+    log.debug('getCourseMetadata() success', {
+      course_metadata: course_metadata,
+    })
     return NextResponse.json({ course_metadata: course_metadata })
   } catch (error) {
-    console.log('Error occured while fetching courseMetadata', error)
+    console.log('Error occurred while fetching courseMetadata', error)
+    log.error('Error occurred while fetching courseMetadata', { error: error })
     return NextResponse.json({ success: false, error: error })
   }
 }
