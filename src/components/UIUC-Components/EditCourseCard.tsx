@@ -742,7 +742,7 @@ const PrivateOrPublicCourse = ({
               >
                 strict security policy
               </a> on protecting your data.
-              To add Admin users with full edit permission, ideal for TA's and collaborators, please just shoot me an email kvday2@illinois.edu.
+              To add Admin users with full edit permission, ideal for TA&apos;s and collaborators, please just shoot me an email kvday2@illinois.edu.
             </Text>
           </Accordion.Panel>
         </Accordion.Item>
