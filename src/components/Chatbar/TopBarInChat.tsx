@@ -18,7 +18,7 @@ export default function TopBarInChat({
   handleSettings,
   showSettings,
   selectedConversation,
-  redirectToMaterialsPage
+  redirectToMaterialsPage,
 }: {
   handleSettings: () => void
   showSettings: boolean

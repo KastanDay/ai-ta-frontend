@@ -5,6 +5,7 @@ import {
   type CourseMetadataOptionalForUpsert,
 } from '~/types/courseMetadata'
 import { type NextRequest, NextResponse } from 'next/server'
+import { encrypt } from '~/utils/crypto'
 
 export const runtime = 'edge'
 
@@ -40,6 +41,20 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     if (!courseMetadata.is_private) {
       courseMetadata.is_private = false
       console.log('is_private field was empty. Set to false.')
+    }
+
+    // Check if openai_api_key is present and if it is a plain string
+    if (
+      courseMetadata.openai_api_key &&
+      courseMetadata.openai_api_key.startsWith('sk-')
+    ) {
+      // Encrypt the openai_api_key
+      console.log('Encrypting api key')
+      courseMetadata.openai_api_key = await encrypt(
+        courseMetadata.openai_api_key,
+        process.env.NEXT_PUBLIC_SIGNING_KEY as string,
+      )
+      console.log('Signed api key: ', courseMetadata.openai_api_key)
     }
 
     const existing_metadata: CourseMetadata | object =

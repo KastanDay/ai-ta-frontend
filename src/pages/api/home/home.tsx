@@ -45,11 +45,10 @@ import { type CourseMetadata } from '~/types/courseMetadata'
 import { kv } from '@vercel/kv'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
-import { router } from '@trpc/server'
 import { useRouter } from 'next/router'
 
 interface Props {
-  // serverSideApiKeyIsSet: boolean
+  serverSideApiKeyIsSet: boolean
   serverSidePluginKeysSet: boolean
   defaultModelId: OpenAIModelID
 }
@@ -70,7 +69,7 @@ const Home = ({
 
   const {
     state: {
-      // apiKey,
+      apiKey,
       lightMode,
       folders,
       conversations,
@@ -104,6 +103,60 @@ const Home = ({
     }
     courseMetadata()
   }, [course_name])
+
+  useEffect(() => {
+    if (course_metadata !== null) {
+      const apiKey = localStorage.getItem('apiKey')
+
+      // 1. Try to use global env key from Vercel .env
+      // 2. Try to use course-specific key from KV store
+      // 3. No key set; the user will have to enter one
+
+      // if (process.env.OPENAI_API_KEY) {
+      //   // use global env key
+      //   // openai_api_key = process.env.OPENAI_API_KEY
+      //   serverSideApiKeyIsSet = true
+      //   console.log('👉👉👉👉Using global env key...')
+      // } else if (course_metadata?.openai_api_key) {
+      //   // use course-specific key
+      //   process.env.OPENAI_API_KEY = course_metadata.openai_api_key
+      //   serverSideApiKeyIsSet = true
+      //   console.log('👉👉👉👉👉👉Using course-wide API key: ', process.env.OPENAI_API_KEY)
+      // } else {
+      //   // user have to enter one
+      //   console.log('👉👉👉👉👉👉Using NO API KEY AT ALL: ', process.env.OPENAI_API_KEY)
+      //   process.env.OPENAI_API_KEY = ''
+      // }
+
+      // If Course-Wide OpenAI key is set, use it
+      if (
+        course_metadata.openai_api_key &&
+        course_metadata.openai_api_key !== ''
+      ) {
+        dispatch({ field: 'apiKey', value: '' })
+        localStorage.removeItem('apiKey')
+      } else if (apiKey) {
+        // NO course wide, yes local key.
+        if (!apiKey.startsWith('sk-')) {
+          alert(
+            `Error: OpenAI API keys must start with "sk-", but yours is ${apiKey}`,
+          )
+        }
+        dispatch({ field: 'apiKey', value: apiKey })
+      } else {
+        // TODO: Which case is this?
+        // Might have to do this on the 'chat.ts' where we invoke the API.
+      }
+
+      const pluginKeys = localStorage.getItem('pluginKeys')
+      if (serverSidePluginKeysSet) {
+        dispatch({ field: 'pluginKeys', value: [] })
+        localStorage.removeItem('pluginKeys')
+      } else if (pluginKeys) {
+        dispatch({ field: 'pluginKeys', value: pluginKeys })
+      }
+    }
+  }, [course_metadata, serverSidePluginKeysSet, dispatch])
 
   // Check auth & redirect
   const clerk_user_outer = useUser()
@@ -139,21 +192,54 @@ const Home = ({
   }, [clerk_user_outer.isLoaded, isCourseMetadataLoading])
   // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
 
+  const [data, setData] = useState(null) // using the original version.
+  const [error, setError] = useState<unknown>(null) // Update the type of the error state variable
+  const [hasError, setHasError] = useState(false)
 
-  // Fetch course metadata from the KV database
+  // Add a new state variable to track whether models have been fetched
+  const [modelsFetched, setModelsFetched] = useState(false)
+
+  // Update the useEffect hook to fetch models only if they haven't been fetched before
+  // Check if serverSideApiKeyIsSet is true then use kv to fetch the key
   useEffect(() => {
-    const fetchCourseMetadata = async () => {
+    if (hasError) return // Add this line to prevent fetching models multiple times when an error occurs
+    if (!apiKey && !serverSideApiKeyIsSet) return
+    if (modelsFetched) return // Add this line to prevent fetching models multiple times
+    let key = ''
+    if (serverSideApiKeyIsSet) {
+      if (course_metadata && course_metadata.openai_api_key) {
+        console.log('Using key from course_metadata')
+        key = course_metadata.openai_api_key
+      } else {
+        console.error('No openai_api_key found in course_metadata')
+      }
+    } else {
+      console.log('Using key present at client', apiKey)
+      key = apiKey
+    }
+
+    const fetchData = async () => {
       try {
-        const course_metadata = await kv.hget('course_metadatas', course_name) as CourseMetadata
-        console.log('Fetched course metadata: ', course_metadata)
-        dispatch({ field: 'serverSideApiKeyIsSet', value: true })
+        const data = await getModels({ key: key })
+        dispatch({ field: 'models', value: data })
+        setModelsFetched(true) // Set modelsFetched to true after fetching models
       } catch (error) {
-        console.error('Error occurred while fetching course metadata', error)
+        dispatch({ field: 'modelError', value: getModelsError(error) })
+        setHasError(true) // Set hasError to true when an error occurs
       }
     }
 
-    fetchCourseMetadata()
-  }, [course_name])
+    fetchData()
+  }, [
+    course_metadata,
+    apiKey,
+    serverSideApiKeyIsSet,
+    getModels,
+    getModelsError,
+    dispatch,
+    modelsFetched,
+    hasError,
+  ]) // Add modelsFetched to the dependency array
 
   useEffect(() => {
     if (data) dispatch({ field: 'models', value: data })
@@ -323,24 +409,6 @@ const Home = ({
       })
     }
 
-    const apiKey = localStorage.getItem('apiKey')
-
-    if (serverSideApiKeyIsSet) {
-      dispatch({ field: 'apiKey', value: '' })
-
-      localStorage.removeItem('apiKey')
-    } else if (apiKey) {
-      dispatch({ field: 'apiKey', value: apiKey })
-    }
-
-    const pluginKeys = localStorage.getItem('pluginKeys')
-    if (serverSidePluginKeysSet) {
-      dispatch({ field: 'pluginKeys', value: [] })
-      localStorage.removeItem('pluginKeys')
-    } else if (pluginKeys) {
-      dispatch({ field: 'pluginKeys', value: pluginKeys })
-    }
-
     if (window.innerWidth < 640) {
       dispatch({ field: 'showChatbar', value: false })
       dispatch({ field: 'showPromptbar', value: false })
@@ -475,8 +543,8 @@ export const getServerSideProps: GetServerSideProps = async (
 
   const course_name = context.params?.course_name as string
 
-  // let openai_api_key = null
-  // let serverSideApiKeyIsSet = false
+  let openai_api_key = null
+  let serverSideApiKeyIsSet = false
 
   // Check course authed users -- the JSON.parse is CRUCIAL to avoid bugs with the stringified JSON 😭
   try {
@@ -487,7 +555,14 @@ export const getServerSideProps: GetServerSideProps = async (
     console.log('in api getCourseMetadata: course_metadata', course_metadata)
 
     if (course_metadata == null) {
-      console.log('WARNING: Course metadata not found in KV database (its null)')
+      console.log(
+        'WARNING: Course metadata not found in KV database (its null)',
+      )
+    }
+
+    if (course_metadata && course_metadata.openai_api_key) {
+      openai_api_key = course_metadata.openai_api_key
+      serverSideApiKeyIsSet = true
     }
 
     // Only parse is_private if it exists
@@ -520,19 +595,22 @@ export const getServerSideProps: GetServerSideProps = async (
   }
 
   // If openai_api_key is not present in course_metadata, use the one from process.env - fallback needed for models api.
-  // if (!openai_api_key && process.env.OPENAI_API_KEY) {
-  //   openai_api_key = process.env.OPENAI_API_KEY
-  //   serverSideApiKeyIsSet = false
-  // }
+  if (!openai_api_key && process.env.OPENAI_API_KEY) {
+    openai_api_key = process.env.OPENAI_API_KEY
+    serverSideApiKeyIsSet = false
+  }
   // TODO: figure out how to set env vars from the front-end.... or something similar.
-  // console.log('Final serverSideApiKeyIsSet', serverSideApiKeyIsSet)
-  console.log('OpenAI apikey on server side (not client!!)', process.env.OPENAI_API_KEY)
+  console.log('Final serverSideApiKeyIsSet', serverSideApiKeyIsSet)
+  console.log(
+    'OpenAI apikey on server side (not client!!)',
+    process.env.OPENAI_API_KEY,
+  )
 
   return {
     props: {
       // ...buildClerkProps(context.req), // https://clerk.com/docs/nextjs/getserversideprops
       // TODO: here we can fetch the keys...
-      // serverSideApiKeyIsSet,
+      serverSideApiKeyIsSet,
       defaultModelId,
       serverSidePluginKeysSet,
       ...(await serverSideTranslations(locale ?? 'en', [

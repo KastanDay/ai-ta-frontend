@@ -156,7 +156,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
     // Log conversation to our Flask Backend
     try {
-
       // const API_URL = 'https://flask-production-751b.up.railway.app'
       const API_URL_PREVIEW = 'https://flask-ai-ta-backend-pr-72.up.railway.app'
 
@@ -230,7 +229,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         const chatBody: ChatBody = {
           model: updatedConversation.model,
           messages: updatedConversation.messages,
-          key: apiKey,
+          key:
+            courseMetadata?.openai_api_key &&
+            courseMetadata?.openai_api_key != ''
+              ? courseMetadata.openai_api_key
+              : apiKey,
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
           course_name: getCurrentPageName(),

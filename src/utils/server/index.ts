@@ -1,5 +1,5 @@
-import { Message, OpenAIChatMessage } from '@/types/chat'
-import { OpenAIModel } from '@/types/openai'
+import { Message, type OpenAIChatMessage } from '@/types/chat'
+import { type OpenAIModel } from '@/types/openai'
 
 import {
   AZURE_DEPLOYMENT_ID,
@@ -10,10 +10,11 @@ import {
 } from '../app/const'
 
 import {
-  ParsedEvent,
-  ReconnectInterval,
+  type ParsedEvent,
+  type ReconnectInterval,
   createParser,
 } from 'eventsource-parser'
+import { decrypt } from '../crypto'
 
 export class OpenAIError extends Error {
   type: string
@@ -39,6 +40,18 @@ export const OpenAIStream = async (
   key: string,
   messages: OpenAIChatMessage[],
 ) => {
+  let apiKey = key ? key : process.env.OPENAI_API_KEY
+  if (key && !key.startsWith('sk-')) {
+    const decryptedText = await decrypt(
+      key,
+      process.env.NEXT_PUBLIC_SIGNING_KEY as string,
+    )
+    apiKey = decryptedText
+    console.log("Decrypted api key for openai chat: ", apiKey)
+  } else {
+    console.log("Using client key for openai chat: ", apiKey)
+  }
+
   let url = `${OPENAI_API_HOST}/v1/chat/completions`
   if (OPENAI_API_TYPE === 'azure') {
     url = `${OPENAI_API_HOST}/openai/deployments/${AZURE_DEPLOYMENT_ID}/chat/completions?api-version=${OPENAI_API_VERSION}`
@@ -47,10 +60,10 @@ export const OpenAIStream = async (
     headers: {
       'Content-Type': 'application/json',
       ...(OPENAI_API_TYPE === 'openai' && {
-        Authorization: `Bearer ${key ? key : process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
       }),
       ...(OPENAI_API_TYPE === 'azure' && {
-        'api-key': `${key ? key : process.env.OPENAI_API_KEY}`,
+        'api-key': `${apiKey}`,
       }),
       ...(OPENAI_API_TYPE === 'openai' &&
         OPENAI_ORGANIZATION && {

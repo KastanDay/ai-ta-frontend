@@ -426,6 +426,7 @@ const EditCourseCard = ({
                             courseMetadata.openai_api_key = (
                               e.target as HTMLInputElement
                             ).value
+                            setApiKey((e.target as HTMLInputElement).value)
                           }
                           callSetCourseMetadata(
                             courseName,
