@@ -415,7 +415,7 @@ const EditCourseCard = ({
                     <Input
                       icon={<IconKey />}
                       className="mt-4 w-full min-w-[20rem]"
-                      placeholder="Enter your OpenAI API key"
+                      placeholder="OpenAI API key"
                       type="password"
                       radius={'xl'}
                       size={'md'}
