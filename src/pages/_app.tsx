@@ -12,6 +12,8 @@ import { api } from '~/utils/api'
 import '~/styles/globals.css'
 import Maintenance from '~/components/UIUC-Components/Maintenance'
 
+export { useReportWebVitals } from 'next-axiom'
+
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
