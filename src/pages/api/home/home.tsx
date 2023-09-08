@@ -46,7 +46,6 @@ import { kv } from '@vercel/kv'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
-import { log } from 'next-axiom'
 
 interface Props {
   serverSideApiKeyIsSet: boolean
