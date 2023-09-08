@@ -327,7 +327,7 @@ const EditCourseCard = ({
                     gradient={{ from: 'gold', to: 'white', deg: 170 }}
                     order={3}
                   >
-                    Course-wide OpenAI Key{' '}
+                    Course-wide OpenAI key{' '}
                   </Title>
 
                   <Accordion
