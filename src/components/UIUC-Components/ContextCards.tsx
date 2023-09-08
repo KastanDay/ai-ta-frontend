@@ -1,28 +1,10 @@
 // src/components/UIUC-Components/ContextCards.tsx
-
-import {
-  Card,
-  Image,
-  Text,
-  Group,
-  // Title,
-  // Badge,
-  // MantineProvider,
-  // Button,
-  // Stack,
-  // createStyles,
-  // FileInput,
-  // rem,
-  // Divider,
-} from '@mantine/core'
-
+import { Card, Image, Text, Group } from '@mantine/core'
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import axios from 'axios'
 import { ContextWithMetadata } from '~/types/chat'
-// import SciteBadge from './SciteBadge'
-
-// import { IconExternalLink } from '@tabler/icons-react'
+import { montserrat_paragraph } from 'fonts'
 
 export async function fetchPresignedUrl(filePath: string) {
   try {
@@ -148,8 +130,7 @@ function DynamicMaterialsCard(context: ContextWithMetadata) {
           )}
 
           <Text
-            className="fade-2-lines"
-            style={{ fontFamily: 'Montserrat' }}
+            className={`fade-2-lines ${montserrat_paragraph.variable} font-montserratParagraph`}
             size="sm"
             weight={500}
           >

@@ -7,6 +7,7 @@ import {
   Checkbox,
   Title,
   type CheckboxProps,
+<<<<<<< HEAD
   Paper,
   Input,
   Button,
@@ -22,22 +23,25 @@ import {
   IconLock,
   IconQuestionMark,
 } from '@tabler/icons-react'
+=======
+  // Paper,
+  // Input,
+  // Button,
+} from '@mantine/core'
+import { IconLock } from '@tabler/icons-react'
+>>>>>>> main
 import { type CourseMetadata } from '~/types/courseMetadata'
 import LargeDropzone from './LargeDropzone'
 import EmailChipsComponent from './EmailChipsComponent'
 import { useMediaQuery } from '@mantine/hooks'
 import { Montserrat } from 'next/font/google'
-import { GetCurrentPageName } from './CanViewOnlyCourse'
+// import { GetCurrentPageName } from './CanViewOnlyCourse'
 import { useRouter } from 'next/router'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
-import axios from 'axios'
+// import axios from 'axios'
 import { WebScrape } from '~/components/UIUC-Components/WebScrape'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
-
-const montserrat = Montserrat({
-  weight: '700',
-  subsets: ['latin'],
-})
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 
 const montserrat_light = Montserrat({
   weight: '400',
@@ -235,7 +239,7 @@ const EditCourseCard = ({
               order={2}
               variant="gradient"
               gradient={{ from: 'gold', to: 'white', deg: 50 }}
-              className={montserrat.className}
+              className={`${montserrat_heading.variable} font-montserratHeading`}
             >
               {!is_new_course ? `${courseName}` : 'Chat with your documents'}
             </Title>
@@ -254,11 +258,13 @@ const EditCourseCard = ({
                                   isCourseAvailable && courseName != ''
                                     ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
                                     : 'border-red-800 text-red-600 focus:border-red-800'
-                                } ${montserrat.className}`}
+                                } ${
+                    montserrat_paragraph.variable
+                  } font-montserratParagraph`}
                 />
                 <Title
                   order={4}
-                  className={`w-full text-center ${montserrat.className} mt-4`}
+                  className={`w-full text-center ${montserrat_paragraph.variable} mt-4 font-montserratParagraph`}
                 >
                   Just one step: upload any and all materials. More is better,
                   it&apos;s fine if they&apos;re messy.
@@ -309,6 +315,7 @@ const EditCourseCard = ({
             <div className="card flex h-full flex-col justify-center">
               <div className="card-body">
                 <div className="form-control relative">
+<<<<<<< HEAD
                   {/* <Title
                     className={montserrat.className}
                     variant="gradient"
@@ -514,6 +521,11 @@ const EditCourseCard = ({
                 </Title>
                 <div className="form-control relative">
                   <label className={`label ${montserrat.className}`}>
+=======
+                  <label
+                    className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                  >
+>>>>>>> main
                     <span className="label-text text-lg text-neutral-200">
                       Set a greeting
                     </span>
@@ -527,7 +539,7 @@ const EditCourseCard = ({
                   <textarea
                     rows={5}
                     placeholder="Enter the introductory message of the chatbot"
-                    className={`textarea-bordered textarea w-full border-2 border-violet-800 bg-white text-black hover:border-violet-800 ${montserrat.className}`}
+                    className={`textarea-bordered textarea w-full border-2 border-violet-800 bg-white text-black hover:border-violet-800 ${montserrat_paragraph.variable} font-montserratParagraph`}
                     value={introMessage}
                     onChange={(e) => {
                       setIntroMessage(e.target.value)
@@ -563,7 +575,9 @@ const EditCourseCard = ({
                   )}
                 </div>
                 <div className="form-control mt-4">
-                  <label className={`label ${montserrat.className}`}>
+                  <label
+                    className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                  >
                     <span className="label-text text-lg text-neutral-200">
                       Upload your logo
                     </span>
@@ -573,7 +587,7 @@ const EditCourseCard = ({
                   </Text>
                   <input
                     type="file"
-                    className={`file-input-bordered file-input w-full border-violet-800 bg-violet-800 text-white  shadow-inner hover:border-violet-600 hover:bg-violet-800 ${montserrat.className}`}
+                    className={`file-input-bordered file-input w-full border-violet-800 bg-violet-800 text-white  shadow-inner hover:border-violet-600 hover:bg-violet-800 ${montserrat_paragraph.variable} font-montserratParagraph`}
                     onChange={async (e) => {
                       // Assuming the file is converted to a URL somewhere else
                       setCourseBannerUrl(e.target.value)
@@ -685,7 +699,11 @@ const PrivateOrPublicCourse = ({
     <>
       <Divider />
       <Title
+<<<<<<< HEAD
         className={`label ${montserrat.className}`}
+=======
+        className={`${montserrat_heading.variable} font-montserratHeading`}
+>>>>>>> main
         variant="gradient"
         gradient={{ from: 'gold', to: 'white', deg: 170 }}
         order={3}
@@ -702,7 +720,11 @@ const PrivateOrPublicCourse = ({
           wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
+<<<<<<< HEAD
           className={`${montserrat.className}`}
+=======
+          className={`${montserrat_heading.variable} font-montserratHeading font-bold`}
+>>>>>>> main
           // style={{ marginTop: '4rem' }}
           size="lg"
           // bg='#020307'

@@ -1,5 +1,5 @@
 import { notifications } from '@mantine/notifications'
-import { Button, Input, Title, useMantineTheme } from '@mantine/core'
+import { rem, Button, Input, Title, Text, useMantineTheme } from '@mantine/core'
 import { IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
 import { Montserrat } from 'next/font/google'
@@ -7,6 +7,7 @@ import axios from 'axios'
 import { useRouter } from 'next/router'
 import { useMediaQuery } from '@mantine/hooks'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 
 interface WebScrapeProps {
   is_new_course: boolean
@@ -14,11 +15,6 @@ interface WebScrapeProps {
   isDisabled: boolean
   current_user_email: string
 }
-
-const montserrat = Montserrat({
-  weight: '700',
-  subsets: ['latin'],
-})
 
 const validateUrl = (url: string) => {
   const courseraRegex = /^https?:\/\/(www\.)?coursera\.org\/learn\/.+/
@@ -182,9 +178,8 @@ export const WebScrape = ({
         // position="top-center",
         title: 'Web scraping started',
         message:
-          "It'll scrape in the background, just wait for the results to show up in your project (~3 minutes total).\nThis is early release; I'd love to fix bugs, please shoot me an email with bug reports kvday2@illinois.edu.",
+          "It'll scrape in the background, just wait for the results to show up in your project (~3 minutes total).\nThis feature is stable but the web is a messy place. If you have trouble, I'd love to fix it. Just shoot me an email: kvday2@illinois.edu.",
         icon: <IconWorldDownload />,
-        // className: 'my-notification-class',
         styles: {
           root: {
             backgroundColor: theme.colors.nearlyWhite,
@@ -271,13 +266,13 @@ export const WebScrape = ({
     <>
       <Title
         order={3}
-        className={`w-full text-center ${montserrat.className} mt-6`}
+        className={`w-full text-center ${montserrat_heading.variable} mt-6 font-montserratHeading`}
       >
         OR
       </Title>
       <Title
         order={4}
-        className={`w-full text-center ${montserrat.className} mt-4`}
+        className={`w-full text-center ${montserrat_heading.variable} mt-4 font-montserratHeading`}
       >
         Web scrape any website that allows it
       </Title>
@@ -338,9 +333,9 @@ export const WebScrape = ({
         }
         rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
       />
-      <Title
-        order={6}
-        className={`w-full text-center ${montserrat.className} mt-2`}
+      <Text
+        size={rem(14)}
+        className={`w-full text-center ${montserrat_paragraph.variable} mt-2 font-montserratParagraph`}
       >
         Looking for high quality reference material? We love{' '}
         <a
@@ -354,7 +349,7 @@ export const WebScrape = ({
         </a>
         <br></br>
         For Coursera and Canvas ingest please email kvday2@illinois.edu
-      </Title>
+      </Text>
     </>
   )
 }
