@@ -14,13 +14,15 @@ import {
   Accordion,
   createStyles,
   rem,
+  em,
 } from '@mantine/core'
 import {
   IconArrowUpRight,
   IconEdit,
+  IconExternalLink,
   IconKey,
   IconLock,
-  IconQuestionMark,
+  // IconQuestionMark,
 } from '@tabler/icons-react'
 
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -717,7 +719,10 @@ const PrivateOrPublicCourse = ({
         />
       </Group>
 
-      <Text className={`label ${montserrat_light.className}`} size={'sm'}>
+      <Text
+        className={`label p-0 ${montserrat_light.className} inline-block`}
+        size={'sm'}
+      >
         Only these email address are able to access the content. That&apos;s
         useful when setting a Course Wide OpenAI Key (above) to limit usage.
         Read our{' '}
@@ -726,12 +731,17 @@ const PrivateOrPublicCourse = ({
           href="/privacy"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ textDecoration: 'underline' }}
+          // style={{ textDecoration: 'underline' }}
         >
-          strict security policy
+          strict security policy{' '}
         </a>
-        .
-        <br />
+        <IconExternalLink
+          size={'1.1em'}
+          className="mr-2 inline-block text-purple-600"
+          style={{ position: 'relative', top: '-3px' }}
+        />
+      </Text>
+      <Text className={`label p-0 ${montserrat_light.className}`} size={'sm'}>
         To add Admin users, who will have full edit access on this page, please
         just shoot me an email kvday2@illinois.edu.
       </Text>
