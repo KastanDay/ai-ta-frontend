@@ -1,9 +1,7 @@
 // src/pages/home/home.tsx
 import { useEffect, useRef, useState } from 'react'
 
-import { type GetServerSideProps, type GetServerSidePropsContext } from 'next'
 import { useTranslation } from 'next-i18next'
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import Head from 'next/head'
 
 import { useCreateReducer } from '@/hooks/useCreateReducer'
@@ -45,21 +43,14 @@ import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
 
-interface Props {
-  // serverSideApiKeyIsSet: boolean
-  serverSidePluginKeysSet: boolean
-  defaultModelId: OpenAIModelID
-}
-
-const Home = ({
-  // serverSideApiKeyIsSet,
-  serverSidePluginKeysSet,
-  defaultModelId,
-}: Props) => {
+const Home = () => {
   const { t } = useTranslation('chat')
   const { getModels } = useApiService()
   const { getModelsError } = useErrorService()
-  const [initialRender, setInitialRender] = useState<boolean>(true)
+  const [isLoading, setIsLoading] = useState<boolean>(true) // Add a new state for loading
+
+  const defaultModelId = 'gpt-3.5-turbo'
+  const serverSidePluginKeysSet = true
 
   const contextValue = useCreateReducer<HomeInitialState>({
     initialState,
@@ -83,15 +74,15 @@ const Home = ({
   const router = useRouter()
   const course_name = router.query.course_name as string
 
-  // Using hook to fetch the latest course_metadata
-  const [serverSideApiKeyIsSet, setServerSideApiKeyIsSet] = useState(false)
   const [isCourseMetadataLoading, setIsCourseMetadataLoading] = useState(true)
   const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
 
   useEffect(() => {
+    if (!course_name) return
     const courseMetadata = async () => {
+      setIsLoading(true) // Set loading to true before fetching data
       const response = await fetch(
         `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
       )
@@ -99,55 +90,14 @@ const Home = ({
       setCourseMetadata(data.course_metadata)
       // console.log("Course Metadata in home: ", data.course_metadata)
       setIsCourseMetadataLoading(false)
+      // setIsLoading(false) // Set loading to false after fetching data
     }
     courseMetadata()
   }, [course_name])
 
-  useEffect(() => {
-    if (course_metadata !== null) {
-      const apiKey = localStorage.getItem('apiKey')
-
-      // 1. Try to use global env key from Vercel .env
-      // 2. Try to use course-specific key from KV store
-      // 3. No key set; the user will have to enter one
-
-      // If Course-Wide OpenAI key is set, use it
-      if (
-        course_metadata.openai_api_key &&
-        course_metadata.openai_api_key !== ''
-      ) {
-        dispatch({ field: 'apiKey', value: '' })
-        localStorage.removeItem('apiKey')
-      } else if (apiKey) {
-        // NO course wide, yes local key.
-        if (!apiKey.startsWith('sk-')) {
-          alert(
-            `Error: OpenAI API keys must start with "sk-", but yours is ${apiKey}`,
-          )
-        }
-        dispatch({ field: 'apiKey', value: apiKey })
-      } else {
-        // TODO: Which case is this?
-        // Might have to do this on the 'chat.ts' where we invoke the API.
-      }
-
-      const pluginKeys = localStorage.getItem('pluginKeys')
-      if (serverSidePluginKeysSet) {
-        dispatch({ field: 'pluginKeys', value: [] })
-        localStorage.removeItem('pluginKeys')
-      } else if (pluginKeys) {
-        dispatch({ field: 'pluginKeys', value: pluginKeys })
-      }
-    }
-  }, [course_metadata, serverSidePluginKeysSet, dispatch])
-
-  // Check auth & redirect
   const clerk_user_outer = useUser()
   // const course_exists = course_metadata != null
 
-  // ------------------- 👇 MOST BASIC AUTH CHECK 👇 -------------------
-
-  // DO AUTH-based redirect!
   useEffect(() => {
     if (!clerk_user_outer.isLoaded || isCourseMetadataLoading) {
       return
@@ -161,9 +111,7 @@ const Home = ({
         )
 
         if (permission_str == 'edit' || permission_str == 'view') {
-          // ✅ AUTHED
         } else {
-          // 🚫 NOT AUTHED
           router.push(`/${course_name}/not_authorized`)
         }
       } else {
@@ -178,58 +126,57 @@ const Home = ({
   // ---- Set OpenAI API Key (either course-wide or from storage) ----
   useEffect(() => {
     if (!course_metadata) return
+    console.log('apiKey in effect:', apiKey)
     let key = ''
 
     if (course_metadata && course_metadata.openai_api_key) {
-      console.log('Using key from course_metadata')
+      console.log(
+        'Using key from course_metadata',
+        course_metadata.openai_api_key,
+      )
+      key = course_metadata.openai_api_key
+      // setServerSideApiKeyIsSet(true)
+      dispatch({
+        field: 'serverSideApiKeyIsSet',
+        value: true,
+      })
+
       // TODO: add logging for axiom, after merging with main (to get the axiom code)
       // log.debug('Using Course-Wide OpenAI API Key', { course_metadata: { course_metadata } })
-      key = course_metadata.openai_api_key
-      setServerSideApiKeyIsSet(true)
     } else if (apiKey) {
       if (apiKey.startsWith('sk-')) {
         console.log(
           'No openai_api_key found in course_metadata, but found one in client localStorage',
         )
         key = apiKey
-        setServerSideApiKeyIsSet(true)
+        // setServerSideApiKeyIsSet(true)
+        dispatch({
+          field: 'serverSideApiKeyIsSet',
+          value: true,
+        })
       } else {
-        // Raise toast, you have entered an API key that does not start with 'sk-', which indicates it's invalid. Please enter just the key from OpenAI starting with 'sk-'
         console.error(
           "you have entered an API key that does not start with 'sk-', which indicates it's invalid. Please enter just the key from OpenAI starting with 'sk-'. You entered",
           apiKey,
         )
       }
     }
-
-    const setOpenaiModel = async () => {
+    const setOpenaiModel = () => {
       try {
-        // if (!apiKey) return
-        const data = await getModels({ key: key })
+        if (!course_metadata || !apiKey) return
+        const data = getModels({ key: key })
         dispatch({ field: 'models', value: data })
-        // setModelsFetched(true) // Set modelsFetched to true after fetching models
       } catch (error) {
+        console.log('Setting getModelsError: ', error)
         dispatch({ field: 'modelError', value: getModelsError(error) })
-        // setHasError(true) // Set hasError to true when an error occurs
       }
     }
 
     setOpenaiModel()
+    setIsLoading(false)
   }, [course_metadata, apiKey])
 
-  // I THINK WE CAN DELETE THIS BELOW?? I already commented it out.
-  // const [data, setData] = useState(null) // using the original version.
-  // const [error, setError] = useState<unknown>(null) // Update the type of the error state variable
-
-  // useEffect(() => {
-  //   if (data) dispatch({ field: 'models', value: data })
-  // }, [data, dispatch])
-
-  // useEffect(() => {
-  //   dispatch({ field: 'modelError', value: getModelsError(error) })
-  // }, [dispatch, error, getModelsError])
-
-  // FETCH MODELS ----------------------------------------------
+  // FOLDER OPERATIONS  --------------------------------------------
 
   const handleSelectConversation = (conversation: Conversation) => {
     dispatch({
@@ -239,8 +186,6 @@ const Home = ({
 
     saveConversation(conversation)
   }
-
-  // FOLDER OPERATIONS  --------------------------------------------
 
   const handleCreateFolder = (name: string, type: FolderType) => {
     const newFolder: FolderInterface = {
@@ -366,17 +311,12 @@ const Home = ({
   useEffect(() => {
     defaultModelId &&
       dispatch({ field: 'defaultModelId', value: defaultModelId })
-    serverSideApiKeyIsSet &&
-      dispatch({
-        field: 'serverSideApiKeyIsSet',
-        value: serverSideApiKeyIsSet,
-      })
     serverSidePluginKeysSet &&
       dispatch({
         field: 'serverSidePluginKeysSet',
         value: serverSidePluginKeysSet,
       })
-  }, [defaultModelId, serverSideApiKeyIsSet, serverSidePluginKeysSet]) // serverSideApiKeyIsSet,
+  }, [defaultModelId, serverSidePluginKeysSet]) // serverSideApiKeyIsSet,
 
   // ON LOAD --------------------------------------------
 
@@ -454,6 +394,10 @@ const Home = ({
     }
   }, [defaultModelId, dispatch, serverSidePluginKeysSet])
 
+  if (isLoading) {
+    // show blank page during loading
+    return <></>
+  }
   return (
     <HomeContext.Provider
       value={{
@@ -506,60 +450,3 @@ const Home = ({
   )
 }
 export default Home
-
-// import { useAuth, useUser } from '@clerk/nextjs'
-
-// import { useAuth } from '@clerk/nextjs'
-// import { withAuth } from '@clerk/nextjs/api'
-
-// import { getAuth, buildClerkProps } from '@clerk/nextjs/server'
-// import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
-
-export const getServerSideProps: GetServerSideProps = async (
-  context: GetServerSidePropsContext,
-) => {
-  console.log('ServerSideProps: ', context.params)
-  // const course_name = context.params?.course_name as string
-  const { locale } = context
-  let serverSideApiKeyIsSet = false
-
-  const defaultModelId =
-    (process.env.DEFAULT_MODEL &&
-      Object.values(OpenAIModelID).includes(
-        process.env.DEFAULT_MODEL as OpenAIModelID,
-      ) &&
-      process.env.DEFAULT_MODEL) ||
-    fallbackModelID
-
-  let serverSidePluginKeysSet = false
-  const googleApiKey = process.env.GOOGLE_API_KEY
-  const googleCSEId = process.env.GOOGLE_CSE_ID
-
-  if (googleApiKey && googleCSEId) {
-    serverSidePluginKeysSet = true
-    console.log('Google plugin keys set... should work.')
-  } else {
-    console.log('Google plugin keys not set... will NOT work.')
-  }
-
-  // If openai_api_key is not present in course_metadata, use the one from process.env - fallback needed for models api.
-  // console.log('Final serverSideApiKeyIsSet', serverSideApiKeyIsSet)
-
-  return {
-    props: {
-      // ...buildClerkProps(context.req), // https://clerk.com/docs/nextjs/getserversideprops
-      // TODO: here we can fetch the keys...
-      // serverSideApiKeyIsSet,
-      defaultModelId,
-      serverSidePluginKeysSet,
-      ...(await serverSideTranslations(locale ?? 'en', [
-        'common',
-        'chat',
-        'sidebar',
-        'markdown',
-        'promptbar',
-        'settings',
-      ])),
-    },
-  }
-}

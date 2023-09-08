@@ -13,11 +13,12 @@ export const config = {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  let apiKey = ''
   try {
     const { key } = (await req.json()) as {
       key: string
     }
-    let apiKey = key ? key : process.env.OPENAI_API_KEY
+    apiKey = key ? key : (process.env.OPENAI_API_KEY as string)
 
     // Check if the key starts with 'sk-' (indicating it's not encrypted)
     if (key && !key.startsWith('sk-')) {
@@ -26,8 +27,13 @@ const handler = async (req: Request): Promise<Response> => {
         key,
         process.env.NEXT_PUBLIC_SIGNING_KEY as string,
       )
-      apiKey = decryptedText
-      // console.log("Decrypted api key: ", apiKey)
+      apiKey = decryptedText as string
+      console.log('models.ts Decrypted api key: ', apiKey)
+    }
+    console.log('models.ts Final openai key: ', apiKey)
+
+    if (!apiKey) {
+      return new Response('Warning: OpenAI Key was not found', { status: 400 })
     }
 
     let url = `${OPENAI_API_HOST}/v1/models`

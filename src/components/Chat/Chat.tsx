@@ -76,6 +76,7 @@ import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
 import Navbar from '../UIUC-Components/Navbar'
 import TopBarInChat from '../Chatbar/TopBarInChat'
+import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
@@ -545,6 +546,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       </div>
     )
   }
+
   return (
     <div className="overflow-wrap relative flex-1 bg-white dark:bg-[#15162c]">
       {!(apiKey || serverSideApiKeyIsSet) ? (
