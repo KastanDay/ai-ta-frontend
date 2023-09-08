@@ -15,6 +15,7 @@ import {
   createStyles,
   rem,
   em,
+  Tooltip,
 } from '@mantine/core'
 import {
   IconArrowUpRight,
@@ -249,11 +250,13 @@ const EditCourseCard = ({
                   }
                   disabled={!is_new_course}
                   className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${isCourseAvailable && courseName != ''
-                      ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                      : 'border-red-800 text-red-600 focus:border-red-800'
-                    } ${montserrat_paragraph.variable
-                    } font-montserratParagraph`}
+                                ${
+                                  isCourseAvailable && courseName != ''
+                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                                    : 'border-red-800 text-red-600 focus:border-red-800'
+                                } ${
+                    montserrat_paragraph.variable
+                  } font-montserratParagraph`}
                 />
                 <Title
                   order={4}
@@ -497,11 +500,11 @@ const EditCourseCard = ({
                   course_name={course_name}
                   current_user_email={current_user_email}
                   courseMetadata={courseMetadata as CourseMetadata}
-                // course_intro_message={
-                //   courseMetadata?.course_intro_message || ''
-                // }
-                // is_private={courseMetadata?.is_private || false}
-                // banner_image_s3={courseBannerUrl}
+                  // course_intro_message={
+                  //   courseMetadata?.course_intro_message || ''
+                  // }
+                  // is_private={courseMetadata?.is_private || false}
+                  // banner_image_s3={courseBannerUrl}
                 />
 
                 <Title
@@ -624,6 +627,7 @@ const PrivateOrPublicCourse = ({
   courseMetadata: CourseMetadata
 }) => {
   const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
+  const { classes } = useStyles() // for Accordion
   // const { user, isSignedIn, isLoaded } = useUser()
   // const user_emails = extractEmailsFromClerk(user)
   // console.log("in MakeNewCoursePage.tsx user email list: ", user_emails )
@@ -693,15 +697,65 @@ const PrivateOrPublicCourse = ({
         variant="gradient"
         gradient={{ from: 'gold', to: 'white', deg: 170 }}
         order={3}
-        p="md"
+        // p="md"
+        pl={'md'}
+        pr={'md'}
+        pt={'sm'}
+        pb={0}
         style={{ alignSelf: 'left', marginLeft: '-11px' }}
       >
         Visibility{' '}
       </Title>
+      <Accordion
+        pl={27}
+        pr={27}
+        pt={40}
+        pb={40}
+        m={-40}
+        // style={{ borderRadius: 'theme.radius.xl', width: '112%', maxWidth: 'min(50rem, )', marginLeft: 'max(-1rem, -10%)' }}
+        style={{ borderRadius: 'theme.radius.xl' }}
+        classNames={classes}
+        className={classes.root}
+      >
+        {/* ... Accordion items */}
+        <Accordion.Item value="openai-key-details">
+          <Accordion.Control>
+            <Text
+              className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+              size={'md'}
+            >
+              Only these email address are able to access the content.
+              {/* <span className={'text-purple-600'}>Read more</span>{' '}
+              👇 */}
+            </Text>
+          </Accordion.Control>
+          <Accordion.Panel>
+            <Text
+              className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+              size={'sm'}
+            >
+              Read our{' '}
+              <a
+                className={'text-purple-600'}
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                // style={{ textDecoration: 'underline' }}
+              >
+                strict security policy{' '}
+              </a>
+              To add Admin users, who will have full edit permission on this
+              page, please just shoot me an email kvday2@illinois.edu
+            </Text>
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
+
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${isPrivate ? 'private' : 'public'
-            }. Click to change.`}
+          label={`Course is ${
+            isPrivate ? 'private' : 'public'
+          }. Click to change.`}
           wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
@@ -716,12 +770,11 @@ const PrivateOrPublicCourse = ({
         />
       </Group>
 
-      <Text
+      {/* <Text
         className={`label p-0 ${montserrat_light.className} inline-block`}
         size={'sm'}
       >
-        Only these email address are able to access the content. That&apos;s
-        useful when setting a Course Wide OpenAI Key (above) to limit usage.
+        Only these email address are able to access the content.
         Read our{' '}
         <a
           className={'text-purple-600'}
@@ -737,11 +790,20 @@ const PrivateOrPublicCourse = ({
           className="mr-2 inline-block text-purple-600"
           style={{ position: 'relative', top: '-3px' }}
         />
-      </Text>
-      <Text className={`label p-0 ${montserrat_light.className}`} size={'sm'}>
+      </Text> */}
+      {/* <Tooltip
+        multiline
+        width={220}
+        withArrow
+        transitionProps={{ duration: 200 }}
+        label=""
+      >
+        <span>For admin users...</span>
+      </Tooltip> */}
+      {/* <Text className={`label p-0 ${montserrat_light.className}`} size={'sm'}>
         To add Admin users, who will have full edit access on this page, please
         just shoot me an email kvday2@illinois.edu.
-      </Text>
+      </Text> */}
       {/* <a href="/privacy">strict security policy</a>. Useful when setting a Course Wide OpenAI Key to limit usage. */}
       {isPrivate && (
         <EmailChipsComponent
