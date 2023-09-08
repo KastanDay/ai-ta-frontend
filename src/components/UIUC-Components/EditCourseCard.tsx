@@ -18,11 +18,16 @@ import {
   Tooltip,
 } from '@mantine/core'
 import {
+  IconAlertCircle,
+  IconAlertTriangle,
   IconArrowUpRight,
+  IconCircleCheck,
   IconEdit,
   IconExternalLink,
   IconKey,
   IconLock,
+  IconTrash,
+  IconX,
   // IconQuestionMark,
 } from '@tabler/icons-react'
 
@@ -38,6 +43,7 @@ import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { WebScrape } from '~/components/UIUC-Components/WebScrape'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { notifications } from '@mantine/notifications'
 
 const montserrat_light = Montserrat({
   weight: '400',
@@ -425,11 +431,28 @@ const EditCourseCard = ({
                       id="openai-api-key-input"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
+                          const inputValue = (e.target as HTMLInputElement).value;
+                          if (!inputValue.startsWith('sk-')) {
+                            notifications.show({
+                              id: 'error-notification',
+                              withCloseButton: true,
+                              onClose: () => console.log('error unmounted'),
+                              onOpen: () => console.log('error mounted'),
+                              autoClose: 4000,
+                              title: "Invalid OpenAI API Key",
+                              message: 'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
+                              color: 'red',
+                              radius: 'lg',
+                              icon: <IconAlertCircle />,
+                              className: 'my-notification-class',
+                              style: { backgroundColor: '#15162c' },
+                              loading: false,
+                            });
+                            return;
+                          }
                           if (courseMetadata) {
-                            courseMetadata.openai_api_key = (
-                              e.target as HTMLInputElement
-                            ).value
-                            setApiKey((e.target as HTMLInputElement).value)
+                            courseMetadata.openai_api_key = inputValue;
+                            setApiKey(inputValue);
                           }
                           callSetCourseMetadata(
                             courseName,
@@ -443,6 +466,39 @@ const EditCourseCard = ({
                             } else {
                               setIsEditing(false) // Reset isEditing to false after successful submission
                               setIsKeyUpdated(true) // Set isKeyUpdated to true after successful submission
+                              if (inputValue === '' && courseMetadata?.openai_api_key != '') {
+                                notifications.show({
+                                  id: 'success-notification',
+                                  withCloseButton: true,
+                                  onClose: () => console.log('success unmounted'),
+                                  onOpen: () => console.log('success mounted'),
+                                  autoClose: 4000,
+                                  title: "Update Successful",
+                                  message: 'Key removed.',
+                                  color: 'green',
+                                  radius: 'lg',
+                                  icon: <IconTrash />,
+                                  className: 'my-notification-class',
+                                  style: { backgroundColor: '#15162c' },
+                                  loading: false,
+                                });
+                              } else {
+                                notifications.show({
+                                  id: 'success-notification',
+                                  withCloseButton: true,
+                                  onClose: () => console.log('success unmounted'),
+                                  onOpen: () => console.log('success mounted'),
+                                  autoClose: 4000,
+                                  title: "Update Successful",
+                                  message: 'Course Wide api key set successfully.',
+                                  color: 'green',
+                                  radius: 'lg',
+                                  icon: <IconCircleCheck />,
+                                  className: 'my-notification-class',
+                                  style: { backgroundColor: '#15162c' },
+                                  loading: false,
+                                });
+                              }
                             }
                           })
                         }
@@ -455,8 +511,42 @@ const EditCourseCard = ({
                               'openai-api-key-input',
                             ) as HTMLInputElement
                             if (courseMetadata && apiKeyInput) {
-                              courseMetadata.openai_api_key = apiKeyInput.value
-                              setApiKey(apiKeyInput.value) // Update the apiKey state
+                              const inputValue = apiKeyInput.value;
+                              if (inputValue === '' && courseMetadata.openai_api_key != '') {
+                                notifications.show({
+                                  id: 'success-notification',
+                                  withCloseButton: true,
+                                  onClose: () => console.log('success unmounted'),
+                                  onOpen: () => console.log('success mounted'),
+                                  autoClose: 4000,
+                                  title: "Update Successful",
+                                  message: 'Key removed.',
+                                  color: 'green',
+                                  radius: 'lg',
+                                  icon: <IconTrash />,
+                                  className: 'my-notification-class',
+                                })
+                              } else if (!inputValue.startsWith('sk-')) {
+                                notifications.show({
+                                  id: 'error-notification',
+                                  withCloseButton: true,
+                                  onClose: () => console.log('error unmounted'),
+                                  onOpen: () => console.log('error mounted'),
+                                  autoClose: 4000,
+                                  title: "Invalid OpenAI API Key",
+                                  message: 'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
+                                  color: 'red',
+                                  radius: 'lg',
+                                  icon: <IconAlertCircle />,
+                                  className: 'my-notification-class',
+                                  style: { backgroundColor: '#15162c' },
+                                  withBorder: true,
+                                  loading: false,
+                                });
+                                return;
+                              }
+                              courseMetadata.openai_api_key = inputValue;
+                              setApiKey(inputValue); // Update the apiKey state
                             }
                             callSetCourseMetadata(
                               courseName,
