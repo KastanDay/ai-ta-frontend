@@ -431,7 +431,8 @@ const EditCourseCard = ({
                       id="openai-api-key-input"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                          const inputValue = (e.target as HTMLInputElement).value;
+                          const inputValue = (e.target as HTMLInputElement)
+                            .value
                           if (!inputValue.startsWith('sk-')) {
                             notifications.show({
                               id: 'error-notification',
@@ -439,20 +440,21 @@ const EditCourseCard = ({
                               onClose: () => console.log('error unmounted'),
                               onOpen: () => console.log('error mounted'),
                               autoClose: 4000,
-                              title: "Invalid OpenAI API Key",
-                              message: 'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
+                              title: 'Invalid OpenAI API Key',
+                              message:
+                                'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
                               color: 'red',
                               radius: 'lg',
                               icon: <IconAlertCircle />,
                               className: 'my-notification-class',
                               style: { backgroundColor: '#15162c' },
                               loading: false,
-                            });
-                            return;
+                            })
+                            return
                           }
                           if (courseMetadata) {
-                            courseMetadata.openai_api_key = inputValue;
-                            setApiKey(inputValue);
+                            courseMetadata.openai_api_key = inputValue
+                            setApiKey(inputValue)
                           }
                           callSetCourseMetadata(
                             courseName,
@@ -466,14 +468,18 @@ const EditCourseCard = ({
                             } else {
                               setIsEditing(false) // Reset isEditing to false after successful submission
                               setIsKeyUpdated(true) // Set isKeyUpdated to true after successful submission
-                              if (inputValue === '' && courseMetadata?.openai_api_key != '') {
+                              if (
+                                inputValue === '' &&
+                                courseMetadata?.openai_api_key != ''
+                              ) {
                                 notifications.show({
                                   id: 'success-notification',
                                   withCloseButton: true,
-                                  onClose: () => console.log('success unmounted'),
+                                  onClose: () =>
+                                    console.log('success unmounted'),
                                   onOpen: () => console.log('success mounted'),
                                   autoClose: 4000,
-                                  title: "Update Successful",
+                                  title: 'Update Successful',
                                   message: 'Key removed.',
                                   color: 'green',
                                   radius: 'lg',
@@ -481,23 +487,25 @@ const EditCourseCard = ({
                                   className: 'my-notification-class',
                                   style: { backgroundColor: '#15162c' },
                                   loading: false,
-                                });
+                                })
                               } else {
                                 notifications.show({
                                   id: 'success-notification',
                                   withCloseButton: true,
-                                  onClose: () => console.log('success unmounted'),
+                                  onClose: () =>
+                                    console.log('success unmounted'),
                                   onOpen: () => console.log('success mounted'),
                                   autoClose: 4000,
-                                  title: "Update Successful",
-                                  message: 'Course Wide api key set successfully.',
+                                  title: 'Update Successful',
+                                  message:
+                                    'Course Wide api key set successfully.',
                                   color: 'green',
                                   radius: 'lg',
                                   icon: <IconCircleCheck />,
                                   className: 'my-notification-class',
                                   style: { backgroundColor: '#15162c' },
                                   loading: false,
-                                });
+                                })
                               }
                             }
                           })
@@ -511,15 +519,19 @@ const EditCourseCard = ({
                               'openai-api-key-input',
                             ) as HTMLInputElement
                             if (courseMetadata && apiKeyInput) {
-                              const inputValue = apiKeyInput.value;
-                              if (inputValue === '' && courseMetadata.openai_api_key != '') {
+                              const inputValue = apiKeyInput.value
+                              if (
+                                inputValue === '' &&
+                                courseMetadata.openai_api_key != ''
+                              ) {
                                 notifications.show({
                                   id: 'success-notification',
                                   withCloseButton: true,
-                                  onClose: () => console.log('success unmounted'),
+                                  onClose: () =>
+                                    console.log('success unmounted'),
                                   onOpen: () => console.log('success mounted'),
                                   autoClose: 4000,
-                                  title: "Update Successful",
+                                  title: 'Update Successful',
                                   message: 'Key removed.',
                                   color: 'green',
                                   radius: 'lg',
@@ -533,8 +545,9 @@ const EditCourseCard = ({
                                   onClose: () => console.log('error unmounted'),
                                   onOpen: () => console.log('error mounted'),
                                   autoClose: 4000,
-                                  title: "Invalid OpenAI API Key",
-                                  message: 'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
+                                  title: 'Invalid OpenAI API Key',
+                                  message:
+                                    'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
                                   color: 'red',
                                   radius: 'lg',
                                   icon: <IconAlertCircle />,
@@ -542,11 +555,11 @@ const EditCourseCard = ({
                                   style: { backgroundColor: '#15162c' },
                                   withBorder: true,
                                   loading: false,
-                                });
-                                return;
+                                })
+                                return
                               }
-                              courseMetadata.openai_api_key = inputValue;
-                              setApiKey(inputValue); // Update the apiKey state
+                              courseMetadata.openai_api_key = inputValue
+                              setApiKey(inputValue) // Update the apiKey state
                             }
                             callSetCourseMetadata(
                               courseName,
