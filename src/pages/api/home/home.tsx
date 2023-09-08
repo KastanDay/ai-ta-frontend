@@ -1,6 +1,5 @@
 // src/pages/home/home.tsx
 import { useEffect, useRef, useState } from 'react'
-import { useQuery } from 'react-query'
 
 import { type GetServerSideProps, type GetServerSidePropsContext } from 'next'
 import { useTranslation } from 'next-i18next'
@@ -42,19 +41,18 @@ import { type HomeInitialState, initialState } from './home.state'
 
 import { v4 as uuidv4 } from 'uuid'
 import { type CourseMetadata } from '~/types/courseMetadata'
-import { kv } from '@vercel/kv'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
 
 interface Props {
-  serverSideApiKeyIsSet: boolean
+  // serverSideApiKeyIsSet: boolean
   serverSidePluginKeysSet: boolean
   defaultModelId: OpenAIModelID
 }
 
 const Home = ({
-  serverSideApiKeyIsSet,
+  // serverSideApiKeyIsSet,
   serverSidePluginKeysSet,
   defaultModelId,
 }: Props) => {
@@ -86,6 +84,7 @@ const Home = ({
   const course_name = router.query.course_name as string
 
   // Using hook to fetch the latest course_metadata
+  const [serverSideApiKeyIsSet, setServerSideApiKeyIsSet] = useState(false)
   const [isCourseMetadataLoading, setIsCourseMetadataLoading] = useState(true)
   const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
@@ -111,22 +110,6 @@ const Home = ({
       // 1. Try to use global env key from Vercel .env
       // 2. Try to use course-specific key from KV store
       // 3. No key set; the user will have to enter one
-
-      // if (process.env.OPENAI_API_KEY) {
-      //   // use global env key
-      //   // openai_api_key = process.env.OPENAI_API_KEY
-      //   serverSideApiKeyIsSet = true
-      //   console.log('👉👉👉👉Using global env key...')
-      // } else if (course_metadata?.openai_api_key) {
-      //   // use course-specific key
-      //   process.env.OPENAI_API_KEY = course_metadata.openai_api_key
-      //   serverSideApiKeyIsSet = true
-      //   console.log('👉👉👉👉👉👉Using course-wide API key: ', process.env.OPENAI_API_KEY)
-      // } else {
-      //   // user have to enter one
-      //   console.log('👉👉👉👉👉👉Using NO API KEY AT ALL: ', process.env.OPENAI_API_KEY)
-      //   process.env.OPENAI_API_KEY = ''
-      // }
 
       // If Course-Wide OpenAI key is set, use it
       if (
@@ -195,26 +178,33 @@ const Home = ({
   // ---- Set OpenAI API Key (either course-wide or from storage) ----
   useEffect(() => {
     if (!course_metadata) return
-    if (!apiKey && !serverSideApiKeyIsSet) return
     let key = ''
 
-    if (serverSideApiKeyIsSet) {
-      if (course_metadata && course_metadata.openai_api_key) {
-        console.log('Using key from course_metadata')
-        // TODO: add logging for axiom, after merging with main (to get the axiom code)
-        // log.debug('Using Course-Wide OpenAI API Key', { course_metadata: { course_metadata } })
-        key = course_metadata.openai_api_key
+    if (course_metadata && course_metadata.openai_api_key) {
+      console.log('Using key from course_metadata')
+      // TODO: add logging for axiom, after merging with main (to get the axiom code)
+      // log.debug('Using Course-Wide OpenAI API Key', { course_metadata: { course_metadata } })
+      key = course_metadata.openai_api_key
+      setServerSideApiKeyIsSet(true)
+    } else if (apiKey) {
+      if (apiKey.startsWith('sk-')) {
+        console.log(
+          'No openai_api_key found in course_metadata, but found one in client localStorage',
+        )
+        key = apiKey
+        setServerSideApiKeyIsSet(true)
       } else {
-        console.error('No openai_api_key found in course_metadata')
+        // Raise toast, you have entered an API key that does not start with 'sk-', which indicates it's invalid. Please enter just the key from OpenAI starting with 'sk-'
+        console.error(
+          "you have entered an API key that does not start with 'sk-', which indicates it's invalid. Please enter just the key from OpenAI starting with 'sk-'. You entered",
+          apiKey,
+        )
       }
-    } else {
-      console.log('Using key present at client', apiKey)
-      key = apiKey
     }
 
     const setOpenaiModel = async () => {
       try {
-        if (!apiKey && !serverSideApiKeyIsSet) return
+        // if (!apiKey) return
         const data = await getModels({ key: key })
         dispatch({ field: 'models', value: data })
         // setModelsFetched(true) // Set modelsFetched to true after fetching models
@@ -386,7 +376,7 @@ const Home = ({
         field: 'serverSidePluginKeysSet',
         value: serverSidePluginKeysSet,
       })
-  }, [defaultModelId, serverSideApiKeyIsSet, serverSidePluginKeysSet])
+  }, [defaultModelId, serverSideApiKeyIsSet, serverSidePluginKeysSet]) // serverSideApiKeyIsSet,
 
   // ON LOAD --------------------------------------------
 
@@ -462,7 +452,7 @@ const Home = ({
         },
       })
     }
-  }, [defaultModelId, dispatch, serverSideApiKeyIsSet, serverSidePluginKeysSet])
+  }, [defaultModelId, dispatch, serverSidePluginKeysSet])
 
   return (
     <HomeContext.Provider
@@ -529,31 +519,10 @@ export const getServerSideProps: GetServerSideProps = async (
   context: GetServerSidePropsContext,
 ) => {
   console.log('ServerSideProps: ', context.params)
-  const course_name = context.params?.course_name as string
+  // const course_name = context.params?.course_name as string
   const { locale } = context
   let serverSideApiKeyIsSet = false
 
-  // Check course authed users
-  try {
-    const course_metadata = (await kv.hget(
-      'course_metadatas',
-      course_name,
-    )) as CourseMetadata
-    console.log('in api getCourseMetadata: course_metadata', course_metadata)
-
-    if (!course_metadata) {
-      // TODO: add axiom warning (could happen when no course exists. )
-      console.warn(
-        'WARNING: Course metadata not found in KV database (its null, could happen when no course exists and ppl go directly to /metadata or /gpt4)',
-      )
-    } else if (course_metadata && course_metadata.openai_api_key) {
-      serverSideApiKeyIsSet = true
-    }
-
-    console.log('home.tsx -- Course metadata in server-side: ', course_metadata)
-  } catch (error) {
-    console.error('Error occurred while fetching courseMetadata', error)
-  }
   const defaultModelId =
     (process.env.DEFAULT_MODEL &&
       Object.values(OpenAIModelID).includes(
@@ -574,13 +543,13 @@ export const getServerSideProps: GetServerSideProps = async (
   }
 
   // If openai_api_key is not present in course_metadata, use the one from process.env - fallback needed for models api.
-  console.log('Final serverSideApiKeyIsSet', serverSideApiKeyIsSet)
+  // console.log('Final serverSideApiKeyIsSet', serverSideApiKeyIsSet)
 
   return {
     props: {
       // ...buildClerkProps(context.req), // https://clerk.com/docs/nextjs/getserversideprops
       // TODO: here we can fetch the keys...
-      serverSideApiKeyIsSet,
+      // serverSideApiKeyIsSet,
       defaultModelId,
       serverSidePluginKeysSet,
       ...(await serverSideTranslations(locale ?? 'en', [

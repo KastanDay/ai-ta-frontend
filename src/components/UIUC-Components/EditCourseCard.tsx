@@ -713,11 +713,8 @@ const PrivateOrPublicCourse = ({
         />
       </Group>
 
-      <Text
-        className={`label ${montserrat_light.className} inline-block`}
-        size={'sm'}
-      >
-        Only the below email address are able to access the content. That&apos;s
+      <Text className={`label ${montserrat_light.className}`} size={'sm'}>
+        Only these email address are able to access the content. That&apos;s
         useful when setting a Course Wide OpenAI Key (above) to limit usage.
         Read our{' '}
         <a
@@ -730,6 +727,9 @@ const PrivateOrPublicCourse = ({
           strict security policy
         </a>
         .
+        <br />
+        To add Admin users, who will have full edit access on this page, please
+        just shoot me an email kvday2@illinois.edu.
       </Text>
       {/* <a href="/privacy">strict security policy</a>. Useful when setting a Course Wide OpenAI Key to limit usage. */}
       {isPrivate && (
