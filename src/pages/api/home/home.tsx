@@ -150,11 +150,7 @@ const Home = () => {
           'No openai_api_key found in course_metadata, but found one in client localStorage',
         )
         key = local_api_key
-        // setServerSideApiKeyIsSet(true)
-        dispatch({
-          field: 'serverSideApiKeyIsSet',
-          value: true,
-        })
+
         dispatch({ field: 'apiKey', value: local_api_key })
       } else {
         console.error(

@@ -247,7 +247,10 @@ export const ChatInput = ({
 
   useEffect(() => {
     setContent(inputContent)
-  }, [inputContent])
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [inputContent, textareaRef])
 
   useEffect(() => {
     if (promptListRef.current) {
