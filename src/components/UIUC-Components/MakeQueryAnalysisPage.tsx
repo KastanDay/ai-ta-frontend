@@ -1,11 +1,6 @@
 import Head from 'next/head'
 import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
-import {
-  Montserrat,
-  // Inter,
-  // Rubik_Puddles,
-  // Audiowide,
-} from 'next/font/google'
+import { montserrat_heading } from 'fonts'
 import {
   // Card,
   // Image,
@@ -28,7 +23,6 @@ import {
   // Tooltip,
 } from '@mantine/core'
 // const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
-const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
@@ -164,7 +158,7 @@ const MakeQueryAnalysisPage = ({
               <Flex direction="row" justify="space-between">
                 <div className="flex flex-row items-start justify-start">
                   <Title
-                    className={montserrat.className}
+                    className={`${montserrat_heading.variable} font-montserratHeading`}
                     variant="gradient"
                     gradient={{
                       from: 'hsl(280,100%,70%)',
@@ -206,7 +200,7 @@ const MakeQueryAnalysisPage = ({
                 />
                 <Title
                   order={6}
-                  className={`w-full text-center ${montserrat.className} mt-2`}
+                  className={`w-full text-center ${montserrat_heading.variable} mt-2 font-montserratHeading`}
                 >
                   A conceptual map of the questions asked by users on this page.
                   <br></br>
@@ -226,7 +220,7 @@ const MakeQueryAnalysisPage = ({
               <>
                 <Title
                   order={6}
-                  className={`w-full text-center ${montserrat.className} mt-2`}
+                  className={`w-full text-center ${montserrat_heading.variable} mt-2 font-montserratHeading`}
                 >
                   Query visualization requires at least 20 queries to be made...
                   go ask some questions and check back later :)
