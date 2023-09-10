@@ -1,15 +1,8 @@
 import Head from 'next/head'
 import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
 import {
-  Montserrat,
-  // Inter,
-  // Rubik_Puddles,
-  // Audiowide,
-} from 'next/font/google'
-import {
   // Card,
   // Image,
-  Text,
   // Badge,
   // MantineProvider,
   // Button,
@@ -20,7 +13,6 @@ import {
   // rem,
   Title,
   Flex,
-  Group,
   createStyles,
   // Divider,
   MantineTheme,
@@ -28,8 +20,6 @@ import {
   // Tooltip,
 } from '@mantine/core'
 // const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
-const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
-import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
@@ -136,6 +126,94 @@ const MakeOldCoursePage = ({
               current_user_email={currentEmail}
               courseMetadata={courseMetadata}
             />
+            <div
+              // Course files header/background
+              className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
+              style={{ zIndex: 1, background: '#15162c' }}
+            >
+              <Flex direction="row" justify="space-between">
+                <div className="flex flex-row items-start justify-start">
+                  <Title
+                    className={`${montserrat_heading.variable} font-montserratHeading`}
+                    variant="gradient"
+                    gradient={{
+                      from: 'hsl(280,100%,70%)',
+                      to: 'white',
+                      deg: 185,
+                    }}
+                    order={3}
+                    p="xl"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {' '}
+                    What questions are people asking?
+                  </Title>
+                </div>
+                <div className="me-6 mt-4 flex flex-row items-end justify-end">
+                  {/* Can add more buttons here */}
+                </div>
+              </Flex>
+            </div>
+            <div className="pt-5"></div>
+            {/* NOMIC VISUALIZATION  */}
+            {/* {false ? ( */}
+            {/* {true ? ( */}
+            {nomicIsLoading ? (
+              <>
+                <span className="nomic-iframe skeleton-box pl-7 pr-7 pt-4"></span>
+              </>
+            ) : nomicMapData && nomicMapData.map_id ? (
+              <>
+                <iframe
+                  className="nomic-iframe pl-7 pr-7 pt-4 pt-4"
+                  id={nomicMapData.map_id}
+                  allow="clipboard-read; clipboard-write"
+                  src={nomicMapData.map_link}
+                />
+                <Title
+                  order={6}
+                  className={`w-full text-center ${montserrat_heading.variable} mt-2 font-montserratHeading`}
+                >
+                  A conceptual map of the questions asked by users on this page.
+                  <br></br>
+                  Read more about{' '}
+                  <a
+                    className={'text-purple-600'}
+                    href="https://home.nomic.ai/about"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'underline', paddingRight: '5px' }}
+                  >
+                    semantic similarity visualizations
+                  </a>
+                </Title>
+              </>
+            ) : (
+              <>
+                <Title
+                  order={6}
+                  className={`w-full text-center ${montserrat_heading.variable} mt-2 font-montserratHeading`}
+                >
+                  Query visualization requires at least 20 queries to be made...
+                  go ask some questions and check back later :)
+                  <br></br>
+                  Read more about{' '}
+                  <a
+                    className={'text-purple-600'}
+                    href="https://home.nomic.ai/about"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'underline', paddingRight: '5px' }}
+                  >
+                    semantic similarity visualizations
+                  </a>
+                </Title>
+              </>
+            )}
 
             {/* Course files header/background */}
             <div
@@ -145,7 +223,7 @@ const MakeOldCoursePage = ({
               <Flex direction="row" justify="space-between">
                 <div className="flex flex-row items-start justify-start">
                   <Title
-                    className={montserrat.className}
+                    className={`${montserrat_heading.variable} font-montserratHeading`}
                     variant="gradient"
                     gradient={{
                       from: 'hsl(280,100%,70%)',
@@ -186,7 +264,12 @@ const MakeOldCoursePage = ({
   )
 }
 
-import { IconCheck, IconDownload, IconLock } from '@tabler/icons-react'
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconDownload,
+  IconLock,
+} from '@tabler/icons-react'
 
 import { CannotEditCourse } from './CannotEditCourse'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -213,6 +296,7 @@ import Navbar from '~/components/UIUC-Components/Navbar'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
+import { montserrat_heading } from 'fonts'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
@@ -418,14 +502,11 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
       title: was_error ? 'Error deleting file' : 'Deleting file...',
       message: was_error
         ? "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug."
-        : 'The file will be delted in the background. After about 10 seconds, it will be 100% purged from our servers and, of course, will no longer be used by the chatbot.',
-      icon: <IconCheck />,
-      // className: 'my-notification-class',
+        : 'The file will be deleted in the background. After about 10 seconds, it will be 100% purged from our servers and, of course, will no longer be used by the chatbot.',
+      icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
       styles: {
         root: {
-          backgroundColor: was_error
-            ? theme.colors.errorBackground
-            : theme.colors.nearlyWhite,
+          backgroundColor: theme.colors.nearlyWhite,
           borderColor: was_error
             ? theme.colors.errorBorder
             : theme.colors.aiPurple,

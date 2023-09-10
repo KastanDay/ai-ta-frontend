@@ -1,5 +1,4 @@
 import Head from 'next/head'
-import { Montserrat } from 'next/font/google'
 // import {
 //   Card,
 //   Text,
@@ -15,11 +14,6 @@ import { Montserrat } from 'next/font/google'
 //   type CheckboxProps,
 //   Title,
 // } from '@mantine/core'
-
-const montserrat = Montserrat({
-  weight: '700',
-  subsets: ['latin'],
-})
 
 import React, { useState } from 'react'
 // import GlobalHeader from './GlobalHeader'
