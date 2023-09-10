@@ -66,7 +66,7 @@ export const CannotEditGPT4Page = ({
               p="xl"
             >
               {' '}
-              Go to any other ULR, like{' '}
+              Go to any other URL, like{' '}
               <Link href={'/your-awesome-course'}>
                 uiuc.chat/your-awesome-course
               </Link>

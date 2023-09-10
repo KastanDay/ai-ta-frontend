@@ -2,7 +2,7 @@ import Link from 'next/link'
 import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
 import { Flex } from '@mantine/core'
 import { ResumeToChat } from './ResumeToChat'
-import { GoToQueryAnalysis } from './GoToQueryAnalysis'
+import { GoToMaterials } from './GoToMaterials'
 
 const Navbar = ({ course_name = '' }) => (
   <div className="flex flex-col items-center bg-[#2e026d]">
@@ -16,8 +16,8 @@ const Navbar = ({ course_name = '' }) => (
           </Link>
         </div>
         <Flex direction="row" align="center" justify="center">
-        <div className="ms-4 mt-4 flex flex-row items-center justify-center gap-2">
-            <GoToQueryAnalysis course_name={course_name} />
+          <div className="ms-4 mt-4 flex flex-row items-center justify-center gap-2">
+            <GoToMaterials course_name={course_name} />
           </div>
           <div className="ms-4 mt-4 flex flex-row items-center justify-center gap-2">
             <ResumeToChat course_name={course_name} />

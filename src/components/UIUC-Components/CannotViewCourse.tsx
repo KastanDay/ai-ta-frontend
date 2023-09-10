@@ -210,7 +210,7 @@ export const CannotViewCourse = ({
               If <i>you are</i> the creator or an admin, please sign in with the
               account you used to create this page (in the top right).
               <br></br>
-              Or go to any other ULR to make a new page, like{' '}
+              Or go to any other URL to make a new page, like{' '}
               <Link href={'/your-awesome-course'}>
                 uiuc.chat/your-awesome-course
               </Link>
