@@ -2,7 +2,7 @@ import Image from 'next/image'
 import { type NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React from 'react'
 
 import {
   // MantineProvider,
@@ -16,15 +16,7 @@ import {
   Group,
 } from '@mantine/core'
 
-
-import SignInPage from '~/pages/sign-in/[[...index]]'
-
-// import { api } from '~/utils/api'
-import Header from '~/components/UIUC-Components/GlobalHeader'
-
 const Home: NextPage = () => {
-
-  // ...
 
   return (
     <>

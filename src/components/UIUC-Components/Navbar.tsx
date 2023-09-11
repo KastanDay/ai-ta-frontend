@@ -28,6 +28,7 @@ const useStyles = createStyles((theme) => ({
 
   links: {
     paddingTop: theme.spacing.lg,
+    // paddingTop: rem(100),
     height: HEADER_HEIGHT,
     display: 'flex',
     flexDirection: 'row',
@@ -41,10 +42,10 @@ const useStyles = createStyles((theme) => ({
   link: {
     textTransform: 'uppercase',
     fontSize: rem(13),
-    color: theme.colorScheme === 'dark' ? theme.colors.dark[1] : theme.colors.gray[6],
+    // color: theme.colorScheme === 'dark' ? theme.colors.dark[1] : theme.colors.gray[6],
     padding: `${rem(7)} ${theme.spacing.sm}`,
     fontWeight: 700,
-    borderBottom: `${rem(2)} solid transparent`,
+    // borderBottom: `${rem(2)} solid transparent`,
     transition: 'border-color 100ms ease, color 100ms ease',
 
     '&:hover': {
@@ -81,16 +82,16 @@ const Navbar = ({ course_name = '' }: { course_name?: string }) => {
               <GoToQueryAnalysis course_name={course_name} />
             </div>
 
-            <Header height={HEADER_HEIGHT} mb={120}>
-              <Container className={classes.classes.inner}>
-                <div className={classes.classes.links}>
-                  <Link href={`${course_name}/chat`} className={classes.classes.link}>Chat</Link>
-                  <Link href={`${course_name}/materials`} className={classes.classes.link}>Materials</Link>
-                  <Link href={`${course_name}/query-analysis`} className={classes.classes.link}>Analysis</Link>
-                  <Link href={`${course_name}/setting`} className={classes.classes.link}>Setting</Link>
-                </div>
-              </Container>
-            </Header>
+            {/* <Header height={HEADER_HEIGHT} mb={120}> */}
+            <Container className={classes.classes.inner}>
+              <div className={classes.classes.links}>
+                <Link href={`${course_name}/chat`} className={classes.classes.link}>Chat</Link>
+                <Link href={`${course_name}/materials`} className={classes.classes.link}>Materials</Link>
+                <Link href={`${course_name}/query-analysis`} className={classes.classes.link}>Analysis</Link>
+                <Link href={`${course_name}/setting`} className={classes.classes.link}>Setting</Link>
+              </div>
+            </Container>
+            {/* </Header> */}
 
 
             <GlobalHeader isNavbar={true} />
