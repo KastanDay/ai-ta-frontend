@@ -79,8 +79,6 @@ const MakeOldCoursePage = ({
     fetchData()
   }, [currentPageName, clerk_user.isLoaded])
 
-  
-
   if (!isLoaded || !courseMetadata) {
     return (
       <MainPageBackground>
@@ -126,7 +124,6 @@ const MakeOldCoursePage = ({
               current_user_email={currentEmail}
               courseMetadata={courseMetadata}
             />
-            
 
             {/* Course files header/background */}
             <div
