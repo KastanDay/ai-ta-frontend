@@ -103,7 +103,7 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
     if (!e.ctrlKey && !e.metaKey) {
       e.preventDefault()
       setIsLoading(true)
-      router.push(`/${course_name}/query-analysis`)
+      router.push(`/${course_name}/gpt4`)
     }
     // If ctrl/cmd key is pressed, do nothing and let the browser handle the new tab opening
   }
@@ -114,8 +114,9 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
 
   return (
     <div className={classes.wrapper}>
-      <button
+      <a
         onClick={handleClick}
+        href={`/${course_name}/gpt4`}
         className={`btn rounded-full ${classes.button}`}
         style={{
           backgroundColor: 'transparent',
@@ -166,7 +167,7 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
             <span className="loading loading-spinner loading-xs"></span>
           </div>
         )}
-      </button>
+      </a>
     </div>
   )
 }
@@ -176,9 +177,14 @@ export function GoToMaterials({ course_name }: { course_name?: string }) {
   const { classes, theme } = useStyles()
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleClick = () => {
-    setIsLoading(true)
-    router.push(`/${course_name}/materials`)
+  const handleClick = (e: React.MouseEvent) => {
+    // If ctrl/cmd key is not pressed, prevent default behavior and programmatically navigate
+    if (!e.ctrlKey && !e.metaKey) {
+      e.preventDefault()
+      setIsLoading(true)
+      router.push(`/${course_name}/materials`)
+    }
+    // If ctrl/cmd key is pressed, do nothing and let the browser handle the new tab opening
   }
 
   if (!course_name) {
@@ -187,8 +193,9 @@ export function GoToMaterials({ course_name }: { course_name?: string }) {
 
   return (
     <div className={classes.wrapper}>
-      <button
+      <a
         onClick={handleClick}
+        href={`/${course_name}/materials`}
         className={`btn rounded-full ${classes.button}`}
         style={{
           backgroundColor: 'transparent',
@@ -225,7 +232,7 @@ export function GoToMaterials({ course_name }: { course_name?: string }) {
             <span className="loading loading-spinner loading-xs"></span>
           </div>
         )}
-      </button>
+      </a>
     </div>
   )
 }
