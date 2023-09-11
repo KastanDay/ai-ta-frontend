@@ -1,9 +1,8 @@
 import { useRouter } from 'next/router'
-import { createStyles, rem, Title, useMantineTheme, Text } from '@mantine/core'
+import { createStyles, Group, Text } from '@mantine/core'
 import React, { useState } from 'react'
-import { Montserrat } from 'next/font/google'
-
-const montserrat = Montserrat({ weight: '700', subsets: ['latin'] })
+import { IconReportAnalytics } from '@tabler/icons-react'
+import { montserrat_paragraph } from 'fonts'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -53,6 +52,7 @@ export function GoToQueryAnalysis({ course_name }: { course_name?: string }) {
           outline: `solid 1.5px ${theme.colors.grape[8]}`,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
+          minWidth: '100%', // Add this line to ensure the button maintains its width
         }}
         onMouseEnter={(e) =>
           (e.currentTarget.style.backgroundColor = theme.colors.grape[8])
@@ -61,23 +61,26 @@ export function GoToQueryAnalysis({ course_name }: { course_name?: string }) {
           (e.currentTarget.style.backgroundColor = 'transparent')
         }
       >
-        {isLoading ? (
-          <>
-            <span className="loading loading-spinner loading-xs"></span>
-          </>
-        ) : (
-          <>
+        <div style={{ visibility: isLoading ? 'hidden' : 'visible' }}>
+          <Group style={{ gap: '5px' }}>
             <Text
               size={theme.fontSizes.sm}
+              className={`${montserrat_paragraph.variable} font-montserratParagraph`}
               color={
                 theme.colorScheme === 'dark'
                   ? theme.colors.gray[0]
                   : theme.black
               }
             >
-              Go to Query Analysis
+              Query Analysis
             </Text>
-          </>
+            <IconReportAnalytics color="white" />
+          </Group>
+        </div>
+        {isLoading && (
+          <div style={{ position: 'absolute' }}>
+            <span className="loading loading-spinner loading-xs"></span>
+          </div>
         )}
       </button>
     </div>

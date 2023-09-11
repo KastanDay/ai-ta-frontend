@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router'
-import { createStyles, Text } from '@mantine/core'
+import { createStyles, Group, Text } from '@mantine/core'
 import React, { useState } from 'react'
+import { montserrat_paragraph } from 'fonts'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -50,6 +51,7 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
           outline: `solid 1.5px ${theme.colors.grape[8]}`,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
+          minWidth: '100%',
         }}
         onMouseEnter={(e) =>
           (e.currentTarget.style.backgroundColor = theme.colors.grape[8])
@@ -58,14 +60,11 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
           (e.currentTarget.style.backgroundColor = 'transparent')
         }
       >
-        {isLoading ? (
-          <>
-            <span className="loading loading-spinner loading-xs"></span>
-          </>
-        ) : (
-          <>
+        <div style={{ visibility: isLoading ? 'hidden' : 'visible' }}>
+          <Group style={{ gap: '5px' }}>
             <Text
               size={theme.fontSizes.sm}
+              className={`${montserrat_paragraph.variable} font-montserratParagraph`}
               color={
                 theme.colorScheme === 'dark'
                   ? theme.colors.gray[0]
@@ -89,7 +88,12 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
                 strokeLinejoin="round"
               />
             </svg>
-          </>
+          </Group>
+        </div>
+        {isLoading && (
+          <div style={{ position: 'absolute' }}>
+            <span className="loading loading-spinner loading-xs"></span>
+          </div>
         )}
       </button>
     </div>
