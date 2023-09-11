@@ -1,7 +1,8 @@
 import { type NextPage } from 'next'
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
-import MakeOldCoursePage from '~/components/UIUC-Components/MakeOldCoursePage'
+import MakeNomicVisualizationPage from '~/components/UIUC-Components/MakeQueryAnalysisPage'
 import React, { useEffect, useState } from 'react'
+import { Montserrat } from 'next/font/google'
 import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
 import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
@@ -10,7 +11,11 @@ import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackgro
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { Title } from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
-import { montserrat_heading } from 'fonts'
+
+const montserrat = Montserrat({
+  weight: '700',
+  subsets: ['latin'],
+})
 
 const CourseMain: NextPage = () => {
   const router = useRouter()
@@ -71,7 +76,7 @@ const CourseMain: NextPage = () => {
     return (
       <MainPageBackground>
         <Title
-          className={`${montserrat_heading.variable} font-montserratHeading`}
+          className={montserrat.className}
           variant="gradient"
           gradient={{ from: 'gold', to: 'white', deg: 50 }}
           order={3}
@@ -116,7 +121,7 @@ const CourseMain: NextPage = () => {
 
   return (
     <>
-      <MakeOldCoursePage
+      <MakeNomicVisualizationPage
         course_name={course_name as string}
         course_data={courseData}
       />
