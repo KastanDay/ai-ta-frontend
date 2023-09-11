@@ -1,4 +1,4 @@
-import { Montserrat, Rubik_Puddles } from 'next/font/google'
+import { Montserrat } from 'next/font/google'
 
 // Docs: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts#with-tailwind-css
 
