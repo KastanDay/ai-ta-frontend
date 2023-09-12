@@ -31,8 +31,9 @@ const styles: Record<string, React.CSSProperties> = {
 
 const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = false }) => (
   <div
-    className={`flex flex-col items-center ${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'
-      }`}
+    className={`flex flex-col items-center ${
+      isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'
+    }`}
   >
     <div className="mt-4 w-full max-w-[95%]">
       <div className="navbar rounded-badge h-24 min-h-fit bg-[#15162c] shadow-lg shadow-purple-800">

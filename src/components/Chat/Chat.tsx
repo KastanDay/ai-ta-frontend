@@ -637,7 +637,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ref={chatContainerRef}
             onScroll={handleScroll}
           >
+            {/* <TopBarInChat course_name={getCurrentPageName()} /> */}
+            {/* <div className="bg-red-500" > */}
             <TopBarInChat course_name={getCurrentPageName()} />
+            {/* </div> */}
 
             {selectedConversation?.messages.length === 0 ? (
               <>
