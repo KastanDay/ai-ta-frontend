@@ -5,23 +5,23 @@ import { GoToQueryAnalysis, ResumeToChat } from './NavbarButtons'
 import Image from 'next/image'
 
 const styles: Record<string, React.CSSProperties> = {
-  /* User-uploaded logos */
   logoContainerBox: {
-    // width: '250px',
-    width: '80%',
-    /* Set the width of the box */
-    height: '220px',
-    /* Set the height of the box */
+    // Control box size
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    maxWidth: '100%',
+    minWidth: '40%',
+    height: '80px',
     overflow: 'hidden',
-    /* Hide any overflow content */
     position: 'relative',
-    /* Establishes a point of reference for the inner img */
   },
   thumbnailImage: {
+    // controls picture size inside of the box
     objectFit: 'cover',
     objectPosition: 'center',
     position: 'absolute',
-    minHeight: '20%',
+    minHeight: '50px',
     minWidth: '50%',
     top: '50%',
     left: '50%',
@@ -31,9 +31,8 @@ const styles: Record<string, React.CSSProperties> = {
 
 const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = false }) => (
   <div
-    className={`flex flex-col items-center ${
-      isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'
-    }`}
+    className={`flex flex-col items-center ${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'
+      }`}
   >
     <div className="mt-4 w-full max-w-[95%]">
       <div className="navbar rounded-badge h-24 min-h-fit bg-[#15162c] shadow-lg shadow-purple-800">
