@@ -35,7 +35,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
 
     return (
       <div className="z-20 flex flex-col md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
-        <div className="backdrop-filter-[blur(10px)] flex h-full flex-col space-y-4 rounded-lg border border-2 border-b border-[rgba(42,42,120,0.55)] border-neutral-200 p-4 dark:border-neutral-600 dark:bg-[rgba(42,42,64,1)] md:rounded-lg md:border">
+        <div className="backdrop-filter-[blur(10px)] bg-#1f1f1f dark:bg-#1f1f1f flex h-full flex-col space-y-4 rounded-lg border border-2 border-b border-[rgba(42,42,120,1)] border-neutral-200 p-4 dark:border-[rgba(42,42,120,1)] dark:border-neutral-600 md:rounded-lg md:border">
           <div
             // THIS IS THE REFERENCE we use in TopBarChat.tsx to enable the "click away" behavior
             ref={ref as any}

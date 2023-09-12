@@ -6,10 +6,8 @@ import {
 } from '@tabler/icons-react'
 import { Text } from '@mantine/core'
 import { ModelSelect } from '../Chat/ModelSelect'
-import { Conversation } from '~/types/chat'
 import { useContext, useEffect, useRef } from 'react'
 import HomeContext from '~/pages/api/home/home.context'
-import { useRouter } from 'next/router'
 import Link from 'next/link'
 
 export default function TopBarInChat({ course_name }: { course_name: string }) {
