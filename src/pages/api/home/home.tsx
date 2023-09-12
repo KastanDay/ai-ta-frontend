@@ -165,7 +165,7 @@ const Home = () => {
       try {
         if (!course_metadata || !key) return
         const data = await getModels({ key: key })
-        console.log("models from getModels()", data)
+        console.log('models from getModels()', data)
         dispatch({ field: 'models', value: data })
       } catch (error) {
         console.error('Error fetching models user has access to: ', error)

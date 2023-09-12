@@ -248,7 +248,7 @@ export const ChatInput = ({
   useEffect(() => {
     setContent(inputContent)
     if (textareaRef.current) {
-      textareaRef.current.focus();
+      textareaRef.current.focus()
     }
   }, [inputContent, textareaRef])
 

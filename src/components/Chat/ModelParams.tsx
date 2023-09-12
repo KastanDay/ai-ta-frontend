@@ -38,7 +38,7 @@ export const ModelParams = ({
         onChange={handleCheckboxChange}
       />
       <Title
-        className={`collapse-title pt-4 pb-2 pl-6 ${montserrat_heading.variable} font-montserratHeading`}
+        className={`collapse-title pb-2 pl-6 pt-4 ${montserrat_heading.variable} font-montserratHeading`}
         order={4}
       >
         Advanced
@@ -46,15 +46,21 @@ export const ModelParams = ({
       {isChecked && (
         <div className="collapse-content">
           <div className="flex h-full flex-col space-y-4 rounded-lg p-2">
-            <div className="flex w-full items-center text-left space-y-0 pt-0">
-              <Input.Description className={`text-left text-sm ${montserrat_paragraph.variable} font-montserratParagraph`}>
+            <div className="flex w-full items-center space-y-0 pt-0 text-left">
+              <Input.Description
+                className={`text-left text-sm ${montserrat_paragraph.variable} font-montserratParagraph`}
+              >
                 <Link
                   href="https://platform.openai.com/account/usage"
                   target="_blank"
                   className="hover:underline"
                 >
                   View account usage on OpenAI{' '}
-                  <IconExternalLink size={15} style={{ position: 'relative', top: '2px' }} className={'mb-2 inline'} />
+                  <IconExternalLink
+                    size={15}
+                    style={{ position: 'relative', top: '2px' }}
+                    className={'mb-2 inline'}
+                  />
                 </Link>
               </Input.Description>
             </div>
@@ -79,11 +85,9 @@ export const ModelParams = ({
                 })
               }
             />
-
           </div>
         </div>
-      )
-      }
-    </div >
+      )}
+    </div>
   )
 }

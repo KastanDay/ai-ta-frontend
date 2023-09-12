@@ -12,16 +12,11 @@ import HomeContext from '~/pages/api/home/home.context'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 
-export default function TopBarInChat({
-  course_name,
-}: {
-  course_name: string
-}) {
+export default function TopBarInChat({ course_name }: { course_name: string }) {
   const {
     state: { showModelSettings, selectedConversation },
     dispatch: homeDispatch,
   } = useContext(HomeContext)
-
 
   const modelSettingsContainer = useRef<HTMLDivElement | null>(null)
   const topBarRef = useRef<HTMLDivElement | null>(null)
@@ -29,19 +24,27 @@ export default function TopBarInChat({
   // Clicking outside the box closes it
   // Don't close the box if we click of any of Model:, Upload Materials or Disclaimer.
   const handleClickOutside = (event: MouseEvent) => {
-    console.log("Target", event.target)
-    console.log("modelSettingsContainer.current", modelSettingsContainer.current)
-    console.log("Current showModelSettings: ", showModelSettings)
+    console.log('Target', event.target)
+    console.log(
+      'modelSettingsContainer.current',
+      modelSettingsContainer.current,
+    )
+    console.log('Current showModelSettings: ', showModelSettings)
 
-    if (event.target instanceof Node && topBarRef.current && topBarRef.current.contains(event.target)) {
+    if (
+      event.target instanceof Node &&
+      topBarRef.current &&
+      topBarRef.current.contains(event.target)
+    ) {
       // Do nothing, the click on button + and click outside should cancel out
     } else if (
-      modelSettingsContainer.current && topBarRef.current &&
+      modelSettingsContainer.current &&
+      topBarRef.current &&
       event.target instanceof Node &&
       !modelSettingsContainer.current.contains(event.target)
     ) {
       homeDispatch({ field: 'showModelSettings', value: false })
-      console.log("SHOULD HAVE CLOSED THE FIELD")
+      console.log('SHOULD HAVE CLOSED THE FIELD')
     }
   }
 
@@ -72,9 +75,11 @@ export default function TopBarInChat({
             <button
               className="ml-2 cursor-pointer hover:opacity-50"
               onClick={() => {
-                homeDispatch({ field: 'showModelSettings', value: !showModelSettings })
+                homeDispatch({
+                  field: 'showModelSettings',
+                  value: !showModelSettings,
+                })
               }}
-
             >
               <div className="flex items-center">
                 <Text
@@ -133,10 +138,7 @@ export default function TopBarInChat({
         </div>
 
         {/* MODEL SETTINGS HERE */}
-        {showModelSettings && (
-          < ModelSelect ref={modelSettingsContainer} />
-        )
-        }
+        {showModelSettings && <ModelSelect ref={modelSettingsContainer} />}
       </div>
     </>
   )
