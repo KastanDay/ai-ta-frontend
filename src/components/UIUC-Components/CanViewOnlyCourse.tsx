@@ -167,7 +167,7 @@ export const CanViewOnlyCourse = ({
               account you used to create this page (in the top right).
               <br></br>
               <br></br>
-              Or make a <i>new</i> page by going to any other ULR, like{' '}
+              Or make a <i>new</i> page by going to any other URL, like{' '}
               <Link href={'/your-awesome-course'}>
                 <u
                   style={{

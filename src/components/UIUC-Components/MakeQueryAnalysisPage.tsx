@@ -1,8 +1,10 @@
 import Head from 'next/head'
 import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
+import { montserrat_heading } from 'fonts'
 import {
   // Card,
   // Image,
+  Text,
   // Badge,
   // MantineProvider,
   // Button,
@@ -13,6 +15,7 @@ import {
   // rem,
   Title,
   Flex,
+  Group,
   createStyles,
   // Divider,
   MantineTheme,
@@ -20,6 +23,7 @@ import {
   // Tooltip,
 } from '@mantine/core'
 // const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
+import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
@@ -32,7 +36,7 @@ export const GetCurrentPageName = () => {
   return useRouter().asPath.slice(1).split('/')[0] as string
 }
 
-const MakeOldCoursePage = ({
+const MakeQueryAnalysisPage = ({
   course_name,
   course_data,
 }: {
@@ -79,6 +83,33 @@ const MakeOldCoursePage = ({
     fetchData()
   }, [currentPageName, clerk_user.isLoaded])
 
+  const [nomicMapData, setNomicMapData] = useState<NomicMapData | null>(null)
+  const [nomicIsLoading, setNomicIsLoading] = useState(true)
+
+  // fetch nomicMapData
+  useEffect(() => {
+    const fetchNomicMapData = async () => {
+      try {
+        console.log('Trying to fetch nomic!!')
+        const response = await fetch(
+          `/api/getNomicMapForQueries?course_name=${course_name}`,
+        )
+        const data = await response.json()
+        const parsedData: NomicMapData = {
+          map_id: data.map_id,
+          map_link: data.map_link,
+        }
+        setNomicMapData(parsedData)
+        setNomicIsLoading(false)
+      } catch (error) {
+        console.error('Error fetching nomic map:', error)
+        setNomicIsLoading(false) // Set nomicIsLoading to false even if there is an error
+      }
+    }
+
+    fetchNomicMapData()
+  }, [course_name])
+
   if (!isLoaded || !courseMetadata) {
     return (
       <MainPageBackground>
@@ -105,7 +136,7 @@ const MakeOldCoursePage = ({
 
   return (
     <>
-      <Navbar course_name={course_name} />
+      <QueryAnalysisNavbar course_name={course_name} />
 
       <Head>
         <title>{course_name}</title>
@@ -119,14 +150,8 @@ const MakeOldCoursePage = ({
       <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center">
         <div className="items-left flex w-full flex-col justify-center py-0">
           <Flex direction="column" align="center" w="100%">
-            <EditCourseCard
-              course_name={course_name}
-              current_user_email={currentEmail}
-              courseMetadata={courseMetadata}
-            />
-
-            {/* Course files header/background */}
             <div
+              // Course files header/background
               className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
             >
@@ -149,23 +174,70 @@ const MakeOldCoursePage = ({
                     }}
                   >
                     {' '}
-                    Course Files
+                    What questions are people asking?
                   </Title>
                 </div>
                 <div className="me-6 mt-4 flex flex-row items-end justify-end">
-                  <DropzoneS3Upload
-                    course_name={course_name}
-                    redirect_to_gpt_4={false}
-                    courseMetadata={courseMetadata}
-                  />
+                  {/* Can add more buttons here */}
                 </div>
               </Flex>
-              {/* NOMIC not bad, not great */}
-              {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
             </div>
-            <div className="mt-2 flex w-[80%] flex-col items-center justify-center">
-              <CourseFilesList files={course_data} />
-            </div>
+            <div className="pt-5"></div>
+            {/* NOMIC VISUALIZATION  */}
+            {/* {false ? ( */}
+            {/* {true ? ( */}
+            {nomicIsLoading ? (
+              <>
+                <span className="nomic-iframe skeleton-box pl-7 pr-7 pt-4"></span>
+              </>
+            ) : nomicMapData && nomicMapData.map_id ? (
+              <>
+                <iframe
+                  className="nomic-iframe pl-7 pr-7 pt-4 pt-4"
+                  id={nomicMapData.map_id}
+                  allow="clipboard-read; clipboard-write"
+                  src={nomicMapData.map_link}
+                />
+                <Title
+                  order={6}
+                  className={`w-full text-center ${montserrat_heading.variable} mt-2 font-montserratHeading`}
+                >
+                  A conceptual map of the questions asked by users on this page.
+                  <br></br>
+                  Read more about{' '}
+                  <a
+                    className={'text-purple-600'}
+                    href="https://home.nomic.ai/about"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'underline', paddingRight: '5px' }}
+                  >
+                    semantic similarity visualizations
+                  </a>
+                </Title>
+              </>
+            ) : (
+              <>
+                <Title
+                  order={6}
+                  className={`w-full text-center ${montserrat_heading.variable} mt-2 font-montserratHeading`}
+                >
+                  Query visualization requires at least 20 queries to be made...
+                  go ask some questions and check back later :)
+                  <br></br>
+                  Read more about{' '}
+                  <a
+                    className={'text-purple-600'}
+                    href="https://home.nomic.ai/about"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'underline', paddingRight: '5px' }}
+                  >
+                    semantic similarity visualizations
+                  </a>
+                </Title>
+              </>
+            )}
           </Flex>
         </div>
         <GlobalFooter />
@@ -174,12 +246,7 @@ const MakeOldCoursePage = ({
   )
 }
 
-import {
-  IconAlertTriangle,
-  IconCheck,
-  IconDownload,
-  IconLock,
-} from '@tabler/icons-react'
+import { IconCheck, IconDownload, IconLock } from '@tabler/icons-react'
 
 import { CannotEditCourse } from './CannotEditCourse'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -202,11 +269,9 @@ import { IconTrash } from '@tabler/icons-react'
 import { MainPageBackground } from './MainPageBackground'
 import { LoadingSpinner } from './LoadingSpinner'
 import { extractEmailsFromClerk } from './clerkHelpers'
-import Navbar from '~/components/UIUC-Components/Navbar'
-import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
+import QueryAnalysisNavbar from '~/components/UIUC-Components/QueryAnalysisNavbar'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
-import { montserrat_heading } from 'fonts'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
@@ -412,11 +477,14 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
       title: was_error ? 'Error deleting file' : 'Deleting file...',
       message: was_error
         ? "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug."
-        : 'The file will be deleted in the background. After about 10 seconds, it will be 100% purged from our servers and, of course, will no longer be used by the chatbot.',
-      icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
+        : 'The file will be delted in the background. After about 10 seconds, it will be 100% purged from our servers and, of course, will no longer be used by the chatbot.',
+      icon: <IconCheck />,
+      // className: 'my-notification-class',
       styles: {
         root: {
-          backgroundColor: theme.colors.nearlyWhite,
+          backgroundColor: was_error
+            ? theme.colors.errorBackground
+            : theme.colors.nearlyWhite,
           borderColor: was_error
             ? theme.colors.errorBorder
             : theme.colors.aiPurple,
@@ -439,4 +507,4 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
   )
 }
 
-export default MakeOldCoursePage
+export default MakeQueryAnalysisPage

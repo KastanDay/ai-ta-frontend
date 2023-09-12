@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
 import { Flex } from '@mantine/core'
-import { ResumeToChat } from './ResumeToChat'
-import Image from 'next/image'
+import { GoToQueryAnalysis, ResumeToChat } from './NavbarButtons'
 
 const styles: Record<string, React.CSSProperties> = {
   /* User-uploaded logos */
@@ -60,10 +59,12 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = false }) => (
 
         <Flex direction="row" align="center" justify="center">
           <div className="ms-4 mt-4 flex flex-row items-center justify-center gap-2">
+            <GoToQueryAnalysis course_name={course_name} />
+          </div>
+          <div className="ms-4 mt-4 flex flex-row items-center justify-center gap-2">
             <ResumeToChat course_name={course_name} />
           </div>
         </Flex>
-
         <GlobalHeader isNavbar={true} />
       </div>
     </div>

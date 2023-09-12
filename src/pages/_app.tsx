@@ -11,11 +11,20 @@ import { api } from '~/utils/api'
 
 import '~/styles/globals.css'
 import Maintenance from '~/components/UIUC-Components/Maintenance'
+import { useReportWebVitals } from 'next-axiom'
+
+// For axiom Web Vitals logging: https://axiom.co/docs/apps/vercel#sending-logs-to-axiom
+import { NextWebVitalsMetric } from 'next/app'
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
 }) => {
+
+  useReportWebVitals(((metric: NextWebVitalsMetric) => {
+    console.log(metric)
+  }) as any)
+
   if (process.env.NEXT_PUBLIC_MAINTENANCE === 'true') {
     return <Maintenance />
   } else {

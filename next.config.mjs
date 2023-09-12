@@ -7,6 +7,7 @@ await import('./src/env.mjs')
 import nextI18NextConfig from './next-i18next.config.mjs'
 import path from 'path'
 import withBundleAnalyzer from '@next/bundle-analyzer'
+import { withAxiom } from 'next-axiom'
 
 const bundleAnalyzerConfig = {
   enabled: process.env.ANALYZE === 'true',
@@ -38,4 +39,11 @@ const config = {
   },
 }
 
-export default withBundleAnalyzer(bundleAnalyzerConfig)(config)
+const withAxiomConfig = withAxiom(config)
+const withBundleAnalyzerConfig =
+  withBundleAnalyzer(bundleAnalyzerConfig)(config)
+
+export default {
+  ...withAxiomConfig,
+  ...withBundleAnalyzerConfig,
+}
