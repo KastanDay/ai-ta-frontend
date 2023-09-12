@@ -24,13 +24,6 @@ export default function TopBarInChat({ course_name }: { course_name: string }) {
   // Clicking outside the box closes it
   // Don't close the box if we click of any of Model:, Upload Materials or Disclaimer.
   const handleClickOutside = (event: MouseEvent) => {
-    console.log('Target', event.target)
-    console.log(
-      'modelSettingsContainer.current',
-      modelSettingsContainer.current,
-    )
-    console.log('Current showModelSettings: ', showModelSettings)
-
     if (
       event.target instanceof Node &&
       topBarRef.current &&
@@ -44,7 +37,6 @@ export default function TopBarInChat({ course_name }: { course_name: string }) {
       !modelSettingsContainer.current.contains(event.target)
     ) {
       homeDispatch({ field: 'showModelSettings', value: false })
-      console.log('SHOULD HAVE CLOSED THE FIELD')
     }
   }
 
