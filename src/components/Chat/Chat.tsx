@@ -50,13 +50,13 @@ import { type Plugin } from '@/types/plugin'
 
 import HomeContext from '~/pages/api/home/home.context'
 
-import Spinner from '../Spinner'
+// import Spinner from '../Spinner'
 import { ChatInput } from './ChatInput'
 import { ChatLoader } from './ChatLoader'
 import { ErrorMessageDiv } from './ErrorMessageDiv'
-import { ModelSelect } from './ModelSelect'
-import { SystemPrompt } from './SystemPrompt'
-import { TemperatureSlider } from './Temperature'
+// import { ModelSelect } from './ModelSelect'
+// import { SystemPrompt } from './SystemPrompt'
+// import { TemperatureSlider } from './Temperature'
 import { MemoizedChatMessage } from './MemoizedChatMessage'
 import { ModelParams } from './ModelParams'
 import { fetchPresignedUrl } from '~/components/UIUC-Components/ContextCards'
@@ -119,6 +119,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       modelError,
       loading,
       prompts,
+      showModelSettings,
     },
     handleUpdateConversation,
     dispatch: homeDispatch,
@@ -126,7 +127,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const [currentMessage, setCurrentMessage] = useState<Message>()
   const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true)
-  const [showSettings, setShowSettings] = useState<boolean>(false)
+  // const [showSettings, setShowSettings] = useState<boolean>(false)
   const [showScrollDownButton, setShowScrollDownButton] =
     useState<boolean>(false)
 
@@ -255,7 +256,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           messages: updatedConversation.messages,
           key:
             courseMetadata?.openai_api_key &&
-            courseMetadata?.openai_api_key != ''
+              courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
           prompt: updatedConversation.prompt,
@@ -463,7 +464,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   const handleSettings = () => {
-    setShowSettings(!showSettings)
+    // setShowSettings(!showSettings)
+    // TODO: dispatch if we should show model settings or not
+    homeDispatch({ field: 'showModelSettings', value: !showModelSettings })
   }
 
   const onClearAll = () => {
@@ -484,16 +487,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
   }
   const throttledScrollDown = throttle(scrollDown, 250)
-
-  // WHY IS THIS COMMENTED OUT???
-
-  // useEffect(() => {
-  //   console.log('currentMessage', currentMessage);
-  //   if (currentMessage) {
-  //     handleSend(currentMessage);
-  //     homeDispatch({ field: 'currentMessage', value: undefined });
-  //   }
-  // }, [currentMessage]);
 
   useEffect(() => {
     throttledScrollDown()
@@ -530,11 +523,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const statements = courseMetadata?.course_intro_message
     ? courseMetadata.course_intro_message.split('\n')
     : [
-        'Make a bullet point list of key takeaways of the course.',
-        'What is [your favorite topic] and why is it worth learning about?',
-        'How can I effectively prepare for the upcoming exam?',
-        'How many assignments in the course?',
-      ]
+      'Make a bullet point list of key takeaways of the course.',
+      'What is [your favorite topic] and why is it worth learning about?',
+      'How can I effectively prepare for the upcoming exam?',
+      'How many assignments in the course?',
+    ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
@@ -662,7 +655,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               <>
                 <TopBarInChat
                   handleSettings={handleSettings}
-                  showSettings={showSettings}
+                  showSettings={showModelSettings}
                   selectedConversation={selectedConversation}
                   redirectToMaterialsPage={redirectToMaterialsPage}
                 />
@@ -688,7 +681,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 <div className="sticky top-0 z-10">
                   <TopBarInChat
                     handleSettings={handleSettings}
-                    showSettings={showSettings}
+                    showSettings={showModelSettings}
                     selectedConversation={selectedConversation}
                     redirectToMaterialsPage={redirectToMaterialsPage}
                   />

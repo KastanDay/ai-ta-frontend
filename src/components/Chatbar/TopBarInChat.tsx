@@ -1,13 +1,7 @@
 import {
-  // IconCloudUpload,
   IconExternalLink,
   IconRobot,
   IconCloudUpload,
-  // IconArrowUpRight,
-  // IconFileTextAi,
-  // IconX,
-  // IconDownload,
-  // IconClearAll,
   // IconSettings,
 } from '@tabler/icons-react'
 import { Text } from '@mantine/core'
@@ -25,6 +19,7 @@ export default function TopBarInChat({
   selectedConversation: Conversation | undefined
   redirectToMaterialsPage: () => void
 }) {
+
   return (
     <>
       <div
@@ -92,20 +87,18 @@ export default function TopBarInChat({
           </a>
         </div>
       </div>
-      {showSettings && (
-        <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
-          <div className="backdrop-filter-[blur(10px)] flex h-full flex-col space-y-4 rounded-lg border border-2 border-b border-[rgba(42,42,120,0.55)] border-neutral-200 p-4 dark:border-neutral-600 dark:bg-[rgba(42,42,64,1)] md:rounded-lg md:border">
-            <ModelSelect />
-            {/* TODO: enable temperature & system prompt changes */}
-            {/* <ModelParams
-                selectedConversation={selectedConversation}
-                prompts={prompts}
-                handleUpdateConversation={handleUpdateConversation}
-                t={t}
-              /> */}
-          </div>
-        </div>
-      )}
+
+
+      <div>
+        {showSettings && (
+          // <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
+          //   <div className="backdrop-filter-[blur(10px)] flex h-full flex-col space-y-4 rounded-lg border border-2 border-b border-[rgba(42,42,120,0.55)] border-neutral-200 p-4 dark:border-neutral-600 dark:bg-[rgba(42,42,64,1)] md:rounded-lg md:border">
+          < ModelSelect />
+          //   </div >
+          // </div>
+        )
+        }
+      </div>
     </>
   )
 }

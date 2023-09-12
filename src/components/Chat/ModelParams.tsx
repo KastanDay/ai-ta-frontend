@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ModelSelect } from './ModelSelect'
+// import { ModelSelect } from './ModelSelect'
 import { SystemPrompt } from './SystemPrompt'
 import { TemperatureSlider } from './Temperature'
 
@@ -27,20 +27,18 @@ export const ModelParams = ({
   }
 
   return (
-    <div className="backdrop-filter-[blur(10px)] collapse-arrow collapse w-full rounded-xl border border-2 border-[rgba(42,42,120,0.7)] bg-[rgba(42,42,64,0.2)]">
+    <div className="backdrop-filter-[blur(10px)] collapse-arrow collapse w-full rounded-lg border ">
       <input
         type="checkbox"
         checked={isChecked}
         onChange={handleCheckboxChange}
       />
       <div className="collapse-title text-xl font-medium text-black dark:text-white">
-        Model Parameters
+        Advanced
       </div>
       {isChecked && (
         <div className="collapse-content">
           <div className="flex h-full flex-col space-y-4 rounded-lg p-4">
-            <ModelSelect />
-
             <SystemPrompt
               conversation={selectedConversation}
               prompts={prompts}

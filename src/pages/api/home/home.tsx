@@ -127,7 +127,7 @@ const Home = () => {
   useEffect(() => {
     if (!course_metadata) return
     const local_api_key = localStorage.getItem('apiKey')
-    console.log('apiKey in effect:', apiKey)
+    console.log('apiKey in localstorage:', apiKey)
     let key = ''
 
     if (course_metadata && course_metadata.openai_api_key) {
@@ -159,13 +159,16 @@ const Home = () => {
         )
       }
     }
-    const setOpenaiModel = () => {
+
+    const setOpenaiModel = async () => {
+      // Get models available to users
       try {
-        if (!course_metadata || !apiKey) return
-        const data = getModels({ key: key })
+        if (!course_metadata || !key) return
+        const data = await getModels({ key: key })
+        console.log("models from getModels()", data)
         dispatch({ field: 'models', value: data })
       } catch (error) {
-        console.log('Setting getModelsError: ', error)
+        console.error('Error fetching models user has access to: ', error)
         dispatch({ field: 'modelError', value: getModelsError(error) })
       }
     }

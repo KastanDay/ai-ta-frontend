@@ -12,7 +12,7 @@ const getCourseMetadata = async (req: any, res: any) => {
       'course_metadatas',
       course_name,
     )) as CourseMetadata
-    console.log('in api getCourseMetadata: course_metadata', course_metadata)
+    // console.log('in api getCourseMetadata: course_metadata', course_metadata)
 
     if (course_metadata == null) {
       return NextResponse.json({
