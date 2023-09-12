@@ -79,7 +79,7 @@ import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
 import Navbar from '../UIUC-Components/Navbar'
 import TopBarInChat from '../Chatbar/TopBarInChat'
-import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
+// import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
@@ -89,10 +89,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const getCurrentPageName = () => {
     // /CS-125/materials --> CS-125
     return router.asPath.slice(1).split('/')[0] as string
-  }
-
-  const redirectToMaterialsPage = () => {
-    router.push(`/${getCurrentPageName()}/materials`)
   }
 
   const [inputContent, setInputContent] = useState<string>('')
@@ -464,8 +460,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   const handleSettings = () => {
-    // setShowSettings(!showSettings)
-    // TODO: dispatch if we should show model settings or not
     homeDispatch({ field: 'showModelSettings', value: !showModelSettings })
   }
 
@@ -651,42 +645,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ref={chatContainerRef}
             onScroll={handleScroll}
           >
+            <TopBarInChat course_name={getCurrentPageName()} />
+
             {selectedConversation?.messages.length === 0 ? (
               <>
-                <TopBarInChat
-                  handleSettings={handleSettings}
-                  showSettings={showModelSettings}
-                  selectedConversation={selectedConversation}
-                  redirectToMaterialsPage={redirectToMaterialsPage}
-                />
-                {/* <CustomBanner bannerUrl={bannerUrl as string} /> Banner on fresh chat page */}
+                {/* NEW CHAT, NO MESSAGES YET */}
                 <Navbar bannerUrl={bannerUrl as string} isgpt4={true} />
-                <div className="xs:mx-2 mt-4 mt-8 flex max-w-3xl flex-col gap-3 gap-3 space-y-5 p-4 last:mb-2 sm:mx-4 md:mx-auto md:space-y-10 md:pt-12 lg:mx-auto">
-                  {models.length > 0 && (
-                    <div className="flex h-full flex-col space-y-4 focus:border-t-info/100 dark:border-neutral-600">
-                      <ModelParams
-                        selectedConversation={selectedConversation}
-                        prompts={prompts}
-                        handleUpdateConversation={handleUpdateConversation}
-                        t={t}
-                      />
-                    </div>
-                  )}
-                </div>
                 <div className="mt-16">{renderIntroductoryStatements()}</div>
               </>
             ) : (
               <>
                 {/* MESSAGES IN CHAT */}
-                <div className="sticky top-0 z-10">
-                  <TopBarInChat
-                    handleSettings={handleSettings}
-                    showSettings={showModelSettings}
-                    selectedConversation={selectedConversation}
-                    redirectToMaterialsPage={redirectToMaterialsPage}
-                  />
-                </div>
-                {/* <CustomBanner bannerUrl={bannerUrl as string} />{' '} */}
                 {selectedConversation?.messages.map((message, index) => (
                   <MemoizedChatMessage
                     key={index}
@@ -704,11 +673,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 {loading && <ChatLoader />}
                 <div
                   // className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"
-                  // reverse the order, go from transparent to the color
-                  // className="h-[162px] bg-gradient-to-t from-[rgba(42,42,64,0.4)] to-transparent"
-                  // className="h-[162px] bg-gradient-to-t from-[rgba(14,14,21,0.4)] to-transparent"
-                  className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
                   // className="h-[162px] bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]"
+                  className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
                   ref={messagesEndRef}
                 />
               </>
@@ -733,8 +699,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             setInputContent={setInputContent}
           />
         </>
-      )}
-    </div>
+      )
+      }
+    </div >
   )
 })
 Chat.displayName = 'Chat'
