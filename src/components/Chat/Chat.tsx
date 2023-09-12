@@ -74,7 +74,12 @@ import Navbar from '../UIUC-Components/Navbar'
 import TopBarInChat from '../Chatbar/TopBarInChat'
 // import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
 import { notifications } from '@mantine/notifications'
+import {Montserrat} from "next/font/google";
 
+const montserrat_med = Montserrat({
+  weight: '500',
+  subsets: ['latin'],
+})
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
   const clerk_obj = useUser()
@@ -282,14 +287,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           homeDispatch({ field: 'messageIsStreaming', value: false })
           notifications.show({
             id: 'error-notification',
-            variant: 'filled',
             withCloseButton: true,
             closeButtonProps: { color: 'red' },
             onClose: () => console.log('error unmounted'),
             onOpen: () => console.log('error mounted'),
             autoClose: 6000,
-            title: 'OpenAI Error',
-            message: response.statusText,
+            title: <Text size={'lg'} className={`${montserrat_med.className}`}>OpenAI Error</Text>,
+            message: <Text className={`${montserrat_med.className} text-neutral-200` }>{response.statusText}</Text>,
             color: 'red',
             radius: 'lg',
             icon: <IconAlertCircle />,
@@ -297,7 +301,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             style: { 
               backgroundColor: 'rgba(42,42,64,0.3)', 
               backdropFilter: 'blur(10px)', 
-              borderLeft: '5px solid red' 
+              borderLeft: '5px solid red',
             },
             withBorder: true,
             loading: false,
