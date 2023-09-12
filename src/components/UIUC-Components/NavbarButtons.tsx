@@ -143,7 +143,7 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
                   : theme.black
               }
             >
-              Back to Chat with Documents
+              Chat with Documents
             </Text>
             <svg
               width="24"
