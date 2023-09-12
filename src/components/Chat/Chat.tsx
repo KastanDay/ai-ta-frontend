@@ -287,7 +287,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             closeButtonProps: { color: 'red' },
             onClose: () => console.log('error unmounted'),
             onOpen: () => console.log('error mounted'),
-            autoClose: 4000,
+            autoClose: 6000,
             title: 'OpenAI Error',
             message: response.statusText,
             color: 'red',
