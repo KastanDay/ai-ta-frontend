@@ -45,15 +45,9 @@ export const ChatbarSettings = () => {
       <Import onImport={handleImportConversations} />
 
       <SidebarButton
-        text={t('Export data')}
+        text={t('Export history')}
         icon={<IconFileExport size={18} />}
         onClick={() => handleExportData()}
-      />
-
-      <SidebarButton
-        text={t('Settings')}
-        icon={<IconSettings size={18} />}
-        onClick={() => setIsSettingDialog(true)}
       />
 
       {!serverSideApiKeyIsSet ? (
@@ -62,12 +56,18 @@ export const ChatbarSettings = () => {
 
       {!serverSidePluginKeysSet ? <PluginKeys /> : null}
 
-      <SettingDialog
+      {/* Deprecate settings button for now... */}
+      {/* <SidebarButton
+        text={t('Settings')}
+        icon={<IconSettings size={18} />}
+        onClick={() => setIsSettingDialog(true)}
+      /> */}
+      {/* <SettingDialog
         open={isSettingDialogOpen}
         onClose={() => {
           setIsSettingDialog(false)
         }}
-      />
+      /> */}
     </div>
   )
 }

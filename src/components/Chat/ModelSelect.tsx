@@ -1,23 +1,13 @@
-import { useRef, useState, useEffect, LegacyRef } from 'react'
-import {
-  IconExternalLink,
-  IconChevronDown,
-  IconX,
-  IconArrowUpRight,
-} from '@tabler/icons-react'
+import { IconExternalLink } from '@tabler/icons-react'
 import { useContext } from 'react'
 import { useTranslation } from 'next-i18next'
 import { type OpenAIModel } from '@/types/openai'
 import HomeContext from '~/pages/api/home/home.context'
 import { ModelParams } from './ModelParams'
-import { montserrat_heading, montserrat_paragraph } from 'fonts'
-import { Group, Input, Title } from '@mantine/core'
+import { montserrat_heading } from 'fonts'
+import { Input, Title } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
-
-// your component code here
-// return {/* or another component that can accept ref */ } </div >;
-// });
 
 export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
   (props, ref) => {
@@ -26,15 +16,14 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
         selectedConversation,
         models,
         defaultModelId,
-        showModelSettings,
+        // showModelSettings,
         prompts,
       },
       handleUpdateConversation,
-      dispatch: homeDispatch,
+      // dispatch: homeDispatch,
     } = useContext(HomeContext)
 
     const { t } = useTranslation('chat')
-    // const wrapperRef = useRef<HTMLDivElement | null>(null)
 
     const handleModelClick = (modelId: string) => {
       selectedConversation &&
@@ -101,4 +90,4 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
   },
 )
 
-ModelSelect.displayName = 'ModelSelect';
+ModelSelect.displayName = 'ModelSelect'
