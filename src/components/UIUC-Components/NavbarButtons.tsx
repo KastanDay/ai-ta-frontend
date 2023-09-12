@@ -28,6 +28,8 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
+// The Navbar buttons buttons are defined individually below
+
 export function GoToQueryAnalysis({ course_name }: { course_name?: string }) {
   const router = useRouter()
   const { classes, theme } = useStyles()

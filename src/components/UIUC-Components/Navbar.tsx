@@ -7,7 +7,8 @@ import Image from 'next/image'
 const styles: Record<string, React.CSSProperties> = {
   /* User-uploaded logos */
   logoContainerBox: {
-    width: '250px',
+    // width: '250px',
+    width: '80%',
     /* Set the width of the box */
     height: '220px',
     /* Set the height of the box */
@@ -39,7 +40,7 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = false }) => (
         <div className="flex-1">
           <Link href="/">
             <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
-              UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
+              UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
             </h2>
           </Link>
           {bannerUrl && (
