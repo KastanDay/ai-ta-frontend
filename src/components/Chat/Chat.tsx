@@ -50,21 +50,13 @@ import { type Plugin } from '@/types/plugin'
 
 import HomeContext from '~/pages/api/home/home.context'
 
-// import Spinner from '../Spinner'
 import { ChatInput } from './ChatInput'
 import { ChatLoader } from './ChatLoader'
 import { ErrorMessageDiv } from './ErrorMessageDiv'
-// import { ModelSelect } from './ModelSelect'
-// import { SystemPrompt } from './SystemPrompt'
-// import { TemperatureSlider } from './Temperature'
 import { MemoizedChatMessage } from './MemoizedChatMessage'
-import { ModelParams } from './ModelParams'
 import { fetchPresignedUrl } from '~/components/UIUC-Components/ContextCards'
 
-// import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
-// import SearchQuery from '~/components/UIUC-Components/StatefulSearchQuery'
 import { type CourseMetadata } from '~/types/courseMetadata'
-// import { logConvoToSupabase } from '~/pages/api/UIUC-api/logConversationToSupabase'
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>
