@@ -40,13 +40,13 @@ export const OpenAIStream = async (
   key: string,
   messages: OpenAIChatMessage[],
 ) => {
-  let apiKey = key ? key : process.env.OPENAI_API_KEY
+  let apiKey = key
   if (key && !key.startsWith('sk-')) {
     const decryptedText = await decrypt(
       key,
       process.env.NEXT_PUBLIC_SIGNING_KEY as string,
     )
-    apiKey = decryptedText
+    apiKey = decryptedText as string
     console.log('Decrypted api key for openai chat: ', apiKey)
   } else {
     console.log('Using client key for openai chat: ', apiKey)

@@ -12,6 +12,7 @@ import {
   IconLock,
   IconBrain,
   IconCreditCard,
+  IconAlertCircle,
   // IconArrowUpRight,
   // IconFileTextAi,
   // IconX,
@@ -72,6 +73,7 @@ import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
 import Navbar from '../UIUC-Components/Navbar'
 import TopBarInChat from '../Chatbar/TopBarInChat'
 // import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
+import { notifications } from '@mantine/notifications'
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
@@ -278,7 +280,28 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         if (!response.ok) {
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
-          toast.error(response.statusText)
+          notifications.show({
+            id: 'error-notification',
+            variant: 'filled',
+            withCloseButton: true,
+            closeButtonProps: { color: 'red' },
+            onClose: () => console.log('error unmounted'),
+            onOpen: () => console.log('error mounted'),
+            autoClose: 4000,
+            title: 'OpenAI Error',
+            message: response.statusText,
+            color: 'red',
+            radius: 'lg',
+            icon: <IconAlertCircle />,
+            className: 'my-notification-class',
+            style: { 
+              backgroundColor: 'rgba(42,42,64,0.3)', 
+              backdropFilter: 'blur(10px)', 
+              borderLeft: '5px solid red' 
+            },
+            withBorder: true,
+            loading: false,
+          })
           return
         }
         const data = response.body
