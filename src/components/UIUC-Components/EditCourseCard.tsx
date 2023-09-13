@@ -526,6 +526,7 @@ const EditCourseCard = ({
                             ) as HTMLInputElement
                             if (courseMetadata && apiKeyInput) {
                               const inputValue = apiKeyInput.value
+                              // TODO: Actually test is key works on /models endpoint.
                               if (
                                 inputValue === '' &&
                                 courseMetadata.openai_api_key != ''
@@ -652,7 +653,31 @@ const EditCourseCard = ({
                   />
                   {isIntroMessageUpdated && (
                     <>
-                      <button
+                      <Button
+                        className="relative m-1 w-[30%] self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
+                        type="submit"
+                        onClick={async () => {
+                          setIsIntroMessageUpdated(false)
+                          if (courseMetadata) {
+                            courseMetadata.course_intro_message = introMessage
+                            // Update the courseMetadata object
+
+                            const resp = await callSetCourseMetadata(
+                              course_name,
+                              courseMetadata,
+                            )
+                            if (!resp) {
+                              console.log(
+                                'Error upserting course metadata for course: ',
+                                course_name,
+                              )
+                            }
+                          }
+                        }}
+                      >
+                        Submit
+                      </Button>
+                      {/* <button
                         className="btn-outline btn absolute bottom-0 right-0 m-1 h-[2%] rounded-3xl border-violet-800 py-1 text-violet-800  hover:bg-violet-800 hover:text-white"
                         onClick={async () => {
                           setIsIntroMessageUpdated(false)
@@ -674,7 +699,7 @@ const EditCourseCard = ({
                         }}
                       >
                         Submit
-                      </button>
+                      </button> */}
                     </>
                   )}
                 </div>
