@@ -8,6 +8,19 @@
   grid-template: auto / repeat(3, 1fr);
 } */
 
+/* Force dark mode for all users!! */
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  html {
+    color-scheme: dark;
+  }
+}
+
 ::-webkit-scrollbar-track {
   background-color: transparent;
 }
@@ -74,14 +87,12 @@ pre:has(div.codeblock) {
 /* Make the purple background fade out  */
 .course-page-main {
   /* height: 400px;     */
-  background: -webkit-gradient(
-    linear,
-    left top,
-    left bottom,
-    from(#2e026d),
-    to(#020307),
-    color-stop(0.75, #15162c)
-  );
+  background: -webkit-gradient(linear,
+      left top,
+      left bottom,
+      from(#2e026d),
+      to(#020307),
+      color-stop(0.75, #15162c));
   background-color: #020307;
   background-size: 100% 45%, 0%;
   background-repeat: no-repeat;
@@ -181,7 +192,7 @@ li {
   margin: 0 0.3rem 0.3rem 0;
 }
 
-.tag-item > .button {
+.tag-item>.button {
   background-color: blueviolet;
   width: 22px;
   height: 22px;
@@ -242,13 +253,11 @@ li {
   bottom: 0;
   left: 0;
   transform: translateX(-100%);
-  background-image: linear-gradient(
-    90deg,
-    rgba(99, 39, 175, 0) 0,
-    rgba(75, 85, 72, 0.2) 20%,
-    rgba(30, 64, 175, 0.5) 60%,
-    rgba(66, 1, 95, 0)
-  );
+  background-image: linear-gradient(90deg,
+      rgba(99, 39, 175, 0) 0,
+      rgba(75, 85, 72, 0.2) 20%,
+      rgba(30, 64, 175, 0.5) 60%,
+      rgba(66, 1, 95, 0));
   /* Changed the primary color to purple-900 */
   animation: shimmer 5s infinite;
   content: '';
