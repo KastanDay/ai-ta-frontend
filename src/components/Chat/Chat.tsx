@@ -556,11 +556,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     return (
       <div className="xs:mx-2 mt-4 max-w-3xl gap-3 px-4 last:mb-2 sm:mx-4 md:mx-auto lg:mx-auto ">
         <div className="backdrop-filter-[blur(10px)] rounded-lg border border-2 border-[rgba(42,42,120,0.55)] bg-[rgba(42,42,64,0.4)] p-6">
-          <h2
+          <Text
             className={`mb-2 text-lg text-white ${montserrat_heading.variable} font-montserratHeading`}
+            style={{ whiteSpace: 'pre-wrap' }}
           >
             {courseMetadata?.course_intro_message}
-          </h2>
+          </Text>
+
           <h4
             className={`text-md mb-2 text-white ${montserrat_paragraph.variable} font-montserratParagraph`}
           >
