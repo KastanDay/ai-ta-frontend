@@ -18,6 +18,7 @@ const EmailChipsComponent = ({
   onEmailAddressesChange,
   banner_image_s3,
   course_intro_message,
+  openai_api_key,
 }: {
   course_name: string
   course_owner: string
@@ -29,6 +30,7 @@ const EmailChipsComponent = ({
   ) => void // Add this prop type
   banner_image_s3: string
   course_intro_message: string
+  openai_api_key: string
 }) => {
   const [emailAddresses, setEmailAddresses] = useState<string[]>([])
   const [courseName, setCourseName] = useState<string>(course_name)
@@ -65,6 +67,8 @@ const EmailChipsComponent = ({
             approved_emails_list: newEmailAddresses,
             course_intro_message: course_intro_message,
             banner_image_s3: banner_image_s3,
+            openai_api_key: openai_api_key,
+            example_questions: undefined,
           }
           onEmailAddressesChange &&
             onEmailAddressesChange(curr_course_metadata, course_name)
@@ -79,6 +83,8 @@ const EmailChipsComponent = ({
           approved_emails_list: [...emailAddresses, trimmedValue],
           banner_image_s3: banner_image_s3,
           course_intro_message: course_intro_message,
+          openai_api_key: openai_api_key,
+          example_questions: undefined,
         })
       }
     }
@@ -102,6 +108,8 @@ const EmailChipsComponent = ({
         approved_emails_list: newEmailAddresses,
         course_intro_message: course_intro_message,
         banner_image_s3: banner_image_s3,
+        openai_api_key: openai_api_key,
+        example_questions: undefined,
       }
       onEmailAddressesChange &&
         onEmailAddressesChange(curr_course_metadata, course_name)
@@ -130,6 +138,8 @@ const EmailChipsComponent = ({
           approved_emails_list: newEmailAddresses,
           course_intro_message: course_intro_message,
           banner_image_s3: banner_image_s3,
+          openai_api_key: openai_api_key,
+          example_questions: undefined,
         }
         onEmailAddressesChange &&
           onEmailAddressesChange(curr_course_metadata, course_name)
@@ -143,6 +153,8 @@ const EmailChipsComponent = ({
         approved_emails_list: [...emailAddresses, ...toBeAdded],
         banner_image_s3: banner_image_s3,
         course_intro_message: course_intro_message,
+        openai_api_key: openai_api_key,
+        example_questions: undefined,
       })
     }
   }

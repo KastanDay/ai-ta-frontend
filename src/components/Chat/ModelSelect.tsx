@@ -1,95 +1,91 @@
-import { useRef, useState, useEffect } from 'react'
-import { IconExternalLink, IconChevronDown } from '@tabler/icons-react'
+import { IconExternalLink } from '@tabler/icons-react'
 import { useContext } from 'react'
 import { useTranslation } from 'next-i18next'
 import { type OpenAIModel } from '@/types/openai'
 import HomeContext from '~/pages/api/home/home.context'
+import { ModelParams } from './ModelParams'
+import { montserrat_heading } from 'fonts'
+import { Input, NativeSelect, Title } from '@mantine/core'
+import Link from 'next/link'
+import React from 'react'
 
-export const ModelSelect = () => {
-  const { t } = useTranslation('chat')
-  const [isOpen, setIsOpen] = useState(false)
-  const wrapperRef = useRef<HTMLDivElement | null>(null)
+export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
+  (props, ref) => {
+    const {
+      state: {
+        selectedConversation,
+        models,
+        defaultModelId,
+        // showModelSettings,
+        prompts,
+      },
+      handleUpdateConversation,
+      // dispatch: homeDispatch,
+    } = useContext(HomeContext)
 
-  const {
-    state: { selectedConversation, models, defaultModelId },
-    handleUpdateConversation,
-    dispatch: homeDispatch,
-  } = useContext(HomeContext)
+    const { t } = useTranslation('chat')
 
-  const handleModelClick = (modelId: string) => {
-    setIsOpen(false)
-    selectedConversation &&
-      handleUpdateConversation(selectedConversation, {
-        key: 'model',
-        value: models.find((model) => model.id === modelId) as OpenAIModel,
-      })
-  }
-
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      wrapperRef.current &&
-      !wrapperRef.current.contains(event.target as Node)
-    ) {
-      setIsOpen(false)
+    const handleModelClick = (modelId: string) => {
+      selectedConversation &&
+        handleUpdateConversation(selectedConversation, {
+          key: 'model',
+          value: models.find((model) => model.id === modelId) as OpenAIModel,
+        })
     }
-  }
 
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [wrapperRef])
-
-  return (
-    <div className="flex flex-col">
-      <label className="mb-2 text-left text-neutral-700 dark:text-neutral-400">
-        {t('Model')}
-      </label>
-      <div
-        ref={wrapperRef}
-        tabIndex={0}
-        className="relative w-full rounded-lg border-neutral-200 bg-neutral-50 pr-2 text-neutral-900 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
-        onFocus={() => setIsOpen(true)}
-        onBlur={() => setIsOpen(false)}
-      >
-        <div className="flex w-full items-center justify-between bg-transparent p-2">
-          <span>
-            {selectedConversation?.model?.id === defaultModelId
-              ? selectedConversation?.model?.name
-              : selectedConversation?.model?.name || 'Select a model'}
-          </span>
-          <IconChevronDown size={18} />
-        </div>
-        {isOpen && (
-          <ul className="menu rounded-box absolute z-[1] w-full bg-base-100 p-2 shadow ">
-            {models.map((model, index, array) => (
-              <li
-                key={model.id}
-                className={`dark:text-white ${
-                  index < array.length - 1
-                    ? 'border-b border-neutral-200 pb-2 dark:border-neutral-600'
-                    : ''
-                }`}
+    return (
+      <div className="flex flex-col md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
+        <div className="flex h-full flex-col space-y-4 rounded-lg border-2 border-[rgba(42,42,120,0.55)] bg-[#1d1f33] p-4 dark:bg-[#1d1f33] md:rounded-lg">
+          <div
+            // THIS IS THE REFERENCE we use in TopBarChat.tsx to enable the "click away" behavior
+            ref={ref as any}
+          >
+            <div className="flex flex-col">
+              <Title
+                className={`pb-0 pl-2 pt-4 ${montserrat_heading.variable} font-montserratHeading`}
+                order={4}
               >
-                <a onClick={() => handleModelClick(model.id)}>
-                  {model.id === defaultModelId ? model.name : model.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
+                Model
+              </Title>
+              <Input.Description className="p-2 text-left">
+                <Link
+                  href="https://platform.openai.com/docs/models"
+                  target="_blank"
+                  className="hover:underline"
+                >
+                  Read about each model{' '}
+                  <IconExternalLink
+                    size={13}
+                    style={{ position: 'relative', top: '2px' }}
+                    className={'mb-2 inline'}
+                  />
+                </Link>
+              </Input.Description>
+              <div tabIndex={0} className="relative w-full">
+                <NativeSelect
+                  className="menu absolute z-[1]"
+                  value={selectedConversation?.model.id || defaultModelId}
+                  onChange={(e) => handleModelClick(e.target.value)}
+                  data={models.map((model) => ({
+                    value: model.id,
+                    label: model.name,
+                  }))}
+                />
+              </div>
+            </div>
+            <div style={{ paddingTop: '47px' }}>
+              <ModelParams
+                selectedConversation={selectedConversation}
+                prompts={prompts}
+                handleUpdateConversation={handleUpdateConversation}
+                t={t}
+              />
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="mt-3 flex w-full items-center text-left text-neutral-700 dark:text-neutral-400">
-        <a
-          href="https://platform.openai.com/account/usage"
-          target="_blank"
-          className="flex items-center"
-        >
-          <IconExternalLink size={18} className={'mr-1 inline'} />
-          {t('View Account Usage')}
-        </a>
-      </div>
-    </div>
-  )
-}
+    )
+  },
+)
+
+ModelSelect.displayName = 'ModelSelect'

@@ -1,11 +1,19 @@
 // src/components/Chat/Chat.tsx
 import {
-  IconBrain,
-  IconClearAll,
-  IconCloudUpload,
+  // IconBrain,
+  // IconClearAll,
+  IconArrowRight,
+  // IconCloudUpload,
   IconExternalLink,
-  IconRobot,
-  IconSettings,
+  // IconRobot,
+  // IconSettings,
+  IconAlertTriangle,
+  IconArrowLeft,
+  IconLock,
+  IconBrain,
+  IconCreditCard,
+  IconAlertCircle,
+  // IconArrowUpRight,
   // IconFileTextAi,
   // IconX,
   // IconDownload,
@@ -22,7 +30,7 @@ import {
   useState,
 } from 'react'
 import toast from 'react-hot-toast'
-import { Text, Title } from '@mantine/core'
+import { Button, Text, Title } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -34,7 +42,7 @@ import {
 import { throttle } from '@/utils/data/throttle'
 
 import {
-  ContextWithMetadata,
+  type ContextWithMetadata,
   type ChatBody,
   type Conversation,
   type Message,
@@ -43,21 +51,13 @@ import { type Plugin } from '@/types/plugin'
 
 import HomeContext from '~/pages/api/home/home.context'
 
-import Spinner from '../Spinner'
 import { ChatInput } from './ChatInput'
 import { ChatLoader } from './ChatLoader'
 import { ErrorMessageDiv } from './ErrorMessageDiv'
-import { ModelSelect } from './ModelSelect'
-import { SystemPrompt } from './SystemPrompt'
-import { TemperatureSlider } from './Temperature'
 import { MemoizedChatMessage } from './MemoizedChatMessage'
-import { ModelParams } from './ModelParams'
 import { fetchPresignedUrl } from '~/components/UIUC-Components/ContextCards'
 
-// import { useSearchQuery } from '~/components/UIUC-Components/ContextCards'
-// import SearchQuery from '~/components/UIUC-Components/StatefulSearchQuery'
 import { type CourseMetadata } from '~/types/courseMetadata'
-// import { logConvoToSupabase } from '~/pages/api/UIUC-api/logConversationToSupabase'
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>
@@ -65,19 +65,25 @@ interface Props {
 }
 
 import { useRouter } from 'next/router'
-import CustomBanner from '../UIUC-Components/CustomBanner'
+// import CustomBanner from '../UIUC-Components/CustomBanner'
 import { fetchContexts } from '~/pages/api/getContexts'
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
-import { OpenAIModelID, OpenAIModels } from '~/types/openai'
-import axios from 'axios'
+import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
+import Navbar from '../UIUC-Components/Navbar'
+import TopBarInChat from '../Chatbar/TopBarInChat'
+// import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
+import { notifications } from '@mantine/notifications'
+import { Montserrat } from 'next/font/google'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 
+const montserrat_med = Montserrat({
+  weight: '500',
+  subsets: ['latin'],
+})
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
-
   const clerk_obj = useUser()
-
-  // how to get the current route inside ANY component
   const router = useRouter()
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
   const getCurrentPageName = () => {
@@ -85,9 +91,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     return router.asPath.slice(1).split('/')[0] as string
   }
 
-  const redirectToMaterialsPage = () => {
-    router.push(`/${getCurrentPageName()}/materials`)
-  }
+  const [inputContent, setInputContent] = useState<string>('')
 
   useEffect(() => {
     if (courseMetadata?.banner_image_s3) {
@@ -111,6 +115,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       modelError,
       loading,
       prompts,
+      showModelSettings,
     },
     handleUpdateConversation,
     dispatch: homeDispatch,
@@ -118,7 +123,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const [currentMessage, setCurrentMessage] = useState<Message>()
   const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true)
-  const [showSettings, setShowSettings] = useState<boolean>(false)
+  // const [showSettings, setShowSettings] = useState<boolean>(false)
   const [showScrollDownButton, setShowScrollDownButton] =
     useState<boolean>(false)
 
@@ -169,7 +174,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       console.error('Error in chat.tsx running onResponseCompletion():', error)
       // return false
     }
-
     // Log conversation to our Flask Backend (BOTH ASMITA local && the PR72)
     try {
       // TODO: Change me when pr72 is merged
@@ -246,7 +250,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         const chatBody: ChatBody = {
           model: updatedConversation.model,
           messages: updatedConversation.messages,
-          key: apiKey,
+          key:
+            courseMetadata?.openai_api_key &&
+            courseMetadata?.openai_api_key != ''
+              ? courseMetadata.openai_api_key
+              : apiKey,
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
           course_name: getCurrentPageName(),
@@ -278,7 +286,35 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         if (!response.ok) {
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
-          toast.error(response.statusText)
+          notifications.show({
+            id: 'error-notification',
+            withCloseButton: true,
+            closeButtonProps: { color: 'red' },
+            onClose: () => console.log('error unmounted'),
+            onOpen: () => console.log('error mounted'),
+            autoClose: 6000,
+            title: (
+              <Text size={'lg'} className={`${montserrat_med.className}`}>
+                OpenAI Error
+              </Text>
+            ),
+            message: (
+              <Text className={`${montserrat_med.className} text-neutral-200`}>
+                {response.statusText}
+              </Text>
+            ),
+            color: 'red',
+            radius: 'lg',
+            icon: <IconAlertCircle />,
+            className: 'my-notification-class',
+            style: {
+              backgroundColor: 'rgba(42,42,64,0.3)',
+              backdropFilter: 'blur(10px)',
+              borderLeft: '5px solid red',
+            },
+            withBorder: true,
+            loading: false,
+          })
           return
         }
         const data = response.body
@@ -452,7 +488,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   const handleSettings = () => {
-    setShowSettings(!showSettings)
+    homeDispatch({ field: 'showModelSettings', value: !showModelSettings })
   }
 
   const onClearAll = () => {
@@ -473,16 +509,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
   }
   const throttledScrollDown = throttle(scrollDown, 250)
-
-  // WHY IS THIS COMMENTED OUT???
-
-  // useEffect(() => {
-  //   console.log('currentMessage', currentMessage);
-  //   if (currentMessage) {
-  //     handleSend(currentMessage);
-  //     homeDispatch({ field: 'currentMessage', value: undefined });
-  //   }
-  // }, [currentMessage]);
 
   useEffect(() => {
     throttledScrollDown()
@@ -516,8 +542,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
   }, [messagesEndRef])
 
-  const statements = courseMetadata?.course_intro_message
-    ? courseMetadata.course_intro_message.split('\n')
+  const statements = courseMetadata?.example_questions
+    ? courseMetadata.example_questions
     : [
         'Make a bullet point list of key takeaways of the course.',
         'What is [your favorite topic] and why is it worth learning about?',
@@ -526,57 +552,124 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       ]
 
   // Add this function to create dividers with statements
-  const renderDividers = () => {
-    return statements.map((statement, index) => (
-      <div key={index} className="flex w-full flex-col items-center px-1">
-        <div className="card rounded-box grid min-h-[6rem] w-full place-items-center justify-items-center bg-base-300/50 text-lg text-black dark:text-white sm:w-3/5">
-          <div className="overflow-auto p-4 text-center">
-            <p>{statement}</p>
+  const renderIntroductoryStatements = () => {
+    return (
+      <div className="xs:mx-2 mt-4 max-w-3xl gap-3 px-4 last:mb-2 sm:mx-4 md:mx-auto lg:mx-auto ">
+        <div className="backdrop-filter-[blur(10px)] rounded-lg border border-2 border-[rgba(42,42,120,0.55)] bg-[rgba(42,42,64,0.4)] p-6">
+          <Text
+            className={`mb-2 text-lg text-white ${montserrat_heading.variable} font-montserratHeading`}
+            style={{ whiteSpace: 'pre-wrap' }}
+          >
+            {courseMetadata?.course_intro_message}
+          </Text>
+
+          <h4
+            className={`text-md mb-2 text-white ${montserrat_paragraph.variable} font-montserratParagraph`}
+          >
+            Start a conversation below or try the following examples
+          </h4>
+          <div className="mt-4 flex flex-col items-start space-y-2 overflow-hidden">
+            {statements.map((statement, index) => (
+              <div
+                key={index}
+                className="w-full rounded-lg border-b-2 border-[rgba(42,42,64,0.4)] hover:cursor-pointer hover:bg-[rgba(42,42,64,0.9)]"
+                onClick={() => setInputContent(statement)}
+              >
+                <Button
+                  variant="link"
+                  className={`text-md h-auto p-2 font-bold leading-relaxed text-white hover:underline ${montserrat_paragraph.variable} font-montserratParagraph `}
+                >
+                  <IconArrowRight size={25} className="mr-2 min-w-[40px]" />
+                  <p className="whitespace-break-spaces">{statement}</p>
+                </Button>
+              </div>
+            ))}
           </div>
         </div>
-        {index !== statements.length - 1 && (
-          <div className="divider mx-auto w-full sm:w-3/5"></div>
-        )}
+        <div
+          // This is critical to keep the scrolling proper. We need padding below the messages for the chat bar to sit.
+          // className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"
+          // className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
+          // className="h-[162px] bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]"
+          className="h-[162px]"
+          ref={messagesEndRef}
+        />
       </div>
-    ))
+    )
   }
 
   return (
-    <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#343541]">
+    <div className="overflow-wrap relative flex-1 bg-white dark:bg-[#15162c]">
       {!(apiKey || serverSideApiKeyIsSet) ? (
-        <div className="mx-auto flex h-full w-[300px] flex-col justify-center space-y-6 sm:w-[600px]">
-          <div className="text-center text-4xl font-bold text-black dark:text-white">
-            UIUC Course AI
-          </div>
-          <div className="text-center text-lg text-black dark:text-white"></div>
-          <div className="text-center text-gray-500 dark:text-gray-400">
-            <div className="rounded border border-2 border-solid border-red-500 p-4">
-              <Title>⚠️</Title>
-              <div className="mb-2">
-                <Title
-                  variant="gradient"
-                  gradient={{ from: 'red', to: 'white', deg: 50 }}
-                  order={3}
-                  p="xl"
-                >
-                  Please set your OpenAI API key in the bottom left of the
-                  sidebar.
-                </Title>
+        <div className="min-w-screen relative min-h-screen flex-1 overflow-hidden">
+          <Navbar isgpt4={true} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className=" backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
+              <div className="mb-2 flex flex-col items-center text-center">
+                <IconAlertTriangle
+                  size={'54'}
+                  className="mr-2 block text-orange-400 "
+                />
+                <div className="mt-4 text-left text-gray-100">
+                  {' '}
+                  {t(
+                    'Please set your OpenAI API key in the bottom left of the screen.',
+                  )}
+                  <div className="mt-2 font-normal">
+                    <Text size={'md'} className="text-gray-100">
+                      If you don&apos;t have a key yet, you can get one here:{' '}
+                      <a
+                        href="https://platform.openai.com/account/api-keys"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-purple-500 hover:underline"
+                      >
+                        OpenAI API key{' '}
+                        <IconExternalLink
+                          className="mr-2 inline-block"
+                          style={{ position: 'relative', top: '-3px' }}
+                        />
+                      </a>
+                    </Text>
+                    <Text size={'md'} className="pt-10 text-gray-400">
+                      <IconLock className="mr-2 inline-block" />
+                      This key will live securely encrypted in your
+                      browser&apos;s cache. It&apos;s all client-side so our
+                      servers never see it.
+                    </Text>
+                    <Text size={'md'} className="pt-10 text-gray-400">
+                      <IconBrain className="mr-2 inline-block" />
+                      GPT 3.5 is default. For GPT-4 access, either complete one
+                      billing cycle as an OpenAI API customer or pre-pay a
+                      minimum of $0.50. See
+                      <a
+                        className="text-purple-500 hover:underline"
+                        href="https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {' '}
+                        this documentation for details{' '}
+                        <IconExternalLink
+                          className="mr-2 inline-block"
+                          style={{ position: 'relative', top: '-3px' }}
+                        />
+                      </a>
+                    </Text>
+                    <Text size={'md'} className="pt-10 text-gray-400">
+                      <IconCreditCard className="mr-2 inline-block" />
+                      You only pay the standard OpenAI prices, per token read or
+                      generated by the model.
+                    </Text>
+                  </div>
+                </div>
               </div>
-              <div>
-                <Text size={'md'}>
-                  If you don&apos;t have an OpenAI API key, you can get one
-                  here:{' '}
-                  <a
-                    href="https://platform.openai.com/account/api-keys"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    openai.com
-                  </a>
-                </Text>
-              </div>
+            </div>
+            <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
+              <IconArrowLeft
+                size={'36'}
+                className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
+              />
             </div>
           </div>
         </div>
@@ -589,106 +682,20 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ref={chatContainerRef}
             onScroll={handleScroll}
           >
-            {/* Always render the 'model, upload, disclaimer' banner */}
-            <div className="sticky top-0 z-10 flex w-full flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-              <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-                <button
-                  className="ml-2 cursor-pointer hover:opacity-50"
-                  onClick={handleSettings}
-                >
-                  <div className="flex items-center">
-                    {t('Model')}: {selectedConversation?.model.name}
-                    <span className="w-2" />
-                    <IconRobot size={18} />
-                  </div>
-                </button>
-                <span className="w-3" />
-                |
-                <span className="w-3" />
-                <button
-                  className="ml-2 cursor-pointer hover:opacity-50"
-                  onClick={redirectToMaterialsPage}
-                >
-                  <div className="flex items-center">
-                    <Text
-                      variant="gradient"
-                      weight={600}
-                      gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                    >
-                      Upload materials
-                    </Text>
-                    &nbsp;&nbsp;
-                    <IconCloudUpload size={18} />
-                  </div>
-                </button>
-                &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;
-                <a
-                  className="ml-2 cursor-pointer hover:opacity-50"
-                  href="/disclaimer"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <div className="flex items-center">
-                    <span>
-                      <Text
-                        variant="gradient"
-                        weight={400}
-                        gradient={{ from: 'white', to: 'white', deg: 50 }}
-                      >
-                        Disclaimer: it&apos;s not perfect
-                      </Text>
-                    </span>
-                    &nbsp;&nbsp;
-                    <IconExternalLink size={18} />
-                  </div>
-                </a>
-              </div>
-            </div>
-            {showSettings && (
-              <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
-                <div className="flex h-full flex-col space-y-4 border-b border-neutral-200 p-4 dark:border-neutral-600 md:rounded-lg md:border">
-                  <ModelSelect />
-                </div>
-              </div>
-            )}
+            {/* <TopBarInChat course_name={getCurrentPageName()} /> */}
+            {/* <div className="bg-red-500" > */}
+            <TopBarInChat course_name={getCurrentPageName()} />
+            {/* </div> */}
+
             {selectedConversation?.messages.length === 0 ? (
               <>
-                {bannerUrl && (
-                  <div style={{ width: '100%' }}>
-                    <img
-                      src={bannerUrl}
-                      alt="Banner"
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                )}
-                <div className="mx-auto flex flex-col space-y-5 px-3 pt-5 sm:max-w-[600px] md:space-y-10 md:pt-12">
-                  <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
-                    {models.length === 0 ? (
-                      <div>
-                        <Spinner size="16px" className="mx-auto" />
-                      </div>
-                    ) : (
-                      'UIUC Course AI'
-                    )}
-                  </div>
-
-                  {models.length > 0 && (
-                    <div className="flex h-full flex-col space-y-4 rounded-3xl p-4 focus:border-t-info/100 dark:border-neutral-600">
-                      <ModelParams
-                        selectedConversation={selectedConversation}
-                        prompts={prompts}
-                        handleUpdateConversation={handleUpdateConversation}
-                        t={t}
-                      />
-                    </div>
-                  )}
-                </div>
-                <div className="mt-16">{renderDividers()}</div>
+                {/* NEW CHAT, NO MESSAGES YET */}
+                <Navbar bannerUrl={bannerUrl as string} isgpt4={true} />
+                <div className="mt-16">{renderIntroductoryStatements()}</div>
               </>
             ) : (
               <>
-                <CustomBanner bannerUrl={bannerUrl as string} />{' '}
+                {/* MESSAGES IN CHAT */}
                 {selectedConversation?.messages.map((message, index) => (
                   <MemoizedChatMessage
                     key={index}
@@ -705,7 +712,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 ))}
                 {loading && <ChatLoader />}
                 <div
-                  className="h-[162px] bg-white dark:bg-[#343541]"
+                  // className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"
+                  // className="h-[162px] bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]"
+                  className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
                   ref={messagesEndRef}
                 />
               </>
@@ -726,6 +735,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               }
             }}
             showScrollDownButton={showScrollDownButton}
+            inputContent={inputContent}
+            setInputContent={setInputContent}
           />
         </>
       )}

@@ -55,9 +55,9 @@ export const CanViewOnlyCourse = ({
           <Link href="/">
             <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
               {' '}
-              UIUC Course{' '}
+              UIUC.
               <span className="${inter.style.fontFamily} text-[hsl(280,100%,70%)]">
-                AI
+                chat
               </span>{' '}
             </h2>
           </Link>

@@ -1,1 +1,1 @@
-export { default, getServerSideProps } from '~/pages/api/home'
+export { default } from '~/pages/api/home'
