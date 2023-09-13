@@ -1,11 +1,9 @@
 // upsertCourseMetadata.ts
 import { kv } from '@vercel/kv'
-import {
-  type CourseMetadata,
-  type CourseMetadataOptionalForUpsert,
-} from '~/types/courseMetadata'
+import { type CourseMetadataOptionalForUpsert } from '~/types/courseMetadata'
 import { type NextRequest, NextResponse } from 'next/server'
 import { encrypt } from '~/utils/crypto'
+import { getCourseMetadata } from './getCourseMetadata'
 
 export const runtime = 'edge'
 
@@ -17,9 +15,9 @@ export default async function handler(req: NextRequest, res: NextResponse) {
   }: { courseName: string; courseMetadata: CourseMetadataOptionalForUpsert } =
     JSON.parse(requestBody)
 
-  console.log('API Request:', requestBody)
-  console.log('courseName:', courseName)
-  console.log('courseMetadata:', courseMetadata)
+  // console.log('API Request:', requestBody)
+  // console.log('courseName:', courseName)
+  // console.log('courseMetadata:', courseMetadata)
 
   // Check if courseName is not null or undefined
   if (!courseName) {
@@ -28,39 +26,48 @@ export default async function handler(req: NextRequest, res: NextResponse) {
   }
 
   try {
-    // Check if courseMetadata doesn't have anything in the field course_admins
+    const existing_metadata = await getCourseMetadata(courseName)
+
+    // Combine the existing metadata with the new metadata, prioritizing the new values (order matters!)
+    const combined_metadata = { ...existing_metadata, ...courseMetadata }
+
+    console.log('-----------------------------------------')
+    console.log('EXISTING course metadata:', existing_metadata)
+    console.log('passed into upsert metadata:', courseMetadata)
+    console.log('FINAL COMBINED course metadata:', combined_metadata)
+    console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+
+    // Check if combined_metadata doesn't have anything in the field course_admins
     if (
-      !courseMetadata.course_admins ||
-      courseMetadata.course_admins.length === 0
+      !combined_metadata.course_admins ||
+      combined_metadata.course_admins.length === 0
     ) {
-      courseMetadata.course_admins = ['kvday2@illinois.edu']
+      combined_metadata.course_admins = ['kvday2@illinois.edu']
       console.log('course_admins field was empty. Added default admin email.')
     }
 
-    // Check if courseMetadata doesn't have anything in the field is_private
-    if (!courseMetadata.is_private) {
-      courseMetadata.is_private = false
+    // Check if combined_metadata doesn't have anything in the field is_private
+    if (!combined_metadata.is_private) {
+      combined_metadata.is_private = false
       console.log('is_private field was empty. Set to false.')
     }
 
     // Check if openai_api_key is present and if it is a plain string
     if (
-      courseMetadata.openai_api_key &&
-      courseMetadata.openai_api_key.startsWith('sk-')
+      combined_metadata.openai_api_key &&
+      combined_metadata.openai_api_key.startsWith('sk-')
     ) {
       // Encrypt the openai_api_key
       console.log('Encrypting api key')
-      courseMetadata.openai_api_key = await encrypt(
-        courseMetadata.openai_api_key,
+      combined_metadata.openai_api_key = await encrypt(
+        combined_metadata.openai_api_key,
         process.env.NEXT_PUBLIC_SIGNING_KEY as string,
       )
-      console.log('Signed api key: ', courseMetadata.openai_api_key)
+      console.log('Signed api key: ', combined_metadata.openai_api_key)
     }
 
-    const existing_metadata: CourseMetadata | object =
-      (await kv.hget('course_metadatas', courseName)) || {}
-    const updated_metadata = { ...existing_metadata, ...courseMetadata }
-    await kv.hset('course_metadatas', { [courseName]: updated_metadata })
+    // Save the combined metadata
+    await kv.hset('course_metadatas', { [courseName]: combined_metadata })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error setting course metadata:', error)

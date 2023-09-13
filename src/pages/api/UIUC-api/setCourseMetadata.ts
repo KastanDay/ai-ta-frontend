@@ -25,6 +25,9 @@ const setCourseMetadata = async (req: any, res: any) => {
     req.nextUrl.searchParams.get('approved_emails_list') || '[]',
   )
   const openai_api_key = req.nextUrl.searchParams.get('openai_api_key') || ''
+  const example_questions = JSON.parse(
+    req.nextUrl.searchParams.get('example_questions') || '[]',
+  )
 
   try {
     const course_metadata: CourseMetadata = {
@@ -35,6 +38,7 @@ const setCourseMetadata = async (req: any, res: any) => {
       course_intro_message: course_intro_message,
       banner_image_s3: banner_image_s3,
       openai_api_key: openai_api_key,
+      example_questions: example_questions,
     }
     console.log('Right before setting course_metadata with: ', course_metadata)
     await kv.hset('course_metadatas', { [course_name]: course_metadata })

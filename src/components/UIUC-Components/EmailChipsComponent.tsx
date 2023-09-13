@@ -68,6 +68,7 @@ const EmailChipsComponent = ({
             course_intro_message: course_intro_message,
             banner_image_s3: banner_image_s3,
             openai_api_key: openai_api_key,
+            example_questions: undefined,
           }
           onEmailAddressesChange &&
             onEmailAddressesChange(curr_course_metadata, course_name)
@@ -83,6 +84,7 @@ const EmailChipsComponent = ({
           banner_image_s3: banner_image_s3,
           course_intro_message: course_intro_message,
           openai_api_key: openai_api_key,
+          example_questions: undefined,
         })
       }
     }
@@ -107,6 +109,7 @@ const EmailChipsComponent = ({
         course_intro_message: course_intro_message,
         banner_image_s3: banner_image_s3,
         openai_api_key: openai_api_key,
+        example_questions: undefined,
       }
       onEmailAddressesChange &&
         onEmailAddressesChange(curr_course_metadata, course_name)
@@ -136,6 +139,7 @@ const EmailChipsComponent = ({
           course_intro_message: course_intro_message,
           banner_image_s3: banner_image_s3,
           openai_api_key: openai_api_key,
+          example_questions: undefined,
         }
         onEmailAddressesChange &&
           onEmailAddressesChange(curr_course_metadata, course_name)
@@ -150,6 +154,7 @@ const EmailChipsComponent = ({
         banner_image_s3: banner_image_s3,
         course_intro_message: course_intro_message,
         openai_api_key: openai_api_key,
+        example_questions: undefined,
       })
     }
   }

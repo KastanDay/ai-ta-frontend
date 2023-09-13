@@ -74,7 +74,7 @@ import Navbar from '../UIUC-Components/Navbar'
 import TopBarInChat from '../Chatbar/TopBarInChat'
 // import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
 import { notifications } from '@mantine/notifications'
-import {Montserrat} from "next/font/google";
+import { Montserrat } from 'next/font/google'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -292,15 +292,23 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             onClose: () => console.log('error unmounted'),
             onOpen: () => console.log('error mounted'),
             autoClose: 6000,
-            title: <Text size={'lg'} className={`${montserrat_med.className}`}>OpenAI Error</Text>,
-            message: <Text className={`${montserrat_med.className} text-neutral-200` }>{response.statusText}</Text>,
+            title: (
+              <Text size={'lg'} className={`${montserrat_med.className}`}>
+                OpenAI Error
+              </Text>
+            ),
+            message: (
+              <Text className={`${montserrat_med.className} text-neutral-200`}>
+                {response.statusText}
+              </Text>
+            ),
             color: 'red',
             radius: 'lg',
             icon: <IconAlertCircle />,
             className: 'my-notification-class',
-            style: { 
-              backgroundColor: 'rgba(42,42,64,0.3)', 
-              backdropFilter: 'blur(10px)', 
+            style: {
+              backgroundColor: 'rgba(42,42,64,0.3)',
+              backdropFilter: 'blur(10px)',
               borderLeft: '5px solid red',
             },
             withBorder: true,

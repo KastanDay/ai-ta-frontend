@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import {
   Card,
   Text,
+  Textarea,
   Flex,
   Group,
   Checkbox,
@@ -16,6 +17,7 @@ import {
   rem,
   em,
   Tooltip,
+  TextInput,
 } from '@mantine/core'
 import {
   IconAlertCircle,
@@ -31,7 +33,10 @@ import {
   // IconQuestionMark,
 } from '@tabler/icons-react'
 
-import { type CourseMetadata } from '~/types/courseMetadata'
+import {
+  CourseMetadataOptionalForUpsert,
+  type CourseMetadata,
+} from '~/types/courseMetadata'
 import LargeDropzone from './LargeDropzone'
 import EmailChipsComponent from './EmailChipsComponent'
 import { useMediaQuery } from '@mantine/hooks'
@@ -44,6 +49,7 @@ import { WebScrape } from '~/components/UIUC-Components/WebScrape'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { notifications } from '@mantine/notifications'
+import SetExampleQuestions from './SetExampleQuestions'
 
 const montserrat_light = Montserrat({
   weight: '400',
@@ -632,10 +638,12 @@ const EditCourseCard = ({
                   >
                     Shown before users send their first chat.
                   </Text>
-                  <textarea
-                    rows={5}
-                    placeholder="Enter the introductory message of the chatbot"
-                    className={`textarea-bordered textarea w-full border-2 border-violet-800 bg-white text-black hover:border-violet-800 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                  <Textarea
+                    autosize
+                    minRows={2}
+                    maxRows={4}
+                    placeholder="Enter a greeting to help users get started with your bot"
+                    className={`w-full ${montserrat_paragraph.variable} font-montserratParagraph`}
                     value={introMessage}
                     onChange={(e) => {
                       setIntroMessage(e.target.value)
@@ -670,7 +678,27 @@ const EditCourseCard = ({
                     </>
                   )}
                 </div>
-                <div className="form-control mt-4">
+                <label
+                  className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                >
+                  <span className="label-text text-lg text-neutral-200">
+                    Set example questions
+                  </span>
+                </label>
+                <Text
+                  className={`label ${montserrat_light.className} pb-0 pt-0`}
+                  mb={-3}
+                  size={'sm'}
+                >
+                  Users will likely try these first to get a feel for your bot.
+                </Text>
+                <SetExampleQuestions
+                  course_name={course_name}
+                  course_metadata={
+                    courseMetadata as CourseMetadataOptionalForUpsert
+                  }
+                />
+                <div className="form-control">
                   <label
                     className={`label ${montserrat_heading.variable} font-montserratHeading`}
                   >

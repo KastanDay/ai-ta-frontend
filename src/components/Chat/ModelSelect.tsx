@@ -5,7 +5,7 @@ import { type OpenAIModel } from '@/types/openai'
 import HomeContext from '~/pages/api/home/home.context'
 import { ModelParams } from './ModelParams'
 import { montserrat_heading } from 'fonts'
-import { Input, Title } from '@mantine/core'
+import { Input, NativeSelect, Title } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
 
@@ -62,17 +62,15 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 </Link>
               </Input.Description>
               <div tabIndex={0} className="relative w-full">
-                <select
-                  className="menu absolute z-[1] w-full rounded-sm bg-base-100 shadow "
+                <NativeSelect
+                  className="menu absolute z-[1]"
                   value={selectedConversation?.model.id || defaultModelId}
                   onChange={(e) => handleModelClick(e.target.value)}
-                >
-                  {models.map((model) => (
-                    <option key={model.id} value={model.id}>
-                      {model.name}
-                    </option>
-                  ))}
-                </select>
+                  data={models.map((model) => ({
+                    value: model.id,
+                    label: model.name,
+                  }))}
+                />
               </div>
             </div>
             <div style={{ paddingTop: '47px' }}>
