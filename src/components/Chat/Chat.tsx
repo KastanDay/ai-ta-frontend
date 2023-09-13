@@ -75,6 +75,7 @@ import TopBarInChat from '../Chatbar/TopBarInChat'
 // import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
 import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -251,7 +252,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           messages: updatedConversation.messages,
           key:
             courseMetadata?.openai_api_key &&
-            courseMetadata?.openai_api_key != ''
+              courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
           prompt: updatedConversation.prompt,
@@ -541,23 +542,30 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
   }, [messagesEndRef])
 
-  const statements = courseMetadata?.course_intro_message
-    ? courseMetadata.course_intro_message.split('\n')
+  const statements = courseMetadata?.example_questions
+    ? courseMetadata.example_questions
     : [
-        'Make a bullet point list of key takeaways of the course.',
-        'What is [your favorite topic] and why is it worth learning about?',
-        'How can I effectively prepare for the upcoming exam?',
-        'How many assignments in the course?',
-      ]
+      'Make a bullet point list of key takeaways of the course.',
+      'What is [your favorite topic] and why is it worth learning about?',
+      'How can I effectively prepare for the upcoming exam?',
+      'How many assignments in the course?',
+    ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
     return (
       <div className="xs:mx-2 mt-4 max-w-3xl gap-3 px-4 last:mb-2 sm:mx-4 md:mx-auto lg:mx-auto ">
         <div className="backdrop-filter-[blur(10px)] rounded-lg border border-2 border-[rgba(42,42,120,0.55)] bg-[rgba(42,42,64,0.4)] p-6">
-          <h1 className="mb-2 text-lg font-semibold text-white">
+          <h2
+            className={`mb-2 text-lg text-white ${montserrat_heading.variable} font-montserratHeading`}
+          >
+            {courseMetadata?.course_intro_message}
+          </h2>
+          <h4
+            className={`text-md mb-2 text-white ${montserrat_paragraph.variable} font-montserratParagraph`}
+          >
             Start a conversation below or try the following examples
-          </h1>
+          </h4>
           <div className="mt-4 flex flex-col items-start space-y-2 overflow-hidden">
             {statements.map((statement, index) => (
               <div
@@ -567,7 +575,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               >
                 <Button
                   variant="link"
-                  className="text-md h-auto p-2 font-bold leading-relaxed text-white hover:underline "
+                  className={`text-md h-auto p-2 font-bold leading-relaxed text-white hover:underline ${montserrat_paragraph.variable} font-montserratParagraph `}
                 >
                   <IconArrowRight size={25} className="mr-2 min-w-[40px]" />
                   <p className="whitespace-break-spaces">{statement}</p>
