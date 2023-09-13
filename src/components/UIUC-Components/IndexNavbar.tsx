@@ -101,17 +101,13 @@ const NewNavbar = () => {
                     <FileIcon />
                     New Project
                   </span>
-                </Link>
-                <Link href={`/login`} onClick={() => handleLinkClick(`/login`)} data-active={activeLink === `/login`} className={classes.classes.link}>
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <LoginIcon />
-                    Login
-                  </span></Link>
+                </Link></div>
+              <GlobalHeader isNavbar={true} />
 
-              </div>
+
+
             </Container>
 
-            <GlobalHeader isNavbar={true} />
           </div >
         </div >
       </div >
