@@ -3,6 +3,7 @@ import { type NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
 import React from 'react'
+import NewNavbar from '~/components/UIUC-Components/IndexNavbar'
 
 import {
   // MantineProvider,
@@ -29,16 +30,14 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <GlobalHeader />
+      {/* <GlobalHeader /> */}
+      <NewNavbar />
 
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
         <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 ">
-          <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            {/* <Link href="/"> */}
+          {/* <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
-            {/* </Link> */}
-          </h1>
-          <CreateNewProject />
+          </h1> */}
           <Container
             size="lg"
             py="l"

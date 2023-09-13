@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { createStyles, Header, Container, Anchor, Group, Burger, rem } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { GoToQueryAnalysis } from './NavbarButtons';
-import { MessageChatbot, Folder, ReportAnalytics, Settings } from 'tabler-icons-react';
+import { File, Login } from 'tabler-icons-react';
 import { useRouter } from 'next/router';
 
 
@@ -68,7 +68,7 @@ const useStyles = createStyles((theme) => ({
   }
 }));
 
-const Navbar = ({ course_name = '' }: { course_name?: string }) => {
+const NewNavbar = () => {
   const classes = useStyles();
   const router = useRouter(); // import useRouter from next/router
   const [activeLink, setActiveLink] = useState(router.pathname); // useState to track the active link
@@ -96,27 +96,18 @@ const Navbar = ({ course_name = '' }: { course_name?: string }) => {
 
             <Container className={classes.classes.inner}>
               <div className={classes.classes.links}>
-                <Link href={`/${course_name}/gpt4`} onClick={() => handleLinkClick(`/${course_name}/gpt4`)} data-active={activeLink === `/${course_name}/gpt4`} className={classes.classes.link}>
+                <Link href={`/new`} onClick={() => handleLinkClick(`/new`)} data-active={activeLink === `/new`} className={classes.classes.link}>
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <MessageChatIcon />
-                    Chat
+                    <FileIcon />
+                    New Project
                   </span>
                 </Link>
-                <Link href={`/${course_name}/materials`} onClick={() => handleLinkClick(`/${course_name}/materials`)} data-active={activeLink === `/${course_name}/materials`} className={classes.classes.link}>
+                <Link href={`/login`} onClick={() => handleLinkClick(`/login`)} data-active={activeLink === `/login`} className={classes.classes.link}>
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <FolderIcon />
-                    Materials
+                    <LoginIcon />
+                    Login
                   </span></Link>
-                <Link href={`/${course_name}/query-analysis`} onClick={() => handleLinkClick(`/${course_name}/query-analysis`)} data-active={activeLink === `/${course_name}/query-analysis`} className={classes.classes.link}>
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <ReportIcon />
-                    Analysis
-                  </span></Link>
-                <Link href={`/${course_name}/setting`} onClick={() => handleLinkClick(`/${course_name}/setting`)} data-active={activeLink === `/${course_name}/setting`} className={classes.classes.link}>
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <SettingIcon />
-                    Setting
-                  </span></Link>
+
               </div>
             </Container>
 
@@ -128,10 +119,10 @@ const Navbar = ({ course_name = '' }: { course_name?: string }) => {
   )
 }
 
-export default Navbar
+export default NewNavbar
 
-export function MessageChatIcon() {
-  return <MessageChatbot
+export function FileIcon() {
+  return <File
     size={20}
     strokeWidth={2}
     color={'white'}
@@ -139,30 +130,11 @@ export function MessageChatIcon() {
   />;
 }
 
-export function FolderIcon() {
-  return <Folder
+export function LoginIcon() {
+  return <Login
     size={20}
     strokeWidth={2}
     color={'white'}
     style={{ marginRight: '5px' }}
   />;
 }
-
-export function ReportIcon() {
-  return <ReportAnalytics
-    size={20}
-    strokeWidth={2}
-    color={'white'}
-    style={{ marginRight: '5px' }}
-  />;
-}
-
-export function SettingIcon() {
-  return <Settings
-    size={20}
-    strokeWidth={2}
-    color={'white'}
-    style={{ marginRight: '5px' }}
-  />;
-}
-
