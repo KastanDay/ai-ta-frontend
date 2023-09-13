@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { createStyles, Group, Text } from '@mantine/core'
+import { createStyles, Flex, Group, Text } from '@mantine/core'
 import React, { useState } from 'react'
 import { IconFolders, IconReportAnalytics } from '@tabler/icons-react'
 import { montserrat_paragraph } from 'fonts'
@@ -135,7 +135,7 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
         }
       >
         <div style={{ visibility: isLoading ? 'hidden' : 'visible' }}>
-          <Group style={{ gap: '5px' }}>
+          <Flex direction="row" align="center" justify="center">
             <Text
               size={theme.fontSizes.sm}
               className={`${montserrat_paragraph.variable} font-montserratParagraph`}
@@ -162,7 +162,7 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
                 strokeLinejoin="round"
               />
             </svg>
-          </Group>
+          </Flex>
         </div>
         {isLoading && (
           <div style={{ position: 'absolute' }}>
