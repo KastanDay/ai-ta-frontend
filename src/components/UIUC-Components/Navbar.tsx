@@ -9,11 +9,13 @@ const styles: Record<string, React.CSSProperties> = {
     // Control image-box size
     justifyContent: 'center',
     alignItems: 'center',
-    maxWidth: '80%',
-    height: '100%', // Set height to 100% to match navbar height
-    overflow: 'hidden', // Hide overflow to crop image
+    overflow: 'hidden',
     position: 'relative',
-    paddingRight: '80px',
+    height: '100%',
+    maxWidth:
+      typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
+    paddingRight:
+      typeof window !== 'undefined' && window.innerWidth > 600 ? '4px' : '25px',
     paddingLeft: '25px',
   },
   thumbnailImage: {
