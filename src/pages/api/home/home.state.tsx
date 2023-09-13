@@ -28,6 +28,7 @@ export interface HomeInitialState {
   serverSideApiKeyIsSet: boolean
   serverSidePluginKeysSet: boolean
   cooldown: number
+  showModelSettings: boolean
 }
 
 export const initialState: HomeInitialState = {
@@ -43,7 +44,7 @@ export const initialState: HomeInitialState = {
   selectedConversation: undefined,
   currentMessage: undefined,
   prompts: [], // TODO: Add default prompts here :)
-  temperature: 0.4,
+  temperature: 0.3,
   showPromptbar: false,
   showChatbar: true,
   currentFolder: undefined,
@@ -53,4 +54,5 @@ export const initialState: HomeInitialState = {
   serverSideApiKeyIsSet: false,
   serverSidePluginKeysSet: false,
   cooldown: 0,
+  showModelSettings: false,
 }

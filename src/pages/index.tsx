@@ -21,10 +21,10 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>UIUC Course AI</title>
+        <title>UIUC.chat</title>
         <meta
           name="description"
-          content="The AI teaching assistant built for students at UIUC."
+          content="Chat with your documents, with full support for any format and web scraping."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -35,7 +35,7 @@ const Home: NextPage = () => {
         <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 ">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             {/* <Link href="/"> */}
-            UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
+            UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
             {/* </Link> */}
           </h1>
 

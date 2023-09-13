@@ -10,7 +10,7 @@ const Navbar = ({ course_name = '' }) => (
         <div className="flex-1">
           <Link href="/">
             <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
-              UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
+              UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
             </h2>
           </Link>
         </div>

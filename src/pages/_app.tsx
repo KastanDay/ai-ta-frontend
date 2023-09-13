@@ -20,7 +20,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
 }) => {
-
   useReportWebVitals(((metric: NextWebVitalsMetric) => {
     console.log(metric)
   }) as any)

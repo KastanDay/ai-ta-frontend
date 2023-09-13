@@ -2,17 +2,41 @@ import React, { useEffect, useState } from 'react'
 import {
   Card,
   Text,
+  Textarea,
   Flex,
   Group,
   Checkbox,
   Title,
   type CheckboxProps,
-  // Paper,
-  // Input,
-  // Button,
+  Paper,
+  Input,
+  Button,
+  Divider,
+  Accordion,
+  createStyles,
+  rem,
+  em,
+  Tooltip,
+  TextInput,
 } from '@mantine/core'
-import { IconLock } from '@tabler/icons-react'
-import { type CourseMetadata } from '~/types/courseMetadata'
+import {
+  IconAlertCircle,
+  IconAlertTriangle,
+  IconArrowUpRight,
+  IconCircleCheck,
+  IconEdit,
+  IconExternalLink,
+  IconKey,
+  IconLock,
+  IconTrash,
+  IconX,
+  // IconQuestionMark,
+} from '@tabler/icons-react'
+
+import {
+  CourseMetadataOptionalForUpsert,
+  type CourseMetadata,
+} from '~/types/courseMetadata'
 import LargeDropzone from './LargeDropzone'
 import EmailChipsComponent from './EmailChipsComponent'
 import { useMediaQuery } from '@mantine/hooks'
@@ -24,6 +48,49 @@ import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { WebScrape } from '~/components/UIUC-Components/WebScrape'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { notifications } from '@mantine/notifications'
+import SetExampleQuestions from './SetExampleQuestions'
+
+const montserrat_light = Montserrat({
+  weight: '400',
+  subsets: ['latin'],
+})
+
+const useStyles = createStyles((theme) => ({
+  // For Accordion
+  root: {
+    padding: 0,
+    borderRadius: theme.radius.xl,
+    outline: 'none',
+  },
+  item: {
+    backgroundColor: 'bg-transparent',
+    // border: `${rem(1)} solid transparent`,
+    border: `solid transparent`,
+    borderRadius: theme.radius.xl,
+    position: 'relative',
+    zIndex: 0,
+    transition: 'transform 150ms ease',
+    outline: 'none',
+
+    '&[data-active]': {
+      transform: 'scale(1.03)',
+      backgroundColor: 'bg-transparent',
+      // boxShadow: theme.shadows.xl,
+      // borderRadius: theme.radius.lg,
+      zIndex: 1,
+    },
+    '&:hover': {
+      backgroundColor: 'bg-transparent',
+    },
+  },
+
+  chevron: {
+    '&[data-rotate]': {
+      transform: 'rotate(90deg)',
+    },
+  },
+}))
 
 const EditCourseCard = ({
   course_name,
@@ -48,6 +115,9 @@ const EditCourseCard = ({
   const [courseBannerUrl, setCourseBannerUrl] = useState('')
   const [isIntroMessageUpdated, setIsIntroMessageUpdated] = useState(false)
   const [loadinSpinner, setLoadinSpinner] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [apiKey, setApiKey] = useState(courseMetadata?.openai_api_key as string)
+  const [isKeyUpdated, setIsKeyUpdated] = useState(false)
 
   const checkCourseAvailability = () => {
     const courseExists =
@@ -95,6 +165,7 @@ const EditCourseCard = ({
 
   useEffect(() => {
     setIntroMessage(courseMetadata?.course_intro_message || '')
+    setApiKey(courseMetadata?.openai_api_key as string)
   }, [courseMetadata])
 
   const uploadToS3 = async (file: File | null) => {
@@ -147,6 +218,8 @@ const EditCourseCard = ({
       console.error('Error uploading file:', error)
     }
   }
+
+  const { classes } = useStyles() // for Accordion
 
   return (
     <Card
@@ -250,17 +323,328 @@ const EditCourseCard = ({
             <div className="card flex h-full flex-col justify-center">
               <div className="card-body">
                 <div className="form-control relative">
+                  {/* <Title
+                    className={montserrat.className}
+                    variant="gradient"
+                    gradient={{ from: 'gold', to: 'white', deg: 50 }}
+                    order={2}
+                    p="xs"
+                    style={{ alignSelf: 'center' }}
+                  >
+                    Customization{' '}
+                  </Title> */}
+
+                  <Title
+                    // className={`label ${montserrat.className}`}
+                    className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                    variant="gradient"
+                    gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                    order={3}
+                  >
+                    Course-wide OpenAI key{' '}
+                  </Title>
+
+                  <Accordion
+                    pl={27}
+                    pr={27}
+                    pt={40}
+                    pb={40}
+                    m={-40}
+                    // style={{ borderRadius: 'theme.radius.xl', width: '112%', maxWidth: 'min(50rem, )', marginLeft: 'max(-1rem, -10%)' }}
+                    style={{ borderRadius: 'theme.radius.xl' }}
+                    classNames={classes}
+                    className={classes.root}
+                  >
+                    {/* ... Accordion items */}
+                    <Accordion.Item value="openai-key-details">
+                      <Accordion.Control>
+                        <Text
+                          className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+                          size={'md'}
+                        >
+                          If you provide an API key then all users of this
+                          course, and only this course, will bill to the below
+                          key while chatting with your documents.{' '}
+                          <span className={'text-purple-600'}>Read more</span>{' '}
+                          👇
+                        </Text>
+                        {/* <a
+                          className={'text-purple-600'}
+                          // href="/privacy"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ textDecoration: 'underline' }}
+                        >
+                          read more...
+                        </a> */}
+                      </Accordion.Control>
+                      <Accordion.Panel>
+                        <Text
+                          className={`label ${montserrat_light.className} p-0 text-neutral-200`}
+                          size={'sm'}
+                        >
+                          Only set this key if you&apos;re comfortable with
+                          paying the OpenAI bill for users to chat with your
+                          documents. Without this, each user must bring their
+                          own key and enter it before using the app. Providing a
+                          key makes your page free and much simpler for your
+                          users. You can use the visibility controls below to
+                          limit access. Advanced rate-limit features are a work
+                          in progress.
+                        </Text>
+                      </Accordion.Panel>
+                    </Accordion.Item>
+                  </Accordion>
+
+                  {apiKey && !isEditing ? (
+                    <>
+                      <Input
+                        icon={<IconKey />}
+                        className="mt-4 w-full min-w-[20rem]"
+                        placeholder="sk-**********"
+                        type="password"
+                        radius={'xl'}
+                        size={'md'}
+                        variant={'default'}
+                        id="openai-api-key-input"
+                        disabled={!isKeyUpdated}
+                        rightSection={
+                          <Button
+                            onClick={() => {
+                              setIsEditing(true)
+                              setIsKeyUpdated(false)
+                            }}
+                            size="sm"
+                            radius={'xl'}
+                            className="min-w-[5rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
+                            w={'auto'}
+                          >
+                            <IconEdit />
+                          </Button>
+                        }
+                        rightSectionWidth={'auto'}
+                      />
+                    </>
+                  ) : (
+                    <Input
+                      icon={<IconKey />}
+                      className="mt-4 w-full min-w-[20rem]"
+                      placeholder="OpenAI API key"
+                      type="password"
+                      radius={'xl'}
+                      size={'md'}
+                      variant={'default'}
+                      id="openai-api-key-input"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const inputValue = (e.target as HTMLInputElement)
+                            .value
+                          if (!inputValue.startsWith('sk-')) {
+                            notifications.show({
+                              id: 'error-notification',
+                              withCloseButton: true,
+                              onClose: () => console.log('error unmounted'),
+                              onOpen: () => console.log('error mounted'),
+                              autoClose: 4000,
+                              title: 'Invalid OpenAI API Key',
+                              message:
+                                'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
+                              color: 'red',
+                              radius: 'lg',
+                              icon: <IconAlertCircle />,
+                              className: 'my-notification-class',
+                              style: { backgroundColor: '#15162c' },
+                              loading: false,
+                            })
+                            return
+                          }
+                          if (courseMetadata) {
+                            courseMetadata.openai_api_key = inputValue
+                            setApiKey(inputValue)
+                          }
+                          callSetCourseMetadata(
+                            courseName,
+                            courseMetadata as CourseMetadata,
+                          ).then((resp) => {
+                            if (!resp) {
+                              console.error(
+                                'Error upserting course metadata for course: ',
+                                course_name,
+                              )
+                            } else {
+                              setIsEditing(false) // Reset isEditing to false after successful submission
+                              setIsKeyUpdated(true) // Set isKeyUpdated to true after successful submission
+                              if (
+                                inputValue === '' &&
+                                courseMetadata?.openai_api_key != ''
+                              ) {
+                                notifications.show({
+                                  id: 'success-notification',
+                                  withCloseButton: true,
+                                  onClose: () =>
+                                    console.log('success unmounted'),
+                                  onOpen: () => console.log('success mounted'),
+                                  autoClose: 4000,
+                                  title: 'Update Successful',
+                                  message: 'Key removed.',
+                                  color: 'green',
+                                  radius: 'lg',
+                                  icon: <IconTrash />,
+                                  className: 'my-notification-class',
+                                  style: { backgroundColor: '#15162c' },
+                                  loading: false,
+                                })
+                              } else {
+                                notifications.show({
+                                  id: 'success-notification',
+                                  withCloseButton: true,
+                                  onClose: () =>
+                                    console.log('success unmounted'),
+                                  onOpen: () => console.log('success mounted'),
+                                  autoClose: 4000,
+                                  title: 'Update Successful',
+                                  message:
+                                    'Course Wide api key set successfully.',
+                                  color: 'green',
+                                  radius: 'lg',
+                                  icon: <IconCircleCheck />,
+                                  className: 'my-notification-class',
+                                  style: { backgroundColor: '#15162c' },
+                                  loading: false,
+                                })
+                              }
+                            }
+                          })
+                        }
+                      }}
+                      rightSection={
+                        <Button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            const apiKeyInput = document.getElementById(
+                              'openai-api-key-input',
+                            ) as HTMLInputElement
+                            if (courseMetadata && apiKeyInput) {
+                              const inputValue = apiKeyInput.value
+                              // TODO: Actually test is key works on /models endpoint.
+                              if (
+                                inputValue === '' &&
+                                courseMetadata.openai_api_key != ''
+                              ) {
+                                notifications.show({
+                                  id: 'success-notification',
+                                  withCloseButton: true,
+                                  onClose: () =>
+                                    console.log('success unmounted'),
+                                  onOpen: () => console.log('success mounted'),
+                                  autoClose: 4000,
+                                  title: 'Update Successful',
+                                  message: 'Key removed.',
+                                  color: 'green',
+                                  radius: 'lg',
+                                  icon: <IconTrash />,
+                                  className: 'my-notification-class',
+                                })
+                              } else if (!inputValue.startsWith('sk-')) {
+                                notifications.show({
+                                  id: 'error-notification',
+                                  withCloseButton: true,
+                                  onClose: () => console.log('error unmounted'),
+                                  onOpen: () => console.log('error mounted'),
+                                  autoClose: 4000,
+                                  title: 'Invalid OpenAI API Key',
+                                  message:
+                                    'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
+                                  color: 'red',
+                                  radius: 'lg',
+                                  icon: <IconAlertCircle />,
+                                  className: 'my-notification-class',
+                                  style: { backgroundColor: '#15162c' },
+                                  withBorder: true,
+                                  loading: false,
+                                })
+                                return
+                              }
+                              courseMetadata.openai_api_key = inputValue
+                              setApiKey(inputValue) // Update the apiKey state
+                            }
+                            callSetCourseMetadata(
+                              courseName,
+                              courseMetadata as CourseMetadata,
+                            ).then((resp) => {
+                              if (!resp) {
+                                console.error(
+                                  'Error upserting course metadata for course: ',
+                                  course_name,
+                                )
+                              } else {
+                                setIsEditing(false) // Reset isEditing to false after successful submission
+                                setIsKeyUpdated(true) // Set isKeyUpdated to true after successful submission
+                              }
+                            })
+                          }}
+                          size="sm"
+                          radius={'xl'}
+                          className="min-w-[5rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
+                          w={'auto'}
+                        >
+                          Submit
+                        </Button>
+                      }
+                      rightSectionWidth={'auto'}
+                    />
+                  )}
+                  <Input.Description className="p-2 text-right">
+                    <a
+                      href="https://platform.openai.com/account/api-keys"
+                      target="_blank"
+                      className="hover:underline"
+                    >
+                      Get your own api key here
+                      <IconArrowUpRight size={12} className={'mb-2 inline'} />
+                    </a>
+                  </Input.Description>
+                </div>
+
+                <PrivateOrPublicCourse
+                  course_name={course_name}
+                  current_user_email={current_user_email}
+                  courseMetadata={courseMetadata as CourseMetadata}
+                  // course_intro_message={
+                  //   courseMetadata?.course_intro_message || ''
+                  // }
+                  // is_private={courseMetadata?.is_private || false}
+                  // banner_image_s3={courseBannerUrl}
+                />
+
+                <Title
+                  className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
+                  variant="gradient"
+                  gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                  order={3}
+                >
+                  Branding{' '}
+                </Title>
+                <div className="form-control relative">
                   <label
                     className={`label ${montserrat_heading.variable} font-montserratHeading`}
                   >
                     <span className="label-text text-lg text-neutral-200">
-                      Introductory Message
+                      Set a greeting
                     </span>
                   </label>
-                  <textarea
-                    rows={5}
-                    placeholder="Enter the introductory message of the chatbot"
-                    className={`textarea-bordered textarea w-full border-2 border-violet-800 bg-white text-black hover:border-violet-800 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                  <Text
+                    className={`label ${montserrat_light.className} pt-0`}
+                    size={'sm'}
+                  >
+                    Shown before users send their first chat.
+                  </Text>
+                  <Textarea
+                    autosize
+                    minRows={2}
+                    maxRows={4}
+                    placeholder="Enter a greeting to help users get started with your bot"
+                    className={`w-full ${montserrat_paragraph.variable} font-montserratParagraph`}
                     value={introMessage}
                     onChange={(e) => {
                       setIntroMessage(e.target.value)
@@ -269,7 +653,31 @@ const EditCourseCard = ({
                   />
                   {isIntroMessageUpdated && (
                     <>
-                      <button
+                      <Button
+                        className="relative m-1 w-[30%] self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
+                        type="submit"
+                        onClick={async () => {
+                          setIsIntroMessageUpdated(false)
+                          if (courseMetadata) {
+                            courseMetadata.course_intro_message = introMessage
+                            // Update the courseMetadata object
+
+                            const resp = await callSetCourseMetadata(
+                              course_name,
+                              courseMetadata,
+                            )
+                            if (!resp) {
+                              console.log(
+                                'Error upserting course metadata for course: ',
+                                course_name,
+                              )
+                            }
+                          }
+                        }}
+                      >
+                        Submit
+                      </Button>
+                      {/* <button
                         className="btn-outline btn absolute bottom-0 right-0 m-1 h-[2%] rounded-3xl border-violet-800 py-1 text-violet-800  hover:bg-violet-800 hover:text-white"
                         onClick={async () => {
                           setIsIntroMessageUpdated(false)
@@ -291,18 +699,44 @@ const EditCourseCard = ({
                         }}
                       >
                         Submit
-                      </button>
+                      </button> */}
                     </>
                   )}
                 </div>
-                <div className="form-control mt-4">
+                <label
+                  className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                >
+                  <span className="label-text text-lg text-neutral-200">
+                    Set example questions
+                  </span>
+                </label>
+                <Text
+                  className={`label ${montserrat_light.className} pb-0 pt-0`}
+                  mb={-3}
+                  size={'sm'}
+                >
+                  Users will likely try these first to get a feel for your bot.
+                </Text>
+                <SetExampleQuestions
+                  course_name={course_name}
+                  course_metadata={
+                    courseMetadata as CourseMetadataOptionalForUpsert
+                  }
+                />
+                <div className="form-control">
                   <label
                     className={`label ${montserrat_heading.variable} font-montserratHeading`}
                   >
                     <span className="label-text text-lg text-neutral-200">
-                      Upload Banner
+                      Upload your logo
                     </span>
                   </label>
+                  <Text
+                    size={'sm'}
+                    className={`label ${montserrat_light.className}`}
+                  >
+                    This logo will appear in the header of the chat page.
+                  </Text>
                   <input
                     type="file"
                     className={`file-input-bordered file-input w-full border-violet-800 bg-violet-800 text-white  shadow-inner hover:border-violet-600 hover:bg-violet-800 ${montserrat_paragraph.variable} font-montserratParagraph`}
@@ -333,16 +767,6 @@ const EditCourseCard = ({
                     }}
                   />
                 </div>
-                <PrivateOrPublicCourse
-                  course_name={course_name}
-                  current_user_email={current_user_email}
-                  courseMetadata={courseMetadata as CourseMetadata}
-                  // course_intro_message={
-                  //   courseMetadata?.course_intro_message || ''
-                  // }
-                  // is_private={courseMetadata?.is_private || false}
-                  // banner_image_s3={courseBannerUrl}
-                />
               </div>
             </div>
           </div>
@@ -362,6 +786,7 @@ const PrivateOrPublicCourse = ({
   courseMetadata: CourseMetadata
 }) => {
   const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
+  const { classes } = useStyles() // for Accordion
   // const { user, isSignedIn, isLoaded } = useUser()
   // const user_emails = extractEmailsFromClerk(user)
   // console.log("in MakeNewCoursePage.tsx user email list: ", user_emails )
@@ -425,27 +850,78 @@ const PrivateOrPublicCourse = ({
 
   return (
     <>
+      <Divider />
       <Title
         className={`${montserrat_heading.variable} font-montserratHeading`}
         variant="gradient"
-        gradient={{ from: 'gold', to: 'white', deg: 50 }}
-        order={2}
-        p="xl"
-        style={{ marginTop: '4rem', alignSelf: 'center' }}
+        gradient={{ from: 'gold', to: 'white', deg: 170 }}
+        order={3}
+        // p="md"
+        pl={'md'}
+        pr={'md'}
+        pt={'sm'}
+        pb={0}
+        style={{ alignSelf: 'left', marginLeft: '-11px' }}
       >
-        {' '}
-        Course Visibility{' '}
+        Visibility{' '}
       </Title>
+      <Accordion
+        pl={27}
+        pr={27}
+        pt={40}
+        pb={40}
+        m={-40}
+        // style={{ borderRadius: 'theme.radius.xl', width: '112%', maxWidth: 'min(50rem, )', marginLeft: 'max(-1rem, -10%)' }}
+        style={{ borderRadius: 'theme.radius.xl' }}
+        classNames={classes}
+        className={classes.root}
+      >
+        {/* ... Accordion items */}
+        <Accordion.Item value="openai-key-details">
+          <Accordion.Control>
+            <Text
+              className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+              size={'md'}
+            >
+              Only these email address are able to access the content.
+              {/* <span className={'text-purple-600'}>Read more</span>{' '}
+              👇 */}
+            </Text>
+          </Accordion.Control>
+          <Accordion.Panel>
+            <Text
+              className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+              size={'sm'}
+            >
+              Read our{' '}
+              <a
+                className={'text-purple-600'}
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                // style={{ textDecoration: 'underline' }}
+              >
+                strict security policy
+              </a>{' '}
+              on protecting your data. To add Admin users with full edit
+              permission, ideal for TA&apos;s and collaborators, please just
+              shoot me an email kvday2@illinois.edu.
+            </Text>
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
+
       <Group className="p-3">
         <Checkbox
           label={`Course is ${
             isPrivate ? 'private' : 'public'
           }. Click to change.`}
+          wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
           className={`${montserrat_heading.variable} font-montserratHeading font-bold`}
           // style={{ marginTop: '4rem' }}
-          size="xl"
+          size="lg"
           // bg='#020307'
           color="grape"
           icon={CheckboxIcon}
@@ -453,13 +929,42 @@ const PrivateOrPublicCourse = ({
           onChange={handleCheckboxChange}
         />
       </Group>
-      {/* </Group>
-      <Group className="p-3"> */}
 
-      <Text>
-        Only the below email address are able to access the content. Read our
-        strict security policy (in progress).
-      </Text>
+      {/* <Text
+        className={`label p-0 ${montserrat_light.className} inline-block`}
+        size={'sm'}
+      >
+        Only these email address are able to access the content.
+        Read our{' '}
+        <a
+          className={'text-purple-600'}
+          href="/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+        // style={{ textDecoration: 'underline' }}
+        >
+          strict security policy{' '}
+        </a>
+        <IconExternalLink
+          size={'1.1em'}
+          className="mr-2 inline-block text-purple-600"
+          style={{ position: 'relative', top: '-3px' }}
+        />
+      </Text> */}
+      {/* <Tooltip
+        multiline
+        width={220}
+        withArrow
+        transitionProps={{ duration: 200 }}
+        label=""
+      >
+        <span>For admin users...</span>
+      </Tooltip> */}
+      {/* <Text className={`label p-0 ${montserrat_light.className}`} size={'sm'}>
+        To add Admin users, who will have full edit access on this page, please
+        just shoot me an email kvday2@illinois.edu.
+      </Text> */}
+      {/* <a href="/privacy">strict security policy</a>. Useful when setting a Course Wide OpenAI Key to limit usage. */}
       {isPrivate && (
         <EmailChipsComponent
           course_owner={current_user_email}
@@ -469,8 +974,10 @@ const PrivateOrPublicCourse = ({
           onEmailAddressesChange={handleEmailAddressesChange}
           course_intro_message={courseMetadata.course_intro_message || ''}
           banner_image_s3={courseMetadata.banner_image_s3 || ''}
+          openai_api_key={courseMetadata.openai_api_key as string}
         />
       )}
+      <Divider />
     </>
   )
 }
