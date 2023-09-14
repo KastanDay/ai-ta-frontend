@@ -8,6 +8,7 @@ import { useRouter } from 'next/router'
 import { useMediaQuery } from '@mantine/hooks'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import SetWebScrapeParameters from './SetWebScrapeParameters'
 
 interface WebScrapeProps {
   is_new_course: boolean
@@ -335,6 +336,11 @@ export const WebScrape = ({
         }
         rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
       />
+      <div style={{ width: '50%' }}>
+        <SetWebScrapeParameters
+          course_name={courseName}
+        />
+      </div>
       <Text
         size={rem(14)}
         className={`w-full text-center ${montserrat_paragraph.variable} mt-2 font-montserratParagraph`}
