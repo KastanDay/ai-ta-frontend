@@ -28,9 +28,9 @@ const handler = async (req: Request): Promise<Response> => {
         process.env.NEXT_PUBLIC_SIGNING_KEY as string,
       )
       apiKey = decryptedText as string
-      console.log('models.ts Decrypted api key: ', apiKey)
+      // console.log('models.ts Decrypted api key: ', apiKey)
     }
-    console.log('models.ts Final openai key: ', apiKey)
+    // console.log('models.ts Final openai key: ', apiKey)
 
     if (!apiKey) {
       return new Response('Warning: OpenAI Key was not found', { status: 400 })

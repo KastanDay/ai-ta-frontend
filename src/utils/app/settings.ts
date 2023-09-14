@@ -11,7 +11,7 @@ export const getSettings = (): Settings => {
   if (settingsJson) {
     try {
       const savedSettings = JSON.parse(settingsJson) as Settings
-      savedSettings.theme = 'dark'; // Override any saved theme settings to force dark mode
+      savedSettings.theme = 'dark' // Override any saved theme settings to force dark mode
       settings = Object.assign(settings, savedSettings)
     } catch (e) {
       console.error(e)
@@ -21,6 +21,6 @@ export const getSettings = (): Settings => {
 }
 
 export const saveSettings = (settings: Settings) => {
-  settings.theme = 'dark'; // Ensure dark mode is saved for all users
+  settings.theme = 'dark' // Ensure dark mode is saved for all users
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
 }
