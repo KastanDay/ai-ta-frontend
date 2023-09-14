@@ -71,11 +71,13 @@ const useStyles = createStyles((theme) => ({
 const Navbar = ({ course_name = '' }: { course_name?: string }) => {
   const classes = useStyles();
   const router = useRouter(); // import useRouter from next/router
-  const [activeLink, setActiveLink] = useState(router.pathname); // useState to track the active link
+  const [activeLink, setActiveLink] = useState(router.asPath); // useState to track the active link
 
   useEffect(() => {
-    setActiveLink(router.pathname); // update the active link when the component mounts
-  }, [router.pathname]);
+    setActiveLink(router.asPath); // update the active link when the component mounts
+    console.log(router.asPath);
+  }, [router.asPath]);
+
 
   const handleLinkClick = (path: string) => {
     setActiveLink(path); // update the active link when a link is clicked
