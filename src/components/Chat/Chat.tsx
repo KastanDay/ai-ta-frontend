@@ -151,36 +151,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       // return false
     }
 
-    // TODO: DELETE ME AFTER PR72 on the backend IS MERGED. Update the one below
     try {
-      // const API_URL = 'https://flask-production-751b.up.railway.app'
-      // const API_URL_PREVIEW = 'https://flask-ai-ta-backend-pr-72.up.railway.app'
-      const API_URL_PREVIEW = 'https://smee.io/zx6ghuGrFuIIUHSs'
+      // Log conversation to our Flask Backend (especially Nomic)
+      const API_URL = 'https://flask-production-751b.up.railway.app'
 
-      const response = await fetch(`${API_URL_PREVIEW}/onResponseCompletion`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          course_name: getCurrentPageName(),
-          conversation: conversation,
-        }),
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.message)
-      // return data.success
-    } catch (error) {
-      console.error('Error in chat.tsx running onResponseCompletion():', error)
-      // return false
-    }
-    // Log conversation to our Flask Backend (BOTH ASMITA local && the PR72)
-    try {
-      // TODO: Change me when pr72 is merged
-      // const API_URL = 'https://flask-production-751b.up.railway.app'
-      const API_URL_PREVIEW = 'https://flask-ai-ta-backend-pr-72.up.railway.app'
-
-      const response = await fetch(`${API_URL_PREVIEW}/onResponseCompletion`, {
+      const response = await fetch(`${API_URL}/onResponseCompletion`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -252,7 +227,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           messages: updatedConversation.messages,
           key:
             courseMetadata?.openai_api_key &&
-            courseMetadata?.openai_api_key != ''
+              courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
           prompt: updatedConversation.prompt,
@@ -544,14 +519,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-    courseMetadata.example_questions.length > 0
+      courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-          'Make a bullet point list of key takeaways of the course.',
-          'What is [your favorite topic] and why is it worth learning about?',
-          'How can I effectively prepare for the upcoming exam?',
-          'How many assignments in the course?',
-        ]
+        'Make a bullet point list of key takeaways of the course.',
+        'What is [your favorite topic] and why is it worth learning about?',
+        'How can I effectively prepare for the upcoming exam?',
+        'How many assignments in the course?',
+      ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
