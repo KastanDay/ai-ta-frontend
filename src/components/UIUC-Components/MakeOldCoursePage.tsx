@@ -407,7 +407,7 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
       withCloseButton: true,
       onClose: () => console.log('unmounted'),
       onOpen: () => console.log('mounted'),
-      autoClose: 6000,
+      autoClose: 12000,
       // position="top-center",
       title: was_error ? 'Error deleting file' : 'Deleting file...',
       message: was_error
@@ -432,6 +432,10 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
           '&:hover': {
             backgroundColor: theme.colors.dark[1],
           },
+        },
+        icon: {
+          backgroundColor: was_error ? theme.colors.errorBackground : theme.colors.successBackground,
+          padding: '4px',
         },
       },
       loading: false,
