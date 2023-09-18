@@ -111,7 +111,7 @@ const useStyles = createStyles((theme) => ({
 
 }));
 
-const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = false }) => {
+const IndexNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = false }) => {
   const { classes, theme } = useStyles();
   const router = useRouter(); // import useRouter from next/router
   const [activeLink, setActiveLink] = useState(router.asPath); // useState to track the active link
@@ -193,7 +193,7 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = false }) => {
   )
 }
 
-export default Navbar
+export default IndexNavbar
 
 export function FileIcon() {
   return <File

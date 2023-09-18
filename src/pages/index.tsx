@@ -3,7 +3,7 @@ import { type NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
 import React from 'react'
-import NewNavbar from '~/components/UIUC-Components/IndexNavbar'
+import IndexNavbar from '~/components/UIUC-Components/IndexNavbar'
 
 import {
   // MantineProvider,
@@ -31,7 +31,7 @@ const Home: NextPage = () => {
       </Head>
 
       {/* <GlobalHeader /> */}
-      <NewNavbar />
+      <IndexNavbar />
 
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
         <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 ">

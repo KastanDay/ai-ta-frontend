@@ -76,9 +76,9 @@ const PlainNavbar = ({ isgpt4 = false }) => {
                 UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
               </h2>
             </Link>
-
-
-            <GlobalHeader isNavbar={true} />
+            <div className="ml-auto">
+              <GlobalHeader isNavbar={true} />
+            </div>
           </div>
         </div>
       </Flex>
