@@ -73,6 +73,9 @@ const Home = () => {
 
   const router = useRouter()
   const course_name = router.query.course_name as string
+  const curr_route_path = router.asPath as string
+  console.log("Course name from router query:", course_name)
+  console.log("curr_route_path:", curr_route_path)
 
   const [isCourseMetadataLoading, setIsCourseMetadataLoading] = useState(true)
   const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
@@ -80,7 +83,7 @@ const Home = () => {
   )
 
   useEffect(() => {
-    if (!course_name) return
+    if (!course_name && curr_route_path != '/gpt4') return
     const courseMetadata = async () => {
       setIsLoading(true) // Set loading to true before fetching data
       const response = await fetch(

@@ -60,11 +60,11 @@ export const CannotEditGPT4Page = ({
               p="xl"
             >
               {' '}
-              Go to any other URL, like{' '}
-              <Link href={'/your-awesome-course'}>
-                uiuc.chat/your-awesome-course
+              Go to{' '}
+              <Link href={'/new'} className='goldUnderline'>
+                uiuc.chat/new
               </Link>
-              , to make a new page.
+              {' '}to make a new page.
             </Title>
           </Flex>
         </div>
