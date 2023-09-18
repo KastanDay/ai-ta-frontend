@@ -55,35 +55,59 @@ export default function SetWebScrapeParameters({
         <TextInput
           label="Max URLs"
           name="maximumUrls"
-          placeholder="Enter the maximum number of URLs..."
+          placeholder="Default 100"
           value={inputList[0]}
-          onChange={(e) => handleInputChange(e, 0)}
+          onChange={(e) => {
+            const value = e.target.value;
+            const intValue = parseInt(value);
+            if (!isNaN(intValue) || value === '') {
+              handleInputChange(e, 0);
+            } else {
+              alert("Please enter a valid integer for Max URLs (numbers only)");
+            }
+          }}
           onFocus={() => handleInputFocus(0)}
           style={{ width: '100%' }}
         />
         <TextInput
           label="Timeout"
           name="timeout"
-          placeholder="Enter the timeout..."
+          placeholder="Default 1"
           value={inputList[1]}
-          onChange={(e) => handleInputChange(e, 1)}  
+          onChange={(e) => {
+            const value = e.target.value;
+            const intValue = parseInt(value);
+            if (!isNaN(intValue) || value === '') {
+              handleInputChange(e, 1);
+            } else {
+              alert("Please enter a valid integer for Timeout (numbers only)");
+            }
+          }}  
           onFocus={() => handleInputFocus(1)}  
           style={{ width: '100%' }}
         />
         <TextInput
           label="Max Depth"
           name="maxDepth"
-          placeholder="Enter the maximum depth..."
+          placeholder="Default 3"
           value={inputList[2]}
-          onChange={(e) => handleInputChange(e, 2)}
+          onChange={(e) => {
+            const value = e.target.value;
+            const intValue = parseInt(value);
+            if (!isNaN(intValue) || value === '') {
+              handleInputChange(e, 2);
+            } else {
+              alert("Please enter a valid integer for Timeout (numbers only)");
+            }
+          }}
           onFocus={() => handleInputFocus(2)}
           style={{ width: '100%' }}
         />
+        <div style={{ fontSize: 'smaller', marginBottom: '0px' }}>Stay on Base URL</div>
         <Checkbox 
           checked={stayOnBaseUrl}
           size="md"
           onChange={() => setStayOnBaseUrl(!stayOnBaseUrl)}
-          label="Stay on base URL"
         />
       </form>
 
