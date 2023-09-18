@@ -2,13 +2,8 @@ import Image from 'next/image'
 import { type NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
-<<<<<<< Updated upstream
 import React from 'react'
-import NewNavbar from '~/components/UIUC-Components/IndexNavbar'
-
-=======
 import IndexNavBar from '~/components/UIUC-Components/IndexNavbar'
->>>>>>> Stashed changes
 import {
   // MantineProvider,
   // Image,
@@ -33,17 +28,6 @@ const Home: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-<<<<<<< Updated upstream
-
-      {/* <GlobalHeader /> */}
-      <NewNavbar />
-
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
-        <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 ">
-          {/* <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            UIUC Course <span className="text-[hsl(280,100%,70%)]">AI</span>
-          </h1> */}
-=======
       <IndexNavBar />
 
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
@@ -54,7 +38,6 @@ const Home: NextPage = () => {
           {/* </Link> */}
           {/* </h1> */}
 
->>>>>>> Stashed changes
           <Container
             size="lg"
             py="l"

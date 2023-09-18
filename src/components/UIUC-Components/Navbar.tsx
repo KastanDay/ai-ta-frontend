@@ -96,31 +96,6 @@ const Navbar = ({ course_name = '' }: { course_name?: string }) => {
               </Link>
             </div>
 
-<<<<<<< Updated upstream
-            <Container className={classes.classes.inner}>
-              <div className={classes.classes.links}>
-                <Link href={`/${course_name}/gpt4`} onClick={() => handleLinkClick(`/${course_name}/gpt4`)} data-active={activeLink === `/${course_name}/gpt4`} className={classes.classes.link}>
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <MessageChatIcon />
-                    Chat
-                  </span>
-                </Link>
-                <Link href={`/${course_name}/materials`} onClick={() => handleLinkClick(`/${course_name}/materials`)} data-active={activeLink === `/${course_name}/materials`} className={classes.classes.link}>
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <FolderIcon />
-                    Materials
-                  </span></Link>
-                <Link href={`/${course_name}/query-analysis`} onClick={() => handleLinkClick(`/${course_name}/query-analysis`)} data-active={activeLink === `/${course_name}/query-analysis`} className={classes.classes.link}>
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <ReportIcon />
-                    Analysis
-                  </span></Link>
-                <Link href={`/${course_name}/setting`} onClick={() => handleLinkClick(`/${course_name}/setting`)} data-active={activeLink === `/${course_name}/setting`} className={classes.classes.link}>
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <SettingIcon />
-                    Setting
-                  </span></Link>
-=======
             {bannerUrl && (
               <div style={{ ...styles.logoContainerBox }}>
                 <Image
@@ -159,7 +134,6 @@ const Navbar = ({ course_name = '' }: { course_name?: string }) => {
                     </span>
                   </Link>
                 ))}
->>>>>>> Stashed changes
               </div>
             </Container>
 

@@ -68,7 +68,7 @@ const useStyles = createStyles((theme) => ({
   }
 }));
 
-const NewNavbar = () => {
+const IndexNavbar = () => {
   const classes = useStyles();
   const router = useRouter(); // import useRouter from next/router
   const [activeLink, setActiveLink] = useState(router.pathname); // useState to track the active link
@@ -115,7 +115,7 @@ const NewNavbar = () => {
   )
 }
 
-export default NewNavbar
+export default IndexNavbar
 
 export function FileIcon() {
   return <File

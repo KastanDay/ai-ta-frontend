@@ -1,5 +1,6 @@
 // src/components/Chat/Chat.tsx
 import {
+  IconAlertTriangle,
   IconBrain,
   IconClearAll,
   IconCloudUpload,
@@ -71,6 +72,7 @@ import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { OpenAIModelID, OpenAIModels } from '~/types/openai'
 import axios from 'axios'
+import Navbar from '../UIUC-Components/Navbar'
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
