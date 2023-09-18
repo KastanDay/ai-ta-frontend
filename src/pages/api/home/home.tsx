@@ -95,6 +95,48 @@ const Home = () => {
     courseMetadata()
   }, [course_name])
 
+  // useEffect(() => {
+  //   if (course_metadata && selectedConversation && course_name !== selectedConversation.messages[0]?.contexts[0]?.course_name) {
+  //     handleNewConversation();
+  //   }
+  // }, [course_metadata])
+
+  useEffect(() => {
+    try {
+      if (isCourseMetadataLoading) return
+      // TODO: FIX TYPES HERE. see this issue: https://github.com/UIUC-Chatbot/ai-ta-backend/issues/87
+      if (
+        course_metadata &&
+        selectedConversation &&
+        selectedConversation.messages &&
+        selectedConversation.messages.length > 0 &&
+        selectedConversation?.messages[0]?.contexts &&
+        selectedConversation.messages[0].contexts.length > 0 &&
+        // eslint-disable-next-line
+        // @ts-ignore
+        selectedConversation?.messages[0]?.contexts[0]?.['course_name '] &&
+        course_name !==
+        // eslint-disable-next-line
+        // @ts-ignore
+        selectedConversation.messages[0].contexts[0]['course_name ']
+      ) {
+        handleNewConversation()
+        console.log(
+          'Auto-created new conversation. Old course_name',
+          // eslint-disable-next-line
+          // @ts-ignore
+          selectedConversation.messages[0].contexts[0]['course_name '],
+          'new course_name',
+          course_name,
+        )
+        // console.log("PASSED CHECK, SHOULD CREATE NEW CONVO ")
+        // console.log("selectedConversation.messages[0].contexts[0].course_name", selectedConversation.messages[0].contexts[0])
+      }
+    } catch (error) {
+      console.error('An error occurred in useEffect: ', error)
+    }
+  }, [course_metadata])
+
   const clerk_user_outer = useUser()
   // const course_exists = course_metadata != null
 
@@ -127,14 +169,13 @@ const Home = () => {
   useEffect(() => {
     if (!course_metadata) return
     const local_api_key = localStorage.getItem('apiKey')
-    console.log('apiKey in localstorage:', apiKey)
     let key = ''
 
     if (course_metadata && course_metadata.openai_api_key) {
-      console.log(
-        'Using key from course_metadata',
-        course_metadata.openai_api_key,
-      )
+      // console.log(
+      //   'Using key from course_metadata',
+      //   course_metadata.openai_api_key,
+      // )
       key = course_metadata.openai_api_key
       // setServerSideApiKeyIsSet(true)
       dispatch({
@@ -165,7 +206,7 @@ const Home = () => {
       try {
         if (!course_metadata || !key) return
         const data = await getModels({ key: key })
-        console.log('models from getModels()', data)
+        // console.log('models from getModels()', data)
         dispatch({ field: 'models', value: data })
       } catch (error) {
         console.error('Error fetching models user has access to: ', error)
