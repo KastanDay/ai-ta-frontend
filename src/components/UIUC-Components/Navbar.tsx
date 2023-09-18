@@ -96,6 +96,7 @@ const Navbar = ({ course_name = '' }: { course_name?: string }) => {
               </Link>
             </div>
 
+<<<<<<< Updated upstream
             <Container className={classes.classes.inner}>
               <div className={classes.classes.links}>
                 <Link href={`/${course_name}/gpt4`} onClick={() => handleLinkClick(`/${course_name}/gpt4`)} data-active={activeLink === `/${course_name}/gpt4`} className={classes.classes.link}>
@@ -119,6 +120,46 @@ const Navbar = ({ course_name = '' }: { course_name?: string }) => {
                     <SettingIcon />
                     Setting
                   </span></Link>
+=======
+            {bannerUrl && (
+              <div style={{ ...styles.logoContainerBox }}>
+                <Image
+                  src={bannerUrl}
+                  style={{ ...styles.thumbnailImage }}
+                  // className=""
+                  width={2000}
+                  height={2000}
+                  alt="The course creator uploaded a logo for this chatbot."
+                />
+              </div>
+            )}
+
+
+            <Transition transition="pop-top-right" duration={200} mounted={opened}>
+              {(styles) => (
+                <Paper className={classes.dropdown} withBorder style={styles}>
+                  {items.map((item) => (
+                    <Link href={item.link} onClick={() => handleLinkClick(item.link)} data-active={activeLink === item.link} className={classes.link}>
+                      <span style={{ display: 'flex', alignItems: 'center' }}>
+                        {item.icon}
+                        {item.name}
+                      </span>
+                    </Link>
+                  ))}
+                </Paper>
+              )}
+            </Transition>
+            <Container className={classes.inner}>
+              <div className={classes.links}>
+                {items.map((item) => (
+                  <Link href={item.link} onClick={() => handleLinkClick(item.link)} data-active={activeLink === item.link} className={classes.link}>
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                      {item.icon}
+                      {item.name}
+                    </span>
+                  </Link>
+                ))}
+>>>>>>> Stashed changes
               </div>
             </Container>
 

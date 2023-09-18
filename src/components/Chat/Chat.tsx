@@ -246,7 +246,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         const chatBody: ChatBody = {
           model: updatedConversation.model,
           messages: updatedConversation.messages,
-          key: apiKey,
+          key:
+            courseMetadata?.openai_api_key &&
+              courseMetadata?.openai_api_key != ''
+              ? courseMetadata.openai_api_key
+              : apiKey,
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
           course_name: getCurrentPageName(),
@@ -519,11 +523,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const statements = courseMetadata?.course_intro_message
     ? courseMetadata.course_intro_message.split('\n')
     : [
-        'Make a bullet point list of key takeaways of the course.',
-        'What is [your favorite topic] and why is it worth learning about?',
-        'How can I effectively prepare for the upcoming exam?',
-        'How many assignments in the course?',
-      ]
+      'Make a bullet point list of key takeaways of the course.',
+      'What is [your favorite topic] and why is it worth learning about?',
+      'How can I effectively prepare for the upcoming exam?',
+      'How many assignments in the course?',
+    ]
 
   // Add this function to create dividers with statements
   const renderDividers = () => {
@@ -544,38 +548,68 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   return (
     <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#343541]">
       {!(apiKey || serverSideApiKeyIsSet) ? (
-        <div className="mx-auto flex h-full w-[300px] flex-col justify-center space-y-6 sm:w-[600px]">
-          <div className="text-center text-4xl font-bold text-black dark:text-white">
-            UIUC Course AI
-          </div>
-          <div className="text-center text-lg text-black dark:text-white"></div>
-          <div className="text-center text-gray-500 dark:text-gray-400">
-            <div className="rounded border border-2 border-solid border-red-500 p-4">
-              <Title>⚠️</Title>
-              <div className="mb-2">
-                <Title
-                  variant="gradient"
-                  gradient={{ from: 'red', to: 'white', deg: 50 }}
-                  order={3}
-                  p="xl"
-                >
-                  Please set your OpenAI API key in the bottom left of the
-                  sidebar.
-                </Title>
-              </div>
-              <div>
-                <Text size={'md'}>
-                  If you don&apos;t have an OpenAI API key, you can get one
-                  here:{' '}
-                  <a
-                    href="https://platform.openai.com/account/api-keys"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    openai.com
-                  </a>
-                </Text>
+        <div className="min-w-screen relative min-h-screen flex-1 overflow-hidden">
+          <Navbar isgpt4={false} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className=" backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
+              <div className="mb-2 flex flex-col items-center text-center">
+                <IconAlertTriangle
+                  size={'54'}
+                  className="mr-2 block text-orange-400 "
+                />
+                <div className="mt-4 text-left text-gray-100">
+                  {' '}
+                  {t(
+                    'Please set your OpenAI API key in the bottom left of the screen.',
+                  )}
+                  <div className="mt-2 font-normal">
+                    <Text size={'md'} className="text-gray-100">
+                      If you don&apos;t have a key yet, you can get one here:{' '}
+                      <a
+                        href="https://platform.openai.com/account/api-keys"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-purple-500 hover:underline"
+                      >
+                        OpenAI API key{' '}
+                        <IconExternalLink
+                          className="mr-2 inline-block"
+                          style={{ position: 'relative', top: '-3px' }}
+                        />
+                      </a>
+                    </Text>
+                    <Text size={'md'} className="pt-10 text-gray-400">
+                      <IconLock className="mr-2 inline-block" />
+                      This key will live securely encrypted in your
+                      browser&apos;s cache. It&apos;s all client-side so our
+                      servers never see it.
+                    </Text>
+                    <Text size={'md'} className="pt-10 text-gray-400">
+                      <IconBrain className="mr-2 inline-block" />
+                      GPT 3.5 is default. For GPT-4 access, either complete one
+                      billing cycle as an OpenAI API customer or pre-pay a
+                      minimum of $0.50. See
+                      <a
+                        className="text-purple-500 hover:underline"
+                        href="https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {' '}
+                        this documentation for details{' '}
+                        <IconExternalLink
+                          className="mr-2 inline-block"
+                          style={{ position: 'relative', top: '-3px' }}
+                        />
+                      </a>
+                    </Text>
+                    <Text size={'md'} className="pt-10 text-gray-400">
+                      <IconCreditCard className="mr-2 inline-block" />
+                      You only pay the standard OpenAI prices, per token read or
+                      generated by the model.
+                    </Text>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
