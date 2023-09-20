@@ -1,4 +1,4 @@
-import { TextInput, Box, Checkbox} from '@mantine/core'
+import { TextInput, Box, Checkbox, Tooltip} from '@mantine/core'
 import { useState, useEffect } from 'react'
 
 export default function SetWebScrapeParameters({
@@ -6,12 +6,9 @@ export default function SetWebScrapeParameters({
 }: {
   course_name: string
 }) {
-  const example_questions = ['']
-  const [inputList, setInputList] = useState(
-    example_questions.length > 0 ? example_questions : [''],
-  )
+  const [inputList, setInputList] = useState(['', '', '']);
   const [isTyping, setIsTyping] = useState(false)
-  const [stayOnBaseUrl, setStayOnBaseUrl] = useState(false) // Added this line
+  const [stayOnBaseUrl, setStayOnBaseUrl] = useState(false)
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -46,12 +43,12 @@ export default function SetWebScrapeParameters({
   }
 
   return (
-    <Box className="pl-1 pr-1">
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-        }}
-      >
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+      }}
+    >
+      <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum number of URLs to scrape">
         <TextInput
           label="Max URLs"
           name="maximumUrls"
@@ -69,6 +66,8 @@ export default function SetWebScrapeParameters({
           onFocus={() => handleInputFocus(0)}
           style={{ width: '100%' }}
         />
+      </Tooltip>
+      <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the timeout duration in seconds">
         <TextInput
           label="Timeout"
           name="timeout"
@@ -86,6 +85,8 @@ export default function SetWebScrapeParameters({
           onFocus={() => handleInputFocus(1)}  
           style={{ width: '100%' }}
         />
+      </Tooltip>
+      <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum depth for recursive scraping">
         <TextInput
           label="Max Depth"
           name="maxDepth"
@@ -103,15 +104,20 @@ export default function SetWebScrapeParameters({
           onFocus={() => handleInputFocus(2)}
           style={{ width: '100%' }}
         />
-        <div style={{ fontSize: 'smaller', marginBottom: '0px' }}>Stay on Base URL</div>
+      </Tooltip>
+      <div style={{ fontSize: 'smaller', marginBottom: '0px' }}>
+          Stay on Base URL
+      </div>
+      <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Only Scrape Information from the Base URL">
         <Checkbox 
           checked={stayOnBaseUrl}
           size="md"
           onChange={() => setStayOnBaseUrl(!stayOnBaseUrl)}
         />
-      </form>
-
-    </Box>
+      </Tooltip>
+    </form>
   )
+
+
 }
 
