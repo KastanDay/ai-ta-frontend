@@ -47,39 +47,33 @@ export const WebScrape = ({
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const theme = useMantineTheme()
-  const [inputList, setInputList] = useState(['', '', '']);
+  const [maxUrls, setMaxUrls] = useState('');
+  const [maxDepth, setMaxDepth] = useState('');
+  const [timeout, setTimeout] = useState('');
   const [isTyping, setIsTyping] = useState(false)
   const [stayOnBaseUrl, setStayOnBaseUrl] = useState(false)
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    index: number,
+    variable: string,
   ) => {
     const value = e.target.value
-    const list = [...inputList]
-    list[index] = value
-    setInputList(list)
-    if (index === inputList.length - 1 && value !== '') {
-      setIsTyping(true)
+    if (variable === 'maxUrls') {
+      setMaxUrls(value)
+    } else if (variable === 'maxDepth') {
+      setMaxDepth(value)
+    } else if (variable === 'timeout') {
+      setTimeout(value)
     }
   }
 
-  const handleInputFocus = (index: number) => {
-    if (inputList.every((item) => item !== '')) {
+  const handleInputFocus = (variable: string) => {
+    if (variable === 'maxUrls' && maxUrls !== '') {
       setIsTyping(true)
-    }
-  }
-
-  useEffect(() => {
-    if (isTyping) {
-      handleAddClick()
-      setIsTyping(false)
-    }
-  }, [isTyping])
-
-  const handleAddClick = () => {
-    if (inputList[inputList.length - 1] !== '') {
-      setInputList([...inputList, ''])
+    } else if (variable === 'maxDepth' && maxDepth !== '') {
+      setIsTyping(true)
+    } else if (variable === 'timeout' && timeout !== '') {
+      setIsTyping(true)
     }
   }
 
@@ -163,9 +157,9 @@ export const WebScrape = ({
         data = scrapeWeb(
           url,
           courseName,
-          inputList?.[0] ?? webScrapeConfig.num_sites,
-          inputList?.[1] ?? webScrapeConfig.recursive_depth,
-          inputList?.[2] ?? webScrapeConfig.timeout_sec,
+          (maxUrls && maxUrls.trim() !== "") ? parseInt(maxUrls) : webScrapeConfig.num_sites,
+          (maxDepth && maxDepth.trim() !== "") ? parseInt(maxDepth) : webScrapeConfig.recursive_depth,
+          (timeout && timeout.trim() !== "") ? parseInt(timeout) : webScrapeConfig.timeout_sec,
           stayOnBaseUrl,
         )
 
@@ -383,17 +377,16 @@ export const WebScrape = ({
                 label="Max URLs"
                 name="maximumUrls"
                 placeholder="Default 100"
-                value={inputList[0]}
+                value={maxUrls}
                 onChange={(e) => {
                   const value = e.target.value;
                   const intValue = parseInt(value);
                   if (!isNaN(intValue) || value === '') {
-                    handleInputChange(e, 0);
+                    handleInputChange(e, "maxUrls");
                   } else {
                     alert("Please enter a valid integer for Max URLs (numbers only)");
                   }
                 }}
-                onFocus={() => handleInputFocus(0)}
                 style={{ width: '100%' }}
               />
             </Tooltip>
@@ -402,17 +395,16 @@ export const WebScrape = ({
                 label="Timeout"
                 name="timeout"
                 placeholder="Default 1"
-                value={inputList[1]}
+                value={timeout}
                 onChange={(e) => {
                   const value = e.target.value;
                   const intValue = parseInt(value);
                   if (!isNaN(intValue) || value === '') {
-                    handleInputChange(e, 1);
+                    handleInputChange(e, "timeout");
                   } else {
                     alert("Please enter a valid integer for Timeout (numbers only)");
                   }
                 }}
-                onFocus={() => handleInputFocus(1)}
                 style={{ width: '100%' }}
               />
             </Tooltip>
@@ -421,17 +413,16 @@ export const WebScrape = ({
                 label="Max Depth"
                 name="maxDepth"
                 placeholder="Default 3"
-                value={inputList[2]}
+                value={maxDepth}
                 onChange={(e) => {
                   const value = e.target.value;
                   const intValue = parseInt(value);
                   if (!isNaN(intValue) || value === '') {
-                    handleInputChange(e, 2);
+                    handleInputChange(e, "maxDepth");
                   } else {
                     alert("Please enter a valid integer for Timeout (numbers only)");
                   }
                 }}
-                onFocus={() => handleInputFocus(2)}
                 style={{ width: '100%' }}
               />
             </Tooltip>
