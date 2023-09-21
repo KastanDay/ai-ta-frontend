@@ -112,7 +112,10 @@ const useStyles = createStyles((theme) => ({
 
 }));
 
-const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = false }) => {
+const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
+  // if (!course_name) {
+  //   return null;
+  // }
   const { classes, theme } = useStyles();
   const router = useRouter(); // import useRouter from next/router
   const [activeLink, setActiveLink] = useState(router.asPath); // useState to track the active link
@@ -129,12 +132,17 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = false }) => {
     toggle(); // close the mobile menu when a link is clicked
   };
 
+  const getCurrentCourseName = () => {
+    // Extract the course name from the current URL path
+    // Example: /CS-125/materials --> CS-125
+    return router.asPath.split('/')[1];
+  }
+
   const items = [
-    { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>, icon: <MessageChatIcon />, link: `/${course_name}/gpt4` },
-    { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>, icon: <FolderIcon />, link: `/${course_name}/materials` },
-    { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>, icon: <ReportIcon />, link: `/${course_name}/query-analysis` },
-    { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Setting</span>, icon: <SettingIcon />, link: `/${course_name}/setting` },
-  ];
+    { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>, icon: <MessageChatIcon />, link: `/${getCurrentCourseName()}/gpt4` },
+    { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>, icon: <FolderIcon />, link: `/${getCurrentCourseName()}/materials` },
+    { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>, icon: <ReportIcon />, link: `/${getCurrentCourseName()}/query-analysis` },
+    { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Setting</span>, icon: <SettingIcon />, link: `/${getCurrentCourseName()}/setting` },]
 
   return (
     <div className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}>

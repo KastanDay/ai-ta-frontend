@@ -71,6 +71,8 @@ import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { OpenAIModelID, OpenAIModels } from '~/types/openai'
 import axios from 'axios'
+import Navbar from '../UIUC-Components/Navbar'
+
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
@@ -519,11 +521,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const statements = courseMetadata?.course_intro_message
     ? courseMetadata.course_intro_message.split('\n')
     : [
-        'Make a bullet point list of key takeaways of the course.',
-        'What is [your favorite topic] and why is it worth learning about?',
-        'How can I effectively prepare for the upcoming exam?',
-        'How many assignments in the course?',
-      ]
+      'Make a bullet point list of key takeaways of the course.',
+      'What is [your favorite topic] and why is it worth learning about?',
+      'How can I effectively prepare for the upcoming exam?',
+      'How many assignments in the course?',
+    ]
 
   // Add this function to create dividers with statements
   const renderDividers = () => {
@@ -605,7 +607,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 <span className="w-3" />
                 |
                 <span className="w-3" />
-                <button
+                {/* <button
                   className="ml-2 cursor-pointer hover:opacity-50"
                   onClick={redirectToMaterialsPage}
                 >
@@ -620,8 +622,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                     &nbsp;&nbsp;
                     <IconCloudUpload size={18} />
                   </div>
-                </button>
-                &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;
+                </button> */}
+                {/* &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp; */}
                 <a
                   className="ml-2 cursor-pointer hover:opacity-50"
                   href="/disclaimer"
@@ -643,6 +645,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   </div>
                 </a>
               </div>
+              <Navbar />
+
             </div>
             {showSettings && (
               <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
