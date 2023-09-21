@@ -1,5 +1,5 @@
 import { notifications } from '@mantine/notifications'
-import { rem, Button, Input, Title, Text, useMantineTheme, Tooltip, Checkbox, TextInput} from '@mantine/core'
+import { rem, Button, Input, Title, Text, useMantineTheme, Tooltip, Checkbox, TextInput } from '@mantine/core'
 import { IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
 import { Montserrat } from 'next/font/google'
@@ -318,7 +318,7 @@ export const WebScrape = ({
       </Title>
       <Input
         icon={icon}
-        className="mt-4 w-[70%] min-w-[20rem] disabled:bg-purple-200 lg:w-[50%]"
+        className="mt-4 w-[80%] min-w-[20rem] disabled:bg-purple-200 lg:w-[75%]"
         wrapperProps={{ backgroundColor: '#020307', borderRadius: 'xl' }}
         placeholder="Enter URL"
         radius={'xl'}
@@ -360,11 +360,9 @@ export const WebScrape = ({
             }}
             size="md"
             radius={'xl'}
-            className={`rounded-s-md ${
-              isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
-            } overflow-ellipsis text-ellipsis p-2 ${
-              isUrlUpdated ? 'text-white' : 'text-gray-500'
-            } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
+            className={`rounded-s-md ${isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
+              } overflow-ellipsis text-ellipsis p-2 ${isUrlUpdated ? 'text-white' : 'text-gray-500'
+              } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
             w={`${isSmallScreen ? 'auto' : 'auto'}`}
             disabled={isDisabled}
           >
@@ -373,81 +371,83 @@ export const WebScrape = ({
         }
         rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
       />
-      <div style={{ width: '50%' }}>
-      <form
-      onSubmit={(event) => {
-        event.preventDefault();
-      }}
-    >
-      <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum number of URLs to scrape">
-        <TextInput
-          label="Max URLs"
-          name="maximumUrls"
-          placeholder="Default 100"
-          value={inputList[0]}
-          onChange={(e) => {
-            const value = e.target.value;
-            const intValue = parseInt(value);
-            if (!isNaN(intValue) || value === '') {
-              handleInputChange(e, 0);
-            } else {
-              alert("Please enter a valid integer for Max URLs (numbers only)");
-            }
-          }}
-          onFocus={() => handleInputFocus(0)}
-          style={{ width: '100%' }}
-        />
-      </Tooltip>
-      <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the timeout duration in seconds">
-        <TextInput
-          label="Timeout"
-          name="timeout"
-          placeholder="Default 1"
-          value={inputList[1]}
-          onChange={(e) => {
-            const value = e.target.value;
-            const intValue = parseInt(value);
-            if (!isNaN(intValue) || value === '') {
-              handleInputChange(e, 1);
-            } else {
-              alert("Please enter a valid integer for Timeout (numbers only)");
-            }
-          }}  
-          onFocus={() => handleInputFocus(1)}  
-          style={{ width: '100%' }}
-        />
-      </Tooltip>
-      <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum depth for recursive scraping">
-        <TextInput
-          label="Max Depth"
-          name="maxDepth"
-          placeholder="Default 3"
-          value={inputList[2]}
-          onChange={(e) => {
-            const value = e.target.value;
-            const intValue = parseInt(value);
-            if (!isNaN(intValue) || value === '') {
-              handleInputChange(e, 2);
-            } else {
-              alert("Please enter a valid integer for Timeout (numbers only)");
-            }
-          }}
-          onFocus={() => handleInputFocus(2)}
-          style={{ width: '100%' }}
-        />
-      </Tooltip>
-      <div style={{ fontSize: 'smaller', marginBottom: '0px' }}>
-          Stay on Base URL
-      </div>
-      <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Only Scrape Information from the Base URL">
-        <Checkbox 
-          checked={stayOnBaseUrl}
-          size="md"
-          onChange={() => setStayOnBaseUrl(!stayOnBaseUrl)}
-        />
-      </Tooltip>
-    </form>
-      </div>
+      {isUrlUpdated && (
+        <div className='w-[80%] min-w-[20rem] lg:w-[75%]' >
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+            }}
+          >
+            <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum number of URLs to scrape">
+              <TextInput
+                label="Max URLs"
+                name="maximumUrls"
+                placeholder="Default 100"
+                value={inputList[0]}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const intValue = parseInt(value);
+                  if (!isNaN(intValue) || value === '') {
+                    handleInputChange(e, 0);
+                  } else {
+                    alert("Please enter a valid integer for Max URLs (numbers only)");
+                  }
+                }}
+                onFocus={() => handleInputFocus(0)}
+                style={{ width: '100%' }}
+              />
+            </Tooltip>
+            <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the timeout duration in seconds">
+              <TextInput
+                label="Timeout"
+                name="timeout"
+                placeholder="Default 1"
+                value={inputList[1]}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const intValue = parseInt(value);
+                  if (!isNaN(intValue) || value === '') {
+                    handleInputChange(e, 1);
+                  } else {
+                    alert("Please enter a valid integer for Timeout (numbers only)");
+                  }
+                }}
+                onFocus={() => handleInputFocus(1)}
+                style={{ width: '100%' }}
+              />
+            </Tooltip>
+            <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum depth for recursive scraping">
+              <TextInput
+                label="Max Depth"
+                name="maxDepth"
+                placeholder="Default 3"
+                value={inputList[2]}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const intValue = parseInt(value);
+                  if (!isNaN(intValue) || value === '') {
+                    handleInputChange(e, 2);
+                  } else {
+                    alert("Please enter a valid integer for Timeout (numbers only)");
+                  }
+                }}
+                onFocus={() => handleInputFocus(2)}
+                style={{ width: '100%' }}
+              />
+            </Tooltip>
+            <div style={{ fontSize: 'smaller', marginBottom: '0px' }}>
+              Stay on Base URL
+            </div>
+            <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Only Scrape Information from the Base URL">
+              <Checkbox
+                checked={stayOnBaseUrl}
+                size="md"
+                onChange={() => setStayOnBaseUrl(!stayOnBaseUrl)}
+              />
+            </Tooltip>
+          </form>
+        </div>
+      )}
       <Text
         size={rem(14)}
         className={`w-full text-center ${montserrat_paragraph.variable} mt-2 font-montserratParagraph`}
