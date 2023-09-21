@@ -157,20 +157,14 @@ export const WebScrape = ({
         data = scrapeWeb(
           url,
           courseName,
-          (maxUrls && maxUrls.trim() !== "") ? parseInt(maxUrls) : webScrapeConfig.num_sites,
-          (maxDepth && maxDepth.trim() !== "") ? parseInt(maxDepth) : webScrapeConfig.recursive_depth,
-          (timeout && timeout.trim() !== "") ? parseInt(timeout) : webScrapeConfig.timeout_sec,
+          maxUrls.trim() !== "" ? parseInt(maxUrls) : webScrapeConfig.num_sites,
+          maxDepth.trim() !== "" ? parseInt(maxDepth) : webScrapeConfig.recursive_depth,
+          timeout.trim() !== "" ? parseInt(timeout) : webScrapeConfig.timeout_sec,
           stayOnBaseUrl,
         )
 
-        // todo: consolidate both KV stores into one (remove setCourseExistsAPI).
-        // todo: use KV store instead of /get-all to check if course exists.
         if (is_new_course) {
-          // Make course exist in kv store
-          // Removing this for kv refactor
-          // await setCourseExistsAPI(courseName)
-
-          // set course exists in new metadata endpoint. Works great.
+          // set course exists in fast course_metadatas KV db
           const response = callSetCourseMetadata(courseName, {
             course_owner: current_user_email,
             // Don't set properties we don't know about. We'll just upsert and use the defaults.
@@ -241,7 +235,7 @@ export const WebScrape = ({
     maxUrls: number,
     maxDepth: number,
     timeout: number,
-    stay_on_base_url: boolean,
+    stay_on_baseurl: boolean,
   ) => {
     try {
       if (!url || !courseName) return null
@@ -254,7 +248,7 @@ export const WebScrape = ({
           max_urls: maxUrls,
           max_depth: maxDepth,
           timeout: timeout,
-          stay_on_base_url: stay_on_base_url,
+          stay_on_baseurl: stay_on_baseurl,
         },
       })
       return response.data
