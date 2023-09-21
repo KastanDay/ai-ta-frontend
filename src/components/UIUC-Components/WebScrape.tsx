@@ -163,9 +163,10 @@ export const WebScrape = ({
         data = scrapeWeb(
           url,
           courseName,
-          webScrapeConfig.num_sites,
-          webScrapeConfig.recursive_depth,
-          webScrapeConfig.timeout_sec,
+          inputList?.[0] ?? webScrapeConfig.num_sites,
+          inputList?.[1] ?? webScrapeConfig.recursive_depth,
+          inputList?.[2] ?? webScrapeConfig.timeout_sec,
+          stayOnBaseUrl,
         )
 
         // todo: consolidate both KV stores into one (remove setCourseExistsAPI).
@@ -246,6 +247,7 @@ export const WebScrape = ({
     maxUrls: number,
     maxDepth: number,
     timeout: number,
+    stay_on_base_url: boolean,
   ) => {
     try {
       if (!url || !courseName) return null
@@ -258,6 +260,7 @@ export const WebScrape = ({
           max_urls: maxUrls,
           max_depth: maxDepth,
           timeout: timeout,
+          stay_on_base_url: stay_on_base_url,
         },
       })
       return response.data
