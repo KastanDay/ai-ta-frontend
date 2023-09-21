@@ -6,6 +6,7 @@ import {
   Flex,
   createStyles,
   Group,
+  Accordion,
   // Card,
   // Badge,
   // MantineProvider,
@@ -26,6 +27,7 @@ import React from 'react'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 
 const useStyles = createStyles((theme) => ({
+  // For Logos
   logos: {
     // width: '30%',
     aspectRatio: '3/2',
@@ -55,6 +57,41 @@ const useStyles = createStyles((theme) => ({
     left: `calc(50% - ${rem(125)})`,
     bottom: rem(-20),
   },
+
+
+  // For Accordion
+  root: {
+    padding: 0,
+    borderRadius: theme.radius.xl,
+    outline: 'none',
+  },
+  item: {
+    backgroundColor: 'bg-transparent',
+    // border: `${rem(1)} solid transparent`,
+    border: `solid transparent`,
+    borderRadius: theme.radius.xl,
+    position: 'relative',
+    zIndex: 0,
+    transition: 'transform 150ms ease',
+    outline: 'none',
+
+    '&[data-active]': {
+      transform: 'scale(1.03)',
+      backgroundColor: 'bg-transparent',
+      // boxShadow: theme.shadows.xl,
+      // borderRadius: theme.radius.lg,
+      zIndex: 1,
+    },
+    '&:hover': {
+      backgroundColor: 'bg-transparent',
+    },
+  },
+
+  chevron: {
+    '&[data-rotate]': {
+      transform: 'rotate(90deg)',
+    },
+  },
 }))
 
 const SupportedFileUploadTypes = () => {
@@ -81,7 +118,7 @@ const SupportedFileUploadTypes = () => {
           quality={60}
           alt="PDF icon"
           className={classes.logos}
-          // className="logos w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 object-contain"
+        // className="logos w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 object-contain"
         />
         <Image
           src="/media/word_logo.png"
@@ -178,7 +215,7 @@ const SupportedFileUploadTypes = () => {
           quality={60}
           alt="Github logo"
           className={classes.smallLogos}
-          // style={{mixBlendMode: 'multiply' }}
+        // style={{mixBlendMode: 'multiply' }}
         />
         <Image
           src="/media/notion_logo.png"
@@ -187,7 +224,7 @@ const SupportedFileUploadTypes = () => {
           quality={60}
           alt="Notion logo"
           className={classes.smallLogos}
-          // style={{mixBlendMode: 'multiply' }}
+        // style={{mixBlendMode: 'multiply' }}
         />
         <Image
           src="/media/coursera_logo_cutout.png"
@@ -196,7 +233,7 @@ const SupportedFileUploadTypes = () => {
           quality={60}
           alt="Coursera logo"
           className={classes.smallLogos}
-          // style={{mixBlendMode: 'multiply' }}
+        // style={{mixBlendMode: 'multiply' }}
         />
         {/* <Image
           src="/media/mitocw_logo.jpg"
@@ -215,6 +252,47 @@ const SupportedFileUploadTypes = () => {
           className={classes.smallLogos}
         />
       </Flex>
+      <Accordion
+        // pl={27}
+        // pr={27}
+        pt={10}
+        // pb={40}
+        // m={-40}
+        // style={{ borderRadius: 'theme.radius.xl', width: '112%', maxWidth: 'min(50rem, )', marginLeft: 'max(-1rem, -10%)' }}
+        style={{ borderRadius: 'theme.radius.xl' }}
+        // classNames={classes}
+        classNames={{ item: classes.item, chevron: classes.chevron }}
+        className={classes.root}
+      >
+        {/* ... Accordion items */}
+        <Accordion.Item value="openai-key-details" className={classes.item}>
+          <Accordion.Control>
+            <Text
+              className={`label ${montserrat_paragraph.variable} font-montserratParagraph inline-block p-0 text-neutral-200`}
+              size={'md'}
+            >
+              <span className={'text-purple-600'}>Read more</span>{' '}
+              👇
+            </Text>
+          </Accordion.Control>
+          <Accordion.Panel>
+            <Text
+              className={`label ${montserrat_paragraph.variable} font-montserratParagraph p-0 text-neutral-200`}
+              size={'sm'}
+            >
+              Only set this key if you&apos;re comfortable with
+              paying the OpenAI bill for users to chat with your
+              documents. Without this, each user must bring their
+              own key and enter it before using the app. Providing a
+              key makes your page free and much simpler for your
+              users. You can use the visibility controls below to
+              limit access. Advanced rate-limit features are a work
+              in progress.
+            </Text>
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
+
     </>
   )
 }
