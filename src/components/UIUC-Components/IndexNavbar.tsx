@@ -60,6 +60,7 @@ const useStyles = createStyles((theme) => ({
     textTransform: 'uppercase',
     fontSize: rem(13),
     padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+    margin: '0.35rem',
     paddingBottom: '1em',
     fontWeight: 700,
     transition: 'border-color 100ms ease, color 100ms ease, background-color 100ms ease',

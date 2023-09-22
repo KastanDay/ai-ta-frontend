@@ -59,6 +59,7 @@ const useStyles = createStyles((theme) => ({
     textTransform: 'uppercase',
     fontSize: rem(13),
     padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+    margin: '0.35rem',
     fontWeight: 700,
     transition: 'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
     borderRadius: theme.radius.sm, // added to make the square edges round
