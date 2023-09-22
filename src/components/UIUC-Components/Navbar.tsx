@@ -46,9 +46,7 @@ const useStyles = createStyles((theme) => ({
   },
 
   links: {
-    paddingTop: theme.spacing.lg,
-    // paddingTop: rem(100),
-    // height: HEADER_HEIGHT,
+    padding: 'theme.spacing.lg, 1em, 1em',
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -73,7 +71,7 @@ const useStyles = createStyles((theme) => ({
     },
     '&[data-active="true"]': {
       color: 'hsl(280,100%,70%)',
-      borderBottom: '2px solid hsl(280,100%,100%)', // make the bottom border of the square thicker and same color as "AI"
+      borderBottom: '2px solid hsl(280,100%,70%)', // make the bottom border of the square thicker and same color as "AI"
       textDecoration: 'none', // remove underline
       borderRadius: '10px', // added to make the square edges round when hovered
       backgroundColor: 'rgba(255, 255, 255, 0.1)', // add a background color when the link is active
@@ -86,8 +84,6 @@ const useStyles = createStyles((theme) => ({
       padding: theme.spacing.sm,
 
     },
-
-
   },
 
   burger: {
@@ -148,11 +144,14 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
       <Flex direction="row" align="center" justify="center">
         <div className="mt-4 w-full max-w-[95%]">
           <div className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800">
-            <Link href="/">
-              <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
-                UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
-              </h2>
-            </Link>
+            <div className="flex-1">
+
+              <Link href="/">
+                <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
+                  UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
+                </h2>
+              </Link>
+            </div>
 
             {/* {bannerUrl && (
               <div style={{ ...styles.logoContainerBox }}>

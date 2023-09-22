@@ -48,7 +48,7 @@ const useStyles = createStyles((theme) => ({
   },
 
   links: {
-    paddingTop: theme.spacing.lg,
+    padding: 'theme.spacing.lg, 1em, 1em',
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -61,6 +61,7 @@ const useStyles = createStyles((theme) => ({
     textTransform: 'uppercase',
     fontSize: rem(13),
     padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+    margin: '0.35rem',
     fontWeight: 700,
     transition: 'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
     borderRadius: theme.radius.sm,
@@ -73,7 +74,7 @@ const useStyles = createStyles((theme) => ({
     },
     '&[data-active="true"]': {
       color: 'hsl(280,100%,70%)',
-      borderBottom: '2px solid hsl(280,100%,100%)',
+      borderBottom: '2px solid hsl(280,100%,70%)',
       textDecoration: 'none',
       borderRadius: '10px',
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -155,11 +156,13 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
       <Flex direction="row" align="center" justify="center">
         <div className="mt-4 w-full max-w-[95%]">
           <div className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800">
-            <Link href="/">
-              <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
-                UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
-              </h2>
-            </Link>
+            <div className="flex-1">
+              <Link href="/">
+                <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
+                  UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
+                </h2>
+              </Link>
+            </div>
 
             <Transition transition="pop-top-right" duration={200} mounted={opened}>
               {(styles) => (
