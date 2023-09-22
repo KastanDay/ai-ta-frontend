@@ -35,7 +35,9 @@ const styles: Record<string, React.CSSProperties> = {
   },
 }
 
-const HEADER_HEIGHT = rem(84);
+const HEADER = rem(60);
+const HEADER_HEIGHT = parseFloat(HEADER) * 16;
+
 
 const useStyles = createStyles((theme) => ({
   inner: {
@@ -47,8 +49,6 @@ const useStyles = createStyles((theme) => ({
 
   links: {
     paddingTop: theme.spacing.lg,
-    // paddingTop: rem(100),
-    // height: HEADER_HEIGHT,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -63,35 +63,30 @@ const useStyles = createStyles((theme) => ({
     padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
     fontWeight: 700,
     transition: 'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
-    borderRadius: theme.radius.sm, // added to make the square edges round
+    borderRadius: theme.radius.sm,
 
     '&:hover': {
-      color: 'hsl(280,100%,70%)', // make the hovered color lighter
+      color: 'hsl(280,100%,70%)',
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
       textDecoration: 'none',
       borderRadius: '10px',
     },
     '&[data-active="true"]': {
       color: 'hsl(280,100%,70%)',
-      borderBottom: '2px solid hsl(280,100%,100%)', // make the bottom border of the square thicker and same color as "AI"
-      textDecoration: 'none', // remove underline
-      borderRadius: '10px', // added to make the square edges round when hovered
-      backgroundColor: 'rgba(255, 255, 255, 0.1)', // add a background color when the link is active
-      textAlign: 'right', // align the text to the right
+      borderBottom: '2px solid hsl(280,100%,100%)',
+      textDecoration: 'none',
+      borderRadius: '10px',
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      textAlign: 'right',
     },
     [theme.fn.smallerThan('sm')]: {
-      display: 'list-item', // change the display to list-item when 'sm'
+      display: 'list-item',
       textAlign: 'center',
       borderRadius: 0,
       padding: theme.spacing.sm,
-
     },
-
-
   },
-
   burger: {
-
     [theme.fn.largerThan('sm')]: {
       display: 'none',
     },
@@ -108,32 +103,44 @@ const useStyles = createStyles((theme) => ({
       display: 'none',
     },
   },
-
-
 }));
 
-const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
-  // if (!course_name) {
-  //   return null;
-  // }
+const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
   const { classes, theme } = useStyles();
-  const router = useRouter(); // import useRouter from next/router
-  const [activeLink, setActiveLink] = useState(router.asPath); // useState to track the active link
+  const router = useRouter();
+  const [activeLink, setActiveLink] = useState(router.asPath);
   const [opened, { toggle }] = useDisclosure(false);
+  const [show, setShow] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
-    setActiveLink(router.asPath); // update the active link when the component mounts
+    setActiveLink(router.asPath);
   }, [router.asPath]);
 
+  // useEffect(() => {
+  //   window.addEventListener('scroll', controlNavbar);
+  //   return () => {
+  //     window.removeEventListener('scroll', controlNavbar);
+  //   };
+  // }, [lastScrollY]);
+
+  const controlNavbar = () => {
+    if (typeof window !== 'undefined') {
+      if (window.scrollY > lastScrollY) { // if scroll down hide the navbar
+        setShow(false);
+      } else { // if scroll up show the navbar
+        setShow(true);
+      }
+      setLastScrollY(window.scrollY);
+    }
+  };
 
   const handleLinkClick = (path: string) => {
-    setActiveLink(path); // update the active link when a link is clicked
-    toggle(); // close the mobile menu when a link is clicked
+    setActiveLink(path);
+    toggle();
   };
 
   const getCurrentCourseName = () => {
-    // Extract the course name from the current URL path
-    // Example: /CS-125/materials --> CS-125
     return router.asPath.split('/')[1];
   }
 
@@ -144,7 +151,7 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
     { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Setting</span>, icon: <SettingIcon />, link: `/${getCurrentCourseName()}/setting` },]
 
   return (
-    <div className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}>
+    <div className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`} style={{ display: show ? 'block' : 'none' }}>
       <Flex direction="row" align="center" justify="center">
         <div className="mt-4 w-full max-w-[95%]">
           <div className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800">
@@ -153,20 +160,6 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                 UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
               </h2>
             </Link>
-
-            {/* {bannerUrl && (
-              <div style={{ ...styles.logoContainerBox }}>
-                <Image
-                  src={bannerUrl}
-                  style={{ ...styles.thumbnailImage }}
-                  // className=""
-                  width={2000}
-                  height={2000}
-                  alt="The course creator uploaded a logo for this chatbot."
-                />
-              </div>
-            )} */}
-
 
             <Transition transition="pop-top-right" duration={200} mounted={opened}>
               {(styles) => (
@@ -204,7 +197,7 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
   )
 }
 
-export default Navbar
+export default ChatNavbar
 
 
 export function MessageChatIcon() {

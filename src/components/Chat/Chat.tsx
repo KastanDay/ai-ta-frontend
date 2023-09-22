@@ -71,7 +71,7 @@ import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { OpenAIModelID, OpenAIModels } from '~/types/openai'
 import axios from 'axios'
-import Navbar from '../UIUC-Components/Navbar'
+import ChatNavbar from '../UIUC-Components/ChatNavbar'
 
 
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
@@ -542,8 +542,29 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       </div>
     ))
   }
+  // for chatnavbar
+  const [show, setShow] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY) {
+        setShow(false);
+      } else {
+        setShow(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
+
+  // end for chatnavbar
 
   return (
+
     <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#343541]">
       {!(apiKey || serverSideApiKeyIsSet) ? (
         <div className="mx-auto flex h-full w-[300px] flex-col justify-center space-y-6 sm:w-[600px]">
@@ -586,14 +607,18 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         <ErrorMessageDiv error={modelError} />
       ) : (
         <>
+
           <div
             className="max-h-full overflow-x-hidden"
             ref={chatContainerRef}
             onScroll={handleScroll}
           >
+
             {/* Always render the 'model, upload, disclaimer' banner */}
+
             <div className="sticky top-0 z-10 flex w-full flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
               <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
+
                 <button
                   className="ml-2 cursor-pointer hover:opacity-50"
                   onClick={handleSettings}
@@ -645,9 +670,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   </div>
                 </a>
               </div>
-              <Navbar />
 
             </div>
+            {show && <ChatNavbar />}
+
             {showSettings && (
               <div className="flex flex-col space-y-10 md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
                 <div className="flex h-full flex-col space-y-4 border-b border-neutral-200 p-4 dark:border-neutral-600 md:rounded-lg md:border">
@@ -732,8 +758,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             showScrollDownButton={showScrollDownButton}
           />
         </>
-      )}
-    </div>
+      )
+      }
+    </div >
   )
 })
 Chat.displayName = 'Chat'
