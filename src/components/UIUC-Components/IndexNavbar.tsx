@@ -45,7 +45,7 @@ const useStyles = createStyles((theme) => ({
   },
 
   links: {
-    paddingTop: theme.spacing.lg,
+    padding: 'theme.spacing.lg, 1em, 1em',
     // paddingTop: rem(100),
     // height: HEADER_HEIGHT,
     display: 'flex',
