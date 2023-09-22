@@ -542,7 +542,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       </div>
     ))
   }
-  // for chatnavbar
+  // begin setting for chatnavbar
   const [show, setShow] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   useEffect(() => {

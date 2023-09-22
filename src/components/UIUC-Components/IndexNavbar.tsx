@@ -111,7 +111,7 @@ const useStyles = createStyles((theme) => ({
 
 }));
 
-const IndexNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = false }) => {
+const IndexNavbar = ({ course_name = '', isgpt4 = false }) => {
   const { classes, theme } = useStyles();
   const router = useRouter(); // import useRouter from next/router
   const [activeLink, setActiveLink] = useState(router.asPath); // useState to track the active link
@@ -143,7 +143,7 @@ const IndexNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = false }) => {
               </h2>
             </Link>
 
-            {bannerUrl && (
+            {/* {bannerUrl && (
               <div style={{ ...styles.logoContainerBox }}>
                 <Image
                   src={bannerUrl}
@@ -154,7 +154,7 @@ const IndexNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = false }) => {
                   alt="The course creator uploaded a logo for this chatbot."
                 />
               </div>
-            )}
+            )} */}
 
 
             <Transition transition="pop-top-right" duration={200} mounted={opened}>
