@@ -45,9 +45,7 @@ const useStyles = createStyles((theme) => ({
   },
 
   links: {
-    padding: 'theme.spacing.lg, 1em, 1em',
-    // paddingTop: rem(100),
-    // height: HEADER_HEIGHT,
+    padding: '1em, 1em',
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -61,7 +59,6 @@ const useStyles = createStyles((theme) => ({
     fontSize: rem(13),
     padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
     margin: '0.35rem',
-    paddingBottom: '1em',
     fontWeight: 700,
     transition: 'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
     borderRadius: theme.radius.sm, // added to make the square edges round
@@ -77,7 +74,7 @@ const useStyles = createStyles((theme) => ({
       borderBottom: '2px solid hsl(280,100%,70%)', // make the bottom border of the square thicker and same color as "AI"
       textDecoration: 'none', // remove underline
       borderRadius: '10px', // added to make the square edges round when hovered
-      backgroundColor: 'rgba(170, 0, 255, 0.1)', // add a background color when the link is active
+      backgroundColor: 'rgba(255, 255, 255, 0.1)', // add a background color when the link is active
       textAlign: 'right', // align the text to the right
     },
     [theme.fn.smallerThan('sm')]: {

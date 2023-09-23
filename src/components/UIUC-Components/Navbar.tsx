@@ -70,6 +70,7 @@ const useStyles = createStyles((theme) => ({
       textDecoration: 'none',
       borderRadius: '10px',
     },
+
     '&[data-active="true"]': {
       color: 'hsl(280,100%,70%)',
       borderBottom: '2px solid hsl(280,100%,70%)', // make the bottom border of the square thicker and same color as "AI"
