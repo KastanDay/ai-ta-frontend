@@ -127,6 +127,8 @@ import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
 import GlobalFooter from '~/components/UIUC-Components/GlobalFooter'
+import { useUser } from '@clerk/nextjs'
+import { extractEmailsFromClerk } from '../components/UIUC-Components/clerkHelpers'
 
 const mockdata = [
   {
@@ -192,6 +194,8 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
+// const clerk_obj = useUser()
+
 export function FeaturesCards() {
   const { classes, theme } = useStyles()
   const features = mockdata.map((feature) => (
@@ -236,6 +240,15 @@ export function FeaturesCards() {
 
 // TODO: USE BETTER CARDS! https://ui.mantine.dev/category/article-cards
 function CourseCard() {
+  // if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
+  //   console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
+  //   const emails = extractEmailsFromClerk(clerk_obj.user)
+  //   // updatedConversation.user_email = emails[0]
+  //   // onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
+  // } else {
+  //   console.log('NOT LOADED OR SIGNED IN')
+  // }
+
   const cards = [
     {
       course_slug: 'ece120',
@@ -290,6 +303,15 @@ function CourseCard() {
 
   return (
     <>
+      {/* if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
+        console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
+            const emails = extractEmailsFromClerk(clerk_obj.user)
+      updatedConversation.user_email = emails[0]
+      onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
+          } else {
+        console.log('NOT LOADED OR SIGNED IN')
+            onMessageReceived(updatedConversation)
+          } */}
       {cards.map((card) => (
         <div
           key={card.course_slug}
