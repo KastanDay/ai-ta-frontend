@@ -19,23 +19,28 @@ export const runtime = 'edge'
 //   fetchCourseMetadata()
 // }, [])
 
-export const getAllCourseMetadata = async (): Promise<CourseMetadata[] | null> => {
-  try {
-    // const all_course_metadata = await kv.hgetall(
-    //   'course_metadatas',
-    // ) as CourseMetadata[]
 
+export const getAllCourseMetadata = async (): Promise<{ [key: string]: CourseMetadata }[] | null> => {
+  /*
+  I return a list of dictionaries of course metadata
+    The key is the courseName
+    The value is the CourseMetadata object
+  */
+
+  try {
     const all_course_metadata_raw = await kv.hgetall('course_metadatas')
+    console.log("Raw metadata")
+    console.log(all_course_metadata_raw)
 
     if (all_course_metadata_raw) {
-      const all_course_metadata = Object.values(all_course_metadata_raw).map(item => {
-        const courseMetadata = item as CourseMetadata;
+      const all_course_metadata = Object.entries(all_course_metadata_raw).map(([key, value]) => {
+        const courseMetadata = value as CourseMetadata;
         if (!courseMetadata) {
-          console.error('Invalid course metadata:', item);
+          console.error('Invalid course metadata:', value);
           return null;
         }
-        return courseMetadata;
-      }).filter(item => item !== null) as CourseMetadata[];
+        return { [key]: courseMetadata };
+      }).filter(item => item !== null) as { [key: string]: CourseMetadata }[];
       console.log('in direct course name', all_course_metadata)
       return all_course_metadata
     } else {
