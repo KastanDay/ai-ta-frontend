@@ -226,7 +226,8 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
       // Handle successful deletion, show a success message
       showToastOnFileDeleted(theme)
       // Refresh the page
-      await router.push(router.asPath)
+      // await router.push(router.asPath)
+      await router.reload()
     } catch (error) {
       console.error(error)
       // Show error message
@@ -404,7 +405,7 @@ async function fetchPresignedUrl(
   }
 }
 
-const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
+export const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
   return (
     // docs: https://mantine.dev/others/notifications/
 

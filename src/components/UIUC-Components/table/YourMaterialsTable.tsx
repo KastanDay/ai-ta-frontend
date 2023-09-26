@@ -27,15 +27,47 @@ import {
   Table,
   useReactTable,
 } from '@tanstack/react-table'
+import { createStyles, Group, Title } from '@mantine/core'
+import axios from 'axios'
+import { showToastOnFileDeleted } from '../MakeOldCoursePage'
+import { useRouter } from 'next/router'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
+const useStyles = createStyles((theme) => ({}))
 
 export default function MyTableView({ course_materials }: CourseFilesListProps) {
+
+  const [data, setData] = React.useState(() => course_materials)
+  const router = useRouter()
+  const { classes, theme } = useStyles()
+
+  const handleDelete = async (
+    course_name: string,
+    s3_path: string,
+    url: string,
+  ) => {
+    try {
+      const API_URL = 'https://flask-production-751b.up.railway.app'
+      const response = await axios.delete(`${API_URL}/delete`, {
+        params: { course_name, s3_path, url },
+      })
+      // Handle successful deletion, show a success message
+      showToastOnFileDeleted(theme)
+      // Refresh the page
+      await router.push(router.asPath, undefined, { scroll: false, shallow: false })
+    } catch (error) {
+      console.error(error)
+      // Show error message
+      showToastOnFileDeleted(theme, true)
+    }
+  }
+
+
   const rerender = React.useReducer(() => ({}), {})[1]
 
   console.log("course_materials")
   console.log(course_materials)
 
   const [rowSelection, setRowSelection] = React.useState({})
-  const [globalFilter, setGlobalFilter] = React.useState('')
 
   const columns = React.useMemo<ColumnDef<CourseFile>[]>(
     () => [
@@ -64,46 +96,65 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
         ),
       },
       {
-        header: 'Name',
+        header: ' ', // I couldn't see how to fully delete the header.
         footer: props => props.column.id,
         columns: [
           {
             accessorKey: 'readable_filename',
             cell: info => info.getValue(),
             footer: props => props.column.id,
-            header: () => <span>File</span>,
+            header: () =>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Title
+                  className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
+                  variant="gradient"
+                  gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                  order={3}
+                >
+                  File name
+                </Title>
+              </div>,
           },
-          {
-            accessorFn: row => row.s3_path,
-            id: 's3_path',
-            cell: info => info.getValue(),
-            header: () => <span>S3 Path</span>,
-            footer: props => props.column.id,
-          },
-        ],
-      },
-      {
-        header: 'Info',
-        footer: props => props.column.id,
-        columns: [
           {
             accessorKey: 'url',
-            header: () => 'URL',
             footer: props => props.column.id,
+            header: () => <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Title
+                className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
+                variant="gradient"
+                gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                order={3}
+              >
+                URL
+              </Title>
+            </div>,
           },
           {
             accessorKey: 'base_url',
-            header: () => <span>Base URL of web scrape</span>,
             footer: props => props.column.id,
+            header: () => <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Title
+                className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
+                variant="gradient"
+                gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                order={3}
+              >
+                Starting URL of web scrape
+              </Title>
+            </div>,
           },
+          // {
+          //   accessorFn: row => row.s3_path,
+          //   id: 's3_path',
+          //   cell: info => info.getValue(),
+          //   header: () => <span>S3 Path</span>,
+          //   footer: props => props.column.id,
+          // },
         ],
       },
     ],
     []
   )
-
-  const [data, setData] = React.useState(() => course_materials)
-  const refreshData = () => setData(() => course_materials)
 
   const table = useReactTable({
     data,
@@ -122,14 +173,14 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
 
   return (
     <div className="p-2">
-      <div>
-        <input
+      {/* <div> */}
+      {/* <input
           value={globalFilter ?? ''}
           onChange={e => setGlobalFilter(e.target.value)}
           className="p-2 font-lg shadow border border-block"
           placeholder="Search all columns..."
-        />
-      </div>
+        /> */}
+      {/* </div> */}
       <div className="h-2" />
       <table>
         <thead>
@@ -157,7 +208,7 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
             </tr>
           ))}
         </thead>
-        <tbody>
+        <tbody className={`${montserrat_paragraph.variable} font-montserratParagraph`}>
           {table.getRowModel().rows.map(row => {
             return (
               <tr key={row.id}>
@@ -186,7 +237,7 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
                 }}
               />
             </td>
-            <td colSpan={20}>Page Rows ({table.getRowModel().rows.length})</td>
+            <td colSpan={20}>Select entire page ({table.getRowModel().rows.length} rows)</td>
           </tr>
         </tfoot>
       </table>
@@ -245,7 +296,7 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
             table.setPageSize(Number(e.target.value))
           }}
         >
-          {[10, 20, 30, 40, 50].map(pageSize => (
+          {[20, 50, 100, 500].map(pageSize => (
             <option key={pageSize} value={pageSize}>
               Show {pageSize}
             </option>
@@ -253,25 +304,23 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
         </select>
       </div>
       <br />
-      <div>
-        {Object.keys(rowSelection).length} of{' '}
-        {table.getPreFilteredRowModel().rows.length} Total Rows Selected
-      </div>
+      {Object.keys(rowSelection).length > 0 && (
+        <div>
+          <Group>
+            {Object.keys(rowSelection).length} of{' '}
+            {table.getPreFilteredRowModel().rows.length} total documents selected
+
+            <button
+              className="border rounded p-2 mb-2"
+              onClick={() => deleteDocs(table.getPreFilteredRowModel().rows)}
+            >
+              Delete Selected Documents
+            </button>
+          </Group>
+        </div>
+      )}
       <hr />
       <br />
-      <div>
-        <button className="border rounded p-2 mb-2" onClick={() => rerender()}>
-          Force Rerender
-        </button>
-      </div>
-      <div>
-        <button
-          className="border rounded p-2 mb-2"
-          onClick={() => refreshData()}
-        >
-          Refresh Data
-        </button>
-      </div>
       <div>
         <button
           className="border rounded p-2 mb-2"
