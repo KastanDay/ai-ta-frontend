@@ -24,6 +24,8 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
   Table,
   useReactTable,
 } from '@tanstack/react-table'
@@ -36,7 +38,8 @@ const useStyles = createStyles((theme) => ({}))
 
 export default function MyTableView({ course_materials }: CourseFilesListProps) {
 
-  const [data, setData] = React.useState(() => course_materials)
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [data, setData] = React.useState(course_materials)
   const router = useRouter()
   const { classes, theme } = useStyles()
 
@@ -96,27 +99,52 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
         ),
       },
       {
+        accessorFn: row => row.readable_filename,
+        id: 'readable_filename',
+        cell: info => info.getValue(),
+        sortType: (rowA, rowB, columnId) => {
+          const a = rowA.values[columnId];
+          const b = rowB.values[columnId];
+          return a.localeCompare(b);
+        },
+        header: () => <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Title
+            className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
+            variant="gradient"
+            gradient={{ from: 'gold', to: 'white', deg: 170 }}
+            order={3}
+          >
+            File name
+          </Title>
+        </div>,
+      },
+      {
         header: ' ', // I couldn't see how to fully delete the header.
         footer: props => props.column.id,
         columns: [
-          {
-            accessorKey: 'readable_filename',
-            cell: info => info.getValue(),
-            footer: props => props.column.id,
-            header: () =>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Title
-                  className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
-                  variant="gradient"
-                  gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                  order={3}
-                >
-                  File name
-                </Title>
-              </div>,
-          },
+          // {
+          //   accessorKey: 'readable_filename',
+          //   cell: info => info.getValue(),
+          //   footer: props => props.column.id,
+          //   header: () =>
+          //     <div style={{ display: 'flex', justifyContent: 'center' }}>
+          //       <Title
+          //         className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
+          //         variant="gradient"
+          //         gradient={{ from: 'gold', to: 'white', deg: 170 }}
+          //         order={3}
+          //       >
+          //         File name
+          //       </Title>
+          //     </div>,
+          // },
           {
             accessorKey: 'url',
+            sortType: (rowA, rowB, columnId) => {
+              const a = rowA.values[columnId];
+              const b = rowB.values[columnId];
+              return a.localeCompare(b);
+            },
             footer: props => props.column.id,
             header: () => <div style={{ display: 'flex', justifyContent: 'center' }}>
               <Title
@@ -131,6 +159,11 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
           },
           {
             accessorKey: 'base_url',
+            sortType: (rowA, rowB, columnId) => {
+              const a = rowA.values[columnId];
+              const b = rowB.values[columnId];
+              return a.localeCompare(b);
+            },
             footer: props => props.column.id,
             header: () => <div style={{ display: 'flex', justifyContent: 'center' }}>
               <Title
@@ -161,14 +194,17 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
     columns,
     state: {
       rowSelection,
+      sorting,
     },
     enableRowSelection: true, //enable row selection for all rows
     // enableRowSelection: row => row.original.age > 18, // or enable row selection conditionally per row
     onRowSelectionChange: setRowSelection,
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    debugTable: false,
+    getSortedRowModel: getSortedRowModel(),
+    debugTable: true,
   })
 
   return (
@@ -190,7 +226,14 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
                 return (
                   <th key={header.id} colSpan={header.colSpan}>
                     {header.isPlaceholder ? null : (
-                      <>
+                      <div
+                        {...{
+                          className: header.column.getCanSort()
+                            ? 'cursor-pointer select-none'
+                            : '',
+                          onClick: header.column.getToggleSortingHandler(),
+                        }}
+                      >
                         {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
@@ -200,7 +243,11 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
                             <Filter column={header.column} table={table} />
                           </div>
                         ) : null}
-                      </>
+                        {{
+                          asc: ' 🔼',
+                          desc: ' 🔽',
+                        }[header.column.getIsSorted() as string] ?? null}
+                      </div>
                     )}
                   </th>
                 )
