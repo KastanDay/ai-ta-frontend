@@ -98,7 +98,7 @@ const MakeOldCoursePage = ({
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-        // current_email={currentEmail as string}
+      // current_email={currentEmail as string}
       />
     )
   }
@@ -168,6 +168,7 @@ const MakeOldCoursePage = ({
             </div>
           </Flex>
         </div>
+        <MyTableView course_materials={course_data} />
         <GlobalFooter />
       </main>
     </>
@@ -207,6 +208,7 @@ import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
 import { montserrat_heading } from 'fonts'
+import MyTableView from './table/YourMaterialsTable'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
@@ -302,15 +304,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colorScheme === 'dark'
-                      ? theme.colors.gray[2]
-                      : theme.colors.gray[1]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colorScheme === 'dark'
+                        ? theme.colors.gray[2]
+                        : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colors.gray[8]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colors.gray[8]
                 }}
               >
                 <IconDownload className="h-5 w-5 text-gray-800" />
@@ -328,15 +330,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colorScheme === 'dark'
-                      ? theme.colors.gray[2]
-                      : theme.colors.gray[1]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colorScheme === 'dark'
+                        ? theme.colors.gray[2]
+                        : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colors.red[6]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colors.red[6]
                 }}
               >
                 <IconTrash className="h-5 w-5 text-red-600" />
@@ -373,8 +375,7 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${
-          response.statusText || response.status
+        `Error fetching course metadata: ${response.statusText || response.status
         }`,
       )
     }
