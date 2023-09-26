@@ -124,9 +124,9 @@ const Home = () => {
         // @ts-ignore
         selectedConversation?.messages[0]?.contexts[0]?.['course_name '] &&
         course_name !==
-        // eslint-disable-next-line
-        // @ts-ignore
-        selectedConversation.messages[0].contexts[0]['course_name ']
+          // eslint-disable-next-line
+          // @ts-ignore
+          selectedConversation.messages[0].contexts[0]['course_name ']
       ) {
         handleNewConversation()
         console.log(

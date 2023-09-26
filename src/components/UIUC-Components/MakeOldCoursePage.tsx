@@ -98,7 +98,7 @@ const MakeOldCoursePage = ({
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-      // current_email={currentEmail as string}
+        // current_email={currentEmail as string}
       />
     )
   }
@@ -211,7 +211,11 @@ import { montserrat_heading } from 'fonts'
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
   const { classes, theme } = useStyles()
-  const handleDelete = async (course_name: string, s3_path: string, url: string) => {
+  const handleDelete = async (
+    course_name: string,
+    s3_path: string,
+    url: string,
+  ) => {
     try {
       const API_URL = 'https://flask-production-751b.up.railway.app'
       const response = await axios.delete(`${API_URL}/delete`, {
@@ -294,19 +298,19 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                     window.open(url, '_blank')
                   })
                 }
-                className="btn btn-circle cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
+                className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.gray[2]
-                        : theme.colors.gray[1]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colorScheme === 'dark'
+                      ? theme.colors.gray[2]
+                      : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colors.gray[8]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colors.gray[8]
                 }}
               >
                 <IconDownload className="h-5 w-5 text-gray-800" />
@@ -320,19 +324,19 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                     file.url as string,
                   )
                 }
-                className="btn btn-circle cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
+                className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.gray[2]
-                        : theme.colors.gray[1]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colorScheme === 'dark'
+                      ? theme.colors.gray[2]
+                      : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colors.red[6]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colors.red[6]
                 }}
               >
                 <IconTrash className="h-5 w-5 text-red-600" />
@@ -369,7 +373,8 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${response.statusText || response.status
+        `Error fetching course metadata: ${
+          response.statusText || response.status
         }`,
       )
     }
@@ -434,7 +439,9 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
           },
         },
         icon: {
-          backgroundColor: was_error ? theme.colors.errorBackground : theme.colors.successBackground,
+          backgroundColor: was_error
+            ? theme.colors.errorBackground
+            : theme.colors.successBackground,
           padding: '4px',
         },
       },
