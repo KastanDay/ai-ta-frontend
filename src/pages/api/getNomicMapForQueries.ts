@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'edge'
 
-const API_URL = 'https://flask-production-751b.up.railway.app'
+const API_URL = 'https://flask-staging-db3e.up.railway.app/'
 // const PR_API_URL = 'https://flask-ai-ta-backend-pr-53.up.railway.app'
 
 export default async function handler(req: NextRequest, res: NextResponse) {
