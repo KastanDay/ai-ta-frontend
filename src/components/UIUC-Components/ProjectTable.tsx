@@ -3,20 +3,33 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { getAllCourseMetadata, getCoursesByOwnerOrAdmin } from '~/pages/api/UIUC-api/getAllCourseMetadata';
-import router from 'next/router';
 import { type CourseMetadata } from '~/types/courseMetadata'
-
-const course_name = router.query.course_name as string
+import { useRouter } from 'next/router';
 
 interface ResponseObject {
   [key: string]: CourseMetadata;
 }
+
 
 const ListProjectTable: React.FC = () => {
   const clerk_user = useUser()
   const [courses, setCourses] = useState<Record<string, CourseMetadata>[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const course_name = router.query.course_name as string
+  useEffect(() => {
+    const fetchCourseMetadata = async () => {
+      const response = await fetch(
+        `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
+      )
+      const data = await response.json()
+      setCourses(data.course_metadata)
+      setLoading(false)
+    }
+
+    fetchCourseMetadata()
+  }, [course_name])
 
   useEffect(() => {
     const fetchCourses = async () => {
