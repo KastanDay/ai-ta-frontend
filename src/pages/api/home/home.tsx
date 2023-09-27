@@ -73,6 +73,7 @@ const Home = () => {
 
   const router = useRouter()
   const course_name = router.query.course_name as string
+  const curr_route_path = router.asPath as string
 
   const [isCourseMetadataLoading, setIsCourseMetadataLoading] = useState(true)
   const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
@@ -80,11 +81,18 @@ const Home = () => {
   )
 
   useEffect(() => {
-    if (!course_name) return
+    if (!course_name && curr_route_path != '/gpt4') return
     const courseMetadata = async () => {
       setIsLoading(true) // Set loading to true before fetching data
+
+      // Handle /gpt4 page
+      let curr_course_name = course_name
+      if (curr_route_path == '/gpt4') {
+        curr_course_name = 'gpt4'
+      }
+
       const response = await fetch(
-        `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
+        `/api/UIUC-api/getCourseMetadata?course_name=${curr_course_name}`,
       )
       const data = await response.json()
       setCourseMetadata(data.course_metadata)
