@@ -6,32 +6,20 @@ import { getAllCourseMetadata, getCoursesByOwnerOrAdmin } from '~/pages/api/UIUC
 import router from 'next/router';
 import { type CourseMetadata } from '~/types/courseMetadata'
 
+const course_name = router.query.course_name as string
 
+interface ResponseObject {
+  [key: string]: CourseMetadata;
+}
 
 const ListProjectTable: React.FC = () => {
   const clerk_user = useUser()
   const [courses, setCourses] = useState<Record<string, CourseMetadata>[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const course_name = router.query.course_name as string
 
-
-  // useEffect(() => {
-  //   const fetchCourseMetadata = async () => {
-  //     const response = await fetch(
-  //       `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
-  //     )
-  //     const data = await response.json()
-  //     setCourseMetadata(data.course_metadata)
-  //     setIsLoading(false)
-  //   }
-
-  //   fetchCourseMetadata()
-  // }, [course_name])
   useEffect(() => {
     const fetchCourses = async () => {
-      const response = await fetch(
-        `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,)
       try {
         if (clerk_user.isLoaded && clerk_user.isSignedIn) {
           const emails = extractEmailsFromClerk(clerk_user.user);
@@ -45,6 +33,20 @@ const ListProjectTable: React.FC = () => {
             setLoading(false);
           } else {
             throw new Error('No courses found for the user');
+          }
+          const response = await getAllCourseMetadata();
+          if (response !== null) {
+            const data = response.find((obd: ResponseObject) => obd.hasOwnProperty(course_name));
+            if (data) {
+              const course = data[course_name];
+              if (course) {
+                setCourses([{ [course_name]: course }]);
+              }
+            } else {
+              throw new Error('No course found with the given name');
+            }
+          } else {
+            throw new Error('No response from getAllCourseMetadata');
           }
         } else {
           throw new Error('User not signed in');
@@ -67,8 +69,8 @@ const ListProjectTable: React.FC = () => {
         <div key={index}>
           <Table striped highlightOnHover>
             <tbody>
-              {Object.entries(courseObj).map(([key, course]) => (
-                <tr key={key}>
+              {Object.entries(courseObj).map(([course_name, course]) => (
+                <tr key={course_name}>
                   <td>{course_name}</td>
                   <td>{course.course_owner}</td>
                   <td>{course.is_private ? 'Private' : 'Public'}</td>
@@ -84,3 +86,4 @@ const ListProjectTable: React.FC = () => {
 };
 
 export default ListProjectTable;
+
