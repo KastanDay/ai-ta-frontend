@@ -29,7 +29,7 @@ import {
   Table,
   useReactTable,
 } from '@tanstack/react-table'
-import { createStyles, Group, Title } from '@mantine/core'
+import { createStyles, Group, TextInput, Title } from '@mantine/core'
 import axios from 'axios'
 import { showToastOnFileDeleted } from '../MakeOldCoursePage'
 import { useRouter } from 'next/router'
@@ -209,6 +209,13 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
 
   return (
     <div className="p-2">
+      <label
+        className={`label ${montserrat_heading.variable} font-montserratHeading`}
+      >
+        <span className="label-text text-lg text-neutral-200">
+          Click on the column name to sort.
+        </span>
+      </label>
       {/* <div> */}
       {/* <input
           value={globalFilter ?? ''}
@@ -234,19 +241,21 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
                           onClick: header.column.getToggleSortingHandler(),
                         }}
                       >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        <Group position="center" className={`pb-2`}>
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                          {{
+                            asc: ' 🔼',
+                            desc: ' 🔽',
+                          }[header.column.getIsSorted() as string] ?? null}
+                        </Group>
                         {header.column.getCanFilter() ? (
                           <div>
                             <Filter column={header.column} table={table} />
                           </div>
                         ) : null}
-                        {{
-                          asc: ' 🔼',
-                          desc: ' 🔽',
-                        }[header.column.getIsSorted() as string] ?? null}
                       </div>
                     )}
                   </th>
@@ -426,13 +435,16 @@ function Filter({
       />
     </div>
   ) : (
-    <input
-      type="text"
-      value={(column.getFilterValue() ?? '') as string}
-      onChange={e => column.setFilterValue(e.target.value)}
-      placeholder={`Search...`}
-      className="w-36 border shadow rounded"
-    />
+    <div className="flex justify-center">
+      <TextInput
+        size='xs'
+        type="text"
+        value={(column.getFilterValue() ?? '') as string}
+        onChange={e => column.setFilterValue(e.target.value)}
+        placeholder={`Search...`}
+        className="w-1/2 rounded"
+      />
+    </div>
   )
 }
 

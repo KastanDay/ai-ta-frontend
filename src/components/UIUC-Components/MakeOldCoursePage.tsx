@@ -152,6 +152,8 @@ const MakeOldCoursePage = ({
                     Course Files
                   </Title>
                 </div>
+
+
                 <div className="me-6 mt-4 flex flex-row items-end justify-end">
                   <DropzoneS3Upload
                     course_name={course_name}
@@ -164,11 +166,17 @@ const MakeOldCoursePage = ({
               {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
             </div>
             <div className="mt-2 flex w-[80%] flex-col items-center justify-center">
+
+
+              <MyTableView course_materials={course_data} />
+              <br></br>
+              <br></br>
+
+
               <CourseFilesList files={course_data} />
             </div>
           </Flex>
         </div>
-        <MyTableView course_materials={course_data} />
         <GlobalFooter />
       </main>
     </>
