@@ -4,20 +4,9 @@ import { NextResponse } from 'next/server'
 import { CourseMetadata } from '~/types/courseMetadata'
 import { log } from 'next-axiom'
 
+
 export const runtime = 'edge'
 
-// USAGE:
-// useEffect(() => {
-//   const fetchCourseMetadata = async () => {
-//     const response = await fetch(
-//       `/api/UIUC-api/getAllCourseMetadata`,
-//     )
-//     const all_course_metadata = await response.json()
-//     console.log("All Course metadta: ", all_course_metadata)
-//   }
-
-//   fetchCourseMetadata()
-// }, [])
 
 export const getCoursesByOwnerOrAdmin = async (
   currUserEmail: string,

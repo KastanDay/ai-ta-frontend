@@ -17,6 +17,7 @@ import {
 import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
 import GlobalFooter from '~/components/UIUC-Components/GlobalFooter'
 
+
 const Home: NextPage = () => {
   return (
     <>
@@ -78,6 +79,7 @@ const Home: NextPage = () => {
           <Title color="white" order={3}>
             Explore the Courses
           </Title>
+          <ListProjectTable />
 
           {/* Main courses */}
           <CourseCard />
@@ -125,6 +127,7 @@ export default Home
 import { createStyles, SimpleGrid, Container } from '@mantine/core'
 import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import ListProjectTable from '~/components/UIUC-Components/ProjectTable'
 
 const mockdata = [
   {
@@ -174,9 +177,8 @@ const useStyles = createStyles((theme) => ({
   },
 
   card: {
-    border: `${rem(1)} solid ${
-      theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
-    }`,
+    border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
+      }`,
   },
 
   cardTitle: {
