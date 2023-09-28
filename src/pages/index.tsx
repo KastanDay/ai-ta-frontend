@@ -69,9 +69,6 @@ const Home: NextPage = () => {
               <span className="font-bold">Upload</span> your videos, any number
               of PDFs, PowerPoint, Word, Excel and almost anything other
               document to chat with your knowledge base.
-              <br></br>
-              Coming soon: Students can contribute content to enhance the
-              AI&apos;s knowledge.
             </Text>
           </Container>
 
