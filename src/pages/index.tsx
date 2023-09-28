@@ -18,7 +18,6 @@ import {
 } from '@mantine/core'
 
 const Home: NextPage = () => {
-
   return (
     <>
       <Head>
@@ -50,7 +49,6 @@ const Home: NextPage = () => {
               // gradient={{ from: 'indigo', to: 'cyan', deg: 45 }}
               gradient={{ from: 'pink', to: 'blue', deg: 45 }}
               ta="center"
-
               mt="md"
             >
               Upload anything. Search everything.
@@ -77,7 +75,6 @@ const Home: NextPage = () => {
           <Title color="white" order={3}>
             Explore the Courses
           </Title>
-
 
           {/* Main courses */}
           <CourseCard />
@@ -176,8 +173,9 @@ const useStyles = createStyles((theme) => ({
   },
 
   card: {
-    border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
-      }`,
+    border: `${rem(1)} solid ${
+      theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
+    }`,
   },
 
   cardTitle: {

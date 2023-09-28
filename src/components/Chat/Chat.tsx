@@ -73,7 +73,6 @@ import { OpenAIModelID, OpenAIModels } from '~/types/openai'
 import axios from 'axios'
 import ChatNavbar from '../UIUC-Components/ChatNavbar'
 
-
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
 
@@ -521,11 +520,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const statements = courseMetadata?.course_intro_message
     ? courseMetadata.course_intro_message.split('\n')
     : [
-      'Make a bullet point list of key takeaways of the course.',
-      'What is [your favorite topic] and why is it worth learning about?',
-      'How can I effectively prepare for the upcoming exam?',
-      'How many assignments in the course?',
-    ]
+        'Make a bullet point list of key takeaways of the course.',
+        'What is [your favorite topic] and why is it worth learning about?',
+        'How can I effectively prepare for the upcoming exam?',
+        'How many assignments in the course?',
+      ]
 
   // Add this function to create dividers with statements
   const renderDividers = () => {
@@ -543,28 +542,27 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     ))
   }
   // begin setting for chatnavbar
-  const [show, setShow] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [show, setShow] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+      const currentScrollY = window.scrollY
       if (currentScrollY > lastScrollY) {
-        setShow(false);
+        setShow(false)
       } else {
-        setShow(true);
+        setShow(true)
       }
-      setLastScrollY(currentScrollY);
-    };
-    window.addEventListener('scroll', handleScroll);
+      setLastScrollY(currentScrollY)
+    }
+    window.addEventListener('scroll', handleScroll)
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [lastScrollY]);
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [lastScrollY])
 
   // end for chatnavbar
 
   return (
-
     <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#343541]">
       {!(apiKey || serverSideApiKeyIsSet) ? (
         <div className="mx-auto flex h-full w-[300px] flex-col justify-center space-y-6 sm:w-[600px]">
@@ -607,18 +605,15 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         <ErrorMessageDiv error={modelError} />
       ) : (
         <>
-
           <div
             className="max-h-full overflow-x-hidden"
             ref={chatContainerRef}
             onScroll={handleScroll}
           >
-
             {/* Always render the 'model, upload, disclaimer' banner */}
 
             <div className="sticky top-0 z-10 flex w-full flex-col justify-center bg-neutral-100 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
               <div className="flex justify-center border border-b-neutral-300 bg-neutral-100 py-2 text-sm text-neutral-500 dark:border-none dark:bg-[#444654] dark:text-neutral-200">
-
                 <button
                   className="ml-2 cursor-pointer hover:opacity-50"
                   onClick={handleSettings}
@@ -670,7 +665,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   </div>
                 </a>
               </div>
-
             </div>
             {show && <ChatNavbar />}
 
@@ -758,9 +752,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             showScrollDownButton={showScrollDownButton}
           />
         </>
-      )
-      }
-    </div >
+      )}
+    </div>
   )
 })
 Chat.displayName = 'Chat'
