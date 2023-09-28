@@ -43,7 +43,7 @@ export const WebScrape = ({
   const [url, setUrl] = useState('')
   const [icon, setIcon] = useState(<IconWorldDownload size={'50%'} />)
   const [loadinSpinner, setLoadinSpinner] = useState(false)
-  const API_URL = 'https://flask-staging-db3e.up.railway.app/'
+  const API_URL = 'https://flask-staging-db3e.up.railway.app'
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const theme = useMantineTheme()

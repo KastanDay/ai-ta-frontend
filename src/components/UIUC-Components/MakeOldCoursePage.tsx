@@ -213,7 +213,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const { classes, theme } = useStyles()
   const handleDelete = async (course_name: string, s3_path: string, url: string) => {
     try {
-      const API_URL = 'https://flask-staging-db3e.up.railway.app/'
+      const API_URL = 'https://flask-staging-db3e.up.railway.app'
       const response = await axios.delete(`${API_URL}/delete`, {
         params: { course_name, s3_path, url },
       })

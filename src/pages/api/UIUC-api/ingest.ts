@@ -12,7 +12,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const s3_filepath = `courses/${courseName}/${fileName}`
 
     // const local_url = 'http://127.0.0.1:8000'
-    const API_URL = 'https://flask-staging-db3e.up.railway.app/'
+    const API_URL = 'https://flask-staging-db3e.up.railway.app'
 
 
     const response: AxiosResponse = await axios.get(

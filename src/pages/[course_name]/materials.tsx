@@ -39,7 +39,7 @@ const CourseMain: NextPage = () => {
       setCourseExists(data)
       if (data) {
         const response = await fetch(
-          `https://flask-staging-db3e.up.railway.app//getAll?course_name=${course_name}`,
+          `https://flask-staging-db3e.up.railway.app/getAll?course_name=${course_name}`,
         )
         const data = await response.json()
         const courseData = data.distinct_files

@@ -153,7 +153,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
     try {
       // Log conversation to our Flask Backend (especially Nomic)
-      const API_URL = 'https://flask-staging-db3e.up.railway.app/'
+      const API_URL = 'https://flask-staging-db3e.up.railway.app'
 
       const response = await fetch(`${API_URL}/onResponseCompletion`, {
         method: 'POST',
