@@ -194,17 +194,17 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
       icon: <ReportIcon />,
       link: `/${getCurrentCourseName()}/query-analysis`,
     },
-    {
-      name: (
-        <span
-          className={`${montserrat_heading.variable} font-montserratHeading`}
-        >
-          Setting
-        </span>
-      ),
-      icon: <SettingIcon />,
-      link: `/${getCurrentCourseName()}/setting`,
-    },
+    // {
+    //   name: (
+    //     <span
+    //       className={`${montserrat_heading.variable} font-montserratHeading`}
+    //     >
+    //       Setting
+    //     </span>
+    //   ),
+    //   icon: <SettingIcon />,
+    //   link: `/${getCurrentCourseName()}/setting`,
+    // },
   ]
 
   return (
