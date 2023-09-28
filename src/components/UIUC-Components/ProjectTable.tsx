@@ -6,96 +6,79 @@ import { getAllCourseMetadata, getCoursesByOwnerOrAdmin } from '~/pages/api/UIUC
 import { type CourseMetadata } from '~/types/courseMetadata'
 import { useRouter } from 'next/router';
 
-interface ResponseObject {
-  [key: string]: CourseMetadata;
-}
 
 
 const ListProjectTable: React.FC = () => {
   const clerk_user = useUser()
-  const [courses, setCourses] = useState<Record<string, CourseMetadata>[]>([]);
+  const [courses, setCourses] = useState<{ [key: string]: CourseMetadata }[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const course_name = router.query.course_name as string
-  useEffect(() => {
-    const fetchCourseMetadata = async () => {
-      const response = await fetch(
-        `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
-      )
-      const data = await response.json()
-      setCourses(data.course_metadata)
-      setLoading(false)
-    }
-
-    fetchCourseMetadata()
-  }, [course_name])
 
   useEffect(() => {
     const fetchCourses = async () => {
-      try {
-        if (clerk_user.isLoaded && clerk_user.isSignedIn) {
-          const emails = extractEmailsFromClerk(clerk_user.user);
-          const currUserEmail = emails[0];
-          if (!currUserEmail) {
-            throw new Error('No email found for the user');
-          }
-          const result = await getCoursesByOwnerOrAdmin(currUserEmail);
-          if (result) {
-            setCourses(result);
-            setLoading(false);
-          } else {
-            throw new Error('No courses found for the user');
-          }
-          const response = await getAllCourseMetadata();
-          if (response !== null) {
-            const data = response.find((obd: ResponseObject) => obd.hasOwnProperty(course_name));
-            if (data) {
-              const course = data[course_name];
-              if (course) {
-                setCourses([{ [course_name]: course }]);
-              }
-            } else {
-              throw new Error('No course found with the given name');
-            }
-          } else {
-            throw new Error('No response from getAllCourseMetadata');
-          }
-        } else {
-          throw new Error('User not signed in');
+      console.log('Fetching courses');
+      if (clerk_user.isLoaded && clerk_user.isSignedIn) {
+        console.log('Signed');
+        const emails = extractEmailsFromClerk(clerk_user.user);
+        const currUserEmail = emails[0]
+        console.log(currUserEmail);
+        if (!currUserEmail) {
+          throw new Error('No email found for the user');
         }
-      } catch (err) {
-        setError((err as Error).message);
-        setLoading(false);
+
+        const response = await fetch(`/api/UIUC-api/getAllCourseMetadata?currUserEmail=${currUserEmail}`);
+        const rawData = await response.json();
+        console.log(rawData);
+
+        if (rawData) {
+          const transformedData = rawData.map((courseObj: { [key: string]: CourseMetadata }) => {
+            const keys = Object.keys(courseObj);
+            if (keys.length > 0) {
+              const courseName = keys[0] as string;
+              const courseDetails = courseObj[courseName];
+              return { courseName, ...courseDetails };
+            }
+            return null;
+          }).filter(Boolean);
+          setCourses(transformedData);
+          console.log(courses);
+        } else {
+          console.log('No course found with the given name');
+        }
+      } else {
+        console.log('User not signed in');
       }
     };
     fetchCourses();
-  }, [course_name]);
+  }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!courses || courses.length === 0) return <div>No courses found</div>;
+  if (!courses) return <div>No courses found</div>;
+  const rows = courses.map((course) => (
+    <tr key={course.courseName}>
+      <td>{course.courseName}</td>
+      <td>{course.course_owner}</td>
+      <td>{course.is_private ? 'Private' : 'Public'}</td>
+      <td>{course.course_admins}</td>
+    </tr>
+  ));
 
   return (
-    <div>
-      {courses && courses.map((courseObj, index) => (
-        <div key={index}>
-          <Table striped highlightOnHover>
-            <tbody>
-              {Object.entries(courseObj).map(([course_name, course]) => (
-                <tr key={course_name}>
-                  <td>{course_name}</td>
-                  <td>{course.course_owner}</td>
-                  <td>{course.is_private ? 'Private' : 'Public'}</td>
-                  <td>{course.course_admins}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
-      ))}
+    <div style={{ overflowX: 'auto', minWidth: '500px' }}>
+      <Table striped>
+        <thead>
+          <tr>
+            <th>Course Name</th>
+            <th>Course Owner</th>
+            <th>Privacy</th>
+            <th>Course Admins</th>
+          </tr>
+        </thead>
+        <tbody>{rows}</tbody>
+      </Table>
     </div>
   );
+
 };
 
 export default ListProjectTable;
