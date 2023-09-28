@@ -14,6 +14,8 @@ const ListProjectTable: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const [rows, setRows] = useState<JSX.Element[] | null>(null);
+
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -30,19 +32,26 @@ const ListProjectTable: React.FC = () => {
         const response = await fetch(`/api/UIUC-api/getAllCourseMetadata?currUserEmail=${currUserEmail}`);
         const rawData = await response.json();
         console.log(rawData);
-
         if (rawData) {
-          const transformedData = rawData.map((courseObj: { [key: string]: CourseMetadata }) => {
-            const keys = Object.keys(courseObj);
-            if (keys.length > 0) {
-              const courseName = keys[0] as string;
-              const courseDetails = courseObj[courseName];
-              return { courseName, ...courseDetails };
+          let tempRows;
+          // if (!courses) return <div>No courses found</div>;
+          tempRows = rawData.map((course: { [key: string]: CourseMetadata }) => {
+
+            // raw data is a list of dicts mapping course name to CourseMetadata objects
+            const courseName = Object.keys(course)[0];
+            const courseMetadata = course[courseName as string];
+            if (courseMetadata) {
+              return (
+                <tr key={courseName}>
+                  <td>{courseName}</td>
+                  <td>{courseMetadata.course_owner}</td>
+                  <td>{courseMetadata.is_private ? 'Private' : 'Public'}</td>
+                  <td>{courseMetadata.course_admins.join(', ')}</td>
+                </tr>
+              );
             }
-            return null;
-          }).filter(Boolean);
-          setCourses(transformedData);
-          console.log(courses);
+          });
+          setRows(tempRows);
         } else {
           console.log('No course found with the given name');
         }
@@ -51,17 +60,7 @@ const ListProjectTable: React.FC = () => {
       }
     };
     fetchCourses();
-  }, []);
-
-  if (!courses) return <div>No courses found</div>;
-  const rows = courses.map((course) => (
-    <tr key={course.courseName}>
-      <td>{course.courseName}</td>
-      <td>{course.course_owner}</td>
-      <td>{course.is_private ? 'Private' : 'Public'}</td>
-      <td>{course.course_admins}</td>
-    </tr>
-  ));
+  }, [clerk_user.isLoaded, clerk_user.isSignedIn]);
 
   return (
     <div style={{ overflowX: 'auto', minWidth: '500px' }}>
@@ -80,6 +79,7 @@ const ListProjectTable: React.FC = () => {
   );
 
 };
+
 
 export default ListProjectTable;
 
