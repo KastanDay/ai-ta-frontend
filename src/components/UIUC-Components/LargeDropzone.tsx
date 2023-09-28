@@ -149,15 +149,18 @@ export function LargeDropzone({
       const data = await response.json()
       // console.log(file.name as string + ' ingested successfully!!')
       console.log('Success or Failure:', data)
-      if (data.failure_ingest.length() > 0) {
+      // failure_ingest.length is not a function. idk why...
+      if (data.failure_ingest.length > 0) {
         // TODO: Raise toast
         data.failure_ingest.map((s3path: string) => {
           console.log('Logging each failure path:', s3path)
         })
       }
-      data.success_ingest.map((s3path: string) => {
-        console.log('Logging each success path:', s3path)
-      })
+      if (data.success_ingest.length > 0) {
+        data.success_ingest.map((s3path: string) => {
+          console.log('Logging each success path:', s3path)
+        })
+      }
 
       return data
     } else {
@@ -265,7 +268,7 @@ export function LargeDropzone({
             radius="md"
             bg="#0E1116"
             disabled={isDisabled}
-            // #0E1116 -- nice dark
+          // #0E1116 -- nice dark
           >
             <div
               style={{ pointerEvents: 'none', opacity: isDisabled ? 0.6 : 1 }}
