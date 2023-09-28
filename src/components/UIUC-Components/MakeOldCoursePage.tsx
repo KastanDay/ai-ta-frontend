@@ -93,7 +93,7 @@ const MakeOldCoursePage = ({
     currentEmail !== (courseMetadata.course_owner as string) &&
     courseMetadata.course_admins.indexOf(currentEmail) === -1
   ) {
-    router.push(`/${course_name}/not_authorized`)
+    router.replace(`/${course_name}/not_authorized`)
 
     return (
       <CannotEditCourse

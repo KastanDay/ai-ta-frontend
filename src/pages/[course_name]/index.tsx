@@ -83,7 +83,7 @@ const IfCourseExists: NextPage = () => {
             clerk_user,
             course_metadata,
           )
-          router.push(`/${course_name}/not_authorized`)
+          router.replace(`/${course_name}/not_authorized`)
         }
       } else {
         // 🆕 MAKE A NEW COURSE
