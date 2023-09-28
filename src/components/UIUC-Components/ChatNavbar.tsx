@@ -167,8 +167,8 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
             <Transition transition="pop-top-right" duration={200} mounted={opened}>
               {(styles) => (
                 <Paper className={classes.dropdown} withBorder style={styles}>
-                  {items.map((item) => (
-                    <Link href={item.link} onClick={() => handleLinkClick(item.link)} data-active={activeLink === item.link} className={classes.link}>
+                  {items.map((item, index) => (
+                    <Link key={index} href={item.link} onClick={() => handleLinkClick(item.link)} data-active={activeLink === item.link} className={classes.link}>
                       <span style={{ display: 'flex', alignItems: 'center' }}>
                         {item.icon}
                         {item.name}
@@ -180,8 +180,8 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
             </Transition>
             <Container className={classes.inner}>
               <div className={classes.links}>
-                {items.map((item) => (
-                  <Link href={item.link} onClick={() => handleLinkClick(item.link)} data-active={activeLink === item.link} className={classes.link}>
+                {items.map((item, index) => (
+                  <Link key={index} href={item.link} onClick={() => handleLinkClick(item.link)} data-active={activeLink === item.link} className={classes.link}>
                     <span style={{ display: 'flex', alignItems: 'center' }}>
                       {item.icon}
                       {item.name}
