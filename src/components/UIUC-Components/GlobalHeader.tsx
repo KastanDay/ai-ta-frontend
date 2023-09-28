@@ -33,7 +33,7 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
 
 import Link from 'next/link'
 import { montserrat_heading } from 'fonts'
-import { createStyles, Group, rem } from '@mantine/core'
+import { Button, createStyles, Group, rem } from '@mantine/core'
 
 export function LandingPageHeader({
   isNavbar = false,
@@ -49,7 +49,7 @@ export function LandingPageHeader({
         <span
           className={`${montserrat_heading.variable} font-montserratHeading`}
         >
-          New Project
+          New project
         </span>
       ),
       icon: <FileIcon />,
@@ -68,7 +68,7 @@ export function LandingPageHeader({
       }}
       className="py-16"
     >
-      <Group>
+      <Group spacing={'xs'}>
         {items.map((item, index) => (
           <Link
             key={index}
@@ -83,18 +83,20 @@ export function LandingPageHeader({
             </span>
           </Link>
         ))}
-        <div className={`${classes.signInButtonStyle} pr-2`}>
-          {/* <div className='p-2 pt-3'> */}
-          <SignedIn>
-            {/* Mount the UserButton component */}
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
-          <SignedOut>
-            {/* Signed out users get sign in button */}
-            <SignInButton />
-          </SignedOut>
-        </div>
-        {/* </div> */}
+        <SignedIn>
+          {/* Mount the UserButton component */}
+          <UserButton afterSignOutUrl="/" />
+        </SignedIn>
+        <SignedOut>
+          {/* Signed out users get sign in button */}
+          <SignInButton>
+            <button className={classes.link}><span
+              className={`${montserrat_heading.variable} font-montserratHeading`}
+            >
+              Sign in / Sign up
+            </span></button>
+          </SignInButton>
+        </SignedOut>
       </Group>
     </header>
   )
@@ -124,18 +126,12 @@ const useStyles = createStyles((theme) => ({
       display: 'none',
     },
   },
-  signInButtonStyle: {
-    fontSize: rem(13),
-    fontWeight: 700,
-    font: montserrat_heading.variable,
-    color: '#f1f5f9',
-  },
   link: {
     // textTransform: 'uppercase',
     fontSize: rem(13),
     color: '#f1f5f9',
-    padding: `${theme.spacing.sm} ${theme.spacing.sm}`,
-    margin: '0.35rem',
+    padding: `${theme.spacing.sm} ${theme.spacing.xs}`,
+    // margin: '0.35rem',
     fontWeight: 700,
     transition:
       'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
