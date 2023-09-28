@@ -43,7 +43,6 @@ export const WebScrape = ({
   const [url, setUrl] = useState('')
   const [icon, setIcon] = useState(<IconWorldDownload size={'50%'} />)
   const [loadinSpinner, setLoadinSpinner] = useState(false)
-  const API_URL = 'https://flask-production-751b.up.railway.app'
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const theme = useMantineTheme()
@@ -108,6 +107,8 @@ export const WebScrape = ({
             is_private: false,
             banner_image_s3: undefined,
             course_intro_message: undefined,
+            openai_api_key: undefined,
+            example_questions: undefined,
           })
 
           if (!response) {
@@ -147,6 +148,8 @@ export const WebScrape = ({
             is_private: false,
             banner_image_s3: undefined,
             course_intro_message: undefined,
+            openai_api_key: undefined,
+            example_questions: undefined,
           })
 
           if (!response) {
@@ -212,15 +215,18 @@ export const WebScrape = ({
       if (!url || !courseName) return null
       url = formatUrl(url) // ensure we have http://
       console.log('SCRAPING', url)
-      const response = await axios.get(`${API_URL}/web-scrape`, {
-        params: {
-          url: url,
-          course_name: courseName,
-          max_urls: maxUrls,
-          max_depth: maxDepth,
-          timeout: timeout,
+      const response = await axios.get(
+        `https://flask-production-751b.up.railway.app/web-scrape`,
+        {
+          params: {
+            url: url,
+            course_name: courseName,
+            max_urls: maxUrls,
+            max_depth: maxDepth,
+            timeout: timeout,
+          },
         },
-      })
+      )
       return response.data
     } catch (error) {
       console.error('Error during web scraping:', error)
@@ -236,13 +242,16 @@ export const WebScrape = ({
     try {
       if (!url || !courseName || !localDir) return null
       console.log('calling downloadMITCourse')
-      const response = await axios.get(`${API_URL}/mit-download`, {
-        params: {
-          url: url,
-          course_name: courseName,
-          local_dir: localDir,
+      const response = await axios.get(
+        `https://flask-production-751b.up.railway.app/mit-download`,
+        {
+          params: {
+            url: url,
+            course_name: courseName,
+            local_dir: localDir,
+          },
         },
-      })
+      )
       return response.data
     } catch (error) {
       console.error('Error during MIT course download:', error)
@@ -318,11 +327,9 @@ export const WebScrape = ({
             }}
             size="md"
             radius={'xl'}
-            className={`rounded-s-md ${
-              isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
-            } overflow-ellipsis text-ellipsis p-2 ${
-              isUrlUpdated ? 'text-white' : 'text-gray-500'
-            } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
+            className={`rounded-s-md ${isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
+              } overflow-ellipsis text-ellipsis p-2 ${isUrlUpdated ? 'text-white' : 'text-gray-500'
+              } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
             w={`${isSmallScreen ? 'auto' : 'auto'}`}
             disabled={isDisabled}
           >

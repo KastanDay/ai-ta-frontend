@@ -10,10 +10,9 @@ export const fetchContexts = async (
   search_query: string,
   token_limit = 4000,
 ) => {
-  const API_URL = 'https://flask-production-751b.up.railway.app'
   try {
     const response: AxiosResponse<ContextWithMetadata[]> = await axios.get(
-      `${API_URL}/getTopContexts`,
+      `https://flask-production-751b.up.railway.app/getTopContexts`,
       {
         params: {
           course_name: course_name,
@@ -35,7 +34,6 @@ export const fetchContexts = async (
 //   search_query: string,
 //   top_n = 4,
 // ) {
-//   const API_URL = 'https://flask-production-751b.up.railway.app'
 //   const res = await fetch(
 //     `${API_URL}/getTopContexts?course_name=${course_name}&search_query=${search_query}&top_n=${top_n}`,
 //     {

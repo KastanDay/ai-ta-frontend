@@ -111,9 +111,9 @@ export const CannotViewCourse = ({
           <Link href="/">
             <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
               {' '}
-              UIUC Course{' '}
+              UIUC.
               <span className="${inter.style.fontFamily} text-[hsl(280,100%,70%)]">
-                AI
+                chat
               </span>{' '}
             </h2>
           </Link>
@@ -204,11 +204,11 @@ export const CannotViewCourse = ({
               If <i>you are</i> the creator or an admin, please sign in with the
               account you used to create this page (in the top right).
               <br></br>
-              Or go to any other URL to make a new page, like{' '}
-              <Link href={'/your-awesome-course'}>
-                uiuc.chat/your-awesome-course
-              </Link>
-              .
+              Or go to{' '}
+              <Link href={'/new'} className="goldUnderline">
+                uiuc.chat/new
+              </Link>{' '}
+              to make a new page.
             </Title>
           </Flex>
         </div>

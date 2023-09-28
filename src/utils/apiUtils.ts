@@ -1,5 +1,8 @@
 // utils/apiUtils.ts
-import { type CourseMetadata } from '~/types/courseMetadata'
+import {
+  CourseMetadataOptionalForUpsert,
+  type CourseMetadata,
+} from '~/types/courseMetadata'
 import { log } from 'next-axiom'
 
 export const config = {
@@ -8,7 +11,7 @@ export const config = {
 
 export const callSetCourseMetadata = async (
   courseName: string,
-  courseMetadata: CourseMetadata,
+  courseMetadata: CourseMetadata | CourseMetadataOptionalForUpsert,
 ) => {
   try {
     const response = await fetch('/api/UIUC-api/upsertCourseMetadata', {

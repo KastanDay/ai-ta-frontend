@@ -11,13 +11,19 @@ import { api } from '~/utils/api'
 
 import '~/styles/globals.css'
 import Maintenance from '~/components/UIUC-Components/Maintenance'
+import { useReportWebVitals } from 'next-axiom'
 
-export { useReportWebVitals } from 'next-axiom'
+// For axiom Web Vitals logging: https://axiom.co/docs/apps/vercel#sending-logs-to-axiom
+import { NextWebVitalsMetric } from 'next/app'
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
 }) => {
+  useReportWebVitals(((metric: NextWebVitalsMetric) => {
+    console.log(metric)
+  }) as any)
+
   if (process.env.NEXT_PUBLIC_MAINTENANCE === 'true') {
     return <Maintenance />
   } else {
@@ -42,8 +48,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
               nearlyBlack: ['#0E1116'],
               nearlyWhite: ['#F7F7F7'],
               disabled: ['#2A2F36'],
-              errorBackground: ['#fa9147'],
-              errorBorder: ['#fa9147'],
+              errorBackground: ['#dc2626'],
+              errorBorder: ['#dc2626'],
               // or replace default theme color
               // blue: ['#E9EDFC', '#C1CCF6', '#99ABF0' /* ... */],
             },

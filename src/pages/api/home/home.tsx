@@ -1,10 +1,7 @@
 // src/pages/home/home.tsx
 import { useEffect, useRef, useState } from 'react'
-import { useQuery } from 'react-query'
 
-import { type GetServerSideProps, type GetServerSidePropsContext } from 'next'
 import { useTranslation } from 'next-i18next'
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import Head from 'next/head'
 
 import { useCreateReducer } from '@/hooks/useCreateReducer'
@@ -42,27 +39,18 @@ import { type HomeInitialState, initialState } from './home.state'
 
 import { v4 as uuidv4 } from 'uuid'
 import { type CourseMetadata } from '~/types/courseMetadata'
-import { kv } from '@vercel/kv'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
-import { router } from '@trpc/server'
 import { useRouter } from 'next/router'
 
-interface Props {
-  serverSideApiKeyIsSet: boolean
-  serverSidePluginKeysSet: boolean
-  defaultModelId: OpenAIModelID
-}
-
-const Home = ({
-  serverSideApiKeyIsSet,
-  serverSidePluginKeysSet,
-  defaultModelId,
-}: Props) => {
+const Home = () => {
   const { t } = useTranslation('chat')
   const { getModels } = useApiService()
   const { getModelsError } = useErrorService()
-  const [initialRender, setInitialRender] = useState<boolean>(true)
+  const [isLoading, setIsLoading] = useState<boolean>(true) // Add a new state for loading
+
+  const defaultModelId = 'gpt-3.5-turbo'
+  const serverSidePluginKeysSet = true
 
   const contextValue = useCreateReducer<HomeInitialState>({
     initialState,
@@ -85,33 +73,88 @@ const Home = ({
 
   const router = useRouter()
   const course_name = router.query.course_name as string
+  const curr_route_path = router.asPath as string
 
-  // Using hook to fetch the latest course_metadata
   const [isCourseMetadataLoading, setIsCourseMetadataLoading] = useState(true)
   const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
 
   useEffect(() => {
+    if (!course_name && curr_route_path != '/gpt4') return
     const courseMetadata = async () => {
+      setIsLoading(true) // Set loading to true before fetching data
+
+      // Handle /gpt4 page
+      let curr_course_name = course_name
+      if (curr_route_path == '/gpt4') {
+        curr_course_name = 'gpt4'
+      }
+
       const response = await fetch(
-        `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
+        `/api/UIUC-api/getCourseMetadata?course_name=${curr_course_name}`,
       )
       const data = await response.json()
       setCourseMetadata(data.course_metadata)
       // console.log("Course Metadata in home: ", data.course_metadata)
       setIsCourseMetadataLoading(false)
+      // setIsLoading(false) // Set loading to false after fetching data
     }
     courseMetadata()
   }, [course_name])
 
-  // Check auth & redirect
+  const [hasMadeNewConvoAlready, setHasMadeNewConvoAlready] = useState(false)
+  useEffect(() => {
+    // ALWAYS make a new convo if current one isn't empty
+    if (!selectedConversation) return
+    if (hasMadeNewConvoAlready) return
+    setHasMadeNewConvoAlready(true)
+
+    if (selectedConversation?.messages.length > 0) {
+      handleNewConversation()
+    }
+  }, [selectedConversation])
+
+  // THIS CODE BELOW hints at HOW TO FILTER sidebar conversation history if they don't match the current course.
+
+  // try {
+  //   if (isCourseMetadataLoading) return
+  //   // TODO: FIX TYPES HERE. see this issue: https://github.com/UIUC-Chatbot/ai-ta-backend/issues/87
+  //   if (
+  //     course_metadata &&
+  //     selectedConversation &&
+  //     selectedConversation.messages &&
+  //     selectedConversation.messages.length > 0 &&
+  //     selectedConversation?.messages[0]?.contexts &&
+  //     selectedConversation.messages[0].contexts.length > 0 &&
+  //     // eslint-disable-next-line
+  //     // @ts-ignore
+  //     selectedConversation?.messages[0]?.contexts[0]?.['course_name '] &&
+  //     course_name !==
+  //     // eslint-disable-next-line
+  //     // @ts-ignore
+  //     selectedConversation.messages[0].contexts[0]['course_name ']
+  //   ) {
+  //     handleNewConversation()
+  //     console.log(
+  //       'Auto-created new conversation. Old course_name',
+  //       // eslint-disable-next-line
+  //       // @ts-ignore
+  //       selectedConversation.messages[0].contexts[0]['course_name '],
+  //       'new course_name',
+  //       course_name,
+  //     )
+  // console.log("PASSED CHECK, SHOULD CREATE NEW CONVO ")
+  // console.log("selectedConversation.messages[0].contexts[0].course_name", selectedConversation.messages[0].contexts[0])
+  //   }
+  // } catch (error) {
+  //   console.error('An error occurred in useEffect: ', error)
+  // }
+  // }, [])
+
   const clerk_user_outer = useUser()
   // const course_exists = course_metadata != null
 
-  // ------------------- 👇 MOST BASIC AUTH CHECK 👇 -------------------
-
-  // DO AUTH-based redirect!
   useEffect(() => {
     if (!clerk_user_outer.isLoaded || isCourseMetadataLoading) {
       return
@@ -125,9 +168,7 @@ const Home = ({
         )
 
         if (permission_str == 'edit' || permission_str == 'view') {
-          // ✅ AUTHED
         } else {
-          // 🚫 NOT AUTHED
           router.push(`/${course_name}/not_authorized`)
         }
       } else {
@@ -139,46 +180,60 @@ const Home = ({
   }, [clerk_user_outer.isLoaded, isCourseMetadataLoading])
   // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
 
-  const [data, setData] = useState(null) // using the original version.
-  const [error, setError] = useState<unknown>(null) // Update the type of the error state variable
-
-  // Add a new state variable to track whether models have been fetched
-  const [modelsFetched, setModelsFetched] = useState(false)
-
-  // Update the useEffect hook to fetch models only if they haven't been fetched before
+  // ---- Set OpenAI API Key (either course-wide or from storage) ----
   useEffect(() => {
-    if (!apiKey && !serverSideApiKeyIsSet) return
-    if (modelsFetched) return // Add this line to prevent fetching models multiple times
+    if (!course_metadata) return
+    const local_api_key = localStorage.getItem('apiKey')
+    let key = ''
 
-    const fetchData = async () => {
+    if (course_metadata && course_metadata.openai_api_key) {
+      // console.log(
+      //   'Using key from course_metadata',
+      //   course_metadata.openai_api_key,
+      // )
+      key = course_metadata.openai_api_key
+      // setServerSideApiKeyIsSet(true)
+      dispatch({
+        field: 'serverSideApiKeyIsSet',
+        value: true,
+      })
+      dispatch({ field: 'apiKey', value: '' })
+      // TODO: add logging for axiom, after merging with main (to get the axiom code)
+      // log.debug('Using Course-Wide OpenAI API Key', { course_metadata: { course_metadata } })
+    } else if (local_api_key) {
+      if (local_api_key.startsWith('sk-')) {
+        console.log(
+          'No openai_api_key found in course_metadata, but found one in client localStorage',
+        )
+        key = local_api_key
+
+        dispatch({ field: 'apiKey', value: local_api_key })
+      } else {
+        console.error(
+          "you have entered an API key that does not start with 'sk-', which indicates it's invalid. Please enter just the key from OpenAI starting with 'sk-'. You entered",
+          apiKey,
+        )
+      }
+    }
+
+    const setOpenaiModel = async () => {
+      // Get models available to users
       try {
-        const data = await getModels({ key: apiKey })
+        if (!course_metadata || !key) return
+        const data = await getModels({ key: key })
+        // console.log('models from getModels()', data)
         dispatch({ field: 'models', value: data })
-        setModelsFetched(true) // Set modelsFetched to true after fetching models
       } catch (error) {
+        console.error('Error fetching models user has access to: ', error)
         dispatch({ field: 'modelError', value: getModelsError(error) })
       }
     }
 
-    fetchData()
-  }, [
-    apiKey,
-    serverSideApiKeyIsSet,
-    getModels,
-    getModelsError,
-    dispatch,
-    modelsFetched,
-  ]) // Add modelsFetched to the dependency array
+    setOpenaiModel()
+    setIsLoading(false)
+  }, [course_metadata, apiKey])
 
-  useEffect(() => {
-    if (data) dispatch({ field: 'models', value: data })
-  }, [data, dispatch])
-
-  useEffect(() => {
-    dispatch({ field: 'modelError', value: getModelsError(error) })
-  }, [dispatch, error, getModelsError])
-
-  // FETCH MODELS ----------------------------------------------
+  // FOLDER OPERATIONS  --------------------------------------------
 
   const handleSelectConversation = (conversation: Conversation) => {
     dispatch({
@@ -188,8 +243,6 @@ const Home = ({
 
     saveConversation(conversation)
   }
-
-  // FOLDER OPERATIONS  --------------------------------------------
 
   const handleCreateFolder = (name: string, type: FolderType) => {
     const newFolder: FolderInterface = {
@@ -315,17 +368,12 @@ const Home = ({
   useEffect(() => {
     defaultModelId &&
       dispatch({ field: 'defaultModelId', value: defaultModelId })
-    serverSideApiKeyIsSet &&
-      dispatch({
-        field: 'serverSideApiKeyIsSet',
-        value: serverSideApiKeyIsSet,
-      })
     serverSidePluginKeysSet &&
       dispatch({
         field: 'serverSidePluginKeysSet',
         value: serverSidePluginKeysSet,
       })
-  }, [defaultModelId, serverSideApiKeyIsSet, serverSidePluginKeysSet])
+  }, [defaultModelId, serverSidePluginKeysSet]) // serverSideApiKeyIsSet,
 
   // ON LOAD --------------------------------------------
 
@@ -336,24 +384,6 @@ const Home = ({
         field: 'lightMode',
         value: settings.theme,
       })
-    }
-
-    const apiKey = localStorage.getItem('apiKey')
-
-    if (serverSideApiKeyIsSet) {
-      dispatch({ field: 'apiKey', value: '' })
-
-      localStorage.removeItem('apiKey')
-    } else if (apiKey) {
-      dispatch({ field: 'apiKey', value: apiKey })
-    }
-
-    const pluginKeys = localStorage.getItem('pluginKeys')
-    if (serverSidePluginKeysSet) {
-      dispatch({ field: 'pluginKeys', value: [] })
-      localStorage.removeItem('pluginKeys')
-    } else if (pluginKeys) {
-      dispatch({ field: 'pluginKeys', value: pluginKeys })
     }
 
     if (window.innerWidth < 640) {
@@ -419,8 +449,12 @@ const Home = ({
         },
       })
     }
-  }, [defaultModelId, dispatch, serverSideApiKeyIsSet, serverSidePluginKeysSet])
+  }, [defaultModelId, dispatch, serverSidePluginKeysSet])
 
+  if (isLoading) {
+    // show blank page during loading
+    return <></>
+  }
   return (
     <HomeContext.Provider
       value={{
@@ -434,7 +468,7 @@ const Home = ({
       }}
     >
       <Head>
-        <title>UIUC Course AI</title>
+        <title>UIUC.chat</title>
         <meta name="description" content="ChatGPT but better." />
         <meta
           name="viewport"
@@ -473,78 +507,3 @@ const Home = ({
   )
 }
 export default Home
-
-// import { useAuth, useUser } from '@clerk/nextjs'
-
-// import { useAuth } from '@clerk/nextjs'
-// import { withAuth } from '@clerk/nextjs/api'
-
-// import { getAuth, buildClerkProps } from '@clerk/nextjs/server'
-// import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
-
-export const getServerSideProps: GetServerSideProps = async (
-  context: GetServerSidePropsContext,
-) => {
-  console.log('ServerSideProps: ', context.params)
-  const { locale } = context
-
-  const course_name = context.params?.course_name as string
-
-  // Check course authed users -- the JSON.parse is CRUCIAL to avoid bugs with the stringified JSON 😭
-  try {
-    const course_metadata = (await kv.hget(
-      'course_metadatas',
-      course_name,
-    )) as CourseMetadata
-    console.log('in api getCourseMetadata: course_metadata', course_metadata)
-
-    if (course_metadata == null) {
-      console.log('Course metadata not found in serverside')
-    }
-
-    // Only parse is_private if it exists
-    if (course_metadata.hasOwnProperty('is_private')) {
-      course_metadata.is_private = JSON.parse(
-        course_metadata.is_private as unknown as string,
-      )
-    }
-    console.log('home.tsx -- Course metadata in serverside: ', course_metadata)
-  } catch (error) {
-    console.error('Error occured while fetching courseMetadata', error)
-  }
-  const defaultModelId =
-    (process.env.DEFAULT_MODEL &&
-      Object.values(OpenAIModelID).includes(
-        process.env.DEFAULT_MODEL as OpenAIModelID,
-      ) &&
-      process.env.DEFAULT_MODEL) ||
-    fallbackModelID
-
-  let serverSidePluginKeysSet = false
-  const googleApiKey = process.env.GOOGLE_API_KEY
-  const googleCSEId = process.env.GOOGLE_CSE_ID
-
-  if (googleApiKey && googleCSEId) {
-    serverSidePluginKeysSet = true
-    console.log('Google plugin keys set... should work.')
-  } else {
-    console.log('Google plugin keys not set... will NOT work.')
-  }
-
-  return {
-    props: {
-      // ...buildClerkProps(context.req), // https://clerk.com/docs/nextjs/getserversideprops
-      serverSideApiKeyIsSet: !!process.env.OPENAI_API_KEY,
-      defaultModelId,
-      serverSidePluginKeysSet,
-      ...(await serverSideTranslations(locale ?? 'en', [
-        'common',
-        'chat',
-        'sidebar',
-        'markdown',
-        'promptbar',
-        'settings',
-      ])),
-    },
-  }
-}

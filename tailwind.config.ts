@@ -2,6 +2,7 @@ import { type Config } from 'tailwindcss'
 
 export default {
   content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class', // 'media' or 'class' (media uses system settings, class uses globals.css)
   theme: {
     extend: {
       fontFamily: {

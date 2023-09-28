@@ -45,11 +45,11 @@ export const CannotEditCourse = ({ course_name }: { course_name: string }) => {
           {' '}
           Either sign in with a different account (in the top right) or
           <br></br>
-          go to any other URL, like{' '}
-          <Link href={'/your-awesome-course'}>
-            uiuc.chat/your-awesome-course
-          </Link>
-          , to make a new page.
+          Go to{' '}
+          <Link href={'/new'} className="goldUnderline">
+            uiuc.chat/new
+          </Link>{' '}
+          to make a new page.
         </Title>
       </Flex>
     </>
