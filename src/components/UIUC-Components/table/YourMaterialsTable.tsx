@@ -36,6 +36,8 @@ import { useRouter } from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 const useStyles = createStyles((theme) => ({}))
 
+import { IconArrowsSort, IconCaretDown, IconCaretUp, IconSquareArrowUp } from '@tabler/icons-react'
+
 export default function MyTableView({ course_materials }: CourseFilesListProps) {
 
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -195,8 +197,9 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
     state: {
       rowSelection,
       sorting,
+      pagination: { pageSize: 20, pageIndex: 0 }, // default number of rows on page
     },
-    enableRowSelection: true, //enable row selection for all rows
+    enableRowSelection: true,
     // enableRowSelection: row => row.original.age > 18, // or enable row selection conditionally per row
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
@@ -209,13 +212,13 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
 
   return (
     <div className="p-2">
-      <label
+      {/* <label
         className={`label ${montserrat_heading.variable} font-montserratHeading`}
       >
         <span className="label-text text-lg text-neutral-200">
           Click on the column name to sort.
         </span>
-      </label>
+      </label> */}
       {/* <div> */}
       {/* <input
           value={globalFilter ?? ''}
@@ -224,179 +227,186 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
           placeholder="Search all columns..."
         /> */}
       {/* </div> */}
-      <div className="h-2" />
-      <table>
-        <thead>
-          {table.getHeaderGroups().map(headerGroup => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map(header => {
-                return (
-                  <th key={header.id} colSpan={header.colSpan}>
-                    {header.isPlaceholder ? null : (
-                      <div
-                        {...{
-                          className: header.column.getCanSort()
-                            ? 'cursor-pointer select-none'
-                            : '',
-                          onClick: header.column.getToggleSortingHandler(),
-                        }}
-                      >
-                        <Group position="center" className={`pb-2`}>
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                          {{
-                            asc: ' 🔼',
-                            desc: ' 🔽',
-                          }[header.column.getIsSorted() as string] ?? null}
-                        </Group>
-                        {header.column.getCanFilter() ? (
-                          <div>
-                            <Filter column={header.column} table={table} />
-                          </div>
-                        ) : null}
-                      </div>
-                    )}
-                  </th>
-                )
-              })}
-            </tr>
-          ))}
-        </thead>
-        <tbody className={`${montserrat_paragraph.variable} font-montserratParagraph`}>
-          {table.getRowModel().rows.map(row => {
-            return (
-              <tr key={row.id}>
-                {row.getVisibleCells().map(cell => {
+      <div
+        className="mx-auto w-full justify-center rounded-md  bg-violet-100 p-5 shadow-md" // bg-violet-100
+        style={{ marginTop: '-1rem', backgroundColor: 'rgb(21, 22, 44)' }}
+      >
+        {/* <div className="h-2" /> */}
+        <table>
+          <thead>
+            {table.getHeaderGroups().map(headerGroup => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map(header => {
                   return (
-                    <td key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
+                    <th key={header.id} colSpan={header.colSpan}>
+                      {header.isPlaceholder ? null : (
+                        <div
+                          {...{
+                            className: header.column.getCanSort()
+                              ? 'cursor-pointer select-none'
+                              : '',
+                            onClick: header.column.getToggleSortingHandler(),
+                          }}
+                        >
+                          <Group position="center" className={`pb-2`}>
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                            {/* TODO: improve icon settings.. */}
+                            {header.column.getCanSort() && !header.column.getIsSorted() ? <IconArrowsSort /> : null}
+                            {{
+                              asc: <IconCaretUp></IconCaretUp>,
+                              desc: <IconCaretDown></IconCaretDown>,
+                            }[header.column.getIsSorted() as string] ?? null}
+                          </Group>
+                          {header.column.getCanFilter() ? (
+                            <div>
+                              <Filter column={header.column} table={table} />
+                            </div>
+                          ) : null}
+                        </div>
                       )}
-                    </td>
+                    </th>
                   )
                 })}
               </tr>
-            )
-          })}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td className="p-1">
-              <IndeterminateCheckbox
-                {...{
-                  checked: table.getIsAllPageRowsSelected(),
-                  indeterminate: table.getIsSomePageRowsSelected(),
-                  onChange: table.getToggleAllPageRowsSelectedHandler(),
-                }}
-              />
-            </td>
-            <td colSpan={20}>Select entire page ({table.getRowModel().rows.length} rows)</td>
-          </tr>
-        </tfoot>
-      </table>
-      <div className="h-2" />
-      <div className="flex items-center gap-2">
-        <button
-          className="border rounded p-1"
-          onClick={() => table.setPageIndex(0)}
-          disabled={!table.getCanPreviousPage()}
-        >
-          {'<<'}
-        </button>
-        <button
-          className="border rounded p-1"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          {'<'}
-        </button>
-        <button
-          className="border rounded p-1"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          {'>'}
-        </button>
-        <button
-          className="border rounded p-1"
-          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-          disabled={!table.getCanNextPage()}
-        >
-          {'>>'}
-        </button>
-        <span className="flex items-center gap-1">
-          <div>Page</div>
-          <strong>
-            {table.getState().pagination.pageIndex + 1} of{' '}
-            {table.getPageCount()}
-          </strong>
-        </span>
-        <span className="flex items-center gap-1">
-          | Go to page:
-          <input
-            type="number"
-            defaultValue={table.getState().pagination.pageIndex + 1}
+            ))}
+          </thead>
+          <tbody className={`${montserrat_paragraph.variable} font-montserratParagraph`}>
+            {table.getRowModel().rows.map(row => {
+              return (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map(cell => {
+                    return (
+                      <td key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    )
+                  })}
+                </tr>
+              )
+            })}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td className="p-1">
+                <IndeterminateCheckbox
+                  {...{
+                    checked: table.getIsAllPageRowsSelected(),
+                    indeterminate: table.getIsSomePageRowsSelected(),
+                    onChange: table.getToggleAllPageRowsSelectedHandler(),
+                  }}
+                />
+              </td>
+              <td colSpan={20}>Select entire page ({table.getRowModel().rows.length} rows)</td>
+            </tr>
+          </tfoot>
+        </table>
+        <div className="h-2" />
+        <div className="flex items-center gap-2">
+          <button
+            className="border rounded p-1"
+            onClick={() => table.setPageIndex(0)}
+            disabled={!table.getCanPreviousPage()}
+          >
+            {'<<'}
+          </button>
+          <button
+            className="border rounded p-1"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            {'<'}
+          </button>
+          <button
+            className="border rounded p-1"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            {'>'}
+          </button>
+          <button
+            className="border rounded p-1"
+            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            disabled={!table.getCanNextPage()}
+          >
+            {'>>'}
+          </button>
+          <span className="flex items-center gap-1">
+            <div>Page</div>
+            <strong>
+              {table.getState().pagination.pageIndex + 1} of{' '}
+              {table.getPageCount()}
+            </strong>
+          </span>
+          <span className="flex items-center gap-1">
+            | Go to page:
+            <input
+              type="number"
+              defaultValue={table.getState().pagination.pageIndex + 1}
+              onChange={e => {
+                const page = e.target.value ? Number(e.target.value) - 1 : 0
+                table.setPageIndex(page)
+              }}
+              className="border p-1 rounded w-16"
+            />
+          </span>
+          <select
+            value={table.getState().pagination.pageSize}
             onChange={e => {
-              const page = e.target.value ? Number(e.target.value) - 1 : 0
-              table.setPageIndex(page)
+              table.setPageSize(Number(e.target.value))
             }}
-            className="border p-1 rounded w-16"
-          />
-        </span>
-        <select
-          value={table.getState().pagination.pageSize}
-          onChange={e => {
-            table.setPageSize(Number(e.target.value))
-          }}
-        >
-          {[20, 50, 100, 500].map(pageSize => (
-            <option key={pageSize} value={pageSize}>
-              Show {pageSize}
-            </option>
-          ))}
-        </select>
-      </div>
-      <br />
-      {Object.keys(rowSelection).length > 0 && (
-        <div>
-          <Group>
-            {Object.keys(rowSelection).length} of{' '}
-            {table.getPreFilteredRowModel().rows.length} total documents selected
-
-            <button
-              className="border rounded p-2 mb-2"
-              onClick={() => deleteDocs(table.getPreFilteredRowModel().rows)}
-            >
-              Delete Selected Documents
-            </button>
-          </Group>
+          >
+            {[20, 50, 100, 500].map(pageSize => (
+              <option key={pageSize} value={pageSize}>
+                Show {pageSize}
+              </option>
+            ))}
+          </select>
         </div>
-      )}
-      <hr />
-      <br />
-      <div>
-        <button
-          className="border rounded p-2 mb-2"
-          onClick={() => console.info('rowSelection', rowSelection)}
-        >
-          Log `rowSelection` state
-        </button>
-      </div>
-      <div>
-        <button
-          className="border rounded p-2 mb-2"
-          onClick={() =>
-            console.info(
-              'table.getSelectedRowModel().flatRows',
-              table.getSelectedRowModel().flatRows
-            )
-          }
-        >
-          Log table.getSelectedRowModel().flatRows
-        </button>
+        <br />
+        {Object.keys(rowSelection).length > 0 && (
+          <div>
+            <Group>
+              {Object.keys(rowSelection).length} of{' '}
+              {table.getPreFilteredRowModel().rows.length} total documents selected
+
+              <button
+                className="border rounded p-2 mb-2"
+                onClick={() => deleteDocs(table.getPreFilteredRowModel().rows)}
+              >
+                Delete Selected Documents
+              </button>
+            </Group>
+          </div>
+        )}
+        <hr />
+        <br />
+        <div>
+          <button
+            className="border rounded p-2 mb-2"
+            onClick={() => console.info('rowSelection', rowSelection)}
+          >
+            Log `rowSelection` state
+          </button>
+        </div>
+        <div>
+          <button
+            className="border rounded p-2 mb-2"
+            onClick={() =>
+              console.info(
+                'table.getSelectedRowModel().flatRows',
+                table.getSelectedRowModel().flatRows
+              )
+            }
+          >
+            Log table.getSelectedRowModel().flatRows
+          </button>
+        </div>
       </div>
     </div>
   )
