@@ -61,11 +61,12 @@ export function LargeDropzone({
   // console.log("in LargeDropzone.tsx primaryEmailAddress: ", user?.primaryEmailAddress?.emailAddress as string)
   // console.log("in LargeDropzone.tsx ALL emailAddresses: ", user?.emailAddresses )
 
-  const refreshOrRedirect = (redirect_to_gpt_4: boolean) => {
+  const refreshOrRedirect = async (redirect_to_gpt_4: boolean) => {
     if (redirect_to_gpt_4) {
       router.push(`/${courseName}/gpt4`)
     }
     // refresh current page
+    await new Promise(resolve => setTimeout(resolve, 700));
     router.reload()
   }
   const uploadToS3 = async (file: File | null) => {

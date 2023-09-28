@@ -110,40 +110,46 @@ const Home = () => {
   // }, [course_metadata])
 
   useEffect(() => {
-    try {
-      if (isCourseMetadataLoading) return
-      // TODO: FIX TYPES HERE. see this issue: https://github.com/UIUC-Chatbot/ai-ta-backend/issues/87
-      if (
-        course_metadata &&
-        selectedConversation &&
-        selectedConversation.messages &&
-        selectedConversation.messages.length > 0 &&
-        selectedConversation?.messages[0]?.contexts &&
-        selectedConversation.messages[0].contexts.length > 0 &&
-        // eslint-disable-next-line
-        // @ts-ignore
-        selectedConversation?.messages[0]?.contexts[0]?.['course_name '] &&
-        course_name !==
-        // eslint-disable-next-line
-        // @ts-ignore
-        selectedConversation.messages[0].contexts[0]['course_name ']
-      ) {
-        handleNewConversation()
-        console.log(
-          'Auto-created new conversation. Old course_name',
-          // eslint-disable-next-line
-          // @ts-ignore
-          selectedConversation.messages[0].contexts[0]['course_name '],
-          'new course_name',
-          course_name,
-        )
-        // console.log("PASSED CHECK, SHOULD CREATE NEW CONVO ")
-        // console.log("selectedConversation.messages[0].contexts[0].course_name", selectedConversation.messages[0].contexts[0])
-      }
-    } catch (error) {
-      console.error('An error occurred in useEffect: ', error)
+    // ALWAYS make a new conversation.
+    if (selectedConversation && selectedConversation?.messages.length > 0) {
+      handleNewConversation()
     }
-  }, [course_metadata])
+    // THIS CODE BELOW hints at HOW TO FILTER sidebar conversation history if they don't match the current course.
+
+    // try {
+    //   if (isCourseMetadataLoading) return
+    //   // TODO: FIX TYPES HERE. see this issue: https://github.com/UIUC-Chatbot/ai-ta-backend/issues/87
+    //   if (
+    //     course_metadata &&
+    //     selectedConversation &&
+    //     selectedConversation.messages &&
+    //     selectedConversation.messages.length > 0 &&
+    //     selectedConversation?.messages[0]?.contexts &&
+    //     selectedConversation.messages[0].contexts.length > 0 &&
+    //     // eslint-disable-next-line
+    //     // @ts-ignore
+    //     selectedConversation?.messages[0]?.contexts[0]?.['course_name '] &&
+    //     course_name !==
+    //     // eslint-disable-next-line
+    //     // @ts-ignore
+    //     selectedConversation.messages[0].contexts[0]['course_name ']
+    //   ) {
+    //     handleNewConversation()
+    //     console.log(
+    //       'Auto-created new conversation. Old course_name',
+    //       // eslint-disable-next-line
+    //       // @ts-ignore
+    //       selectedConversation.messages[0].contexts[0]['course_name '],
+    //       'new course_name',
+    //       course_name,
+    //     )
+    // console.log("PASSED CHECK, SHOULD CREATE NEW CONVO ")
+    // console.log("selectedConversation.messages[0].contexts[0].course_name", selectedConversation.messages[0].contexts[0])
+    //   }
+    // } catch (error) {
+    //   console.error('An error occurred in useEffect: ', error)
+    // }
+  }, [])
 
   const clerk_user_outer = useUser()
   // const course_exists = course_metadata != null

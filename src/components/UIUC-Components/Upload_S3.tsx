@@ -77,11 +77,12 @@ export function DropzoneS3Upload({
   const { isSignedIn, user } = useUser()
   const current_user_email = user?.primaryEmailAddress?.emailAddress as string
 
-  const refreshOrRedirect = (redirect_to_gpt_4: boolean) => {
+  const refreshOrRedirect = async (redirect_to_gpt_4: boolean) => {
     if (redirect_to_gpt_4) {
       router.push(`/${course_name}/gpt4`)
     }
-    // refresh current page
+    // refresh current page (wait just a tad for the latest file to finish ingesting)
+    await new Promise(resolve => setTimeout(resolve, 700));
     router.reload()
   }
 
