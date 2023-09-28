@@ -5,7 +5,7 @@ import {
   SignInButton,
   UserButton,
 } from '@clerk/nextjs'
-import { File } from 'tabler-icons-react'
+import { IconFile } from '@tabler/icons-react'
 
 export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
   return (
@@ -95,7 +95,7 @@ export function LandingPageHeader({ isNavbar = false }: { isNavbar?: boolean }) 
 
 export function FileIcon() {
   return (
-    <File
+    <IconFile
       size={20}
       strokeWidth={2}
       style={{ marginRight: '5px' }}
