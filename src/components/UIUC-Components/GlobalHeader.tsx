@@ -31,12 +31,15 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
   )
 }
 
-
 import Link from 'next/link'
 import { montserrat_heading } from 'fonts'
-import { createStyles, rem } from '@mantine/core'
+import { createStyles, Group, rem } from '@mantine/core'
 
-export function LandingPageHeader({ isNavbar = false }: { isNavbar?: boolean }) {
+export function LandingPageHeader({
+  isNavbar = false,
+}: {
+  isNavbar?: boolean
+}) {
   const { classes, theme } = useStyles()
 
   const items = [
@@ -65,42 +68,40 @@ export function LandingPageHeader({ isNavbar = false }: { isNavbar?: boolean }) 
       }}
       className="py-16"
     >
-      {items.map((item, index) => (
-        <Link
-          key={index}
-          href={item.link}
-          // onClick={() => }
-          // data-active={activeLink === item.link}
-          className={classes.link}
-        >
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            {item.icon}
-            {item.name}
-          </span>
-        </Link>
-      ))}
-      <div className='p-2 pt-3'>
-        <SignedIn>
-          {/* Mount the UserButton component */}
-          <UserButton afterSignOutUrl="/" />
-        </SignedIn>
-        <SignedOut>
-          {/* Signed out users get sign in button */}
-          <SignInButton />
-        </SignedOut>
-      </div>
+      <Group>
+        {items.map((item, index) => (
+          <Link
+            key={index}
+            href={item.link}
+            // onClick={() => }
+            // data-active={activeLink === item.link}
+            className={classes.link}
+          >
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              {item.icon}
+              {item.name}
+            </span>
+          </Link>
+        ))}
+        <div className={`${classes.signInButtonStyle} pr-2`}>
+          {/* <div className='p-2 pt-3'> */}
+          <SignedIn>
+            {/* Mount the UserButton component */}
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+          <SignedOut>
+            {/* Signed out users get sign in button */}
+            <SignInButton />
+          </SignedOut>
+        </div>
+        {/* </div> */}
+      </Group>
     </header>
   )
 }
 
 export function FileIcon() {
-  return (
-    <IconFile
-      size={20}
-      strokeWidth={2}
-      style={{ marginRight: '5px' }}
-    />
-  )
+  return <IconFile size={20} strokeWidth={2} style={{ marginRight: '5px' }} />
 }
 
 const HEADER_HEIGHT = rem(84)
@@ -114,7 +115,7 @@ const useStyles = createStyles((theme) => ({
   },
 
   links: {
-    padding: '1em, 1em',
+    padding: '.2em, 1em',
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -123,11 +124,17 @@ const useStyles = createStyles((theme) => ({
       display: 'none',
     },
   },
+  signInButtonStyle: {
+    fontSize: rem(13),
+    fontWeight: 700,
+    font: montserrat_heading.variable,
+    color: '#f1f5f9',
+  },
   link: {
-    textTransform: 'uppercase',
+    // textTransform: 'uppercase',
     fontSize: rem(13),
     color: '#f1f5f9',
-    padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+    padding: `${theme.spacing.sm} ${theme.spacing.sm}`,
     margin: '0.35rem',
     fontWeight: 700,
     transition:
