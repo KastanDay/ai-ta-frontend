@@ -30,7 +30,6 @@ const Home: NextPage = () => {
       </Head>
 
       <LandingPageHeader />
-      {/* <IndexNavbar /> */}
 
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
         <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 ">
@@ -121,7 +120,6 @@ export default Home
 import { createStyles, SimpleGrid, Container } from '@mantine/core'
 import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
-import IndexNavbar from '~/components/UIUC-Components/IndexNavbar'
 
 const mockdata = [
   {
