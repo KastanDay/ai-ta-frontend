@@ -261,7 +261,7 @@ const EditCourseCard = ({
                     setCourseName(e.target.value.replaceAll(' ', '-'))
                   }
                   disabled={!is_new_course}
-                  className={`input input-bordered w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
+                  className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
                                 ${
                                   isCourseAvailable && courseName != ''
                                     ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
@@ -739,7 +739,7 @@ const EditCourseCard = ({
                   </Text>
                   <input
                     type="file"
-                    className={`file-input file-input-bordered w-full border-violet-800 bg-violet-800 text-white  shadow-inner hover:border-violet-600 hover:bg-violet-800 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                    className={`file-input-bordered file-input w-full border-violet-800 bg-violet-800 text-white  shadow-inner hover:border-violet-600 hover:bg-violet-800 ${montserrat_paragraph.variable} font-montserratParagraph`}
                     onChange={async (e) => {
                       // Assuming the file is converted to a URL somewhere else
                       setCourseBannerUrl(e.target.value)

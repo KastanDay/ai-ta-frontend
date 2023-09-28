@@ -153,18 +153,19 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
     try {
       // Log conversation to our Flask Backend (especially Nomic)
-      const API_URL = 'https://flask-production-751b.up.railway.app'
-
-      const response = await fetch(`${API_URL}/onResponseCompletion`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `https://flask-production-751b.up.railway.app/onResponseCompletion`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            course_name: getCurrentPageName(),
+            conversation: conversation,
+          }),
         },
-        body: JSON.stringify({
-          course_name: getCurrentPageName(),
-          conversation: conversation,
-        }),
-      })
+      )
       const data = await response.json()
       if (!response.ok) throw new Error(data.message)
       return data.success

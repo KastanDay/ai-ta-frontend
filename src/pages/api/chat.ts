@@ -98,9 +98,13 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Prompt being sent to OpenAI: ', promptToSend)
     console.log('Message history being sent to OpenAI: ', messagesToSend)
 
+    // Add custom instructions to system prompt
+    const systemPrompt =
+      promptToSend + "Only answer if it's related to the course materials."
+
     const stream = await OpenAIStream(
       model,
-      promptToSend,
+      systemPrompt,
       temperatureToUse,
       key,
       messagesToSend,

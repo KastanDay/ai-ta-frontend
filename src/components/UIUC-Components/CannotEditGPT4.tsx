@@ -61,10 +61,10 @@ export const CannotEditGPT4Page = ({
             >
               {' '}
               Go to{' '}
-              <Link href={'/new'} className='goldUnderline'>
+              <Link href={'/new'} className="goldUnderline">
                 uiuc.chat/new
-              </Link>
-              {' '}to make a new page.
+              </Link>{' '}
+              to make a new page.
             </Title>
           </Flex>
         </div>
