@@ -103,7 +103,6 @@ const Home = () => {
     courseMetadata()
   }, [course_name])
 
-
   const [hasMadeNewConvoAlready, setHasMadeNewConvoAlready] = useState(false)
   useEffect(() => {
     // ALWAYS make a new convo if current one isn't empty

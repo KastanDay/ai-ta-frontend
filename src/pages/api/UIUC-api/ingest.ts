@@ -14,16 +14,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     // const local_url = 'http://127.0.0.1:8000'
     const API_URL = 'https://flask-staging-db3e.up.railway.app'
 
-
-    const response: AxiosResponse = await axios.get(
-      API_URL + '/ingest',
-      {
-        params: {
-          course_name: courseName,
-          s3_paths: s3_filepath,
-        },
+    const response: AxiosResponse = await axios.get(API_URL + '/ingest', {
+      params: {
+        course_name: courseName,
+        s3_paths: s3_filepath,
       },
-    )
+    })
     // const data = await
     return res.status(200).json(response.data)
     // console.log('Getting to our /ingest endpoint', data);

@@ -82,7 +82,7 @@ export function DropzoneS3Upload({
       router.push(`/${course_name}/gpt4`)
     }
     // refresh current page (wait just a tad for the latest file to finish ingesting)
-    await new Promise(resolve => setTimeout(resolve, 700));
+    await new Promise((resolve) => setTimeout(resolve, 700))
     router.reload()
   }
 
@@ -303,7 +303,7 @@ export function DropzoneS3Upload({
             e.currentTarget.style.backgroundColor = 'transparent'
           }
         }}
-      // maxSize={30 * 1024 ** 2} max file size
+        // maxSize={30 * 1024 ** 2} max file size
       >
         {redirect_to_gpt_4 ? (
           <div style={{ pointerEvents: 'none' }}>

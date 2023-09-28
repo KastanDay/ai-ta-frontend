@@ -66,7 +66,7 @@ export function LargeDropzone({
       router.push(`/${courseName}/gpt4`)
     }
     // refresh current page
-    await new Promise(resolve => setTimeout(resolve, 700));
+    await new Promise((resolve) => setTimeout(resolve, 700))
     router.reload()
   }
   const uploadToS3 = async (file: File | null) => {
@@ -152,13 +152,12 @@ export function LargeDropzone({
       if (data.failure_ingest.length() > 0) {
         // TODO: Raise toast
         data.failure_ingest.map((s3path: string) => {
-          console.log("Logging each failure path:", s3path)
+          console.log('Logging each failure path:', s3path)
         })
       }
       data.success_ingest.map((s3path: string) => {
-        console.log("Logging each success path:", s3path)
+        console.log('Logging each success path:', s3path)
       })
-
 
       return data
     } else {
@@ -266,7 +265,7 @@ export function LargeDropzone({
             radius="md"
             bg="#0E1116"
             disabled={isDisabled}
-          // #0E1116 -- nice dark
+            // #0E1116 -- nice dark
           >
             <div
               style={{ pointerEvents: 'none', opacity: isDisabled ? 0.6 : 1 }}
