@@ -1,13 +1,14 @@
 // LargeDropzone.tsx
 import React, { useRef, useState } from 'react'
-import { createStyles, Group, rem, Text, Title } from '@mantine/core'
-import { IconCloudUpload, IconDownload, IconX } from '@tabler/icons-react'
+import { createStyles, Group, rem, Text, Title, useMantineTheme } from '@mantine/core'
+import { IconAlertCircle, IconCloudUpload, IconDownload, IconX } from '@tabler/icons-react'
 import { Dropzone } from '@mantine/dropzone'
 import { useRouter } from 'next/router'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import SupportedFileUploadTypes from './SupportedFileUploadTypes'
 import { useMediaQuery } from '@mantine/hooks'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
+import { notifications } from '@mantine/notifications'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -54,6 +55,7 @@ export function LargeDropzone({
   const [uploadInProgress, setUploadInProgress] = useState(false)
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
+  // const theme = useMantineTheme()
   // Set owner email
   // const { isSignedIn, user } = useUser()
   // const current_user_email = user?.primaryEmailAddress?.emailAddress as string
@@ -149,9 +151,11 @@ export function LargeDropzone({
       const data = await response.json()
       // console.log(file.name as string + ' ingested successfully!!')
       console.log('Success or Failure:', data)
+      // TODO: move these toasts to AFTER the refreshOrRedirect
+      // showToast(data.failure_ingest)
+      // showToast(data.success_ingest)
       // failure_ingest.length is not a function. idk why...
       if (data.failure_ingest.length > 0) {
-        // TODO: Raise toast
         data.failure_ingest.map((s3path: string) => {
           console.log('Logging each failure path:', s3path)
         })
@@ -259,6 +263,8 @@ export function LargeDropzone({
                 )
                 setUploadInProgress(false)
                 refreshOrRedirect(redirect_to_gpt_4)
+                // TODO: here we should raise toast for failed ingest files. AND successful ingest files.
+
               } else {
                 console.error('Upsert metadata failed')
                 setUploadInProgress(false)
@@ -375,3 +381,26 @@ export function LargeDropzone({
 }
 
 export default LargeDropzone
+
+const showToast = (error_files: string[]) => {
+  return (
+    // docs: https://mantine.dev/others/notifications/
+
+    notifications.show({
+      id: 'failed-ingest-toast',
+      withCloseButton: true,
+      onClose: () => console.log('unmounted'),
+      onOpen: () => console.log('mounted'),
+      autoClose: 15000,
+      // position="top-center",
+      title: 'Failed to ingest files',
+      message: `Failed to ingest the following files: ${error_files.join(", ")}. Please shoot me an email: kvday2@illinois.edu.`,
+      color: 'red',
+      radius: 'lg',
+      icon: <IconAlertCircle />,
+      className: 'my-notification-class',
+      style: { backgroundColor: '#15162c' },
+      loading: false,
+    })
+  )
+}
