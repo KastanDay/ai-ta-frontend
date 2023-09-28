@@ -65,8 +65,8 @@ export function LargeDropzone({
     if (redirect_to_gpt_4) {
       router.push(`/${courseName}/gpt4`)
     }
-    //   refresh current page
-    router.push(`/${courseName}/materials`)
+    // refresh current page
+    router.reload()
   }
   const uploadToS3 = async (file: File | null) => {
     if (!file) return
@@ -147,7 +147,18 @@ export function LargeDropzone({
     if (response.ok) {
       const data = await response.json()
       // console.log(file.name as string + ' ingested successfully!!')
-      console.log('Response:', data)
+      console.log('Success or Failure:', data)
+      if (data.failure_ingest.length() > 0) {
+        // TODO: Raise toast
+        data.failure_ingest.map((s3path: string) => {
+          console.log("Logging each failure path:", s3path)
+        })
+      }
+      data.success_ingest.map((s3path: string) => {
+        console.log("Logging each success path:", s3path)
+      })
+
+
       return data
     } else {
       console.log('Error during ingest:', response.statusText)
@@ -254,7 +265,7 @@ export function LargeDropzone({
             radius="md"
             bg="#0E1116"
             disabled={isDisabled}
-            // #0E1116 -- nice dark
+          // #0E1116 -- nice dark
           >
             <div
               style={{ pointerEvents: 'none', opacity: isDisabled ? 0.6 : 1 }}

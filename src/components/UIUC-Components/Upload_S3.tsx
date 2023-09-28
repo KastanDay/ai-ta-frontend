@@ -81,8 +81,8 @@ export function DropzoneS3Upload({
     if (redirect_to_gpt_4) {
       router.push(`/${course_name}/gpt4`)
     }
-    //   refresh current page
-    router.push(router.asPath)
+    // refresh current page
+    router.reload()
   }
 
   const getCurrentPageName = () => {
@@ -169,7 +169,7 @@ export function DropzoneS3Upload({
     if (response.ok) {
       const data = await response.json()
       // console.log(file.name as string + ' ingested successfully!!')
-      console.log('Response:', data)
+      console.log('Success or Failure:', data)
       return data
     } else {
       console.log('Error during ingest:', response.statusText)
@@ -302,7 +302,7 @@ export function DropzoneS3Upload({
             e.currentTarget.style.backgroundColor = 'transparent'
           }
         }}
-        // maxSize={30 * 1024 ** 2} max file size
+      // maxSize={30 * 1024 ** 2} max file size
       >
         {redirect_to_gpt_4 ? (
           <div style={{ pointerEvents: 'none' }}>
