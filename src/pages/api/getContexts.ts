@@ -12,7 +12,7 @@ export const fetchContexts = async (
 ) => {
   try {
     const response: AxiosResponse<ContextWithMetadata[]> = await axios.get(
-      `${process.env.RAILWAY_URL}/getTopContexts`,
+      `https://flask-production-751b.up.railway.app/getTopContexts`,
       {
         params: {
           course_name: course_name,

@@ -12,7 +12,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const s3_filepath = `courses/${courseName}/${fileName}`
 
     const response: AxiosResponse = await axios.get(
-      `${process.env.RAILWAY_URL}/ingest`,
+      `https://flask-production-751b.up.railway.app/ingest`,
       {
         params: {
           course_name: courseName,
