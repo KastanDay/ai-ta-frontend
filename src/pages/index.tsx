@@ -77,9 +77,13 @@ const Home: NextPage = () => {
           </Container>
 
           <Title color="white" order={3}>
-            Explore the Courses
+            Your Courses
           </Title>
           <ListProjectTable />
+
+          <Title color="white" order={3}>
+            Explore the Courses
+          </Title>
 
           {/* Main courses */}
           <CourseCard />

@@ -34,9 +34,7 @@ const ListProjectTable: React.FC = () => {
         console.log(rawData);
         if (rawData) {
           let tempRows;
-          // if (!courses) return <div>No courses found</div>;
           tempRows = rawData.map((course: { [key: string]: CourseMetadata }) => {
-
             // raw data is a list of dicts mapping course name to CourseMetadata objects
             const courseName = Object.keys(course)[0];
             const courseMetadata = course[courseName as string];
@@ -47,12 +45,15 @@ const ListProjectTable: React.FC = () => {
                   <td>{courseMetadata.course_owner}</td>
                   <td>{courseMetadata.is_private ? 'Private' : 'Public'}</td>
                   <td>{courseMetadata.course_admins.join(', ')}</td>
+                  {/* <td>{courseMetadata.approved_emails_list.join(', ')}</td> */}
+                  {/* maybe show the approved emails list as a dropdown */}
                 </tr>
               );
             }
           });
           setRows(tempRows);
         } else {
+          // remind user to create a new project
           console.log('No course found with the given name');
         }
       } else {
@@ -73,7 +74,9 @@ const ListProjectTable: React.FC = () => {
             <th>Course Admins</th>
           </tr>
         </thead>
-        <tbody>{rows}</tbody>
+        <tbody>
+          {rows ? rows : <tr><td colSpan={4}>You haven't created any courses yet. Let's CREATE one!</td></tr>}
+        </tbody>
       </Table>
     </div>
   );
