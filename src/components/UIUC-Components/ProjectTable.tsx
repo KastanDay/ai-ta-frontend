@@ -1,4 +1,4 @@
-import { Table } from '@mantine/core';
+import { Table, createStyles } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
@@ -7,6 +7,18 @@ import { type CourseMetadata } from '~/types/courseMetadata'
 import { useRouter } from 'next/router';
 
 
+// const useStyles = createStyles({
+//   rowStyle: {
+//     '& tr:hover': {
+//       backgroundColor: 'hsl(280,100%,70%)',
+//     },
+//   },
+// });
+const rowStyles = {
+  '&:hover': {
+    backgroundColor: 'hsl(280,100%,70%)',
+  },
+};
 
 const ListProjectTable: React.FC = () => {
   const clerk_user = useUser()
@@ -15,7 +27,6 @@ const ListProjectTable: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const [rows, setRows] = useState<JSX.Element[] | null>(null);
-
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -40,7 +51,7 @@ const ListProjectTable: React.FC = () => {
             const courseMetadata = course[courseName as string];
             if (courseMetadata) {
               return (
-                <tr key={courseName}>
+                <tr key={courseName} style={{ rowStyles }}>
                   <td>{courseName}</td>
                   <td>{courseMetadata.course_owner}</td>
                   <td>{courseMetadata.is_private ? 'Private' : 'Public'}</td>
@@ -64,9 +75,10 @@ const ListProjectTable: React.FC = () => {
   }, [clerk_user.isLoaded, clerk_user.isSignedIn]);
 
   return (
-    <div style={{ overflowX: 'auto', minWidth: '500px' }}>
-      <Table striped>
-        <thead>
+    <div style={{ overflowX: 'auto', minWidth: '800px' }}>
+
+      <Table highlightOnHover>
+        <thead >
           <tr>
             <th>Course Name</th>
             <th>Course Owner</th>
@@ -78,11 +90,12 @@ const ListProjectTable: React.FC = () => {
           {rows ? rows : <tr><td colSpan={4}>You haven't created any courses yet. Let's CREATE one!</td></tr>}
         </tbody>
       </Table>
-    </div>
+
+    </div >
   );
 
 };
 
-
 export default ListProjectTable;
+
 

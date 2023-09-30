@@ -372,3 +372,4 @@ function CourseCard() {
     </>
   )
 }
+
