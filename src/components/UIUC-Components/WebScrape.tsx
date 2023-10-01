@@ -47,9 +47,8 @@ export const WebScrape = ({
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const theme = useMantineTheme()
-  const [maxUrls, setMaxUrls] = useState('');
-  const [maxDepth, setMaxDepth] = useState('');
-  const [timeout, setTimeout] = useState('');
+  const [maxUrls, setMaxUrls] = useState('50');
+  const [maxDepth, setMaxDepth] = useState('2');
   const [isTyping, setIsTyping] = useState(false)
   const [stayOnBaseUrl, setStayOnBaseUrl] = useState(false)
 
@@ -71,8 +70,6 @@ export const WebScrape = ({
     if (variable === 'maxUrls' && maxUrls !== '') {
       setIsTyping(true)
     } else if (variable === 'maxDepth' && maxDepth !== '') {
-      setIsTyping(true)
-    } else if (variable === 'timeout' && timeout !== '') {
       setIsTyping(true)
     }
   }
@@ -159,7 +156,7 @@ export const WebScrape = ({
           courseName,
           maxUrls.trim() !== "" ? parseInt(maxUrls) : webScrapeConfig.num_sites,
           maxDepth.trim() !== "" ? parseInt(maxDepth) : webScrapeConfig.recursive_depth,
-          timeout.trim() !== "" ? parseInt(timeout) : webScrapeConfig.timeout_sec,
+          webScrapeConfig.timeout_sec,
           stayOnBaseUrl,
         )
 
@@ -190,6 +187,42 @@ export const WebScrape = ({
     setLoadinSpinner(false)
     setUrl('') // clear url
   }
+
+  const [inputErrors, setInputErrors] = useState({
+    maxUrls: { error: false, message: '' },
+    maxDepth: { error: false, message: '' }
+  });
+
+  const setErrors = (name: string, value: { error: boolean, message: string }) => {
+    setInputErrors(prevState => ({ ...prevState, [name]: value }));
+  };
+
+  const validateInputs = () => {
+    let errors = {
+      maxUrls: { error: false, message: '' },
+      maxDepth: { error: false, message: '' }
+    };
+    // Check for maxUrls
+    if (!maxUrls) {
+      errors.maxUrls = { error: true, message: 'Please provide an input for Max URLs' };
+    } else if (isNaN(parseInt(maxUrls))) {
+      errors.maxUrls = { error: true, message: 'Max URLs should be a valid number' };
+    } else if (parseInt(maxUrls) < 1 || parseInt(maxUrls) > 500) {
+      errors.maxUrls = { error: true, message: 'Max URLs should be between 1 and 500' };
+    }
+
+    // Check for maxDepth
+    if (!maxDepth) {
+      errors.maxDepth = { error: true, message: 'Please provide an input for Max Depth' };
+    } else if (isNaN(parseInt(maxDepth))) {
+      errors.maxDepth = { error: true, message: 'Max Depth should be a valid number' };
+    } else if (parseInt(maxDepth) < 1 || parseInt(maxDepth) > 500) {
+      errors.maxDepth = { error: true, message: 'Max Depth should be between 1 and 500' };
+    }
+
+    setInputErrors(errors);
+    return !Object.values(errors).some(error => error.error);
+  };
 
   const showToast = () => {
     return (
@@ -344,7 +377,7 @@ export const WebScrape = ({
           <Button
             onClick={(e) => {
               e.preventDefault()
-              handleSubmit()
+              validateInputs() && handleSubmit()
             }}
             size="md"
             radius={'xl'}
@@ -366,60 +399,38 @@ export const WebScrape = ({
               event.preventDefault();
             }}
           >
-            <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum number of URLs to scrape">
-              <TextInput
-                label="Max URLs"
-                name="maximumUrls"
-                placeholder="Default 100"
-                value={maxUrls}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  const intValue = parseInt(value);
-                  if (!isNaN(intValue) || value === '') {
+            <div>
+              <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum number of URLs to scrape">
+                <TextInput
+                  label="Max URLs"
+                  name="maximumUrls"
+                  placeholder="Default 100"
+                  value={maxUrls}
+                  onChange={(e) => {
                     handleInputChange(e, "maxUrls");
-                  } else {
-                    alert("Please enter a valid integer for Max URLs (numbers only)");
-                  }
-                }}
-                style={{ width: '100%' }}
-              />
-            </Tooltip>
-            <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the timeout duration in seconds">
-              <TextInput
-                label="Timeout"
-                name="timeout"
-                placeholder="Default 1"
-                value={timeout}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  const intValue = parseInt(value);
-                  if (!isNaN(intValue) || value === '') {
-                    handleInputChange(e, "timeout");
-                  } else {
-                    alert("Please enter a valid integer for Timeout (numbers only)");
-                  }
-                }}
-                style={{ width: '100%' }}
-              />
-            </Tooltip>
-            <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum depth for recursive scraping">
-              <TextInput
-                label="Max Depth"
-                name="maxDepth"
-                placeholder="Default 3"
-                value={maxDepth}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  const intValue = parseInt(value);
-                  if (!isNaN(intValue) || value === '') {
+                  }}
+                  style={{ width: '100%' }}
+                  error={inputErrors.maxUrls.error}
+                />
+              </Tooltip>
+              {inputErrors.maxUrls.error && <p style={{ color: 'red' }}>{inputErrors.maxUrls.message}</p>}
+            </div>
+            <div>
+              <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum depth for recursive scraping">
+                <TextInput
+                  label="Max Depth"
+                  name="maxDepth"
+                  placeholder="Default 3"
+                  value={maxDepth}
+                  onChange={(e) => {
                     handleInputChange(e, "maxDepth");
-                  } else {
-                    alert("Please enter a valid integer for Timeout (numbers only)");
-                  }
-                }}
-                style={{ width: '100%' }}
-              />
-            </Tooltip>
+                  }}
+                  style={{ width: '100%' }}
+                  error={inputErrors.maxDepth.error}
+                />
+              </Tooltip>
+              {inputErrors.maxDepth.error && <p style={{ color: 'red' }}>{inputErrors.maxDepth.message}</p>}
+            </div>
             <div style={{ fontSize: 'smaller', marginBottom: '0px' }}>
               Stay on Base URL
             </div>

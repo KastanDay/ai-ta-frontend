@@ -52,11 +52,11 @@ const useStyles = createStyles((theme) => ({
   },
 
   control: {
-    position: 'absolute',
-    width: rem(250),
-    left: `calc(50% - ${rem(125)})`,
-    bottom: rem(-20),
-  },
+    backgroundColor: 'transparent',
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, 0.2)', // 20% white on hover
+    },
+},
 
 
   // For Accordion
@@ -266,7 +266,7 @@ const SupportedFileUploadTypes = () => {
       >
         {/* ... Accordion items */}
         <Accordion.Item value="openai-key-details" className={classes.item}>
-          <Accordion.Control>
+          <Accordion.Control className={classes.control}>
             <Text
               className={`label ${montserrat_paragraph.variable} font-montserratParagraph inline-block p-0 text-neutral-200`}
               size={'md'}
@@ -280,14 +280,9 @@ const SupportedFileUploadTypes = () => {
               className={`label ${montserrat_paragraph.variable} font-montserratParagraph p-0 text-neutral-200`}
               size={'sm'}
             >
-              Only set this key if you&apos;re comfortable with
-              paying the OpenAI bill for users to chat with your
-              documents. Without this, each user must bring their
-              own key and enter it before using the app. Providing a
-              key makes your page free and much simpler for your
-              users. You can use the visibility controls below to
-              limit access. Advanced rate-limit features are a work
-              in progress.
+              To ingest content from GitHub, simply provide the URL of the repository or specific file 
+              you'd like to pull content from. Ensure the repository is public. Our system will automatically 
+              fetch and process the content from GitHub, allowing you to seamlessly integrate it into your platform.
             </Text>
           </Accordion.Panel>
         </Accordion.Item>
