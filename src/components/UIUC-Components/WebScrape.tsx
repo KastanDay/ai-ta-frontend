@@ -153,8 +153,8 @@ export const WebScrape = ({
         data = scrapeWeb(
           url,
           courseName,
-          maxUrls.trim() !== "" ? parseInt(maxUrls) : webScrapeConfig.num_sites,
-          maxDepth.trim() !== "" ? parseInt(maxDepth) : webScrapeConfig.recursive_depth,
+          maxUrls.trim() !== "" ? parseInt(maxUrls)-1 : webScrapeConfig.num_sites,
+          maxDepth.trim() !== "" ? parseInt(maxDepth)-1 : webScrapeConfig.recursive_depth,
           webScrapeConfig.timeout_sec,
           stayOnBaseUrl,
         )
