@@ -2,7 +2,6 @@ import { notifications } from '@mantine/notifications'
 import { rem, Button, Input, Title, Text, useMantineTheme, Tooltip, Checkbox, TextInput } from '@mantine/core'
 import { IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
-import { Montserrat } from 'next/font/google'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import { useMediaQuery } from '@mantine/hooks'
@@ -48,7 +47,6 @@ export const WebScrape = ({
   const theme = useMantineTheme()
   const [maxUrls, setMaxUrls] = useState('50');
   const [maxDepth, setMaxDepth] = useState('2');
-  const [isTyping, setIsTyping] = useState(false)
   const [stayOnBaseUrl, setStayOnBaseUrl] = useState(false)
 
   const handleInputChange = (
@@ -62,45 +60,6 @@ export const WebScrape = ({
       setMaxDepth(value)
     } else if (variable === 'timeout') {
       setTimeout(value)
-    }
-  }
-
-  const handleInputFocus = (variable: string) => {
-    if (variable === 'maxUrls' && maxUrls !== '') {
-      setIsTyping(true)
-    } else if (variable === 'maxDepth' && maxDepth !== '') {
-      setIsTyping(true)
-    }
-  }
-
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newUrl = e.target.value
-    console.log('newUrl: ', newUrl)
-    setUrl(newUrl)
-    if (newUrl.length > 0 && validateUrl(newUrl)) {
-      setIsUrlUpdated(true)
-    } else {
-      setIsUrlUpdated(false)
-    }
-    // Change icon based on URL
-    if (newUrl.includes('coursera.org')) {
-      setIcon(
-        <img
-          src={'/media/coursera_logo_cutout.png'}
-          alt="Coursera Logo"
-          style={{ height: '50%', width: '50%' }}
-        />,
-      )
-    } else if (newUrl.includes('ocw.mit.edu')) {
-      setIcon(
-        <img
-          src={'/media/mitocw_logo.jpg'}
-          alt="MIT OCW Logo"
-          style={{ height: '50%', width: '50%' }}
-        />,
-      )
-    } else {
-      setIcon(<IconWorldDownload />)
     }
   }
 
@@ -191,10 +150,6 @@ export const WebScrape = ({
     maxUrls: { error: false, message: '' },
     maxDepth: { error: false, message: '' }
   });
-
-  const setErrors = (name: string, value: { error: boolean, message: string }) => {
-    setInputErrors(prevState => ({ ...prevState, [name]: value }));
-  };
 
   const validateInputs = () => {
     const errors = {
