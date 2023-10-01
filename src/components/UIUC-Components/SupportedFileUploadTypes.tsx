@@ -283,7 +283,7 @@ const SupportedFileUploadTypes = () => {
               size={'sm'}
             >
               To ingest content from GitHub, simply provide the URL of the repository or specific file 
-              you&aposd like to pull content from. Ensure the repository is public. Our system will automatically 
+              you&apos;d like to pull content from. Ensure the repository is public. Our system will automatically 
               fetch and process the content from GitHub, allowing you to seamlessly integrate it into your course.
             </Text>
           </Accordion.Panel>
