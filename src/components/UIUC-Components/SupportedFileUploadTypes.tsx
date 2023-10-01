@@ -267,13 +267,15 @@ const SupportedFileUploadTypes = () => {
         {/* ... Accordion items */}
         <Accordion.Item value="openai-key-details" className={classes.item}>
           <Accordion.Control className={classes.control}>
-            <Text
-              className={`label ${montserrat_paragraph.variable} font-montserratParagraph inline-block p-0 text-neutral-200`}
-              size={'md'}
-            >
-              <span className={'text-white'}>Read more</span>{' '}
-              👇
-            </Text>
+            <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+              <Text
+                className={`label ${montserrat_paragraph.variable} font-montserratParagraph inline-block p-0 text-neutral-200`}
+                size={'md'}
+              >
+                <span className={'text-white'}>Read more</span>{' '}
+                👇
+              </Text>
+            </div>
           </Accordion.Control>
           <Accordion.Panel>
             <Text
