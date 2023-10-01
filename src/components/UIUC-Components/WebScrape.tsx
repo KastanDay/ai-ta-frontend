@@ -197,7 +197,7 @@ export const WebScrape = ({
   };
 
   const validateInputs = () => {
-    let errors = {
+    const errors = {
       maxUrls: { error: false, message: '' },
       maxDepth: { error: false, message: '' }
     };
