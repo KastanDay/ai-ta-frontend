@@ -58,8 +58,6 @@ export const WebScrape = ({
       setMaxUrls(value)
     } else if (variable === 'maxDepth') {
       setMaxDepth(value)
-    } else if (variable === 'timeout') {
-      setTimeout(value)
     }
   }
 
@@ -159,7 +157,7 @@ export const WebScrape = ({
     // Check for maxUrls
     if (!maxUrls) {
       errors.maxUrls = { error: true, message: 'Please provide an input for Max URLs' };
-    } else if (isNaN(parseInt(maxUrls))) {
+    } else if (!/^\d+$/.test(maxUrls)) { // Using regex to ensure the entire string is a number
       errors.maxUrls = { error: true, message: 'Max URLs should be a valid number' };
     } else if (parseInt(maxUrls) < 1 || parseInt(maxUrls) > 500) {
       errors.maxUrls = { error: true, message: 'Max URLs should be between 1 and 500' };
@@ -168,7 +166,7 @@ export const WebScrape = ({
     // Check for maxDepth
     if (!maxDepth) {
       errors.maxDepth = { error: true, message: 'Please provide an input for Max Depth' };
-    } else if (isNaN(parseInt(maxDepth))) {
+    } else if (!/^\d+$/.test(maxDepth)) { // Using regex to ensure the entire string is a number
       errors.maxDepth = { error: true, message: 'Max Depth should be a valid number' };
     } else if (parseInt(maxDepth) < 1 || parseInt(maxDepth) > 500) {
       errors.maxDepth = { error: true, message: 'Max Depth should be between 1 and 500' };
@@ -336,8 +334,10 @@ export const WebScrape = ({
         rightSection={
           <Button
             onClick={(e) => {
-              e.preventDefault()
-              validateInputs() && handleSubmit()
+              e.preventDefault();
+              if (validateInputs() && validateUrl(url)) {
+                handleSubmit();
+              }
             }}
             size="md"
             radius={'xl'}
