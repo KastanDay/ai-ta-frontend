@@ -402,7 +402,7 @@ export const WebScrape = ({
             <div>
               <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum number of URLs to scrape">
                 <TextInput
-                  label="Max URLs"
+                  label="Max URLs (1 to 500)"
                   name="maximumUrls"
                   placeholder="Default 100"
                   value={maxUrls}
@@ -418,7 +418,7 @@ export const WebScrape = ({
             <div>
               <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum depth for recursive scraping">
                 <TextInput
-                  label="Max Depth"
+                  label="Max Depth (1 to 500)"
                   name="maxDepth"
                   placeholder="Default 3"
                   value={maxDepth}
