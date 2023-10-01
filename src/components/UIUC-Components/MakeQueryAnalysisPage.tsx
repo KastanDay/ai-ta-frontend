@@ -124,7 +124,7 @@ const MakeQueryAnalysisPage = ({
     currentEmail !== (courseMetadata.course_owner as string) &&
     courseMetadata.course_admins.indexOf(currentEmail) === -1
   ) {
-    router.push(`/${course_name}/not_authorized`)
+    router.replace(`/${course_name}/not_authorized`)
 
     return (
       <CannotEditCourse
@@ -278,8 +278,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const { classes, theme } = useStyles()
   const handleDelete = async (s3_path: string, course_name: string) => {
     try {
-      const API_URL = 'https://flask-production-751b.up.railway.app'
-      const response = await axios.delete(`${API_URL}/delete`, {
+      const response = await axios.delete(`https://flask-production-751b.up.railway.app/delete`, {
         params: { s3_path, course_name },
       })
       // Handle successful deletion, show a success message
@@ -359,7 +358,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                     window.open(url, '_blank')
                   })
                 }
-                className="btn btn-circle cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
+                className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
@@ -384,7 +383,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                     file.course_name as string,
                   )
                 }
-                className="btn btn-circle cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
+                className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]

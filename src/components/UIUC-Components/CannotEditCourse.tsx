@@ -46,10 +46,10 @@ export const CannotEditCourse = ({ course_name }: { course_name: string }) => {
           Either sign in with a different account (in the top right) or
           <br></br>
           Go to{' '}
-          <Link href={'/new'} className='goldUnderline'>
+          <Link href={'/new'} className="goldUnderline">
             uiuc.chat/new
-          </Link>
-          {' '}to make a new page.
+          </Link>{' '}
+          to make a new page.
         </Title>
       </Flex>
     </>

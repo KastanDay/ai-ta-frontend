@@ -2,7 +2,7 @@ import React from 'react'
 import { Title, Text } from '@mantine/core'
 import Link from 'next/link'
 
-const Maintenance = ({}: {
+const Maintenance = ({ }: {
   // Prevent search engine indexing of Maintenance page (because it'll ruin our entire search results): https://github.com/vercel/next.js/discussions/12850#discussioncomment-3335807
   // in _document.tsx
 }) => {
@@ -24,6 +24,9 @@ const Maintenance = ({}: {
             UIUC.chat is down for maintenance
           </Title>
           <Text size="lg">
+            Our database provider, Supabase, is down. We will be back shortly after they are back online.
+          </Text>
+          {/* <Text size="lg">
             Motivation: Things to explosive product growth, accompanied by the
             start of the school year with blown pas our OpenAI/GPT-4 maximum
             budget and most core functionality is on pause while that is
@@ -34,7 +37,7 @@ const Maintenance = ({}: {
             caching of responses, so simple and repeated queries are free for us
             to run. But cache invalidation is inherently complex and will take
             more time to implement properly.
-          </Text>
+          </Text> */}
         </div>
         <div className="items-left container flex flex-col justify-center gap-12 px-20 py-16 "></div>
       </main>

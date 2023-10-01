@@ -168,10 +168,10 @@ export const CanViewOnlyCourse = ({
               <br></br>
               <br></br>
               Or go to{' '}
-              <Link href={'/new'} className='goldUnderline'>
+              <Link href={'/new'} className="goldUnderline">
                 uiuc.chat/new
-              </Link>
-              {' '}to make a new page.
+              </Link>{' '}
+              to make a new page.
             </Title>
           </Flex>
         </div>

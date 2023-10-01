@@ -77,12 +77,13 @@ export function DropzoneS3Upload({
   const { isSignedIn, user } = useUser()
   const current_user_email = user?.primaryEmailAddress?.emailAddress as string
 
-  const refreshOrRedirect = (redirect_to_gpt_4: boolean) => {
+  const refreshOrRedirect = async (redirect_to_gpt_4: boolean) => {
     if (redirect_to_gpt_4) {
       router.push(`/${course_name}/gpt4`)
     }
-    //   refresh current page
-    router.push(router.asPath)
+    // refresh current page (wait just a tad for the latest file to finish ingesting)
+    await new Promise((resolve) => setTimeout(resolve, 700))
+    router.reload()
   }
 
   const getCurrentPageName = () => {
@@ -169,7 +170,7 @@ export function DropzoneS3Upload({
     if (response.ok) {
       const data = await response.json()
       // console.log(file.name as string + ' ingested successfully!!')
-      console.log('Response:', data)
+      console.log('Success or Failure:', data)
       return data
     } else {
       console.log('Error during ingest:', response.statusText)
