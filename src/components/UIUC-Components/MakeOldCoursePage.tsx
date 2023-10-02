@@ -216,7 +216,7 @@ import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
 import { montserrat_heading } from 'fonts'
-import MyTableView from './table/YourMaterialsTable'
+import MyTableView from './YourMaterialsTable'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
