@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import React, { HTMLAttributes, HTMLProps } from 'react'
 import ReactDOM from 'react-dom/client'
 
@@ -25,6 +26,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  Row,
   SortingState,
   Table,
   useReactTable,
@@ -104,8 +106,11 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
         accessorFn: row => row.readable_filename,
         id: 'readable_filename',
         cell: info => info.getValue(),
-        sortType: (rowA, rowB, columnId) => {
+        // sortType: (rowA, rowB, columnId) => {
+        sortType: (rowA: Row<CourseFile>, rowB: Row<CourseFile>, columnId: string) => {
+          // @ts-ignore
           const a = rowA.values[columnId];
+          // @ts-ignore
           const b = rowB.values[columnId];
           return a.localeCompare(b);
         },
@@ -142,6 +147,7 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
           // },
           {
             accessorKey: 'url',
+            // @ts-ignore
             sortType: (rowA, rowB, columnId) => {
               const a = rowA.values[columnId];
               const b = rowB.values[columnId];
@@ -161,6 +167,7 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
           },
           {
             accessorKey: 'base_url',
+            // @ts-ignore
             sortType: (rowA, rowB, columnId) => {
               const a = rowA.values[columnId];
               const b = rowB.values[columnId];
@@ -377,6 +384,8 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
 
               <button
                 className="border rounded p-2 mb-2"
+                // TODO: implement delete and download
+                // @ts-ignore
                 onClick={() => deleteDocs(table.getPreFilteredRowModel().rows)}
               >
                 Delete Selected Documents
