@@ -5,28 +5,23 @@ import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelper
 import { getAllCourseMetadata, getCoursesByOwnerOrAdmin } from '~/pages/api/UIUC-api/getAllCourseMetadata';
 import { type CourseMetadata } from '~/types/courseMetadata'
 import { useRouter } from 'next/router';
+import { DataTable } from 'mantine-datatable';
+import styled from 'styled-components';
 
 
-// const useStyles = createStyles({
-//   rowStyle: {
-//     '& tr:hover': {
-//       backgroundColor: 'hsl(280,100%,70%)',
-//     },
-//   },
-// });
-const rowStyles = {
-  '&:hover': {
-    backgroundColor: 'hsl(280,100%,70%)',
-  },
-};
+
+const StyledRow = styled.tr`
+  &:hover {
+    background-color: hsla(280,100%,70%, 0.5);
+  }
+`;
 
 const ListProjectTable: React.FC = () => {
   const clerk_user = useUser()
   const [courses, setCourses] = useState<{ [key: string]: CourseMetadata }[] | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const [rows, setRows] = useState<JSX.Element[] | null>(null);
+  const [rows, setRows] = useState<JSX.Element[]>([]);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -44,27 +39,31 @@ const ListProjectTable: React.FC = () => {
         const rawData = await response.json();
         console.log(rawData);
         if (rawData) {
-          let tempRows;
-          tempRows = rawData.map((course: { [key: string]: CourseMetadata }) => {
-            // raw data is a list of dicts mapping course name to CourseMetadata objects
+          const tempRows = rawData.map((course: { [key: string]: CourseMetadata }) => {
             const courseName = Object.keys(course)[0];
             const courseMetadata = course[courseName as string];
             if (courseMetadata) {
+              //     return {
+              //       courseName,
+              //       course_owner: courseMetadata.course_owner,
+              //       is_private: courseMetadata.is_private ? 'Private' : 'Public',
+              //       course_admins: courseMetadata.course_admins.join(', ')
+              //     };
+              //   }
+              // }).filter(Boolean);
               return (
-                <tr key={courseName} style={{ rowStyles }}>
+                <StyledRow key={courseName}>
+                  {/* style={isHovered === courseName ? rowStyles['[data-hover="true"]'] : {}} */}
                   <td>{courseName}</td>
                   <td>{courseMetadata.course_owner}</td>
                   <td>{courseMetadata.is_private ? 'Private' : 'Public'}</td>
                   <td>{courseMetadata.course_admins.join(', ')}</td>
-                  {/* <td>{courseMetadata.approved_emails_list.join(', ')}</td> */}
-                  {/* maybe show the approved emails list as a dropdown */}
-                </tr>
+                </StyledRow>
               );
             }
           });
           setRows(tempRows);
         } else {
-          // remind user to create a new project
           console.log('No course found with the given name');
         }
       } else {
@@ -73,25 +72,47 @@ const ListProjectTable: React.FC = () => {
     };
     fetchCourses();
   }, [clerk_user.isLoaded, clerk_user.isSignedIn]);
-
   return (
     <div style={{ overflowX: 'auto', minWidth: '800px' }}>
-
-      <Table highlightOnHover>
-        <thead >
-          <tr>
-            <th>Course Name</th>
-            <th>Course Owner</th>
-            <th>Privacy</th>
-            <th>Course Admins</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows ? rows : <tr><td colSpan={4}>You haven't created any courses yet. Let's CREATE one!</td></tr>}
-        </tbody>
-      </Table>
-
-    </div >
+      {/* <DataTable
+        style={{ backgroundColor: 'white' }}
+        sx={(theme) => ({
+          backgroundColor: 'transparent',
+          '&:hover': {
+            backgroundColor: 'transparent',
+          },
+        })}
+        highlightOnHover
+        records={rows}
+        columns={[
+          { accessor: 'courseName' },
+          { accessor: 'course_owner' },
+          { accessor: 'is_private' },
+          { accessor: 'course_admins' },
+        ]}
+        height={320}
+        withBorder
+        borderRadius="sm"
+        verticalAlignment="top"
+      /> */}
+      {rows.length > 0 ? (
+        <Table>
+          <thead>
+            <tr>
+              <th>Course Name</th>
+              <th>Course Owner</th>
+              <th>Privacy</th>
+              <th>Course Admins</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows}
+          </tbody>
+        </Table>
+      ) : (
+        <h3 style={{ textAlign: "center" }}>You haven't created any courses yet. Let's CREATE one!</h3>
+      )}
+    </div>
   );
 
 };
