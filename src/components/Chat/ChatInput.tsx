@@ -6,6 +6,7 @@ import {
   IconRepeat,
   IconSend,
   IconPhoto,
+  IconAlertCircle
 } from '@tabler/icons-react'
 import {
   KeyboardEvent,
@@ -28,6 +29,15 @@ import HomeContext from '~/pages/api/home/home.context'
 import { PluginSelect } from './PluginSelect'
 import { PromptList } from './PromptList'
 import { VariableModal } from './VariableModal'
+
+import { notifications } from '@mantine/notifications';
+import { MantineTheme, Text, useMantineTheme } from '@mantine/core';
+import { Montserrat } from 'next/font/google'
+const montserrat_med = Montserrat({
+  weight: '500',
+  subsets: ['latin'],
+})
+
 
 interface Props {
   onSend: (message: Message, plugin: Plugin | null) => void
@@ -70,8 +80,7 @@ export const ChatInput = ({
   const [uploadingImage, setUploadingImage] = useState<boolean>(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
-
-
+  const imageUploadRef = useRef<HTMLInputElement | null>(null);
   const promptListRef = useRef<HTMLUListElement | null>(null)
 
   const filteredPrompts = prompts.filter((prompt) =>
@@ -258,13 +267,43 @@ export const ChatInput = ({
   }
 
   const handleImageUpload = (file: File) => {
-      if (!isImageValid(file.name)) {
-          setImageError('Unsupported file type. Please upload .jpg or .png images.');
-          return;
+    if (!isImageValid(file.name)) {
+        setImageError(null);  // Explicitly set to null first
+        setImageError('Unsupported file type. Please upload .jpg or .png images.');
+        showToastOnInvalidImage();
+        if (imageUploadRef.current) {
+          imageUploadRef.current.value = '';  // Reset the file input's value
       }
-      // Handle the image upload logic here
-      // ...
+              return;
+    }
+    // Handle the image upload logic here
+    // ...
   }
+
+
+
+  const theme = useMantineTheme();
+
+  const showToastOnInvalidImage = () => {
+    notifications.show({
+        id: 'error-notification',
+        withCloseButton: true,
+        onClose: () => console.log('error unmounted'),
+        onOpen: () => console.log('error mounted'),
+        autoClose: 4000,
+        title: 'Invalid Image Type',
+        message: 'Unsupported file type. Please upload .jpg or .png images.',
+        color: 'red',
+        radius: 'lg',
+        icon: <IconAlertCircle />,
+        className: 'my-notification-class',
+        style: { backgroundColor: '#15162c' },
+        withBorder: true,
+        loading: false,
+    });
+  }
+
+
 
   useEffect(() => {
     const handleDocumentDragOver = (e: DragEvent) => {
@@ -301,9 +340,8 @@ export const ChatInput = ({
 
   useEffect(() => {
     if (imageError) {
-        // Display the toast message
-        alert(imageError);  // Use a more advanced toast system if you have one
-        setImageError(null);
+      showToastOnInvalidImage();
+      setImageError(null);
     }
   }, [imageError]);
 
@@ -398,14 +436,14 @@ export const ChatInput = ({
           <input
               type="file"
               id="imageUpload"
+              ref={imageUploadRef}
               style={{ display: 'none' }}
               onChange={(e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                  handleImageUpload(e.target.files[0] as File);
-                }
+                  if (e.target.files && e.target.files.length > 0) {
+                      handleImageUpload(e.target.files[0] as File);
+                  }
               }}
           />
-
           {showPluginSelect && (
             <div className="absolute bottom-14 left-0 rounded bg-white dark:bg-[#15162c]">
               <PluginSelect
