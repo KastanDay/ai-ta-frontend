@@ -43,17 +43,8 @@ const ListProjectTable: React.FC = () => {
             const courseName = Object.keys(course)[0];
             const courseMetadata = course[courseName as string];
             if (courseMetadata) {
-              //     return {
-              //       courseName,
-              //       course_owner: courseMetadata.course_owner,
-              //       is_private: courseMetadata.is_private ? 'Private' : 'Public',
-              //       course_admins: courseMetadata.course_admins.join(', ')
-              //     };
-              //   }
-              // }).filter(Boolean);
               return (
-                <StyledRow key={courseName}>
-                  {/* style={isHovered === courseName ? rowStyles['[data-hover="true"]'] : {}} */}
+                <StyledRow key={courseName} onClick={() => router.push(`/${courseName}/gpt4`)} style={{ cursor: 'pointer' }}>
                   <td>{courseName}</td>
                   <td>{courseMetadata.course_owner}</td>
                   <td>{courseMetadata.is_private ? 'Private' : 'Public'}</td>
@@ -73,7 +64,7 @@ const ListProjectTable: React.FC = () => {
     fetchCourses();
   }, [clerk_user.isLoaded, clerk_user.isSignedIn]);
   return (
-    <div style={{ overflowX: 'auto', minWidth: '800px' }}>
+    <div style={{ overflowX: 'auto', minWidth: '800px', backgroundColor: '#0f1116', boxShadow: '0px 0px 10px 2px rgba(0,0,0,0,5)', borderRadius: '10px' }}>
       {/* <DataTable
         style={{ backgroundColor: 'white' }}
         sx={(theme) => ({
@@ -96,7 +87,7 @@ const ListProjectTable: React.FC = () => {
         verticalAlignment="top"
       /> */}
       {rows.length > 0 ? (
-        <Table>
+        <Table withBorder>
           <thead>
             <tr>
               <th>Course Name</th>
