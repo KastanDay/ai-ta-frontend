@@ -5,6 +5,7 @@ import {
   IconPlayerStop,
   IconRepeat,
   IconSend,
+  IconPhoto,
 } from '@tabler/icons-react'
 import {
   KeyboardEvent,
@@ -66,6 +67,10 @@ export const ChatInput = ({
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [showPluginSelect, setShowPluginSelect] = useState(false)
   const [plugin, setPlugin] = useState<Plugin | null>(null)
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+
 
   const promptListRef = useRef<HTMLUListElement | null>(null)
 
@@ -245,6 +250,63 @@ export const ChatInput = ({
     }
   }
 
+  const validImageTypes = ['.jpg', '.jpeg', '.png'];
+
+  const isImageValid = (fileName: string): boolean => {
+      const ext = fileName.slice(((fileName.lastIndexOf(".") - 1) >>> 0) + 2);
+      return validImageTypes.includes(`.${ext}`);
+  }
+
+  const handleImageUpload = (file: File) => {
+      if (!isImageValid(file.name)) {
+          setImageError('Unsupported file type. Please upload .jpg or .png images.');
+          return;
+      }
+      // Handle the image upload logic here
+      // ...
+  }
+
+  useEffect(() => {
+    const handleDocumentDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+    };
+  
+    const handleDocumentDrop = (e: DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      if (e.dataTransfer && e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+        const file = e.dataTransfer.items[0]?.getAsFile();
+        if (file) {
+          handleImageUpload(file);
+        }
+      }
+    };
+  
+    const handleDocumentDragLeave = (e: DragEvent) => {
+      setIsDragging(false);
+    };
+  
+    document.addEventListener('dragover', handleDocumentDragOver);
+    document.addEventListener('drop', handleDocumentDrop);
+    document.addEventListener('dragleave', handleDocumentDragLeave);
+  
+    return () => {
+      // Clean up the event listeners when the component is unmounted
+      document.removeEventListener('dragover', handleDocumentDragOver);
+      document.removeEventListener('drop', handleDocumentDrop);
+      document.removeEventListener('dragleave', handleDocumentDragLeave);
+    };
+  }, []);  
+
+  useEffect(() => {
+    if (imageError) {
+        // Display the toast message
+        alert(imageError);  // Use a more advanced toast system if you have one
+        setImageError(null);
+    }
+  }, [imageError]);
+
   useEffect(() => {
     setContent(inputContent)
     if (textareaRef.current) {
@@ -286,7 +348,14 @@ export const ChatInput = ({
   }, [])
 
   return (
-    <div className="absolute bottom-0 left-0 w-full border-transparent bg-transparent pt-6 dark:border-white/20 md:pt-2">
+    <div className={`absolute bottom-0 left-0 w-full border-transparent bg-transparent pt-6 dark:border-white/20 md:pt-2 ${isDragging ? 'border-4 border-dashed border-blue-400' : ''}`}>
+      {isDragging && (
+          <div
+            className="absolute inset-0 w-full h-full flex justify-center items-center bg-black opacity-75 z-10"  // Added z-10 to ensure it's on top, changed background to a semi-transparent black
+          >
+            <span className="text-2xl font-extrabold text-white">Drop your image here!</span>
+          </div>
+      )}
       <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
         {messageIsStreaming && (
           <button
@@ -309,7 +378,7 @@ export const ChatInput = ({
           )}
 
         <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#15162c] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4">
-          <button
+        <button
             className="absolute left-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
             onClick={() => setShowPluginSelect(!showPluginSelect)}
             onKeyDown={(e) => {
@@ -317,7 +386,25 @@ export const ChatInput = ({
             }}
           >
             {plugin ? <IconBrandGoogle size={20} /> : <IconBolt size={20} />}
+        </button>
+
+          {/* Image Icon and Input */}
+          <button 
+              className="absolute left-8 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+              onClick={() => document.getElementById('imageUpload')?.click()}
+          >
+              <IconPhoto size={20} />
           </button>
+          <input
+              type="file"
+              id="imageUpload"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  handleImageUpload(e.target.files[0] as File);
+                }
+              }}
+          />
 
           {showPluginSelect && (
             <div className="absolute bottom-14 left-0 rounded bg-white dark:bg-[#15162c]">
@@ -344,7 +431,7 @@ export const ChatInput = ({
 
           <textarea
             ref={textareaRef}
-            className="m-0 w-full resize-none bg-[#070712] p-0 py-2 pl-10 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-3 md:pl-10"
+            className="m-0 w-full resize-none bg-[#070712] p-0 py-2 pl-16 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-3 md:pl-16"
             style={{
               resize: 'none',
               bottom: `${textareaRef?.current?.scrollHeight}px`,
@@ -367,15 +454,16 @@ export const ChatInput = ({
           />
 
           <button
-            className="absolute right-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
-            onClick={handleSend}
-          >
-            {messageIsStreaming ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
-            ) : (
-              <IconSend size={18} />
-            )}
+              className="absolute right-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+              onClick={handleSend}
+            >
+              {messageIsStreaming ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
+              ) : (
+                <IconSend size={18} />
+              )}
           </button>
+
 
           {showScrollDownButton && (
             <div className="absolute bottom-12 right-0 lg:-right-10 lg:bottom-0">
@@ -409,20 +497,20 @@ export const ChatInput = ({
             />
           )}
         </div>
+        {/* Small title below the main chat input bar */}
+        {/* <div className="px-3 pb-3 pt-2 text-center text-[12px] text-black/50 dark:text-white/50 md:px-4 md:pb-6 md:pt-3">
+          {t('Advanced version of ChatGPT, built for UIUC. Forked from ')}
+          <a
+            href="https://github.com/mckaywrigley/chatbot-ui"
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            ChatBot UI
+          </a>
+          .{' '}
+        </div> */}
       </div>
-      {/* Small title below the main chat input bar */}
-      {/* <div className="px-3 pb-3 pt-2 text-center text-[12px] text-black/50 dark:text-white/50 md:px-4 md:pb-6 md:pt-3">
-        {t('Advanced version of ChatGPT, built for UIUC. Forked from ')}
-        <a
-          href="https://github.com/mckaywrigley/chatbot-ui"
-          target="_blank"
-          rel="noreferrer"
-          className="underline"
-        >
-          ChatBot UI
-        </a>
-        .{' '}
-      </div> */}
     </div>
   )
 }
