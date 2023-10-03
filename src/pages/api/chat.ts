@@ -121,6 +121,8 @@ const handler = async (req: Request): Promise<Response> => {
       const resp = new Response('Error', { status: 500, statusText: (error as Error).message })
       console.log("Final error:", resp)
       return resp
+    } else {
+      return new Response('Error', { status: 500 })
     }
   }
 }
