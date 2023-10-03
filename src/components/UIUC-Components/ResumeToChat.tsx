@@ -29,7 +29,11 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-export default function ResumeToChat({ course_name }: { course_name?: string }) {
+export default function ResumeToChat({
+  course_name,
+}: {
+  course_name?: string
+}) {
   const router = useRouter()
   const { classes, theme } = useStyles()
   const [isLoading, setIsLoading] = useState(false)

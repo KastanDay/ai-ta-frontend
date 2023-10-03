@@ -30,9 +30,9 @@ export const CannotEditGPT4Page = ({
           <Link href="/">
             <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
               {' '}
-              UIUC Course{' '}
+              UIUC.{' '}
               <span className="${inter.style.fontFamily} text-[hsl(280,100%,70%)]">
-                AI
+                chat
               </span>{' '}
             </h2>
           </Link>
@@ -60,11 +60,11 @@ export const CannotEditGPT4Page = ({
               p="xl"
             >
               {' '}
-              Go to any other URL, like{' '}
-              <Link href={'/your-awesome-course'}>
-                uiuc.chat/your-awesome-course
-              </Link>
-              , to make a new page.
+              Go to{' '}
+              <Link href={'/new'} className="goldUnderline">
+                uiuc.chat/new
+              </Link>{' '}
+              to make a new page.
             </Title>
           </Flex>
         </div>

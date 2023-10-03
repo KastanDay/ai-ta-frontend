@@ -1,20 +1,48 @@
 import Link from 'next/link'
 import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
-import { useDisclosure } from '@mantine/hooks';
-import { useEffect, useState } from 'react';
-import { createStyles, Header, Container, Anchor, Group, Burger, rem, Transition, Paper } from '@mantine/core';
-import { Direction, File } from 'tabler-icons-react';
-import { useRouter } from 'next/router';
-import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { Flex } from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
+import Image from 'next/image'
+import { useEffect, useState } from 'react'
 import {
-  ClerkProvider,
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from '@clerk/nextjs'
+  createStyles,
+  Header,
+  Container,
+  Anchor,
+  Group,
+  Burger,
+  rem,
+  Transition,
+  Paper,
+} from '@mantine/core'
+import { Direction, File } from 'tabler-icons-react'
+import { useRouter } from 'next/router'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 
-const HEADER_HEIGHT = rem(84);
+const styles: Record<string, React.CSSProperties> = {
+  logoContainerBox: {
+    // Control image-box size
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    position: 'relative',
+    height: '100%',
+    maxWidth:
+      typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
+    paddingRight:
+      typeof window !== 'undefined' && window.innerWidth > 600 ? '4px' : '25px',
+    paddingLeft: '25px',
+  },
+  thumbnailImage: {
+    // Control picture layout INSIDE of the box
+    objectFit: 'cover', // Cover to ensure image fills the box
+    objectPosition: 'center', // Center to ensure image is centered
+    height: '100%', // Set height to 100% to match navbar height
+    width: 'auto',
+  },
+}
+
+const HEADER_HEIGHT = rem(84)
 
 const useStyles = createStyles((theme) => ({
   inner: {
@@ -29,7 +57,8 @@ const useStyles = createStyles((theme) => ({
     padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
     margin: '0.35rem',
     fontWeight: 700,
-    transition: 'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
+    transition:
+      'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
     borderRadius: theme.radius.sm,
     '&:hover': {
       color: 'hsl(280,100%,70%)',
@@ -45,6 +74,12 @@ const useStyles = createStyles((theme) => ({
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
       textAlign: 'right',
     },
+    [theme.fn.smallerThan('sm')]: {
+      display: 'list-item', // change the display to list-item when 'sm'
+      textAlign: 'center',
+      borderRadius: 0,
+      padding: theme.spacing.sm,
+    },
   },
   burger: {
     [theme.fn.largerThan('sm')]: {
@@ -57,51 +92,117 @@ const useStyles = createStyles((theme) => ({
     font: montserrat_heading.variable,
     color: '#f1f5f9',
   },
-}));
+}))
 
-// const IndexNavbar = ({ course_name = '', isgpt4 = false }) => {
-//   const { classes, theme } = useStyles();
-//   const router = useRouter();
-//   const [activeLink, setActiveLink] = useState(router.asPath);
-//   const [opened, { toggle }] = useDisclosure(false);
+const IndexNavbar = ({ course_name = '', isgpt4 = false }) => {
+  const { classes, theme } = useStyles()
+  const router = useRouter() // import useRouter from next/router
+  const [activeLink, setActiveLink] = useState(router.asPath) // useState to track the active link
+  const [opened, { toggle }] = useDisclosure(false)
 
-//   useEffect(() => {
-//     setActiveLink(router.asPath);
-//   }, [router.asPath]);
+  useEffect(() => {
+    setActiveLink(router.asPath) // update the active link when the component mounts
+  }, [router.asPath])
 
-//   const handleLinkClick = (path: string) => {
-//     setActiveLink(path);
-//     toggle();
-//   };
+  const handleLinkClick = (path: string) => {
+    setActiveLink(path) // update the active link when a link is clicked
+    toggle() // close the mobile menu when a link is clicked
+  }
 
-//   const items = [
-//     { name: <button className={`${montserrat_heading.variable} font-montserratHeading`}>New Project</button>, icon: <FileIcon />, link: `/new` },
-//   ];
+  const items = [
+    {
+      name: (
+        <span
+          className={`${montserrat_heading.variable} font-montserratHeading`}
+        >
+          New Project
+        </span>
+      ),
+      icon: <FileIcon />,
+      link: `/new`,
+    },
+  ]
 
-//   return (
-//     <div>
-//       {items.map((item) => (
-//         <Link href={item.link} onClick={() => handleLinkClick(item.link)} data-active={activeLink === item.link} className={classes.link}>
-//           <span style={{ display: 'flex', alignItems: 'right' }}>
-//             {item.icon}
-//             {item.name}
-//           </span>
-//         </Link>
-//       ))}
-//       <Burger opened={opened} onClick={toggle} className={classes.burger} size="sm" />
-//       <GlobalHeader isNavbar={true} />
-//     </div>
-//   )
-// }
+  return (
+    <div className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}>
+      <Flex direction="row" align="center" justify="center">
+        <div className="mt-4 w-full max-w-[95%]">
+          <div className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800">
+            <div className="flex-1">
+              <Link href="/">
+                <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
+                  UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
+                </h2>
+              </Link>
+            </div>
+            <Container className={classes.inner}>
+              <div className={classes.links}>
+                {items.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.link}
+                    onClick={() => handleLinkClick(item.link)}
+                    data-active={activeLink === item.link}
+                    className={classes.link}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                      {item.icon}
+                      {item.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </Container>
+            <Transition
+              transition="pop-top-right"
+              duration={200}
+              mounted={opened}
+            >
+              {(styles) => (
+                <Paper className={classes.dropdown} withBorder style={styles}>
+                  {items.map((item, index) => (
+                    <Link
+                      key={index}
+                      href={item.link}
+                      onClick={() => handleLinkClick(item.link)}
+                      data-active={activeLink === item.link}
+                      className={classes.link}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center' }}>
+                        {item.icon}
+                        {item.name}
+                      </span>
+                    </Link>
+                  ))}
+                </Paper>
+              )}
+            </Transition>
 
+            <Burger
+              opened={opened}
+              onClick={toggle}
+              className={classes.burger}
+              size="sm"
+            />
+            <GlobalHeader isNavbar={true} />
+          </div>
+        </div>
+      </Flex>
+    </div>
+  )
+}
+
+export default IndexNavbar
 
 export function FileIcon() {
-  return <File
-    size={20}
-    strokeWidth={2}
-    color={'white'}
-    style={{ marginRight: '5px' }}
-  />;
+  return (
+    <File
+      size={20}
+      strokeWidth={2}
+      color={'white'}
+      style={{ marginRight: '5px' }}
+    />
+  )
 }
 
 

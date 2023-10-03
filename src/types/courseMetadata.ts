@@ -6,8 +6,10 @@ export interface CourseMetadata {
   course_owner: string
   course_admins: string[]
   approved_emails_list: string[]
+  example_questions: string[] | undefined
   banner_image_s3: string | undefined
   course_intro_message: string | undefined
+  openai_api_key: string | undefined
 }
 
 export interface CourseMetadataOptionalForUpsert {
@@ -15,6 +17,8 @@ export interface CourseMetadataOptionalForUpsert {
   course_owner: string | undefined
   course_admins: string[] | undefined
   approved_emails_list: string[] | undefined
+  example_questions: string[] | undefined
   banner_image_s3: string | undefined
   course_intro_message: string | undefined
+  openai_api_key: string | undefined
 }

@@ -1,16 +1,29 @@
 import Link from 'next/link'
 import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
 import { Flex } from '@mantine/core'
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure } from '@mantine/hooks'
 import { GoToQueryAnalysis, ResumeToChat } from './NavbarButtons'
 import Image from 'next/image'
-import { useEffect, useState } from 'react';
-import { createStyles, Header, Container, Anchor, Group, Burger, rem, Transition, Paper } from '@mantine/core';
-import { MessageChatbot, Folder, ReportAnalytics, Settings } from 'tabler-icons-react';
-import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react'
+import {
+  createStyles,
+  Header,
+  Container,
+  Anchor,
+  Group,
+  Burger,
+  rem,
+  Transition,
+  Paper,
+} from '@mantine/core'
+import {
+  MessageChatbot,
+  Folder,
+  ReportAnalytics,
+  Settings,
+} from 'tabler-icons-react'
+import { useRouter } from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
-
-
 
 const styles = {
   logoContainerBox: {
@@ -35,7 +48,7 @@ const styles = {
   },
 }
 
-const HEADER_HEIGHT = rem(84);
+const HEADER_HEIGHT = rem(84)
 
 const useStyles = createStyles((theme) => ({
   inner: {
@@ -57,14 +70,10 @@ const useStyles = createStyles((theme) => ({
       display: 'none',
     },
   },
-
-
-
-}));
+}))
 
 const PlainNavbar = ({ isgpt4 = false }) => {
-  const router = useRouter(); // import useRouter from next/router
-
+  const router = useRouter() // import useRouter from next/router
 
   return (
     <div className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}>

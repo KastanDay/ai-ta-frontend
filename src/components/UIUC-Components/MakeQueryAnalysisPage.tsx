@@ -278,8 +278,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const { classes, theme } = useStyles()
   const handleDelete = async (s3_path: string, course_name: string) => {
     try {
-      const API_URL = 'https://flask-production-751b.up.railway.app'
-      const response = await axios.delete(`${API_URL}/delete`, {
+      const response = await axios.delete(`https://flask-production-751b.up.railway.app/delete`, {
         params: { s3_path, course_name },
       })
       // Handle successful deletion, show a success message

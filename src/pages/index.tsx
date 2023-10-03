@@ -18,14 +18,13 @@ import {
 } from '@mantine/core'
 
 const Home: NextPage = () => {
-
   return (
     <>
       <Head>
-        <title>UIUC Course AI</title>
+        <title>UIUC.chat</title>
         <meta
           name="description"
-          content="The AI teaching assistant built for students at UIUC."
+          content="Chat with your documents, with full support for any format and web scraping."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -52,7 +51,6 @@ const Home: NextPage = () => {
               // gradient={{ from: 'indigo', to: 'cyan', deg: 45 }}
               gradient={{ from: 'pink', to: 'blue', deg: 45 }}
               ta="center"
-
               mt="md"
             >
               Upload anything. Search everything.
@@ -70,16 +68,12 @@ const Home: NextPage = () => {
               <span className="font-bold">Upload</span> your videos, any number
               of PDFs, PowerPoint, Word, Excel and almost anything other
               document to chat with your knowledge base.
-              <br></br>
-              Coming soon: Students can contribute content to enhance the
-              AI&apos;s knowledge.
             </Text>
           </Container>
 
           <Title color="white" order={3}>
             Explore the Courses
           </Title>
-
 
           {/* Main courses */}
           <CourseCard />

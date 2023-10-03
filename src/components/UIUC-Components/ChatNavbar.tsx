@@ -1,20 +1,33 @@
 import Link from 'next/link'
 import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
 import { Flex } from '@mantine/core'
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure } from '@mantine/hooks'
 import { GoToQueryAnalysis, ResumeToChat } from './NavbarButtons'
 import Image from 'next/image'
-import { useEffect, useState } from 'react';
-import { createStyles, Header, Container, Anchor, Group, Burger, rem, Transition, Paper } from '@mantine/core';
-import { MessageChatbot, Folder, ReportAnalytics, Settings } from 'tabler-icons-react';
-import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react'
+import {
+  createStyles,
+  Header,
+  Container,
+  Anchor,
+  Group,
+  Burger,
+  rem,
+  Transition,
+  Paper,
+} from '@mantine/core'
+import {
+  MessageChatbot,
+  Folder,
+  ReportAnalytics,
+  Settings,
+} from 'tabler-icons-react'
+import { useRouter } from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { useUser } from '@clerk/nextjs'
 import { getCoursesByOwnerOrAdmin } from './getAllCourseMetaData';
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { type CourseMetadata } from '~/types/courseMetadata'
-
-
 
 
 
@@ -41,9 +54,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
 }
 
-const HEADER = rem(60);
-const HEADER_HEIGHT = parseFloat(HEADER) * 16;
-
+const HEADER = rem(60)
+const HEADER_HEIGHT = parseFloat(HEADER) * 16
 
 const useStyles = createStyles((theme) => ({
   inner: {
@@ -69,7 +81,8 @@ const useStyles = createStyles((theme) => ({
     padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
     margin: '0.35rem',
     fontWeight: 700,
-    transition: 'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
+    transition:
+      'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
     borderRadius: theme.radius.sm,
 
     '&:hover': {
@@ -110,7 +123,7 @@ const useStyles = createStyles((theme) => ({
       display: 'none',
     },
   },
-}));
+}))
 
 const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
   const { classes, theme } = useStyles();
@@ -121,10 +134,16 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isAdminOrOwner, setIsAdminOrOwner] = useState(true);
   const clerk_user = useUser()
+  const { classes, theme } = useStyles()
+  const router = useRouter()
+  const [activeLink, setActiveLink] = useState(router.asPath)
+  const [opened, { toggle }] = useDisclosure(false)
+  const [show, setShow] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   useEffect(() => {
-    setActiveLink(router.asPath);
-  }, [router.asPath]);
+    setActiveLink(router.asPath)
+  }, [router.asPath])
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -165,17 +184,17 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
       } else {
         setShow(true);
       }
-      setLastScrollY(window.scrollY);
+      setLastScrollY(window.scrollY)
     }
-  };
+  }
 
   const handleLinkClick = (path: string) => {
-    setActiveLink(path);
-    toggle();
-  };
+    setActiveLink(path)
+    toggle()
+  }
 
   const getCurrentCourseName = () => {
-    return router.asPath.split('/')[1];
+    return router.asPath.split('/')[1]
   }
 
   const items = [
@@ -188,7 +207,10 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
   ];
 
   return (
-    <div className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`} style={{ display: show ? 'block' : 'none' }}>
+    <div
+      className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}
+      style={{ display: show ? 'block' : 'none' }}
+    >
       <Flex direction="row" align="center" justify="center">
         <div className="mt-4 w-full max-w-[95%]">
           <div className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800">
@@ -200,11 +222,21 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
               </Link>
             </div>
 
-            <Transition transition="pop-top-right" duration={200} mounted={opened}>
+            <Transition
+              transition="pop-top-right"
+              duration={200}
+              mounted={opened}
+            >
               {(styles) => (
                 <Paper className={classes.dropdown} withBorder style={styles}>
-                  {items.map((item) => (
-                    <Link href={item.link} onClick={() => handleLinkClick(item.link)} data-active={activeLink === item.link} className={classes.link}>
+                  {items.map((item, index) => (
+                    <Link
+                      key={index}
+                      href={item.link}
+                      onClick={() => handleLinkClick(item.link)}
+                      data-active={activeLink === item.link}
+                      className={classes.link}
+                    >
                       <span style={{ display: 'flex', alignItems: 'center' }}>
                         {item.icon}
                         {item.name}
@@ -216,8 +248,14 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
             </Transition>
             <Container className={classes.inner}>
               <div className={classes.links}>
-                {items.map((item) => (
-                  <Link href={item.link} onClick={() => handleLinkClick(item.link)} data-active={activeLink === item.link} className={classes.link}>
+                {items.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.link}
+                    onClick={() => handleLinkClick(item.link)}
+                    data-active={activeLink === item.link}
+                    className={classes.link}
+                  >
                     <span style={{ display: 'flex', alignItems: 'center' }}>
                       {item.icon}
                       {item.name}
@@ -226,7 +264,12 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                 ))}
               </div>
             </Container>
-            <Burger opened={opened} onClick={toggle} className={classes.burger} size="sm" />
+            <Burger
+              opened={opened}
+              onClick={toggle}
+              className={classes.burger}
+              size="sm"
+            />
 
             <GlobalHeader isNavbar={true} />
           </div>
@@ -238,39 +281,46 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
 
 export default ChatNavbar
 
-
 export function MessageChatIcon() {
-  return <MessageChatbot
-    size={20}
-    strokeWidth={2}
-    color={'white'}
-    style={{ marginRight: '5px', marginLeft: '5px' }}
-  />;
+  return (
+    <MessageChatbot
+      size={20}
+      strokeWidth={2}
+      color={'white'}
+      style={{ marginRight: '5px', marginLeft: '5px' }}
+    />
+  )
 }
 
 export function FolderIcon() {
-  return <Folder
-    size={20}
-    strokeWidth={2}
-    color={'white'}
-    style={{ marginRight: '5px', marginLeft: '5px' }}
-  />;
+  return (
+    <Folder
+      size={20}
+      strokeWidth={2}
+      color={'white'}
+      style={{ marginRight: '5px', marginLeft: '5px' }}
+    />
+  )
 }
 
 export function ReportIcon() {
-  return <ReportAnalytics
-    size={20}
-    strokeWidth={2}
-    color={'white'}
-    style={{ marginRight: '5px', marginLeft: '5px' }}
-  />;
+  return (
+    <ReportAnalytics
+      size={20}
+      strokeWidth={2}
+      color={'white'}
+      style={{ marginRight: '5px', marginLeft: '5px' }}
+    />
+  )
 }
 
 export function SettingIcon() {
-  return <Settings
-    size={20}
-    strokeWidth={2}
-    color={'white'}
-    style={{ marginRight: '5px', marginLeft: '5px' }}
-  />;
+  return (
+    <Settings
+      size={20}
+      strokeWidth={2}
+      color={'white'}
+      style={{ marginRight: '5px', marginLeft: '5px' }}
+    />
+  )
 }

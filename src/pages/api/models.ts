@@ -6,15 +6,34 @@ import {
 } from '@/utils/app/const'
 
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
+import { decrypt } from '~/utils/crypto'
 
 export const config = {
   runtime: 'edge',
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  let apiKey = ''
   try {
     const { key } = (await req.json()) as {
       key: string
+    }
+    apiKey = key ? key : (process.env.OPENAI_API_KEY as string)
+
+    // Check if the key starts with 'sk-' (indicating it's not encrypted)
+    if (key && !key.startsWith('sk-')) {
+      // Decrypt the key
+      const decryptedText = await decrypt(
+        key,
+        process.env.NEXT_PUBLIC_SIGNING_KEY as string,
+      )
+      apiKey = decryptedText as string
+      // console.log('models.ts Decrypted api key: ', apiKey)
+    }
+    // console.log('models.ts Final openai key: ', apiKey)
+
+    if (!apiKey) {
+      return new Response('Warning: OpenAI Key was not found', { status: 400 })
     }
 
     let url = `${OPENAI_API_HOST}/v1/models`
@@ -26,10 +45,10 @@ const handler = async (req: Request): Promise<Response> => {
       headers: {
         'Content-Type': 'application/json',
         ...(OPENAI_API_TYPE === 'openai' && {
-          Authorization: `Bearer ${key ? key : process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
         }),
         ...(OPENAI_API_TYPE === 'azure' && {
-          'api-key': `${key ? key : process.env.OPENAI_API_KEY}`,
+          'api-key': `${apiKey}`,
         }),
         ...(OPENAI_API_TYPE === 'openai' &&
           OPENAI_ORGANIZATION && {

@@ -55,9 +55,9 @@ export const CanViewOnlyCourse = ({
           <Link href="/">
             <h2 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
               {' '}
-              UIUC Course{' '}
+              UIUC.
               <span className="${inter.style.fontFamily} text-[hsl(280,100%,70%)]">
-                AI
+                chat
               </span>{' '}
             </h2>
           </Link>
@@ -167,19 +167,11 @@ export const CanViewOnlyCourse = ({
               account you used to create this page (in the top right).
               <br></br>
               <br></br>
-              Or make a <i>new</i> page by going to any other URL, like{' '}
-              <Link href={'/your-awesome-course'}>
-                <u
-                  style={{
-                    textDecoration: 'underline',
-                    textDecorationColor: 'gold',
-                    color: 'inherit',
-                  }}
-                >
-                  uiuc.chat/your-awesome-course
-                </u>
-              </Link>
-              .
+              Or go to{' '}
+              <Link href={'/new'} className="goldUnderline">
+                uiuc.chat/new
+              </Link>{' '}
+              to make a new page.
             </Title>
           </Flex>
         </div>
