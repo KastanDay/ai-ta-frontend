@@ -14,7 +14,9 @@ import {
   Group,
 } from '@mantine/core'
 
-import GlobalHeader, { LandingPageHeader } from '~/components/UIUC-Components/GlobalHeader'
+import GlobalHeader, {
+  LandingPageHeader,
+} from '~/components/UIUC-Components/GlobalHeader'
 import GlobalFooter from '~/components/UIUC-Components/GlobalFooter'
 
 const Home: NextPage = () => {
@@ -169,8 +171,9 @@ const useStyles = createStyles((theme) => ({
   },
 
   card: {
-    border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
-      }`,
+    border: `${rem(1)} solid ${
+      theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
+    }`,
   },
 
   cardTitle: {

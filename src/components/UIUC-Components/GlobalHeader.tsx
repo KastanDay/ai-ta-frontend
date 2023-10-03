@@ -90,11 +90,13 @@ export function LandingPageHeader({
         <SignedOut>
           {/* Signed out users get sign in button */}
           <SignInButton>
-            <button className={classes.link}><span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Sign in / Sign up
-            </span></button>
+            <button className={classes.link}>
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Sign in / Sign up
+              </span>
+            </button>
           </SignInButton>
         </SignedOut>
       </Group>
