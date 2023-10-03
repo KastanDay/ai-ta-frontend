@@ -1,5 +1,5 @@
 import { notifications } from '@mantine/notifications'
-import { rem, Button, Input, Title, Text, useMantineTheme, Tooltip, Checkbox, TextInput } from '@mantine/core'
+import { rem, Button, Input, Title, Text, useMantineTheme, Tooltip, Checkbox, TextInput, Group } from '@mantine/core'
 import { IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
@@ -110,8 +110,8 @@ export const WebScrape = ({
         data = scrapeWeb(
           url,
           courseName,
-          maxUrls.trim() !== "" ? parseInt(maxUrls)-1 : webScrapeConfig.num_sites,
-          maxDepth.trim() !== "" ? parseInt(maxDepth)-1 : webScrapeConfig.recursive_depth,
+          maxUrls.trim() !== "" ? parseInt(maxUrls) - 1 : webScrapeConfig.num_sites,
+          maxDepth.trim() !== "" ? parseInt(maxDepth) - 1 : webScrapeConfig.recursive_depth,
           webScrapeConfig.timeout_sec,
           stayOnBaseUrl,
         )
@@ -236,7 +236,7 @@ export const WebScrape = ({
             max_depth: maxDepth,
             timeout: timeout,
             stay_on_baseurl: stay_on_baseurl,
-        },
+          },
         },
       )
       return response.data
@@ -353,56 +353,55 @@ export const WebScrape = ({
         rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
       />
       {isUrlUpdated && (
-        <div className='w-[80%] min-w-[20rem] lg:w-[75%]' >
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-            }}
-          >
-            <div>
-              <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum number of URLs to scrape">
-                <TextInput
-                  label="Max URLs (1 to 500)"
-                  name="maximumUrls"
-                  placeholder="Default 100"
-                  value={maxUrls}
-                  onChange={(e) => {
-                    handleInputChange(e, "maxUrls");
-                  }}
-                  style={{ width: '100%' }}
-                  error={inputErrors.maxUrls.error}
-                />
-              </Tooltip>
-              {inputErrors.maxUrls.error && <p style={{ color: 'red' }}>{inputErrors.maxUrls.message}</p>}
-            </div>
-            <div>
-              <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum depth for recursive scraping">
-                <TextInput
-                  label="Max Depth (1 to 500)"
-                  name="maxDepth"
-                  placeholder="Default 3"
-                  value={maxDepth}
-                  onChange={(e) => {
-                    handleInputChange(e, "maxDepth");
-                  }}
-                  style={{ width: '100%' }}
-                  error={inputErrors.maxDepth.error}
-                />
-              </Tooltip>
-              {inputErrors.maxDepth.error && <p style={{ color: 'red' }}>{inputErrors.maxDepth.message}</p>}
-            </div>
-            <div style={{ fontSize: 'smaller', marginBottom: '0px' }}>
-              Stay on Base URL
-            </div>
-            <Tooltip arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Only Scrape Information from the Base URL">
-              <Checkbox
-                checked={stayOnBaseUrl}
-                size="md"
-                onChange={() => setStayOnBaseUrl(!stayOnBaseUrl)}
+
+        <form
+          className='w-[80%] min-w-[20rem] lg:w-[75%]'
+          onSubmit={(event) => {
+            event.preventDefault();
+          }}
+        >
+          <div>
+            <Tooltip multiline w={400} color="#15162b" arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="We will attempt to visit this number of pages, but not all will be scraped if they're duplicates, broken or otherwise inaccessible.">
+              <TextInput
+                label="Max URLs (1 to 500)"
+                name="maximumUrls"
+                placeholder="Default 100"
+                value={maxUrls}
+                onChange={(e) => {
+                  handleInputChange(e, "maxUrls");
+                }}
+
+                error={inputErrors.maxUrls.error}
               />
             </Tooltip>
-          </form>
-        </div>
+          </div>
+          {inputErrors.maxUrls.error && <p style={{ color: 'red' }}>{inputErrors.maxUrls.message}</p>}
+          <Tooltip multiline color="#15162b" arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum depth for clicking on links relative to the original URL.">
+            {/* no need in this tooltip: w={400} */}
+            <TextInput
+              label="Max Depth (1 to 500)"
+              name="maxDepth"
+              placeholder="Default 3"
+              value={maxDepth}
+              onChange={(e) => {
+                handleInputChange(e, "maxDepth");
+              }}
+              style={{ width: '100%' }}
+              error={inputErrors.maxDepth.error}
+            />
+          </Tooltip>
+          {inputErrors.maxDepth.error && <p style={{ color: 'red' }}>{inputErrors.maxDepth.message}</p>}
+          <div style={{ fontSize: 'smaller', }}>
+            Stay on Base URL
+          </div>
+          <Tooltip multiline w={400} color="#15162b" arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="If true, we will *not* visit any other websites, only other pages on the website you entered. For example, entering illinois.edu/anything will restrict all materials to begin with illinois.edu, not uic.edu.">
+            <Checkbox
+              checked={stayOnBaseUrl}
+              size="md"
+              onChange={() => setStayOnBaseUrl(!stayOnBaseUrl)}
+            />
+          </Tooltip>
+        </form>
       )}
       <Text
         size={rem(14)}
