@@ -1,5 +1,16 @@
 import { notifications } from '@mantine/notifications'
-import { rem, Button, Input, Title, Text, useMantineTheme, Tooltip, Checkbox, TextInput, Group } from '@mantine/core'
+import {
+  rem,
+  Button,
+  Input,
+  Title,
+  Text,
+  useMantineTheme,
+  Tooltip,
+  Checkbox,
+  TextInput,
+  Group,
+} from '@mantine/core'
 import { IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
@@ -45,8 +56,8 @@ export const WebScrape = ({
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const theme = useMantineTheme()
-  const [maxUrls, setMaxUrls] = useState('50');
-  const [maxDepth, setMaxDepth] = useState('2');
+  const [maxUrls, setMaxUrls] = useState('50')
+  const [maxDepth, setMaxDepth] = useState('2')
   const [stayOnBaseUrl, setStayOnBaseUrl] = useState(false)
 
   const handleInputChange = (
@@ -110,8 +121,12 @@ export const WebScrape = ({
         data = scrapeWeb(
           url,
           courseName,
-          maxUrls.trim() !== "" ? parseInt(maxUrls) - 1 : webScrapeConfig.num_sites,
-          maxDepth.trim() !== "" ? parseInt(maxDepth) - 1 : webScrapeConfig.recursive_depth,
+          maxUrls.trim() !== ''
+            ? parseInt(maxUrls) - 1
+            : webScrapeConfig.num_sites,
+          maxDepth.trim() !== ''
+            ? parseInt(maxDepth) - 1
+            : webScrapeConfig.recursive_depth,
           webScrapeConfig.timeout_sec,
           stayOnBaseUrl,
         )
@@ -146,35 +161,55 @@ export const WebScrape = ({
 
   const [inputErrors, setInputErrors] = useState({
     maxUrls: { error: false, message: '' },
-    maxDepth: { error: false, message: '' }
-  });
+    maxDepth: { error: false, message: '' },
+  })
 
   const validateInputs = () => {
     const errors = {
       maxUrls: { error: false, message: '' },
-      maxDepth: { error: false, message: '' }
-    };
+      maxDepth: { error: false, message: '' },
+    }
     // Check for maxUrls
     if (!maxUrls) {
-      errors.maxUrls = { error: true, message: 'Please provide an input for Max URLs' };
-    } else if (!/^\d+$/.test(maxUrls)) { // Using regex to ensure the entire string is a number
-      errors.maxUrls = { error: true, message: 'Max URLs should be a valid number' };
+      errors.maxUrls = {
+        error: true,
+        message: 'Please provide an input for Max URLs',
+      }
+    } else if (!/^\d+$/.test(maxUrls)) {
+      // Using regex to ensure the entire string is a number
+      errors.maxUrls = {
+        error: true,
+        message: 'Max URLs should be a valid number',
+      }
     } else if (parseInt(maxUrls) < 1 || parseInt(maxUrls) > 500) {
-      errors.maxUrls = { error: true, message: 'Max URLs should be between 1 and 500' };
+      errors.maxUrls = {
+        error: true,
+        message: 'Max URLs should be between 1 and 500',
+      }
     }
 
     // Check for maxDepth
     if (!maxDepth) {
-      errors.maxDepth = { error: true, message: 'Please provide an input for Max Depth' };
-    } else if (!/^\d+$/.test(maxDepth)) { // Using regex to ensure the entire string is a number
-      errors.maxDepth = { error: true, message: 'Max Depth should be a valid number' };
+      errors.maxDepth = {
+        error: true,
+        message: 'Please provide an input for Max Depth',
+      }
+    } else if (!/^\d+$/.test(maxDepth)) {
+      // Using regex to ensure the entire string is a number
+      errors.maxDepth = {
+        error: true,
+        message: 'Max Depth should be a valid number',
+      }
     } else if (parseInt(maxDepth) < 1 || parseInt(maxDepth) > 500) {
-      errors.maxDepth = { error: true, message: 'Max Depth should be between 1 and 500' };
+      errors.maxDepth = {
+        error: true,
+        message: 'Max Depth should be between 1 and 500',
+      }
     }
 
-    setInputErrors(errors);
-    return !Object.values(errors).some(error => error.error);
-  };
+    setInputErrors(errors)
+    return !Object.values(errors).some((error) => error.error)
+  }
 
   const showToast = () => {
     return (
@@ -334,16 +369,18 @@ export const WebScrape = ({
         rightSection={
           <Button
             onClick={(e) => {
-              e.preventDefault();
+              e.preventDefault()
               if (validateInputs() && validateUrl(url)) {
-                handleSubmit();
+                handleSubmit()
               }
             }}
             size="md"
             radius={'xl'}
-            className={`rounded-s-md ${isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
-              } overflow-ellipsis text-ellipsis p-2 ${isUrlUpdated ? 'text-white' : 'text-gray-500'
-              } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
+            className={`rounded-s-md ${
+              isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
+            } overflow-ellipsis text-ellipsis p-2 ${
+              isUrlUpdated ? 'text-white' : 'text-gray-500'
+            } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
             w={`${isSmallScreen ? 'auto' : 'auto'}`}
             disabled={isDisabled}
           >
@@ -353,30 +390,47 @@ export const WebScrape = ({
         rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
       />
       {isUrlUpdated && (
-
         <form
-          className='w-[80%] min-w-[20rem] lg:w-[75%]'
+          className="w-[80%] min-w-[20rem] lg:w-[75%]"
           onSubmit={(event) => {
-            event.preventDefault();
+            event.preventDefault()
           }}
         >
           <div>
-            <Tooltip multiline w={400} color="#15162b" arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="We will attempt to visit this number of pages, but not all will be scraped if they're duplicates, broken or otherwise inaccessible.">
+            <Tooltip
+              multiline
+              w={400}
+              color="#15162b"
+              arrowPosition="side"
+              arrowSize={8}
+              withArrow
+              position="bottom-start"
+              label="We will attempt to visit this number of pages, but not all will be scraped if they're duplicates, broken or otherwise inaccessible."
+            >
               <TextInput
                 label="Max URLs (1 to 500)"
                 name="maximumUrls"
                 placeholder="Default 100"
                 value={maxUrls}
                 onChange={(e) => {
-                  handleInputChange(e, "maxUrls");
+                  handleInputChange(e, 'maxUrls')
                 }}
-
                 error={inputErrors.maxUrls.error}
               />
             </Tooltip>
           </div>
-          {inputErrors.maxUrls.error && <p style={{ color: 'red' }}>{inputErrors.maxUrls.message}</p>}
-          <Tooltip multiline color="#15162b" arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="Enter the maximum depth for clicking on links relative to the original URL.">
+          {inputErrors.maxUrls.error && (
+            <p style={{ color: 'red' }}>{inputErrors.maxUrls.message}</p>
+          )}
+          <Tooltip
+            multiline
+            color="#15162b"
+            arrowPosition="side"
+            arrowSize={8}
+            withArrow
+            position="bottom-start"
+            label="Enter the maximum depth for clicking on links relative to the original URL."
+          >
             {/* no need in this tooltip: w={400} */}
             <TextInput
               label="Max Depth (1 to 500)"
@@ -384,17 +438,26 @@ export const WebScrape = ({
               placeholder="Default 3"
               value={maxDepth}
               onChange={(e) => {
-                handleInputChange(e, "maxDepth");
+                handleInputChange(e, 'maxDepth')
               }}
               style={{ width: '100%' }}
               error={inputErrors.maxDepth.error}
             />
           </Tooltip>
-          {inputErrors.maxDepth.error && <p style={{ color: 'red' }}>{inputErrors.maxDepth.message}</p>}
-          <div style={{ fontSize: 'smaller', }}>
-            Stay on Base URL
-          </div>
-          <Tooltip multiline w={400} color="#15162b" arrowPosition="side" arrowSize={8} withArrow position="bottom-start" label="If true, we will *not* visit any other websites, only other pages on the website you entered. For example, entering illinois.edu/anything will restrict all materials to begin with illinois.edu, not uic.edu.">
+          {inputErrors.maxDepth.error && (
+            <p style={{ color: 'red' }}>{inputErrors.maxDepth.message}</p>
+          )}
+          <div style={{ fontSize: 'smaller' }}>Stay on Base URL</div>
+          <Tooltip
+            multiline
+            w={400}
+            color="#15162b"
+            arrowPosition="side"
+            arrowSize={8}
+            withArrow
+            position="bottom-start"
+            label="If true, we will *not* visit any other websites, only other pages on the website you entered. For example, entering illinois.edu/anything will restrict all materials to begin with illinois.edu, not uic.edu."
+          >
             <Checkbox
               checked={stayOnBaseUrl}
               size="md"

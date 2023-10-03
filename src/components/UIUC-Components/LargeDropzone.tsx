@@ -1,7 +1,19 @@
 // LargeDropzone.tsx
 import React, { useRef, useState } from 'react'
-import { createStyles, Group, rem, Text, Title, useMantineTheme } from '@mantine/core'
-import { IconAlertCircle, IconCloudUpload, IconDownload, IconX } from '@tabler/icons-react'
+import {
+  createStyles,
+  Group,
+  rem,
+  Text,
+  Title,
+  useMantineTheme,
+} from '@mantine/core'
+import {
+  IconAlertCircle,
+  IconCloudUpload,
+  IconDownload,
+  IconX,
+} from '@tabler/icons-react'
 import { Dropzone } from '@mantine/dropzone'
 import { useRouter } from 'next/router'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -264,7 +276,6 @@ export function LargeDropzone({
                 setUploadInProgress(false)
                 refreshOrRedirect(redirect_to_gpt_4)
                 // TODO: here we should raise toast for failed ingest files. AND successful ingest files.
-
               } else {
                 console.error('Upsert metadata failed')
                 setUploadInProgress(false)
@@ -274,7 +285,7 @@ export function LargeDropzone({
             radius="md"
             bg="#0E1116"
             disabled={isDisabled}
-          // #0E1116 -- nice dark
+            // #0E1116 -- nice dark
           >
             <div
               style={{ pointerEvents: 'none', opacity: isDisabled ? 0.6 : 1 }}
@@ -394,7 +405,9 @@ const showToast = (error_files: string[]) => {
       autoClose: 15000,
       // position="top-center",
       title: 'Failed to ingest files',
-      message: `Failed to ingest the following files: ${error_files.join(", ")}. Please shoot me an email: kvday2@illinois.edu.`,
+      message: `Failed to ingest the following files: ${error_files.join(
+        ', ',
+      )}. Please shoot me an email: kvday2@illinois.edu.`,
       color: 'red',
       radius: 'lg',
       icon: <IconAlertCircle />,
