@@ -113,6 +113,7 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(stream)
   } catch (error) {
     console.error("Error while calling openai api: ", error)
+    console.log("Type of the error", typeof(error))
     if (error instanceof OpenAIError || (typeof error === 'string' && error.includes('OpenAIError'))) {
       let errorMessage = error;
       if (typeof error === 'string') {
