@@ -9,6 +9,12 @@ import { createStyles, Header, Container, Anchor, Group, Burger, rem, Transition
 import { MessageChatbot, Folder, ReportAnalytics, Settings } from 'tabler-icons-react';
 import { useRouter } from 'next/router';
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { useUser } from '@clerk/nextjs'
+import { getCoursesByOwnerOrAdmin } from './getAllCourseMetaData';
+import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
+import { type CourseMetadata } from '~/types/courseMetadata'
+
+
 
 
 
@@ -113,23 +119,50 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
   const [opened, { toggle }] = useDisclosure(false);
   const [show, setShow] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isAdminOrOwner, setIsAdminOrOwner] = useState(true);
+  const clerk_user = useUser()
 
   useEffect(() => {
     setActiveLink(router.asPath);
   }, [router.asPath]);
 
-  // useEffect(() => {
-  //   window.addEventListener('scroll', controlNavbar);
-  //   return () => {
-  //     window.removeEventListener('scroll', controlNavbar);
-  //   };
-  // }, [lastScrollY]);
+  useEffect(() => {
+    const fetchCourses = async () => {
+      if (clerk_user.isLoaded && clerk_user.isSignedIn) {
+        const emails = extractEmailsFromClerk(clerk_user.user)
+        const currUserEmail = emails[0]
+        if (!currUserEmail) {
+          throw new Error('No email found for the user')
+        }
+        console.log(currUserEmail);
+        const response = await fetch(
+          `/api/UIUC-api/getAllCourseMetadata?currUserEmail=${currUserEmail}`,
+        )
+        const rawData = await response.json()
+        console.log(rawData);
+        if (rawData) {
+          const isAdmin = rawData.map((course: { [key: string]: CourseMetadata }) => {
+            console.log(isAdmin);
+            const courseName = Object.keys(course)[0]
+            const courseData = course[courseName as string]
+            console.log(courseData);
+            if (courseData) {
+              return courseData.course_owner === currUserEmail ||
+                (courseData.course_admins && courseData.course_admins.includes(currUserEmail))
+            }
+          });
+          setIsAdminOrOwner(true);
+        }
+      }
+    }
+    fetchCourses();
+  }, [clerk_user.isLoaded, clerk_user.isSignedIn])
 
   const controlNavbar = () => {
     if (typeof window !== 'undefined') {
-      if (window.scrollY > lastScrollY) { // if scroll down hide the navbar
+      if (window.scrollY > lastScrollY) {
         setShow(false);
-      } else { // if scroll up show the navbar
+      } else {
         setShow(true);
       }
       setLastScrollY(window.scrollY);
@@ -146,10 +179,13 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
   }
 
   const items = [
-    { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>, icon: <MessageChatIcon />, link: `/${getCurrentCourseName()}/gpt4` },
-    { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>, icon: <FolderIcon />, link: `/${getCurrentCourseName()}/materials` },
-    { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>, icon: <ReportIcon />, link: `/${getCurrentCourseName()}/query-analysis` },
-    { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Setting</span>, icon: <SettingIcon />, link: `/${getCurrentCourseName()}/setting` },]
+    ...(isAdminOrOwner ? [
+      { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>, icon: <MessageChatIcon />, link: `/${getCurrentCourseName()}/gpt4` },
+      { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>, icon: <FolderIcon />, link: `/${getCurrentCourseName()}/materials` },
+      { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>, icon: <ReportIcon />, link: `/${getCurrentCourseName()}/query-analysis` },
+    ] : []),
+    ...(isAdminOrOwner ? [] : [{ name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Setting</span>, icon: <SettingIcon />, link: `/${getCurrentCourseName()}/setting` }]),
+  ];
 
   return (
     <div className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`} style={{ display: show ? 'block' : 'none' }}>
