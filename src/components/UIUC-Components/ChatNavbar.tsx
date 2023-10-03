@@ -132,18 +132,9 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
   const [opened, { toggle }] = useDisclosure(false);
   const [show, setShow] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [isAdminOrOwner, setIsAdminOrOwner] = useState(true);
+  const [isAdminOrOwner, setIsAdminOrOwner] = useState(false);
   const clerk_user = useUser()
-  const { classes, theme } = useStyles()
-  const router = useRouter()
-  const [activeLink, setActiveLink] = useState(router.asPath)
-  const [opened, { toggle }] = useDisclosure(false)
-  const [show, setShow] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
 
-  useEffect(() => {
-    setActiveLink(router.asPath)
-  }, [router.asPath])
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -170,7 +161,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                 (courseData.course_admins && courseData.course_admins.includes(currUserEmail))
             }
           });
-          setIsAdminOrOwner(true);
+          setIsAdminOrOwner(isAdmin.some((admin: boolean) => admin === true));
         }
       }
     }
