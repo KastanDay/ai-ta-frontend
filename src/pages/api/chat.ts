@@ -117,11 +117,16 @@ const handler = async (req: Request): Promise<Response> => {
       let errorMessage = error;
       if (typeof error === 'string') {
         const errorObj = JSON.parse(error);
+        console.log("Parsed errObj:", errorObj)
         errorMessage = errorObj.message;
       }
-      return new Response('Error', { status: 500, statusText: errorMessage as string })
+      let resp = new Response('Error', { status: 500, statusText: errorMessage as string })
+      console.log("Final openai error:", resp)
+      return resp
     } else {
-      return new Response('Error', { status: 500 })
+      let resp = new Response('Error', { status: 500 })
+      console.log("Final error:", resp)
+      return resp
     }
   }
 }
