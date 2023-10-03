@@ -320,13 +320,13 @@ const SupportedFileUploadTypes = () => {
                   style={{ display: 'flex', justifyContent: 'center' }}
                 />
               </div>
-              <strong>For Coursera</strong>, it's probably easiest to manually export the content then upload it here. Or{' '}
+              <strong>For Coursera</strong>, it&apos;s probably easiest to manually export the content then upload it here. Or{' '}
               <span className={'text-purple-600'}>
                 <Link target="_blank"
                   rel="noreferrer"
                   href={'mailto:kvday2@illinois.edu'}>email me</Link>
               </span>{' '}
-              and we can do a direct ingest, we're limited by Coursera's controls on login/auth.
+              and we can do a direct ingest, we&apos;re limited by Coursera&apos;s controls on login/auth.
 
               <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '3px', paddingTop: '3px' }}>
                 <Image
