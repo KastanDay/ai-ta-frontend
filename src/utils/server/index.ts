@@ -91,6 +91,7 @@ export const OpenAIStream = async (
 
   if (res.status !== 200) {
     const result = await res.json()
+    console.log("Result: ", result)
     if (result.error) {
       throw new OpenAIError(
         result.error.message,
