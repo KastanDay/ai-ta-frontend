@@ -55,17 +55,20 @@ const useStyles = createStyles((theme) => ({
   // For Accordion
   root: {
     borderRadius: theme.radius.lg,
-    paddingLeft: 40,
-    width: '430px',
-    outline: 'none',
+    paddingLeft: 25,
+    width: '400px',
+    // outline: 'none',
     paddingTop: 20,
     paddingBottom: 20,
+
+
     '&[data-active]': {
       paddingTop: 20,
     },
   },
   control: {
     borderRadius: theme.radius.lg,
+    // outline: '0.5px solid ',
     '&:hover': {
       backgroundColor: 'rgba(255, 255, 255, 0.2)', // 20% white on hover
     },
@@ -128,7 +131,7 @@ const SupportedFileUploadTypes = () => {
           quality={60}
           alt="PDF icon"
           className={classes.logos}
-          // className="logos w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 object-contain"
+        // className="logos w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 object-contain"
         />
         <Image
           src="/media/word_logo.png"
@@ -211,8 +214,8 @@ const SupportedFileUploadTypes = () => {
           quality={60}
           alt="Github logo"
           className={classes.logos}
-          // className={classes.smallLogos}
-          // style={{mixBlendMode: 'multiply' }}
+        // className={classes.smallLogos}
+        // style={{mixBlendMode: 'multiply' }}
         />
         <Image
           src="/media/notion_logo.png"
@@ -221,8 +224,8 @@ const SupportedFileUploadTypes = () => {
           quality={60}
           alt="Notion logo"
           className={classes.logos}
-          // className={classes.smallLogos}
-          // style={{mixBlendMode: 'multiply' }}
+        // className={classes.smallLogos}
+        // style={{mixBlendMode: 'multiply' }}
         />
       </Flex>
 
@@ -236,6 +239,8 @@ const SupportedFileUploadTypes = () => {
       </Text>
 
       <Accordion
+        pl={20}
+        pr={4}
         style={{ borderRadius: 'theme.radius.lg' }}
         classNames={{
           item: classes.item,
@@ -244,7 +249,7 @@ const SupportedFileUploadTypes = () => {
         }}
         className={classes.root}
       >
-        <Accordion.Item value="openai-key-details" className={classes.item}>
+        <Accordion.Item value="openai-key-details" className={classes.item} style={{ backgroundColor: '#292c5b' }}>
           <Accordion.Control className={classes.control}>
             <div
               style={{
@@ -404,7 +409,7 @@ const SupportedFileUploadTypes = () => {
             </Text>
           </Accordion.Panel>
         </Accordion.Item>
-      </Accordion>
+      </Accordion >
     </>
   )
 }
