@@ -1,4 +1,4 @@
-import { Table, createStyles } from '@mantine/core';
+import { Table, Title, createStyles } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
@@ -7,6 +7,8 @@ import { type CourseMetadata } from '~/types/courseMetadata'
 import { useRouter } from 'next/router';
 import { DataTable } from 'mantine-datatable';
 import styled from 'styled-components';
+import { montserrat_heading } from 'fonts';
+import Link from 'next/link';
 
 
 
@@ -22,6 +24,7 @@ const ListProjectTable: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const [rows, setRows] = useState<JSX.Element[]>([]);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -46,16 +49,18 @@ const ListProjectTable: React.FC = () => {
               return (
                 <StyledRow key={courseName} onClick={() => router.push(`/${courseName}/gpt4`)} style={{ cursor: 'pointer' }}>
                   <td>{courseName}</td>
-                  <td>{courseMetadata.course_owner}</td>
                   <td>{courseMetadata.is_private ? 'Private' : 'Public'}</td>
+                  <td>{courseMetadata.course_owner}</td>
                   <td>{courseMetadata.course_admins.join(', ')}</td>
                 </StyledRow>
               );
             }
           });
           setRows(tempRows);
+          setIsLoaded(true);
         } else {
           console.log('No course found with the given name');
+          setIsLoaded(true);
         }
       } else {
         console.log('User not signed in');
@@ -63,37 +68,22 @@ const ListProjectTable: React.FC = () => {
     };
     fetchCourses();
   }, [clerk_user.isLoaded, clerk_user.isSignedIn]);
+
+  if (!isLoaded) {
+    // Todo add skeleton here, for typical looking boxes
+    return null;
+  }
+
   return (
-    <div style={{ overflowX: 'auto', minWidth: '800px', backgroundColor: '#0f1116', boxShadow: '0px 0px 10px 2px rgba(0,0,0,0,5)', borderRadius: '10px' }}>
-      {/* <DataTable
-        style={{ backgroundColor: 'white' }}
-        sx={(theme) => ({
-          backgroundColor: 'transparent',
-          '&:hover': {
-            backgroundColor: 'transparent',
-          },
-        })}
-        highlightOnHover
-        records={rows}
-        columns={[
-          { accessor: 'courseName' },
-          { accessor: 'course_owner' },
-          { accessor: 'is_private' },
-          { accessor: 'course_admins' },
-        ]}
-        height={320}
-        withBorder
-        borderRadius="sm"
-        verticalAlignment="top"
-      /> */}
+    <div style={{ overflowX: 'auto', minWidth: '40%', maxWidth: '80%', backgroundColor: '#15162b', boxShadow: '0px 0px 10px 2px rgba(0,0,0,0,5)', borderRadius: '12px' }}>
       {rows.length > 0 ? (
-        <Table withBorder>
+        <Table withBorder >
           <thead>
             <tr>
-              <th>Course Name</th>
-              <th>Course Owner</th>
-              <th>Privacy</th>
-              <th>Course Admins</th>
+              <th><span className={`text-md text-slate-200 ${montserrat_heading.variable} font-montserratHeading`}>Course Name</span></th>
+              <th><span className={`text-md text-slate-200 ${montserrat_heading.variable} font-montserratHeading`}>Privacy</span></th>
+              <th><span className={`text-md text-slate-200 ${montserrat_heading.variable} font-montserratHeading`}>Course Owner</span></th>
+              <th><span className={`text-md text-slate-200 ${montserrat_heading.variable} font-montserratHeading`}>Course Admins</span></th>
             </tr>
           </thead>
           <tbody>
@@ -101,7 +91,10 @@ const ListProjectTable: React.FC = () => {
           </tbody>
         </Table>
       ) : (
-        <h3 style={{ textAlign: "center" }}>You haven't created any courses yet. Let's CREATE one!</h3>
+        <h3 style={{ textAlign: "center" }}>
+          You haven&apos;t created any courses yet. Let&apos;s
+          <Link href="/new">go make one here</Link>, don&apos;t worry it&apos;s easy.
+        </h3>
       )}
     </div>
   );
@@ -109,5 +102,6 @@ const ListProjectTable: React.FC = () => {
 };
 
 export default ListProjectTable;
+
 
 
