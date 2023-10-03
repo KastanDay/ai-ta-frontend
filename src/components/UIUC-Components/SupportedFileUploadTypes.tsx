@@ -25,6 +25,7 @@ import {
 // import Link from 'next/link'
 import React from 'react'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import Link from 'next/link'
 
 const useStyles = createStyles((theme) => ({
   // For Logos
@@ -51,36 +52,44 @@ const useStyles = createStyles((theme) => ({
     justifyItems: 'center',
   },
 
+  // For Accordion
+  root: {
+    borderRadius: theme.radius.lg,
+    outline: 'none',
+    paddingTop: 20,
+    paddingBottom: 20,
+    '&[data-active]': {
+      paddingTop: 20,
+    }
+
+  },
   control: {
-    backgroundColor: 'transparent',
+    borderRadius: theme.radius.lg,
     '&:hover': {
       backgroundColor: 'rgba(255, 255, 255, 0.2)', // 20% white on hover
     },
-},
-
-
-  // For Accordion
-  root: {
-    padding: 0,
-    borderRadius: theme.radius.xl,
-    outline: 'none',
+  },
+  content: {
+    borderRadius: theme.radius.lg,
+  },
+  panel: {
+    borderRadius: theme.radius.lg,
   },
   item: {
     backgroundColor: 'bg-transparent',
     // border: `${rem(1)} solid transparent`,
     border: `solid transparent`,
-    borderRadius: theme.radius.xl,
+    borderRadius: theme.radius.lg,
     position: 'relative',
-    zIndex: 0,
+    // zIndex: 0,
     transition: 'transform 150ms ease',
     outline: 'none',
 
     '&[data-active]': {
       transform: 'scale(1.03)',
-      backgroundColor: 'bg-transparent',
-      // boxShadow: theme.shadows.xl,
-      // borderRadius: theme.radius.lg,
-      zIndex: 1,
+      backgroundColor: '#15162b',
+      borderRadius: theme.radius.lg,
+      boxShadow: theme.shadows.xl,
     },
     '&:hover': {
       backgroundColor: 'bg-transparent',
@@ -89,7 +98,7 @@ const useStyles = createStyles((theme) => ({
 
   chevron: {
     '&[data-rotate]': {
-      transform: 'rotate(90deg)',
+      transform: 'rotate(180deg)',
     },
   },
 }))
@@ -253,21 +262,13 @@ const SupportedFileUploadTypes = () => {
         />
       </Flex>
       <Accordion
-        // pl={27}
-        // pr={27}
-        pt={10}
-        // pb={40}
-        // m={-40}
-        // style={{ borderRadius: 'theme.radius.xl', width: '112%', maxWidth: 'min(50rem, )', marginLeft: 'max(-1rem, -10%)' }}
-        style={{ borderRadius: 'theme.radius.xl' }}
-        // classNames={classes}
-        classNames={{ item: classes.item, chevron: classes.chevron }}
+        style={{ borderRadius: 'theme.radius.lg' }}
+        classNames={{ item: classes.item, chevron: classes.chevron, panel: classes.panel }}
         className={classes.root}
       >
-        {/* ... Accordion items */}
         <Accordion.Item value="openai-key-details" className={classes.item}>
           <Accordion.Control className={classes.control}>
-            <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', width: '100%', borderRadius: theme.radius.lg }}>
               <Text
                 className={`label ${montserrat_paragraph.variable} font-montserratParagraph inline-block p-0 text-neutral-200`}
                 size={'md'}
@@ -277,14 +278,28 @@ const SupportedFileUploadTypes = () => {
               </Text>
             </div>
           </Accordion.Control>
-          <Accordion.Panel>
+          <Accordion.Panel bg={'#15162b'} >
             <Text
-              className={`label ${montserrat_paragraph.variable} font-montserratParagraph p-0 text-neutral-200`}
+              className={`${montserrat_paragraph.variable} font-montserratParagraph p-0 text-neutral-200`}
               size={'sm'}
+              style={{ textAlign: 'left' }}
             >
-              To ingest content from GitHub, simply provide the URL of the repository or specific file 
-              you&apos;d like to pull content from. Ensure the repository is public. Our system will automatically 
-              fetch and process the content from GitHub, allowing you to seamlessly integrate it into your course.
+              <strong>For GitHub ingest</strong>, just paste a URL like <code>github.com/USER/REPO</code>, for example:{' '}
+              <span className={'text-purple-600'}>
+                <a target="_blank"
+                  rel="noreferrer"
+                  className='inline-block' href={'https://github.com/langchain-ai/langchain'}>https://github.com/langchain-ai/langchain</a>
+              </span>.{' '}
+              We&apos;ll ingest all files in the main branch. Ensure the repository is public.
+              <br></br>
+              <br></br>
+
+              <strong>For MIT Open Course Ware ingest</strong>, just paste a URL like <code>ocw.mit.edu/courses/ANY_COURSE</code> for example:{' '}
+              <span className={'text-purple-600'}>
+                <a target="_blank"
+                  rel="noreferrer"
+                  className='inline-block' href={'https://ocw.mit.edu/courses/8-321-quantum-theory-i-fall-2017'}>https://ocw.mit.edu/courses/8-321-quantum-theory-i-fall-2017</a>
+              </span>
             </Text>
           </Accordion.Panel>
         </Accordion.Item>
