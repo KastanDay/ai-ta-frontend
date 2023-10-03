@@ -55,6 +55,8 @@ const useStyles = createStyles((theme) => ({
   // For Accordion
   root: {
     borderRadius: theme.radius.lg,
+    paddingLeft: 40,
+    width: '430px',
     outline: 'none',
     paddingTop: 20,
     paddingBottom: 20,
@@ -146,6 +148,18 @@ const SupportedFileUploadTypes = () => {
           className={classes.logos}
         />
         <Image
+          src="/media/excel_logo.png"
+          width={720}
+          height={100}
+          quality={60}
+          alt="Powerpoint logo"
+          className={classes.logos}
+        />
+      </Flex>
+      <div className='p-2' />
+      {/* 2nd ROW  */}
+      <Flex>
+        <Image
           src="/media/video_logo.png"
           width={720}
           height={100}
@@ -169,61 +183,36 @@ const SupportedFileUploadTypes = () => {
           alt="Closed caption icon"
           className={classes.logos}
         />
-        {/* <>
-          <Group
-            style={{
-              justifyContent: 'center',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
-          >
-            <Image
-              src="/media/cc_logo.jpg"
-              width={720}
-              height={100}
-              quality={60}
-              alt="Closed caption audio icon"
-              // className={classes.logos}
-              style={{
-                // aspectRatio: '6/2',
-                objectFit: 'contain',
-                width: '55px',
-                alignItems: 'center',
-                justifyItems: 'center',
-              }}
-            />
-            <Text>
-              <code className={classes.codeStyledText}>.srt</code> &{' '}
-              <code className={classes.codeStyledText}>.vtt</code>
-            </Text>
-          </Group>
-        </> */}
-      </Flex>
-
-      <Text style={{ paddingTop: '8px' }}>
-        And <code className={classes.codeStyledText}>.txt</code>,{' '}
-        <code className={classes.codeStyledText}>.py</code>,{' '}
-        <code className={classes.codeStyledText}>.html</code>,{' '}
-        <code className={classes.codeStyledText}>.srt</code>,{' '}
-        <code className={classes.codeStyledText}>.vtt</code>
-      </Text>
-
-      <Text
-        size={'lg'}
-        p={rem(20)}
-        className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-      >
-        Under development...
-      </Text>
-
-      <Flex className="space-x-5">
+      </Flex >
+      <div className='p-2' />
+      {/* THIRD ROW */}
+      <Flex>
+        <Image
+          src="/media/canvas_logo.png"
+          width={720}
+          height={100}
+          quality={60}
+          alt="Canvas logo"
+          className={classes.logos}
+          // Had to force it down a few pixels, looked weird otherwise
+          style={{ position: 'relative', top: '7px' }}
+        />
+        <Image
+          src="/media/mitocw_logo.jpg"
+          width={720}
+          height={100}
+          quality={60}
+          alt="MIT Open Courseware logo"
+          className={classes.logos}
+        />
         <Image
           src="/media/github-mark-white.png"
           width={720}
           height={100}
           quality={60}
           alt="Github logo"
-          className={classes.smallLogos}
+          className={classes.logos}
+        // className={classes.smallLogos}
         // style={{mixBlendMode: 'multiply' }}
         />
         <Image
@@ -232,35 +221,23 @@ const SupportedFileUploadTypes = () => {
           height={100}
           quality={60}
           alt="Notion logo"
-          className={classes.smallLogos}
+          className={classes.logos}
+        // className={classes.smallLogos}
         // style={{mixBlendMode: 'multiply' }}
         />
-        <Image
-          src="/media/coursera_logo_cutout.png"
-          width={720}
-          height={100}
-          quality={60}
-          alt="Coursera logo"
-          className={classes.smallLogos}
-        // style={{mixBlendMode: 'multiply' }}
-        />
-        {/* <Image
-          src="/media/mitocw_logo.jpg"
-          width={720}
-          height={100}
-          quality={60}
-          alt="MIT Open Courseware logo"
-          className={classes.smallLogos}
-        /> */}
-        <Image
-          src="/media/canvas_logo.png"
-          width={720}
-          height={100}
-          quality={60}
-          alt="Canvas logo"
-          className={classes.smallLogos}
-        />
-      </Flex>
+      </Flex >
+
+      <div className='p-1' />
+      < Text style={{ paddingTop: '8px' }
+      }>
+        And literally any text file:{' '}
+        {/* < code className={classes.codeStyledText} ></code >, {' '} */}
+        <code className={classes.codeStyledText} >txt</code>, {' '}
+        <code className={classes.codeStyledText} >code</code>, {' '}
+        <code className={classes.codeStyledText} >etc</code>{' '}...
+      </Text >
+
+
       <Accordion
         style={{ borderRadius: 'theme.radius.lg' }}
         classNames={{ item: classes.item, chevron: classes.chevron, panel: classes.panel }}
@@ -273,7 +250,7 @@ const SupportedFileUploadTypes = () => {
                 className={`label ${montserrat_paragraph.variable} font-montserratParagraph inline-block p-0 text-neutral-200`}
                 size={'md'}
               >
-                <span className={'text-white'}>Read more</span>{' '}
+                <span className={'text-white'}>Read the details</span>{' '}
                 👇
               </Text>
             </div>
@@ -284,26 +261,89 @@ const SupportedFileUploadTypes = () => {
               size={'sm'}
               style={{ textAlign: 'left' }}
             >
-              <strong>For GitHub ingest</strong>, just paste a URL like <code>github.com/USER/REPO</code>, for example:{' '}
+              <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '3px' }}>
+                <Image
+                  src="/media/github-mark-white.png"
+                  width={720}
+                  height={100}
+                  quality={60}
+                  alt="Github logo"
+                  className='w-[50px]'
+                />
+              </div>
+              <strong>For GitHub</strong>, just enter a URL like <code className={classes.codeStyledText}>github.com/USER/REPO</code>, for example:{' '}
               <span className={'text-purple-600'}>
-                <a target="_blank"
+                <Link target="_blank"
                   rel="noreferrer"
-                  className='inline-block' href={'https://github.com/langchain-ai/langchain'}>https://github.com/langchain-ai/langchain</a>
+                  href={'https://github.com/langchain-ai/langchain'}>https://github.com/langchain-ai/langchain</Link>
               </span>.{' '}
               We&apos;ll ingest all files in the main branch. Ensure the repository is public.
-              <br></br>
-              <br></br>
 
-              <strong>For MIT Open Course Ware ingest</strong>, just paste a URL like <code>ocw.mit.edu/courses/ANY_COURSE</code> for example:{' '}
+              <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '3px' }}>
+                <Image
+                  src="/media/canvas_logo.png"
+                  width={720}
+                  height={100}
+                  quality={60}
+                  alt="Github logo"
+                  className='w-[50px]'
+                />
+              </div>
+              <strong>Canvas</strong> - coming very soon in Fall 2023!
+
+              <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '3px', paddingTop: '4px' }}>
+                <Image
+                  src="/media/mitocw_logo.jpg"
+                  width={720}
+                  height={100}
+                  quality={60}
+                  alt="MIT Open Course Ware logo"
+                  className='w-[50px]'
+                />
+              </div>
+
+              <strong>For MIT Open Course Ware</strong>, just enter a URL like <code className={classes.codeStyledText}>ocw.mit.edu/courses/ANY_COURSE</code> for example:{' '}
               <span className={'text-purple-600'}>
-                <a target="_blank"
+                <Link target="_blank"
                   rel="noreferrer"
-                  className='inline-block' href={'https://ocw.mit.edu/courses/8-321-quantum-theory-i-fall-2017'}>https://ocw.mit.edu/courses/8-321-quantum-theory-i-fall-2017</a>
+                  href={'https://ocw.mit.edu/courses/8-321-quantum-theory-i-fall-2017'}>https://ocw.mit.edu/courses/8-321-quantum-theory-i-fall-2017</Link>
               </span>
+
+              <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '3px', paddingTop: '3px' }}>
+                <Image
+                  src="/media/coursera_logo_cutout.png"
+                  width={720}
+                  height={100}
+                  quality={60}
+                  alt="Coursera logo"
+                  className='w-[50px]'
+                  style={{ display: 'flex', justifyContent: 'center' }}
+                />
+              </div>
+              <strong>For Coursera</strong>, it's probably easiest to manually export the content then upload it here. Or{' '}
+              <span className={'text-purple-600'}>
+                <Link target="_blank"
+                  rel="noreferrer"
+                  href={'mailto:kvday2@illinois.edu'}>email me</Link>
+              </span>{' '}
+              and we can do a direct ingest, we're limited by Coursera's controls on login/auth.
+
+              <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '3px', paddingTop: '3px' }}>
+                <Image
+                  src="/media/notion_logo.png"
+                  width={720}
+                  height={100}
+                  quality={60}
+                  alt="Notion logo"
+                  className='w-[50px]'
+                  style={{ display: 'flex', justifyContent: 'center' }}
+                />
+              </div>
+              <strong>For Notion</strong>, manually Export your pages to local files, then ingest those. It works great.
             </Text>
           </Accordion.Panel>
         </Accordion.Item>
-      </Accordion>
+      </Accordion >
 
     </>
   )

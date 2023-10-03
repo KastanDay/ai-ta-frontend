@@ -403,23 +403,6 @@ export const WebScrape = ({
           </Tooltip>
         </form>
       )}
-      <Text
-        size={rem(14)}
-        className={`w-full text-center ${montserrat_paragraph.variable} mt-2 font-montserratParagraph`}
-      >
-        Looking for high quality reference material? We love{' '}
-        <a
-          className={'text-purple-600'}
-          href="https://ocw.mit.edu/"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ textDecoration: 'underline', paddingRight: '5px' }}
-        >
-          MIT Open Course Ware
-        </a>
-        <br></br>
-        For Coursera and Canvas ingest please email kvday2@illinois.edu
-      </Text>
     </>
   )
 }
