@@ -260,15 +260,14 @@ const EditCourseCard = ({
                   onChange={(e) =>
                     setCourseName(e.target.value.replaceAll(' ', '-'))
                   }
+                  autoFocus
                   disabled={!is_new_course}
                   className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${
-                                  isCourseAvailable && courseName != ''
-                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                                    : 'border-red-800 text-red-600 focus:border-red-800'
-                                } ${
-                    montserrat_paragraph.variable
-                  } font-montserratParagraph`}
+                                ${isCourseAvailable && courseName != ''
+                      ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                      : 'border-red-800 text-red-600 focus:border-red-800'
+                    } ${montserrat_paragraph.variable
+                    } font-montserratParagraph`}
                 />
                 <Title
                   order={4}
@@ -610,11 +609,11 @@ const EditCourseCard = ({
                   course_name={course_name}
                   current_user_email={current_user_email}
                   courseMetadata={courseMetadata as CourseMetadata}
-                  // course_intro_message={
-                  //   courseMetadata?.course_intro_message || ''
-                  // }
-                  // is_private={courseMetadata?.is_private || false}
-                  // banner_image_s3={courseBannerUrl}
+                // course_intro_message={
+                //   courseMetadata?.course_intro_message || ''
+                // }
+                // is_private={courseMetadata?.is_private || false}
+                // banner_image_s3={courseBannerUrl}
                 />
 
                 <Title
@@ -899,7 +898,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                // style={{ textDecoration: 'underline' }}
+              // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
@@ -913,9 +912,8 @@ const PrivateOrPublicCourse = ({
 
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${
-            isPrivate ? 'private' : 'public'
-          }. Click to change.`}
+          label={`Course is ${isPrivate ? 'private' : 'public'
+            }. Click to change.`}
           wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."

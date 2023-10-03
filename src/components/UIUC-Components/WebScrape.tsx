@@ -330,9 +330,11 @@ export const WebScrape = ({
       >
         Web scrape any website that allows it
       </Title>
+
       <Input
         icon={icon}
-        className="mt-4 w-[80%] min-w-[20rem] disabled:bg-purple-200 lg:w-[75%]"
+        // I can't figure out how to change the background colors.
+        className={`mt-4 w-[80%] min-w-[20rem] disabled:bg-purple-200 lg:w-[75%]`}
         wrapperProps={{ backgroundColor: '#020307', borderRadius: 'xl' }}
         placeholder="Enter URL"
         radius={'xl'}
@@ -376,11 +378,9 @@ export const WebScrape = ({
             }}
             size="md"
             radius={'xl'}
-            className={`rounded-s-md ${
-              isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
-            } overflow-ellipsis text-ellipsis p-2 ${
-              isUrlUpdated ? 'text-white' : 'text-gray-500'
-            } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
+            className={`rounded-s-md ${isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
+              } overflow-ellipsis text-ellipsis p-2 ${isUrlUpdated ? 'text-white' : 'text-gray-500'
+              } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
             w={`${isSmallScreen ? 'auto' : 'auto'}`}
             disabled={isDisabled}
           >
@@ -389,6 +389,8 @@ export const WebScrape = ({
         }
         rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
       />
+
+      {/* Detailed web ingest form */}
       {isUrlUpdated && (
         <form
           className="w-[80%] min-w-[20rem] lg:w-[75%]"
