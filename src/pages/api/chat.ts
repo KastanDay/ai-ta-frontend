@@ -115,14 +115,14 @@ const handler = async (req: Request): Promise<Response> => {
     console.error("Error while calling openai api: ", error)
     console.log("Type of the error", typeof(error))
     console.error(error)
-    if (error instanceof OpenAIError) {
-      return new Response('Error', { status: 500, statusText: error.message })
-    } else if (error && typeof error === 'object' && 'message' in error) {
-      const resp = new Response('Error', { status: 500, statusText: (error as Error).message })
-      console.log("Final error:", resp)
+    if (error && (error as OpenAIError).message) {
+      const resp = new Response('Error', { status: 500, statusText: (error as OpenAIError).message })
+      console.log("Final openai error:", resp)
       return resp
     } else {
-      return new Response('Error', { status: 500 })
+      const resp = new Response('Error', { status: 500 })
+      console.log("Final error:", resp)
+      return resp
     }
   }
 }
