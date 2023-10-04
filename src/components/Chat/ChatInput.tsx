@@ -35,7 +35,6 @@ import { notifications } from '@mantine/notifications';
 import { MantineTheme, Text, useMantineTheme } from '@mantine/core';
 import { Montserrat } from 'next/font/google'
 
-import { useRouter } from 'next/router';
 import { v4 as uuidv4 } from 'uuid';
 
 import React from 'react'
