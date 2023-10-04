@@ -36,7 +36,7 @@ import { MantineTheme, Text, useMantineTheme } from '@mantine/core';
 import { Montserrat } from 'next/font/google'
 
 import { useRouter } from 'next/router';
-
+import { v4 as uuidv4 } from 'uuid';
 
 import React from 'react'
 // ... other imports ...
@@ -278,7 +278,10 @@ export const ChatInput = ({
   }
 
   const uploadToS3 = async (file: File | null) => {
-    if (!file) return
+    if (!file) return;
+
+    const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2);
+    const uniqueFileName = `${uuidv4()}.${fileExtension}`;
 
     const requestObject = {
       method: 'POST',
@@ -286,11 +289,11 @@ export const ChatInput = ({
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        fileName: file.name,
+        fileName: uniqueFileName,
         fileType: file.type,
         courseName: courseName,
       }),
-    }
+    };
 
     try {
       interface PresignedPostResponse {
@@ -328,11 +331,15 @@ export const ChatInput = ({
   }
 
   const ingestFile = async (file: File | null) => {
-    if (!file) return
+    if (!file) return;
+
+    const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2);
+    const uniqueFileName = `${uuidv4()}.${fileExtension}`;
+
     const queryParams = new URLSearchParams({
       courseName: courseName,
-      fileName: file.name,
-    }).toString()
+      fileName: uniqueFileName,
+    }).toString();
 
     const requestObject = {
       method: 'GET',
