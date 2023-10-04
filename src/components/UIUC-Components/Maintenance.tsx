@@ -2,7 +2,7 @@ import React from 'react'
 import { Title, Text } from '@mantine/core'
 import Link from 'next/link'
 
-const Maintenance = ({ }: {
+const Maintenance = ({}: {
   // Prevent search engine indexing of Maintenance page (because it'll ruin our entire search results): https://github.com/vercel/next.js/discussions/12850#discussioncomment-3335807
   // in _document.tsx
 }) => {
@@ -24,7 +24,8 @@ const Maintenance = ({ }: {
             UIUC.chat is down for maintenance
           </Title>
           <Text size="lg">
-            Our database provider, Supabase, is down. We will be back shortly after they are back online.
+            Our database provider, Supabase, is down. We will be back shortly
+            after they are back online.
           </Text>
           {/* <Text size="lg">
             Motivation: Things to explosive product growth, accompanied by the
