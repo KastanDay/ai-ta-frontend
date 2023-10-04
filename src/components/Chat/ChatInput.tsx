@@ -32,7 +32,7 @@ import { PromptList } from './PromptList'
 import { VariableModal } from './VariableModal'
 
 import { notifications } from '@mantine/notifications';
-import { MantineTheme, Text, useMantineTheme } from '@mantine/core';
+import { useMantineTheme } from '@mantine/core';
 import { Montserrat } from 'next/font/google'
 
 import { v4 as uuidv4 } from 'uuid';
