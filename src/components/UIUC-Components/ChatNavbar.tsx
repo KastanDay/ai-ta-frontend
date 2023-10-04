@@ -4,7 +4,7 @@ import { Flex } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { GoToQueryAnalysis, ResumeToChat } from './NavbarButtons'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useContext, useRef } from 'react'
 import {
   createStyles,
   Header,
@@ -28,6 +28,8 @@ import { useUser } from '@clerk/nextjs'
 import { getCoursesByOwnerOrAdmin } from './getAllCourseMetaData';
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { type CourseMetadata } from '~/types/courseMetadata'
+import HomeContext from '~/pages/api/home/home.context'
+
 
 
 
@@ -131,53 +133,46 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
   const [activeLink, setActiveLink] = useState(router.asPath);
   const [opened, { toggle }] = useDisclosure(false);
   const [show, setShow] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [isAdminOrOwner, setIsAdminOrOwner] = useState(false);
   const clerk_user = useUser()
+  const {
+    state: { showModelSettings },
+    dispatch: homeDispatch,
+  } = useContext(HomeContext)
+
+  const modelSettingsContainer = useRef<HTMLDivElement | null>(null)
 
 
   useEffect(() => {
     const fetchCourses = async () => {
+      console.log('Fetching courses');
       if (clerk_user.isLoaded && clerk_user.isSignedIn) {
-        const emails = extractEmailsFromClerk(clerk_user.user)
-        const currUserEmail = emails[0]
-        if (!currUserEmail) {
-          throw new Error('No email found for the user')
-        }
+        console.log('Signed');
+        const emails = extractEmailsFromClerk(clerk_user.user);
+        const currUserEmail = emails[0];
         console.log(currUserEmail);
-        const response = await fetch(
-          `/api/UIUC-api/getAllCourseMetadata?currUserEmail=${currUserEmail}`,
-        )
-        const rawData = await response.json()
+        if (!currUserEmail) {
+          throw new Error('No email found for the user');
+        }
+        const response = await fetch(`/api/UIUC-api/getAllCourseMetadata?currUserEmail=${currUserEmail}`);
+        const rawData = await response.json();
         console.log(rawData);
         if (rawData) {
-          const isAdmin = rawData.map((course: { [key: string]: CourseMetadata }) => {
-            console.log(isAdmin);
-            const courseName = Object.keys(course)[0]
-            const courseData = course[courseName as string]
-            console.log(courseData);
-            if (courseData) {
-              return courseData.course_owner === currUserEmail ||
-                (courseData.course_admins && courseData.course_admins.includes(currUserEmail))
+          rawData.map((course: { [key: string]: CourseMetadata }) => {
+            const courseName = Object.keys(course)[0];
+            const courseMetadata = course[courseName as string];
+            if (courseMetadata) {
+              const isAdmin = courseMetadata.course_owner === currUserEmail ||
+                (courseMetadata.course_admins && courseMetadata.course_admins.includes(currUserEmail));
+              setIsAdminOrOwner(isAdmin);
             }
           });
-          setIsAdminOrOwner(isAdmin.some((admin: boolean) => admin === true));
         }
       }
     }
     fetchCourses();
   }, [clerk_user.isLoaded, clerk_user.isSignedIn])
 
-  const controlNavbar = () => {
-    if (typeof window !== 'undefined') {
-      if (window.scrollY > lastScrollY) {
-        setShow(false);
-      } else {
-        setShow(true);
-      }
-      setLastScrollY(window.scrollY)
-    }
-  }
 
   const handleLinkClick = (path: string) => {
     setActiveLink(path)
@@ -190,11 +185,28 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
 
   const items = [
     ...(isAdminOrOwner ? [
-      { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>, icon: <MessageChatIcon />, link: `/${getCurrentCourseName()}/gpt4` },
-      { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>, icon: <FolderIcon />, link: `/${getCurrentCourseName()}/materials` },
-      { name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>, icon: <ReportIcon />, link: `/${getCurrentCourseName()}/query-analysis` },
+      {
+        name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
+        icon: <MessageChatIcon />, link: `/${getCurrentCourseName()}/gpt4`
+      },
+      {
+        name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>,
+        icon: <FolderIcon />, link: `/${getCurrentCourseName()}/materials`
+      },
+      {
+        name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
+        icon: <ReportIcon />, link: `/${getCurrentCourseName()}/query-analysis`
+      },
+      {
+        name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Model Setting</span>,
+        icon: <SettingIcon />, link: `/${getCurrentCourseName()}/model-setting`,
+        onClick: () => homeDispatch({ field: 'showModelSettings', value: !showModelSettings })
+      },
     ] : []),
-    ...(isAdminOrOwner ? [] : [{ name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Setting</span>, icon: <SettingIcon />, link: `/${getCurrentCourseName()}/setting` }]),
+    ...(isAdminOrOwner ? [] : [{
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Setting</span>,
+      icon: <SettingIcon />, link: `/${getCurrentCourseName()}/setting`,
+    }]),
   ];
 
   return (
@@ -224,7 +236,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                     <Link
                       key={index}
                       href={item.link}
-                      onClick={() => handleLinkClick(item.link)}
+                      onClick={() => { handleLinkClick(item.link); item.onClick && item.onClick(); }}
                       data-active={activeLink === item.link}
                       className={classes.link}
                     >
@@ -243,7 +255,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                   <Link
                     key={index}
                     href={item.link}
-                    onClick={() => handleLinkClick(item.link)}
+                    onClick={() => { handleLinkClick(item.link); item.onClick && item.onClick(); }}
                     data-active={activeLink === item.link}
                     className={classes.link}
                   >

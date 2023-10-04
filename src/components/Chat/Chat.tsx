@@ -76,6 +76,7 @@ import TopBarInChat from '../Chatbar/TopBarInChat'
 import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import ChatNavbar from '../UIUC-Components/ChatNavbar'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -682,13 +683,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           >
             {/* <TopBarInChat course_name={getCurrentPageName()} /> */}
             {/* <div className="bg-red-500" > */}
-            <TopBarInChat course_name={getCurrentPageName()} />
+            {/* <TopBarInChat course_name={getCurrentPageName()} /> */}
             {/* </div> */}
 
             {selectedConversation?.messages.length === 0 ? (
               <>
                 {/* NEW CHAT, NO MESSAGES YET */}
-                <Navbar bannerUrl={bannerUrl as string} isgpt4={true} />
+                <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
                 <div className="mt-16">{renderIntroductoryStatements()}</div>
               </>
             ) : (
