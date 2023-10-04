@@ -38,6 +38,7 @@ import {
   type CourseMetadata,
 } from '~/types/courseMetadata'
 import LargeDropzone from './LargeDropzone'
+import { CanvasIngest } from './CanvasIngest'
 import EmailChipsComponent from './EmailChipsComponent'
 import { useMediaQuery } from '@mantine/hooks'
 import { Montserrat } from 'next/font/google'
@@ -299,6 +300,7 @@ const EditCourseCard = ({
                 courseMetadata={courseMetadata as CourseMetadata}
                 is_new_course={is_new_course}
               />
+              <CanvasIngest />
               <WebScrape
                 is_new_course={is_new_course}
                 courseName={courseName}

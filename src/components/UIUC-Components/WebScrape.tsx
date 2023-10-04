@@ -320,7 +320,7 @@ export const WebScrape = ({
     <>
       <Title
         order={3}
-        className={`w-full text-center ${montserrat_heading.variable} pt-1 font-montserratHeading`}
+        className={`w-full text-center ${montserrat_heading.variable} pt-4 font-montserratHeading`}
       >
         OR
       </Title>
