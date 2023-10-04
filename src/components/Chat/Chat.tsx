@@ -715,6 +715,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             showScrollDownButton={showScrollDownButton}
             inputContent={inputContent}
             setInputContent={setInputContent}
+            courseName={getCurrentPageName()}
           />
         </>
       )}

@@ -1,3 +1,4 @@
+// chatinput.tsx
 import {
   IconArrowDown,
   IconBolt,
@@ -33,6 +34,14 @@ import { VariableModal } from './VariableModal'
 import { notifications } from '@mantine/notifications';
 import { MantineTheme, Text, useMantineTheme } from '@mantine/core';
 import { Montserrat } from 'next/font/google'
+
+import { useRouter } from 'next/router';
+
+
+import React from 'react'
+// ... other imports ...
+
+
 const montserrat_med = Montserrat({
   weight: '500',
   subsets: ['latin'],
@@ -48,6 +57,7 @@ interface Props {
   showScrollDownButton: boolean
   inputContent: string
   setInputContent: (content: string) => void
+  courseName: string
 }
 
 export const ChatInput = ({
@@ -59,6 +69,7 @@ export const ChatInput = ({
   showScrollDownButton,
   inputContent,
   setInputContent,
+  courseName,
 }: Props) => {
   const { t } = useTranslation('chat')
 
@@ -266,21 +277,117 @@ export const ChatInput = ({
       return validImageTypes.includes(`.${ext}`);
   }
 
-  const handleImageUpload = (file: File) => {
+  const uploadToS3 = async (file: File | null) => {
+    if (!file) return
+
+    const requestObject = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        fileName: file.name,
+        fileType: file.type,
+        courseName: courseName,
+      }),
+    }
+
+    try {
+      interface PresignedPostResponse {
+        post: {
+          url: string
+          fields: { [key: string]: string }
+        }
+      }
+
+      // Then, update the lines where you fetch the response and parse the JSON
+      const response = await fetch('/api/UIUC-api/uploadToS3', requestObject)
+      const data = (await response.json()) as PresignedPostResponse
+
+      const { url, fields } = data.post as {
+        url: string
+        fields: { [key: string]: string }
+      }
+      const formData = new FormData()
+
+      Object.entries(fields).forEach(([key, value]) => {
+        formData.append(key, value)
+      })
+
+      formData.append('file', file)
+
+      await fetch(url, {
+        method: 'POST',
+        body: formData,
+      })
+
+      console.log((file.name as string) + 'uploaded to S3 successfully!!')
+    } catch (error) {
+      console.error('Error uploading file:', error)
+    }
+  }
+
+  const ingestFile = async (file: File | null) => {
+    if (!file) return
+    const queryParams = new URLSearchParams({
+      courseName: courseName,
+      fileName: file.name,
+    }).toString()
+
+    const requestObject = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      query: {
+        fileName: file.name,
+        courseName: courseName,
+      },
+    }
+
+    // Actually we CAN await here, just don't await this function.
+    console.log('right before call /ingest...')
+    const response = await fetch(
+      `/api/UIUC-api/ingest?${queryParams}`,
+      requestObject,
+    )
+
+    // check if the response was ok
+    if (response.ok) {
+      const data = await response.json()
+      // console.log(file.name as string + ' ingested successfully!!')
+      console.log('Success or Failure:', data)
+      return data
+    } else {
+      console.log('Error during ingest:', response.statusText)
+      console.log('Full Response message:', response)
+      return response
+    }
+  }
+
+  const handleImageUpload = async (file: File) => {
     if (!isImageValid(file.name)) {
-        setImageError(null);  // Explicitly set to null first
+        setImageError(null);
         setImageError('Unsupported file type. Please upload .jpg or .png images.');
         showToastOnInvalidImage();
         if (imageUploadRef.current) {
-          imageUploadRef.current.value = '';  // Reset the file input's value
-      }
-              return;
+            imageUploadRef.current.value = '';
+        }
+        return;
     }
-    // Handle the image upload logic here
-    // ...
-  }
 
+    try {
+        // Upload to S3
+        await uploadToS3(file);
+        console.log(file.name + ' uploaded to S3 successfully!!');
 
+        // Ingest file (if needed)
+        await ingestFile(file);
+        console.log(file.name + ' ingested successfully!!');
+    } catch (error) {
+        console.error('Error during file processing:', error);
+    }
+}
 
   const theme = useMantineTheme();
 
