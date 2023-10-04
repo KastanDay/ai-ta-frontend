@@ -11,6 +11,7 @@ import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 
+
 const IfCourseExists: NextPage = () => {
   const router = useRouter()
   const course_name = router.query.course_name as string
@@ -83,7 +84,7 @@ const IfCourseExists: NextPage = () => {
             clerk_user,
             course_metadata,
           )
-          router.push(`/${course_name}/not_authorized`)
+          router.replace(`/${course_name}/not_authorized`)
         }
       } else {
         // 🆕 MAKE A NEW COURSE

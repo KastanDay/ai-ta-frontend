@@ -13,7 +13,15 @@ export default function Footer({ isNavbar = false }: { isNavbar?: boolean }) {
           Disclaimer
         </Link>
         <Link
-          href="/terms"
+          href="https://www.vpaa.uillinois.edu/digital_risk_management/generative_ai/"
+          className="link-hover link text-blue-500"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Generative AI Policy
+        </Link>
+        <Link
+          href="https://www.vpaa.uillinois.edu/resources/terms_of_use"
           className="link-hover link text-blue-500"
           target="_blank"
           rel="noopener noreferrer"
@@ -21,7 +29,7 @@ export default function Footer({ isNavbar = false }: { isNavbar?: boolean }) {
           Terms
         </Link>
         <Link
-          href="/privacy"
+          href="https://www.vpaa.uillinois.edu/resources/web_privacy"
           className="link-hover link text-blue-500"
           target="_blank"
           rel="noopener noreferrer"
