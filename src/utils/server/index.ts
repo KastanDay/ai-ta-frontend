@@ -22,7 +22,7 @@ export class OpenAIError extends Error {
   code: string
 
   constructor(message: string, type: string, param: string, code: string) {
-    super(message)
+    super(JSON.stringify(message))
     this.name = 'OpenAIError'
     this.type = type
     this.param = param
