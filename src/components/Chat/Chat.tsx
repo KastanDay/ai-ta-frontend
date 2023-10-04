@@ -259,6 +259,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           signal: controller.signal,
           body,
         })
+        console.log("Logging response for debugging")
         if (!response.ok) {
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
