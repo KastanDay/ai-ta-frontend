@@ -22,6 +22,12 @@ import {
   ReportAnalytics,
   Settings,
 } from 'tabler-icons-react'
+import {
+  IconExternalLink,
+  IconRobot,
+  IconCloudUpload,
+  // IconSettings,
+} from '@tabler/icons-react'
 import { useRouter } from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { useUser } from '@clerk/nextjs'
@@ -29,29 +35,25 @@ import { getCoursesByOwnerOrAdmin } from './getAllCourseMetaData';
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import HomeContext from '~/pages/api/home/home.context'
-
+import { ModelSelect } from '../Chat/ModelSelect'
 
 
 
 const styles: Record<string, React.CSSProperties> = {
   logoContainerBox: {
-    // Control image-box size
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
     position: 'relative',
     height: '100%',
-    maxWidth:
-      typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
-    paddingRight:
-      typeof window !== 'undefined' && window.innerWidth > 600 ? '4px' : '25px',
+    maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
+    paddingRight: typeof window !== 'undefined' && window.innerWidth > 600 ? '4px' : '25px',
     paddingLeft: '25px',
   },
   thumbnailImage: {
-    // Control picture layout INSIDE of the box
-    objectFit: 'cover', // Cover to ensure image fills the box
-    objectPosition: 'center', // Center to ensure image is centered
-    height: '100%', // Set height to 100% to match navbar height
+    objectFit: 'cover',
+    objectPosition: 'center',
+    height: '100%',
     width: 'auto',
   },
 }
@@ -66,13 +68,11 @@ const useStyles = createStyles((theme) => ({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-
   links: {
     padding: 'theme.spacing.lg, 1em, 1em',
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
-
     [theme.fn.smallerThan('sm')]: {
       display: 'none',
     },
@@ -83,10 +83,8 @@ const useStyles = createStyles((theme) => ({
     padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
     margin: '0.35rem',
     fontWeight: 700,
-    transition:
-      'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
+    transition: 'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
     borderRadius: theme.radius.sm,
-
     '&:hover': {
       color: 'hsl(280,100%,70%)',
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -125,6 +123,19 @@ const useStyles = createStyles((theme) => ({
       display: 'none',
     },
   },
+  modelSettings: {
+    position: 'relative',
+    top: '100px',
+    left: 0,
+    zIndex: 1,
+    borderRadius: '10px',
+    boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)',
+  },
+  modelButtonContainer: {
+    position: 'absolute',
+    top: '100px',
+    // This makes sure that ModelSelect is positioned relative to this container
+  },
 }))
 
 const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
@@ -136,27 +147,24 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
   const [isAdminOrOwner, setIsAdminOrOwner] = useState(false);
   const clerk_user = useUser()
   const {
-    state: { showModelSettings },
+    state: { showModelSettings, selectedConversation },
     dispatch: homeDispatch,
   } = useContext(HomeContext)
 
   const modelSettingsContainer = useRef<HTMLDivElement | null>(null)
+  const topBarRef = useRef<HTMLDivElement | null>(null)
 
 
   useEffect(() => {
     const fetchCourses = async () => {
-      console.log('Fetching courses');
       if (clerk_user.isLoaded && clerk_user.isSignedIn) {
-        console.log('Signed');
         const emails = extractEmailsFromClerk(clerk_user.user);
         const currUserEmail = emails[0];
-        console.log(currUserEmail);
         if (!currUserEmail) {
           throw new Error('No email found for the user');
         }
         const response = await fetch(`/api/UIUC-api/getAllCourseMetadata?currUserEmail=${currUserEmail}`);
         const rawData = await response.json();
-        console.log(rawData);
         if (rawData) {
           rawData.map((course: { [key: string]: CourseMetadata }) => {
             const courseName = Object.keys(course)[0];
@@ -184,30 +192,56 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
   }
 
   const items = [
-    ...(isAdminOrOwner ? [
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
+      icon: <MessageChatIcon />, link: `/${getCurrentCourseName()}/gpt4`
+    },
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>,
+      icon: <FolderIcon />, link: `/${getCurrentCourseName()}/materials`
+    },
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
+      icon: <ReportIcon />, link: `/${getCurrentCourseName()}/query-analysis`
+    },
+    ...(!isAdminOrOwner ? [
       {
-        name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
-        icon: <MessageChatIcon />, link: `/${getCurrentCourseName()}/gpt4`
+        name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Setting</span>,
+        icon: <SettingIcon />, link: `/${getCurrentCourseName()}/setting`,
       },
-      {
-        name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>,
-        icon: <FolderIcon />, link: `/${getCurrentCourseName()}/materials`
-      },
-      {
-        name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
-        icon: <ReportIcon />, link: `/${getCurrentCourseName()}/query-analysis`
-      },
-      {
-        name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Model Setting</span>,
-        icon: <SettingIcon />, link: `/${getCurrentCourseName()}/model-setting`,
-        onClick: () => homeDispatch({ field: 'showModelSettings', value: !showModelSettings })
-      },
-    ] : []),
-    ...(isAdminOrOwner ? [] : [{
-      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Setting</span>,
-      icon: <SettingIcon />, link: `/${getCurrentCourseName()}/setting`,
-    }]),
-  ];
+    ] : [])
+  ]
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      event.target instanceof Node &&
+      topBarRef.current &&
+      topBarRef.current.contains(event.target)
+    ) {
+      // Do nothing, the click on button + and click outside should cancel out
+    } else if (
+      modelSettingsContainer.current &&
+      topBarRef.current &&
+      event.target instanceof Node &&
+      !modelSettingsContainer.current.contains(event.target)
+    ) {
+      homeDispatch({ field: 'showModelSettings', value: false })
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [modelSettingsContainer])
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [topBarRef])
 
   return (
     <div
@@ -236,7 +270,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                     <Link
                       key={index}
                       href={item.link}
-                      onClick={() => { handleLinkClick(item.link); item.onClick && item.onClick(); }}
+                      onClick={() => handleLinkClick(item.link)}
                       data-active={activeLink === item.link}
                       className={classes.link}
                     >
@@ -254,8 +288,8 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                 {items.map((item, index) => (
                   <Link
                     key={index}
-                    href={item.link}
-                    onClick={() => { handleLinkClick(item.link); item.onClick && item.onClick(); }}
+                    href={item.link || ''}
+                    onClick={() => handleLinkClick(item.link)}
                     data-active={activeLink === item.link}
                     className={classes.link}
                   >
@@ -265,23 +299,39 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                     </span>
                   </Link>
                 ))}
+
               </div>
             </Container>
-            <Burger
-              opened={opened}
-              onClick={toggle}
-              className={classes.burger}
-              size="sm"
-            />
 
+            <div className={classes.modelButtonContainer} style={{ display: 'block', position: 'relative' }}>
+              <button className={`${classes.link}`}
+                onClick={() => {
+                  homeDispatch({
+                    field: 'showModelSettings',
+                    value: !showModelSettings,
+                  })
+                }}
+              >
+                <IconRobot size={18} />
+                <span className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span>
+              </button>
+              {showModelSettings && <ModelSelect className={classes.modelSettings} ref={modelSettingsContainer} />}
+            </div>
+            <Container>
+              <Burger
+                opened={opened} onClick={toggle}
+                className={classes.burger} size="sm"
+              />
+            </Container>
             <GlobalHeader isNavbar={true} />
+
           </div>
         </div>
+
       </Flex>
     </div>
   )
 }
-
 export default ChatNavbar
 
 export function MessageChatIcon() {
@@ -327,3 +377,4 @@ export function SettingIcon() {
     />
   )
 }
+

@@ -1,3 +1,108 @@
+// // src/components/Chat/Chat.tsx
+// for the purposes of filtering the chat history based on the course in current url
+// import {
+//   // IconBrain,
+//   // IconClearAll,
+//   IconArrowRight,
+//   // IconCloudUpload,
+//   IconExternalLink,
+//   // IconRobot,
+//   // IconSettings,
+//   IconAlertTriangle,
+//   IconArrowLeft,
+//   IconLock,
+//   IconBrain,
+//   IconCreditCard,
+//   IconAlertCircle,
+//   // IconArrowUpRight,
+//   // IconFileTextAi,
+//   // IconX,
+//   // IconDownload,
+//   // IconClearAll,
+//   // IconSettings,
+// } from '@tabler/icons-react'
+// import {
+//   type MutableRefObject,
+//   memo,
+//   useCallback,
+//   useContext,
+//   useEffect,
+//   useRef,
+//   useState,
+// } from 'react'
+// import toast from 'react-hot-toast'
+// import { Button, Text, Title } from '@mantine/core'
+// import { useTranslation } from 'next-i18next'
+
+// import { getEndpoint } from '@/utils/app/api'
+// import {
+//   saveConversation,
+//   saveConversations,
+//   updateConversation,
+// } from '@/utils/app/conversation'
+// import { throttle } from '@/utils/data/throttle'
+
+// import {
+//   type ContextWithMetadata,
+//   type ChatBody,
+//   type Conversation,
+//   type Message,
+// } from '@/types/chat'
+// import { type Plugin } from '@/types/plugin'
+
+// import HomeContext from '~/pages/api/home/home.context'
+
+// import { ChatInput } from './ChatInput'
+// import { ChatLoader } from './ChatLoader'
+// import { ErrorMessageDiv } from './ErrorMessageDiv'
+// import { MemoizedChatMessage } from './MemoizedChatMessage'
+// import { fetchPresignedUrl } from '~/components/UIUC-Components/ContextCards'
+
+// import { type CourseMetadata } from '~/types/courseMetadata'
+
+// interface Props {
+//   stopConversationRef: MutableRefObject<boolean>
+//   courseMetadata: CourseMetadata
+// }
+
+// import { useRouter } from 'next/router'
+// // import CustomBanner from '../UIUC-Components/CustomBanner'
+// import { fetchContexts } from '~/pages/api/getContexts'
+// import { useUser } from '@clerk/nextjs'
+// import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
+// import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
+// import Navbar from '../UIUC-Components/Navbar'
+// import TopBarInChat from '../Chatbar/TopBarInChat'
+// // import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
+// import { notifications } from '@mantine/notifications'
+// import { Montserrat } from 'next/font/google'
+// import { montserrat_heading, montserrat_paragraph } from 'fonts'
+// import ChatNavbar from '../UIUC-Components/ChatNavbar'
+
+// const montserrat_med = Montserrat({
+//   weight: '500',
+//   subsets: ['latin'],
+// })
+// // Extract the current course from the URL
+// const currentCourse = window.location.pathname.split('/')[2];
+
+// // Filter the conversation history based on the current course
+// const filteredConversations = conversations.filter(conversation => conversation.course === currentCourse);
+
+// // Set the state with the filtered conversations
+// this.setState({ conversations: filteredConversations });
+
+// // Create a new conversation every time the user visits the chat page
+// const newConversation = {
+//   id: uuidv4(),
+//   course: currentCourse,
+//   messages: []
+// };
+
+// // Add the new conversation to the state
+// this.setState(prevState => ({
+//   conversations: [...prevState.conversations, newConversation]
+// }));
 
 // src/components/Chat/Chat.tsx
 import {
@@ -664,6 +769,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           >
             {/* <TopBarInChat course_name={getCurrentPageName()} /> */}
             {/* <div className="bg-red-500" > */}
+            <TopBarInChat course_name={getCurrentPageName()} />
             {/* </div> */}
 
             {selectedConversation?.messages.length === 0 ? (
