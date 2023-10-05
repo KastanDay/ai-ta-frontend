@@ -131,23 +131,83 @@ export const CanvasIngest = ({}: CanvasIngestProps) => {
               }}
             >
               <div>
-                <div className="flex items-start mb-2">
-                  <Checkbox value="files" label="Files" size="md" style={checkboxStyle} />
+                <div className="flex items-center mb-2">
+                  <Tooltip
+                    multiline
+                    color="#15162b"
+                    arrowPosition="side"
+                    position="bottom-start"
+                    arrowSize={8}
+                    withArrow
+                    label="Select this option to ingest all files from the Canvas course."
+                  >
+                    <Checkbox value="files" label="Files" size="md" style={checkboxStyle} />
+                  </Tooltip>
                 </div>
-                <div className="flex items-start mb-2">
-                  <Checkbox value="pages" label="Pages" size="md" style={checkboxStyle} />
+                <div className="flex items-center mb-2">
+                  <Tooltip
+                    multiline
+                    color="#15162b"
+                    arrowPosition="side"
+                    position="bottom-start"                    
+                    arrowSize={8}
+                    withArrow
+                    label="Select this option to ingest all pages from the Canvas course."
+                  >
+                    <Checkbox value="pages" label="Pages" size="md" style={checkboxStyle} />
+                  </Tooltip>
                 </div>
-                <div className="flex items-start mb-2">
-                  <Checkbox value="modules" label="Modules" size="md" style={checkboxStyle} />
+                <div className="flex items-center mb-2">
+                  <Tooltip
+                    multiline
+                    color="#15162b"
+                    arrowPosition="side"
+                    position="bottom-start"                    
+                    arrowSize={8}
+                    withArrow
+                    label="Select this option to ingest all modules from the Canvas course."
+                  >
+                    <Checkbox value="modules" label="Modules" size="md" style={checkboxStyle} />
+                  </Tooltip>
                 </div>
-                <div className="flex items-start mb-2">
-                  <Checkbox value="syllabus" label="Syllabus" size="md" style={checkboxStyle} />
+                <div className="flex items-center mb-2">
+                  <Tooltip
+                    multiline
+                    color="#15162b"
+                    arrowPosition="side"
+                    position="bottom-start"                    
+                    arrowSize={8}
+                    withArrow
+                    label="Select this option to ingest the course syllabus from Canvas."
+                  >
+                    <Checkbox value="syllabus" label="Syllabus" size="md" style={checkboxStyle} />
+                  </Tooltip>
                 </div>
-                <div className="flex items-start mb-2">
-                  <Checkbox value="assignments" label="Assignments" size="md" style={checkboxStyle} />
+                <div className="flex items-center mb-2">
+                  <Tooltip
+                    multiline
+                    color="#15162b"
+                    arrowPosition="side"
+                    position="bottom-start"                    
+                    arrowSize={8}
+                    withArrow
+                    label="Select this option to ingest all assignments from the Canvas course."
+                  >
+                    <Checkbox value="assignments" label="Assignments" size="md" style={checkboxStyle} />
+                  </Tooltip>
                 </div>
-                <div className="flex items-start">
-                  <Checkbox value="discussions" label="Discussions" size="md" style={checkboxStyle} />
+                <div className="flex items-center">
+                  <Tooltip
+                    multiline
+                    color="#15162b"
+                    arrowPosition="side"
+                    position="bottom-start"
+                    arrowSize={8}
+                    withArrow
+                    label="Select this option to ingest all discussions from the Canvas course."
+                  >
+                    <Checkbox value="discussions" label="Discussions" size="md" style={checkboxStyle} />
+                  </Tooltip>
                 </div>
               </div>
               <Text className="mt-4 text-lg font-bold underline text-red-600">
