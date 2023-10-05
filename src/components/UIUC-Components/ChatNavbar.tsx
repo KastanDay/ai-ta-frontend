@@ -124,17 +124,16 @@ const useStyles = createStyles((theme) => ({
     },
   },
   modelSettings: {
-    position: 'relative',
-    top: '100px',
+    position: 'absolute',
+    top: '100%',
     left: 0,
     zIndex: 1,
     borderRadius: '10px',
     boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)',
   },
   modelButtonContainer: {
-    position: 'absolute',
-    top: '100px',
-    // This makes sure that ModelSelect is positioned relative to this container
+    position: 'relative',
+    top: '100%',
   },
 }))
 
@@ -302,8 +301,8 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
 
               </div>
             </Container>
-
-            <div className={classes.modelButtonContainer} style={{ display: 'block', position: 'relative' }}>
+            {/* <div className={classes.modelButtonContainer}> */}
+            <div style={{ display: 'block' }}>
               <button className={`${classes.link}`}
                 onClick={() => {
                   homeDispatch({
@@ -312,11 +311,14 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                   })
                 }}
               >
-                <IconRobot size={18} />
-                <span className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span>
+                <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center' }}>
+                  <IconRobot size={18} />
+                  <span style={{ marginLeft: '5px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span>
+                </div>
               </button>
-              {showModelSettings && <ModelSelect className={classes.modelSettings} ref={modelSettingsContainer} />}
+              {showModelSettings && <ModelSelect ref={modelSettingsContainer} />}
             </div>
+            {/* </div> */}
             <Container>
               <Burger
                 opened={opened} onClick={toggle}
@@ -328,8 +330,8 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
           </div>
         </div>
 
-      </Flex>
-    </div>
+      </Flex >
+    </div >
   )
 }
 export default ChatNavbar
