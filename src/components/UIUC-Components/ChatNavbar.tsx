@@ -250,25 +250,54 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
       <Flex direction="row" align="center" justify="center">
         <div className="mt-4 w-full max-w-[95%]">
           <div className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800" style={{ height: '70px' }}>
-            <div className="flex-1">
+            <div className="flex-1 flex justify-between items-center">
               <Link href="/">
                 <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
                   UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
                 </h2>
               </Link>
-            </div>
-
-            <Transition
-              transition="pop-top-right"
-              duration={200}
-              mounted={opened}
-            >
-              {(styles) => (
-                <Paper className={classes.dropdown} withBorder style={styles}>
+              <div className='flex-1'>
+                {bannerUrl && (
+                  <Image
+                    src={bannerUrl}
+                    style={{ ...styles.thumbnailImage, maxHeight: '70px', padding: '10px 10px' }}
+                    // className=""
+                    width={2000}
+                    height={2000}
+                    alt="The course creator uploaded a logo for this chatbot."
+                  />
+                )}
+              </div>
+              <Transition
+                transition="pop-top-right"
+                duration={200}
+                mounted={opened}
+              >
+                {(styles) => (
+                  <Paper className={classes.dropdown} withBorder style={styles}>
+                    {items.map((item, index) => (
+                      <Link
+                        key={index}
+                        href={item.link}
+                        onClick={() => handleLinkClick(item.link)}
+                        data-active={activeLink === item.link}
+                        className={classes.link}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center' }}>
+                          {item.icon}
+                          {item.name}
+                        </span>
+                      </Link>
+                    ))}
+                  </Paper>
+                )}
+              </Transition>
+              <Container className={classes.inner}>
+                <div className={classes.links}>
                   {items.map((item, index) => (
                     <Link
                       key={index}
-                      href={item.link}
+                      href={item.link || ''}
                       onClick={() => handleLinkClick(item.link)}
                       data-active={activeLink === item.link}
                       className={classes.link}
@@ -279,62 +308,42 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                       </span>
                     </Link>
                   ))}
-                </Paper>
-              )}
-            </Transition>
-            <Container className={classes.inner}>
-              <div className={classes.links}>
-                {items.map((item, index) => (
-                  <Link
-                    key={index}
-                    href={item.link || ''}
-                    onClick={() => handleLinkClick(item.link)}
-                    data-active={activeLink === item.link}
-                    className={classes.link}
-                  >
-                    <span style={{ display: 'flex', alignItems: 'center' }}>
-                      {item.icon}
-                      {item.name}
-                    </span>
-                  </Link>
-                ))}
 
-              </div>
-            </Container>
-            {/* <div className={classes.modelButtonContainer}> */}
-            {!isAdminOrOwner && <div style={{ display: 'block' }}>
-              <button className={`${classes.link}`} style={{ padding: '3px 12px' }}
-                onClick={() => {
-                  homeDispatch({
-                    field: 'showModelSettings',
-                    value: !showModelSettings,
-                  })
-                }}
-              >
-                <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center' }}>
-                  <IconRobot size={18} />
-                  <span className="home-header_text-underline" style={{
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'bottom left',
-                    backgroundSize: 'contain',
-                    height: '40px',
-                    position: 'relative',
-                    top: '13px'
-                  }}>
-                    <span style={{ marginLeft: '5px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span></span>
                 </div>
-              </button>
-              {showModelSettings && <ModelSelect ref={modelSettingsContainer} />}
-            </div>}
-            {/* </div> */}
-            <Container>
-              <Burger
-                opened={opened} onClick={toggle}
-                className={classes.burger} size="sm"
-              />
-            </Container>
-            <GlobalHeader isNavbar={true} />
-          </div>
+              </Container>
+              {!isAdminOrOwner && <div style={{ display: 'block' }}>
+                <button className={`${classes.link}`} style={{ padding: '3px 12px' }}
+                  onClick={() => {
+                    homeDispatch({
+                      field: 'showModelSettings',
+                      value: !showModelSettings,
+                    })
+                  }}
+                >
+                  <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center' }}>
+                    <IconRobot size={18} />
+                    <span className="home-header_text-underline" style={{
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'bottom left',
+                      backgroundSize: 'contain',
+                      height: '40px',
+                      position: 'relative',
+                      top: '13px'
+                    }}>
+                      <span style={{ marginLeft: '5px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span></span>
+                  </div>
+                </button>
+                {showModelSettings && <ModelSelect ref={modelSettingsContainer} />}
+              </div>}
+              <Container>
+                <Burger
+                  opened={opened} onClick={toggle}
+                  className={classes.burger} size="sm"
+                />
+              </Container>
+              <GlobalHeader isNavbar={true} />
+            </div>
+          </div >
         </div>
       </Flex >
     </div >
