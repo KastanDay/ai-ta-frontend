@@ -303,7 +303,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
             </Container>
             {/* <div className={classes.modelButtonContainer}> */}
             {!isAdminOrOwner && <div style={{ display: 'block' }}>
-              <button className={`${classes.link}`} style={{ padding: '3px 8px' }}
+              <button className={`${classes.link}`} style={{ padding: '3px 12px' }}
                 onClick={() => {
                   homeDispatch({
                     field: 'showModelSettings',
