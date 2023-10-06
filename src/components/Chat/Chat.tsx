@@ -380,6 +380,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             onMessageReceived(updatedConversation)
           }
 
+          const currentPageName = getCurrentPageName();
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
@@ -433,6 +434,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       pluginKeys,
       selectedConversation,
       stopConversationRef,
+      updateConversation,
     ],
   )
 
@@ -675,20 +677,23 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ) : (
               <>
                 {/* MESSAGES IN CHAT */}
-                {selectedConversation?.messages.map((message, index) => (
-                  <MemoizedChatMessage
-                    key={index}
-                    message={message}
-                    messageIndex={index}
-                    onEdit={(editedMessage) => {
-                      setCurrentMessage(editedMessage)
-                      handleSend(
-                        editedMessage,
-                        selectedConversation?.messages.length - index,
-                      )
-                    }}
-                  />
-                ))}
+
+                {selectedConversation?.messages
+                  .filter(message => message.contexts?.some(context => context.course_name === getCurrentPageName()))
+                  .map((message, index) => (
+                    <MemoizedChatMessage
+                      key={index}
+                      message={message}
+                      messageIndex={index}
+                      onEdit={(editedMessage) => {
+                        setCurrentMessage(editedMessage)
+                        handleSend(
+                          editedMessage,
+                          selectedConversation?.messages.length - index,
+                        )
+                      }}
+                    />
+                  ))}
                 {loading && <ChatLoader />}
                 <div
                   // className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"

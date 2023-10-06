@@ -313,7 +313,14 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
               >
                 <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center' }}>
                   <IconRobot size={18} />
-                  <span style={{ marginLeft: '5px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span>
+                  <span className="home-header_text-underline" style={{
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'bottom left',
+                    backgroundSize: 'contain',
+                    height: '42px',
+                    top: '13px'
+                  }}>
+                    <span style={{ marginLeft: '5px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span></span>
                 </div>
               </button>
               {showModelSettings && <ModelSelect ref={modelSettingsContainer} />}
@@ -326,10 +333,8 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
               />
             </Container>
             <GlobalHeader isNavbar={true} />
-
           </div>
         </div>
-
       </Flex >
     </div >
   )
