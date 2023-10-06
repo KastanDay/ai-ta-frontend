@@ -78,7 +78,7 @@ const useStyles = createStyles((theme) => ({
     },
   },
   link: {
-    textTransform: 'uppercase',
+    // textTransform: 'uppercase',
     fontSize: rem(13),
     padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
     margin: '0.35rem',
@@ -204,10 +204,10 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
       icon: <ReportIcon />, link: `/${getCurrentCourseName()}/query-analysis`
     },
     ...(!isAdminOrOwner ? [
-      {
-        name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Setting</span>,
-        icon: <SettingIcon />, link: `/${getCurrentCourseName()}/setting`,
-      },
+      // {
+      //   name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Setting</span>,
+      //   icon: <SettingIcon />, link: `/${getCurrentCourseName()}/setting`,
+      // },
     ] : [])
   ]
 
@@ -302,8 +302,8 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
               </div>
             </Container>
             {/* <div className={classes.modelButtonContainer}> */}
-            <div style={{ display: 'block' }}>
-              <button className={`${classes.link}`}
+            {!isAdminOrOwner && <div style={{ display: 'block' }}>
+              <button className={`${classes.link}`} style={{ padding: '3px 8px' }}
                 onClick={() => {
                   homeDispatch({
                     field: 'showModelSettings',
@@ -325,7 +325,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                 </div>
               </button>
               {showModelSettings && <ModelSelect ref={modelSettingsContainer} />}
-            </div>
+            </div>}
             {/* </div> */}
             <Container>
               <Burger
@@ -347,7 +347,7 @@ export function MessageChatIcon() {
     <MessageChatbot
       size={20}
       strokeWidth={2}
-      color={'white'}
+      // color={'white'}
       style={{ marginRight: '5px', marginLeft: '5px' }}
     />
   )
@@ -358,7 +358,7 @@ export function FolderIcon() {
     <Folder
       size={20}
       strokeWidth={2}
-      color={'white'}
+      // color={'white'}
       style={{ marginRight: '5px', marginLeft: '5px' }}
     />
   )
@@ -369,7 +369,7 @@ export function ReportIcon() {
     <ReportAnalytics
       size={20}
       strokeWidth={2}
-      color={'white'}
+      // color={'white'}
       style={{ marginRight: '5px', marginLeft: '5px' }}
     />
   )
@@ -380,7 +380,7 @@ export function SettingIcon() {
     <Settings
       size={20}
       strokeWidth={2}
-      color={'white'}
+      // color={'white'}
       style={{ marginRight: '5px', marginLeft: '5px' }}
     />
   )

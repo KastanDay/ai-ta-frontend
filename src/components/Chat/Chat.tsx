@@ -1,4 +1,3 @@
-
 // src/components/Chat/Chat.tsx
 import {
   // IconBrain,
@@ -71,13 +70,11 @@ import { fetchContexts } from '~/pages/api/getContexts'
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
-import Navbar from '../UIUC-Components/Navbar'
-import TopBarInChat from '../Chatbar/TopBarInChat'
+import ChatNavbar from '../UIUC-Components/ChatNavbar'
 // import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
 import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
-import ChatNavbar from '../UIUC-Components/ChatNavbar'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -380,7 +377,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             onMessageReceived(updatedConversation)
           }
 
-          const currentPageName = getCurrentPageName();
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
@@ -434,7 +430,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       pluginKeys,
       selectedConversation,
       stopConversationRef,
-      updateConversation,
     ],
   )
 
@@ -582,10 +577,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   return (
     <div className="overflow-wrap relative flex-1 bg-white dark:bg-[#15162c]">
+      <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
       {!(apiKey || serverSideApiKeyIsSet) ? (
         <div className="min-w-screen relative min-h-screen flex-1 overflow-hidden">
-          <ChatNavbar isgpt4={true} />
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
+
+          <div className="absolute inset-0 flex flex-col items-center justify-center mt-16">
             <div className=" backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
               <div className="mb-2 flex flex-col items-center text-center">
                 <IconAlertTriangle
@@ -671,29 +667,27 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             {selectedConversation?.messages.length === 0 ? (
               <>
                 {/* NEW CHAT, NO MESSAGES YET */}
-                <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
+                {/* <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} /> */}
+                {/* check whether need this line is needed 👆 */}
                 <div className="mt-16">{renderIntroductoryStatements()}</div>
               </>
             ) : (
               <>
                 {/* MESSAGES IN CHAT */}
-
-                {selectedConversation?.messages
-                  .filter(message => message.contexts?.some(context => context.course_name === getCurrentPageName()))
-                  .map((message, index) => (
-                    <MemoizedChatMessage
-                      key={index}
-                      message={message}
-                      messageIndex={index}
-                      onEdit={(editedMessage) => {
-                        setCurrentMessage(editedMessage)
-                        handleSend(
-                          editedMessage,
-                          selectedConversation?.messages.length - index,
-                        )
-                      }}
-                    />
-                  ))}
+                {selectedConversation?.messages.map((message, index) => (
+                  <MemoizedChatMessage
+                    key={index}
+                    message={message}
+                    messageIndex={index}
+                    onEdit={(editedMessage) => {
+                      setCurrentMessage(editedMessage)
+                      handleSend(
+                        editedMessage,
+                        selectedConversation?.messages.length - index,
+                      )
+                    }}
+                  />
+                ))}
                 {loading && <ChatLoader />}
                 <div
                   // className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"

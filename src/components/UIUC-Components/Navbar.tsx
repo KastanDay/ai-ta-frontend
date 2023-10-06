@@ -69,7 +69,7 @@ const useStyles = createStyles((theme) => ({
     },
   },
   link: {
-    textTransform: 'uppercase',
+    // textTransform: 'uppercase',
     fontSize: rem(13),
     padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
     margin: '0.35rem',

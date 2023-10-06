@@ -25,6 +25,10 @@ import ChatbarContext from './Chatbar.context'
 import { ChatbarInitialState, initialState } from './Chatbar.state'
 
 import { v4 as uuidv4 } from 'uuid'
+import router from 'next/router'
+
+import { ContextWithMetadata } from '@/types/chat';
+
 
 export const Chatbar = () => {
   const { t } = useTranslation('sidebar')
@@ -190,25 +194,77 @@ export const Chatbar = () => {
     }
   }
 
+  const getCurrentCourseName = () => {
+    return router.asPath.split('/')[1]
+  }
   useEffect(() => {
-    if (searchTerm) {
+    const currentCourseName = getCurrentCourseName();
+
+    const filterByCourse = (conversation: Conversation) => {
+      return conversation.messages[0]?.contexts?.some(context => context["course_name"] === currentCourseName);
+    };
+    const filterBySearchTerm = (conversation: Conversation) => {
+      const searchable =
+        conversation.name.toLocaleLowerCase() +
+        ' ' +
+        conversation.messages.map((message) => message.content).join(' ');
+      return searchable.toLowerCase().includes(searchTerm.toLowerCase());
+    };
+
+    console.log("Number of conversations:", conversations.length);
+
+    conversations.forEach((conv: Conversation, index: number) => {
+      console.log(`Checking conversation at index ${index}`);
+
+      if (conv.messages[0]?.contexts) {
+        console.log(`Contexts found for conversation at index ${index}`);
+
+        conv.messages[0].contexts.forEach((context: ContextWithMetadata) => {
+          if (context["course_name"]) {
+            console.log(context["course_name"]);
+          } else {
+            console.log("course_name not found in context");
+          }
+        });
+      } else {
+        console.log(`No contexts for conversation at index ${index}`);
+      }
+    });
+
+
+    let filteredConversations = conversations.filter(filterByCourse);
+    if (!searchTerm) {
       chatDispatch({
         field: 'filteredConversations',
-        value: conversations.filter((conversation) => {
-          const searchable =
-            conversation.name.toLocaleLowerCase() +
-            ' ' +
-            conversation.messages.map((message) => message.content).join(' ')
-          return searchable.toLowerCase().includes(searchTerm.toLowerCase())
-        }),
-      })
+        value: filteredConversations,
+      });
     } else {
-      chatDispatch({
-        field: 'filteredConversations',
-        value: conversations,
-      })
+      filteredConversations = filteredConversations.filter(filterBySearchTerm);
     }
-  }, [searchTerm, conversations])
+
+
+  }, [searchTerm, conversations]);
+
+  // useEffect(() => {
+  //   if (searchTerm) {
+  //     chatDispatch({
+  //       field: 'filteredConversations',
+  //       value: conversations.filter((conversation) => {
+  //         console.log(conversation);
+  //         const searchable =
+  //           conversation.name.toLocaleLowerCase() +
+  //           ' ' +
+  //           conversation.messages.map((message) => message.content).join(' ')
+  //         return searchable.toLowerCase().includes(searchTerm.toLowerCase())
+  //       }),
+  //     })
+  //   } else {
+  //     chatDispatch({
+  //       field: 'filteredConversations',
+  //       value: conversations,
+  //     })
+  //   }
+  // }, [searchTerm, conversations])
 
   return (
     <ChatbarContext.Provider
@@ -240,6 +296,6 @@ export const Chatbar = () => {
         handleDrop={handleDrop}
         footerComponent={<ChatbarSettings />}
       />
-    </ChatbarContext.Provider>
+    </ChatbarContext.Provider >
   )
 }

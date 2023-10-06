@@ -20,6 +20,8 @@ import GlobalHeader, {
   LandingPageHeader,
 } from '~/components/UIUC-Components/GlobalHeader'
 import GlobalFooter from '~/components/UIUC-Components/GlobalFooter'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
+
 
 const Home: NextPage = () => {
   return (
@@ -125,7 +127,6 @@ export default Home
 
 import { createStyles, SimpleGrid, Container } from '@mantine/core'
 import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
-import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import ListProjectTable from '~/components/UIUC-Components/ProjectTable'
 
 const mockdata = [
