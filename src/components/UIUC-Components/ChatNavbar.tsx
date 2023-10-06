@@ -317,7 +317,8 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                     backgroundRepeat: 'no-repeat',
                     backgroundPosition: 'bottom left',
                     backgroundSize: 'contain',
-                    height: '42px',
+                    height: '40px',
+                    position: 'relative',
                     top: '13px'
                   }}>
                     <span style={{ marginLeft: '5px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span></span>
