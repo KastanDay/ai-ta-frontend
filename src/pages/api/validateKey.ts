@@ -56,7 +56,7 @@ const handler = async (req: Request): Promise<Response> => {
             },
             body: JSON.stringify({
                 model: 'gpt-3.5-turbo',
-                messages: [{ "role": "user", "content": "Testing, say hi" }],
+                messages: [{ "role": "user", "content": "I" }], // min tokens for testing
                 max_tokens: 1,
             }),
         })
