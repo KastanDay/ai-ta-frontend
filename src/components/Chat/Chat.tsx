@@ -271,7 +271,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             closeButtonProps: { color: 'red' },
             onClose: () => console.log('error unmounted'),
             onOpen: () => console.log('error mounted'),
-            autoClose: 6000,
+            autoClose: 12000,
             title: (
               <Text size={'lg'} className={`${montserrat_med.className}`}>
                 {final_response.name}
