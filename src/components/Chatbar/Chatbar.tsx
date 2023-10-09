@@ -201,7 +201,7 @@ export const Chatbar = () => {
     const currentCourseName = getCurrentCourseName();
 
     const filterByCourse = (conversation: Conversation) => {
-      return conversation.messages[0]?.contexts?.some(context => context["course_name"] === currentCourseName);
+      return conversation.messages[0]?.contexts?.some(context => context["course_name "] === currentCourseName);
     };
     const filterBySearchTerm = (conversation: Conversation) => {
       const searchable =
@@ -210,26 +210,6 @@ export const Chatbar = () => {
         conversation.messages.map((message) => message.content).join(' ');
       return searchable.toLowerCase().includes(searchTerm.toLowerCase());
     };
-
-    console.log("Number of conversations:", conversations.length);
-
-    conversations.forEach((conv: Conversation, index: number) => {
-      console.log(`Checking conversation at index ${index}`);
-
-      if (conv.messages[0]?.contexts) {
-        console.log(`Contexts found for conversation at index ${index}`);
-
-        conv.messages[0].contexts.forEach((context: ContextWithMetadata) => {
-          if (context["course_name"]) {
-            console.log(context["course_name"]);
-          } else {
-            console.log("course_name not found in context");
-          }
-        });
-      } else {
-        console.log(`No contexts for conversation at index ${index}`);
-      }
-    });
 
 
     let filteredConversations = conversations.filter(filterByCourse);

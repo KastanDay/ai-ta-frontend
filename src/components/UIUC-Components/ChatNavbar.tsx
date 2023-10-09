@@ -137,7 +137,7 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
+const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className = '' }) => {
   const { classes, theme } = useStyles();
   const router = useRouter();
   const [activeLink, setActiveLink] = useState(router.asPath);
@@ -244,7 +244,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
 
   return (
     <div
-      className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}
+      className={`${className} ${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}
       style={{ display: show ? 'block' : 'none' }}
     >
       <Flex direction="row" align="center" justify="center">
@@ -268,6 +268,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                   />
                 )}
               </div>
+
               <Transition
                 transition="pop-top-right"
                 duration={200}

@@ -667,7 +667,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             {selectedConversation?.messages.length === 0 ? (
               <>
                 {/* NEW CHAT, NO MESSAGES YET */}
-                {/* <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} /> */}
                 {/* check whether need this line is needed 👆 */}
                 <div className="mt-16">{renderIntroductoryStatements()}</div>
               </>
