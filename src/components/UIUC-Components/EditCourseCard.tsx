@@ -168,7 +168,7 @@ const EditCourseCard = ({
     setApiKey(courseMetadata?.openai_api_key as string)
   }, [courseMetadata])
 
-  const validateKey = async (key: String) => {
+  const validateKey = async (key: string) => {
     const response = await fetch('/api/validateKey', {
       method: 'POST',
       headers: {
