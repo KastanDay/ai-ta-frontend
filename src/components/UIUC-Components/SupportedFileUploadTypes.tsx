@@ -242,7 +242,7 @@ const SupportedFileUploadTypes = () => {
         {/* < code className={classes.codeStyledText} ></code >, {' '} */}
         <code className={classes.codeStyledText}>txt</code>,{' '}
         <code className={classes.codeStyledText}>code</code>,{' '}
-        <code className={classes.codeStyledText}>etc</code> ...
+        <code className={classes.codeStyledText}>utf-8</code> ...
       </Text>
 
       <Accordion
