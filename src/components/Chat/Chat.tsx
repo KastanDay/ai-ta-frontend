@@ -651,65 +651,65 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 </div>
               </div>
             </div>
-            ) : modelError ? (
-            <ErrorMessageDiv error={modelError} />
-            ) : (
-            <>
-              <div
-                className="max-h-full overflow-x-hidden"
-                ref={chatContainerRef}
-                onScroll={handleScroll}
-              >
-                {selectedConversation?.messages.length === 0 ? (
-                  <>
-                    <div className="mt-16">{renderIntroductoryStatements()}</div>
-                  </>
-                ) : (
-                  <>
-                    {selectedConversation?.messages.map((message, index) => (
-                      <MemoizedChatMessage
-                        key={index}
-                        message={message}
-                        messageIndex={index}
-                        onEdit={(editedMessage) => {
-                          setCurrentMessage(editedMessage)
-                          handleSend(
-                            editedMessage,
-                            selectedConversation?.messages.length - index,
-                          )
-                        }}
-                      />
-                    ))}
-                    {loading && <ChatLoader />}
-                    <div
-                      className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
-                      ref={messagesEndRef}
-                    />
-                  </>
-                )}
-              </div>
-              <ChatInput
-                stopConversationRef={stopConversationRef}
-                textareaRef={textareaRef}
-                onSend={(message, plugin) => {
-                  setCurrentMessage(message)
-                  handleSend(message, 0, plugin)
-                }}
-                onScrollDownClick={handleScrollDown}
-                onRegenerate={() => {
-                  if (currentMessage) {
-                    handleSend(currentMessage, 2, null)
-                  }
-                }}
-                showScrollDownButton={showScrollDownButton}
-                inputContent={inputContent}
-                setInputContent={setInputContent}
-              />
-
-            </>
-        )}
           </div>
+        ) : modelError ? (
+          <ErrorMessageDiv error={modelError} />
+        ) : (
+          <>
+            <div
+              className="max-h-full overflow-x-hidden"
+              ref={chatContainerRef}
+              onScroll={handleScroll}
+            >
+              {selectedConversation?.messages.length === 0 ? (
+                <>
+                  <div className="mt-16">{renderIntroductoryStatements()}</div>
+                </>
+              ) : (
+                <>
+                  {selectedConversation?.messages.map((message, index) => (
+                    <MemoizedChatMessage
+                      key={index}
+                      message={message}
+                      messageIndex={index}
+                      onEdit={(editedMessage) => {
+                        setCurrentMessage(editedMessage)
+                        handleSend(
+                          editedMessage,
+                          selectedConversation?.messages.length - index,
+                        )
+                      }}
+                    />
+                  ))}
+                  {loading && <ChatLoader />}
+                  <div
+                    className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
+                    ref={messagesEndRef}
+                  />
+                </>
+              )}
+            </div>
+            <ChatInput
+              stopConversationRef={stopConversationRef}
+              textareaRef={textareaRef}
+              onSend={(message, plugin) => {
+                setCurrentMessage(message)
+                handleSend(message, 0, plugin)
+              }}
+              onScrollDownClick={handleScrollDown}
+              onRegenerate={() => {
+                if (currentMessage) {
+                  handleSend(currentMessage, 2, null)
+                }
+              }}
+              showScrollDownButton={showScrollDownButton}
+              inputContent={inputContent}
+              setInputContent={setInputContent}
+            />
+          </>
+        )}
+      </div>
     </div>
-      )
-
-      Chat.displayName = 'Chat'
+  )
+  Chat.displayName = 'Chat'
+})
