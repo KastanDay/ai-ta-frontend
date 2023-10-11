@@ -249,7 +249,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
     >
       <Flex direction="row" align="center" justify="center">
         <div className="mt-4 w-full max-w-[95%]">
-          <div className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800" style={{ height: '70px' }}>
+          <div className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800" style={{ height: '50px', paddingTop: '0px' }}>
             <div className="flex-1 flex justify-between items-center">
               <Link href="/">
                 <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">

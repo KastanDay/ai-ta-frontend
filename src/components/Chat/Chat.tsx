@@ -576,13 +576,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   return (
-    <div className="overflow-wrap relative flex-1 bg-white dark:bg-[#15162c]">
-      <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
-      {!(apiKey || serverSideApiKeyIsSet) ? (
-        <div className="min-w-screen relative min-h-screen flex-1 overflow-hidden">
-
-          <div className="absolute inset-0 flex flex-col items-center justify-center mt-16">
-            <div className=" backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
+    <div className="flex flex-col h-screen overflow-hidden">
+      <div className="flex-none">
+        <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
+      </div>
+      <div className="flex-grow overflow-auto">
+        {!(apiKey || serverSideApiKeyIsSet) ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
               <div className="mb-2 flex flex-col items-center text-center">
                 <IconAlertTriangle
                   size={'54'}
@@ -641,83 +642,74 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                     </Text>
                   </div>
                 </div>
+                <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
+
+                  <IconArrowLeft
+                    size={'36'}
+                    className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
+                  />
+                </div>
               </div>
             </div>
-            <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
-              <IconArrowLeft
-                size={'36'}
-                className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
-              />
-            </div>
-          </div>
-        </div>
-      ) : modelError ? (
-        <ErrorMessageDiv error={modelError} />
-      ) : (
-        <>
-          <div
-            className="max-h-full overflow-x-hidden"
-            ref={chatContainerRef}
-            onScroll={handleScroll}
-          >
-            {/* <TopBarInChat course_name={getCurrentPageName()} /> */}
-            {/* <div className="bg-red-500" > */}
-            {/* </div> */}
-
-            {selectedConversation?.messages.length === 0 ? (
-              <>
-                {/* NEW CHAT, NO MESSAGES YET */}
-                {/* check whether need this line is needed 👆 */}
-                <div className="mt-16">{renderIntroductoryStatements()}</div>
-              </>
+            ) : modelError ? (
+            <ErrorMessageDiv error={modelError} />
             ) : (
-              <>
-                {/* MESSAGES IN CHAT */}
-                {selectedConversation?.messages.map((message, index) => (
-                  <MemoizedChatMessage
-                    key={index}
-                    message={message}
-                    messageIndex={index}
-                    onEdit={(editedMessage) => {
-                      setCurrentMessage(editedMessage)
-                      handleSend(
-                        editedMessage,
-                        selectedConversation?.messages.length - index,
-                      )
-                    }}
-                  />
-                ))}
-                {loading && <ChatLoader />}
-                <div
-                  // className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"
-                  // className="h-[162px] bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]"
-                  className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
-                  ref={messagesEndRef}
-                />
-              </>
-            )}
-          </div>
+            <>
+              <div
+                className="max-h-full overflow-x-hidden"
+                ref={chatContainerRef}
+                onScroll={handleScroll}
+              >
+                {selectedConversation?.messages.length === 0 ? (
+                  <>
+                    <div className="mt-16">{renderIntroductoryStatements()}</div>
+                  </>
+                ) : (
+                  <>
+                    {selectedConversation?.messages.map((message, index) => (
+                      <MemoizedChatMessage
+                        key={index}
+                        message={message}
+                        messageIndex={index}
+                        onEdit={(editedMessage) => {
+                          setCurrentMessage(editedMessage)
+                          handleSend(
+                            editedMessage,
+                            selectedConversation?.messages.length - index,
+                          )
+                        }}
+                      />
+                    ))}
+                    {loading && <ChatLoader />}
+                    <div
+                      className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
+                      ref={messagesEndRef}
+                    />
+                  </>
+                )}
+              </div>
+              <ChatInput
+                stopConversationRef={stopConversationRef}
+                textareaRef={textareaRef}
+                onSend={(message, plugin) => {
+                  setCurrentMessage(message)
+                  handleSend(message, 0, plugin)
+                }}
+                onScrollDownClick={handleScrollDown}
+                onRegenerate={() => {
+                  if (currentMessage) {
+                    handleSend(currentMessage, 2, null)
+                  }
+                }}
+                showScrollDownButton={showScrollDownButton}
+                inputContent={inputContent}
+                setInputContent={setInputContent}
+              />
 
-          <ChatInput
-            stopConversationRef={stopConversationRef}
-            textareaRef={textareaRef}
-            onSend={(message, plugin) => {
-              setCurrentMessage(message)
-              handleSend(message, 0, plugin)
-            }}
-            onScrollDownClick={handleScrollDown}
-            onRegenerate={() => {
-              if (currentMessage) {
-                handleSend(currentMessage, 2, null)
-              }
-            }}
-            showScrollDownButton={showScrollDownButton}
-            inputContent={inputContent}
-            setInputContent={setInputContent}
-          />
-        </>
-      )}
+            </>
+        )}
+          </div>
     </div>
-  )
-})
-Chat.displayName = 'Chat'
+      )
+
+      Chat.displayName = 'Chat'
