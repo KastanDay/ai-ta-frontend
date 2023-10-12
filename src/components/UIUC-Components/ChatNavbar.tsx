@@ -312,7 +312,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
 
                 </div>
               </Container>
-              {!isAdminOrOwner && <div style={{ display: 'block' }}>
+              <div style={{ display: 'block' }}>
                 <button className={`${classes.link}`} style={{ padding: '3px 12px' }}
                   onClick={() => {
                     homeDispatch({
@@ -335,7 +335,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                   </div>
                 </button>
                 {showModelSettings && <ModelSelect ref={modelSettingsContainer} />}
-              </div>}
+              </div>
               <Container>
                 <Burger
                   opened={opened} onClick={toggle}
