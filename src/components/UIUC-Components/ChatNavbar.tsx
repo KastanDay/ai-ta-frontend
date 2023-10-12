@@ -152,7 +152,9 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
 
   const modelSettingsContainer = useRef<HTMLDivElement | null>(null)
   const topBarRef = useRef<HTMLDivElement | null>(null)
-
+  const getCurrentCourseName = () => {
+    return router.asPath.split('/')[1]
+  }
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -171,7 +173,11 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
             if (courseMetadata) {
               const isAdmin = courseMetadata.course_owner === currUserEmail ||
                 (courseMetadata.course_admins && courseMetadata.course_admins.includes(currUserEmail));
-              setIsAdminOrOwner(isAdmin);
+              if (courseName === getCurrentCourseName()) {
+                setIsAdminOrOwner(isAdmin);
+              } else {
+                setIsAdminOrOwner(false);
+              }
             }
           });
         }
@@ -186,9 +192,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
     toggle()
   }
 
-  const getCurrentCourseName = () => {
-    return router.asPath.split('/')[1]
-  }
+
 
   const items = () => {
     if (isAdminOrOwner) {
