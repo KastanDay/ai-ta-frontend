@@ -190,7 +190,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
     return router.asPath.split('/')[1]
   }
 
-  const items = [
+  const items = isAdminOrOwner ? [
     {
       name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
       icon: <MessageChatIcon />, link: `/${getCurrentCourseName()}/gpt4`
@@ -203,6 +203,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
       name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
       icon: <ReportIcon />, link: `/${getCurrentCourseName()}/query-analysis`
     },
+
     ...(!isAdminOrOwner ? [
       // {
       //   name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Setting</span>,
@@ -210,6 +211,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
       // },
     ] : [])
   ]
+
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
