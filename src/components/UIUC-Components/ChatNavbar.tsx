@@ -190,28 +190,29 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
     return router.asPath.split('/')[1]
   }
 
-  const items = isAdminOrOwner ? [
-    {
-      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
-      icon: <MessageChatIcon />, link: `/${getCurrentCourseName()}/gpt4`
-    },
-    {
-      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>,
-      icon: <FolderIcon />, link: `/${getCurrentCourseName()}/materials`
-    },
-    {
-      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
-      icon: <ReportIcon />, link: `/${getCurrentCourseName()}/query-analysis`
-    },
-
-    ...(!isAdminOrOwner ? [
-      // {
-      //   name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Setting</span>,
-      //   icon: <SettingIcon />, link: `/${getCurrentCourseName()}/setting`,
-      // },
-    ] : [])
-  ]
-
+  const items = () => {
+    if (isAdminOrOwner) {
+      return [
+        {
+          name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
+          icon: <MessageChatIcon />,
+          link: `/${getCurrentCourseName()}/gpt4`
+        },
+        {
+          name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>,
+          icon: <FolderIcon />,
+          link: `/${getCurrentCourseName()}/materials`
+        },
+        {
+          name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
+          icon: <ReportIcon />,
+          link: `/${getCurrentCourseName()}/query-analysis`
+        }
+      ];
+    } else {
+      return [];
+    }
+  }
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -229,14 +230,12 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
       homeDispatch({ field: 'showModelSettings', value: false })
     }
   }
-
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [modelSettingsContainer])
-
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside)
     return () => {
@@ -246,7 +245,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
 
   return (
     <div
-      className={`${className} ${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}
+      className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}
       style={{ display: show ? 'block' : 'none' }}
     >
       <Flex direction="row" align="center" justify="center">
@@ -278,7 +277,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
               >
                 {(styles) => (
                   <Paper className={classes.dropdown} withBorder style={styles}>
-                    {items.map((item, index) => (
+                    {items().map((item, index) => (
                       <Link
                         key={index}
                         href={item.link}
@@ -297,10 +296,10 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
               </Transition>
               <Container className={classes.inner}>
                 <div className={classes.links}>
-                  {items.map((item, index) => (
+                  {items().map((item, index) => (
                     <Link
                       key={index}
-                      href={item.link || ''}
+                      href={item.link}
                       onClick={() => handleLinkClick(item.link)}
                       data-active={activeLink === item.link}
                       className={classes.link}
@@ -347,7 +346,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
               <GlobalHeader isNavbar={true} />
             </div>
           </div >
-        </div>
+        </div >
       </Flex >
     </div >
   )
