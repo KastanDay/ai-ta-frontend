@@ -259,8 +259,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           signal: controller.signal,
           body,
         })
-        
-        if(!response.ok) {
+
+        if (!response.ok) {
           const final_response = await response.json()
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })

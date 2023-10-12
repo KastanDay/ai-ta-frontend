@@ -73,7 +73,7 @@ const useStyles = createStyles((theme) => ({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    [theme.fn.smallerThan('sm')]: {
+    [theme.fn.smallerThan(1159)]: {
       display: 'none',
     },
   },
@@ -99,7 +99,7 @@ const useStyles = createStyles((theme) => ({
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
       textAlign: 'right',
     },
-    [theme.fn.smallerThan('sm')]: {
+    [theme.fn.smallerThan(1159)]: {
       display: 'list-item',
       textAlign: 'center',
       borderRadius: 0,
@@ -107,7 +107,7 @@ const useStyles = createStyles((theme) => ({
     },
   },
   burger: {
-    [theme.fn.largerThan('sm')]: {
+    [theme.fn.largerThan(1159)]: {
       display: 'none',
     },
   },
@@ -116,10 +116,10 @@ const useStyles = createStyles((theme) => ({
     top: HEADER_HEIGHT,
     left: '50%',
     right: '10%',
-    zIndex: 1,
+    zIndex: 10,
     borderRadius: '10px',
     overflow: 'hidden',
-    [theme.fn.largerThan('sm')]: {
+    [theme.fn.largerThan(1159)]: {
       display: 'none',
     },
   },
@@ -127,7 +127,7 @@ const useStyles = createStyles((theme) => ({
     position: 'absolute',
     top: '100%',
     left: 0,
-    zIndex: 1,
+    zIndex: 10,
     borderRadius: '10px',
     boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)',
   },
@@ -167,19 +167,18 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
         const response = await fetch(`/api/UIUC-api/getAllCourseMetadata?currUserEmail=${currUserEmail}`);
         const rawData = await response.json();
         if (rawData) {
-          rawData.map((course: { [key: string]: CourseMetadata }) => {
-            const courseName = Object.keys(course)[0];
-            const courseMetadata = course[courseName as string];
-            if (courseMetadata) {
+          const currentCourseName = getCurrentCourseName();
+          if (currentCourseName) {
+            const courseData = rawData.find((course: { [key: string]: CourseMetadata }) => Object.keys(course)[0] === currentCourseName);
+            if (courseData) {
+              const courseMetadata = courseData[currentCourseName];
               const isAdmin = courseMetadata.course_owner === currUserEmail ||
                 (courseMetadata.course_admins && courseMetadata.course_admins.includes(currUserEmail));
-              if (courseName === getCurrentCourseName()) {
-                setIsAdminOrOwner(isAdmin);
-              } else {
-                setIsAdminOrOwner(false);
-              }
+              setIsAdminOrOwner(isAdmin);
+            } else {
+              setIsAdminOrOwner(false);
             }
-          });
+          }
         }
       }
     }
@@ -326,8 +325,8 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                     })
                   }}
                 >
-                  <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center' }}>
-                    <IconRobot size={18} />
+                  <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <IconRobot size={20} />
                     <span className="home-header_text-underline" style={{
                       backgroundRepeat: 'no-repeat',
                       backgroundPosition: 'bottom left',
@@ -339,13 +338,15 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                       <span style={{ marginLeft: '5px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span></span>
                   </div>
                 </button>
-                {showModelSettings && <ModelSelect ref={modelSettingsContainer} />}
+                {showModelSettings && <ModelSelect ref={modelSettingsContainer} style={{ width: '100%', backgroundColor: '#1d1f33' }} />}
               </div>
               <Container>
-                <Burger
-                  opened={opened} onClick={toggle}
-                  className={classes.burger} size="sm"
-                />
+                {isAdminOrOwner && (
+                  <Burger
+                    opened={opened} onClick={toggle}
+                    className={classes.burger} size="sm"
+                  />
+                )}
               </Container>
               <GlobalHeader isNavbar={true} />
             </div>
