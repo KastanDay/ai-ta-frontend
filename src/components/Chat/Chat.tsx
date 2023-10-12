@@ -576,7 +576,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-screen w-full overflow-hidden bg-white dark:bg-[#15162c]">
       <div className="flex-none">
         <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
       </div>
