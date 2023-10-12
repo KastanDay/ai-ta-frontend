@@ -75,6 +75,7 @@ import ChatNavbar from '../UIUC-Components/ChatNavbar'
 import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { NextResponse } from 'next/server'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -258,7 +259,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           signal: controller.signal,
           body,
         })
-        if (!response.ok) {
+        
+        if(!response.ok) {
+          const final_response = await response.json()
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
           notifications.show({
@@ -267,15 +270,15 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             closeButtonProps: { color: 'red' },
             onClose: () => console.log('error unmounted'),
             onOpen: () => console.log('error mounted'),
-            autoClose: 6000,
+            autoClose: 12000,
             title: (
               <Text size={'lg'} className={`${montserrat_med.className}`}>
-                OpenAI Error
+                {final_response.name}
               </Text>
             ),
             message: (
               <Text className={`${montserrat_med.className} text-neutral-200`}>
-                {response.statusText}
+                {final_response.message}
               </Text>
             ),
             color: 'red',

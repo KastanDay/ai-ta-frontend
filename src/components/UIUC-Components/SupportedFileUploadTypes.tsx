@@ -1,12 +1,12 @@
 import Image from 'next/image'
 import {
   Text,
-  rem,
   Title,
   Flex,
   createStyles,
-  Group,
   Accordion,
+  // rem,
+  // Group,
   // Card,
   // Badge,
   // MantineProvider,
@@ -26,6 +26,7 @@ import {
 import React from 'react'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import Link from 'next/link'
+import { IconPhoto } from '@tabler/icons-react'
 
 const useStyles = createStyles((theme) => ({
   // For Logos
@@ -127,33 +128,32 @@ const SupportedFileUploadTypes = () => {
         <Image
           src="/media/pdf_logo.png"
           width={720}
-          height={100}
-          quality={60}
+          height={400}
+          quality={85}
           alt="PDF icon"
           className={classes.logos}
-        // className="logos w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 object-contain"
         />
         <Image
           src="/media/word_logo.png"
           width={2000}
           height={2000}
-          quality={60}
+          quality={80}
           alt="Word logo"
           className={classes.logos}
         />
         <Image
           src="/media/ppt_logo.png"
           width={720}
-          height={100}
-          quality={60}
+          height={220}
+          quality={80}
           alt="Powerpoint logo"
           className={classes.logos}
         />
         <Image
           src="/media/excel_logo.png"
           width={720}
-          height={100}
-          quality={60}
+          height={220}
+          quality={80}
           alt="Powerpoint logo"
           className={classes.logos}
         />
@@ -162,17 +162,24 @@ const SupportedFileUploadTypes = () => {
       {/* 2nd ROW  */}
       <Flex>
         <Image
-          src="/media/video_logo.png"
+          src="/media/video_clapboard_icon.png"
           width={720}
           height={100}
           quality={60}
+          color='white'
           alt="Generic video icon"
+          className={classes.logos}
+        />
+        <IconPhoto
+          size={'54px'}
+          strokeWidth={2}
+          color={'white'}
           className={classes.logos}
         />
         <Image
           src="/media/audio_logo.png"
           width={720}
-          height={100}
+          height={220}
           quality={60}
           alt="Generic audio icon"
           className={classes.logos}
@@ -180,7 +187,7 @@ const SupportedFileUploadTypes = () => {
         <Image
           src="/media/cc_logo.jpg"
           width={720}
-          height={100}
+          height={220}
           quality={60}
           alt="Closed caption icon"
           className={classes.logos}
@@ -196,8 +203,8 @@ const SupportedFileUploadTypes = () => {
           quality={60}
           alt="Canvas logo"
           className={classes.logos}
-          // Had to force it down a few pixels, looked weird otherwise
-          style={{ position: 'relative', top: '7px' }}
+        // Had to force it down a few pixels, looked weird otherwise
+        // style={{ position: 'relative', top: '7px' }}
         />
         <Image
           src="/media/mitocw_logo.jpg"
@@ -235,7 +242,7 @@ const SupportedFileUploadTypes = () => {
         {/* < code className={classes.codeStyledText} ></code >, {' '} */}
         <code className={classes.codeStyledText}>txt</code>,{' '}
         <code className={classes.codeStyledText}>code</code>,{' '}
-        <code className={classes.codeStyledText}>etc</code> ...
+        <code className={classes.codeStyledText}>utf-8</code> ...
       </Text>
 
       <Accordion
