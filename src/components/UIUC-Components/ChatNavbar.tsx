@@ -75,15 +75,15 @@ const useStyles = createStyles((theme) => ({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    [theme.fn.smallerThan(1159)]: {
+    [theme.fn.smallerThan(990)]: {
       display: 'none',
     },
   },
   link: {
     // textTransform: 'uppercase',
-    fontSize: rem(13),
-    padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-    margin: '0.35rem',
+    fontSize: rem(12),
+    padding: `${theme.spacing.sm} ${theme.spacing.sm}`,
+    margin: '0.2rem',
     fontWeight: 700,
     transition: 'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
     borderRadius: theme.radius.sm,
@@ -101,7 +101,7 @@ const useStyles = createStyles((theme) => ({
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
       textAlign: 'right',
     },
-    [theme.fn.smallerThan(1159)]: {
+    [theme.fn.smallerThan(990)]: {
       display: 'list-item',
       textAlign: 'right',
       borderRadius: 0,
@@ -109,7 +109,7 @@ const useStyles = createStyles((theme) => ({
     },
   },
   burger: {
-    [theme.fn.largerThan(1159)]: {
+    [theme.fn.largerThan(990)]: {
       display: 'none',
     },
   },
@@ -121,7 +121,7 @@ const useStyles = createStyles((theme) => ({
     zIndex: 10,
     borderRadius: '10px',
     overflow: 'hidden',
-    [theme.fn.largerThan(1159)]: {
+    [theme.fn.largerThan(990)]: {
       display: 'none',
     },
   },
@@ -339,7 +339,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                   }}
                 >
                   <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                    <IconRobot size={20} />
+                    <IconRobot size={23} />
                     <span className="home-header_text-underline" style={{
                       backgroundRepeat: 'no-repeat',
                       backgroundPosition: 'bottom left',
@@ -356,14 +356,14 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
             </Container>
 
 
-            <div>
+            <Container>
               {isAdminOrOwner && (
                 <Burger
                   opened={opened} onClick={toggle}
                   className={classes.burger} size="sm"
                 />
               )}
-            </div>
+            </Container>
             <GlobalHeader isNavbar={true} />
           </div>
         </Flex>
