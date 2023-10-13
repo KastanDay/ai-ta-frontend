@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
-import { Box, Flex } from '@mantine/core'
+import { Flex, Stack } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { GoToQueryAnalysis, ResumeToChat } from './NavbarButtons'
 import Image from 'next/image'
@@ -45,10 +45,12 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     overflow: 'hidden',
     position: 'relative',
-    height: '100%',
-    maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
+    // height: '40%',
+    height: '80px',
+    // maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
+    maxWidth: '100%',
     paddingRight: typeof window !== 'undefined' && window.innerWidth > 600 ? '4px' : '25px',
-    paddingLeft: '25px',
+    minWidth: '100px',
   },
   thumbnailImage: {
     objectFit: 'cover',
@@ -72,7 +74,7 @@ const useStyles = createStyles((theme) => ({
     padding: 'theme.spacing.lg, 1em, 1em',
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     [theme.fn.smallerThan(1159)]: {
       display: 'none',
     },
@@ -101,7 +103,7 @@ const useStyles = createStyles((theme) => ({
     },
     [theme.fn.smallerThan(1159)]: {
       display: 'list-item',
-      textAlign: 'center',
+      textAlign: 'right',
       borderRadius: 0,
       padding: theme.spacing.sm,
     },
@@ -247,75 +249,127 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
   }, [topBarRef])
 
   return (
-    <header className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}>
-      <Container className={classes.inner}>
-        <Link href="/">
-          <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
-            UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
-          </h2>
-        </Link>
-        <div style={{ ...styles.logoContainerBox }}>
-          {bannerUrl && (
-            <div className="flex-1">
-              <Image
-                src={bannerUrl}
-                style={{ ...styles.thumbnailImage }}
-                width={2000}
-                height={2000}
-                alt="The course creator uploaded a logo for this chatbot."
-              />
+    <div
+      className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}
+      style={{ display: show ? 'block' : 'none' }}
+    >
+
+
+      <div className="mt-4 w-full max-w-[95%]" style={{ height: '50px', paddingTop: 'Opx' }}>
+        {/* <div > */}
+        {/* <Flex style={{ flexDirection: 'row' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"> */}
+        <Flex style={{ flexDirection: 'row', justifyContent: 'space-between' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800">
+
+
+          <div style={{ justifyContent: 'flex-start' }} >
+            <div style={{ ...styles.logoContainerBox, display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+              <Link href="/">
+                <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
+                  UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
+                </h2>
+              </Link>
+
+              {bannerUrl && (
+                <div style={{ ...styles.logoContainerBox, paddingLeft: '25px', }}>
+                  <Image
+                    src={bannerUrl}
+                    style={{ ...styles.thumbnailImage }}
+                    width={2000}
+                    height={2000}
+                    alt="The course creator uploaded a logo for this chatbot."
+                  />
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        <Box className={classes.links}>
-          {items().map((item, index) => (
-            <Link
-              key={index}
-              href={item.link}
-              onClick={() => handleLinkClick(item.link)}
-              data-active={activeLink === item.link}
-              className={classes.link}
+          </div>
+
+
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <Transition
+              transition="pop-top-right"
+              duration={200}
+              mounted={opened}
             >
-              <span style={{ display: 'flex', alignItems: 'center' }}>
-                {item.icon}
-                {item.name}
-              </span>
-            </Link>
-          ))}
-        </Box>
-        <Burger
-          opened={opened}
-          onClick={toggle}
-          className={classes.burger}
-          size="sm"
-        />
-        <div style={{ display: 'block' }}>
-          <button className={`${classes.link}`} style={{ padding: '3px 12px' }}
-            onClick={() => {
-              homeDispatch({
-                field: 'showModelSettings',
-                value: !showModelSettings,
-              })
-            }}
-          >
-            <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-              <IconRobot size={20} />
-              <span className="home-header_text-underline" style={{
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'bottom left',
-                backgroundSize: 'contain',
-                height: '40px',
-                position: 'relative',
-                top: '13px'
-              }}>
-                <span style={{ marginLeft: '5px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span></span>
+              {(styles) => (
+                <Paper className={classes.dropdown} withBorder style={styles}>
+                  {items().map((item, index) => (
+                    <Link
+                      key={index}
+                      href={item.link}
+                      onClick={() => handleLinkClick(item.link)}
+                      data-active={activeLink === item.link}
+                      className={classes.link}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'right', justifyContent: 'flex-end' }}>
+                        {item.icon}
+                        {item.name}
+                      </span>
+                    </Link>
+                  ))}
+                </Paper>
+              )}
+            </Transition>
+
+
+            <Container className={classes.inner}>
+              <div className={classes.links}>
+                {items().map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.link}
+                    onClick={() => handleLinkClick(item.link)}
+                    data-active={activeLink === item.link}
+                    className={classes.link}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'right', justifyContent: 'flex-end' }}>
+                      {item.icon}
+                      {item.name}
+                    </span>
+                  </Link>
+                ))}
+
+              </div>
+              <div style={{ display: 'block' }}>
+                <button className={`${classes.link}`} style={{ padding: '3px 12px', minWidth: '120px' }}
+                  onClick={() => {
+                    homeDispatch({
+                      field: 'showModelSettings',
+                      value: !showModelSettings,
+                    })
+                  }}
+                >
+                  <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <IconRobot size={20} />
+                    <span className="home-header_text-underline" style={{
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'bottom left',
+                      backgroundSize: 'contain',
+                      height: '40px',
+                      position: 'relative',
+                      top: '13px'
+                    }}>
+                      <span style={{ marginLeft: '5px', whiteSpace: 'nowrap' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span></span>
+                  </div>
+                </button>
+              </div>
+              {showModelSettings && <ModelSelect ref={modelSettingsContainer} style={{ width: '100%', backgroundColor: '#1d1f33' }} />}
+            </Container>
+
+
+            <div>
+              {isAdminOrOwner && (
+                <Burger
+                  opened={opened} onClick={toggle}
+                  className={classes.burger} size="sm"
+                />
+              )}
             </div>
-          </button>
-          {showModelSettings && <ModelSelect ref={modelSettingsContainer} style={{ width: '100%', backgroundColor: '#1d1f33' }} />}
-        </div>
-        <GlobalHeader isNavbar={true} />
-      </Container>
-    </header>
+            <GlobalHeader isNavbar={true} />
+          </div>
+        </Flex>
+        {/* </div> */}
+      </div >
+    </div >
   )
 }
 export default ChatNavbar
