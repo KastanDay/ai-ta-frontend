@@ -116,7 +116,7 @@ const useStyles = createStyles((theme) => ({
   dropdown: {
     position: 'absolute',
     top: HEADER_HEIGHT,
-    left: '50%',
+    left: '71%',
     right: '10%',
     zIndex: 10,
     borderRadius: '10px',
@@ -127,8 +127,8 @@ const useStyles = createStyles((theme) => ({
   },
   modelSettings: {
     position: 'absolute',
-    top: '100%',
-    left: 0,
+    // top: '600px',
+    // left: '-50px',
     zIndex: 10,
     borderRadius: '10px',
     boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)',
@@ -291,7 +291,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
               mounted={opened}
             >
               {(styles) => (
-                <Paper className={classes.dropdown} withBorder style={styles}>
+                <Paper className={classes.dropdown} withBorder style={{ ...styles, transform: 'translateY(26px)' }}>
                   {items().map((item, index) => (
                     <Link
                       key={index}
@@ -300,7 +300,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                       data-active={activeLink === item.link}
                       className={classes.link}
                     >
-                      <span style={{ display: 'flex', alignItems: 'right', justifyContent: 'flex-end' }}>
+                      <span style={{ display: 'flex', alignItems: 'left', justifyContent: 'flex-start' }}>
                         {item.icon}
                         {item.name}
                       </span>
@@ -321,7 +321,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                     data-active={activeLink === item.link}
                     className={classes.link}
                   >
-                    <span style={{ display: 'flex', alignItems: 'right', justifyContent: 'flex-end' }}>
+                    <span style={{ display: 'flex', alignItems: 'left', justifyContent: 'flex-start' }}>
                       {item.icon}
                       {item.name}
                     </span>
@@ -352,7 +352,9 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                   </div>
                 </button>
               </div>
-              {showModelSettings && <ModelSelect ref={modelSettingsContainer} style={{ width: '100%', backgroundColor: '#1d1f33' }} />}
+              <div style={{ position: 'absolute', zIndex: 100, right: '30px', top: '75px' }}>
+                {showModelSettings && <ModelSelect ref={modelSettingsContainer} style={{ width: '100%', backgroundColor: '#1d1f33' }} />}
+              </div>
             </Container>
 
 
