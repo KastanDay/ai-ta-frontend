@@ -192,7 +192,7 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
   ]
 
   return (
-    <div className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}>
+    <div className="bg-[#2e026d]">
       <Flex direction="row" align="center" justify="center">
         <div className="mt-4 w-full max-w-[95%]">
           <div className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800">
