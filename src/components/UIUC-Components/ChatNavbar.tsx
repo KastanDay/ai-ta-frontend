@@ -75,15 +75,15 @@ const useStyles = createStyles((theme) => ({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    [theme.fn.smallerThan(1159)]: {
+    [theme.fn.smallerThan(990)]: {
       display: 'none',
     },
   },
   link: {
     // textTransform: 'uppercase',
-    fontSize: rem(13),
-    padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-    margin: '0.35rem',
+    fontSize: rem(12),
+    padding: `${theme.spacing.sm} ${theme.spacing.sm}`,
+    margin: '0.2rem',
     fontWeight: 700,
     transition: 'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
     borderRadius: theme.radius.sm,
@@ -101,7 +101,7 @@ const useStyles = createStyles((theme) => ({
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
       textAlign: 'right',
     },
-    [theme.fn.smallerThan(1159)]: {
+    [theme.fn.smallerThan(990)]: {
       display: 'list-item',
       textAlign: 'right',
       borderRadius: 0,
@@ -109,26 +109,26 @@ const useStyles = createStyles((theme) => ({
     },
   },
   burger: {
-    [theme.fn.largerThan(1159)]: {
+    [theme.fn.largerThan(990)]: {
       display: 'none',
     },
   },
   dropdown: {
     position: 'absolute',
     top: HEADER_HEIGHT,
-    left: '50%',
+    left: '71%',
     right: '10%',
     zIndex: 10,
     borderRadius: '10px',
     overflow: 'hidden',
-    [theme.fn.largerThan(1159)]: {
+    [theme.fn.largerThan(990)]: {
       display: 'none',
     },
   },
   modelSettings: {
     position: 'absolute',
-    top: '100%',
-    left: 0,
+    // top: '600px',
+    // left: '-50px',
     zIndex: 10,
     borderRadius: '10px',
     boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)',
@@ -291,7 +291,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
               mounted={opened}
             >
               {(styles) => (
-                <Paper className={classes.dropdown} withBorder style={styles}>
+                <Paper className={classes.dropdown} withBorder style={{ ...styles, transform: 'translateY(26px)' }}>
                   {items().map((item, index) => (
                     <Link
                       key={index}
@@ -300,7 +300,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                       data-active={activeLink === item.link}
                       className={classes.link}
                     >
-                      <span style={{ display: 'flex', alignItems: 'right', justifyContent: 'flex-end' }}>
+                      <span style={{ display: 'flex', alignItems: 'left', justifyContent: 'flex-start' }}>
                         {item.icon}
                         {item.name}
                       </span>
@@ -321,7 +321,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                     data-active={activeLink === item.link}
                     className={classes.link}
                   >
-                    <span style={{ display: 'flex', alignItems: 'right', justifyContent: 'flex-end' }}>
+                    <span style={{ display: 'flex', alignItems: 'left', justifyContent: 'flex-start' }}>
                       {item.icon}
                       {item.name}
                     </span>
@@ -339,7 +339,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                   }}
                 >
                   <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                    <IconRobot size={20} />
+                    <IconRobot size={23} />
                     <span className="home-header_text-underline" style={{
                       backgroundRepeat: 'no-repeat',
                       backgroundPosition: 'bottom left',
@@ -352,18 +352,20 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                   </div>
                 </button>
               </div>
-              {showModelSettings && <ModelSelect ref={modelSettingsContainer} style={{ width: '100%', backgroundColor: '#1d1f33' }} />}
+              <div style={{ position: 'absolute', zIndex: 100, right: '30px', top: '75px' }}>
+                {showModelSettings && <ModelSelect ref={modelSettingsContainer} style={{ width: '100%', backgroundColor: '#1d1f33' }} />}
+              </div>
             </Container>
 
 
-            <div>
+            <Container>
               {isAdminOrOwner && (
                 <Burger
                   opened={opened} onClick={toggle}
                   className={classes.burger} size="sm"
                 />
               )}
-            </div>
+            </Container>
             <GlobalHeader isNavbar={true} />
           </div>
         </Flex>
