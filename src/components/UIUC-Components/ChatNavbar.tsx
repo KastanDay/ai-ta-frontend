@@ -45,10 +45,11 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     overflow: 'hidden',
     position: 'relative',
-    height: '100%',
-    maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
+    // height: '40%',
+    height: '80px',
+    // maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
+    maxWidth: '100%',
     paddingRight: typeof window !== 'undefined' && window.innerWidth > 600 ? '4px' : '25px',
-    paddingLeft: '25px',
     minWidth: '100px',
   },
   thumbnailImage: {
@@ -252,59 +253,45 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
       className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}
       style={{ display: show ? 'block' : 'none' }}
     >
-      <Group >
-        <div className="mt-4 w-full max-w-[95%]" style={{ height: '50px', paddingTop: 'Opx' }}>
-          <div className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800">
-            {/* <Stack> */}
-            {/* <div className=" shadow-lg shadow-purple-800" style={{ height: '50px', paddingTop: '0px' }}> */}
-            <Link href="/">
-              <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
-                UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
-              </h2>
-            </Link>
-
-            {bannerUrl && (
-              <div style={{ ...styles.logoContainerBox }}>
-                <Image
-                  src={bannerUrl}
-                  style={{ ...styles.thumbnailImage }}
-                  width={2000}
-                  height={2000}
-                  alt="The course creator uploaded a logo for this chatbot."
-                />
-              </div>
-            )}
-            {/* </Stack> */}
-
-            <Container >
-              <Transition
-                transition="pop-top-right"
-                duration={200}
-                mounted={opened}
-              >
-                {(styles) => (
-                  <Paper className={classes.dropdown} withBorder style={styles}>
-                    {items().map((item, index) => (
-                      <Link
-                        key={index}
-                        href={item.link}
-                        onClick={() => handleLinkClick(item.link)}
-                        data-active={activeLink === item.link}
-                        className={classes.link}
-                      >
-                        <span style={{ display: 'flex', alignItems: 'right' }}>
-                          {item.icon}
-                          {item.name}
-                        </span>
-                      </Link>
-                    ))}
-                  </Paper>
-                )}
-              </Transition>
 
 
-              <Container className={classes.inner}>
-                <div className={classes.links}>
+      <div className="mt-4 w-full max-w-[95%]" style={{ height: '50px', paddingTop: 'Opx' }}>
+        {/* <div > */}
+        {/* <Flex style={{ flexDirection: 'row' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"> */}
+        <Flex style={{ flexDirection: 'row', justifyContent: 'space-between' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800">
+
+
+          <div style={{ justifyContent: 'flex-start' }} >
+            <div style={{ ...styles.logoContainerBox, display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+              <Link href="/">
+                <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
+                  UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
+                </h2>
+              </Link>
+
+              {bannerUrl && (
+                <div style={{ ...styles.logoContainerBox, paddingLeft: '25px', }}>
+                  <Image
+                    src={bannerUrl}
+                    style={{ ...styles.thumbnailImage }}
+                    width={2000}
+                    height={2000}
+                    alt="The course creator uploaded a logo for this chatbot."
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <Transition
+              transition="pop-top-right"
+              duration={200}
+              mounted={opened}
+            >
+              {(styles) => (
+                <Paper className={classes.dropdown} withBorder style={styles}>
                   {items().map((item, index) => (
                     <Link
                       key={index}
@@ -313,54 +300,75 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                       data-active={activeLink === item.link}
                       className={classes.link}
                     >
-                      <span style={{ display: 'flex', alignItems: 'right' }}>
+                      <span style={{ display: 'flex', alignItems: 'right', justifyContent: 'flex-end' }}>
                         {item.icon}
                         {item.name}
                       </span>
                     </Link>
                   ))}
+                </Paper>
+              )}
+            </Transition>
 
-                </div>
-                <div style={{ display: 'block' }}>
-                  <button className={`${classes.link}`} style={{ padding: '3px 12px', minWidth: '120px' }}
-                    onClick={() => {
-                      homeDispatch({
-                        field: 'showModelSettings',
-                        value: !showModelSettings,
-                      })
-                    }}
+
+            <Container className={classes.inner}>
+              <div className={classes.links}>
+                {items().map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.link}
+                    onClick={() => handleLinkClick(item.link)}
+                    data-active={activeLink === item.link}
+                    className={classes.link}
                   >
-                    <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                      <IconRobot size={20} />
-                      <span className="home-header_text-underline" style={{
-                        backgroundRepeat: 'no-repeat',
-                        backgroundPosition: 'bottom left',
-                        backgroundSize: 'contain',
-                        height: '40px',
-                        position: 'relative',
-                        top: '13px'
-                      }}>
-                        <span style={{ marginLeft: '5px', whiteSpace: 'nowrap' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span></span>
-                    </div>
-                  </button>
-                </div>
-                {showModelSettings && <ModelSelect ref={modelSettingsContainer} style={{ width: '100%', backgroundColor: '#1d1f33' }} />}
-              </Container>
+                    <span style={{ display: 'flex', alignItems: 'right', justifyContent: 'flex-end' }}>
+                      {item.icon}
+                      {item.name}
+                    </span>
+                  </Link>
+                ))}
 
-
-              <Container>
-                {isAdminOrOwner && (
-                  <Burger
-                    opened={opened} onClick={toggle}
-                    className={classes.burger} size="sm"
-                  />
-                )}
-              </Container>
-              <GlobalHeader isNavbar={true} />
+              </div>
+              <div style={{ display: 'block' }}>
+                <button className={`${classes.link}`} style={{ padding: '3px 12px', minWidth: '120px' }}
+                  onClick={() => {
+                    homeDispatch({
+                      field: 'showModelSettings',
+                      value: !showModelSettings,
+                    })
+                  }}
+                >
+                  <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <IconRobot size={20} />
+                    <span className="home-header_text-underline" style={{
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'bottom left',
+                      backgroundSize: 'contain',
+                      height: '40px',
+                      position: 'relative',
+                      top: '13px'
+                    }}>
+                      <span style={{ marginLeft: '5px', whiteSpace: 'nowrap' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span></span>
+                  </div>
+                </button>
+              </div>
+              {showModelSettings && <ModelSelect ref={modelSettingsContainer} style={{ width: '100%', backgroundColor: '#1d1f33' }} />}
             </Container>
+
+
+            <div>
+              {isAdminOrOwner && (
+                <Burger
+                  opened={opened} onClick={toggle}
+                  className={classes.burger} size="sm"
+                />
+              )}
+            </div>
+            <GlobalHeader isNavbar={true} />
           </div>
-        </div >
-      </Group >
+        </Flex>
+        {/* </div> */}
+      </div >
     </div >
   )
 }
