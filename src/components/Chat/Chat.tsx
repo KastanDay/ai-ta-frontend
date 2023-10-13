@@ -579,7 +579,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   return (
-    <div className="flex flex-col h-screen w-full overflow-hidden bg-white dark:bg-[#15162c]">
+    <div className="overflow-wrap relative flex flex-col h-screen w-full overflow-hidden bg-white dark:bg-[#15162c]">
       <div className="flex-none">
         <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
       </div>
@@ -692,6 +692,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 </>
               )}
             </div>
+            {/* <div className="w-full max-w-[calc(100% - var(--sidebar-width))] mx-auto flex justify-center"> */}
             <ChatInput
               stopConversationRef={stopConversationRef}
               textareaRef={textareaRef}
@@ -709,6 +710,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               inputContent={inputContent}
               setInputContent={setInputContent}
             />
+            {/* </div> */}
           </>
         )}
       </div>

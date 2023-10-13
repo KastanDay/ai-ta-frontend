@@ -260,19 +260,19 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                   UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
                 </h2>
               </Link>
-              <div className='flex-1'>
+              <div className='flex-1' style={{ ...styles.logoContainerBox }}>
                 {bannerUrl && (
-                  <Image
-                    src={bannerUrl}
-                    style={{ ...styles.thumbnailImage, maxHeight: '70px', padding: '10px 10px' }}
-                    // className=""
-                    width={2000}
-                    height={2000}
-                    alt="The course creator uploaded a logo for this chatbot."
-                  />
+                  <div className="flex-1">
+                    <Image
+                      src={bannerUrl}
+                      style={{ ...styles.thumbnailImage }}
+                      width={2000}
+                      height={2000}
+                      alt="The course creator uploaded a logo for this chatbot."
+                    />
+                  </div>
                 )}
               </div>
-
               <Transition
                 transition="pop-top-right"
                 duration={200}
