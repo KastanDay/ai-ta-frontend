@@ -585,7 +585,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       </div>
       <div className="flex-grow overflow-auto">
         {!(apiKey || serverSideApiKeyIsSet) ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center mt-16">
             <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
               <div className="mb-2 flex flex-col items-center text-center">
                 <IconAlertTriangle
