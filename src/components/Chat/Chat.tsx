@@ -228,7 +228,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           messages: updatedConversation.messages,
           key:
             courseMetadata?.openai_api_key &&
-              courseMetadata?.openai_api_key != ''
+            courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
           prompt: updatedConversation.prompt,
@@ -522,14 +522,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-      courseMetadata.example_questions.length > 0
+    courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-        'Make a bullet point list of key takeaways of the course.',
-        'What is [your favorite topic] and why is it worth learning about?',
-        'How can I effectively prepare for the upcoming exam?',
-        'How many assignments in the course?',
-      ]
+          'Make a bullet point list of key takeaways of the course.',
+          'What is [your favorite topic] and why is it worth learning about?',
+          'How can I effectively prepare for the upcoming exam?',
+          'How many assignments in the course?',
+        ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
@@ -579,7 +579,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   return (
-    <div className="overflow-wrap relative flex flex-col h-screen w-full overflow-hidden bg-white dark:bg-[#15162c]">
+    <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
       <div className="flex-none">
         <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
       </div>
@@ -646,7 +646,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   </div>
                 </div>
                 <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
-
                   <IconArrowLeft
                     size={'36'}
                     className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"

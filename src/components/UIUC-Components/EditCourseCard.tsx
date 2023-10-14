@@ -116,7 +116,9 @@ const EditCourseCard = ({
   const [isIntroMessageUpdated, setIsIntroMessageUpdated] = useState(false)
   const [loadinSpinner, setLoadinSpinner] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [apiKey, setApiKey] = useState<string | undefined>(courseMetadata?.openai_api_key as string)
+  const [apiKey, setApiKey] = useState<string | undefined>(
+    courseMetadata?.openai_api_key as string,
+  )
   const [isKeyUpdated, setIsKeyUpdated] = useState(false)
 
   const checkCourseAvailability = () => {
@@ -175,8 +177,8 @@ const EditCourseCard = ({
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ key: key }),
-    });
-    
+    })
+
     return response
   }
 
@@ -232,9 +234,8 @@ const EditCourseCard = ({
   }
 
   const handleKeyUpdate = async (inputValue: string) => {
-
     if (inputValue === '' && courseMetadata?.openai_api_key === '') {
-      console.log("Key already empty")
+      console.log('Key already empty')
       notifications.show({
         id: 'info-notification',
         title: 'No Changes',
@@ -245,15 +246,15 @@ const EditCourseCard = ({
         className: 'my-notification-class',
         style: { backgroundColor: '#15162c' },
         loading: false,
-      });
-      return;
+      })
+      return
     }
 
     if (inputValue === '' && courseMetadata?.openai_api_key !== '') {
-      (courseMetadata as CourseMetadata).openai_api_key = inputValue;
-      console.log("Removing api key")
-      setApiKey(inputValue);
-      await callSetCourseMetadata(course_name, courseMetadata as CourseMetadata);
+      ;(courseMetadata as CourseMetadata).openai_api_key = inputValue
+      console.log('Removing api key')
+      setApiKey(inputValue)
+      await callSetCourseMetadata(course_name, courseMetadata as CourseMetadata)
       notifications.show({
         id: 'success-notification',
         title: 'Update Successful',
@@ -264,30 +265,31 @@ const EditCourseCard = ({
         className: 'my-notification-class',
         style: { backgroundColor: '#15162c' },
         loading: false,
-      });
-      return;
+      })
+      return
     }
 
     if (!inputValue.startsWith('sk-')) {
-      console.log("Invalid OpenAI API Key")
+      console.log('Invalid OpenAI API Key')
       notifications.show({
         id: 'error-notification',
         title: 'Invalid OpenAI API Key',
-        message: 'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
+        message:
+          'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
         color: 'red',
         radius: 'lg',
         icon: <IconAlertCircle />,
         className: 'my-notification-class',
         style: { backgroundColor: '#15162c' },
         loading: false,
-      });
-      return;
+      })
+      return
     }
 
-    const validationResponse = await validateKey(inputValue);
+    const validationResponse = await validateKey(inputValue)
     if (!validationResponse.ok) {
       const response = await validationResponse.json()
-      console.log("New key validated")
+      console.log('New key validated')
       notifications.show({
         id: 'error-notification',
         title: response.name,
@@ -298,15 +300,15 @@ const EditCourseCard = ({
         className: 'my-notification-class',
         style: { backgroundColor: '#15162c' },
         loading: false,
-      });
-      return;
+      })
+      return
     }
 
     if (courseMetadata) {
-      console.log("Key updated for course")
-      courseMetadata.openai_api_key = inputValue;
-      setApiKey(inputValue);
-      await callSetCourseMetadata(course_name, courseMetadata);
+      console.log('Key updated for course')
+      courseMetadata.openai_api_key = inputValue
+      setApiKey(inputValue)
+      await callSetCourseMetadata(course_name, courseMetadata)
       notifications.show({
         id: 'success-notification',
         title: 'Update Successful',
@@ -317,9 +319,9 @@ const EditCourseCard = ({
         className: 'my-notification-class',
         style: { backgroundColor: '#15162c' },
         loading: false,
-      });
+      })
     }
-  };
+  }
 
   const { classes } = useStyles() // for Accordion
 
@@ -365,11 +367,13 @@ const EditCourseCard = ({
                   autoFocus
                   disabled={!is_new_course}
                   className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${isCourseAvailable && courseName != ''
-                      ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                      : 'border-red-800 text-red-600 focus:border-red-800'
-                    } ${montserrat_paragraph.variable
-                    } font-montserratParagraph`}
+                                ${
+                                  isCourseAvailable && courseName != ''
+                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                                    : 'border-red-800 text-red-600 focus:border-red-800'
+                                } ${
+                    montserrat_paragraph.variable
+                  } font-montserratParagraph`}
                 />
                 <Title
                   order={4}
@@ -538,20 +542,23 @@ const EditCourseCard = ({
                       id="openai-api-key-input"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                          const inputValue = (e.target as HTMLInputElement).value;
-                          handleKeyUpdate(inputValue);
+                          const inputValue = (e.target as HTMLInputElement)
+                            .value
+                          handleKeyUpdate(inputValue)
                         }
                       }}
                       rightSection={
                         <Button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          const apiKeyInput = document.getElementById('openai-api-key-input') as HTMLInputElement;
-                          if (apiKeyInput) {
-                            const inputValue = apiKeyInput.value;
-                            handleKeyUpdate(inputValue);
-                          }
-                        }}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            const apiKeyInput = document.getElementById(
+                              'openai-api-key-input',
+                            ) as HTMLInputElement
+                            if (apiKeyInput) {
+                              const inputValue = apiKeyInput.value
+                              handleKeyUpdate(inputValue)
+                            }
+                          }}
                           size="sm"
                           radius={'xl'}
                           className="min-w-[5rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
@@ -579,11 +586,11 @@ const EditCourseCard = ({
                   course_name={course_name}
                   current_user_email={current_user_email}
                   courseMetadata={courseMetadata as CourseMetadata}
-                // course_intro_message={
-                //   courseMetadata?.course_intro_message || ''
-                // }
-                // is_private={courseMetadata?.is_private || false}
-                // banner_image_s3={courseBannerUrl}
+                  // course_intro_message={
+                  //   courseMetadata?.course_intro_message || ''
+                  // }
+                  // is_private={courseMetadata?.is_private || false}
+                  // banner_image_s3={courseBannerUrl}
                 />
 
                 <Title
@@ -868,7 +875,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-              // style={{ textDecoration: 'underline' }}
+                // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
@@ -882,8 +889,9 @@ const PrivateOrPublicCourse = ({
 
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${isPrivate ? 'private' : 'public'
-            }. Click to change.`}
+          label={`Course is ${
+            isPrivate ? 'private' : 'public'
+          }. Click to change.`}
           wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."

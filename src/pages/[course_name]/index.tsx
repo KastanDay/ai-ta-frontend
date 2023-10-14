@@ -11,7 +11,6 @@ import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 
-
 const IfCourseExists: NextPage = () => {
   const router = useRouter()
   const course_name = router.query.course_name as string

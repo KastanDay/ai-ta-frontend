@@ -62,7 +62,6 @@ const useStyles = createStyles((theme) => ({
     paddingTop: 20,
     paddingBottom: 20,
 
-
     '&[data-active]': {
       paddingTop: 20,
     },
@@ -166,7 +165,7 @@ const SupportedFileUploadTypes = () => {
           width={720}
           height={100}
           quality={60}
-          color='white'
+          color="white"
           alt="Generic video icon"
           className={classes.logos}
         />
@@ -203,8 +202,8 @@ const SupportedFileUploadTypes = () => {
           quality={60}
           alt="Canvas logo"
           className={classes.logos}
-        // Had to force it down a few pixels, looked weird otherwise
-        // style={{ position: 'relative', top: '7px' }}
+          // Had to force it down a few pixels, looked weird otherwise
+          // style={{ position: 'relative', top: '7px' }}
         />
         <Image
           src="/media/mitocw_logo.jpg"
@@ -221,8 +220,8 @@ const SupportedFileUploadTypes = () => {
           quality={60}
           alt="Github logo"
           className={classes.logos}
-        // className={classes.smallLogos}
-        // style={{mixBlendMode: 'multiply' }}
+          // className={classes.smallLogos}
+          // style={{mixBlendMode: 'multiply' }}
         />
         <Image
           src="/media/notion_logo.png"
@@ -231,8 +230,8 @@ const SupportedFileUploadTypes = () => {
           quality={60}
           alt="Notion logo"
           className={classes.logos}
-        // className={classes.smallLogos}
-        // style={{mixBlendMode: 'multiply' }}
+          // className={classes.smallLogos}
+          // style={{mixBlendMode: 'multiply' }}
         />
       </Flex>
 
@@ -256,7 +255,11 @@ const SupportedFileUploadTypes = () => {
         }}
         className={classes.root}
       >
-        <Accordion.Item value="openai-key-details" className={classes.item} style={{ backgroundColor: '#292c5b' }}>
+        <Accordion.Item
+          value="openai-key-details"
+          className={classes.item}
+          style={{ backgroundColor: '#292c5b' }}
+        >
           <Accordion.Control className={classes.control}>
             <div
               style={{
@@ -416,7 +419,7 @@ const SupportedFileUploadTypes = () => {
             </Text>
           </Accordion.Panel>
         </Accordion.Item>
-      </Accordion >
+      </Accordion>
     </>
   )
 }

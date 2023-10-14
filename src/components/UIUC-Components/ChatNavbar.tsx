@@ -38,13 +38,11 @@ import {
 import { useRouter } from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { useUser } from '@clerk/nextjs'
-import { getCoursesByOwnerOrAdmin } from './getAllCourseMetaData';
+import { getCoursesByOwnerOrAdmin } from './getAllCourseMetaData'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import HomeContext from '~/pages/api/home/home.context'
 import { ModelSelect } from '../Chat/ModelSelect'
-
-
 
 const styles: Record<string, React.CSSProperties> = {
   logoContainerBox: {
@@ -56,7 +54,8 @@ const styles: Record<string, React.CSSProperties> = {
     height: '80px',
     // maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
     maxWidth: '100%',
-    paddingRight: typeof window !== 'undefined' && window.innerWidth > 600 ? '4px' : '25px',
+    paddingRight:
+      typeof window !== 'undefined' && window.innerWidth > 600 ? '4px' : '25px',
     minWidth: '100px',
   },
   thumbnailImage: {
@@ -92,7 +91,8 @@ const useStyles = createStyles((theme) => ({
     padding: `${theme.spacing.sm} ${theme.spacing.sm}`,
     margin: '0.2rem',
     fontWeight: 700,
-    transition: 'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
+    transition:
+      'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
     borderRadius: theme.radius.sm,
     '&:hover': {
       color: 'hsl(280,100%,70%)',
@@ -146,13 +146,18 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className = '' }) => {
-  const { classes, theme } = useStyles();
-  const router = useRouter();
-  const [activeLink, setActiveLink] = useState(router.asPath);
-  const [opened, { toggle }] = useDisclosure(false);
-  const [show, setShow] = useState(true);
-  const [isAdminOrOwner, setIsAdminOrOwner] = useState(false);
+const ChatNavbar = ({
+  course_name = '',
+  bannerUrl = '',
+  isgpt4 = true,
+  className = '',
+}) => {
+  const { classes, theme } = useStyles()
+  const router = useRouter()
+  const [activeLink, setActiveLink] = useState(router.asPath)
+  const [opened, { toggle }] = useDisclosure(false)
+  const [show, setShow] = useState(true)
+  const [isAdminOrOwner, setIsAdminOrOwner] = useState(false)
   const clerk_user = useUser()
   const {
     state: { showModelSettings, selectedConversation },
@@ -168,61 +173,83 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
   useEffect(() => {
     const fetchCourses = async () => {
       if (clerk_user.isLoaded && clerk_user.isSignedIn) {
-        const emails = extractEmailsFromClerk(clerk_user.user);
-        const currUserEmail = emails[0];
+        const emails = extractEmailsFromClerk(clerk_user.user)
+        const currUserEmail = emails[0]
         if (!currUserEmail) {
-          throw new Error('No email found for the user');
+          throw new Error('No email found for the user')
         }
-        const response = await fetch(`/api/UIUC-api/getAllCourseMetadata?currUserEmail=${currUserEmail}`);
-        const rawData = await response.json();
+        const response = await fetch(
+          `/api/UIUC-api/getAllCourseMetadata?currUserEmail=${currUserEmail}`,
+        )
+        const rawData = await response.json()
         if (rawData) {
-          const currentCourseName = getCurrentCourseName();
+          const currentCourseName = getCurrentCourseName()
           if (currentCourseName) {
-            const courseData = rawData.find((course: { [key: string]: CourseMetadata }) => Object.keys(course)[0] === currentCourseName);
+            const courseData = rawData.find(
+              (course: { [key: string]: CourseMetadata }) =>
+                Object.keys(course)[0] === currentCourseName,
+            )
             if (courseData) {
-              const courseMetadata = courseData[currentCourseName];
-              const isAdmin = courseMetadata.course_owner === currUserEmail ||
-                (courseMetadata.course_admins && courseMetadata.course_admins.includes(currUserEmail));
-              setIsAdminOrOwner(isAdmin);
+              const courseMetadata = courseData[currentCourseName]
+              const isAdmin =
+                courseMetadata.course_owner === currUserEmail ||
+                (courseMetadata.course_admins &&
+                  courseMetadata.course_admins.includes(currUserEmail))
+              setIsAdminOrOwner(isAdmin)
             } else {
-              setIsAdminOrOwner(false);
+              setIsAdminOrOwner(false)
             }
           }
         }
       }
     }
-    fetchCourses();
+    fetchCourses()
   }, [clerk_user.isLoaded, clerk_user.isSignedIn])
-
 
   const handleLinkClick = (path: string) => {
     setActiveLink(path)
     toggle()
   }
 
-
-
   const items = () => {
     if (isAdminOrOwner) {
       return [
         {
-          name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
+          name: (
+            <span
+              className={`${montserrat_heading.variable} font-montserratHeading`}
+            >
+              Chat
+            </span>
+          ),
           icon: <MessageChatIcon />,
-          link: `/${getCurrentCourseName()}/gpt4`
+          link: `/${getCurrentCourseName()}/gpt4`,
         },
         {
-          name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>,
+          name: (
+            <span
+              className={`${montserrat_heading.variable} font-montserratHeading`}
+            >
+              Materials
+            </span>
+          ),
           icon: <FolderIcon />,
-          link: `/${getCurrentCourseName()}/materials`
+          link: `/${getCurrentCourseName()}/materials`,
         },
         {
-          name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
+          name: (
+            <span
+              className={`${montserrat_heading.variable} font-montserratHeading`}
+            >
+              Analysis
+            </span>
+          ),
           icon: <ReportIcon />,
-          link: `/${getCurrentCourseName()}/query-analysis`
-        }
-      ];
+          link: `/${getCurrentCourseName()}/query-analysis`,
+        },
+      ]
     } else {
-      return [];
+      return []
     }
   }
 
@@ -257,19 +284,28 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
 
   return (
     <div
-      className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'} pb-16 pl-5 -mr-5`}
+      className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'} -mr-5 pb-16 pl-5`}
       style={{ display: show ? 'block' : 'none' }}
     >
-
-
-      <div className="mt-4 w-full max-w-[95%]" style={{ height: '50px', paddingTop: 'Opx' }}>
+      <div
+        className="mt-4 w-full max-w-[95%]"
+        style={{ height: '50px', paddingTop: 'Opx' }}
+      >
         {/* <div > */}
         {/* <Flex style={{ flexDirection: 'row' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"> */}
-        <Flex style={{ flexDirection: 'row', justifyContent: 'space-between' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800">
-
-
-          <div style={{ justifyContent: 'flex-start' }} >
-            <div style={{ ...styles.logoContainerBox, display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+        <Flex
+          style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+          className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"
+        >
+          <div style={{ justifyContent: 'flex-start' }}>
+            <div
+              style={{
+                ...styles.logoContainerBox,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+              }}
+            >
               <Link href="/">
                 <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
                   UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
@@ -277,7 +313,9 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
               </Link>
 
               {bannerUrl && (
-                <div style={{ ...styles.logoContainerBox, paddingLeft: '25px', }}>
+                <div
+                  style={{ ...styles.logoContainerBox, paddingLeft: '25px' }}
+                >
                   <Image
                     src={bannerUrl}
                     style={{ ...styles.thumbnailImage }}
@@ -290,9 +328,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
             </div>
           </div>
 
-
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             {/* This is the hamburger menu / dropdown */}
             <Transition
               transition="pop-top-right"
@@ -300,7 +336,11 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
               mounted={opened}
             >
               {(styles) => (
-                <Paper className={classes.dropdown} withBorder style={{ ...styles, transform: 'translateY(26px)' }}>
+                <Paper
+                  className={classes.dropdown}
+                  withBorder
+                  style={{ ...styles, transform: 'translateY(26px)' }}
+                >
                   {items().map((item, index) => (
                     <Link
                       key={index}
@@ -309,7 +349,13 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                       data-active={activeLink === item.link}
                       className={classes.link}
                     >
-                      <span style={{ display: 'flex', alignItems: 'left', justifyContent: 'flex-start' }}>
+                      <span
+                        style={{
+                          display: 'flex',
+                          alignItems: 'left',
+                          justifyContent: 'flex-start',
+                        }}
+                      >
                         {item.icon}
                         {item.name}
                       </span>
@@ -318,7 +364,6 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                 </Paper>
               )}
             </Transition>
-
 
             {/* This is the main links on top  */}
             <Container className={classes.inner}>
@@ -331,16 +376,24 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                     data-active={activeLink === item.link}
                     className={classes.link}
                   >
-                    <span style={{ display: 'flex', alignItems: 'left', justifyContent: 'flex-start', padding: '0px' }}>
+                    <span
+                      style={{
+                        display: 'flex',
+                        alignItems: 'left',
+                        justifyContent: 'flex-start',
+                        padding: '0px',
+                      }}
+                    >
                       {item.icon}
                       {item.name}
                     </span>
                   </Link>
                 ))}
-
               </div>
               <div style={{ display: 'block' }}>
-                <button className={`${classes.link}`} style={{ padding: '3px 12px', minWidth: '120px' }}
+                <button
+                  className={`${classes.link}`}
+                  style={{ padding: '3px 12px', minWidth: '120px' }}
                   onClick={() => {
                     homeDispatch({
                       field: 'showModelSettings',
@@ -348,37 +401,68 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                     })
                   }}
                 >
-                  <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                    <IconRobot size={24} style={{ position: 'relative', top: '-2px' }} />
-                    <span className="home-header_text-underline" style={{
-                      backgroundRepeat: 'no-repeat',
-                      backgroundPosition: 'bottom left',
-                      backgroundSize: 'contain',
-                      height: '40px',
-                      position: 'relative',
-                      top: '12px'
-                    }}>
-                      <span style={{ marginLeft: '5px', whiteSpace: 'nowrap' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span></span>
+                  <div
+                    ref={topBarRef}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      width: '100%',
+                    }}
+                  >
+                    <IconRobot
+                      size={24}
+                      style={{ position: 'relative', top: '-2px' }}
+                    />
+                    <span
+                      className="home-header_text-underline"
+                      style={{
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'bottom left',
+                        backgroundSize: 'contain',
+                        height: '40px',
+                        position: 'relative',
+                        top: '12px',
+                      }}
+                    >
+                      <span
+                        style={{ marginLeft: '5px', whiteSpace: 'nowrap' }}
+                        className={`${montserrat_heading.variable} font-montserratHeading`}
+                      >
+                        Model: {selectedConversation?.model.name}
+                      </span>
+                    </span>
                   </div>
                 </button>
               </div>
-              <div style={{ position: 'absolute', zIndex: 100, right: '30px', top: '75px' }}>
-                {showModelSettings && <ModelSelect ref={modelSettingsContainer} style={{ width: '100%', backgroundColor: '#1d1f33' }} />}
+              <div
+                style={{
+                  position: 'absolute',
+                  zIndex: 100,
+                  right: '30px',
+                  top: '75px',
+                }}
+              >
+                {showModelSettings && (
+                  <ModelSelect
+                    ref={modelSettingsContainer}
+                    style={{ width: '100%', backgroundColor: '#1d1f33' }}
+                  />
+                )}
               </div>
             </Container>
-
 
             <Container style={{ padding: 0, margin: 0 }}>
               {isAdminOrOwner && (
                 <Burger
-                  opened={opened} onClick={toggle}
-                  className={classes.burger} size="sm"
+                  opened={opened}
+                  onClick={toggle}
+                  className={classes.burger}
+                  size="sm"
                 />
               )}
             </Container>
 
-            <div className='pl-1 pr-1' style={{ marginLeft: '-15px' }}>
-
+            <div className="pl-1 pr-1" style={{ marginLeft: '-15px' }}>
               <SignedIn>
                 <UserButton afterSignOutUrl="/" />
               </SignedIn>
@@ -386,12 +470,11 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                 <SignInButton />
               </SignedOut>
             </div>
-
           </div>
         </Flex>
         {/* </div> */}
-      </div >
-    </div >
+      </div>
+    </div>
   )
 }
 export default ChatNavbar
