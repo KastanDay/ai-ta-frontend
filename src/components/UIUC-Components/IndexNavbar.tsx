@@ -39,11 +39,7 @@ export function LandingPageHeader({ isNavbar = false }) {
     >
       <Group>
         {items.map((item, index) => (
-          <Link
-            key={index}
-            href={item.link}
-            className={classes.link}
-          >
+          <Link key={index} href={item.link} className={classes.link}>
             <span style={{ display: 'flex', alignItems: 'center' }}>
               {item.icon}
               {item.name}
@@ -97,7 +93,8 @@ const useStyles = createStyles((theme) => ({
     padding: `${theme.spacing.sm} ${theme.spacing.sm}`,
     margin: '0.35rem',
     fontWeight: 700,
-    transition: 'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
+    transition:
+      'border-color 100ms ease, color 100ms ease, background-color 100ms ease',
     borderRadius: theme.radius.sm,
     '&:hover': {
       color: 'hsl(280,100%,70%)',

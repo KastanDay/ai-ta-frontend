@@ -4,9 +4,7 @@ import { NextResponse } from 'next/server'
 import { CourseMetadata } from '~/types/courseMetadata'
 import { log } from 'next-axiom'
 
-
 export const runtime = 'edge'
-
 
 export const getCoursesByOwnerOrAdmin = async (
   currUserEmail: string,

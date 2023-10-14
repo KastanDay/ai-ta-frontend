@@ -1,4 +1,4 @@
-import { Table, Title, Text, } from '@mantine/core'
+import { Table, Title, Text } from '@mantine/core'
 import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
@@ -95,7 +95,7 @@ const ListProjectTable: React.FC = () => {
         </>
       )
     }
-    // authed users: 
+    // authed users:
     return (
       <>
         <Title order={3} color="white" ta="center">
@@ -147,18 +147,24 @@ const ListProjectTable: React.FC = () => {
               </thead>
               <tbody>{rows}</tbody>
             </Table>
-          </div >
+          </div>
         ) : (
-          <Text size='md' className={`${montserrat_heading.variable} font-montserratHeading`} bg={'bg-transparent'} style={{ backgroundColor: 'clear', textAlign: 'center' }}>
+          <Text
+            size="md"
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+            bg={'bg-transparent'}
+            style={{ backgroundColor: 'clear', textAlign: 'center' }}
+          >
             You haven&apos;t created any projects yet. Let&apos;s{' '}
-            <Link className="text-purple-500 underline" href="/new">go make one here</Link>, don&apos;t worry it&apos;s
-            easy.
+            <Link className="text-purple-500 underline" href="/new">
+              go make one here
+            </Link>
+            , don&apos;t worry it&apos;s easy.
           </Text>
         )}
       </>
     )
   }
 }
-
 
 export default ListProjectTable
