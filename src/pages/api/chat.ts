@@ -9,8 +9,7 @@ import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 import { getExtremePrompt } from './getExtremePrompt'
 import { getStuffedPrompt } from './contextStuffingHelper'
 import { OpenAIModelID, OpenAIModels } from '~/types/openai'
-import { NextResponse } from 'next/server';
-
+import { NextResponse } from 'next/server'
 
 export const config = {
   runtime: 'edge',
@@ -115,17 +114,20 @@ const handler = async (req: Request): Promise<NextResponse> => {
     return new NextResponse(stream)
   } catch (error) {
     if (error instanceof OpenAIError) {
-      const { name, message } = error;
-      console.log("Printing message here", message)
-      const resp = NextResponse.json({
-        statusCode: 400,
-        name: name,
-        message: message
-      }, { status: 400 });
+      const { name, message } = error
+      console.log('Printing message here', message)
+      const resp = NextResponse.json(
+        {
+          statusCode: 400,
+          name: name,
+          message: message,
+        },
+        { status: 400 },
+      )
       console.log('Final OpenAIError resp: ', resp)
       return resp
     } else {
-      const resp =  NextResponse.json({ name: 'Error' }, { status: 500 });
+      const resp = NextResponse.json({ name: 'Error' }, { status: 500 })
       console.log('Final Error resp: ', resp)
       return resp
     }
