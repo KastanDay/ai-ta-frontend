@@ -9,7 +9,7 @@ import Link from 'next/link'
 import GlobalHeader from '~/components/UIUC-Components/navbars/GlobalHeader'
 import { Flex, Stack } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { GoToQueryAnalysis, ResumeToChat } from '../NavbarButtons'
+import { GoToQueryAnalysis, ResumeToChat } from './NavbarButtons'
 import Image from 'next/image'
 import { useEffect, useState, useContext, useRef } from 'react'
 import {
@@ -211,47 +211,23 @@ const ChatNavbar = ({
     toggle()
   }
 
-  const items = () => {
-    if (isAdminOrOwner) {
-      return [
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Chat
-            </span>
-          ),
-          icon: <MessageChatIcon />,
-          link: `/${getCurrentCourseName()}/gpt4`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Materials
-            </span>
-          ),
-          icon: <FolderIcon />,
-          link: `/${getCurrentCourseName()}/materials`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Analysis
-            </span>
-          ),
-          icon: <ReportIcon />,
-          link: `/${getCurrentCourseName()}/query-analysis`,
-        },
-      ]
-    } else {
-      return []
+  const items = isAdminOrOwner ? [
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
+      icon: <MessageChatIcon />,
+      link: `/${getCurrentCourseName()}/gpt4`
+    },
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>,
+      icon: <FolderIcon />,
+      link: `/${getCurrentCourseName()}/materials`
+    },
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
+      icon: <ReportIcon />,
+      link: `/${getCurrentCourseName()}/query-analysis`
     }
-  }
+  ] : [];
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -341,7 +317,7 @@ const ChatNavbar = ({
                   withBorder
                   style={{ ...styles, transform: 'translateY(26px)' }}
                 >
-                  {items().map((item, index) => (
+                  {items.map((item, index) => (
                     <Link
                       key={index}
                       href={item.link}
@@ -368,7 +344,7 @@ const ChatNavbar = ({
             {/* This is the main links on top  */}
             <Container className={classes.inner} style={{ padding: 0, margin: 0 }}>
               <div className={classes.links}>
-                {items().map((item, index) => (
+                {items.map((item, index) => (
                   <Link
                     key={index}
                     href={item.link}
