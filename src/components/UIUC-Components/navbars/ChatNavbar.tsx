@@ -119,6 +119,7 @@ const useStyles = createStyles((theme) => ({
     [theme.fn.largerThan(990)]: {
       display: 'none',
     },
+    marginRight: '14px',
   },
   dropdown: {
     position: 'absolute',
