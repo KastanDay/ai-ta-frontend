@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
+import GlobalHeader from '~/components/UIUC-Components/navbars/GlobalHeader'
 import { Flex } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { GoToQueryAnalysis, ResumeToChat } from './NavbarButtons'
+import { GoToQueryAnalysis, ResumeToChat } from '../NavbarButtons'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import {

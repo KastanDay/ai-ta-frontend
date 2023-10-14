@@ -11,7 +11,7 @@ import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { Title } from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { montserrat_heading } from 'fonts'
-import Navbar from '~/components/UIUC-Components/Navbar'
+import Navbar from '~/components/UIUC-Components/navbars/MaterialsNavbar'
 
 const CourseMain: NextPage = () => {
   const router = useRouter()

@@ -6,10 +6,10 @@ import {
   UserButton,
 } from '@clerk/nextjs'
 import Link from 'next/link'
-import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
+import GlobalHeader from '~/components/UIUC-Components/navbars/GlobalHeader'
 import { Flex, Stack } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { GoToQueryAnalysis, ResumeToChat } from './NavbarButtons'
+import { GoToQueryAnalysis, ResumeToChat } from '../NavbarButtons'
 import Image from 'next/image'
 import { useEffect, useState, useContext, useRef } from 'react'
 import {
@@ -38,11 +38,11 @@ import {
 import { useRouter } from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { useUser } from '@clerk/nextjs'
-import { getCoursesByOwnerOrAdmin } from './getAllCourseMetaData'
+import { getCoursesByOwnerOrAdmin } from '../getAllCourseMetaData'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import HomeContext from '~/pages/api/home/home.context'
-import { ModelSelect } from '../Chat/ModelSelect'
+import { ModelSelect } from '../../Chat/ModelSelect'
 
 const styles: Record<string, React.CSSProperties> = {
   logoContainerBox: {

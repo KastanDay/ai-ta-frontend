@@ -14,7 +14,7 @@ import {
   Title,
   Flex,
 } from '@mantine/core'
-import GlobalHeader from './GlobalHeader'
+import GlobalHeader from './navbars/GlobalHeader'
 import { CourseMetadata } from '~/types/courseMetadata'
 import React from 'react'
 import { useRouter } from 'next/router'

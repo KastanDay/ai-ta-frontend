@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
+import GlobalHeader from '~/components/UIUC-Components/navbars/GlobalHeader'
 import { Flex } from '@mantine/core'
-import { GoToMaterials, ResumeToChat } from './NavbarButtons'
+import { GoToMaterials, ResumeToChat } from '../NavbarButtons'
 
 const Navbar = ({ course_name = '' }) => (
   <div className="flex flex-col items-center bg-[#2e026d]">
