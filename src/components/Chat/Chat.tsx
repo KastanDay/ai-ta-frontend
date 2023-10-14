@@ -534,7 +534,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
     return (
-      <div className="xs:mx-2 mt-4 max-w-3xl gap-3 px-4 last:mb-2 sm:mx-4 md:mx-auto lg:mx-auto ">
+      <div className="xs:mx-2 mt-4 max-w-3xl gap-3 px-4 last:mb-2 sm:mx-4 md:mx-auto lg:mx-auto">
         <div className="backdrop-filter-[blur(10px)] rounded-lg border border-2 border-[rgba(42,42,120,0.55)] bg-[rgba(42,42,64,0.4)] p-6">
           <Text
             className={`mb-2 text-lg text-white ${montserrat_heading.variable} font-montserratHeading`}
@@ -580,7 +580,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   return (
     <div className="overflow-wrap relative flex flex-col h-screen w-full overflow-hidden bg-white dark:bg-[#15162c]">
+      {/* <div style={{ position: 'relative', left: '50%', transform: 'translateX(-50%)' }}> */}
       <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
+      {/* </div> */}
       <div className="flex-grow overflow-auto mt-10">
 
 
