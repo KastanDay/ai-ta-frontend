@@ -169,6 +169,7 @@ const MakeOldCoursePage = ({
 
 
               <MyTableView course_materials={course_data} />
+              <ComplexUsageExample course_materials={course_data} />
               {/* <br></br>
               <br></br>
 
@@ -217,6 +218,7 @@ import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
 import { montserrat_heading } from 'fonts'
 import MyTableView from './YourMaterialsTable'
+import ComplexUsageExample from './MantineYourMaterialsTable'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
