@@ -70,7 +70,7 @@ import { fetchContexts } from '~/pages/api/getContexts'
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
-import ChatNavbar from '../UIUC-Components/ChatNavbar'
+import ChatNavbar from '../UIUC-Components/navbars/ChatNavbar'
 // import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
 import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
@@ -581,9 +581,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   return (
     <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
       <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
-      <div className="mt-10 flex-grow overflow-auto">
+      <div className="flex-grow overflow-auto mt-10">
         {!(apiKey || serverSideApiKeyIsSet) ? (
-          <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center mt-20">
             <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
               <div className="mb-2 flex flex-col items-center text-center">
                 <IconAlertTriangle
@@ -657,7 +657,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ) : (
           <>
             <div
-              className="mt-4 max-h-full overflow-x-hidden"
+              className="max-h-full overflow-x-hidden mt-4"
               ref={chatContainerRef}
               onScroll={handleScroll}
             >
@@ -710,8 +710,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             {/* </div> */}
           </>
         )}
-      </div>
-    </div>
+      </div >
+    </div >
   )
   Chat.displayName = 'Chat'
 })

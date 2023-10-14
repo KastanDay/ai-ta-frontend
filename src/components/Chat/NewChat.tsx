@@ -176,13 +176,13 @@ import { fetchContexts } from '~/pages/api/getContexts'
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
-import Navbar from '../UIUC-Components/Navbar'
+import Navbar from '../UIUC-Components/navbars/MaterialsNavbar'
 import TopBarInChat from '../Chatbar/TopBarInChat'
 // import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
 import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
-import ChatNavbar from '../UIUC-Components/ChatNavbar'
+import ChatNavbar from '../UIUC-Components/navbars/ChatNavbar'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -335,7 +335,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           messages: updatedConversation.messages,
           key:
             courseMetadata?.openai_api_key &&
-            courseMetadata?.openai_api_key != ''
+              courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
           prompt: updatedConversation.prompt,
@@ -627,14 +627,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-    courseMetadata.example_questions.length > 0
+      courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-          'Make a bullet point list of key takeaways of the course.',
-          'What is [your favorite topic] and why is it worth learning about?',
-          'How can I effectively prepare for the upcoming exam?',
-          'How many assignments in the course?',
-        ]
+        'Make a bullet point list of key takeaways of the course.',
+        'What is [your favorite topic] and why is it worth learning about?',
+        'How can I effectively prepare for the upcoming exam?',
+        'How many assignments in the course?',
+      ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {

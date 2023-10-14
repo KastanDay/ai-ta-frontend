@@ -28,6 +28,9 @@ import { v4 as uuidv4 } from 'uuid'
 import router from 'next/router'
 
 import { ContextWithMetadata } from '@/types/chat'
+import router from 'next/router'
+
+import { ContextWithMetadata } from '@/types/chat'
 
 export const Chatbar = () => {
   const { t } = useTranslation('sidebar')
@@ -202,7 +205,7 @@ export const Chatbar = () => {
     const filterByCourse = (conversation: Conversation) => {
       return conversation.messages[0]?.contexts?.some(
         (context) => context['course_name'] === currentCourseName,
-      ) // TODO: add the space back, fix schema so we don't have this space problem
+      ) // TODO: fix "course_name " to have no space :/ the SQL database is broken...
     }
     const filterBySearchTerm = (conversation: Conversation) => {
       const searchable =

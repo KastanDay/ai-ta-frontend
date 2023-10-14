@@ -21,7 +21,7 @@ import React, { useState } from 'react'
 // import EmailChipsComponent from './EmailChipsComponent'
 // import { type CourseMetadata } from '~/types/courseMetadata'
 // import LargeDropzone from './LargeDropzone'
-import PlainNavbar from '~/components/UIUC-Components/PlainNavbar'
+import PlainNavbar from '~/components/UIUC-Components/navbars/PlainNavbar'
 import { useMediaQuery } from '@mantine/hooks'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
 

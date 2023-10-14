@@ -18,7 +18,7 @@ import {
 
 import GlobalHeader, {
   LandingPageHeader,
-} from '~/components/UIUC-Components/GlobalHeader'
+} from '~/components/UIUC-Components/navbars/GlobalHeader'
 import GlobalFooter from '~/components/UIUC-Components/GlobalFooter'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 
