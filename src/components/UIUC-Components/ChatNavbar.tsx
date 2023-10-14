@@ -54,8 +54,8 @@ const styles: Record<string, React.CSSProperties> = {
     height: '80px',
     // maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
     maxWidth: '100%',
-    paddingRight:
-      typeof window !== 'undefined' && window.innerWidth > 600 ? '4px' : '25px',
+    // paddingRight: '4px',
+    // typeof window !== 'undefined' && window.innerWidth > 900 ? '4px' : '25px',
     minWidth: '100px',
   },
   thumbnailImage: {
@@ -366,7 +366,7 @@ const ChatNavbar = ({
             </Transition>
 
             {/* This is the main links on top  */}
-            <Container className={classes.inner}>
+            <Container className={classes.inner} style={{ padding: 0, margin: 0 }}>
               <div className={classes.links}>
                 {items().map((item, index) => (
                   <Link
