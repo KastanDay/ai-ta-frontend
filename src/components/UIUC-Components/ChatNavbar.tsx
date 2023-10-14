@@ -465,7 +465,7 @@ const ChatNavbar = ({
             {/* Sign in buttons */}
             <div
               className="pl-1 pr-1"
-              style={{ marginLeft: '-15px', position: 'relative', top: '-2px' }}
+              style={{ marginLeft: '-15px', position: 'relative', top: '-2px', justifyContent: 'flex-center' }}
             >
               <SignedIn>
                 <UserButton afterSignOutUrl="/" />
