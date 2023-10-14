@@ -1,3 +1,10 @@
+import {
+  ClerkProvider,
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+} from '@clerk/nextjs'
 import Link from 'next/link'
 import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
 import { Flex, Stack } from '@mantine/core'
@@ -339,14 +346,14 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                   }}
                 >
                   <div ref={topBarRef} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                    <IconRobot size={23} />
+                    <IconRobot size={24} style={{ position: 'relative', top: '-2px' }} />
                     <span className="home-header_text-underline" style={{
                       backgroundRepeat: 'no-repeat',
                       backgroundPosition: 'bottom left',
                       backgroundSize: 'contain',
                       height: '40px',
                       position: 'relative',
-                      top: '13px'
+                      top: '12px'
                     }}>
                       <span style={{ marginLeft: '5px', whiteSpace: 'nowrap' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Model: {selectedConversation?.model.name}</span></span>
                   </div>
@@ -358,7 +365,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
             </Container>
 
 
-            <Container>
+            <Container style={{ padding: 0, margin: 0 }}>
               {isAdminOrOwner && (
                 <Burger
                   opened={opened} onClick={toggle}
@@ -366,7 +373,17 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                 />
               )}
             </Container>
-            <GlobalHeader isNavbar={true} />
+
+            <div className='pl-1 pr-1' style={{ marginLeft: '-15px' }}>
+
+              <SignedIn>
+                <UserButton afterSignOutUrl="/" />
+              </SignedIn>
+              <SignedOut>
+                <SignInButton />
+              </SignedOut>
+            </div>
+
           </div>
         </Flex>
         {/* </div> */}
