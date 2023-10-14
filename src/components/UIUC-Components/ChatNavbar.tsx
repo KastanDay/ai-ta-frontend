@@ -78,7 +78,7 @@ const useStyles = createStyles((theme) => ({
     justifyContent: 'space-between',
   },
   links: {
-    padding: 'theme.spacing.lg, 1em, 1em',
+    padding: 'theme.spacing.sm, 5px, 5px',
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -257,7 +257,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
 
   return (
     <div
-      className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'}`}
+      className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'} pb-16 pl-5 -mr-5`}
       style={{ display: show ? 'block' : 'none' }}
     >
 
@@ -292,6 +292,8 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
 
 
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
+
+            {/* This is the hamburger menu / dropdown */}
             <Transition
               transition="pop-top-right"
               duration={200}
@@ -318,6 +320,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
             </Transition>
 
 
+            {/* This is the main links on top  */}
             <Container className={classes.inner}>
               <div className={classes.links}>
                 {items().map((item, index) => (
@@ -328,7 +331,7 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
                     data-active={activeLink === item.link}
                     className={classes.link}
                   >
-                    <span style={{ display: 'flex', alignItems: 'left', justifyContent: 'flex-start' }}>
+                    <span style={{ display: 'flex', alignItems: 'left', justifyContent: 'flex-start', padding: '0px' }}>
                       {item.icon}
                       {item.name}
                     </span>
@@ -399,7 +402,7 @@ export function MessageChatIcon() {
       size={20}
       strokeWidth={2}
       // color={'white'}
-      style={{ marginRight: '5px', marginLeft: '5px' }}
+      style={{ marginRight: '4px', marginLeft: '4px' }}
     />
   )
 }
@@ -410,7 +413,7 @@ export function FolderIcon() {
       size={20}
       strokeWidth={2}
       // color={'white'}
-      style={{ marginRight: '5px', marginLeft: '5px' }}
+      style={{ marginRight: '4px', marginLeft: '4px' }}
     />
   )
 }
@@ -421,7 +424,7 @@ export function ReportIcon() {
       size={20}
       strokeWidth={2}
       // color={'white'}
-      style={{ marginRight: '5px', marginLeft: '5px' }}
+      style={{ marginRight: '4px', marginLeft: '4px' }}
     />
   )
 }
@@ -432,7 +435,7 @@ export function SettingIcon() {
       size={20}
       strokeWidth={2}
       // color={'white'}
-      style={{ marginRight: '5px', marginLeft: '5px' }}
+      style={{ marginRight: '4px', marginLeft: '4px' }}
     />
   )
 }
