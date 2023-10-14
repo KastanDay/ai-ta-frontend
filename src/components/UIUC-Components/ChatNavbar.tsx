@@ -462,12 +462,28 @@ const ChatNavbar = ({
               )}
             </Container>
 
-            <div className="pl-1 pr-1" style={{ marginLeft: '-15px' }}>
+            {/* Sign in buttons */}
+            <div
+              className="pl-1 pr-1"
+              style={{ marginLeft: '-15px', position: 'relative', top: '-2px' }}
+            >
               <SignedIn>
                 <UserButton afterSignOutUrl="/" />
               </SignedIn>
               <SignedOut>
-                <SignInButton />
+                <SignInButton >
+                  <button className={classes.link}>
+                    <div
+                      className={`${montserrat_heading.variable} font-montserratHeading`}
+                      style={{ fontSize: '12px' }}
+                    >
+                      <span style={{ whiteSpace: 'nowrap' }}>Sign in /{' '}</span>
+                      <span> </span>
+                      {/* ^^ THIS SPAN IS REQUIRED !!! TO have nice multiline behavior */}
+                      <span style={{ whiteSpace: 'nowrap' }}>Sign up</span>
+                    </div>
+                  </button>
+                </SignInButton>
               </SignedOut>
             </div>
           </div>
