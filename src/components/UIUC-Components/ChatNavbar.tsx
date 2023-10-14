@@ -195,29 +195,23 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
 
 
 
-  const items = () => {
-    if (isAdminOrOwner) {
-      return [
-        {
-          name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
-          icon: <MessageChatIcon />,
-          link: `/${getCurrentCourseName()}/gpt4`
-        },
-        {
-          name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>,
-          icon: <FolderIcon />,
-          link: `/${getCurrentCourseName()}/materials`
-        },
-        {
-          name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
-          icon: <ReportIcon />,
-          link: `/${getCurrentCourseName()}/query-analysis`
-        }
-      ];
-    } else {
-      return [];
+  const items = isAdminOrOwner ? [
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
+      icon: <MessageChatIcon />,
+      link: `/${getCurrentCourseName()}/gpt4`
+    },
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>,
+      icon: <FolderIcon />,
+      link: `/${getCurrentCourseName()}/materials`
+    },
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
+      icon: <ReportIcon />,
+      link: `/${getCurrentCourseName()}/query-analysis`
     }
-  }
+  ] : [];
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -292,13 +286,14 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
             >
               {(styles) => (
                 <Paper className={classes.dropdown} withBorder style={{ ...styles, transform: 'translateY(26px)' }}>
-                  {items().map((item, index) => (
+                  {items.map((item, index) => (
                     <Link
                       key={index}
                       href={item.link}
+                      className={classes.link}
                       onClick={() => handleLinkClick(item.link)}
                       data-active={activeLink === item.link}
-                      className={classes.link}
+
                     >
                       <span style={{ display: 'flex', alignItems: 'left', justifyContent: 'flex-start' }}>
                         {item.icon}
@@ -313,13 +308,14 @@ const ChatNavbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, className
 
             <Container className={classes.inner}>
               <div className={classes.links}>
-                {items().map((item, index) => (
+                {items.map((item, index) => (
                   <Link
                     key={index}
                     href={item.link}
+                    className={classes.link}
                     onClick={() => handleLinkClick(item.link)}
                     data-active={activeLink === item.link}
-                    className={classes.link}
+
                   >
                     <span style={{ display: 'flex', alignItems: 'left', justifyContent: 'flex-start' }}>
                       {item.icon}

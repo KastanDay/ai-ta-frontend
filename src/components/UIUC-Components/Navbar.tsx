@@ -64,7 +64,7 @@ const useStyles = createStyles((theme) => ({
     flexDirection: 'row',
     justifyContent: 'space-between',
 
-    [theme.fn.smallerThan('sm')]: {
+    [theme.fn.smallerThan(990)]: {
       display: 'none',
     },
   },
@@ -93,7 +93,7 @@ const useStyles = createStyles((theme) => ({
       backgroundColor: 'rgba(255, 255, 255, 0.1)', // add a background color when the link is active
       textAlign: 'right', // align the text to the right
     },
-    [theme.fn.smallerThan('sm')]: {
+    [theme.fn.smallerThan(990)]: {
       display: 'list-item', // change the display to list-item when 'sm'
       textAlign: 'center',
       borderRadius: 0,
@@ -102,7 +102,7 @@ const useStyles = createStyles((theme) => ({
   },
 
   burger: {
-    [theme.fn.largerThan('sm')]: {
+    [theme.fn.largerThan(990)]: {
       display: 'none',
     },
   },
@@ -114,7 +114,7 @@ const useStyles = createStyles((theme) => ({
     zIndex: 1,
     borderRadius: '10px',
     overflow: 'hidden',
-    [theme.fn.largerThan('sm')]: {
+    [theme.fn.largerThan(990)]: {
       display: 'none',
     },
   },
