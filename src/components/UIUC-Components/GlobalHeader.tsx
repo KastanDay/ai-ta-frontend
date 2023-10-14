@@ -10,24 +10,21 @@ import { IconFile } from '@tabler/icons-react'
 export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
   const headerStyle = isNavbar
     ? {
-      backgroundColor: '#15162c',
-      display: 'flex',
-      justifyContent: 'flex-end',
-      padding: '0.2em 0.2em',
-      paddingRight: '0.3em',
-    }
+        backgroundColor: '#15162c',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '0.2em 0.2em',
+        paddingRight: '0.3em',
+      }
     : {
-      backgroundColor: '#2e026d',
-      display: 'flex',
-      justifyContent: 'flex-end',
-      padding: '1em',
-    };
+        backgroundColor: '#2e026d',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '1em',
+      }
 
   return (
-    <header
-      style={headerStyle}
-      className="py-16"
-    >
+    <header style={headerStyle} className="py-16">
       <SignedIn>
         {/* Mount the UserButton component */}
         <UserButton afterSignOutUrl="/" />

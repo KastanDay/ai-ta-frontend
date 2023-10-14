@@ -579,15 +579,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   return (
-    <div className="overflow-wrap relative flex flex-col h-screen w-full overflow-hidden bg-white dark:bg-[#15162c]">
-      {/* <div style={{ position: 'relative', left: '50%', transform: 'translateX(-50%)' }}> */}
+    <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
       <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
-      {/* </div> */}
-      <div className="flex-grow overflow-auto mt-10">
-
-
+      <div className="mt-10 flex-grow overflow-auto">
         {!(apiKey || serverSideApiKeyIsSet) ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center mt-20">
+          <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
             <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
               <div className="mb-2 flex flex-col items-center text-center">
                 <IconAlertTriangle
@@ -648,7 +644,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   </div>
                 </div>
                 <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
-
                   <IconArrowLeft
                     size={'36'}
                     className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
@@ -662,7 +657,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ) : (
           <>
             <div
-              className="max-h-full overflow-x-hidden mt-4"
+              className="mt-4 max-h-full overflow-x-hidden"
               ref={chatContainerRef}
               onScroll={handleScroll}
             >
@@ -714,10 +709,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             />
             {/* </div> */}
           </>
-        )
-        }
-      </div >
-    </div >
+        )}
+      </div>
+    </div>
   )
   Chat.displayName = 'Chat'
 })

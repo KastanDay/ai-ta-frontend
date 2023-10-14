@@ -27,8 +27,7 @@ import { ChatbarInitialState, initialState } from './Chatbar.state'
 import { v4 as uuidv4 } from 'uuid'
 import router from 'next/router'
 
-import { ContextWithMetadata } from '@/types/chat';
-
+import { ContextWithMetadata } from '@/types/chat'
 
 export const Chatbar = () => {
   const { t } = useTranslation('sidebar')
@@ -198,32 +197,31 @@ export const Chatbar = () => {
     return router.asPath.split('/')[1]
   }
   useEffect(() => {
-    const currentCourseName = getCurrentCourseName();
+    const currentCourseName = getCurrentCourseName()
 
     const filterByCourse = (conversation: Conversation) => {
-      return conversation.messages[0]?.contexts?.some(context => context["course_name "] === currentCourseName);
-    };
+      return conversation.messages[0]?.contexts?.some(
+        (context) => context['course_name'] === currentCourseName,
+      ) // TODO: add the space back, fix schema so we don't have this space problem
+    }
     const filterBySearchTerm = (conversation: Conversation) => {
       const searchable =
         conversation.name.toLocaleLowerCase() +
         ' ' +
-        conversation.messages.map((message) => message.content).join(' ');
-      return searchable.toLowerCase().includes(searchTerm.toLowerCase());
-    };
+        conversation.messages.map((message) => message.content).join(' ')
+      return searchable.toLowerCase().includes(searchTerm.toLowerCase())
+    }
 
-
-    let filteredConversations = conversations.filter(filterByCourse);
+    let filteredConversations = conversations.filter(filterByCourse)
     if (!searchTerm) {
       chatDispatch({
         field: 'filteredConversations',
         value: filteredConversations,
-      });
+      })
     } else {
-      filteredConversations = filteredConversations.filter(filterBySearchTerm);
+      filteredConversations = filteredConversations.filter(filterBySearchTerm)
     }
-
-
-  }, [searchTerm, conversations]);
+  }, [searchTerm, conversations])
 
   // useEffect(() => {
   //   if (searchTerm) {
@@ -276,6 +274,6 @@ export const Chatbar = () => {
         handleDrop={handleDrop}
         footerComponent={<ChatbarSettings />}
       />
-    </ChatbarContext.Provider >
+    </ChatbarContext.Provider>
   )
 }

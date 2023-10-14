@@ -216,7 +216,9 @@ export function LargeDropzone({
             style={{
               width: rem(330),
               height: rem(225),
-              ...(isDisabled ? { backgroundColor: '#3a374a' } : { backgroundColor: '#25262b' }),
+              ...(isDisabled
+                ? { backgroundColor: '#3a374a' }
+                : { backgroundColor: '#25262b' }),
               cursor: isDisabled ? 'not-allowed' : 'pointer',
             }}
             loading={uploadInProgress}
@@ -290,17 +292,19 @@ export function LargeDropzone({
                     stroke={1.5}
                   />
                 </Dropzone.Reject>
-                {!isDisabled && <Dropzone.Idle>
-                  <IconCloudUpload
-                    size={rem(50)}
-                    color={
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.dark[0]
-                        : theme.black
-                    }
-                    stroke={1.5}
-                  />
-                </Dropzone.Idle>}
+                {!isDisabled && (
+                  <Dropzone.Idle>
+                    <IconCloudUpload
+                      size={rem(50)}
+                      color={
+                        theme.colorScheme === 'dark'
+                          ? theme.colors.dark[0]
+                          : theme.black
+                      }
+                      stroke={1.5}
+                    />
+                  </Dropzone.Idle>
+                )}
               </Group>
               {isDisabled ? (
                 <>
@@ -356,7 +360,7 @@ export function LargeDropzone({
               </Title>
             </div>
           )}
-        </div >
+        </div>
         {/* END LEFT COLUMN */}
 
         {/* START RIGHT COLUMN */}
@@ -373,7 +377,7 @@ export function LargeDropzone({
           <SupportedFileUploadTypes />
         </div>
         {/* END RIGHT COLUMN */}
-      </div >
+      </div>
     </>
   )
 }

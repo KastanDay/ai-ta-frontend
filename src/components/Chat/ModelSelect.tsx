@@ -34,9 +34,11 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
     }
 
     return (
-      <div className="flex flex-col md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:max-w-2xl lg:w-[30rem] lg:px-0 xl:max-w-3xl" style={{ position: 'absolute', zIndex: 100, right: '10px' }}>
+      <div
+        className="flex flex-col md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:w-[30rem] lg:max-w-2xl lg:px-0 xl:max-w-3xl"
+        style={{ position: 'absolute', zIndex: 100, right: '10px' }}
+      >
         <div className="flex h-full flex-col space-y-4 rounded-lg border-2 border-[rgba(42,42,120,1)] bg-[#1d1f33] p-4 dark:bg-[#1d1f33] md:rounded-lg">
-
           <div
             // THIS IS THE REFERENCE we use in TopBarChat.tsx to enable the "click away" behavior
             ref={ref as any}
@@ -84,7 +86,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
             </div>
           </div>
         </div>
-      </div >
+      </div>
     )
   },
 )
