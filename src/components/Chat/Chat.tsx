@@ -30,7 +30,7 @@ import {
   useState,
 } from 'react'
 import toast from 'react-hot-toast'
-import { Button, Text, Title } from '@mantine/core'
+import { Button, Container, Text, Title } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -580,7 +580,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   return (
     <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
-      <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
+      <Container size={2600} className="justify-center">
+        <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
+      </Container>
       <div className="flex-grow overflow-auto mt-10">
         {!(apiKey || serverSideApiKeyIsSet) ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center mt-20">
