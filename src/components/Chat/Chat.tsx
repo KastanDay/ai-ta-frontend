@@ -659,7 +659,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ) : (
           <>
             <div
-              className="max-h-full overflow-x-hidden mt-4"
+              className="max-h-full mt-4"
               ref={chatContainerRef}
               onScroll={handleScroll}
             >
