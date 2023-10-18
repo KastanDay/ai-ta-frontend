@@ -1,15 +1,12 @@
 import { notifications } from '@mantine/notifications'
 import {
-  rem,
   Button,
   Input,
   Title,
-  Text,
   useMantineTheme,
   Tooltip,
   Checkbox,
   TextInput,
-  Group,
 } from '@mantine/core'
 import { IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
@@ -17,7 +14,10 @@ import axios from 'axios'
 import { useRouter } from 'next/router'
 import { useMediaQuery } from '@mantine/hooks'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
-import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { montserrat_heading } from 'fonts'
+import { useRef } from 'react';
+
+
 
 interface WebScrapeProps {
   is_new_course: boolean
@@ -26,13 +26,28 @@ interface WebScrapeProps {
   current_user_email: string
 }
 
+const shouldShowFields = (inputUrl: string) => {
+  return !(
+    inputUrl.includes('coursera.org') ||
+    inputUrl.includes('ocw.mit.edu') ||
+    inputUrl.includes('github.com') ||
+    inputUrl.includes('canvas.illinois.edu')
+  );
+};
+
 const validateUrl = (url: string) => {
   const courseraRegex = /^https?:\/\/(www\.)?coursera\.org\/learn\/.+/
   const mitRegex = /^https?:\/\/ocw\.mit\.edu\/.+/
+  const githubRegex = /^https?:\/\/(www\.)?github\.com\/.+/
+  const canvasRegex = /^https?:\/\/canvas\.illinois\.edu\/courses\/\d+/;
   const webScrapingRegex = /^(https?:\/\/)?.+/
 
   return (
-    courseraRegex.test(url) || mitRegex.test(url) || webScrapingRegex.test(url)
+    courseraRegex.test(url) ||
+    mitRegex.test(url) ||
+    githubRegex.test(url) ||
+    canvasRegex.test(url) ||
+    webScrapingRegex.test(url)
   )
 }
 
@@ -59,6 +74,20 @@ export const WebScrape = ({
   const [maxUrls, setMaxUrls] = useState('50')
   const [maxDepth, setMaxDepth] = useState('2')
   const [stayOnBaseUrl, setStayOnBaseUrl] = useState(false)
+  const [courseID, setCourseID] = useState<string>('');
+  const [selectedContents, setSelectedContents] = useState<string[]>([]);
+  const [showContentOptions, setShowContentOptions] = useState<boolean>(false);
+  const isCourseIDUpdated = courseID.trim() !== '';
+  const logoRef = useRef(null);
+
+  const handleCheckboxChange = (values: string[]) => {
+    setSelectedContents(values);
+  };
+
+  const canvasSubmit = () => {
+    console.log('Course ID:', courseID);
+    console.log('Selected Contents:', selectedContents);
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -307,6 +336,16 @@ export const WebScrape = ({
   }
 
   useEffect(() => {
+    if (logoRef.current) {
+      const logoElement = logoRef.current as HTMLImageElement;
+      logoElement.style.width = '60%';
+      logoElement.style.height = '60%';
+      logoElement.style.position = 'relative';
+      logoElement.style.top = '2px';
+    }
+  }, [logoRef.current]);
+
+  useEffect(() => {
     if (url && url.length > 0 && validateUrl(url)) {
       console.log('url updated : ', url)
       setIsUrlUpdated(true)
@@ -349,7 +388,7 @@ export const WebScrape = ({
                 src={'/media/coursera_logo_cutout.png'}
                 alt="Coursera Logo"
                 style={{ height: '50%', width: '50%' }}
-              />,
+              />
             )
           } else if (e.target.value.includes('ocw.mit.edu')) {
             setIcon(
@@ -357,12 +396,30 @@ export const WebScrape = ({
                 src={'/media/mitocw_logo.jpg'}
                 alt="MIT OCW Logo"
                 style={{ height: '50%', width: '50%' }}
-              />,
+              />
             )
-          } else {
+          } else if (e.target.value.includes('github.com')) {
+            setIcon(
+              <img
+                src="/media/github-mark-white.png"
+                alt="GitHub Logo"
+                style={{ height: '50%', width: '50%' }}
+              />
+            )
+          }
+          else if (e.target.value.includes('canvas.illinois.edu')) {
+            setIcon(
+              <img
+                src="/media/canvas_logo.png"
+                alt="Canvas Logo"
+                style={{ height: '50%', width: '50%' }}
+              />
+            )
+          }          
+          else {
             setIcon(<IconWorldDownload />)
           }
-        }}
+        }}        
         onKeyPress={(event) => {
           if (event.key === 'Enter') {
             handleSubmit()
@@ -391,7 +448,7 @@ export const WebScrape = ({
       />
 
       {/* Detailed web ingest form */}
-      {isUrlUpdated && (
+      {isUrlUpdated && shouldShowFields(url) && (
         <form
           className="w-[80%] min-w-[20rem] lg:w-[75%]"
           onSubmit={(event) => {

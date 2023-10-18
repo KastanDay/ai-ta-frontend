@@ -8,29 +8,20 @@ import {
   Checkbox,
   Title,
   type CheckboxProps,
-  Paper,
   Input,
   Button,
   Divider,
   Accordion,
   createStyles,
-  rem,
-  em,
-  Tooltip,
-  TextInput,
 } from '@mantine/core'
 import {
   IconAlertCircle,
-  IconAlertTriangle,
   IconArrowUpRight,
   IconCircleCheck,
   IconEdit,
-  IconExternalLink,
   IconKey,
   IconLock,
   IconTrash,
-  IconX,
-  // IconQuestionMark,
 } from '@tabler/icons-react'
 
 import {
@@ -300,7 +291,6 @@ const EditCourseCard = ({
                 courseMetadata={courseMetadata as CourseMetadata}
                 is_new_course={is_new_course}
               />
-              <CanvasIngest />
               <WebScrape
                 is_new_course={is_new_course}
                 courseName={courseName}

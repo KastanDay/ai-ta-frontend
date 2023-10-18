@@ -1,6 +1,4 @@
-import { notifications } from '@mantine/notifications'
 import {
-  rem,
   Button,
   Input,
   Title,
@@ -8,16 +6,9 @@ import {
   useMantineTheme,
   Tooltip,
   Checkbox,
-  TextInput,
-  Group,
 } from '@mantine/core'
-import { IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useRef, useState } from 'react';
-import axios from 'axios'
-import { useRouter } from 'next/router'
-import { useMediaQuery } from '@mantine/hooks'
-import { callSetCourseMetadata } from '~/utils/apiUtils'
-import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { montserrat_heading } from 'fonts'
 
 interface CanvasIngestProps {
   // You can add props here if needed
