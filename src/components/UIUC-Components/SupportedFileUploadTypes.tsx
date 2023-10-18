@@ -331,7 +331,14 @@ const SupportedFileUploadTypes = () => {
                   className="w-[50px]"
                 />
               </div>
-              <strong>Canvas</strong> - coming very soon in Fall 2023!
+              <strong>For Canvas</strong>, just enter a URL like{' '}
+              <code className={classes.codeStyledText}>
+                canvas.illinois.edu/courses/COURSE_CODE
+              </code>
+              , for example:{' '}
+              <span className={'text-purple-600'}>
+                https://canvas.illinois.edu/courses/39503
+              </span>. 
               <div
                 style={{
                   display: 'flex',
@@ -353,7 +360,7 @@ const SupportedFileUploadTypes = () => {
               <code className={classes.codeStyledText}>
                 ocw.mit.edu/courses/ANY_COURSE
               </code>{' '}
-              for example:{' '}
+              , for example:{' '}
               <span className={'text-purple-600'}>
                 <Link
                   target="_blank"
