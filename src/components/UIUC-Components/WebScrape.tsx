@@ -1,3 +1,4 @@
+// Web Scrape
 import { notifications } from '@mantine/notifications'
 import {
   Button,
@@ -7,6 +8,7 @@ import {
   Tooltip,
   Checkbox,
   TextInput,
+  Text,
 } from '@mantine/core'
 import { IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
@@ -335,6 +337,10 @@ export const WebScrape = ({
     }
   }
 
+  const checkboxStyle = {
+    borderColor: theme.colors.gray[4] as string,
+  };
+
   useEffect(() => {
     if (logoRef.current) {
       const logoElement = logoRef.current as HTMLImageElement;
@@ -382,6 +388,7 @@ export const WebScrape = ({
         disabled={isDisabled}
         onChange={(e) => {
           setUrl(e.target.value)
+          setShowContentOptions(e.target.value.includes('canvas.illinois.edu'));
           if (e.target.value.includes('coursera.org')) {
             setIcon(
               <img
@@ -448,6 +455,100 @@ export const WebScrape = ({
         }
         rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
       />
+
+      {/* Canvas ingest form */}
+      {showContentOptions && (
+        <form
+        className="w-[70%] min-w-[20rem] lg:w-[70%] mt-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+        }}
+      >
+        <div>
+          <div className="flex items-center mb-2">
+            <Tooltip
+              multiline
+              color="#15162b"
+              arrowPosition="side"
+              position="bottom-start"
+              arrowSize={8}
+              withArrow
+              label="Select this option to ingest all files from the Canvas course."
+            >
+              <Checkbox value="files" label="Files" size="md" style={checkboxStyle} />
+            </Tooltip>
+          </div>
+          <div className="flex items-center mb-2">
+            <Tooltip
+              multiline
+              color="#15162b"
+              arrowPosition="side"
+              position="bottom-start"                    
+              arrowSize={8}
+              withArrow
+              label="Select this option to ingest all pages from the Canvas course."
+            >
+              <Checkbox value="pages" label="Pages" size="md" style={checkboxStyle} />
+            </Tooltip>
+          </div>
+          <div className="flex items-center mb-2">
+            <Tooltip
+              multiline
+              color="#15162b"
+              arrowPosition="side"
+              position="bottom-start"                    
+              arrowSize={8}
+              withArrow
+              label="Select this option to ingest all modules from the Canvas course."
+            >
+              <Checkbox value="modules" label="Modules" size="md" style={checkboxStyle} />
+            </Tooltip>
+          </div>
+          <div className="flex items-center mb-2">
+            <Tooltip
+              multiline
+              color="#15162b"
+              arrowPosition="side"
+              position="bottom-start"                    
+              arrowSize={8}
+              withArrow
+              label="Select this option to ingest the course syllabus from Canvas."
+            >
+              <Checkbox value="syllabus" label="Syllabus" size="md" style={checkboxStyle} />
+            </Tooltip>
+          </div>
+          <div className="flex items-center mb-2">
+            <Tooltip
+              multiline
+              color="#15162b"
+              arrowPosition="side"
+              position="bottom-start"                    
+              arrowSize={8}
+              withArrow
+              label="Select this option to ingest all assignments from the Canvas course."
+            >
+              <Checkbox value="assignments" label="Assignments" size="md" style={checkboxStyle} />
+            </Tooltip>
+          </div>
+          <div className="flex items-center">
+            <Tooltip
+              multiline
+              color="#15162b"
+              arrowPosition="side"
+              position="bottom-start"
+              arrowSize={8}
+              withArrow
+              label="Select this option to ingest all discussions from the Canvas course."
+            >
+              <Checkbox value="discussions" label="Discussions" size="md" style={checkboxStyle} />
+            </Tooltip>
+          </div>
+        </div>
+          <Text className="mt-4 text-lg font-bold underline text-red-600">
+              Please ensure that you have added the UIUC Chatbot as a student to your course on Canvas before you begin ingesting the course content. The bot email address is uiuc.chat@ad.uillinois.edu and the bot name is UIUC Course AI.
+          </Text>
+        </form>
+      )}
 
       {/* Detailed web ingest form */}
       {isUrlUpdated && shouldShowFields(url) && (

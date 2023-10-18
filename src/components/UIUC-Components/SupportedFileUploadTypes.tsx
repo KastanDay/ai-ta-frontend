@@ -337,7 +337,13 @@ const SupportedFileUploadTypes = () => {
               </code>
               , for example:{' '}
               <span className={'text-purple-600'}>
-                https://canvas.illinois.edu/courses/39503
+                <Link
+                  target="_blank"
+                  rel="noreferrer"
+                  href={'https://canvas.illinois.edu/courses/39503'}
+                >
+                  https://canvas.illinois.edu/courses/39503
+                </Link>
               </span>. 
               <div
                 style={{
@@ -371,7 +377,7 @@ const SupportedFileUploadTypes = () => {
                 >
                   https://ocw.mit.edu/courses/8-321-quantum-theory-i-fall-2017
                 </Link>
-              </span>
+              </span>.
               <div
                 style={{
                   display: 'flex',
