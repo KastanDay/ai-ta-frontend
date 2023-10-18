@@ -25,6 +25,9 @@ import ChatbarContext from './Chatbar.context'
 import { ChatbarInitialState, initialState } from './Chatbar.state'
 
 import { v4 as uuidv4 } from 'uuid'
+import router from 'next/router'
+
+import { ContextWithMetadata } from '@/types/chat'
 
 export const Chatbar = () => {
   const { t } = useTranslation('sidebar')
@@ -190,25 +193,56 @@ export const Chatbar = () => {
     }
   }
 
+  const getCurrentCourseName = () => {
+    return router.asPath.split('/')[1]
+  }
   useEffect(() => {
-    if (searchTerm) {
+    const currentCourseName = getCurrentCourseName()
+
+    const filterByCourse = (conversation: Conversation) => {
+      return conversation.messages[0]?.contexts?.some(
+        (context) => context['course_name'] === currentCourseName,
+      ) // TODO: fix "course_name " to have no space :/ the SQL database is broken...
+    }
+    const filterBySearchTerm = (conversation: Conversation) => {
+      const searchable =
+        conversation.name.toLocaleLowerCase() +
+        ' ' +
+        conversation.messages.map((message) => message.content).join(' ')
+      return searchable.toLowerCase().includes(searchTerm.toLowerCase())
+    }
+
+    let filteredConversations = conversations.filter(filterByCourse)
+    if (!searchTerm) {
       chatDispatch({
         field: 'filteredConversations',
-        value: conversations.filter((conversation) => {
-          const searchable =
-            conversation.name.toLocaleLowerCase() +
-            ' ' +
-            conversation.messages.map((message) => message.content).join(' ')
-          return searchable.toLowerCase().includes(searchTerm.toLowerCase())
-        }),
+        value: filteredConversations,
       })
     } else {
-      chatDispatch({
-        field: 'filteredConversations',
-        value: conversations,
-      })
+      filteredConversations = filteredConversations.filter(filterBySearchTerm)
     }
   }, [searchTerm, conversations])
+
+  // useEffect(() => {
+  //   if (searchTerm) {
+  //     chatDispatch({
+  //       field: 'filteredConversations',
+  //       value: conversations.filter((conversation) => {
+  //         console.log(conversation);
+  //         const searchable =
+  //           conversation.name.toLocaleLowerCase() +
+  //           ' ' +
+  //           conversation.messages.map((message) => message.content).join(' ')
+  //         return searchable.toLowerCase().includes(searchTerm.toLowerCase())
+  //       }),
+  //     })
+  //   } else {
+  //     chatDispatch({
+  //       field: 'filteredConversations',
+  //       value: conversations,
+  //     })
+  //   }
+  // }, [searchTerm, conversations])
 
   return (
     <ChatbarContext.Provider

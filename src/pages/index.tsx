@@ -2,6 +2,8 @@ import Image from 'next/image'
 import { type NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
+import React from 'react'
+
 import {
   // MantineProvider,
   // Image,
@@ -16,8 +18,9 @@ import {
 
 import GlobalHeader, {
   LandingPageHeader,
-} from '~/components/UIUC-Components/GlobalHeader'
+} from '~/components/UIUC-Components/navbars/GlobalHeader'
 import GlobalFooter from '~/components/UIUC-Components/GlobalFooter'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 
 const Home: NextPage = () => {
   return (
@@ -38,7 +41,6 @@ const Home: NextPage = () => {
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
           </h1>
-
           <Container
             size="lg"
             py="l"
@@ -56,7 +58,7 @@ const Home: NextPage = () => {
             >
               Upload anything. Search everything.
               <br></br>
-              <span className="home-header_text-underline">Discover more.</span>
+              <span className="home-header_text-underline">Discover More.</span>
             </Title>
 
             {/* <Text color="#57534e" c="dimmed" ta="center" mt="md">
@@ -71,7 +73,6 @@ const Home: NextPage = () => {
               document to chat with your knowledge base.
             </Text>
           </Container>
-
 
           <ListProjectTable />
 
@@ -124,7 +125,6 @@ export default Home
 
 import { createStyles, SimpleGrid, Container } from '@mantine/core'
 import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
-import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import ListProjectTable from '~/components/UIUC-Components/ProjectTable'
 
 const mockdata = [

@@ -21,7 +21,7 @@ import React, { useState } from 'react'
 // import EmailChipsComponent from './EmailChipsComponent'
 // import { type CourseMetadata } from '~/types/courseMetadata'
 // import LargeDropzone from './LargeDropzone'
-import Navbar from '~/components/UIUC-Components/Navbar'
+import PlainNavbar from '~/components/UIUC-Components/navbars/PlainNavbar'
 import { useMediaQuery } from '@mantine/hooks'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
 
@@ -44,7 +44,7 @@ const MakeNewCoursePage = ({
 
   return (
     <>
-      <Navbar />
+      <PlainNavbar />
       <Head>
         <title>{course_name}</title>
         <meta
