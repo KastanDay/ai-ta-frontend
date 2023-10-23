@@ -8,29 +8,20 @@ import {
   Checkbox,
   Title,
   type CheckboxProps,
-  Paper,
   Input,
   Button,
   Divider,
   Accordion,
   createStyles,
-  rem,
-  em,
-  Tooltip,
-  TextInput,
 } from '@mantine/core'
 import {
   IconAlertCircle,
-  IconAlertTriangle,
   IconArrowUpRight,
   IconCircleCheck,
   IconEdit,
-  IconExternalLink,
   IconKey,
   IconLock,
   IconTrash,
-  IconX,
-  // IconQuestionMark,
 } from '@tabler/icons-react'
 
 import {
@@ -38,6 +29,7 @@ import {
   type CourseMetadata,
 } from '~/types/courseMetadata'
 import LargeDropzone from './LargeDropzone'
+import { CanvasIngest } from './CanvasIngest'
 import EmailChipsComponent from './EmailChipsComponent'
 import { useMediaQuery } from '@mantine/hooks'
 import { Montserrat } from 'next/font/google'
