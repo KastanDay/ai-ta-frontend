@@ -160,9 +160,11 @@ export const WebScrape = ({
         router.push(`/${courseName}/materials`)
       } else if (url.includes('canvas.illinois.edu/courses/')) {
 
-        const canvasCourseId = url.split('canvas.illinois.edu/courses/')[1]; // Extract course ID from URL
+        const canvasCourseIdParts = url.split('canvas.illinois.edu/courses/');
+        const canvasCourseId = canvasCourseIdParts[1]?.split('/')[0];
+
         try {
-          const response = await axios.get('https://your-backend-url/ingestCanvas', {
+          const response = await axios.get('https://flask-production-751b.up.railway.app/ingestCanvas', {
             params: {
               course_id: canvasCourseId,
               course_name: courseName,
