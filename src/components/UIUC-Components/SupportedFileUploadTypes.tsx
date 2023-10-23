@@ -340,9 +340,9 @@ const SupportedFileUploadTypes = () => {
                 <Link
                   target="_blank"
                   rel="noreferrer"
-                  href={'https://canvas.illinois.edu/courses/39503'}
+                  href={'https://canvas.illinois.edu/courses/37348'}
                 >
-                  https://canvas.illinois.edu/courses/39503
+                  https://canvas.illinois.edu/courses/37348
                 </Link>
               </span>. 
               <div
