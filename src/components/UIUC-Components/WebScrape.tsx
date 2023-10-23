@@ -69,7 +69,7 @@ export const WebScrape = ({
   const [isUrlUpdated, setIsUrlUpdated] = useState(false)
   const [url, setUrl] = useState('')
   const [icon, setIcon] = useState(<IconWorldDownload size={'50%'} />)
-  const [loadinSpinner, setLoadinSpinner] = useState(false)
+  const [loadingSpinner, setLoadingSpinner] = useState(false)
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const theme = useMantineTheme()
@@ -81,6 +81,22 @@ export const WebScrape = ({
   const [showContentOptions, setShowContentOptions] = useState<boolean>(false);
   const isCourseIDUpdated = courseID.trim() !== '';
   const logoRef = useRef(null);
+  const [selectedCanvasOptions, setSelectedCanvasOptions] = useState<string[]>([
+    "files", 
+    "pages", 
+    "modules", 
+    "syllabus", 
+    "assignments", 
+    "discussions"
+  ]);
+  
+  const handleCanvasOptionChange = (value: string) => {
+    if (selectedCanvasOptions.includes(value)) {
+      setSelectedCanvasOptions((prev) => prev.filter((item) => item !== value));
+    } else {
+      setSelectedCanvasOptions((prev) => [...prev, value]);
+    }
+  };
 
   const handleCheckboxChange = (values: string[]) => {
     setSelectedContents(values);
@@ -105,7 +121,7 @@ export const WebScrape = ({
 
   const handleSubmit = async () => {
     if (validateUrl(url)) {
-      setLoadinSpinner(true)
+      setLoadingSpinner(true)
       let data = null
       // Make API call based on URL
       if (url.includes('coursera.org')) {
@@ -142,6 +158,35 @@ export const WebScrape = ({
           router.replace(`/${courseName}/materials`)
         }
         router.push(`/${courseName}/materials`)
+      } else if (url.includes('canvas.illinois.edu/courses/')) {
+
+        const canvasCourseId = url.split('canvas.illinois.edu/courses/')[1]; // Extract course ID from URL
+        try {
+          const response = await axios.get('https://your-backend-url/ingestCanvas', {
+            params: {
+              course_id: canvasCourseId,
+              course_name: courseName,
+              files: selectedCanvasOptions.includes('files') ? 'true' : 'false',
+              pages: selectedCanvasOptions.includes('pages') ? 'true' : 'false',
+              modules: selectedCanvasOptions.includes('modules') ? 'true' : 'false',
+              syllabus: selectedCanvasOptions.includes('syllabus') ? 'true' : 'false',
+              assignments: selectedCanvasOptions.includes('assignments') ? 'true' : 'false',
+              discussions: selectedCanvasOptions.includes('discussions') ? 'true' : 'false',
+            },
+          });
+      
+          if (response.data.outcome) {
+            console.log('Canvas content ingestion was successful!');
+            // Navigate to the course materials page or any other success behavior
+            router.push(`/${courseName}/materials`);
+          } else {
+            console.error('Canvas content ingestion failed.');
+            // Handle the failure, maybe show a notification or alert to the user
+          }
+        } catch (error) {
+          console.error('Error while ingesting Canvas content:', error);
+        }
+        
       } else {
         showToast()
 
@@ -186,7 +231,7 @@ export const WebScrape = ({
     } else {
       alert('Invalid URL (please include https://)')
     }
-    setLoadinSpinner(false)
+    setLoadingSpinner(false)
     setUrl('') // clear url
   }
 
@@ -475,7 +520,14 @@ export const WebScrape = ({
               withArrow
               label="Select this option to ingest all files from the Canvas course."
             >
-              <Checkbox value="files" label="Files" size="md" style={checkboxStyle} />
+              <Checkbox 
+                value="files" 
+                label="Files" 
+                size="md" 
+                style={checkboxStyle} 
+                checked={selectedCanvasOptions.includes("files")} 
+                onChange={() => handleCanvasOptionChange("files")}
+              />
             </Tooltip>
           </div>
           <div className="flex items-center mb-2">
@@ -488,7 +540,14 @@ export const WebScrape = ({
               withArrow
               label="Select this option to ingest all pages from the Canvas course."
             >
-              <Checkbox value="pages" label="Pages" size="md" style={checkboxStyle} />
+              <Checkbox 
+                value="pages" 
+                label="Pages" 
+                size="md" 
+                style={checkboxStyle} 
+                checked={selectedCanvasOptions.includes("pages")} 
+                onChange={() => handleCanvasOptionChange("pages")}
+              />            
             </Tooltip>
           </div>
           <div className="flex items-center mb-2">
@@ -501,7 +560,14 @@ export const WebScrape = ({
               withArrow
               label="Select this option to ingest all modules from the Canvas course."
             >
-              <Checkbox value="modules" label="Modules" size="md" style={checkboxStyle} />
+              <Checkbox 
+                value="modules" 
+                label="Modules" 
+                size="md" 
+                style={checkboxStyle} 
+                checked={selectedCanvasOptions.includes("modules")} 
+                onChange={() => handleCanvasOptionChange("modules")}
+              />
             </Tooltip>
           </div>
           <div className="flex items-center mb-2">
@@ -514,7 +580,14 @@ export const WebScrape = ({
               withArrow
               label="Select this option to ingest the course syllabus from Canvas."
             >
-              <Checkbox value="syllabus" label="Syllabus" size="md" style={checkboxStyle} />
+              <Checkbox 
+                value="syllabus" 
+                label="Syllabus" 
+                size="md" 
+                style={checkboxStyle} 
+                checked={selectedCanvasOptions.includes("syllabus")} 
+                onChange={() => handleCanvasOptionChange("syllabus")}
+              />
             </Tooltip>
           </div>
           <div className="flex items-center mb-2">
@@ -527,7 +600,14 @@ export const WebScrape = ({
               withArrow
               label="Select this option to ingest all assignments from the Canvas course."
             >
-              <Checkbox value="assignments" label="Assignments" size="md" style={checkboxStyle} />
+              <Checkbox 
+                value="assignments" 
+                label="Assignments" 
+                size="md" 
+                style={checkboxStyle} 
+                checked={selectedCanvasOptions.includes("assignments")} 
+                onChange={() => handleCanvasOptionChange("assignments")}
+              />
             </Tooltip>
           </div>
           <div className="flex items-center">
@@ -540,7 +620,14 @@ export const WebScrape = ({
               withArrow
               label="Select this option to ingest all discussions from the Canvas course."
             >
-              <Checkbox value="discussions" label="Discussions" size="md" style={checkboxStyle} />
+              <Checkbox 
+                value="discussions" 
+                label="Discussions" 
+                size="md" 
+                style={checkboxStyle} 
+                checked={selectedCanvasOptions.includes("discussions")} 
+                onChange={() => handleCanvasOptionChange("discussions")}
+              />
             </Tooltip>
           </div>
         </div>
