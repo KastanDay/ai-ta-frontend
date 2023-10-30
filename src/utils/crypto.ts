@@ -1,8 +1,8 @@
 // src/utils/crypto.ts
 export const encrypt = async (text: string, key: string) => {
-  if (!text || !text) {
+  if (!text || !key) {
     console.error(
-      'Error decrypting because open ai key or secret key is not available',
+      'Error encrypting because open ai key or secret key is not available',
       text,
       key,
     )
@@ -52,4 +52,10 @@ export const decrypt = async (encryptedText: string, key: string) => {
     Buffer.from(encryptedBase64, 'base64'),
   )
   return new TextDecoder().decode(ptBuffer)
+}
+
+export function isEncrypted(str: string) {
+  const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/;
+  const parts = str.split('.');
+  return parts.length === 2 && base64Regex.test(parts[0] as string) && base64Regex.test(parts[1] as string);
 }

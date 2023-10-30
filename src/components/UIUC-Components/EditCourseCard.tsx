@@ -162,13 +162,13 @@ const EditCourseCard = ({
     setApiKey(courseMetadata?.openai_api_key as string)
   }, [courseMetadata])
 
-  const validateKey = async (key: string) => {
+  const validateKey = async (key: string, isAzure: boolean) => {
     const response = await fetch('/api/validateKey', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ key: key }),
+      body: JSON.stringify({ key: key, isAzure: isAzure}),
     })
 
     return response
@@ -225,7 +225,7 @@ const EditCourseCard = ({
     }
   }
 
-  const handleKeyUpdate = async (inputValue: string) => {
+  const handleKeyUpdate = async (inputValue: string, isAzure: boolean) => {
     if (inputValue === '' && courseMetadata?.openai_api_key === '') {
       console.log('Key already empty')
       notifications.show({
@@ -260,25 +260,25 @@ const EditCourseCard = ({
       })
       return
     }
+    // Disabling this condition to support Azure OpenAI keys
+    // if (!inputValue.startsWith('sk-')) {
+      // console.log('Invalid OpenAI API Key')
+      // notifications.show({
+      //   id: 'error-notification',
+      //   title: 'Invalid OpenAI API Key',
+      //   message:
+      //     'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
+      //   color: 'red',
+      //   radius: 'lg',
+      //   icon: <IconAlertCircle />,
+      //   className: 'my-notification-class',
+      //   style: { backgroundColor: '#15162c' },
+      //   loading: false,
+      // })
+      // return
+    // }
 
-    if (!inputValue.startsWith('sk-')) {
-      console.log('Invalid OpenAI API Key')
-      notifications.show({
-        id: 'error-notification',
-        title: 'Invalid OpenAI API Key',
-        message:
-          'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
-        color: 'red',
-        radius: 'lg',
-        icon: <IconAlertCircle />,
-        className: 'my-notification-class',
-        style: { backgroundColor: '#15162c' },
-        loading: false,
-      })
-      return
-    }
-
-    const validationResponse = await validateKey(inputValue)
+    const validationResponse = await validateKey(inputValue, isAzure)
     if (!validationResponse.ok) {
       const response = await validationResponse.json()
       console.log('New key validated')
@@ -312,6 +312,7 @@ const EditCourseCard = ({
         style: { backgroundColor: '#15162c' },
         loading: false,
       })
+      setIsEditing(false)
     }
   }
 
@@ -536,7 +537,7 @@ const EditCourseCard = ({
                         if (e.key === 'Enter') {
                           const inputValue = (e.target as HTMLInputElement)
                             .value
-                          handleKeyUpdate(inputValue)
+                          handleKeyUpdate(inputValue, !inputValue.startsWith('sk-'))
                         }
                       }}
                       rightSection={
@@ -548,7 +549,7 @@ const EditCourseCard = ({
                             ) as HTMLInputElement
                             if (apiKeyInput) {
                               const inputValue = apiKeyInput.value
-                              handleKeyUpdate(inputValue)
+                              handleKeyUpdate(inputValue, !inputValue.startsWith('sk-'))
                             }
                           }}
                           size="sm"

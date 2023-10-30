@@ -14,7 +14,7 @@ import {
   type ReconnectInterval,
   createParser,
 } from 'eventsource-parser'
-import { decrypt } from '../crypto'
+import { decrypt, isEncrypted } from '../crypto'
 
 export class OpenAIError extends Error {
   type: string
@@ -41,31 +41,41 @@ export const OpenAIStream = async (
   messages: OpenAIChatMessage[],
 ) => {
   let apiKey = key
-  if (key && !key.startsWith('sk-')) {
+  let apiType = OPENAI_API_TYPE
+  let endpoint = OPENAI_API_HOST
+  if (key && isEncrypted(key)) {
     const decryptedText = await decrypt(
       key,
       process.env.NEXT_PUBLIC_SIGNING_KEY as string,
     )
     apiKey = decryptedText as string
-    console.log('Decrypted api key for openai chat: ', apiKey)
+    // console.log('Decrypted api key for openai chat: ', apiKey)
+    console.log('Decrypted api key for openai chat')
   } else {
     console.log('Using client key for openai chat: ', apiKey)
   }
 
-  let url = `${OPENAI_API_HOST}/v1/chat/completions`
-  if (OPENAI_API_TYPE === 'azure') {
-    url = `${OPENAI_API_HOST}/openai/deployments/${AZURE_DEPLOYMENT_ID}/chat/completions?api-version=${OPENAI_API_VERSION}`
+  if (apiKey && !apiKey.startsWith('sk-')) {
+    console.log("setting azure variables")
+    apiType = 'azure'
+    endpoint = process.env.AZURE_OPENAI_ENDPOINT || OPENAI_API_HOST
+  }
+
+  let url = `${endpoint}/v1/chat/completions`
+  if (apiType === 'azure') {
+    const deploymentName = process.env.AZURE_OPENAI_ENGINE
+    url = `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${OPENAI_API_VERSION}`
   }
   const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
-      ...(OPENAI_API_TYPE === 'openai' && {
+      ...(apiType === 'openai' && {
         Authorization: `Bearer ${apiKey}`,
       }),
-      ...(OPENAI_API_TYPE === 'azure' && {
+      ...(apiType === 'azure' && {
         'api-key': `${apiKey}`,
       }),
-      ...(OPENAI_API_TYPE === 'openai' &&
+      ...(apiType === 'openai' &&
         OPENAI_ORGANIZATION && {
           'OpenAI-Organization': OPENAI_ORGANIZATION,
         }),
