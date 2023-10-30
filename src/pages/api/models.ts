@@ -21,7 +21,7 @@ const handler = async (req: Request): Promise<Response> => {
       key: string
     }
     apiKey = key ? key : (process.env.OPENAI_API_KEY as string)
-    console.log("Validating apikey:", apiKey)
+    console.log('Validating apikey:', apiKey)
     // Check if the key starts with 'sk-' (indicating it's not encrypted)
     if (key && isEncrypted(key)) {
       // Decrypt the key
@@ -35,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
     // console.log('models.ts Final openai key: ', apiKey)
 
     if (apiKey && !apiKey.startsWith('sk-')) {
-      console.log("setting azure variables")
+      console.log('setting azure variables')
       apiType = 'azure'
       endpoint = process.env.AZURE_OPENAI_ENDPOINT || OPENAI_API_HOST
     }

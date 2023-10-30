@@ -56,7 +56,7 @@ export const OpenAIStream = async (
   }
 
   if (apiKey && !apiKey.startsWith('sk-')) {
-    console.log("setting azure variables")
+    console.log('setting azure variables')
     apiType = 'azure'
     endpoint = process.env.AZURE_OPENAI_ENDPOINT || OPENAI_API_HOST
   }

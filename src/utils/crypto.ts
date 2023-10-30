@@ -55,7 +55,12 @@ export const decrypt = async (encryptedText: string, key: string) => {
 }
 
 export function isEncrypted(str: string) {
-  const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/;
-  const parts = str.split('.');
-  return parts.length === 2 && base64Regex.test(parts[0] as string) && base64Regex.test(parts[1] as string);
+  const base64Regex =
+    /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/
+  const parts = str.split('.')
+  return (
+    parts.length === 2 &&
+    base64Regex.test(parts[0] as string) &&
+    base64Regex.test(parts[1] as string)
+  )
 }

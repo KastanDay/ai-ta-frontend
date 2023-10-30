@@ -168,7 +168,7 @@ const EditCourseCard = ({
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ key: key, isAzure: isAzure}),
+      body: JSON.stringify({ key: key, isAzure: isAzure }),
     })
 
     return response
@@ -262,20 +262,20 @@ const EditCourseCard = ({
     }
     // Disabling this condition to support Azure OpenAI keys
     // if (!inputValue.startsWith('sk-')) {
-      // console.log('Invalid OpenAI API Key')
-      // notifications.show({
-      //   id: 'error-notification',
-      //   title: 'Invalid OpenAI API Key',
-      //   message:
-      //     'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
-      //   color: 'red',
-      //   radius: 'lg',
-      //   icon: <IconAlertCircle />,
-      //   className: 'my-notification-class',
-      //   style: { backgroundColor: '#15162c' },
-      //   loading: false,
-      // })
-      // return
+    // console.log('Invalid OpenAI API Key')
+    // notifications.show({
+    //   id: 'error-notification',
+    //   title: 'Invalid OpenAI API Key',
+    //   message:
+    //     'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
+    //   color: 'red',
+    //   radius: 'lg',
+    //   icon: <IconAlertCircle />,
+    //   className: 'my-notification-class',
+    //   style: { backgroundColor: '#15162c' },
+    //   loading: false,
+    // })
+    // return
     // }
 
     const validationResponse = await validateKey(inputValue, isAzure)
@@ -537,7 +537,10 @@ const EditCourseCard = ({
                         if (e.key === 'Enter') {
                           const inputValue = (e.target as HTMLInputElement)
                             .value
-                          handleKeyUpdate(inputValue, !inputValue.startsWith('sk-'))
+                          handleKeyUpdate(
+                            inputValue,
+                            !inputValue.startsWith('sk-'),
+                          )
                         }
                       }}
                       rightSection={
@@ -549,7 +552,10 @@ const EditCourseCard = ({
                             ) as HTMLInputElement
                             if (apiKeyInput) {
                               const inputValue = apiKeyInput.value
-                              handleKeyUpdate(inputValue, !inputValue.startsWith('sk-'))
+                              handleKeyUpdate(
+                                inputValue,
+                                !inputValue.startsWith('sk-'),
+                              )
                             }
                           }}
                           size="sm"

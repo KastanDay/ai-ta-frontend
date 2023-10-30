@@ -20,17 +20,16 @@ const handler = async (req: Request): Promise<Response> => {
   let endpoint = OPENAI_API_HOST
   try {
     const { key, isAzure } = (await req.json()) as {
-      key: string,
+      key: string
       isAzure: boolean
     }
     apiKey = key ? key : (process.env.OPENAI_API_KEY as string)
-    console.log("Apikey: ", apiKey)
+
     if (isAzure) {
-      console.log("setting azure variables")
+      console.log('setting azure variables')
       apiType = 'azure'
       endpoint = process.env.AZURE_OPENAI_ENDPOINT || OPENAI_API_HOST
-    }
-    else if (key && !key.startsWith('sk-')) {
+    } else if (key && !key.startsWith('sk-')) {
       const decryptedText = await decrypt(
         key,
         process.env.NEXT_PUBLIC_SIGNING_KEY as string,
@@ -44,10 +43,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     let url = `${endpoint}/v1/chat/completions`
     if (apiType === 'azure') {
-      
       const deploymentName = process.env.AZURE_OPENAI_ENGINE
       url = `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${OPENAI_API_VERSION}`
-      console.log("Created Azure url: ", url)
+      console.log('Created Azure url: ', url)
     }
 
     const response = await fetch(url, {
