@@ -6,7 +6,7 @@ import {
 } from '@/utils/app/const'
 
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
-import { decrypt } from '~/utils/crypto'
+import { decrypt, isEncrypted } from '~/utils/crypto'
 
 export const config = {
   runtime: 'edge',
@@ -14,14 +14,16 @@ export const config = {
 
 const handler = async (req: Request): Promise<Response> => {
   let apiKey = ''
+  let apiType = OPENAI_API_TYPE
+  let endpoint = OPENAI_API_HOST
   try {
     const { key } = (await req.json()) as {
       key: string
     }
     apiKey = key ? key : (process.env.OPENAI_API_KEY as string)
-
+    console.log('Validating apikey:', apiKey)
     // Check if the key starts with 'sk-' (indicating it's not encrypted)
-    if (key && !key.startsWith('sk-')) {
+    if (key && isEncrypted(key)) {
       // Decrypt the key
       const decryptedText = await decrypt(
         key,
@@ -32,25 +34,31 @@ const handler = async (req: Request): Promise<Response> => {
     }
     // console.log('models.ts Final openai key: ', apiKey)
 
+    if (apiKey && !apiKey.startsWith('sk-')) {
+      console.log('setting azure variables')
+      apiType = 'azure'
+      endpoint = process.env.AZURE_OPENAI_ENDPOINT || OPENAI_API_HOST
+    }
+
     if (!apiKey) {
       return new Response('Warning: OpenAI Key was not found', { status: 400 })
     }
 
-    let url = `${OPENAI_API_HOST}/v1/models`
-    if (OPENAI_API_TYPE === 'azure') {
-      url = `${OPENAI_API_HOST}/openai/deployments?api-version=${OPENAI_API_VERSION}`
+    let url = `${endpoint}/v1/models`
+    if (apiType === 'azure') {
+      url = `${endpoint}/openai/deployments?api-version=${OPENAI_API_VERSION}`
     }
 
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
-        ...(OPENAI_API_TYPE === 'openai' && {
+        ...(apiType === 'openai' && {
           Authorization: `Bearer ${apiKey}`,
         }),
-        ...(OPENAI_API_TYPE === 'azure' && {
+        ...(apiType === 'azure' && {
           'api-key': `${apiKey}`,
         }),
-        ...(OPENAI_API_TYPE === 'openai' &&
+        ...(apiType === 'openai' &&
           OPENAI_ORGANIZATION && {
             'OpenAI-Organization': OPENAI_ORGANIZATION,
           }),
