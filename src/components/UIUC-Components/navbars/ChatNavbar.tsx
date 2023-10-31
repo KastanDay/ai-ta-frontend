@@ -51,7 +51,7 @@ const styles: Record<string, React.CSSProperties> = {
     overflow: 'hidden',
     position: 'relative',
     // height: '40%',
-    height: '80px',
+    height: '52px',
     // maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
     maxWidth: '100%',
     // paddingRight: '4px',
@@ -81,7 +81,7 @@ const useStyles = createStyles((theme) => ({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    [theme.fn.smallerThan(990)]: {
+    [theme.fn.smallerThan(1148)]: {
       display: 'none',
     },
   },
@@ -108,7 +108,7 @@ const useStyles = createStyles((theme) => ({
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
       textAlign: 'right',
     },
-    [theme.fn.smallerThan(990)]: {
+    [theme.fn.smallerThan(1148)]: {
       display: 'list-item',
       textAlign: 'right',
       borderRadius: 0,
@@ -116,9 +116,10 @@ const useStyles = createStyles((theme) => ({
     },
   },
   burger: {
-    [theme.fn.largerThan(990)]: {
+    [theme.fn.largerThan(1148)]: {
       display: 'none',
     },
+    marginRight: '14px',
   },
   dropdown: {
     position: 'absolute',
@@ -128,7 +129,7 @@ const useStyles = createStyles((theme) => ({
     zIndex: 10,
     borderRadius: '10px',
     overflow: 'hidden',
-    [theme.fn.largerThan(990)]: {
+    [theme.fn.largerThan(1148)]: {
       display: 'none',
     },
   },
@@ -261,7 +262,7 @@ const ChatNavbar = ({
   return (
     <div
       className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'} -mr-5 pb-16 pl-5`}
-      style={{ display: show ? 'block' : 'none' }}
+      style={{ display: show ? 'block' : 'none', height: '40%' }}
     >
       <div
         className="mt-4 w-full max-w-[95%]"
@@ -270,7 +271,7 @@ const ChatNavbar = ({
         {/* <div > */}
         {/* <Flex style={{ flexDirection: 'row' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"> */}
         <Flex
-          style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+          style={{ flexDirection: 'row', justifyContent: 'space-between', height: '30px' }}
           className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"
         >
           <div style={{ justifyContent: 'flex-start' }}>
@@ -441,7 +442,7 @@ const ChatNavbar = ({
             {/* Sign in buttons */}
             <div
               className="pl-1 pr-1"
-              style={{ marginLeft: '-15px', position: 'relative', top: '-2px', justifyContent: 'flex-center' }}
+              style={{ marginLeft: '-5px', position: 'relative', top: '-2px', justifyContent: 'flex-center' }}
             >
               <SignedIn>
                 <UserButton afterSignOutUrl="/" />
