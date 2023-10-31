@@ -51,7 +51,7 @@ const styles: Record<string, React.CSSProperties> = {
     overflow: 'hidden',
     position: 'relative',
     // height: '40%',
-    height: '63px',
+    height: '52px',
     // maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
     maxWidth: '100%',
     // paddingRight: '4px',
