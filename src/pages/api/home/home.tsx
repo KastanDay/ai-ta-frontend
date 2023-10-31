@@ -313,16 +313,19 @@ const Home = () => {
 
   const handleNewConversation = () => {
     const lastConversation = conversations[conversations.length - 1]
-
+    console.debug("Models available: ", models)
+    const defaultModel = models.find(model => model.id === defaultModelId) || models[0]
+    console.debug("Using model: ", defaultModel)
+    
     const newConversation: Conversation = {
       id: uuidv4(),
       name: t('New Conversation'),
       messages: [],
       model: lastConversation?.model || {
-        id: OpenAIModels[defaultModelId].id,
-        name: OpenAIModels[defaultModelId].name,
-        maxLength: OpenAIModels[defaultModelId].maxLength,
-        tokenLimit: OpenAIModels[defaultModelId].tokenLimit,
+        id: defaultModel?.id as string,
+        name: defaultModel?.name as string,
+        maxLength: defaultModel?.maxLength as number,
+        tokenLimit: defaultModel?.tokenLimit as number,
       },
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
