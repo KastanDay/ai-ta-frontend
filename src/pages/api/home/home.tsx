@@ -65,6 +65,7 @@ const Home = () => {
       selectedConversation,
       prompts,
       temperature,
+      models
     },
     dispatch,
   } = contextValue
@@ -436,21 +437,28 @@ const Home = () => {
       })
     } else {
       const lastConversation = conversations[conversations.length - 1]
+      console.debug("Models available: ", models)
+      const defaultModel = models.find(model => model.id === defaultModelId) || models[0]
+      console.debug("Using model: ", defaultModel)
       dispatch({
         field: 'selectedConversation',
         value: {
           id: uuidv4(),
           name: t('New Conversation'),
           messages: [],
-          model: OpenAIModels[defaultModelId],
+          model: {
+            id: defaultModel?.id,
+            name: defaultModel?.name,
+            maxLength: defaultModel?.maxLength,
+            tokenLimit: defaultModel?.tokenLimit,
+          },
           prompt: DEFAULT_SYSTEM_PROMPT,
           temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
           folderId: null,
         },
       })
     }
-  }, [defaultModelId, dispatch, serverSidePluginKeysSet])
-
+  }, [defaultModelId, dispatch, serverSidePluginKeysSet, models, conversations])
   if (isLoading) {
     // show blank page during loading
     return <></>
