@@ -50,7 +50,7 @@ export const initialState: HomeInitialState = {
   currentFolder: undefined,
   messageError: false,
   searchTerm: '',
-  defaultModelId: undefined,
+  defaultModelId: OpenAIModelID.GPT_4,
   serverSideApiKeyIsSet: false,
   serverSidePluginKeysSet: false,
   cooldown: 0,
