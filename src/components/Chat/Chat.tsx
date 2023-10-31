@@ -30,7 +30,7 @@ import {
   useState,
 } from 'react'
 import toast from 'react-hot-toast'
-import { Button, Text, Title } from '@mantine/core'
+import { Button, Container, Text, Title } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -580,8 +580,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   return (
     <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
-      <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
-      <div className="mt-10 flex-grow overflow-auto">
+      <div className="justify-center" style={{ height: '46px' }}>
+        <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
+      </div>
+      <div className="flex-grow overflow-auto mt-10">
         {!(apiKey || serverSideApiKeyIsSet) ? (
           <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
             <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
@@ -657,7 +659,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ) : (
           <>
             <div
-              className="mt-4 max-h-full overflow-x-hidden"
+              className="max-h-full mt-4"
               ref={chatContainerRef}
               onScroll={handleScroll}
             >
