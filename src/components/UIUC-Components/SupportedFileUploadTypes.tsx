@@ -331,7 +331,20 @@ const SupportedFileUploadTypes = () => {
                   className="w-[50px]"
                 />
               </div>
-              <strong>Canvas</strong> - coming very soon in Fall 2023!
+              <strong>For Canvas</strong>, just enter a URL like{' '}
+              <code className={classes.codeStyledText}>
+                canvas.illinois.edu/courses/COURSE_CODE
+              </code>
+              , for example:{' '}
+              <span className={'text-purple-600'}>
+                <Link
+                  target="_blank"
+                  rel="noreferrer"
+                  href={'https://canvas.illinois.edu/courses/37348'}
+                >
+                  https://canvas.illinois.edu/courses/37348
+                </Link>
+              </span>. 
               <div
                 style={{
                   display: 'flex',
@@ -353,7 +366,7 @@ const SupportedFileUploadTypes = () => {
               <code className={classes.codeStyledText}>
                 ocw.mit.edu/courses/ANY_COURSE
               </code>{' '}
-              for example:{' '}
+              , for example:{' '}
               <span className={'text-purple-600'}>
                 <Link
                   target="_blank"
@@ -364,7 +377,7 @@ const SupportedFileUploadTypes = () => {
                 >
                   https://ocw.mit.edu/courses/8-321-quantum-theory-i-fall-2017
                 </Link>
-              </span>
+              </span>.
               <div
                 style={{
                   display: 'flex',

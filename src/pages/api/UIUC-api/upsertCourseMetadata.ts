@@ -2,7 +2,7 @@
 import { kv } from '@vercel/kv'
 import { type CourseMetadataOptionalForUpsert } from '~/types/courseMetadata'
 import { type NextRequest, NextResponse } from 'next/server'
-import { encrypt } from '~/utils/crypto'
+import { encrypt, isEncrypted } from '~/utils/crypto'
 import { getCourseMetadata } from './getCourseMetadata'
 
 export const runtime = 'edge'
@@ -55,7 +55,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     // Check if openai_api_key is present and if it is a plain string
     if (
       combined_metadata.openai_api_key &&
-      combined_metadata.openai_api_key.startsWith('sk-')
+      !isEncrypted(combined_metadata.openai_api_key)
     ) {
       // Encrypt the openai_api_key
       console.log('Encrypting api key')
