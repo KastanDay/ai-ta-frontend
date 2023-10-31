@@ -11,6 +11,8 @@ import { api } from '~/utils/api'
 
 import '~/styles/globals.css'
 import Maintenance from '~/components/UIUC-Components/Maintenance'
+import clearLocalStorageOnce from 'src/pages/api/UIUC-api/clearLocalStorage'
+
 import { useReportWebVitals } from 'next-axiom'
 
 // For axiom Web Vitals logging: https://axiom.co/docs/apps/vercel#sending-logs-to-axiom
