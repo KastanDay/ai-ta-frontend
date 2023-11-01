@@ -15,7 +15,7 @@ import {
   Title,
   Flex,
 } from '@mantine/core'
-import GlobalHeader from './GlobalHeader'
+import GlobalHeader from './navbars/GlobalHeader'
 import { CourseMetadata } from '~/types/courseMetadata'
 // const rubikpuddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 import React, { useState, useEffect } from 'react'

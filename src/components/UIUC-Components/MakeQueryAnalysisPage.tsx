@@ -124,7 +124,7 @@ const MakeQueryAnalysisPage = ({
     currentEmail !== (courseMetadata.course_owner as string) &&
     courseMetadata.course_admins.indexOf(currentEmail) === -1
   ) {
-    router.push(`/${course_name}/not_authorized`)
+    router.replace(`/${course_name}/not_authorized`)
 
     return (
       <CannotEditCourse
@@ -136,7 +136,7 @@ const MakeQueryAnalysisPage = ({
 
   return (
     <>
-      <QueryAnalysisNavbar course_name={course_name} />
+      <Navbar course_name={course_name} />
 
       <Head>
         <title>{course_name}</title>
@@ -269,19 +269,21 @@ import { IconTrash } from '@tabler/icons-react'
 import { MainPageBackground } from './MainPageBackground'
 import { LoadingSpinner } from './LoadingSpinner'
 import { extractEmailsFromClerk } from './clerkHelpers'
-import QueryAnalysisNavbar from '~/components/UIUC-Components/QueryAnalysisNavbar'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
+import Navbar from './navbars/MaterialsNavbar'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
   const { classes, theme } = useStyles()
   const handleDelete = async (s3_path: string, course_name: string) => {
     try {
-      const API_URL = 'https://flask-production-751b.up.railway.app'
-      const response = await axios.delete(`${API_URL}/delete`, {
-        params: { s3_path, course_name },
-      })
+      const response = await axios.delete(
+        `https://flask-production-751b.up.railway.app/delete`,
+        {
+          params: { s3_path, course_name },
+        },
+      )
       // Handle successful deletion, show a success message
       showToastOnFileDeleted(theme)
       // Refresh the page

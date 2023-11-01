@@ -1,8 +1,18 @@
 import { notifications } from '@mantine/notifications'
-import { rem, Button, Input, Title, Text, useMantineTheme } from '@mantine/core'
+import {
+  rem,
+  Button,
+  Input,
+  Title,
+  Text,
+  useMantineTheme,
+  Tooltip,
+  Checkbox,
+  TextInput,
+  Group,
+} from '@mantine/core'
 import { IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
-import { Montserrat } from 'next/font/google'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import { useMediaQuery } from '@mantine/hooks'
@@ -43,39 +53,22 @@ export const WebScrape = ({
   const [url, setUrl] = useState('')
   const [icon, setIcon] = useState(<IconWorldDownload size={'50%'} />)
   const [loadinSpinner, setLoadinSpinner] = useState(false)
-  const API_URL = 'https://flask-production-751b.up.railway.app'
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const theme = useMantineTheme()
+  const [maxUrls, setMaxUrls] = useState('50')
+  const [maxDepth, setMaxDepth] = useState('2')
+  const [stayOnBaseUrl, setStayOnBaseUrl] = useState(false)
 
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newUrl = e.target.value
-    console.log('newUrl: ', newUrl)
-    setUrl(newUrl)
-    if (newUrl.length > 0 && validateUrl(newUrl)) {
-      setIsUrlUpdated(true)
-    } else {
-      setIsUrlUpdated(false)
-    }
-    // Change icon based on URL
-    if (newUrl.includes('coursera.org')) {
-      setIcon(
-        <img
-          src={'/media/coursera_logo_cutout.png'}
-          alt="Coursera Logo"
-          style={{ height: '50%', width: '50%' }}
-        />,
-      )
-    } else if (newUrl.includes('ocw.mit.edu')) {
-      setIcon(
-        <img
-          src={'/media/mitocw_logo.jpg'}
-          alt="MIT OCW Logo"
-          style={{ height: '50%', width: '50%' }}
-        />,
-      )
-    } else {
-      setIcon(<IconWorldDownload />)
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    variable: string,
+  ) => {
+    const value = e.target.value
+    if (variable === 'maxUrls') {
+      setMaxUrls(value)
+    } else if (variable === 'maxDepth') {
+      setMaxDepth(value)
     }
   }
 
@@ -128,19 +121,18 @@ export const WebScrape = ({
         data = scrapeWeb(
           url,
           courseName,
-          webScrapeConfig.num_sites,
-          webScrapeConfig.recursive_depth,
+          maxUrls.trim() !== ''
+            ? parseInt(maxUrls) - 1
+            : webScrapeConfig.num_sites,
+          maxDepth.trim() !== ''
+            ? parseInt(maxDepth) - 1
+            : webScrapeConfig.recursive_depth,
           webScrapeConfig.timeout_sec,
+          stayOnBaseUrl,
         )
 
-        // todo: consolidate both KV stores into one (remove setCourseExistsAPI).
-        // todo: use KV store instead of /get-all to check if course exists.
         if (is_new_course) {
-          // Make course exist in kv store
-          // Removing this for kv refactor
-          // await setCourseExistsAPI(courseName)
-
-          // set course exists in new metadata endpoint. Works great.
+          // set course exists in fast course_metadatas KV db
           const response = callSetCourseMetadata(courseName, {
             course_owner: current_user_email,
             // Don't set properties we don't know about. We'll just upsert and use the defaults.
@@ -165,6 +157,58 @@ export const WebScrape = ({
     }
     setLoadinSpinner(false)
     setUrl('') // clear url
+  }
+
+  const [inputErrors, setInputErrors] = useState({
+    maxUrls: { error: false, message: '' },
+    maxDepth: { error: false, message: '' },
+  })
+
+  const validateInputs = () => {
+    const errors = {
+      maxUrls: { error: false, message: '' },
+      maxDepth: { error: false, message: '' },
+    }
+    // Check for maxUrls
+    if (!maxUrls) {
+      errors.maxUrls = {
+        error: true,
+        message: 'Please provide an input for Max URLs',
+      }
+    } else if (!/^\d+$/.test(maxUrls)) {
+      // Using regex to ensure the entire string is a number
+      errors.maxUrls = {
+        error: true,
+        message: 'Max URLs should be a valid number',
+      }
+    } else if (parseInt(maxUrls) < 1 || parseInt(maxUrls) > 500) {
+      errors.maxUrls = {
+        error: true,
+        message: 'Max URLs should be between 1 and 500',
+      }
+    }
+
+    // Check for maxDepth
+    if (!maxDepth) {
+      errors.maxDepth = {
+        error: true,
+        message: 'Please provide an input for Max Depth',
+      }
+    } else if (!/^\d+$/.test(maxDepth)) {
+      // Using regex to ensure the entire string is a number
+      errors.maxDepth = {
+        error: true,
+        message: 'Max Depth should be a valid number',
+      }
+    } else if (parseInt(maxDepth) < 1 || parseInt(maxDepth) > 500) {
+      errors.maxDepth = {
+        error: true,
+        message: 'Max Depth should be between 1 and 500',
+      }
+    }
+
+    setInputErrors(errors)
+    return !Object.values(errors).some((error) => error.error)
   }
 
   const showToast = () => {
@@ -211,20 +255,25 @@ export const WebScrape = ({
     maxUrls: number,
     maxDepth: number,
     timeout: number,
+    stay_on_baseurl: boolean,
   ) => {
     try {
       if (!url || !courseName) return null
       url = formatUrl(url) // ensure we have http://
       console.log('SCRAPING', url)
-      const response = await axios.get(`${API_URL}/web-scrape`, {
-        params: {
-          url: url,
-          course_name: courseName,
-          max_urls: maxUrls,
-          max_depth: maxDepth,
-          timeout: timeout,
+      const response = await axios.get(
+        `https://flask-production-751b.up.railway.app/web-scrape`,
+        {
+          params: {
+            url: url,
+            course_name: courseName,
+            max_urls: maxUrls,
+            max_depth: maxDepth,
+            timeout: timeout,
+            stay_on_baseurl: stay_on_baseurl,
+          },
         },
-      })
+      )
       return response.data
     } catch (error) {
       console.error('Error during web scraping:', error)
@@ -240,13 +289,16 @@ export const WebScrape = ({
     try {
       if (!url || !courseName || !localDir) return null
       console.log('calling downloadMITCourse')
-      const response = await axios.get(`${API_URL}/mit-download`, {
-        params: {
-          url: url,
-          course_name: courseName,
-          local_dir: localDir,
+      const response = await axios.get(
+        `https://flask-production-751b.up.railway.app/mit-download`,
+        {
+          params: {
+            url: url,
+            course_name: courseName,
+            local_dir: localDir,
+          },
         },
-      })
+      )
       return response.data
     } catch (error) {
       console.error('Error during MIT course download:', error)
@@ -268,7 +320,7 @@ export const WebScrape = ({
     <>
       <Title
         order={3}
-        className={`w-full text-center ${montserrat_heading.variable} mt-6 font-montserratHeading`}
+        className={`w-full text-center ${montserrat_heading.variable} pt-1 font-montserratHeading`}
       >
         OR
       </Title>
@@ -278,9 +330,11 @@ export const WebScrape = ({
       >
         Web scrape any website that allows it
       </Title>
+
       <Input
         icon={icon}
-        className="mt-4 w-[70%] min-w-[20rem] disabled:bg-purple-200 lg:w-[50%]"
+        // I can't figure out how to change the background colors.
+        className={`mt-4 w-[80%] min-w-[20rem] disabled:bg-purple-200 lg:w-[75%]`}
         wrapperProps={{ backgroundColor: '#020307', borderRadius: 'xl' }}
         placeholder="Enter URL"
         radius={'xl'}
@@ -318,7 +372,9 @@ export const WebScrape = ({
           <Button
             onClick={(e) => {
               e.preventDefault()
-              handleSubmit()
+              if (validateInputs() && validateUrl(url)) {
+                handleSubmit()
+              }
             }}
             size="md"
             radius={'xl'}
@@ -335,23 +391,85 @@ export const WebScrape = ({
         }
         rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
       />
-      <Text
-        size={rem(14)}
-        className={`w-full text-center ${montserrat_paragraph.variable} mt-2 font-montserratParagraph`}
-      >
-        Looking for high quality reference material? We love{' '}
-        <a
-          className={'text-purple-600'}
-          href="https://ocw.mit.edu/"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ textDecoration: 'underline', paddingRight: '5px' }}
+
+      {/* Detailed web ingest form */}
+      {isUrlUpdated && (
+        <form
+          className="w-[80%] min-w-[20rem] lg:w-[75%]"
+          onSubmit={(event) => {
+            event.preventDefault()
+          }}
         >
-          MIT Open Course Ware
-        </a>
-        <br></br>
-        For Coursera and Canvas ingest please email kvday2@illinois.edu
-      </Text>
+          <div>
+            <Tooltip
+              multiline
+              w={400}
+              color="#15162b"
+              arrowPosition="side"
+              arrowSize={8}
+              withArrow
+              position="bottom-start"
+              label="We will attempt to visit this number of pages, but not all will be scraped if they're duplicates, broken or otherwise inaccessible."
+            >
+              <TextInput
+                label="Max URLs (1 to 500)"
+                name="maximumUrls"
+                placeholder="Default 100"
+                value={maxUrls}
+                onChange={(e) => {
+                  handleInputChange(e, 'maxUrls')
+                }}
+                error={inputErrors.maxUrls.error}
+              />
+            </Tooltip>
+          </div>
+          {inputErrors.maxUrls.error && (
+            <p style={{ color: 'red' }}>{inputErrors.maxUrls.message}</p>
+          )}
+          <Tooltip
+            multiline
+            color="#15162b"
+            arrowPosition="side"
+            arrowSize={8}
+            withArrow
+            position="bottom-start"
+            label="Enter the maximum depth for clicking on links relative to the original URL."
+          >
+            {/* no need in this tooltip: w={400} */}
+            <TextInput
+              label="Max Depth (1 to 500)"
+              name="maxDepth"
+              placeholder="Default 3"
+              value={maxDepth}
+              onChange={(e) => {
+                handleInputChange(e, 'maxDepth')
+              }}
+              style={{ width: '100%' }}
+              error={inputErrors.maxDepth.error}
+            />
+          </Tooltip>
+          {inputErrors.maxDepth.error && (
+            <p style={{ color: 'red' }}>{inputErrors.maxDepth.message}</p>
+          )}
+          <div style={{ fontSize: 'smaller' }}>Stay on Base URL</div>
+          <Tooltip
+            multiline
+            w={400}
+            color="#15162b"
+            arrowPosition="side"
+            arrowSize={8}
+            withArrow
+            position="bottom-start"
+            label="If true, we will *not* visit any other websites, only other pages on the website you entered. For example, entering illinois.edu/anything will restrict all materials to begin with illinois.edu, not uic.edu."
+          >
+            <Checkbox
+              checked={stayOnBaseUrl}
+              size="md"
+              onChange={() => setStayOnBaseUrl(!stayOnBaseUrl)}
+            />
+          </Tooltip>
+        </form>
+      )}
     </>
   )
 }

@@ -1,13 +1,26 @@
 // LargeDropzone.tsx
 import React, { useRef, useState } from 'react'
-import { createStyles, Group, rem, Text, Title } from '@mantine/core'
-import { IconCloudUpload, IconDownload, IconX } from '@tabler/icons-react'
+import {
+  createStyles,
+  Group,
+  rem,
+  Text,
+  Title,
+  useMantineTheme,
+} from '@mantine/core'
+import {
+  IconAlertCircle,
+  IconCloudUpload,
+  IconDownload,
+  IconX,
+} from '@tabler/icons-react'
 import { Dropzone } from '@mantine/dropzone'
 import { useRouter } from 'next/router'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import SupportedFileUploadTypes from './SupportedFileUploadTypes'
 import { useMediaQuery } from '@mantine/hooks'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
+import { notifications } from '@mantine/notifications'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -54,6 +67,7 @@ export function LargeDropzone({
   const [uploadInProgress, setUploadInProgress] = useState(false)
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
+  // const theme = useMantineTheme()
   // Set owner email
   // const { isSignedIn, user } = useUser()
   // const current_user_email = user?.primaryEmailAddress?.emailAddress as string
@@ -61,12 +75,13 @@ export function LargeDropzone({
   // console.log("in LargeDropzone.tsx primaryEmailAddress: ", user?.primaryEmailAddress?.emailAddress as string)
   // console.log("in LargeDropzone.tsx ALL emailAddresses: ", user?.emailAddresses )
 
-  const refreshOrRedirect = (redirect_to_gpt_4: boolean) => {
+  const refreshOrRedirect = async (redirect_to_gpt_4: boolean) => {
     if (redirect_to_gpt_4) {
       router.push(`/${courseName}/gpt4`)
     }
-    //   refresh current page
-    router.push(`/${courseName}/materials`)
+    // refresh current page
+    await new Promise((resolve) => setTimeout(resolve, 700))
+    router.reload()
   }
   const uploadToS3 = async (file: File | null) => {
     if (!file) return
@@ -147,7 +162,22 @@ export function LargeDropzone({
     if (response.ok) {
       const data = await response.json()
       // console.log(file.name as string + ' ingested successfully!!')
-      console.log('Response:', data)
+      console.log('Success or Failure:', data)
+      // TODO: move these toasts to AFTER the refreshOrRedirect
+      // showToast(data.failure_ingest)
+      // showToast(data.success_ingest)
+      // failure_ingest.length is not a function. idk why...
+      if (data.failure_ingest.length > 0) {
+        data.failure_ingest.map((s3path: string) => {
+          console.log('Logging each failure path:', s3path)
+        })
+      }
+      if (data.success_ingest.length > 0) {
+        data.success_ingest.map((s3path: string) => {
+          console.log('Logging each success path:', s3path)
+        })
+      }
+
       return data
     } else {
       console.log('Error during ingest:', response.statusText)
@@ -186,29 +216,24 @@ export function LargeDropzone({
             style={{
               width: rem(330),
               height: rem(225),
-              ...(isDisabled ? { backgroundColor: '#2A2F36' } : {}),
+              ...(isDisabled
+                ? { backgroundColor: '#3a374a' }
+                : { backgroundColor: '#25262b' }),
               cursor: isDisabled ? 'not-allowed' : 'pointer',
             }}
             loading={uploadInProgress}
             onDrop={async (files) => {
-              // set loading property
               setUploadInProgress(true)
               console.log(
                 'Calling upsert metadata api with courseName & courseMetadata',
                 courseName,
                 courseMetadata,
               )
-              // Make course exist in kv store
-              // Removing this for kv refactor
-              // await setCourseExistsAPI(course_name)
-
-              // set course exists in new metadata endpoint. Works great.
+              // set course exists
               const upsertCourseMetadataResponse = await callSetCourseMetadata(
                 courseName,
                 courseMetadata || {
                   course_owner: current_user_email,
-
-                  // Don't set properties we don't know about. We'll just upsert and use the defaults.
                   course_admins: undefined,
                   approved_emails_list: undefined,
                   is_private: undefined,
@@ -216,35 +241,29 @@ export function LargeDropzone({
                   course_intro_message: undefined,
                 },
               )
-
-              // Check if upsertCourseMetadataResponse was successful
               if (upsertCourseMetadataResponse) {
                 // this does sequential uploads.
                 for (const [index, file] of files.entries()) {
                   console.log('Index: ' + index)
-
                   try {
-                    // UPLOAD TO S3
                     await uploadToS3(file).catch((error) => {
                       console.error('Error during file upload:', error)
                     })
-
-                    // Ingest into Qdrant (time consuming).
+                    // Ingest into backend (time consuming)
                     await ingestFile(file).catch((error) => {
                       console.error('Error during file upload:', error)
                     })
-
                     console.log('Ingested a file.')
                   } catch (error) {
                     console.error('Error during file processing:', error)
                   }
                 }
-
                 console.log(
                   'Done ingesting everything! Now refreshing the page...',
                 )
                 setUploadInProgress(false)
                 refreshOrRedirect(redirect_to_gpt_4)
+                // TODO: here we should raise toast for failed ingest files. AND successful ingest files.
               } else {
                 console.error('Upsert metadata failed')
                 setUploadInProgress(false)
@@ -252,9 +271,8 @@ export function LargeDropzone({
             }}
             className={classes.dropzone}
             radius="md"
-            bg="#0E1116"
+            bg="#25262b"
             disabled={isDisabled}
-            // #0E1116 -- nice dark
           >
             <div
               style={{ pointerEvents: 'none', opacity: isDisabled ? 0.6 : 1 }}
@@ -274,32 +292,36 @@ export function LargeDropzone({
                     stroke={1.5}
                   />
                 </Dropzone.Reject>
-                <Dropzone.Idle>
-                  <IconCloudUpload
-                    size={rem(50)}
-                    color={
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.dark[0]
-                        : theme.black
-                    }
-                    stroke={1.5}
-                  />
-                </Dropzone.Idle>
-              </Group>
-
-              <Text ta="center" fw={700} fz="lg" mt="xl">
-                {isDisabled ? (
-                  'Enter an available project name above! 👀'
-                ) : (
-                  <>
-                    <Dropzone.Accept>Drop files here</Dropzone.Accept>
-                    <Dropzone.Reject>
-                      Upload rejected, not proper file type or too large.
-                    </Dropzone.Reject>
-                    <Dropzone.Idle>Upload materials</Dropzone.Idle>
-                  </>
+                {!isDisabled && (
+                  <Dropzone.Idle>
+                    <IconCloudUpload
+                      size={rem(50)}
+                      color={
+                        theme.colorScheme === 'dark'
+                          ? theme.colors.dark[0]
+                          : theme.black
+                      }
+                      stroke={1.5}
+                    />
+                  </Dropzone.Idle>
                 )}
-              </Text>
+              </Group>
+              {isDisabled ? (
+                <>
+                  <br></br>
+                  <Text ta="center" fw={700} fz="lg" mt="xl">
+                    Enter an available project name above! 👀
+                  </Text>
+                </>
+              ) : (
+                <Text ta="center" fw={700} fz="lg" mt="xl">
+                  <Dropzone.Accept>Drop files here</Dropzone.Accept>
+                  <Dropzone.Reject>
+                    Upload rejected, not proper file type or too large.
+                  </Dropzone.Reject>
+                  <Dropzone.Idle>Upload materials</Dropzone.Idle>
+                </Text>
+              )}
               {isDisabled ? (
                 ''
               ) : (
@@ -361,3 +383,28 @@ export function LargeDropzone({
 }
 
 export default LargeDropzone
+
+const showToast = (error_files: string[]) => {
+  return (
+    // docs: https://mantine.dev/others/notifications/
+
+    notifications.show({
+      id: 'failed-ingest-toast',
+      withCloseButton: true,
+      onClose: () => console.log('unmounted'),
+      onOpen: () => console.log('mounted'),
+      autoClose: 15000,
+      // position="top-center",
+      title: 'Failed to ingest files',
+      message: `Failed to ingest the following files: ${error_files.join(
+        ', ',
+      )}. Please shoot me an email: kvday2@illinois.edu.`,
+      color: 'red',
+      radius: 'lg',
+      icon: <IconAlertCircle />,
+      className: 'my-notification-class',
+      style: { backgroundColor: '#15162c' },
+      loading: false,
+    })
+  )
+}

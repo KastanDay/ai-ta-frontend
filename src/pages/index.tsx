@@ -2,6 +2,8 @@ import Image from 'next/image'
 import { type NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
+import React from 'react'
+
 import {
   // MantineProvider,
   // Image,
@@ -14,8 +16,11 @@ import {
   Group,
 } from '@mantine/core'
 
-import GlobalHeader from '~/components/UIUC-Components/GlobalHeader'
+import GlobalHeader, {
+  LandingPageHeader,
+} from '~/components/UIUC-Components/navbars/GlobalHeader'
 import GlobalFooter from '~/components/UIUC-Components/GlobalFooter'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 
 const Home: NextPage = () => {
   return (
@@ -29,16 +34,13 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <GlobalHeader />
+      <LandingPageHeader />
 
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#0E1116]">
         <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 ">
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            {/* <Link href="/"> */}
             UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
-            {/* </Link> */}
           </h1>
-
           <Container
             size="lg"
             py="l"
@@ -56,7 +58,7 @@ const Home: NextPage = () => {
             >
               Upload anything. Search everything.
               <br></br>
-              <span className="home-header_text-underline">Discover more.</span>
+              <span className="home-header_text-underline">Discover More.</span>
             </Title>
 
             {/* <Text color="#57534e" c="dimmed" ta="center" mt="md">
@@ -69,11 +71,10 @@ const Home: NextPage = () => {
               <span className="font-bold">Upload</span> your videos, any number
               of PDFs, PowerPoint, Word, Excel and almost anything other
               document to chat with your knowledge base.
-              <br></br>
-              Coming soon: Students can contribute content to enhance the
-              AI&apos;s knowledge.
             </Text>
           </Container>
+
+          <ListProjectTable />
 
           <Title color="white" order={3}>
             Explore the Courses
@@ -124,7 +125,7 @@ export default Home
 
 import { createStyles, SimpleGrid, Container } from '@mantine/core'
 import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
-import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import ListProjectTable from '~/components/UIUC-Components/ProjectTable'
 
 const mockdata = [
   {
@@ -174,9 +175,8 @@ const useStyles = createStyles((theme) => ({
   },
 
   card: {
-    border: `${rem(1)} solid ${
-      theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
-    }`,
+    border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
+      }`,
   },
 
   cardTitle: {
