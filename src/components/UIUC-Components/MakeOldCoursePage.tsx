@@ -167,7 +167,7 @@ const MakeOldCoursePage = ({
             </div>
             <div className="mt-2 flex w-[80%] flex-col items-center justify-center">
 
-
+              {/* This is the old table view */}
               <MyTableView course_materials={course_data} />
               <ComplexUsageExample course_materials={course_data} />
               {/* <br></br>
