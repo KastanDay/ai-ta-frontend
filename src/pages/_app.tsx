@@ -29,10 +29,10 @@ const MyApp: AppType<{ session: Session | null }> = ({
   if (process.env.NEXT_PUBLIC_MAINTENANCE === 'true') {
     return <Maintenance />
   } else {
-    // Clear local storage once per user
-    if (typeof window !== 'undefined') { // Check for window object to make sure we are in the client
-      clearLocalStorageOnce();
-    }
+    // ! This seems to cause huge bugs with streaming answers!
+    // if (typeof window !== 'undefined') { // Check for window object to make sure we are in the client
+    //   clearLocalStorageOnce(); // Clear local storage once per user
+    // }
 
 
     return (
