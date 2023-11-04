@@ -9,7 +9,7 @@ export const runtime = 'edge'
 
 import { createClient } from '@supabase/supabase-js'
 
-// TODO:
+
 // Create a single supabase client for interacting with your database
 const supabase = createClient('https://twzwfuydgnnjcaopyfdv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3endmdXlkZ25uamNhb3B5ZmR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTIxMzA1MDYsImV4cCI6MjAwNzcwNjUwNn0.Wuz8ToRJliaYHyqvnE8L9uc-qcwIkeSpvtHnt0cpYxo')
 
@@ -18,6 +18,7 @@ interface CourseDocuments {
   url: string;
   s3_path: string;
   created_at: string;
+  base_url: string;
 }
 
 export const getCourseDocuments = async (
@@ -36,7 +37,7 @@ export const getCourseDocuments = async (
 
     let { data: documents, error } = await supabase
       .from('documents')
-      .select('readable_filename,url,s3_path,created_at')
+      .select('readable_filename,url,s3_path,created_at,base_url')
       .eq('course_name', course_name)
     // .range(start_idx, end_idx)
     if (error) {

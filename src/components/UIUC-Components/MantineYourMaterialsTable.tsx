@@ -8,26 +8,58 @@ import { DataTable } from 'mantine-datatable';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import { getCourseDocuments } from '~/pages/api/UIUC-api/getDocsForMaterials';
+import { useRouter } from 'next/router';
 // import { employees } from '~/data';
 // const initialRecords = employees.slice(0, 100);
 
-interface CourseFile {
-  name: string
-  s3_path: string
-  course_name: string
-  readable_filename: string
-  // type: string
-  url: string
-  base_url: string
+interface CourseDocuments {
+  readable_filename: string;
+  url: string;
+  s3_path: string;
+  created_at: string;
+  base_url: string;
 }
 
+
 interface CourseFilesListProps {
-  course_materials: CourseFile[]
+  course_materials: CourseDocuments[]
 }
 
 export function ComplexUsageExample({ course_materials }: CourseFilesListProps) {
+
+  const [documents, setDocuments] = useState<CourseDocuments[]>([]);
+
+  useEffect(() => {
+    getCourseDocuments('is507').then((docs) => {
+      if (docs && docs.length != 0) {
+        setDocuments(docs); // Save the fetched documents to state
+      } else {
+        // Handle the case where no documents are returned or an error occurred
+        console.error('No documents were fetched');
+      }
+    });
+  }, []);
+
+  const router = useRouter();
+  const getCurrentPageName = (): string => {
+    const path = router.asPath;
+    const courseName = path.slice(1).split('/')[0] || '';
+    return courseName;
+  }
+
   const [materials, setMaterials] = useState(course_materials);
 
+  useEffect(() => {
+    const fetchCourseDocuments = async () => {
+      const documents = await getCourseDocuments(getCurrentPageName());
+      console.log(documents);
+      if (documents) {
+        setMaterials(documents);
+      }
+    };
+
+    fetchCourseDocuments();
+  }, [getCurrentPageName()]);
   // const departments = useMemo(() => {
   //   const departments = new Set(employees.map((e) => e.department.name));
   //   return [...departments];

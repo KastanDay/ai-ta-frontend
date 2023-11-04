@@ -169,12 +169,12 @@ const MakeOldCoursePage = ({
 
               {/* This is the old table view */}
               {/* <MyTableView course_materials={course_data} /> */}
-              <ComplexUsageExample course_materials={course_data} />
-              {/* <br></br>
+              {course_data && <ComplexUsageExample course_materials={course_data} />}
+              {/* <br></br> */}
               <br></br>
 
 
-              <CourseFilesList files={course_data} /> */}
+              {/* <CourseFilesList files={course_data} /> */}
             </div>
           </Flex>
         </div>
