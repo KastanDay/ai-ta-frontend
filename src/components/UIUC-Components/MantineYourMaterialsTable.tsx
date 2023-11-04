@@ -1,36 +1,22 @@
-import { Button, createStyles, Group, Stack, Text } from '@mantine/core';
-import { closeAllModals, openModal } from '@mantine/modals';
-import { showNotification } from '@mantine/notifications';
-import { IconEdit, IconTrash, IconTrashX } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
+'use client';
+
+import { ActionIcon, Button, MultiSelect, Stack, TextInput } from '@mantine/core';
+import { DatePicker, type DatesRangeValue } from '@mantine/dates';
+import { useDebouncedValue } from '@mantine/hooks';
+import { IconSearch, IconX } from '@tabler/icons-react';
+import { DataTable } from 'mantine-datatable';
 import dayjs from 'dayjs';
-import { DataTable, DataTableSortStatus } from 'mantine-datatable';
-import { useState } from 'react';
-// import { Employee, getEmployeesAsync } from '~/data';
-
-const useStyles = createStyles((theme) => ({
-  modalHeader: {
-    borderBottom: `1px solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[2]}`,
-    marginBottom: theme.spacing.md,
-  },
-  modalTitle: {
-    color: theme.colorScheme === 'dark' ? theme.colors.dark[2] : theme.colors.gray[8],
-    fontWeight: 700,
-  },
-  modalContent: {
-    maxWidth: 300,
-  },
-  modalLabel: { width: 80 },
-}));
-
-const PAGE_SIZE = 100;
+import { useEffect, useMemo, useState } from 'react';
+import { getCourseDocuments } from '~/pages/api/UIUC-api/getDocsForMaterials';
+// import { employees } from '~/data';
+// const initialRecords = employees.slice(0, 100);
 
 interface CourseFile {
   name: string
   s3_path: string
   course_name: string
   readable_filename: string
-  type: string
+  // type: string
   url: string
   base_url: string
 }
@@ -39,129 +25,148 @@ interface CourseFilesListProps {
   course_materials: CourseFile[]
 }
 
-export default function ComplexUsageExample({ course_materials }: CourseFilesListProps) {
-  const [page, setPage] = useState(1);
-  const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({ columnAccessor: 'name', direction: 'asc' });
+export function ComplexUsageExample({ course_materials }: CourseFilesListProps) {
+  const [materials, setMaterials] = useState(course_materials);
 
-  const handleSortStatusChange = (status: DataTableSortStatus) => {
-    setPage(1);
-    setSortStatus(status);
-  };
+  // const departments = useMemo(() => {
+  //   const departments = new Set(employees.map((e) => e.department.name));
+  //   return [...departments];
+  // }, []);
+  const [query, setQuery] = useState('');
+  const [ReadableFilename, setReadableFilename] = useState<string[]>([]);
+  const [debouncedQuery] = useDebouncedValue(query, 200);
 
-  const { data, isFetching } = useQuery(
-    ['employees', sortStatus.columnAccessor, sortStatus.direction, page],
-    // TODO: update this to work with our new endpoint: getDocsForMaterials. Ensure it works with search.
-    async () => getEmployeesAsync({ recordsPerPage: PAGE_SIZE, page, sortStatus }),
-    { refetchOnWindowFocus: false }
-  );
+  useEffect(() => {
+    setMaterials(
+      course_materials.filter(({ readable_filename, url, base_url }) => {
+        const lowerCaseDebouncedQuery = debouncedQuery.trim().toLowerCase();
+        if (
+          debouncedQuery !== '' &&
+          !`${readable_filename}`.toLowerCase().includes(lowerCaseDebouncedQuery)
+        ) {
+          return false;
+        }
 
-  const [selectedRecords, setSelectedRecords] = useState<Employee[]>([]);
+        if (
+          debouncedQuery !== '' &&
+          !`${url}`.toLowerCase().includes(lowerCaseDebouncedQuery)
+        ) {
+          return false;
+        }
 
-  const {
-    classes,
-    theme: {
-      breakpoints: { xs: xsBreakpoint },
-    },
-  } = useStyles();
-  const aboveXsMediaQuery = `(min-width: ${xsBreakpoint})`;
-  const now = dayjs();
+        if (
+          debouncedQuery !== '' &&
+          !`${base_url}`.toLowerCase().includes(lowerCaseDebouncedQuery)
+        ) {
+          return false;
+        }
+        return true;
+      })
+    );
+  }, [debouncedQuery]);
 
   return (
     <DataTable
-      height={320}
-      withBorder
-      borderRadius="sm"
+      height={300}
+      // withTableBorder
       withColumnBorders
-      striped
-      verticalAlignment="top"
-      fetching={isFetching}
+      records={materials}
       columns={[
         {
-          accessor: 'readable_filename',
-          title: 'File name',
-          width: 150,
-          ellipsis: true,
-          sortable: true,
+          accessor: 'File Name',
+          render: ({ readable_filename }) => `${readable_filename}`,
+          filter: (
+            <TextInput
+              label="File Name"
+              description="Show uploaded files that include the specified text"
+              placeholder="Search files..."
+              // leftSection={<IconSearch size={16} />}
+              rightSection={
+                <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
+                  <IconX size={14} />
+                </ActionIcon>
+              }
+              value={query}
+              onChange={(e) => setQuery(e.currentTarget.value)}
+            />
+          ),
+          filtering: query !== '',
         },
         {
-          accessor: 'url',
-          title: 'URL',
-          sortable: true,
-          visibleMediaQuery: aboveXsMediaQuery,
+          accessor: 'URL',
+          render: ({ url }) => `${url}`,
+          filter: (
+            <TextInput
+              label="URL"
+              description="Show all urls "
+              placeholder="Search urls..."
+              // leftSection={<IconSearch size={16} />}
+              rightSection={
+                <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
+                  <IconX size={14} />
+                </ActionIcon>
+              }
+              value={query}
+              onChange={(e) => setQuery(e.currentTarget.value)}
+            />
+          ),
+          filtering: query !== '',
         },
         {
-          accessor: 'base_url',
-          title: 'Starting URL of web scrape',
-          width: 150,
-          sortable: true,
-          visibleMediaQuery: aboveXsMediaQuery,
+          accessor: 'Starting URL of Web Scape',
+          render: ({ base_url }) => `${base_url}`,
+          filter: (
+            <TextInput
+              label="Starting URL of Web Scape"
+              description="Show all urls "
+              placeholder="Search urls..."
+              // leftSection={<IconSearch size={16} />}
+              rightSection={
+                <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
+                  <IconX size={14} />
+                </ActionIcon>
+              }
+              value={query}
+              onChange={(e) => setQuery(e.currentTarget.value)}
+            />
+          ),
+          filtering: query !== '',
         },
       ]}
-      records={course_materials}
-      page={page}
-      onPageChange={setPage}
-      totalRecords={data?.total}
-      recordsPerPage={PAGE_SIZE}
-      sortStatus={sortStatus}
-      onSortStatusChange={handleSortStatusChange}
-      selectedRecords={selectedRecords}
-      onSelectedRecordsChange={setSelectedRecords}
-      onRowClick={({ firstName, lastName, birthDate }) =>
-        openModal({
-          title: `${firstName} ${lastName}`,
-          classNames: { header: classes.modalHeader, title: classes.modalTitle, content: classes.modalContent },
-          children: (
-            <Stack>
-              <Group>
-                <Text className={classes.modalLabel} size="sm">
-                  First name
-                </Text>
-                <Text size="sm">{firstName}</Text>
-              </Group>
-              <Group>
-                <Text className={classes.modalLabel} size="sm">
-                  Last name
-                </Text>
-                <Text size="sm">{lastName}</Text>
-              </Group>
-              <Group>
-                <Text className={classes.modalLabel} size="sm">
-                  Birth date
-                </Text>
-                <Text size="sm">{dayjs(birthDate).format('MMMM DD, YYYY')}</Text>
-              </Group>
-              <Button onClick={() => closeAllModals()}>Close</Button>
-            </Stack>
-          ),
-        })
-      }
-      rowContextMenu={{
-        items: ({ id, firstName, lastName }) => [
-          {
-            key: 'edit',
-            icon: <IconEdit size={14} />,
-            title: `Edit ${firstName} ${lastName}`,
-            onClick: () => showNotification({ color: 'orange', message: `Should edit ${firstName} ${lastName}` }),
-          },
-          {
-            key: 'delete',
-            title: `Delete ${firstName} ${lastName}`,
-            icon: <IconTrashX size={14} />,
-            color: 'red',
-            onClick: () => showNotification({ color: 'red', message: `Should delete ${firstName} ${lastName}` }),
-          },
-          { key: 'divider-1', divider: true },
-          {
-            key: 'deleteMany',
-            hidden: selectedRecords.length <= 1 || !selectedRecords.map((r) => r.id).includes(id),
-            title: `Delete ${selectedRecords.length} selected records`,
-            icon: <IconTrash size={14} />,
-            color: 'red',
-            onClick: () =>
-              showNotification({ color: 'red', message: `Should delete ${selectedRecords.length} records` }),
-          },
-        ],
-      }}
     />
   );
+}
+
+async function fetchCourseMetadata(course_name: string) {
+  try {
+    const response = await fetch(
+      `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
+    )
+    console.log('Response received while fetching metadata:', response)
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success === false) {
+        throw new Error(
+          data.message || 'An error occurred while fetching course metadata',
+        )
+      }
+      // Parse is_private field from string to boolean
+      if (
+        data.course_metadata &&
+        typeof data.course_metadata.is_private === 'string'
+      ) {
+        data.course_metadata.is_private =
+          data.course_metadata.is_private.toLowerCase() === 'true'
+      }
+      return data.course_metadata
+    } else {
+      throw new Error(
+        `Error fetching course metadata: ${response.statusText || response.status
+        }`,
+      )
+    }
+  } catch (error) {
+    console.error('Error fetching course metadata:', error)
+    throw error
+  }
 }
