@@ -1,3 +1,109 @@
+// // src/components/Chat/Chat.tsx
+// for the purposes of filtering the chat history based on the course in current url
+// import {
+//   // IconBrain,
+//   // IconClearAll,
+//   IconArrowRight,
+//   // IconCloudUpload,
+//   IconExternalLink,
+//   // IconRobot,
+//   // IconSettings,
+//   IconAlertTriangle,
+//   IconArrowLeft,
+//   IconLock,
+//   IconBrain,
+//   IconCreditCard,
+//   IconAlertCircle,
+//   // IconArrowUpRight,
+//   // IconFileTextAi,
+//   // IconX,
+//   // IconDownload,
+//   // IconClearAll,
+//   // IconSettings,
+// } from '@tabler/icons-react'
+// import {
+//   type MutableRefObject,
+//   memo,
+//   useCallback,
+//   useContext,
+//   useEffect,
+//   useRef,
+//   useState,
+// } from 'react'
+// import toast from 'react-hot-toast'
+// import { Button, Text, Title } from '@mantine/core'
+// import { useTranslation } from 'next-i18next'
+
+// import { getEndpoint } from '@/utils/app/api'
+// import {
+//   saveConversation,
+//   saveConversations,
+//   updateConversation,
+// } from '@/utils/app/conversation'
+// import { throttle } from '@/utils/data/throttle'
+
+// import {
+//   type ContextWithMetadata,
+//   type ChatBody,
+//   type Conversation,
+//   type Message,
+// } from '@/types/chat'
+// import { type Plugin } from '@/types/plugin'
+
+// import HomeContext from '~/pages/api/home/home.context'
+
+// import { ChatInput } from './ChatInput'
+// import { ChatLoader } from './ChatLoader'
+// import { ErrorMessageDiv } from './ErrorMessageDiv'
+// import { MemoizedChatMessage } from './MemoizedChatMessage'
+// import { fetchPresignedUrl } from '~/components/UIUC-Components/ContextCards'
+
+// import { type CourseMetadata } from '~/types/courseMetadata'
+
+// interface Props {
+//   stopConversationRef: MutableRefObject<boolean>
+//   courseMetadata: CourseMetadata
+// }
+
+// import { useRouter } from 'next/router'
+// // import CustomBanner from '../UIUC-Components/CustomBanner'
+// import { fetchContexts } from '~/pages/api/getContexts'
+// import { useUser } from '@clerk/nextjs'
+// import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
+// import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
+// import Navbar from '../UIUC-Components/Navbar'
+// import TopBarInChat from '../Chatbar/TopBarInChat'
+// // import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
+// import { notifications } from '@mantine/notifications'
+// import { Montserrat } from 'next/font/google'
+// import { montserrat_heading, montserrat_paragraph } from 'fonts'
+// import ChatNavbar from '../UIUC-Components/ChatNavbar'
+
+// const montserrat_med = Montserrat({
+//   weight: '500',
+//   subsets: ['latin'],
+// })
+// // Extract the current course from the URL
+// const currentCourse = window.location.pathname.split('/')[2];
+
+// // Filter the conversation history based on the current course
+// const filteredConversations = conversations.filter(conversation => conversation.course === currentCourse);
+
+// // Set the state with the filtered conversations
+// this.setState({ conversations: filteredConversations });
+
+// // Create a new conversation every time the user visits the chat page
+// const newConversation = {
+//   id: uuidv4(),
+//   course: currentCourse,
+//   messages: []
+// };
+
+// // Add the new conversation to the state
+// this.setState(prevState => ({
+//   conversations: [...prevState.conversations, newConversation]
+// }));
+
 // src/components/Chat/Chat.tsx
 import {
   // IconBrain,
@@ -30,7 +136,7 @@ import {
   useState,
 } from 'react'
 import toast from 'react-hot-toast'
-import { Button, Container, Text, Title } from '@mantine/core'
+import { Button, Text, Title } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -70,12 +176,13 @@ import { fetchContexts } from '~/pages/api/getContexts'
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
-import ChatNavbar from '../UIUC-Components/navbars/ChatNavbar'
+import Navbar from '../UIUC-Components/navbars/MaterialsNavbar'
+import TopBarInChat from '../Chatbar/TopBarInChat'
 // import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
 import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
-import { NextResponse } from 'next/server'
+import ChatNavbar from '../UIUC-Components/navbars/ChatNavbar'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -228,7 +335,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           messages: updatedConversation.messages,
           key:
             courseMetadata?.openai_api_key &&
-            courseMetadata?.openai_api_key != ''
+              courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
           prompt: updatedConversation.prompt,
@@ -259,9 +366,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           signal: controller.signal,
           body,
         })
-
         if (!response.ok) {
-          const final_response = await response.json()
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
           notifications.show({
@@ -270,15 +375,15 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             closeButtonProps: { color: 'red' },
             onClose: () => console.log('error unmounted'),
             onOpen: () => console.log('error mounted'),
-            autoClose: 12000,
+            autoClose: 6000,
             title: (
               <Text size={'lg'} className={`${montserrat_med.className}`}>
-                {final_response.name}
+                OpenAI Error
               </Text>
             ),
             message: (
               <Text className={`${montserrat_med.className} text-neutral-200`}>
-                {final_response.message}
+                {response.statusText}
               </Text>
             ),
             color: 'red',
@@ -522,14 +627,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-    courseMetadata.example_questions.length > 0
+      courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-          'Make a bullet point list of key takeaways of the course.',
-          'What is [your favorite topic] and why is it worth learning about?',
-          'How can I effectively prepare for the upcoming exam?',
-          'How many assignments in the course?',
-        ]
+        'Make a bullet point list of key takeaways of the course.',
+        'What is [your favorite topic] and why is it worth learning about?',
+        'How can I effectively prepare for the upcoming exam?',
+        'How many assignments in the course?',
+      ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
@@ -579,14 +684,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   return (
-    <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
-      <div className="justify-center" style={{ height: '46px' }}>
-        <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
-      </div>
-      <div className="flex-grow overflow-auto mt-10">
-        {!(apiKey || serverSideApiKeyIsSet) ? (
-          <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
-            <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
+    <div className="overflow-wrap relative flex-1 bg-white dark:bg-[#15162c]">
+      {!(apiKey || serverSideApiKeyIsSet) ? (
+        <div className="min-w-screen relative min-h-screen flex-1 overflow-hidden">
+          <ChatNavbar isgpt4={true} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className=" backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
               <div className="mb-2 flex flex-col items-center text-center">
                 <IconAlertTriangle
                   size={'54'}
@@ -645,76 +748,84 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                     </Text>
                   </div>
                 </div>
-                <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
-                  <IconArrowLeft
-                    size={'36'}
-                    className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
-                  />
-                </div>
               </div>
             </div>
-          </div>
-        ) : modelError ? (
-          <ErrorMessageDiv error={modelError} />
-        ) : (
-          <>
-            <div
-              className="max-h-full mt-4"
-              ref={chatContainerRef}
-              onScroll={handleScroll}
-            >
-              {selectedConversation?.messages.length === 0 ? (
-                <>
-                  <div className="mt-16">{renderIntroductoryStatements()}</div>
-                </>
-              ) : (
-                <>
-                  {selectedConversation?.messages.map((message, index) => (
-                    <MemoizedChatMessage
-                      key={index}
-                      message={message}
-                      messageIndex={index}
-                      onEdit={(editedMessage) => {
-                        setCurrentMessage(editedMessage)
-                        handleSend(
-                          editedMessage,
-                          selectedConversation?.messages.length - index,
-                        )
-                      }}
-                    />
-                  ))}
-                  {loading && <ChatLoader />}
-                  <div
-                    className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
-                    ref={messagesEndRef}
-                  />
-                </>
-              )}
+            <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
+              <IconArrowLeft
+                size={'36'}
+                className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
+              />
             </div>
-            {/* <div className="w-full max-w-[calc(100% - var(--sidebar-width))] mx-auto flex justify-center"> */}
-            <ChatInput
-              stopConversationRef={stopConversationRef}
-              textareaRef={textareaRef}
-              onSend={(message, plugin) => {
-                setCurrentMessage(message)
-                handleSend(message, 0, plugin)
-              }}
-              onScrollDownClick={handleScrollDown}
-              onRegenerate={() => {
-                if (currentMessage) {
-                  handleSend(currentMessage, 2, null)
-                }
-              }}
-              showScrollDownButton={showScrollDownButton}
-              inputContent={inputContent}
-              setInputContent={setInputContent}
-              courseName={getCurrentPageName()}
-          />
+          </div>
+        </div>
+      ) : modelError ? (
+        <ErrorMessageDiv error={modelError} />
+      ) : (
+        <>
+          <div
+            className="max-h-full overflow-x-hidden"
+            ref={chatContainerRef}
+            onScroll={handleScroll}
+          >
+            {/* <TopBarInChat course_name={getCurrentPageName()} /> */}
+            {/* <div className="bg-red-500" > */}
+            <TopBarInChat course_name={getCurrentPageName()} />
             {/* </div> */}
-          </>
-        )}
-      </div>
+
+            {selectedConversation?.messages.length === 0 ? (
+              <>
+                {/* NEW CHAT, NO MESSAGES YET */}
+                <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
+                <div className="mt-16">{renderIntroductoryStatements()}</div>
+              </>
+            ) : (
+              <>
+                {/* MESSAGES IN CHAT */}
+                {selectedConversation?.messages.map((message, index) => (
+                  <MemoizedChatMessage
+                    key={index}
+                    message={message}
+                    messageIndex={index}
+                    onEdit={(editedMessage) => {
+                      setCurrentMessage(editedMessage)
+                      handleSend(
+                        editedMessage,
+                        selectedConversation?.messages.length - index,
+                      )
+                    }}
+                  />
+                ))}
+                {loading && <ChatLoader />}
+                <div
+                  // className="h-[162px] bg-gradient-to-b from-[#1a1a2e] via-[#2A2A40] to-[#15162c]"
+                  // className="h-[162px] bg-gradient-to-b dark:from-[#2e026d] dark:via-[#15162c] dark:to-[#15162c]"
+                  className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
+                  ref={messagesEndRef}
+                />
+              </>
+            )}
+          </div>
+
+          <ChatInput
+            stopConversationRef={stopConversationRef}
+            textareaRef={textareaRef}
+            onSend={(message, plugin) => {
+              setCurrentMessage(message)
+              handleSend(message, 0, plugin)
+            }}
+            onScrollDownClick={handleScrollDown}
+            onRegenerate={() => {
+              if (currentMessage) {
+                handleSend(currentMessage, 2, null)
+              }
+            }}
+            showScrollDownButton={showScrollDownButton}
+            inputContent={inputContent}
+            setInputContent={setInputContent}
+          />
+        </>
+      )}
     </div>
   )
-  Chat.displayName = 'Chat'
 })
+Chat.displayName = 'Chat'

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import React, { ReactNode } from 'react'
-import GlobalHeader from './GlobalHeader'
+import GlobalHeader from './navbars/GlobalHeader'
 
 interface MainPageBackgroundProps {
   children: ReactNode

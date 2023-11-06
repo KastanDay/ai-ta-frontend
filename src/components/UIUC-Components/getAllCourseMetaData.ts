@@ -17,6 +17,7 @@ export const getCoursesByOwnerOrAdmin = async (
 
   try {
     const all_course_metadata_raw = await kv.hgetall('course_metadatas')
+    console.log('Raw metadata')
     // console.log(all_course_metadata_raw)
 
     if (all_course_metadata_raw) {
@@ -34,6 +35,7 @@ export const getCoursesByOwnerOrAdmin = async (
             (courseMetadata.course_owner === currUserEmail ||
               courseMetadata.course_admins.includes(currUserEmail))
           ) {
+            console.log('Found a course: ', courseMetadata)
             return { [key]: courseMetadata }
           }
           // return null;
@@ -42,6 +44,7 @@ export const getCoursesByOwnerOrAdmin = async (
           (item) =>
             item !== null && item !== undefined && Object.keys(item).length > 0,
         ) as { [key: string]: CourseMetadata }[]
+      console.log('in direct course name', all_course_metadata)
       return all_course_metadata
     } else {
       console.error(
@@ -66,6 +69,8 @@ export const getAllCourseMetadata = async (): Promise<
 
   try {
     const all_course_metadata_raw = await kv.hgetall('course_metadatas')
+    console.log('Raw metadata')
+    console.log(all_course_metadata_raw)
 
     if (all_course_metadata_raw) {
       const all_course_metadata = Object.entries(all_course_metadata_raw)
