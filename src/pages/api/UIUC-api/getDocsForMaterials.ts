@@ -3,6 +3,7 @@ import { kv } from '@vercel/kv'
 import { NextResponse } from 'next/server'
 import { CourseMetadata } from '~/types/courseMetadata'
 import { log } from 'next-axiom'
+import { env } from "~/env.mjs";
 
 export const runtime = 'edge'
 
@@ -11,7 +12,7 @@ import { createClient } from '@supabase/supabase-js'
 
 
 // Create a single supabase client for interacting with your database
-const supabase = createClient('https://twzwfuydgnnjcaopyfdv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3endmdXlkZ25uamNhb3B5ZmR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTIxMzA1MDYsImV4cCI6MjAwNzcwNjUwNn0.Wuz8ToRJliaYHyqvnE8L9uc-qcwIkeSpvtHnt0cpYxo')
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
 interface CourseDocuments {
   readable_filename: string;

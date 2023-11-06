@@ -30,9 +30,11 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
   const [documents, setDocuments] = useState<CourseDocuments[]>([]);
 
   useEffect(() => {
-    getCourseDocuments('is507').then((docs) => {
+    getCourseDocuments('HDF5').then((docs) => {
       if (docs && docs.length != 0) {
-        setDocuments(docs); // Save the fetched documents to state
+        setDocuments(docs);
+        console.log(documents);
+        // Save the fetched documents to state
       } else {
         // Handle the case where no documents are returned or an error occurred
         console.error('No documents were fetched');
