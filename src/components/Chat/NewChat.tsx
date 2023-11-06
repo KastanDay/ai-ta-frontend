@@ -807,6 +807,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           </div>
 
           <ChatInput
+            courseName={getCurrentPageName()} // Add the missing prop here
             stopConversationRef={stopConversationRef}
             textareaRef={textareaRef}
             onSend={(message, plugin) => {
