@@ -65,7 +65,7 @@ const Home = () => {
       selectedConversation,
       prompts,
       temperature,
-      models
+      models,
     },
     dispatch,
   } = contextValue
@@ -313,10 +313,11 @@ const Home = () => {
 
   const handleNewConversation = () => {
     const lastConversation = conversations[conversations.length - 1]
-    console.debug("Models available: ", models)
-    const defaultModel = models.find(model => model.id === defaultModelId) || models[0]
-    console.debug("Using model: ", defaultModel)
-    
+    console.debug('Models available: ', models)
+    const defaultModel =
+      models.find((model) => model.id === defaultModelId) || models[0]
+    console.debug('Using model: ', defaultModel)
+
     const newConversation: Conversation = {
       id: uuidv4(),
       name: t('New Conversation'),
@@ -440,9 +441,10 @@ const Home = () => {
       })
     } else {
       const lastConversation = conversations[conversations.length - 1]
-      console.debug("Models available: ", models)
-      const defaultModel = models.find(model => model.id === defaultModelId) || models[0]
-      console.debug("Using model: ", defaultModel)
+      console.debug('Models available: ', models)
+      const defaultModel =
+        models.find((model) => model.id === defaultModelId) || models[0]
+      console.debug('Using model: ', defaultModel)
       dispatch({
         field: 'selectedConversation',
         value: {

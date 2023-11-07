@@ -17,9 +17,7 @@ import { useRouter } from 'next/router'
 import { useMediaQuery } from '@mantine/hooks'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
 import { montserrat_heading } from 'fonts'
-import { useRef } from 'react';
-
-
+import { useRef } from 'react'
 
 interface WebScrapeProps {
   is_new_course: boolean
@@ -34,14 +32,14 @@ const shouldShowFields = (inputUrl: string) => {
     inputUrl.includes('ocw.mit.edu') ||
     inputUrl.includes('github.com') ||
     inputUrl.includes('canvas.illinois.edu')
-  );
-};
+  )
+}
 
 const validateUrl = (url: string) => {
   const courseraRegex = /^https?:\/\/(www\.)?coursera\.org\/learn\/.+/
   const mitRegex = /^https?:\/\/ocw\.mit\.edu\/.+/
   const githubRegex = /^https?:\/\/(www\.)?github\.com\/.+/
-  const canvasRegex = /^https?:\/\/canvas\.illinois\.edu\/courses\/\d+/;
+  const canvasRegex = /^https?:\/\/canvas\.illinois\.edu\/courses\/\d+/
   const webScrapingRegex = /^(https?:\/\/)?.+/
 
   return (
@@ -76,36 +74,36 @@ export const WebScrape = ({
   const [maxUrls, setMaxUrls] = useState('50')
   const [maxDepth, setMaxDepth] = useState('2')
   const [stayOnBaseUrl, setStayOnBaseUrl] = useState(false)
-  const [courseID, setCourseID] = useState<string>('');
-  const [selectedContents, setSelectedContents] = useState<string[]>([]);
-  const [showContentOptions, setShowContentOptions] = useState<boolean>(false);
-  const isCourseIDUpdated = courseID.trim() !== '';
-  const logoRef = useRef(null);
+  const [courseID, setCourseID] = useState<string>('')
+  const [selectedContents, setSelectedContents] = useState<string[]>([])
+  const [showContentOptions, setShowContentOptions] = useState<boolean>(false)
+  const isCourseIDUpdated = courseID.trim() !== ''
+  const logoRef = useRef(null)
   const [selectedCanvasOptions, setSelectedCanvasOptions] = useState<string[]>([
-    "files", 
-    "pages", 
-    "modules", 
-    "syllabus", 
-    "assignments", 
-    "discussions"
-  ]);
-  
+    'files',
+    'pages',
+    'modules',
+    'syllabus',
+    'assignments',
+    'discussions',
+  ])
+
   const handleCanvasOptionChange = (value: string) => {
     if (selectedCanvasOptions.includes(value)) {
-      setSelectedCanvasOptions((prev) => prev.filter((item) => item !== value));
+      setSelectedCanvasOptions((prev) => prev.filter((item) => item !== value))
     } else {
-      setSelectedCanvasOptions((prev) => [...prev, value]);
+      setSelectedCanvasOptions((prev) => [...prev, value])
     }
-  };
+  }
 
   const handleCheckboxChange = (values: string[]) => {
-    setSelectedContents(values);
-  };
+    setSelectedContents(values)
+  }
 
   const canvasSubmit = () => {
-    console.log('Course ID:', courseID);
-    console.log('Selected Contents:', selectedContents);
-  };
+    console.log('Course ID:', courseID)
+    console.log('Selected Contents:', selectedContents)
+  }
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -159,36 +157,49 @@ export const WebScrape = ({
         }
         router.push(`/${courseName}/materials`)
       } else if (url.includes('canvas.illinois.edu/courses/')) {
-
-        const canvasCourseIdParts = url.split('canvas.illinois.edu/courses/');
-        const canvasCourseId = canvasCourseIdParts[1]?.split('/')[0];
+        const canvasCourseIdParts = url.split('canvas.illinois.edu/courses/')
+        const canvasCourseId = canvasCourseIdParts[1]?.split('/')[0]
 
         try {
-          const response = await axios.get('https://flask-production-751b.up.railway.app/ingestCanvas', {
-            params: {
-              course_id: canvasCourseId,
-              course_name: courseName,
-              files: selectedCanvasOptions.includes('files') ? 'true' : 'false',
-              pages: selectedCanvasOptions.includes('pages') ? 'true' : 'false',
-              modules: selectedCanvasOptions.includes('modules') ? 'true' : 'false',
-              syllabus: selectedCanvasOptions.includes('syllabus') ? 'true' : 'false',
-              assignments: selectedCanvasOptions.includes('assignments') ? 'true' : 'false',
-              discussions: selectedCanvasOptions.includes('discussions') ? 'true' : 'false',
+          const response = await axios.get(
+            'https://flask-production-751b.up.railway.app/ingestCanvas',
+            {
+              params: {
+                course_id: canvasCourseId,
+                course_name: courseName,
+                files: selectedCanvasOptions.includes('files')
+                  ? 'true'
+                  : 'false',
+                pages: selectedCanvasOptions.includes('pages')
+                  ? 'true'
+                  : 'false',
+                modules: selectedCanvasOptions.includes('modules')
+                  ? 'true'
+                  : 'false',
+                syllabus: selectedCanvasOptions.includes('syllabus')
+                  ? 'true'
+                  : 'false',
+                assignments: selectedCanvasOptions.includes('assignments')
+                  ? 'true'
+                  : 'false',
+                discussions: selectedCanvasOptions.includes('discussions')
+                  ? 'true'
+                  : 'false',
+              },
             },
-          });
-      
+          )
+
           if (response.data.outcome) {
-            console.log('Canvas content ingestion was successful!');
+            console.log('Canvas content ingestion was successful!')
             // Navigate to the course materials page or any other success behavior
-            router.push(`/${courseName}/materials`);
+            router.push(`/${courseName}/materials`)
           } else {
-            console.error('Canvas content ingestion failed.');
+            console.error('Canvas content ingestion failed.')
             // Handle the failure, maybe show a notification or alert to the user
           }
         } catch (error) {
-          console.error('Error while ingesting Canvas content:', error);
+          console.error('Error while ingesting Canvas content:', error)
         }
-        
       } else {
         showToast()
 
@@ -386,17 +397,17 @@ export const WebScrape = ({
 
   const checkboxStyle = {
     borderColor: theme.colors.gray[4] as string,
-  };
+  }
 
   useEffect(() => {
     if (logoRef.current) {
-      const logoElement = logoRef.current as HTMLImageElement;
-      logoElement.style.width = '60%';
-      logoElement.style.height = '60%';
-      logoElement.style.position = 'relative';
-      logoElement.style.top = '2px';
+      const logoElement = logoRef.current as HTMLImageElement
+      logoElement.style.width = '60%'
+      logoElement.style.height = '60%'
+      logoElement.style.position = 'relative'
+      logoElement.style.top = '2px'
     }
-  }, [logoRef.current]);
+  }, [logoRef.current])
 
   useEffect(() => {
     if (url && url.length > 0 && validateUrl(url)) {
@@ -435,14 +446,14 @@ export const WebScrape = ({
         disabled={isDisabled}
         onChange={(e) => {
           setUrl(e.target.value)
-          setShowContentOptions(e.target.value.includes('canvas.illinois.edu'));
+          setShowContentOptions(e.target.value.includes('canvas.illinois.edu'))
           if (e.target.value.includes('coursera.org')) {
             setIcon(
               <img
                 src={'/media/coursera_logo_cutout.png'}
                 alt="Coursera Logo"
                 style={{ height: '50%', width: '50%' }}
-              />
+              />,
             )
           } else if (e.target.value.includes('ocw.mit.edu')) {
             setIcon(
@@ -450,7 +461,7 @@ export const WebScrape = ({
                 src={'/media/mitocw_logo.jpg'}
                 alt="MIT OCW Logo"
                 style={{ height: '50%', width: '50%' }}
-              />
+              />,
             )
           } else if (e.target.value.includes('github.com')) {
             setIcon(
@@ -458,22 +469,20 @@ export const WebScrape = ({
                 src="/media/github-mark-white.png"
                 alt="GitHub Logo"
                 style={{ height: '50%', width: '50%' }}
-              />
+              />,
             )
-          }
-          else if (e.target.value.includes('canvas.illinois.edu')) {
+          } else if (e.target.value.includes('canvas.illinois.edu')) {
             setIcon(
               <img
                 src="/media/canvas_logo.png"
                 alt="Canvas Logo"
                 style={{ height: '50%', width: '50%' }}
-              />
+              />,
             )
-          }          
-          else {
+          } else {
             setIcon(<IconWorldDownload />)
           }
-        }}        
+        }}
         onKeyPress={(event) => {
           if (event.key === 'Enter') {
             handleSubmit()
@@ -506,135 +515,138 @@ export const WebScrape = ({
       {/* Canvas ingest form */}
       {showContentOptions && (
         <form
-        className="w-[70%] min-w-[20rem] lg:w-[70%] mt-3"
-        onSubmit={(event) => {
-          event.preventDefault();
-        }}
-      >
-        <div>
-          <div className="flex items-center mb-2">
-            <Tooltip
-              multiline
-              color="#15162b"
-              arrowPosition="side"
-              position="bottom-start"
-              arrowSize={8}
-              withArrow
-              label="Select this option to ingest all files from the Canvas course."
-            >
-              <Checkbox 
-                value="files" 
-                label="Files" 
-                size="md" 
-                style={checkboxStyle} 
-                checked={selectedCanvasOptions.includes("files")} 
-                onChange={() => handleCanvasOptionChange("files")}
-              />
-            </Tooltip>
+          className="mt-3 w-[70%] min-w-[20rem] lg:w-[70%]"
+          onSubmit={(event) => {
+            event.preventDefault()
+          }}
+        >
+          <div>
+            <div className="mb-2 flex items-center">
+              <Tooltip
+                multiline
+                color="#15162b"
+                arrowPosition="side"
+                position="bottom-start"
+                arrowSize={8}
+                withArrow
+                label="Select this option to ingest all files from the Canvas course."
+              >
+                <Checkbox
+                  value="files"
+                  label="Files"
+                  size="md"
+                  style={checkboxStyle}
+                  checked={selectedCanvasOptions.includes('files')}
+                  onChange={() => handleCanvasOptionChange('files')}
+                />
+              </Tooltip>
+            </div>
+            <div className="mb-2 flex items-center">
+              <Tooltip
+                multiline
+                color="#15162b"
+                arrowPosition="side"
+                position="bottom-start"
+                arrowSize={8}
+                withArrow
+                label="Select this option to ingest all pages from the Canvas course."
+              >
+                <Checkbox
+                  value="pages"
+                  label="Pages"
+                  size="md"
+                  style={checkboxStyle}
+                  checked={selectedCanvasOptions.includes('pages')}
+                  onChange={() => handleCanvasOptionChange('pages')}
+                />
+              </Tooltip>
+            </div>
+            <div className="mb-2 flex items-center">
+              <Tooltip
+                multiline
+                color="#15162b"
+                arrowPosition="side"
+                position="bottom-start"
+                arrowSize={8}
+                withArrow
+                label="Select this option to ingest all modules from the Canvas course."
+              >
+                <Checkbox
+                  value="modules"
+                  label="Modules"
+                  size="md"
+                  style={checkboxStyle}
+                  checked={selectedCanvasOptions.includes('modules')}
+                  onChange={() => handleCanvasOptionChange('modules')}
+                />
+              </Tooltip>
+            </div>
+            <div className="mb-2 flex items-center">
+              <Tooltip
+                multiline
+                color="#15162b"
+                arrowPosition="side"
+                position="bottom-start"
+                arrowSize={8}
+                withArrow
+                label="Select this option to ingest the course syllabus from Canvas."
+              >
+                <Checkbox
+                  value="syllabus"
+                  label="Syllabus"
+                  size="md"
+                  style={checkboxStyle}
+                  checked={selectedCanvasOptions.includes('syllabus')}
+                  onChange={() => handleCanvasOptionChange('syllabus')}
+                />
+              </Tooltip>
+            </div>
+            <div className="mb-2 flex items-center">
+              <Tooltip
+                multiline
+                color="#15162b"
+                arrowPosition="side"
+                position="bottom-start"
+                arrowSize={8}
+                withArrow
+                label="Select this option to ingest all assignments from the Canvas course."
+              >
+                <Checkbox
+                  value="assignments"
+                  label="Assignments"
+                  size="md"
+                  style={checkboxStyle}
+                  checked={selectedCanvasOptions.includes('assignments')}
+                  onChange={() => handleCanvasOptionChange('assignments')}
+                />
+              </Tooltip>
+            </div>
+            <div className="flex items-center">
+              <Tooltip
+                multiline
+                color="#15162b"
+                arrowPosition="side"
+                position="bottom-start"
+                arrowSize={8}
+                withArrow
+                label="Select this option to ingest all discussions from the Canvas course."
+              >
+                <Checkbox
+                  value="discussions"
+                  label="Discussions"
+                  size="md"
+                  style={checkboxStyle}
+                  checked={selectedCanvasOptions.includes('discussions')}
+                  onChange={() => handleCanvasOptionChange('discussions')}
+                />
+              </Tooltip>
+            </div>
           </div>
-          <div className="flex items-center mb-2">
-            <Tooltip
-              multiline
-              color="#15162b"
-              arrowPosition="side"
-              position="bottom-start"                    
-              arrowSize={8}
-              withArrow
-              label="Select this option to ingest all pages from the Canvas course."
-            >
-              <Checkbox 
-                value="pages" 
-                label="Pages" 
-                size="md" 
-                style={checkboxStyle} 
-                checked={selectedCanvasOptions.includes("pages")} 
-                onChange={() => handleCanvasOptionChange("pages")}
-              />            
-            </Tooltip>
-          </div>
-          <div className="flex items-center mb-2">
-            <Tooltip
-              multiline
-              color="#15162b"
-              arrowPosition="side"
-              position="bottom-start"                    
-              arrowSize={8}
-              withArrow
-              label="Select this option to ingest all modules from the Canvas course."
-            >
-              <Checkbox 
-                value="modules" 
-                label="Modules" 
-                size="md" 
-                style={checkboxStyle} 
-                checked={selectedCanvasOptions.includes("modules")} 
-                onChange={() => handleCanvasOptionChange("modules")}
-              />
-            </Tooltip>
-          </div>
-          <div className="flex items-center mb-2">
-            <Tooltip
-              multiline
-              color="#15162b"
-              arrowPosition="side"
-              position="bottom-start"                    
-              arrowSize={8}
-              withArrow
-              label="Select this option to ingest the course syllabus from Canvas."
-            >
-              <Checkbox 
-                value="syllabus" 
-                label="Syllabus" 
-                size="md" 
-                style={checkboxStyle} 
-                checked={selectedCanvasOptions.includes("syllabus")} 
-                onChange={() => handleCanvasOptionChange("syllabus")}
-              />
-            </Tooltip>
-          </div>
-          <div className="flex items-center mb-2">
-            <Tooltip
-              multiline
-              color="#15162b"
-              arrowPosition="side"
-              position="bottom-start"                    
-              arrowSize={8}
-              withArrow
-              label="Select this option to ingest all assignments from the Canvas course."
-            >
-              <Checkbox 
-                value="assignments" 
-                label="Assignments" 
-                size="md" 
-                style={checkboxStyle} 
-                checked={selectedCanvasOptions.includes("assignments")} 
-                onChange={() => handleCanvasOptionChange("assignments")}
-              />
-            </Tooltip>
-          </div>
-          <div className="flex items-center">
-            <Tooltip
-              multiline
-              color="#15162b"
-              arrowPosition="side"
-              position="bottom-start"
-              arrowSize={8}
-              withArrow
-              label="Select this option to ingest all discussions from the Canvas course."
-            >
-              <Checkbox 
-                value="discussions" 
-                label="Discussions" 
-                size="md" 
-                style={checkboxStyle} 
-                checked={selectedCanvasOptions.includes("discussions")} 
-                onChange={() => handleCanvasOptionChange("discussions")}
-              />
-            </Tooltip>
-          </div>
-        </div>
-          <Text className="mt-4 text-lg font-bold underline text-red-600">
-              Please ensure that you have added the UIUC Chatbot as a student to your course on Canvas before you begin ingesting the course content. The bot email address is uiuc.chat@ad.uillinois.edu and the bot name is UIUC Course AI.
+          <Text className="mt-4 text-lg font-bold text-red-600 underline">
+            Please ensure that you have added the UIUC Chatbot as a student to
+            your course on Canvas before you begin ingesting the course content.
+            The bot email address is uiuc.chat@ad.uillinois.edu and the bot name
+            is UIUC Course AI.
           </Text>
         </form>
       )}

@@ -23,12 +23,15 @@ const s3Client = new S3Client({
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const { fileName, courseName } = req.body as {
-      fileName: string
+    const { uniqueFileName, courseName } = req.body as {
+      uniqueFileName: string
       courseName: string
     }
 
-    const s3_filepath = `courses/${courseName}/${fileName}`
+    console.log('in uploadToS3.ts: CourseName:', courseName)
+    console.log('in uploadToS3.ts: uniqueFileName:', uniqueFileName)
+    const s3_filepath = `courses/${courseName}/${uniqueFileName}`
+    console.log('S3 path to upload:', s3_filepath)
 
     const post = await createPresignedPost(s3Client, {
       Bucket: aws_config.bucketName,
