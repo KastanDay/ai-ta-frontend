@@ -34,7 +34,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
     //   clearLocalStorageOnce(); // Clear local storage once per user
     // }
 
-
     return (
       <ClerkProvider
         appearance={{

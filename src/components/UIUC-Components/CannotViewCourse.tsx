@@ -34,12 +34,12 @@ export const GetCurrentPageName = () => {
 export const CannotViewCourse = ({
   course_name,
 }: // creator_email_address,
-  // admins_email_addresses,
-  {
-    course_name: string
-    // creator_email_address: string
-    // admins_email_addresses: string
-  }) => {
+// admins_email_addresses,
+{
+  course_name: string
+  // creator_email_address: string
+  // admins_email_addresses: string
+}) => {
   // console.log('course_name in CannotViewCourse: ', course_name)
   const currentPageName = GetCurrentPageName()
 
@@ -126,7 +126,7 @@ export const CannotViewCourse = ({
               gradient={{ from: 'gold', to: 'white', deg: 50 }}
               order={2}
               p="xl"
-            // size={20}
+              // size={20}
             >
               {' '}
               You are not authorized to view this page.
@@ -147,7 +147,7 @@ export const CannotViewCourse = ({
                   gradient={{ from: 'gold', to: 'white', deg: 50 }}
                   order={2}
                   p="lg"
-                // size={20}
+                  // size={20}
                 >
                   Email the creator or admins to request access:
                 </Title>

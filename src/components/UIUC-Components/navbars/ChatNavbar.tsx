@@ -212,23 +212,43 @@ const ChatNavbar = ({
     toggle()
   }
 
-  const items = isAdminOrOwner ? [
-    {
-      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
-      icon: <MessageChatIcon />,
-      link: `/${getCurrentCourseName()}/gpt4`
-    },
-    {
-      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>,
-      icon: <FolderIcon />,
-      link: `/${getCurrentCourseName()}/materials`
-    },
-    {
-      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
-      icon: <ReportIcon />,
-      link: `/${getCurrentCourseName()}/query-analysis`
-    }
-  ] : [];
+  const items = isAdminOrOwner
+    ? [
+        {
+          name: (
+            <span
+              className={`${montserrat_heading.variable} font-montserratHeading`}
+            >
+              Chat
+            </span>
+          ),
+          icon: <MessageChatIcon />,
+          link: `/${getCurrentCourseName()}/gpt4`,
+        },
+        {
+          name: (
+            <span
+              className={`${montserrat_heading.variable} font-montserratHeading`}
+            >
+              Materials
+            </span>
+          ),
+          icon: <FolderIcon />,
+          link: `/${getCurrentCourseName()}/materials`,
+        },
+        {
+          name: (
+            <span
+              className={`${montserrat_heading.variable} font-montserratHeading`}
+            >
+              Analysis
+            </span>
+          ),
+          icon: <ReportIcon />,
+          link: `/${getCurrentCourseName()}/query-analysis`,
+        },
+      ]
+    : []
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -271,7 +291,11 @@ const ChatNavbar = ({
         {/* <div > */}
         {/* <Flex style={{ flexDirection: 'row' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"> */}
         <Flex
-          style={{ flexDirection: 'row', justifyContent: 'space-between', height: '30px' }}
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            height: '30px',
+          }}
           className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"
         >
           <div style={{ justifyContent: 'flex-start' }}>
@@ -343,7 +367,10 @@ const ChatNavbar = ({
             </Transition>
 
             {/* This is the main links on top  */}
-            <Container className={classes.inner} style={{ padding: 0, margin: 0 }}>
+            <Container
+              className={classes.inner}
+              style={{ padding: 0, margin: 0 }}
+            >
               <div className={classes.links}>
                 {items.map((item, index) => (
                   <Link
@@ -442,19 +469,24 @@ const ChatNavbar = ({
             {/* Sign in buttons */}
             <div
               className="pl-1 pr-1"
-              style={{ marginLeft: '-5px', position: 'relative', top: '-2px', justifyContent: 'flex-center' }}
+              style={{
+                marginLeft: '-5px',
+                position: 'relative',
+                top: '-2px',
+                justifyContent: 'flex-center',
+              }}
             >
               <SignedIn>
                 <UserButton afterSignOutUrl="/" />
               </SignedIn>
               <SignedOut>
-                <SignInButton >
+                <SignInButton>
                   <button className={classes.link}>
                     <div
                       className={`${montserrat_heading.variable} font-montserratHeading`}
                       style={{ fontSize: '12px' }}
                     >
-                      <span style={{ whiteSpace: 'nowrap' }}>Sign in /{' '}</span>
+                      <span style={{ whiteSpace: 'nowrap' }}>Sign in / </span>
                       <span> </span>
                       {/* ^^ THIS SPAN IS REQUIRED !!! TO have nice multiline behavior */}
                       <span style={{ whiteSpace: 'nowrap' }}>Sign up</span>
