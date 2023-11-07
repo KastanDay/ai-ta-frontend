@@ -11,11 +11,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const s3_filepath = `courses/${courseName}/${uniqueFileName}`
-    console.log("S3 path in ingest.ts:", s3_filepath)
 
     const response: AxiosResponse = await axios.get(
-      // `https://flask-production-751b.up.railway.app/ingest`,
-      `https://flask-ai-ta-backend-pr-137.up.railway.app/ingest`,
+      `https://flask-production-751b.up.railway.app/ingest`,
       {
         params: {
           course_name: courseName,
