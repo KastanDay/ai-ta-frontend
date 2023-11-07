@@ -21,7 +21,7 @@ import SupportedFileUploadTypes from './SupportedFileUploadTypes'
 import { useMediaQuery } from '@mantine/hooks'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
 import { notifications } from '@mantine/notifications'
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -134,7 +134,11 @@ export function LargeDropzone({
     }
   }
 
-  const ingestFile = async (file: File | null, uniqueFileName: string, readableFilename: string) => {
+  const ingestFile = async (
+    file: File | null,
+    uniqueFileName: string,
+    readableFilename: string,
+  ) => {
     if (!file) return
     const requestObject = {
       method: 'GET',
@@ -237,16 +241,18 @@ export function LargeDropzone({
                 // this does sequential uploads.
                 for (const [index, file] of files.entries()) {
                   console.log('Index: ' + index)
-                  const uniqueFileName = uuidv4() as string + '-' + file.name;
+                  const uniqueFileName = (uuidv4() as string) + '-' + file.name
 
                   try {
                     await uploadToS3(file, uniqueFileName).catch((error) => {
                       console.error('Error during file upload:', error)
                     })
                     // Ingest into backend (time consuming)
-                    await ingestFile(file, uniqueFileName, file.name).catch((error) => {
-                      console.error('Error during file upload:', error)
-                    })
+                    await ingestFile(file, uniqueFileName, file.name).catch(
+                      (error) => {
+                        console.error('Error during file upload:', error)
+                      },
+                    )
                     console.log('Ingested a file.')
                   } catch (error) {
                     console.error('Error during file processing:', error)

@@ -12,7 +12,7 @@ import {
 import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
 import { type CourseMetadata } from '~/types/courseMetadata'
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid'
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -95,7 +95,7 @@ export function DropzoneS3Upload({
   const uploadToS3 = async (file: File | null, uniqueFileName: string) => {
     if (!file) return
 
-    console.log("S3 path to upload:", uniqueFileName)
+    console.log('S3 path to upload:', uniqueFileName)
 
     const requestObject = {
       method: 'POST',
@@ -144,7 +144,11 @@ export function DropzoneS3Upload({
     }
   }
 
-  const ingestFile = async (file: File | null, uniqueFileName: string, readableFilename: string) => {
+  const ingestFile = async (
+    file: File | null,
+    uniqueFileName: string,
+    readableFilename: string,
+  ) => {
     if (!file) return
 
     const requestObject = {
@@ -261,7 +265,7 @@ export function DropzoneS3Upload({
           // this does sequential uploads.
           for (const [index, file] of files.entries()) {
             console.log('Index: ' + index)
-            const uniqueFileName = uuidv4() as string + '-' + file.name;
+            const uniqueFileName = (uuidv4() as string) + '-' + file.name
 
             try {
               // UPLOAD TO S3
@@ -270,9 +274,11 @@ export function DropzoneS3Upload({
               })
 
               // Ingest into Qdrant (time consuming).
-              await ingestFile(file, uniqueFileName, file.name).catch((error) => {
-                console.error('Error during file upload:', error)
-              })
+              await ingestFile(file, uniqueFileName, file.name).catch(
+                (error) => {
+                  console.error('Error during file upload:', error)
+                },
+              )
 
               console.log('Ingested a file.')
             } catch (error) {
@@ -297,7 +303,7 @@ export function DropzoneS3Upload({
             e.currentTarget.style.backgroundColor = 'transparent'
           }
         }}
-      // maxSize={30 * 1024 ** 2} max file size
+        // maxSize={30 * 1024 ** 2} max file size
       >
         {redirect_to_gpt_4 ? (
           <div style={{ pointerEvents: 'none' }}>

@@ -28,10 +28,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       courseName: string
     }
 
-    console.log("in uploadToS3.ts: CourseName:", courseName)
-    console.log("in uploadToS3.ts: uniqueFileName:", uniqueFileName)
+    console.log('in uploadToS3.ts: CourseName:', courseName)
+    console.log('in uploadToS3.ts: uniqueFileName:', uniqueFileName)
     const s3_filepath = `courses/${courseName}/${uniqueFileName}`
-    console.log("S3 path to upload:", s3_filepath)
+    console.log('S3 path to upload:', s3_filepath)
 
     const post = await createPresignedPost(s3Client, {
       Bucket: aws_config.bucketName,
