@@ -4,7 +4,7 @@ import { ActionIcon, Button, MultiSelect, Stack, TextInput } from '@mantine/core
 import { DatePicker, type DatesRangeValue } from '@mantine/dates';
 import { useDebouncedValue } from '@mantine/hooks';
 import { IconSearch, IconX } from '@tabler/icons-react';
-import { DataTable } from 'mantine-datatable';
+import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import { getCourseDocuments } from '~/pages/api/UIUC-api/getDocsForMaterials';
@@ -27,148 +27,148 @@ interface CourseFilesListProps {
 
 export function ComplexUsageExample({ course_materials }: CourseFilesListProps) {
 
-  const [documents, setDocuments] = useState<CourseDocuments[]>([]);
-
-  useEffect(() => {
-    getCourseDocuments('HDF5').then((docs) => {
-      if (docs && docs.length != 0) {
-        setDocuments(docs);
-        console.log(documents);
-        // Save the fetched documents to state
-      } else {
-        // Handle the case where no documents are returned or an error occurred
-        console.error('No documents were fetched');
-      }
-    });
-  }, []);
-
   const router = useRouter();
   const getCurrentPageName = (): string => {
     const path = router.asPath;
     const courseName = path.slice(1).split('/')[0] || '';
     return courseName;
   }
-
   const [materials, setMaterials] = useState(course_materials);
 
   useEffect(() => {
     const fetchCourseDocuments = async () => {
-      const documents = await getCourseDocuments(getCurrentPageName());
-      console.log(documents);
+      const response = await fetch(`/api/UIUC-api/getCourseDocuments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          course_name: getCurrentPageName(),
+        }),
+      });
+      const documents = await response.json();
       if (documents) {
         setMaterials(documents);
       }
     };
 
     fetchCourseDocuments();
-  }, [getCurrentPageName()]);
-  // const departments = useMemo(() => {
-  //   const departments = new Set(employees.map((e) => e.department.name));
-  //   return [...departments];
-  // }, []);
-  const [query, setQuery] = useState('');
-  const [ReadableFilename, setReadableFilename] = useState<string[]>([]);
-  const [debouncedQuery] = useDebouncedValue(query, 200);
+  }, []);
+}
 
-  useEffect(() => {
-    setMaterials(
-      course_materials.filter(({ readable_filename, url, base_url }) => {
-        const lowerCaseDebouncedQuery = debouncedQuery.trim().toLowerCase();
-        if (
-          debouncedQuery !== '' &&
-          !`${readable_filename}`.toLowerCase().includes(lowerCaseDebouncedQuery)
-        ) {
-          return false;
-        }
+const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
+  columnAccessor: 'File Name',
+  direction: 'asc',
+});
+// const departments = useMemo(() => {
+//   const departments = new Set(employees.map((e) => e.department.name));
+//   return [...departments];
+// }, []);
+const [query, setQuery] = useState('');
+// const [ReadableFilename, setReadableFilename] = useState<string[]>([]);
+const [debouncedQuery] = useDebouncedValue(query, 200);
 
-        if (
-          debouncedQuery !== '' &&
-          !`${url}`.toLowerCase().includes(lowerCaseDebouncedQuery)
-        ) {
-          return false;
-        }
+useEffect(() => {
+  setMaterials(
+    course_materials.filter(({ readable_filename, url, base_url }) => {
+      const lowerCaseDebouncedQuery = debouncedQuery.trim().toLowerCase();
+      if (
+        debouncedQuery !== '' &&
+        !`${readable_filename}`.toLowerCase().includes(lowerCaseDebouncedQuery)
+      ) {
+        return false;
+      }
 
-        if (
-          debouncedQuery !== '' &&
-          !`${base_url}`.toLowerCase().includes(lowerCaseDebouncedQuery)
-        ) {
-          return false;
-        }
-        return true;
-      })
-    );
-  }, [debouncedQuery]);
+      if (
+        debouncedQuery !== '' &&
+        !`${url}`.toLowerCase().includes(lowerCaseDebouncedQuery)
+      ) {
+        return false;
+      }
 
-  return (
-    <DataTable
-      height={300}
-      // withTableBorder
-      withColumnBorders
-      records={materials}
-      columns={[
-        {
-          accessor: 'File Name',
-          render: ({ readable_filename }) => `${readable_filename}`,
-          filter: (
-            <TextInput
-              label="File Name"
-              description="Show uploaded files that include the specified text"
-              placeholder="Search files..."
-              // leftSection={<IconSearch size={16} />}
-              rightSection={
-                <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
-                  <IconX size={14} />
-                </ActionIcon>
-              }
-              value={query}
-              onChange={(e) => setQuery(e.currentTarget.value)}
-            />
-          ),
-          filtering: query !== '',
-        },
-        {
-          accessor: 'URL',
-          render: ({ url }) => `${url}`,
-          filter: (
-            <TextInput
-              label="URL"
-              description="Show all urls "
-              placeholder="Search urls..."
-              // leftSection={<IconSearch size={16} />}
-              rightSection={
-                <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
-                  <IconX size={14} />
-                </ActionIcon>
-              }
-              value={query}
-              onChange={(e) => setQuery(e.currentTarget.value)}
-            />
-          ),
-          filtering: query !== '',
-        },
-        {
-          accessor: 'Starting URL of Web Scape',
-          render: ({ base_url }) => `${base_url}`,
-          filter: (
-            <TextInput
-              label="Starting URL of Web Scape"
-              description="Show all urls "
-              placeholder="Search urls..."
-              // leftSection={<IconSearch size={16} />}
-              rightSection={
-                <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
-                  <IconX size={14} />
-                </ActionIcon>
-              }
-              value={query}
-              onChange={(e) => setQuery(e.currentTarget.value)}
-            />
-          ),
-          filtering: query !== '',
-        },
-      ]}
-    />
+      if (
+        debouncedQuery !== '' &&
+        !`${base_url}`.toLowerCase().includes(lowerCaseDebouncedQuery)
+      ) {
+        return false;
+      }
+      return true;
+    })
   );
+}, [debouncedQuery]);
+
+return (
+  <DataTable
+    height={300}
+    // withTableBorder
+    withColumnBorders
+    records={materials}
+    columns={[
+      {
+        accessor: 'File Name',
+        render: ({ readable_filename }) => `${readable_filename}`,
+        filter: (
+          <TextInput
+            label="File Name"
+            description="Show uploaded files that include the specified text"
+            placeholder="Search files..."
+            // leftSection={<IconSearch size={16} />}
+            rightSection={
+              <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
+                <IconX size={14} />
+              </ActionIcon>
+            }
+            value={query}
+            onChange={(e) => setQuery(e.currentTarget.value)}
+          />
+        ),
+        filtering: query !== '',
+      },
+      {
+        accessor: 'URL',
+        render: ({ url }) => `${url}`,
+        filter: (
+          <TextInput
+            label="URL"
+            description="Show all urls "
+            placeholder="Search urls..."
+            // leftSection={<IconSearch size={16} />}
+            rightSection={
+              <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
+                <IconX size={14} />
+              </ActionIcon>
+            }
+            value={query}
+            onChange={(e) => setQuery(e.currentTarget.value)}
+          />
+        ),
+        filtering: query !== '',
+      },
+      {
+        accessor: 'Starting URL of Web Scape',
+        render: ({ base_url }) => `${base_url}`,
+        filter: (
+          <TextInput
+            label="Starting URL of Web Scape"
+            description="Show all urls "
+            placeholder="Search urls..."
+            // leftSection={<IconSearch size={16} />}
+            rightSection={
+              <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
+                <IconX size={14} />
+              </ActionIcon>
+            }
+            value={query}
+            onChange={(e) => setQuery(e.currentTarget.value)}
+          />
+        ),
+        filtering: query !== '',
+      },
+    ]}
+    sortStatus={sortStatus}
+    onSortStatusChange={setSortStatus}
+  />
+);
 }
 
 async function fetchCourseMetadata(course_name: string) {

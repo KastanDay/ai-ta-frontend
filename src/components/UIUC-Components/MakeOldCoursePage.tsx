@@ -37,7 +37,7 @@ const MakeOldCoursePage = ({
   course_data,
 }: {
   course_name: string
-  course_data: any
+  course_data: Array<any>
 }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   // const { classes, } = useStyles()
