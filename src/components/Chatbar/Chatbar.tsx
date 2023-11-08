@@ -201,7 +201,7 @@ export const Chatbar = () => {
 
     const filterByCourse = (conversation: Conversation) => {
       return conversation.messages[0]?.contexts?.some(
-        (context) => context['course_name '] === currentCourseName,
+        (context) => context['course_name'] === currentCourseName,
       ) // TODO: fix "course_name " to have no space :/ the SQL database is broken...
     }
     const filterBySearchTerm = (conversation: Conversation) => {
