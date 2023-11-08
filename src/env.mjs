@@ -17,6 +17,8 @@ export const env = createEnv({
     CLERK_SECRET_KEY: z.string().min(1),
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
     EDGE_CONFIG: z.string().min(1),
+    AZURE_OPENAI_ENDPOINT: z.string().url(),
+    AZURE_OPENAI_ENGINE: z.string().min(1),
     // NEXTAUTH_SECRET:
     //   process.env.NODE_ENV === "production"
     //     ? z.string().min(1)
@@ -58,6 +60,8 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
     EDGE_CONFIG: process.env.EDGE_CONFIG,
+    AZURE_OPENAI_ENDPOINT: process.env.AZURE_OPENAI_ENDPOINT,
+    AZURE_OPENAI_ENGINE: process.env.AZURE_OPENAI_ENGINE,
     // NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     // NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     // DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
