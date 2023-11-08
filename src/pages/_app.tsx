@@ -11,6 +11,8 @@ import { api } from '~/utils/api'
 
 import '~/styles/globals.css'
 import Maintenance from '~/components/UIUC-Components/Maintenance'
+import clearLocalStorageOnce from 'src/pages/api/UIUC-api/clearLocalStorage'
+
 import { useReportWebVitals } from 'next-axiom'
 
 // For axiom Web Vitals logging: https://axiom.co/docs/apps/vercel#sending-logs-to-axiom
@@ -27,6 +29,11 @@ const MyApp: AppType<{ session: Session | null }> = ({
   if (process.env.NEXT_PUBLIC_MAINTENANCE === 'true') {
     return <Maintenance />
   } else {
+    // ! This seems to cause huge bugs with streaming answers!
+    // if (typeof window !== 'undefined') { // Check for window object to make sure we are in the client
+    //   clearLocalStorageOnce(); // Clear local storage once per user
+    // }
+
     return (
       <ClerkProvider
         appearance={{
