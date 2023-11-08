@@ -17,7 +17,8 @@ export interface ContextWithMetadata {
   id: number
   text: string
   readable_filename: string
-  course_name: string
+  course_name?: string
+  course_name_?: string
   s3_path: string
   pagenumber: string
   url: string
