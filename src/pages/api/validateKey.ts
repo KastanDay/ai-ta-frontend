@@ -16,13 +16,20 @@ export const config = {
 
 const handler = async (req: Request): Promise<Response> => {
   let apiKey = ''
+  let apiType = OPENAI_API_TYPE
+  let endpoint = OPENAI_API_HOST
   try {
-    const { key } = (await req.json()) as {
+    const { key, isAzure } = (await req.json()) as {
       key: string
+      isAzure: boolean
     }
     apiKey = key ? key : (process.env.OPENAI_API_KEY as string)
 
-    if (key && !key.startsWith('sk-')) {
+    if (isAzure) {
+      console.log('setting azure variables')
+      apiType = 'azure'
+      endpoint = process.env.AZURE_OPENAI_ENDPOINT || OPENAI_API_HOST
+    } else if (key && !key.startsWith('sk-')) {
       const decryptedText = await decrypt(
         key,
         process.env.NEXT_PUBLIC_SIGNING_KEY as string,
@@ -34,22 +41,24 @@ const handler = async (req: Request): Promise<Response> => {
       return new Response('Warning: OpenAI Key was not found', { status: 400 })
     }
 
-    let url = `${OPENAI_API_HOST}/v1/chat/completions`
-    if (OPENAI_API_TYPE === 'azure') {
-      url = `${OPENAI_API_HOST}/openai/deployments?api-version=${OPENAI_API_VERSION}`
+    let url = `${endpoint}/v1/chat/completions`
+    if (apiType === 'azure') {
+      const deploymentName = process.env.AZURE_OPENAI_ENGINE
+      url = `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${OPENAI_API_VERSION}`
+      console.log('Created Azure url: ', url)
     }
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(OPENAI_API_TYPE === 'openai' && {
+        ...(apiType === 'openai' && {
           Authorization: `Bearer ${apiKey}`,
         }),
-        ...(OPENAI_API_TYPE === 'azure' && {
+        ...(apiType === 'azure' && {
           'api-key': `${apiKey}`,
         }),
-        ...(OPENAI_API_TYPE === 'openai' &&
+        ...(apiType === 'openai' &&
           OPENAI_ORGANIZATION && {
             'OpenAI-Organization': OPENAI_ORGANIZATION,
           }),

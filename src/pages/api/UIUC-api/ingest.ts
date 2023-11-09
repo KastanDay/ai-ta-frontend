@@ -4,12 +4,13 @@ import axios, { AxiosResponse } from 'axios'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const { fileName, courseName } = req.query as {
-      fileName: string
+    const { uniqueFileName, courseName, readableFilename } = req.query as {
+      uniqueFileName: string
       courseName: string
+      readableFilename: string
     }
 
-    const s3_filepath = `courses/${courseName}/${fileName}`
+    const s3_filepath = `courses/${courseName}/${uniqueFileName}`
 
     const response: AxiosResponse = await axios.get(
       `https://flask-production-751b.up.railway.app/ingest`,
@@ -17,6 +18,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         params: {
           course_name: courseName,
           s3_paths: s3_filepath,
+          readable_filename: readableFilename,
         },
       },
     )

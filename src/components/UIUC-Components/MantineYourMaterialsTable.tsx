@@ -60,46 +60,27 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
     columnAccessor: 'File Name',
     direction: 'asc',
   });
-  // const departments = useMemo(() => {
-  //   const departments = new Set(employees.map((e) => e.department.name));
-  //   return [...departments];
-  // }, []);
   const [query, setQuery] = useState('');
-  // const [ReadableFilename, setReadableFilename] = useState<string[]>([]);
   const [debouncedQuery] = useDebouncedValue(query, 200);
 
   useEffect(() => {
-    setMaterials(
-      course_materials.filter(({ readable_filename, url, base_url }) => {
-        const lowerCaseDebouncedQuery = debouncedQuery.trim().toLowerCase();
-        if (
-          debouncedQuery !== '' &&
-          !`${readable_filename}`.toLowerCase().includes(lowerCaseDebouncedQuery)
-        ) {
-          return false;
-        }
-
-        if (
-          debouncedQuery !== '' &&
-          !`${url}`.toLowerCase().includes(lowerCaseDebouncedQuery)
-        ) {
-          return false;
-        }
-
-        if (
-          debouncedQuery !== '' &&
-          !`${base_url}`.toLowerCase().includes(lowerCaseDebouncedQuery)
-        ) {
-          return false;
-        }
-        return true;
-      })
-    );
-  }, [debouncedQuery]);
+    if (debouncedQuery !== '') {
+      const lowerCaseDebouncedQuery = debouncedQuery.trim().toLowerCase();
+      setMaterials(
+        course_materials.filter(({ readable_filename, url, base_url }) => {
+          return `${readable_filename}`.toLowerCase().includes(lowerCaseDebouncedQuery) ||
+            `${url}`.toLowerCase().includes(lowerCaseDebouncedQuery) ||
+            `${base_url}`.toLowerCase().includes(lowerCaseDebouncedQuery);
+        })
+      );
+    } else {
+      setMaterials(course_materials);
+    }
+  }, [debouncedQuery, course_materials]);
 
   return (
     <DataTable
-      height={300}
+      height="65vh"
       // withTableBorder
       withColumnBorders
       records={materials}
