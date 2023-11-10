@@ -1,14 +1,16 @@
 'use client';
 
-import { ActionIcon, Button, MultiSelect, Stack, TextInput } from '@mantine/core';
+import { ActionIcon, Box, Button, Group, MultiSelect, Stack, TextInput, Text } from '@mantine/core';
 import { DatePicker, type DatesRangeValue } from '@mantine/dates';
 import { useDebouncedValue } from '@mantine/hooks';
-import { IconSearch, IconX } from '@tabler/icons-react';
+import { IconEdit, IconEye, IconSearch, IconTrash, IconX } from '@tabler/icons-react';
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import { getCourseDocuments } from '~/pages/api/UIUC-api/getDocsForMaterials';
 import { useRouter } from 'next/router';
+import { modals, openConfirmModal, useModals, ModalsProvider } from '@mantine/modals';
+
 // import { employees } from '~/data';
 // const initialRecords = employees.slice(0, 100);
 
@@ -63,6 +65,7 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
   const [query, setQuery] = useState('');
   const [debouncedQuery] = useDebouncedValue(query, 200);
 
+
   useEffect(() => {
     if (debouncedQuery !== '') {
       const lowerCaseDebouncedQuery = debouncedQuery.trim().toLowerCase();
@@ -78,10 +81,22 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
     }
   }, [debouncedQuery, course_materials]);
 
+
+  // const openModal = () => modals.openConfirmModal({
+  //   title: 'Please confirm your action',
+  //   children: (
+  //     <Text size="sm">
+  //       {`File Name: ${materials}`}
+  //     </Text>
+  //   ),
+  //   labels: { confirm: 'Close', cancel: 'Cancel' },
+  //   // onCancel: () => console.log('Cancel'),
+  //   // onConfirm: () => console.log('Confirmed'),
+  // });
+
   return (
     <DataTable
       height="65vh"
-      // withTableBorder
       withColumnBorders
       records={materials}
       columns={[
@@ -93,9 +108,12 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
               label="File Name"
               description="Show uploaded files that include the specified text"
               placeholder="Search files..."
-              // leftSection={<IconSearch size={16} />}
               rightSection={
-                <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
+                <ActionIcon
+                  size="sm"
+                  variant="transparent"
+                  c="dimmed"
+                  onClick={() => setQuery('')}>
                   <IconX size={14} />
                 </ActionIcon>
               }
@@ -113,7 +131,6 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
               label="URL"
               description="Show all urls "
               placeholder="Search urls..."
-              // leftSection={<IconSearch size={16} />}
               rightSection={
                 <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
                   <IconX size={14} />
@@ -133,7 +150,6 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
               label="Starting URL of Web Scape"
               description="Show all urls "
               placeholder="Search urls..."
-              // leftSection={<IconSearch size={16} />}
               rightSection={
                 <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
                   <IconX size={14} />
@@ -144,6 +160,44 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
             />
           ),
           filtering: query !== '',
+        },
+        {
+          accessor: 'actions',
+          title: <Box mr={6}>Row actions</Box>,
+          render: (materials) => {
+            const openModal = (materials: any, action: string) => modals.openConfirmModal({
+              title: 'Please confirm your action',
+              children: (
+                <Text size="sm">
+                  {`File Name: ${materials.readable_filename}`}
+                </Text>
+              ),
+              labels: { confirm: 'Close', cancel: 'Cancel' },
+            });
+
+            return (
+              <ModalsProvider>
+                <Group>
+                  <ActionIcon
+                    size="sm"
+                    variant="subtle"
+                    color="green"
+                    onClick={() => openModal(materials, 'view')}
+                  >
+                    <IconEye size={16} />
+                  </ActionIcon>
+                  <ActionIcon
+                    size="sm"
+                    variant="subtle"
+                    color="red"
+                    onClick={() => openModal(materials, 'delete')}
+                  >
+                    <IconTrash size={16} />
+                  </ActionIcon>
+                </Group>
+              </ModalsProvider>
+            );
+          },
         },
       ]}
       sortStatus={sortStatus}
