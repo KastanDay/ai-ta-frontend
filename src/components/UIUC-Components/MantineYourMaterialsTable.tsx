@@ -1,18 +1,13 @@
 'use client';
 
 import { ActionIcon, Box, Button, Group, MultiSelect, Stack, TextInput, Text } from '@mantine/core';
-import { DatePicker, type DatesRangeValue } from '@mantine/dates';
 import { useDebouncedValue } from '@mantine/hooks';
 import { IconEdit, IconEye, IconSearch, IconTrash, IconX } from '@tabler/icons-react';
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
-import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
-import { getCourseDocuments } from '~/pages/api/UIUC-api/getDocsForMaterials';
 import { useRouter } from 'next/router';
 import { modals, openConfirmModal, useModals, ModalsProvider } from '@mantine/modals';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { NextApiRequest, NextApiResponse } from 'next';
+
 
 // import { employees } from '~/data';
 // const initialRecords = employees.slice(0, 100);
@@ -106,7 +101,8 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
 
   return (
     <DataTable
-      height="65vh"
+      style={{ width: '90%' }}
+      height="100%"
       withColumnBorders
       records={materials}
       columns={[
@@ -175,19 +171,22 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
         {
           accessor: 'actions',
           title: <Box mr={6}>Row actions</Box>,
-          render: (materials) => {
-            const openModal = async (materials: any, action: string) => {
-              // Generate a presigned URL for viewing the file
-              const presignedUrl = await getPresignedUrl(materials.s3_path);
-
+          render: (materials: any, index: number) => {
+            const openModal = async (action: string) => {
+              let urlToOpen = materials.url;
+              // If s3_path is available, generate a presigned URL for viewing the file
+              if (materials.s3_path) {
+                const presignedUrl = await getPresignedUrl(materials.s3_path);
+                urlToOpen = presignedUrl;
+              }
               if (action === 'view') {
-                window.open(presignedUrl, '_blank');
+                window.open(urlToOpen, '_blank');
               } else {
                 modals.openConfirmModal({
                   title: 'Please confirm your action',
                   children: (
                     <Text size="sm">
-                      {`File Name: ${materials.s3_path}`}
+                      {`File Name: ${materials.s3_path ? materials.s3_path : materials.url}`}
                     </Text>
                   ),
                   labels: { confirm: 'Close', cancel: 'Cancel' },
@@ -202,7 +201,7 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
                     size="sm"
                     variant="subtle"
                     color="green"
-                    onClick={() => openModal(materials, 'view')}
+                    onClick={() => openModal('view')}
                   >
                     <IconEye size={16} />
                   </ActionIcon>
@@ -210,7 +209,7 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
                     size="sm"
                     variant="subtle"
                     color="red"
-                    onClick={() => openModal(materials, 'delete')}
+                    onClick={() => openModal('delete')}
                   >
                     <IconTrash size={16} />
                   </ActionIcon>
