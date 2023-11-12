@@ -10,6 +10,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { getCourseDocuments } from '~/pages/api/UIUC-api/getDocsForMaterials';
 import { useRouter } from 'next/router';
 import { modals, openConfirmModal, useModals, ModalsProvider } from '@mantine/modals';
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 // import { employees } from '~/data';
 // const initialRecords = employees.slice(0, 100);
@@ -25,6 +28,13 @@ interface CourseDocuments {
 
 interface CourseFilesListProps {
   course_materials: CourseDocuments[]
+}
+
+
+export async function getPresignedUrl(s3_path: string) {
+  const response = await fetch(`/api/UIUC-api/getPresignedUrl?s3_path=${s3_path}`);
+  const data = await response.json();
+  return data.presignedUrl;
 }
 
 export function ComplexUsageExample({ course_materials }: CourseFilesListProps) {
@@ -109,13 +119,14 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
               description="Show uploaded files that include the specified text"
               placeholder="Search files..."
               rightSection={
-                <ActionIcon
+                < ActionIcon
                   size="sm"
                   variant="transparent"
                   c="dimmed"
-                  onClick={() => setQuery('')}>
+                  onClick={() => setQuery('')
+                  } >
                   <IconX size={14} />
-                </ActionIcon>
+                </ActionIcon >
               }
               value={query}
               onChange={(e) => setQuery(e.currentTarget.value)}
@@ -143,11 +154,11 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
           filtering: query !== '',
         },
         {
-          accessor: 'Starting URL of Web Scape',
+          accessor: 'Starting URL of Web Scrape',
           render: ({ base_url }) => `${base_url}`,
           filter: (
             <TextInput
-              label="Starting URL of Web Scape"
+              label="Starting URL of Web Scrape"
               description="Show all urls "
               placeholder="Search urls..."
               rightSection={
@@ -165,15 +176,24 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
           accessor: 'actions',
           title: <Box mr={6}>Row actions</Box>,
           render: (materials) => {
-            const openModal = (materials: any, action: string) => modals.openConfirmModal({
-              title: 'Please confirm your action',
-              children: (
-                <Text size="sm">
-                  {`File Name: ${materials.readable_filename}`}
-                </Text>
-              ),
-              labels: { confirm: 'Close', cancel: 'Cancel' },
-            });
+            const openModal = async (materials: any, action: string) => {
+              // Generate a presigned URL for viewing the file
+              const presignedUrl = await getPresignedUrl(materials.s3_path);
+
+              if (action === 'view') {
+                window.open(presignedUrl, '_blank');
+              } else {
+                modals.openConfirmModal({
+                  title: 'Please confirm your action',
+                  children: (
+                    <Text size="sm">
+                      {`File Name: ${materials.s3_path}`}
+                    </Text>
+                  ),
+                  labels: { confirm: 'Close', cancel: 'Cancel' },
+                });
+              }
+            };
 
             return (
               <ModalsProvider>
