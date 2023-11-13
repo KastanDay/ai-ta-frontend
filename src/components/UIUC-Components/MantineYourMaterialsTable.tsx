@@ -1,6 +1,6 @@
 'use client';
 
-import { ActionIcon, Box, Button, Group, MultiSelect, Stack, TextInput, Text } from '@mantine/core';
+import { ActionIcon, Box, Button, Group, MultiSelect, Stack, TextInput, Text, MantineProvider, createStyles } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { IconEdit, IconEye, IconSearch, IconTrash, IconX } from '@tabler/icons-react';
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
@@ -11,6 +11,15 @@ import { modals, openConfirmModal, useModals, ModalsProvider } from '@mantine/mo
 
 // import { employees } from '~/data';
 // const initialRecords = employees.slice(0, 100);
+
+const useStyles = createStyles((theme) => ({
+  header: {
+    '& tr th': {
+      color: theme.colorScheme === 'dark' ? theme.colors.dark[0] : 'white',
+      fontSize: '100%',
+    },
+  },
+}));
 
 interface CourseDocuments {
   readable_filename: string;
@@ -33,6 +42,7 @@ export async function getPresignedUrl(s3_path: string) {
 }
 
 export function ComplexUsageExample({ course_materials }: CourseFilesListProps) {
+  const { classes } = useStyles();
 
   const router = useRouter();
   const getCurrentPageName = (): string => {
@@ -100,129 +110,144 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
   // });
 
   return (
+    // <MantineProvider>
     <DataTable
-      style={{ width: '90%' }}
+      style={{
+        width: '90%',
+      }}
+      classNames={classes}
+      styles={{
+        header: { color: 'white' },
+      }}
       height="100%"
       withColumnBorders
       records={materials}
-      columns={[
-        {
-          accessor: 'File Name',
-          render: ({ readable_filename }) => `${readable_filename}`,
-          filter: (
-            <TextInput
-              label="File Name"
-              description="Show uploaded files that include the specified text"
-              placeholder="Search files..."
-              rightSection={
-                < ActionIcon
-                  size="sm"
-                  variant="transparent"
-                  c="dimmed"
-                  onClick={() => setQuery('')
-                  } >
-                  <IconX size={14} />
-                </ActionIcon >
-              }
-              value={query}
-              onChange={(e) => setQuery(e.currentTarget.value)}
-            />
-          ),
-          filtering: query !== '',
-        },
-        {
-          accessor: 'URL',
-          render: ({ url }) => `${url}`,
-          filter: (
-            <TextInput
-              label="URL"
-              description="Show all urls "
-              placeholder="Search urls..."
-              rightSection={
-                <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
-                  <IconX size={14} />
-                </ActionIcon>
-              }
-              value={query}
-              onChange={(e) => setQuery(e.currentTarget.value)}
-            />
-          ),
-          filtering: query !== '',
-        },
-        {
-          accessor: 'Starting URL of Web Scrape',
-          render: ({ base_url }) => `${base_url}`,
-          filter: (
-            <TextInput
-              label="Starting URL of Web Scrape"
-              description="Show all urls "
-              placeholder="Search urls..."
-              rightSection={
-                <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
-                  <IconX size={14} />
-                </ActionIcon>
-              }
-              value={query}
-              onChange={(e) => setQuery(e.currentTarget.value)}
-            />
-          ),
-          filtering: query !== '',
-        },
-        {
-          accessor: 'actions',
-          title: <Box mr={6}>Row actions</Box>,
-          render: (materials: any, index: number) => {
-            const openModal = async (action: string) => {
-              let urlToOpen = materials.url;
-              // If s3_path is available, generate a presigned URL for viewing the file
-              if (materials.s3_path) {
-                const presignedUrl = await getPresignedUrl(materials.s3_path);
-                urlToOpen = presignedUrl;
-              }
-              if (action === 'view') {
-                window.open(urlToOpen, '_blank');
-              } else {
-                modals.openConfirmModal({
-                  title: 'Please confirm your action',
-                  children: (
-                    <Text size="sm">
-                      {`File Name: ${materials.s3_path ? materials.s3_path : materials.url}`}
-                    </Text>
-                  ),
-                  labels: { confirm: 'Close', cancel: 'Cancel' },
-                });
-              }
-            };
-
-            return (
-              <ModalsProvider>
-                <Group>
-                  <ActionIcon
+      columns={
+        [
+          {
+            accessor: 'File Name',
+            render: ({ readable_filename }) => `${readable_filename}`,
+            filter: (
+              <TextInput
+                label="File Name"
+                description="Show uploaded files that include the specified text"
+                placeholder="Search files..."
+                rightSection={
+                  < ActionIcon
                     size="sm"
-                    variant="subtle"
-                    color="green"
-                    onClick={() => openModal('view')}
-                  >
-                    <IconEye size={16} />
-                  </ActionIcon>
-                  <ActionIcon
-                    size="sm"
-                    variant="subtle"
-                    color="red"
-                    onClick={() => openModal('delete')}
-                  >
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Group>
-              </ModalsProvider>
-            );
+                    variant="transparent"
+                    c="dimmed"
+                    onClick={() => setQuery('')
+                    } >
+                    <IconX size={14} />
+                  </ActionIcon >
+                }
+                value={query}
+                onChange={(e) => setQuery(e.currentTarget.value)}
+              // style={{ color: 'yellow' }}
+              />
+            ),
+            filtering: query !== '',
           },
-        },
-      ]}
+          {
+            accessor: 'URL',
+            render: ({ url }) => `${url}`,
+            filter: (
+              <TextInput
+                label="URL"
+                description="Show all urls "
+                placeholder="Search urls..."
+                rightSection={
+                  <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
+                    <IconX size={14} />
+                  </ActionIcon>
+                }
+                value={query}
+                onChange={(e) => setQuery(e.currentTarget.value)}
+              // style={{ color: 'yellow' }}
+              />
+            ),
+            filtering: query !== '',
+          },
+          {
+            accessor: 'Starting URL of Web Scrape',
+            render: ({ base_url }) => `${base_url}`,
+            filter: (
+              <TextInput
+                label="Starting URL of Web Scrape"
+                description="Show all urls "
+                placeholder="Search urls..."
+                rightSection={
+                  <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
+                    <IconX size={14} />
+                  </ActionIcon>
+                }
+                value={query}
+                onChange={(e) => setQuery(e.currentTarget.value)}
+              // style={{ color: 'yellow' }}
+              />
+            ),
+            filtering: query !== '',
+          },
+          {
+            accessor: 'actions',
+            title: <Box mr={6}>Row actions</Box>,
+            render: (materials: any, index: number) => {
+              const openModal = async (action: string) => {
+                let urlToOpen = materials.url;
+                // If url is empty and s3_path is available, generate a presigned URL for viewing the file
+                if (!materials.url && materials.s3_path) {
+                  const presignedUrl = await getPresignedUrl(materials.s3_path);
+                  urlToOpen = presignedUrl;
+                }
+                if (action === 'view' && urlToOpen) {
+                  console.log(urlToOpen);
+                  window.open(urlToOpen, '_blank');
+                }
+                else {
+                  modals.openConfirmModal({
+                    title: 'Please confirm your action',
+                    children: (
+                      <Text size="sm" style={{ color: 'white' }}>
+                        {`File Name: ${materials.s3_path ? materials.s3_path : materials.url}`}
+                      </Text>
+                    ),
+                    labels: { confirm: 'Close', cancel: 'Cancel' },
+                  });
+                }
+              };
+
+              return (
+                <ModalsProvider>
+                  <Group>
+                    <ActionIcon
+                      size="sm"
+                      variant="subtle"
+                      color="green"
+                      onClick={() => openModal('view')}
+                    >
+                      <IconEye size={16} />
+                    </ActionIcon>
+                    <ActionIcon
+                      size="sm"
+                      variant="subtle"
+                      color="red"
+                      onClick={() => openModal('delete')}
+                    >
+                      <IconTrash size={16} />
+                    </ActionIcon>
+                  </Group>
+                </ModalsProvider>
+              );
+            },
+          },
+        ]}
       sortStatus={sortStatus}
       onSortStatusChange={setSortStatus}
     />
+    // </MantineProvider>
   );
+
 }
 
 async function fetchCourseMetadata(course_name: string) {
