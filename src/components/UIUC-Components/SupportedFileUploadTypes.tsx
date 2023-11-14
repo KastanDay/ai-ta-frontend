@@ -344,7 +344,8 @@ const SupportedFileUploadTypes = () => {
                 >
                   https://canvas.illinois.edu/courses/37348
                 </Link>
-              </span>. 
+              </span>
+              .
               <div
                 style={{
                   display: 'flex',
@@ -377,7 +378,8 @@ const SupportedFileUploadTypes = () => {
                 >
                   https://ocw.mit.edu/courses/8-321-quantum-theory-i-fall-2017
                 </Link>
-              </span>.
+              </span>
+              .
               <div
                 style={{
                   display: 'flex',
