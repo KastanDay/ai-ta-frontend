@@ -7,7 +7,8 @@ import {
   IconRepeat,
   IconSend,
   IconPhoto,
-  IconAlertCircle
+  IconAlertCircle,
+  IconX
 } from '@tabler/icons-react'
 import {
   KeyboardEvent,
@@ -20,7 +21,6 @@ import {
 } from 'react'
 
 import { useTranslation } from 'next-i18next'
-
 import { Message } from '@/types/chat'
 import { Plugin } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
@@ -32,12 +32,13 @@ import { PromptList } from './PromptList'
 import { VariableModal } from './VariableModal'
 
 import { notifications } from '@mantine/notifications';
-import { useMantineTheme } from '@mantine/core';
+import { useMantineTheme, Modal, Tooltip } from '@mantine/core';
 import { Montserrat } from 'next/font/google'
 
 import { v4 as uuidv4 } from 'uuid';
 
 import React from 'react'
+import { CSSProperties } from 'react';
 // ... other imports ...
 
 
@@ -78,7 +79,7 @@ export const ChatInput = ({
     dispatch: homeDispatch,
   } = useContext(HomeContext)
 
-  const [content, setContent] = useState<string>()
+  const [content, setContent] = useState<string>(() => inputContent);
   const [isTyping, setIsTyping] = useState<boolean>(false)
   const [showPromptList, setShowPromptList] = useState(false)
   const [activePromptIndex, setActivePromptIndex] = useState(0)
@@ -96,7 +97,36 @@ export const ChatInput = ({
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const chatInputContainerRef = useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+
+  const removeButtonStyle: CSSProperties = {
+    position: 'absolute',
+    top: '-8px',
+    right: '-8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    borderRadius: '50%',
+    backgroundColor: '#A9A9A9', // Changed to a darker gray
+    color: 'white', // White icon color
+    border: '2px solid white', // White border
+    cursor: 'pointer',
+    zIndex: 2,
+  };
+
+  const removeButtonHoverStyle: CSSProperties = {
+    backgroundColor: '#505050', // Even darker gray for hover state
+  };
+
+  // Dynamically set the padding based on image previews presence
+  const chatInputContainerStyle: CSSProperties = {
+    padding: imagePreviews.length > 0 ? '10px' : '0', // Apply padding if there are images, otherwise no padding
+  };
 
   const filteredPrompts = prompts.filter((prompt) =>
     prompt.name.toLowerCase().includes(promptInputValue.toLowerCase()),
@@ -300,11 +330,14 @@ export const ChatInput = ({
   }
 
   const uploadToS3 = async (file: File | null) => {
-    if (!file) return;
-
+    if (!file) {
+      console.error('No file provided for upload');
+      return;
+    }
+    
     const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2);
     const uniqueFileName = `${uuidv4()}.${fileExtension}`;
-
+  
     const requestObject = {
       method: 'POST',
       headers: {
@@ -316,7 +349,7 @@ export const ChatInput = ({
         courseName: courseName,
       }),
     };
-
+  
     try {
       interface PresignedPostResponse {
         post: {
@@ -345,12 +378,13 @@ export const ChatInput = ({
         method: 'POST',
         body: formData,
       })
-
+  
       console.log((file.name as string) + 'uploaded to S3 successfully!!')
     } catch (error) {
       console.error('Error uploading file:', error)
     }
   }
+  
 
   const ingestFile = async (file: File | null) => {
     if (!file) return;
@@ -394,24 +428,6 @@ export const ChatInput = ({
     }
   }
 
-  // Update the handleImageUpload to take a File as the parameter
-  const handleImageUpload = (file: File) => {
-    if (isImageValid(file.name)) {
-      setImageError(null);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      setImageFile(file); // We save the File object for later
-    } else {
-      setImageError('Unsupported file type. Please upload .jpg or .png images.');
-      showToastOnInvalidImage();
-    }
-  };
-
-  const theme = useMantineTheme();
-
   const showToastOnInvalidImage = useCallback(() => {
     notifications.show({
       id: 'error-notification',
@@ -431,7 +447,38 @@ export const ChatInput = ({
     });
   }, []);
 
+  // Update the handleImageUpload to take a File as the parameter
+  const handleImageUpload = useCallback((file: File) => {
+    if (isImageValid(file.name)) {
+      setImageError(null);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        // Ensure reader.result is a string before adding it to the array
+        const result = reader.result;
+        if (typeof result === 'string') {
+          setImagePreviews(prev => [...prev, result]);
+        }
+      };
+      reader.readAsDataURL(file);
+      setImageFile(file);
+    } else {
+      setImageError('Unsupported file type. Please upload .jpg or .png images.');
+      showToastOnInvalidImage();
+    }
+  }, [
+    setImageError, 
+    setImagePreviews, 
+    setImageFile, 
+    showToastOnInvalidImage // showToastOnInvalidImage is now defined before handleImageUpload
+  ]);
 
+  // Function to open the modal with the selected image
+  const openModal = (imageSrc: string) => {
+    setSelectedImage(imageSrc);
+    setIsModalOpen(true);
+  };
+
+  const theme = useMantineTheme();
 
   useEffect(() => {
     const handleDocumentDragOver = (e: DragEvent) => {
@@ -464,7 +511,7 @@ export const ChatInput = ({
       document.removeEventListener('drop', handleDocumentDrop);
       document.removeEventListener('dragleave', handleDocumentDragLeave);
     };
-  }, []);  
+  }, [handleImageUpload]);  
 
   useEffect(() => {
     if (imageError) {
@@ -474,11 +521,13 @@ export const ChatInput = ({
   }, [imageError, showToastOnInvalidImage]);
 
   useEffect(() => {
-    setContent(inputContent)
+    if (inputContent !== content) {
+      setContent(inputContent);
+    }
     if (textareaRef.current) {
       textareaRef.current.focus()
     }
-  }, [inputContent, textareaRef])
+  }, [inputContent, textareaRef, content])
 
   useEffect(() => {
     if (promptListRef.current) {
@@ -603,29 +652,68 @@ export const ChatInput = ({
             </div>
           )}
            {/* Chat input and preview container */}
-          <div 
-            ref={chatInputContainerRef} 
-            className="chat-input-container m-0 w-full resize-none bg-[#070712] p-0 text-black dark:bg-[#070712] dark:text-white"
-            tabIndex={0}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            onClick={() => textareaRef.current?.focus()} // Add this line
-            style={{ 
-              outline: isFocused ? '2px solid #9acafa' : 'none', // Adjust the outline as needed
-            }}
-          >
+           <div 
+              ref={chatInputContainerRef} 
+              className="chat-input-container m-0 w-full resize-none bg-[#070712] p-0 text-black dark:bg-[#070712] dark:text-white"
+              tabIndex={0}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onClick={() => textareaRef.current?.focus()} // Add this line
+              style={{ 
+                outline: isFocused ? '2px solid #9acafa' : 'none', // Adjust the outline as needed
+                ...chatInputContainerStyle // Apply the dynamic padding here
+              }}
+            >
             {/* Image preview section */}
-            {imagePreviewUrl && (
-              <div className="flex justify-center">
-                <img src={imagePreviewUrl} alt="Preview" style={{ maxWidth: '100%', maxHeight: '300px' }} />
-                <button className="rounded bg-red-500 text-white hover:bg-red-700" onClick={() => {
-                  setImagePreviewUrl(null);
-                  setImageFile(null);
-                }}>
-                  Remove Image
-                </button>
-              </div>
-            )}
+            <div className="flex space-x-3" style={{ display: imagePreviews.length > 0 ? 'flex' : 'none' }}>
+              {imagePreviews.map((src, index) => (
+                <div key={index} className="relative w-12 h-12">
+                  <img
+                    src={src}
+                    alt={`Preview ${index}`}
+                    className="object-cover w-full h-full rounded-lg"
+                    onClick={() => openModal(src)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <Tooltip
+                    label="Remove File"
+                    position="top"
+                    withArrow
+                    style={{
+                      backgroundColor: '#505050', // Very dark gray background for the tooltip
+                      color: 'white', // White text color for the tooltip content
+                    }}
+                  >
+                    <button
+                      className="remove-button"
+                      onClick={() => setImagePreviews(prev => prev.filter((_, i) => i !== index))}
+                      style={removeButtonStyle}
+                      onMouseEnter={e => {
+                        const current = e.currentTarget;
+                        current.style.backgroundColor = removeButtonHoverStyle.backgroundColor!;
+                        current.style.color = removeButtonHoverStyle.color!;
+                      }}
+                      onMouseLeave={e => {
+                        const current = e.currentTarget;
+                        current.style.backgroundColor = removeButtonStyle.backgroundColor!;
+                        current.style.color = removeButtonStyle.color!;
+                      }}
+                    >
+                      <IconX size={16} />
+                    </button>
+                  </Tooltip>
+                </div>
+              ))}
+            </div>
+
+            {/* Modal for full image preview */}
+            <Modal
+              opened={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              title="Image Preview"
+            >
+              <img src={selectedImage || undefined} alt="Selected Preview" />
+            </Modal>
             <textarea
               ref={textareaRef}
               className="flex-grow m-0 w-full resize-none bg-[#070712] p-0 py-2 pl-16 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-3 md:pl-16"
