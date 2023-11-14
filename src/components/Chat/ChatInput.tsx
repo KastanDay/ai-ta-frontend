@@ -92,6 +92,11 @@ export const ChatInput = ({
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const imageUploadRef = useRef<HTMLInputElement | null>(null);
   const promptListRef = useRef<HTMLUListElement | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const chatInputContainerRef = useRef<HTMLDivElement>(null);
+  const [isFocused, setIsFocused] = useState(false);
+
 
   const filteredPrompts = prompts.filter((prompt) =>
     prompt.name.toLowerCase().includes(promptInputValue.toLowerCase()),
@@ -115,24 +120,43 @@ export const ChatInput = ({
     updatePromptListVisibility(value)
   }
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (messageIsStreaming) {
-      return
+      return;
     }
 
-    if (!content) {
-      alert(t('Please enter a message'))
-      return
+    let finalContent = content;
+
+    if (imageFile && !uploadingImage) {
+      setUploadingImage(true);
+      try {
+        // Call your upload function here
+        const uploadedImageUrl = await uploadToS3(imageFile); // This should return the URL of the uploaded image
+        finalContent += `\n![image](${uploadedImageUrl})`; // Append the image URL to the message content
+        setImageFile(null); // Clear the file after uploading
+        setImagePreviewUrl(null);
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        setImageError('Error uploading file');
+        showToastOnInvalidImage();
+      } finally {
+        setUploadingImage(false);
+      }
     }
 
-    onSend({ role: 'user', content }, plugin)
-    setContent('')
-    setPlugin(null)
+    if (!finalContent) {
+      alert(t('Please enter a message'));
+      return;
+    }
+
+    onSend({ role: 'user', content: finalContent }, plugin);
+    setContent('');
+    setPlugin(null);
 
     if (window.innerWidth < 640 && textareaRef && textareaRef.current) {
-      textareaRef.current.blur()
+      textareaRef.current.blur();
     }
-  }
+  };
 
   const handleStopConversation = () => {
     stopConversationRef.current = true
@@ -223,7 +247,7 @@ export const ChatInput = ({
     }
   }, [])
 
-  const handlePromptSelect = (prompt: Prompt) => {
+  const handlePromptSelect = useCallback((prompt: Prompt) => {
     const parsedVariables = parseVariables(prompt.content)
     const filteredVariables = parsedVariables.filter(
       (variable) => variable !== undefined,
@@ -239,8 +263,7 @@ export const ChatInput = ({
       })
       updatePromptListVisibility(prompt.content)
     }
-  }
-
+  }, [parseVariables, setContent, updatePromptListVisibility]); 
   // const handlePromptSelect = (prompt: Prompt) => {
   //   const parsedVariables = parseVariables(prompt.content);
   //   setVariables(parsedVariables);
@@ -256,7 +279,7 @@ export const ChatInput = ({
   //   }
   // };
 
-  const handleSubmit = (updatedVariables: string[]) => {
+  const handleSubmit = useCallback((updatedVariables: string[]) => {
     const newContent = content?.replace(/{{(.*?)}}/g, (match, variable) => {
       const index = variables.indexOf(variable)
       return updatedVariables[index] || ''
@@ -267,7 +290,7 @@ export const ChatInput = ({
     if (textareaRef && textareaRef.current) {
       textareaRef.current.focus()
     }
-  }
+  }, [variables, setContent, textareaRef]); // Add dependencies used in the function
 
   const validImageTypes = ['.jpg', '.jpeg', '.png'];
 
@@ -371,50 +394,42 @@ export const ChatInput = ({
     }
   }
 
-  const handleImageUpload = async (file: File) => {
-    if (!isImageValid(file.name)) {
-        setImageError(null);
-        setImageError('Unsupported file type. Please upload .jpg or .png images.');
-        showToastOnInvalidImage();
-        if (imageUploadRef.current) {
-            imageUploadRef.current.value = '';
-        }
-        return;
+  // Update the handleImageUpload to take a File as the parameter
+  const handleImageUpload = (file: File) => {
+    if (isImageValid(file.name)) {
+      setImageError(null);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      setImageFile(file); // We save the File object for later
+    } else {
+      setImageError('Unsupported file type. Please upload .jpg or .png images.');
+      showToastOnInvalidImage();
     }
-
-    try {
-        // Upload to S3
-        await uploadToS3(file);
-        console.log(file.name + ' uploaded to S3 successfully!!');
-
-        // Ingest file (if needed)
-        await ingestFile(file);
-        console.log(file.name + ' ingested successfully!!');
-    } catch (error) {
-        console.error('Error during file processing:', error);
-    }
-}
+  };
 
   const theme = useMantineTheme();
 
-  const showToastOnInvalidImage = () => {
+  const showToastOnInvalidImage = useCallback(() => {
     notifications.show({
-        id: 'error-notification',
-        withCloseButton: true,
-        onClose: () => console.log('error unmounted'),
-        onOpen: () => console.log('error mounted'),
-        autoClose: 4000,
-        title: 'Invalid Image Type',
-        message: 'Unsupported file type. Please upload .jpg or .png images.',
-        color: 'red',
-        radius: 'lg',
-        icon: <IconAlertCircle />,
-        className: 'my-notification-class',
-        style: { backgroundColor: '#15162c' },
-        withBorder: true,
-        loading: false,
+      id: 'error-notification',
+      withCloseButton: true,
+      onClose: () => console.log('error unmounted'),
+      onOpen: () => console.log('error mounted'),
+      autoClose: 4000,
+      title: 'Invalid Image Type',
+      message: 'Unsupported file type. Please upload .jpg or .png images.',
+      color: 'red',
+      radius: 'lg',
+      icon: <IconAlertCircle />,
+      className: 'my-notification-class',
+      style: { backgroundColor: '#15162c' },
+      withBorder: true,
+      loading: false,
     });
-  }
+  }, []);
 
 
 
@@ -456,7 +471,7 @@ export const ChatInput = ({
       showToastOnInvalidImage();
       setImageError(null);
     }
-  }, [imageError]);
+  }, [imageError, showToastOnInvalidImage]);
 
   useEffect(() => {
     setContent(inputContent)
@@ -498,6 +513,13 @@ export const ChatInput = ({
     }
   }, [])
 
+  useEffect(() => {
+    // This will focus the div as soon as the component mounts
+    if (chatInputContainerRef.current) {
+      chatInputContainerRef.current.focus();
+    }
+  }, []);  
+
   return (
     <div className={`absolute bottom-0 left-0 w-full border-transparent bg-transparent pt-6 dark:border-white/20 md:pt-2 ${isDragging ? 'border-4 border-dashed border-blue-400' : ''}`}>
       {isDragging && (
@@ -530,7 +552,7 @@ export const ChatInput = ({
 
         <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#15162c] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4">
         <button
-            className="absolute left-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+            className="absolute left-2 bottom-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
             onClick={() => setShowPluginSelect(!showPluginSelect)}
             onKeyDown={(e) => {
               console.log(e)
@@ -541,21 +563,22 @@ export const ChatInput = ({
 
           {/* Image Icon and Input */}
           <button 
-              className="absolute left-8 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+              className="absolute left-8 bottom-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
               onClick={() => document.getElementById('imageUpload')?.click()}
           >
               <IconPhoto size={20} />
           </button>
           <input
-              type="file"
-              id="imageUpload"
-              ref={imageUploadRef}
-              style={{ display: 'none' }}
-              onChange={(e) => {
-                  if (e.target.files && e.target.files.length > 0) {
-                      handleImageUpload(e.target.files[0] as File);
-                  }
-              }}
+            type="file"
+            id="imageUpload"
+            ref={imageUploadRef}
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                handleImageUpload(file);
+              }
+            }}
           />
           {showPluginSelect && (
             <div className="absolute bottom-14 left-0 rounded bg-white dark:bg-[#15162c]">
@@ -579,74 +602,94 @@ export const ChatInput = ({
               />
             </div>
           )}
-
-          <textarea
-            ref={textareaRef}
-            className="m-0 w-full resize-none bg-[#070712] p-0 py-2 pl-16 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-3 md:pl-16"
-            style={{
-              resize: 'none',
-              bottom: `${textareaRef?.current?.scrollHeight}px`,
-              maxHeight: '400px',
-              overflow: `${
-                textareaRef.current && textareaRef.current.scrollHeight > 400
-                  ? 'auto'
-                  : 'hidden'
-              }`,
+           {/* Chat input and preview container */}
+          <div 
+            ref={chatInputContainerRef} 
+            className="chat-input-container m-0 w-full resize-none bg-[#070712] p-0 text-black dark:bg-[#070712] dark:text-white"
+            tabIndex={0}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            onClick={() => textareaRef.current?.focus()} // Add this line
+            style={{ 
+              outline: isFocused ? '2px solid #9acafa' : 'none', // Adjust the outline as needed
             }}
-            placeholder={
-              t('Type a message or type "/" to select a prompt...') || ''
-            }
-            value={content}
-            rows={1}
-            onCompositionStart={() => setIsTyping(true)}
-            onCompositionEnd={() => setIsTyping(false)}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-          />
-
-          <button
-              className="absolute right-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
-              onClick={handleSend}
-            >
-              {messageIsStreaming ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
-              ) : (
-                <IconSend size={18} />
-              )}
-          </button>
-
-
-          {showScrollDownButton && (
-            <div className="absolute bottom-12 right-0 lg:-right-10 lg:bottom-0">
-              <button
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-300 text-gray-800 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-neutral-200"
-                onClick={onScrollDownClick}
-              >
-                <IconArrowDown size={18} />
-              </button>
-            </div>
-          )}
-
-          {showPromptList && filteredPrompts.length > 0 && (
-            <div className="absolute bottom-12 w-full">
-              <PromptList
-                activePromptIndex={activePromptIndex}
-                prompts={filteredPrompts}
-                onSelect={handleInitModal}
-                onMouseOver={setActivePromptIndex}
-                promptListRef={promptListRef}
-              />
-            </div>
-          )}
-
-          {isModalVisible && filteredPrompts[activePromptIndex] && (
-            <VariableModal
-              prompt={filteredPrompts[activePromptIndex]}
-              variables={variables}
-              onSubmit={handleSubmit}
-              onClose={() => setIsModalVisible(false)}
+          >
+            {/* Image preview section */}
+            {imagePreviewUrl && (
+              <div className="flex justify-center">
+                <img src={imagePreviewUrl} alt="Preview" style={{ maxWidth: '100%', maxHeight: '300px' }} />
+                <button className="rounded bg-red-500 text-white hover:bg-red-700" onClick={() => {
+                  setImagePreviewUrl(null);
+                  setImageFile(null);
+                }}>
+                  Remove Image
+                </button>
+              </div>
+            )}
+            <textarea
+              ref={textareaRef}
+              className="flex-grow m-0 w-full resize-none bg-[#070712] p-0 py-2 pl-16 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-3 md:pl-16"
+              placeholder={t('Type a message or type "/" to select a prompt...') || ''}
+              value={content}
+              rows={1}
+              onCompositionStart={() => setIsTyping(true)}
+              onCompositionEnd={() => setIsTyping(false)}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              style={{
+                resize: 'none',
+                maxHeight: '400px',
+                overflow: 'hidden',
+                outline: 'none' // Add this line to remove the outline from the textarea
+              }}
             />
-          )}
+
+
+
+            <button
+                className="absolute right-2 bottom-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+                onClick={handleSend}
+              >
+                {messageIsStreaming ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
+                ) : (
+                  <IconSend size={18} />
+                )}
+            </button>
+
+
+            {showScrollDownButton && (
+              <div className="absolute bottom-12 right-0 lg:-right-10 lg:bottom-0">
+                <button
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-300 text-gray-800 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-neutral-200"
+                  onClick={onScrollDownClick}
+                >
+                  <IconArrowDown size={18} />
+                </button>
+              </div>
+            )}
+
+            {showPromptList && filteredPrompts.length > 0 && (
+              <div className="absolute bottom-12 w-full">
+                <PromptList
+                  activePromptIndex={activePromptIndex}
+                  prompts={filteredPrompts}
+                  onSelect={handleInitModal}
+                  onMouseOver={setActivePromptIndex}
+                  promptListRef={promptListRef}
+                />
+              </div>
+            )}
+
+            {isModalVisible && filteredPrompts[activePromptIndex] && (
+              <VariableModal
+                prompt={filteredPrompts[activePromptIndex]}
+                variables={variables}
+                onSubmit={handleSubmit}
+                onClose={() => setIsModalVisible(false)}
+              />
+            )}
+          </div>
         </div>
         {/* Small title below the main chat input bar */}
         {/* <div className="px-3 pb-3 pt-2 text-center text-[12px] text-black/50 dark:text-white/50 md:px-4 md:pb-6 md:pt-3">

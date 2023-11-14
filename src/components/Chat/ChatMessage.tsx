@@ -56,6 +56,7 @@ export interface Props {
   messageIndex: number
   onEdit?: (editedMessage: Message) => void
   context?: ContextWithMetadata[]
+  contentRenderer?: (message: Message) => JSX.Element; // Add this line
 }
 
 export const ChatMessage: FC<Props> = memo(
