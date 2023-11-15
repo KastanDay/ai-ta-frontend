@@ -39,7 +39,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import React from 'react'
 import { CSSProperties } from 'react';
-// ... other imports ...
 
 
 const montserrat_med = Montserrat({
@@ -125,8 +124,11 @@ export const ChatInput = ({
 
   // Dynamically set the padding based on image previews presence
   const chatInputContainerStyle: CSSProperties = {
-    padding: imagePreviews.length > 0 ? '10px' : '0', // Apply padding if there are images, otherwise no padding
-  };
+    paddingTop: imagePreviews.length > 0 ? '10px' : '0',
+    paddingRight: imagePreviews.length > 0 ? '10px' : '0',
+    // Keep the padding for the other sides as 0
+    paddingBottom: '0',
+    paddingLeft: '0',  };
 
   const filteredPrompts = prompts.filter((prompt) =>
     prompt.name.toLowerCase().includes(promptInputValue.toLowerCase()),
@@ -182,6 +184,7 @@ export const ChatInput = ({
     onSend({ role: 'user', content: finalContent }, plugin);
     setContent('');
     setPlugin(null);
+    setImagePreviews([]); // This will clear the image previews
 
     if (window.innerWidth < 640 && textareaRef && textareaRef.current) {
       textareaRef.current.blur();
@@ -294,20 +297,7 @@ export const ChatInput = ({
       updatePromptListVisibility(prompt.content)
     }
   }, [parseVariables, setContent, updatePromptListVisibility]); 
-  // const handlePromptSelect = (prompt: Prompt) => {
-  //   const parsedVariables = parseVariables(prompt.content);
-  //   setVariables(parsedVariables);
 
-  //   if (parsedVariables.length > 0) {
-  //     setIsModalVisible(true);
-  //   } else {
-  //     setContent((prevContent) => {
-  //       const updatedContent = prevContent?.replace(/\/\w*$/, prompt.content);
-  //       return updatedContent;
-  //     });
-  //     updatePromptListVisibility(prompt.content);
-  //   }
-  // };
 
   const handleSubmit = useCallback((updatedVariables: string[]) => {
     const newContent = content?.replace(/{{(.*?)}}/g, (match, variable) => {
@@ -519,15 +509,7 @@ export const ChatInput = ({
       setImageError(null);
     }
   }, [imageError, showToastOnInvalidImage]);
-
-  useEffect(() => {
-    if (inputContent !== content) {
-      setContent(inputContent);
-    }
-    if (textareaRef.current) {
-      textareaRef.current.focus()
-    }
-  }, [inputContent, textareaRef, content])
+  
 
   useEffect(() => {
     if (promptListRef.current) {
@@ -601,7 +583,7 @@ export const ChatInput = ({
 
         <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#15162c] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4">
         <button
-            className="absolute left-2 bottom-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+            className="absolute left-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
             onClick={() => setShowPluginSelect(!showPluginSelect)}
             onKeyDown={(e) => {
               console.log(e)
@@ -612,7 +594,7 @@ export const ChatInput = ({
 
           {/* Image Icon and Input */}
           <button 
-              className="absolute left-8 bottom-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+              className="absolute left-8 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
               onClick={() => document.getElementById('imageUpload')?.click()}
           >
               <IconPhoto size={20} />
@@ -716,7 +698,7 @@ export const ChatInput = ({
             </Modal>
             <textarea
               ref={textareaRef}
-              className="flex-grow m-0 w-full resize-none bg-[#070712] p-0 py-2 pl-16 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-3 md:pl-16"
+              className="flex-grow m-0 w-full resize-none bg-[#070712] p-0 py-2 pl-16 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-2 md:pl-16"
               placeholder={t('Type a message or type "/" to select a prompt...') || ''}
               value={content}
               rows={1}
@@ -728,14 +710,15 @@ export const ChatInput = ({
                 resize: 'none',
                 maxHeight: '400px',
                 overflow: 'hidden',
-                outline: 'none' // Add this line to remove the outline from the textarea
+                outline: 'none', // Add this line to remove the outline from the textarea
+                paddingTop: '14px'
               }}
             />
 
 
 
             <button
-                className="absolute right-2 bottom-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+                className="absolute right-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
                 onClick={handleSend}
               >
                 {messageIsStreaming ? (
@@ -779,19 +762,6 @@ export const ChatInput = ({
             )}
           </div>
         </div>
-        {/* Small title below the main chat input bar */}
-        {/* <div className="px-3 pb-3 pt-2 text-center text-[12px] text-black/50 dark:text-white/50 md:px-4 md:pb-6 md:pt-3">
-          {t('Advanced version of ChatGPT, built for UIUC. Forked from ')}
-          <a
-            href="https://github.com/mckaywrigley/chatbot-ui"
-            target="_blank"
-            rel="noreferrer"
-            className="underline"
-          >
-            ChatBot UI
-          </a>
-          .{' '}
-        </div> */}
       </div>
     </div>
   )
