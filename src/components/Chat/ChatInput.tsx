@@ -126,9 +126,10 @@ export const ChatInput = ({
   const chatInputContainerStyle: CSSProperties = {
     paddingTop: imagePreviews.length > 0 ? '10px' : '0',
     paddingRight: imagePreviews.length > 0 ? '10px' : '0',
-    // Keep the padding for the other sides as 0
     paddingBottom: '0',
-    paddingLeft: '0',  };
+    paddingLeft: '0',
+    borderRadius: '4px', // This will round the edges slightly
+  };
 
   const filteredPrompts = prompts.filter((prompt) =>
     prompt.name.toLowerCase().includes(promptInputValue.toLowerCase()),
