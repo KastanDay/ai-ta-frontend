@@ -127,7 +127,7 @@ export const ChatInput = ({
     paddingTop: imagePreviews.length > 0 ? '10px' : '0',
     paddingRight: imagePreviews.length > 0 ? '10px' : '0',
     paddingBottom: '0',
-    paddingLeft: '0',
+    paddingLeft: '10px',
     borderRadius: '4px', // This will round the edges slightly
   };
 
