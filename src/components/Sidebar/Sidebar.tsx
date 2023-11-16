@@ -90,12 +90,15 @@ const Sidebar = <T,>({
           searchTerm={searchTerm}
           onSearch={handleSearchTerm}
         />
-        <Switch
-          label={t('Only show conversations from current course')}
-          checked={showCurrentCourseOnly}
-          onChange={(event) => onToggleCurrentCourseOnly(event.currentTarget.checked)}
-          color='violet.7'
-        />
+        {/* Only show filter option on "Convo history bar (left sidebar), NOT in prompt library (right sidebar)" */}
+        {side === 'right' ? null : (
+          <Switch
+            label={t('Only show conversations from current course')}
+            checked={showCurrentCourseOnly}
+            onChange={(event) => onToggleCurrentCourseOnly(event.currentTarget.checked)}
+            color='violet.7'
+          />
+        )}
 
         <div className="flex-grow overflow-auto">
           {items?.length > 0 && (
