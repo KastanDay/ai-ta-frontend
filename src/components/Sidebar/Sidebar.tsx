@@ -93,7 +93,7 @@ const Sidebar = <T,>({
         {/* Only show filter option on "Convo history bar (left sidebar), NOT in prompt library (right sidebar)" */}
         {side === 'right' ? null : (
           <Switch
-            label={t('Only show conversations from current course')}
+            label={t('Only show conversations from current project')}
             checked={showCurrentCourseOnly}
             onChange={(event) => onToggleCurrentCourseOnly(event.currentTarget.checked)}
             color='violet.7'
