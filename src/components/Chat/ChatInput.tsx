@@ -38,8 +38,10 @@ import { Montserrat } from 'next/font/google'
 import { v4 as uuidv4 } from 'uuid';
 
 import React from 'react'
+
 import { CSSProperties } from 'react';
 
+import { aws_config } from '../../pages/api/UIUC-api/uploadToS3'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -57,6 +59,11 @@ interface Props {
   inputContent: string
   setInputContent: (content: string) => void
   courseName: string
+}
+
+interface ProcessedImage {
+  resizedFile: File;
+  dataUrl: string;
 }
 
 export const ChatInput = ({
@@ -92,8 +99,8 @@ export const ChatInput = ({
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const imageUploadRef = useRef<HTMLInputElement | null>(null);
   const promptListRef = useRef<HTMLUListElement | null>(null)
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const chatInputContainerRef = useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -124,8 +131,8 @@ export const ChatInput = ({
 
   // Dynamically set the padding based on image previews presence
   const chatInputContainerStyle: CSSProperties = {
-    paddingTop: imagePreviews.length > 0 ? '10px' : '0',
-    paddingRight: imagePreviews.length > 0 ? '10px' : '0',
+    paddingTop: imagePreviewUrls.length > 0 ? '10px' : '0',
+    paddingRight: imagePreviewUrls.length > 0 ? '10px' : '0',
     paddingBottom: '0',
     paddingLeft: '10px',
     borderRadius: '4px', // This will round the edges slightly
@@ -157,20 +164,29 @@ export const ChatInput = ({
     if (messageIsStreaming) {
       return;
     }
-
+  
     let finalContent = content;
-
-    if (imageFile && !uploadingImage) {
+  
+    if (imageFiles.length > 0 && !uploadingImage) {
       setUploadingImage(true);
       try {
-        // Call your upload function here
-        const uploadedImageUrl = await uploadToS3(imageFile); // This should return the URL of the uploaded image
-        finalContent += `\n![image](${uploadedImageUrl})`; // Append the image URL to the message content
-        setImageFile(null); // Clear the file after uploading
-        setImagePreviewUrl(null);
+        // Upload all images and get their URLs
+        const imageUrls = await Promise.all(imageFiles.map(file => 
+          uploadToS3(file).catch(error => {
+            console.error('Upload failed for file', file.name, error);
+            return ''; // Return a placeholder or an empty string if the upload fails
+          })
+        ));
+          
+        // Append all image URLs to the message content
+        finalContent += imageUrls.map(url => `\n![image](${url})`).join('');
+  
+        // Clear the files after uploading
+        setImageFiles([]);
+        setImagePreviewUrls([]);
       } catch (error) {
-        console.error('Error uploading file:', error);
-        setImageError('Error uploading file');
+        console.error('Error uploading files:', error);
+        setImageError('Error uploading files');
         showToastOnInvalidImage();
       } finally {
         setUploadingImage(false);
@@ -299,7 +315,6 @@ export const ChatInput = ({
     }
   }, [parseVariables, setContent, updatePromptListVisibility]); 
 
-
   const handleSubmit = useCallback((updatedVariables: string[]) => {
     const newContent = content?.replace(/{{(.*?)}}/g, (match, variable) => {
       const index = variables.indexOf(variable)
@@ -320,15 +335,17 @@ export const ChatInput = ({
       return validImageTypes.includes(`.${ext}`);
   }
 
-  const uploadToS3 = async (file: File | null) => {
+  const uploadToS3 = async (file: File) => {
     if (!file) {
       console.error('No file provided for upload');
       return;
     }
-    
-    const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2);
-    const uniqueFileName = `${uuidv4()}.${fileExtension}`;
   
+    // Generate a unique file name using uuidv4
+    const uniqueFileName = `${uuidv4()}.${file.name.split('.').pop()}`;
+    const s3_filepath = `courses/${courseName}/${uniqueFileName}`; // Define s3_filepath here
+  
+    // Prepare the request body for the API call
     const requestObject = {
       method: 'POST',
       headers: {
@@ -342,39 +359,39 @@ export const ChatInput = ({
     };
   
     try {
-      interface PresignedPostResponse {
-        post: {
-          url: string
-          fields: { [key: string]: string }
-        }
+      // Call your API to get the presigned POST data
+      const response = await fetch('/api/UIUC-api/uploadToS3', requestObject);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-
-      // Then, update the lines where you fetch the response and parse the JSON
-      const response = await fetch('/api/UIUC-api/uploadToS3', requestObject)
-      const data = (await response.json()) as PresignedPostResponse
-
-      const { url, fields } = data.post as {
-        url: string
-        fields: { [key: string]: string }
-      }
-      const formData = new FormData()
-
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value)
-      })
-
-      formData.append('file', file)
-
-      await fetch(url, {
+      const { post } = await response.json();
+  
+      // Use the presigned POST data to upload the file to S3
+      const formData = new FormData();
+      Object.entries(post.fields).forEach(([key, value]) => {
+        formData.append(key, value as string);
+      });
+      formData.append('file', file);
+  
+      // Post the file to the S3 bucket using the presigned URL and form data
+      const uploadResponse = await fetch(post.url, {
         method: 'POST',
         body: formData,
-      })
+      });
   
-      console.log((file.name as string) + 'uploaded to S3 successfully!!')
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload the file to S3');
+      }
+  
+      // Construct the URL to the uploaded file using the response from the presigned POST
+      const uploadedImageUrl = `https://${aws_config.bucketName}.s3.${aws_config.region}.amazonaws.com/${encodeURIComponent(s3_filepath)}`;
+  
+      return uploadedImageUrl;
     } catch (error) {
-      console.error('Error uploading file:', error)
+      console.error('Error uploading file:', error);
     }
-  }
+  };
+  
   
 
   const ingestFile = async (file: File | null) => {
@@ -438,30 +455,88 @@ export const ChatInput = ({
     });
   }, []);
 
-  // Update the handleImageUpload to take a File as the parameter
-  const handleImageUpload = useCallback((file: File) => {
-    if (isImageValid(file.name)) {
-      setImageError(null);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        // Ensure reader.result is a string before adding it to the array
-        const result = reader.result;
-        if (typeof result === 'string') {
-          setImagePreviews(prev => [...prev, result]);
-        }
-      };
-      reader.readAsDataURL(file);
-      setImageFile(file);
-    } else {
-      setImageError('Unsupported file type. Please upload .jpg or .png images.');
-      showToastOnInvalidImage();
+  const handleImageUpload = useCallback(async (files: File[]) => {
+    const validFiles = files.filter(file => isImageValid(file.name));
+    const invalidFilesCount = files.length - validFiles.length;
+  
+    if (invalidFilesCount > 0) {
+      setImageError(`${invalidFilesCount} invalid file type(s). Please upload .jpg or .png images.`);
+      showToastOnInvalidImage(); // This already shows a toast, you might want to pass a custom message
     }
-  }, [
-    setImageError, 
-    setImagePreviews, 
-    setImageFile, 
-    showToastOnInvalidImage // showToastOnInvalidImage is now defined before handleImageUpload
-  ]);
+  
+    const imageProcessingPromises = validFiles.map(file => {
+      return new Promise<ProcessedImage>((resolve, reject) => {
+        const reader = new FileReader();
+  
+        reader.onloadend = () => {
+          const result = reader.result;
+          if (typeof result === 'string') {
+            const img = new Image();
+            img.src = result;
+  
+            img.onload = () => {
+              let newWidth, newHeight;
+              const MAX_WIDTH = 2048;
+              const MAX_HEIGHT = 2048;
+              const MIN_SIDE = 768;
+  
+              if (img.width > img.height) {
+                newHeight = MIN_SIDE;
+                newWidth = (img.width / img.height) * newHeight;
+                if (newWidth > MAX_WIDTH) {
+                  newWidth = MAX_WIDTH;
+                  newHeight = (img.height / img.width) * newWidth;
+                }
+              } else {
+                newWidth = MIN_SIDE;
+                newHeight = (img.height / img.width) * newWidth;
+                if (newHeight > MAX_HEIGHT) {
+                  newHeight = MAX_HEIGHT;
+                  newWidth = (img.width / img.height) * newHeight;
+                }
+              }
+  
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                ctx.drawImage(img, 0, 0, newWidth, newHeight);
+  
+                canvas.toBlob((blob) => {
+                  if (blob) {
+                    const resizedFile = new File([blob], file.name, {
+                      type: 'image/jpeg',
+                      lastModified: Date.now(),
+                    });
+  
+                    resolve({ resizedFile, dataUrl: canvas.toDataURL('image/jpeg') });
+                  } else {
+                    reject(new Error('Canvas toBlob failed'));
+                  }
+                }, 'image/jpeg', 0.9);
+              } else {
+                reject(new Error('Canvas Context is null'));
+              }
+            };
+          } else {
+            reject(new Error('FileReader did not return a string result'));
+          }
+        };
+  
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    });
+  
+    try {
+      const processedImages = await Promise.all(imageProcessingPromises);
+      setImageFiles(prev => [...prev, ...processedImages.map(img => img.resizedFile)]);
+      setImagePreviewUrls(prev => [...prev, ...processedImages.map(img => img.dataUrl)]);
+    } catch (error) {
+      console.error('Error processing files:', error);
+    }    
+  }, [setImageError, setImageFiles, setImagePreviewUrls, showToastOnInvalidImage]);  
 
   // Function to open the modal with the selected image
   const openModal = (imageSrc: string) => {
@@ -481,12 +556,16 @@ export const ChatInput = ({
       e.preventDefault();
       setIsDragging(false);
       if (e.dataTransfer && e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-        const file = e.dataTransfer.items[0]?.getAsFile();
-        if (file) {
-          handleImageUpload(file);
+        const files = Array.from(e.dataTransfer.items)
+          .filter(item => item.kind === 'file')
+          .map(item => item.getAsFile())
+          .filter(file => file !== null) as File[];
+        if (files.length > 0) {
+          handleImageUpload(files);
         }
       }
     };
+    
   
     const handleDocumentDragLeave = (e: DragEvent) => {
       setIsDragging(false);
@@ -602,13 +681,14 @@ export const ChatInput = ({
           </button>
           <input
             type="file"
+            multiple
             id="imageUpload"
             ref={imageUploadRef}
             style={{ display: 'none' }}
             onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                handleImageUpload(file);
+              const files = e.target.files;
+              if (files) {
+                handleImageUpload(Array.from(files));
               }
             }}
           />
@@ -648,9 +728,9 @@ export const ChatInput = ({
               }}
             >
             {/* Image preview section */}
-            <div className="flex space-x-3" style={{ display: imagePreviews.length > 0 ? 'flex' : 'none' }}>
-              {imagePreviews.map((src, index) => (
-                <div key={index} className="relative w-12 h-12">
+            <div className="flex space-x-3" style={{ display: imagePreviewUrls.length > 0 ? 'flex' : 'none' }}>
+              {imagePreviewUrls.map((src, index) => (
+                <div key={src} className="relative w-12 h-12">
                   <img
                     src={src}
                     alt={`Preview ${index}`}
@@ -663,13 +743,17 @@ export const ChatInput = ({
                     position="top"
                     withArrow
                     style={{
-                      backgroundColor: '#505050', // Very dark gray background for the tooltip
-                      color: 'white', // White text color for the tooltip content
+                      backgroundColor: '#505050',
+                      color: 'white',
                     }}
                   >
                     <button
                       className="remove-button"
-                      onClick={() => setImagePreviews(prev => prev.filter((_, i) => i !== index))}
+                      onClick={() => {
+                        // Filter out the image from both imageFiles and imagePreviewUrls
+                        setImageFiles(prev => prev.filter((_, i) => i !== index));
+                        setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+                      }}
                       style={removeButtonStyle}
                       onMouseEnter={e => {
                         const current = e.currentTarget;

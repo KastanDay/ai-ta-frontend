@@ -579,13 +579,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
   // Inside Chat function before the return statement
   const renderMessageContent = (message: Message) => {
-    if (message.type === 'image') {
-      // Render image using an <img> tag or any other suitable component
-      return <img src={message.content} alt="Uploaded content" />;
+    // If message is of type 'image', render an <img> tag
+    if (message.type === 'image' && message.content) {
+      return <img src={message.content} alt="Uploaded content" onError={(e) => {
+        // Handle image load error, maybe replace with a placeholder
+        e.currentTarget.src = 'path/to/placeholder.png';
+      }} />;
     }
-    // Render text as usual
+    // If message is of type 'text' or any other type, render text
     return <span>{message.content}</span>;
   };
+  
 
   return (
     <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
