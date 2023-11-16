@@ -299,6 +299,8 @@ const ChatNavbar = ({
                     width={2000}
                     height={2000}
                     alt="The course creator uploaded a logo for this chatbot."
+                    aria-label="The course creator uploaded a logo for this chatbot."
+                    onError={(e) => e.currentTarget.style.display = 'none'} // display nothing if image fails
                   />
                 </div>
               )}

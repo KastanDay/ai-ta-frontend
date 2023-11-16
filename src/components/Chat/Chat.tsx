@@ -94,11 +94,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const [inputContent, setInputContent] = useState<string>('')
 
   useEffect(() => {
-    console.log("Inside useEffect in Chat.tsx, courseMetadata: ", courseMetadata)
-    if (courseMetadata?.banner_image_s3) {
-      console.log('Fetching course banner url')
+    console.log("courseMetadata?.banner_image_s3", courseMetadata?.banner_image_s3)
+    if (courseMetadata?.banner_image_s3 && courseMetadata.banner_image_s3 !== '') {
       fetchPresignedUrl(courseMetadata.banner_image_s3).then((url) => {
-        console.log('Setting course banner url')
         setBannerUrl(url)
       })
     }

@@ -201,11 +201,10 @@ export const Chatbar = () => {
     }
   }
 
-  // NEWER 
+  // SEARCH CONVO HISTORY (by message title, content and course-name)
+  // Also implements "Only show conversations from current course" toggle
   useEffect(() => {
     const currentCourseName = router.asPath.split('/')[1];
-
-    console.log("Curr course name is ", currentCourseName)
 
     const filterBySearchTermOrCourse = (conversation: Conversation) => {
       const courseMatch = conversation.messages[0]?.contexts?.some(
@@ -216,11 +215,6 @@ export const Chatbar = () => {
           message.content.toLowerCase().includes(searchTerm.toLowerCase())
         );
       const isMatch = (showCurrentCourseOnly ? courseMatch : true) && searchTermMatch;
-      console.log(`Convo: ${conversation.name}, Course Match: ${courseMatch}, Search Term Match: ${searchTermMatch}, Is Match: ${isMatch}, First Context Course Name: ${conversation.messages[0]?.contexts?.[0]?.course_name}`);
-      console.log(`Convo: ${conversation.name},First Context ${conversation.messages[0]?.contexts?.[0]?.['course_name ']}`);
-      if (!isMatch) {
-        console.log(`Convo: ${conversation.name} failed to match, First Context Course Name: ${conversation.messages[0]?.contexts?.[0]?.course_name}`);
-      }
       return isMatch;
     };
 
