@@ -58,8 +58,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
               disabled: ['#2A2F36'],
               errorBackground: ['#dc2626'],
               errorBorder: ['#dc2626'],
-              // or replace default theme color
-              // blue: ['#E9EDFC', '#C1CCF6', '#99ABF0' /* ... */],
             },
             // primaryColor: 'aiPurple',
 

@@ -49,7 +49,7 @@ const Home = () => {
   const { getModelsError } = useErrorService()
   const [isLoading, setIsLoading] = useState<boolean>(true) // Add a new state for loading
 
-  const defaultModelId = 'gpt-3.5-turbo'
+  const defaultModelId = 'gpt-4'
   const serverSidePluginKeysSet = true
 
   const contextValue = useCreateReducer<HomeInitialState>({
@@ -76,12 +76,14 @@ const Home = () => {
   const course_name = router.query.course_name as string
   const curr_route_path = router.asPath as string
 
+  const [isInitialSetupDone, setIsInitialSetupDone] = useState(false)
   const [isCourseMetadataLoading, setIsCourseMetadataLoading] = useState(true)
   const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
 
   useEffect(() => {
+    console.log("In useEffect for course_metadata, home.tsx, course_metadata: ", course_metadata)
     if (!course_name && curr_route_path != '/gpt4') return
     const courseMetadata = async () => {
       setIsLoading(true) // Set loading to true before fetching data
@@ -106,6 +108,7 @@ const Home = () => {
 
   const [hasMadeNewConvoAlready, setHasMadeNewConvoAlready] = useState(false)
   useEffect(() => {
+    console.log("In useEffect for selectedConversation, home.tsx, selectedConversation: ", selectedConversation)
     // ALWAYS make a new convo if current one isn't empty
     if (!selectedConversation) return
     if (hasMadeNewConvoAlready) return
@@ -114,7 +117,7 @@ const Home = () => {
     if (selectedConversation?.messages.length > 0) {
       handleNewConversation()
     }
-  }, [selectedConversation])
+  }, [selectedConversation, conversations])
 
   // THIS CODE BELOW hints at HOW TO FILTER sidebar conversation history if they don't match the current course.
 
@@ -157,6 +160,7 @@ const Home = () => {
   // const course_exists = course_metadata != null
 
   useEffect(() => {
+    console.log("In useEffect for clerk_user_outer, home.tsx, clerk_user_outer: ", clerk_user_outer)
     if (!clerk_user_outer.isLoaded || isCourseMetadataLoading) {
       return
     }
@@ -183,6 +187,7 @@ const Home = () => {
 
   // ---- Set OpenAI API Key (either course-wide or from storage) ----
   useEffect(() => {
+    console.log("In useEffect for apiKey, home.tsx, apiKey: ", apiKey)
     if (!course_metadata) return
     const local_api_key = localStorage.getItem('apiKey')
     let key = ''
@@ -314,19 +319,23 @@ const Home = () => {
   const handleNewConversation = () => {
     const lastConversation = conversations[conversations.length - 1]
     console.debug("Models available: ", models)
-    const defaultModel = models.find(model => model.id === defaultModelId) || models[0]
+    let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
+    if (!defaultModel) {
+      defaultModel = OpenAIModels['gpt-4']
+    }
     console.debug("Using model: ", defaultModel)
-    
+
     const newConversation: Conversation = {
       id: uuidv4(),
       name: t('New Conversation'),
       messages: [],
-      model: lastConversation?.model || {
-        id: defaultModel?.id as string,
-        name: defaultModel?.name as string,
-        maxLength: defaultModel?.maxLength as number,
-        tokenLimit: defaultModel?.tokenLimit as number,
-      },
+      // model: lastConversation?.model || {
+      //   id: defaultModel?.id as string,
+      //   name: defaultModel?.name as string,
+      //   maxLength: defaultModel?.maxLength as number,
+      //   tokenLimit: defaultModel?.tokenLimit as number,
+      // },
+      model: lastConversation?.model || defaultModel,
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
@@ -381,7 +390,27 @@ const Home = () => {
 
   // ON LOAD --------------------------------------------
 
+
   useEffect(() => {
+    // JUST FOR TESTING 
+    console.log("Inside my useEffect for conversations, home.tsx, conversations: ", conversations)
+    if (conversations) {
+      let counter = 0;
+      conversations.forEach((conversation) => {
+        // print out the conversation
+        console.log("Conversation: ", counter)
+        console.log("Conversation model: ", conversation.name)
+        console.log("Conversation model: ", conversation.model)
+        counter++;
+      })
+    }
+
+  }, [conversations])
+
+
+
+  useEffect(() => {
+    if (isInitialSetupDone) return
     const settings = getSettings()
     if (settings.theme) {
       dispatch({
@@ -423,10 +452,13 @@ const Home = () => {
         parsedConversationHistory,
       )
 
+      // ! Disable convo cleaning
       dispatch({ field: 'conversations', value: cleanedConversationHistory })
+      // dispatch({ field: 'conversations', value: parsedConversationHistory })
     }
 
     const selectedConversation = localStorage.getItem('selectedConversation')
+    console.log('selectedConversation in localStorage', selectedConversation)
     if (selectedConversation) {
       const parsedSelectedConversation: Conversation =
         JSON.parse(selectedConversation)
@@ -434,6 +466,11 @@ const Home = () => {
         parsedSelectedConversation,
       )
 
+      console.log("About to dispatch selectedConversation: ", cleanedSelectedConversation)
+      console.log("About to dispatch selectedConversation (model): ", cleanedSelectedConversation.model)
+
+
+      // ! Disable convo cleaning
       dispatch({
         field: 'selectedConversation',
         value: cleanedSelectedConversation,
@@ -441,7 +478,10 @@ const Home = () => {
     } else {
       const lastConversation = conversations[conversations.length - 1]
       console.debug("Models available: ", models)
-      const defaultModel = models.find(model => model.id === defaultModelId) || models[0]
+      let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
+      if (!defaultModel) {
+        defaultModel = OpenAIModels['gpt-4']
+      }
       console.debug("Using model: ", defaultModel)
       dispatch({
         field: 'selectedConversation',
@@ -449,19 +489,19 @@ const Home = () => {
           id: uuidv4(),
           name: t('New Conversation'),
           messages: [],
-          model: {
-            id: defaultModel?.id,
-            name: defaultModel?.name,
-            maxLength: defaultModel?.maxLength,
-            tokenLimit: defaultModel?.tokenLimit,
-          },
+          model: defaultModel,
           prompt: DEFAULT_SYSTEM_PROMPT,
           temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
           folderId: null,
         },
       })
     }
-  }, [defaultModelId, dispatch, serverSidePluginKeysSet, models, conversations])
+    setIsInitialSetupDone(true)
+  }, [dispatch, models, conversations, isInitialSetupDone])
+  // }, [dispatch, models, conversations]) // ! CERTAINLY `conversations` is causing the infinite loop... but is needed for convo saving
+  // ! serverSidePluginKeysSet, removed 
+
+  // }, [defaultModelId, dispatch, serverSidePluginKeysSet, models, conversations]) // original!
   if (isLoading) {
     // show blank page during loading
     return <></>
