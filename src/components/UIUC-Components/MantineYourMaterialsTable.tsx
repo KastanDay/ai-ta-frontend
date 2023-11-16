@@ -77,6 +77,7 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
     columnAccessor: 'File Name',
     direction: 'asc',
   });
+
   const [query, setQuery] = useState('');
   const [debouncedQuery] = useDebouncedValue(query, 200);
 
@@ -228,22 +229,22 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
                     >
                       <IconEye size={16} />
                     </ActionIcon>
-                    <ActionIcon
+                    {/* <ActionIcon
                       size="sm"
                       variant="subtle"
                       color="red"
                       onClick={() => openModal('delete')}
                     >
                       <IconTrash size={16} />
-                    </ActionIcon>
+                    </ActionIcon> */}
                   </Group>
                 </ModalsProvider>
               );
             },
           },
         ]}
-      sortStatus={sortStatus}
-      onSortStatusChange={setSortStatus}
+    // sortStatus={sortStatus}
+    // onSortStatusChange={setSortStatus}
     />
     // </MantineProvider>
   );
