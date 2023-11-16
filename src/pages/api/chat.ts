@@ -115,7 +115,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
   } catch (error) {
     if (error instanceof OpenAIError) {
       const { name, message } = error
-      console.log('Printing message here', message)
+      console.error('OpenAI Completion Error', message)
       const resp = NextResponse.json(
         {
           statusCode: 400,

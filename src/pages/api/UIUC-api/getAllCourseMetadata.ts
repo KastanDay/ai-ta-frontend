@@ -98,9 +98,9 @@ export default async (req: any, res: any) => {
     // const currUserEmail = req.query.currUserEmail;
     const currUserEmail = req.nextUrl.searchParams.get('currUserEmail')
     const all_course_metadata = await getCoursesByOwnerOrAdmin(currUserEmail)
-    log.debug('getCourseMetadata() success', {
-      all_course_metadata: all_course_metadata,
-    })
+    // log.debug('getCourseMetadata() success', {
+    //   all_course_metadata: all_course_metadata,
+    // })
     return NextResponse.json(all_course_metadata)
   } catch (error) {
     console.log('Error occurred while fetching courseMetadata', error)

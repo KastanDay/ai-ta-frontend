@@ -83,7 +83,6 @@ const Home = () => {
   )
 
   useEffect(() => {
-    console.log("In useEffect for course_metadata, home.tsx, course_metadata: ", course_metadata)
     if (!course_name && curr_route_path != '/gpt4') return
     const courseMetadata = async () => {
       setIsLoading(true) // Set loading to true before fetching data
@@ -108,7 +107,7 @@ const Home = () => {
 
   const [hasMadeNewConvoAlready, setHasMadeNewConvoAlready] = useState(false)
   useEffect(() => {
-    console.log("In useEffect for selectedConversation, home.tsx, selectedConversation: ", selectedConversation)
+    // console.log("In useEffect for selectedConversation, home.tsx, selectedConversation: ", selectedConversation)
     // ALWAYS make a new convo if current one isn't empty
     if (!selectedConversation) return
     if (hasMadeNewConvoAlready) return
@@ -160,7 +159,7 @@ const Home = () => {
   // const course_exists = course_metadata != null
 
   useEffect(() => {
-    console.log("In useEffect for clerk_user_outer, home.tsx, clerk_user_outer: ", clerk_user_outer)
+    // console.log("In useEffect for clerk_user_outer, home.tsx, clerk_user_outer: ", clerk_user_outer)
     if (!clerk_user_outer.isLoaded || isCourseMetadataLoading) {
       return
     }
@@ -187,7 +186,7 @@ const Home = () => {
 
   // ---- Set OpenAI API Key (either course-wide or from storage) ----
   useEffect(() => {
-    console.log("In useEffect for apiKey, home.tsx, apiKey: ", apiKey)
+    // console.log("In useEffect for apiKey, home.tsx, apiKey: ", apiKey)
     if (!course_metadata) return
     const local_api_key = localStorage.getItem('apiKey')
     let key = ''
@@ -391,21 +390,21 @@ const Home = () => {
   // ON LOAD --------------------------------------------
 
 
-  useEffect(() => {
-    // JUST FOR TESTING 
-    console.log("Inside my useEffect for conversations, home.tsx, conversations: ", conversations)
-    if (conversations) {
-      let counter = 0;
-      conversations.forEach((conversation) => {
-        // print out the conversation
-        console.log("Conversation: ", counter)
-        console.log("Conversation model: ", conversation.name)
-        console.log("Conversation model: ", conversation.model)
-        counter++;
-      })
-    }
+  // useEffect(() => {
+  //   // JUST FOR TESTING 
+  //   console.log("Inside my useEffect for conversations, home.tsx, conversations: ", conversations)
+  //   if (conversations) {
+  //     let counter = 0;
+  //     conversations.forEach((conversation) => {
+  //       // print out the conversation
+  //       console.log("Conversation: ", counter)
+  //       console.log("Conversation model: ", conversation.name)
+  //       console.log("Conversation model: ", conversation.model)
+  //       counter++;
+  //     })
+  //   }
 
-  }, [conversations])
+  // }, [conversations])
 
 
 
@@ -452,13 +451,11 @@ const Home = () => {
         parsedConversationHistory,
       )
 
-      // ! Disable convo cleaning
       dispatch({ field: 'conversations', value: cleanedConversationHistory })
-      // dispatch({ field: 'conversations', value: parsedConversationHistory })
     }
 
     const selectedConversation = localStorage.getItem('selectedConversation')
-    console.log('selectedConversation in localStorage', selectedConversation)
+    // console.log('selectedConversation in localStorage', selectedConversation)
     if (selectedConversation) {
       const parsedSelectedConversation: Conversation =
         JSON.parse(selectedConversation)
@@ -466,11 +463,6 @@ const Home = () => {
         parsedSelectedConversation,
       )
 
-      console.log("About to dispatch selectedConversation: ", cleanedSelectedConversation)
-      console.log("About to dispatch selectedConversation (model): ", cleanedSelectedConversation.model)
-
-
-      // ! Disable convo cleaning
       dispatch({
         field: 'selectedConversation',
         value: cleanedSelectedConversation,
