@@ -14,7 +14,7 @@ const Gpt4 = () => {
 
     useEffect(() => {
         router.replace(`/${getCurrentPageName()}/chat`)
-    }, [])
+    }, [router])
 
     return (
         <MainPageBackground>
