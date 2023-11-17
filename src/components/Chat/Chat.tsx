@@ -222,10 +222,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             message.contexts = curr_contexts as ContextWithMetadata[]
           })
         }
-
+        
         const chatBody: ChatBody = {
           model: updatedConversation.model,
-          messages: updatedConversation.messages,
+          messages: updatedConversation.messages.map((message) => ({
+            role: message.role,
+            content: message.image_url ? JSON.stringify({ image_url: message.image_url }) : message.content,
+          })),
           key:
             courseMetadata?.openai_api_key &&
             courseMetadata?.openai_api_key != ''

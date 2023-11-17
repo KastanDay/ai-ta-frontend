@@ -106,6 +106,7 @@ export const ChatInput = ({
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
 
   const removeButtonStyle: CSSProperties = {
@@ -181,10 +182,10 @@ export const ChatInput = ({
     if (messageIsStreaming) {
       return;
     }
-
+  
     let textContent = content;
     let imageContent: Content[] = []; // Explicitly declare the type for imageContent
-
+  
     if (imageFiles.length > 0 && !uploadingImage) {
       setUploadingImage(true);
       try {
@@ -197,7 +198,7 @@ export const ChatInput = ({
           });
           return uploadedImageUrl;
         }));
-
+  
         // Construct image content for the message
         imageContent = imageUrls
           .filter((url): url is string => url !== '') // Type-guard to filter out empty strings
@@ -205,7 +206,7 @@ export const ChatInput = ({
             type: "image_url",
             image_url: { url }
           }));
-
+  
         // Clear the files after uploading
         setImageFiles([]);
         setImagePreviewUrls([]);
@@ -216,7 +217,7 @@ export const ChatInput = ({
         setUploadingImage(false);
       }
     }
-
+  
     if (!textContent && imageContent.length === 0) {
       alert(t('Please enter a message or upload an image'));
       return;
@@ -227,21 +228,19 @@ export const ChatInput = ({
       ...(textContent ? [{ type: "text", text: textContent }] : []),
       ...imageContent
     ];
-
+  
     // Serialize the content array into a string to match the expected Message type
     let serializedContent = JSON.stringify(contentArray);
-
+  
     // Create a structured message for GPT-4 Vision
     const messageForGPT4Vision: MessageForGPT4Vision = {
       role: 'user',
       content: serializedContent
     };
-
   
-
     // Use the onSend prop to send the structured message
     onSend(messageForGPT4Vision as unknown as Message, plugin); // Cast to unknown then to Message if needed
-
+  
     // Reset states
     setContent('');
     setPlugin(null);
@@ -573,10 +572,14 @@ export const ChatInput = ({
       const processedImages = await Promise.all(imageProcessingPromises);
       setImageFiles(prev => [...prev, ...processedImages.map(img => img.resizedFile)]);
       setImagePreviewUrls(prev => [...prev, ...processedImages.map(img => img.dataUrl)]);
+  
+      // Store the URLs of the uploaded images
+      const uploadedImageUrls = (await Promise.all(processedImages.map(img => uploadToS3(img.resizedFile)))).filter(Boolean);
+      setImageUrls(uploadedImageUrls as string[]);
     } catch (error) {
       console.error('Error processing files:', error);
     }    
-  }, [setImageError, setImageFiles, setImagePreviewUrls, showToastOnInvalidImage]);  
+  }, [setImageError, setImageFiles, setImagePreviewUrls, showToastOnInvalidImage, uploadToS3]);  
 
   // Function to open the modal with the selected image
   const openModal = (imageSrc: string) => {

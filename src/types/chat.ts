@@ -7,6 +7,7 @@ export interface Message {
   contexts?: ContextWithMetadata[] // todo: make sure things works.
   responseTimeSec?: number
   type?: 'text' | 'image';
+  image_url?: string;
 }
 
 export interface OpenAIChatMessage {
