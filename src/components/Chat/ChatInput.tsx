@@ -183,7 +183,7 @@ export const ChatInput = ({
       return;
     }
   
-    let textContent = content;
+    const textContent = content;
     let imageContent: Content[] = []; // Explicitly declare the type for imageContent
   
     if (imageFiles.length > 0 && !uploadingImage) {
@@ -224,13 +224,13 @@ export const ChatInput = ({
     }
     
     // Construct the content array
-    let contentArray: Content[] = [
+    const contentArray: Content[] = [
       ...(textContent ? [{ type: "text", text: textContent }] : []),
       ...imageContent
     ];
   
     // Serialize the content array into a string to match the expected Message type
-    let serializedContent = JSON.stringify(contentArray);
+    const serializedContent = JSON.stringify(contentArray);
   
     // Create a structured message for GPT-4 Vision
     const messageForGPT4Vision: MessageForGPT4Vision = {
