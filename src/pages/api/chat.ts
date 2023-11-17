@@ -57,7 +57,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
       )
       console.log('EXTREME STUFFED PROMPT\n:', promptToSend)
     } else if (course_name == 'gpt4') {
-      console.log('NO CONTEXT STUFFING FOR /gpt4 slug')
+      console.log('NO CONTEXT STUFFING FOR /chat slug')
     }
     // else if (course_name == 'global' || course_name == 'search-all') {
     // todo

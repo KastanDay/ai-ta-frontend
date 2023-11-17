@@ -154,7 +154,7 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
         </span>
       ),
       icon: <MessageChatIcon />,
-      link: `/${getCurrentCourseName()}/gpt4`,
+      link: `/${getCurrentCourseName()}/chat`,
     },
     {
       name: (

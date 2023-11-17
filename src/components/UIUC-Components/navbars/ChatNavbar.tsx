@@ -224,7 +224,7 @@ const ChatNavbar = ({
     {
       name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
       icon: <MessageChatIcon />,
-      link: `/${getCurrentCourseName()}/gpt4`
+      link: `/${getCurrentCourseName()}/chat`
     },
     {
       name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>,

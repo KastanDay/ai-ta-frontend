@@ -77,7 +77,7 @@ export function LargeDropzone({
 
   const refreshOrRedirect = async (redirect_to_gpt_4: boolean) => {
     if (redirect_to_gpt_4) {
-      router.push(`/${courseName}/gpt4`)
+      router.push(`/${courseName}/chat`)
     }
     // refresh current page
     await new Promise((resolve) => setTimeout(resolve, 700))

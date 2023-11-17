@@ -126,7 +126,7 @@ const Home = () => {
     const courseMetadata = async () => {
       setIsLoading(true) // Set loading to true before fetching data
 
-      // Handle /gpt4 page
+      // Handle /gpt4 page (special non-course page)
       let curr_course_name = course_name
       if (curr_route_path == '/gpt4') {
         curr_course_name = 'gpt4'
