@@ -20,5 +20,6 @@ export const config = {
     '/',
     '/(api|trpc)(.*)',
     '/\\[course_name\\]/gpt4', // Add this line to match the route
+    '/\\[course_name\\]/chat', // Add this line to match the route
   ],
 }

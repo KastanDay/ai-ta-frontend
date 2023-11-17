@@ -1,5 +1,6 @@
 import Head from 'next/head'
-import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
+// import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
+import { fetchPresignedUrl } from '~/components/UIUC-Components/ContextCards'
 import { montserrat_heading } from 'fonts'
 import {
   // Card,
@@ -443,25 +444,6 @@ async function fetchCourseMetadata(course_name: string) {
   } catch (error) {
     console.error('Error fetching course metadata:', error)
     throw error
-  }
-}
-
-async function fetchPresignedUrl(
-  filePath: string,
-  // ResponseContentType: string,
-) {
-  try {
-    console.log('filePath', filePath)
-    // if filepath ends with .pdf, then ResponseContentType = 'application/pdf'
-
-    const response = await axios.post('/api/download', {
-      filePath,
-      // ResponseContentType,
-    })
-    return response.data.url
-  } catch (error) {
-    console.error('Error fetching presigned URL:', error)
-    return null
   }
 }
 

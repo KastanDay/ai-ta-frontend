@@ -51,8 +51,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       url: presignedUrl,
     })
   } catch (error) {
-    console.error('Error generating presigned URL:', error)
-    res.status(500).json({ message: 'Error generating presigned URL', error })
+    const e = error as { name: string };
+    if (e.name === 'NoSuchKey') {
+      console.error('File does not exist:', error);
+      res.status(404).json({ message: 'File does not exist' });
+    } else {
+      console.error('Error generating presigned URL:', error);
+      res.status(500).json({ message: 'Error generating presigned URL', error });
+    }
   }
 }
 

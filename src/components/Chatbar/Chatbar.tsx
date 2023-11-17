@@ -1,3 +1,6 @@
+import { useState } from 'react';
+
+
 import { useCallback, useContext, useEffect } from 'react'
 
 import { useTranslation } from 'next-i18next'
@@ -35,6 +38,9 @@ export const Chatbar = () => {
   const chatBarContextValue = useCreateReducer<ChatbarInitialState>({
     initialState,
   })
+
+  const [showCurrentCourseOnly, setShowCurrentCourseOnly] = useState(false);
+
 
   const {
     state: { conversations, showChatbar, defaultModelId, folders, pluginKeys },
@@ -153,6 +159,7 @@ export const Chatbar = () => {
       const lastConversation =
         updatedConversations[updatedConversations.length - 1]
       if (lastConversation) {
+        console.log("ARE WE updating the lastConversation here EVER??? USING lastConversation ", lastConversation)
         homeDispatch({
           field: 'selectedConversation',
           value: lastConversation,
@@ -161,6 +168,7 @@ export const Chatbar = () => {
         saveConversation(lastConversation)
       }
     } else {
+      console.log("ARE WE CREATING NEW CONVOS HERE EVER??? USING DEFAULT MODEL ID ", defaultModelId)
       defaultModelId &&
         homeDispatch({
           field: 'selectedConversation',
@@ -193,56 +201,29 @@ export const Chatbar = () => {
     }
   }
 
-  const getCurrentCourseName = () => {
-    return router.asPath.split('/')[1]
-  }
+  // SEARCH CONVO HISTORY (by message title, content and course-name)
+  // Also implements "Only show conversations from current course" toggle
   useEffect(() => {
-    const currentCourseName = getCurrentCourseName()
+    const currentCourseName = router.asPath.split('/')[1];
 
-    const filterByCourse = (conversation: Conversation) => {
-      return conversation.messages[0]?.contexts?.some(
-        (context) => context['course_name'] === currentCourseName,
-      ) // TODO: fix "course_name " to have no space :/ the SQL database is broken...
-    }
-    const filterBySearchTerm = (conversation: Conversation) => {
-      const searchable =
-        conversation.name.toLocaleLowerCase() +
-        ' ' +
-        conversation.messages.map((message) => message.content).join(' ')
-      return searchable.toLowerCase().includes(searchTerm.toLowerCase())
-    }
+    const filterBySearchTermOrCourse = (conversation: Conversation) => {
+      const courseMatch = conversation.messages[0]?.contexts?.some(
+        (context) => context['course_name '] === currentCourseName,
+      );
+      const searchTermMatch = conversation.messages[0]?.contexts?.[0]?.['course_name '].toLocaleLowerCase().includes(searchTerm.toLowerCase()) ||
+        conversation.messages.some((message) =>
+          message.content.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      const isMatch = (showCurrentCourseOnly ? courseMatch : true) && searchTermMatch;
+      return isMatch;
+    };
 
-    let filteredConversations = conversations.filter(filterByCourse)
-    if (!searchTerm) {
-      chatDispatch({
-        field: 'filteredConversations',
-        value: filteredConversations,
-      })
-    } else {
-      filteredConversations = filteredConversations.filter(filterBySearchTerm)
-    }
-  }, [searchTerm, conversations])
-
-  // useEffect(() => {
-  //   if (searchTerm) {
-  //     chatDispatch({
-  //       field: 'filteredConversations',
-  //       value: conversations.filter((conversation) => {
-  //         console.log(conversation);
-  //         const searchable =
-  //           conversation.name.toLocaleLowerCase() +
-  //           ' ' +
-  //           conversation.messages.map((message) => message.content).join(' ')
-  //         return searchable.toLowerCase().includes(searchTerm.toLowerCase())
-  //       }),
-  //     })
-  //   } else {
-  //     chatDispatch({
-  //       field: 'filteredConversations',
-  //       value: conversations,
-  //     })
-  //   }
-  // }, [searchTerm, conversations])
+    const filteredConversations = conversations.filter(filterBySearchTermOrCourse);
+    chatDispatch({
+      field: 'filteredConversations',
+      value: filteredConversations,
+    });
+  }, [searchTerm, conversations, showCurrentCourseOnly]);
 
   return (
     <ChatbarContext.Provider
@@ -268,6 +249,8 @@ export const Chatbar = () => {
         handleSearchTerm={(searchTerm: string) =>
           chatDispatch({ field: 'searchTerm', value: searchTerm })
         }
+        showCurrentCourseOnly={showCurrentCourseOnly}
+        onToggleCurrentCourseOnly={setShowCurrentCourseOnly}
         toggleOpen={handleToggleChatbar}
         handleCreateItem={handleNewConversation}
         handleCreateFolder={() => handleCreateFolder(t('New folder'), 'chat')}

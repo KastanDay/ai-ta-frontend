@@ -11,7 +11,6 @@ import { api } from '~/utils/api'
 
 import '~/styles/globals.css'
 import Maintenance from '~/components/UIUC-Components/Maintenance'
-import clearLocalStorageOnce from 'src/pages/api/UIUC-api/clearLocalStorage'
 
 import { useReportWebVitals } from 'next-axiom'
 
@@ -29,11 +28,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
   if (process.env.NEXT_PUBLIC_MAINTENANCE === 'true') {
     return <Maintenance />
   } else {
-    // ! This seems to cause huge bugs with streaming answers!
-    // if (typeof window !== 'undefined') { // Check for window object to make sure we are in the client
-    //   clearLocalStorageOnce(); // Clear local storage once per user
-    // }
-
     return (
       <ClerkProvider
         appearance={{
@@ -57,8 +51,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
               disabled: ['#2A2F36'],
               errorBackground: ['#dc2626'],
               errorBorder: ['#dc2626'],
-              // or replace default theme color
-              // blue: ['#E9EDFC', '#C1CCF6', '#99ABF0' /* ... */],
             },
             // primaryColor: 'aiPurple',
 

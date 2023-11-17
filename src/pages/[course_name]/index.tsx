@@ -74,7 +74,7 @@ const IfCourseExists: NextPage = () => {
           console.log(
             'in [course_name]/index.tsx - Course exists & user is properly authed, redirecting to gpt4 page',
           )
-          router.push(`/${course_name}/gpt4`)
+          router.push(`/${course_name}/chat`)
         } else {
           // 🚫 NOT AUTHED
           console.log(
