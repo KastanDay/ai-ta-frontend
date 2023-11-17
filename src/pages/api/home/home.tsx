@@ -82,21 +82,19 @@ const Home = () => {
     null,
   )
 
-  // TODO: CHECK HERE
   useEffect(() => {
-    console.debug("Models available: ", models)
-
-    const modelId = selectedConversation?.model.id
-
-    console.log('Home.tsx -- setting DefaultModelId -- avail models: ', models)
-    console.log('Home.tsx -- setting DefaultModelId -- from selectedConto:', modelId)
+    // Set model (to only available models)
     // First try to use selectedconversation model, if not available, use default model
+    const modelId = selectedConversation?.model.id
+    // 1. Default to GPT-4 (either OpenAI or Azure) if available
+    // Fallback 
 
-
-
+    // , otherwise fallback to the first model in the list (random)
     const defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
     let model = models.find((model) => model.id === modelId) || defaultModel
 
+    console.debug('Home.tsx -- setting DefaultModelId -- avail models: ', models)
+    console.debug('Home.tsx -- setting DefaultModelId -- from selectedConto:', modelId)
 
     if (!model) {
       console.log('NO MODELS FOUND -- Falling back to GPT-4 standard: ', OpenAIModels['gpt-4'])
@@ -104,10 +102,6 @@ const Home = () => {
     }
     console.log('Home.tsx -- setting DefaultModelId SETTING IT TO: ', model)
 
-    // Default to GPT-4 (either OpenAI or Azure), otherwise fallback to the first model in the list (random)
-    // let defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
-    // let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
-    // Dispatch default model
     dispatch({
       field: 'defaultModelId',
       value: model.id,
@@ -115,10 +109,9 @@ const Home = () => {
 
     // Ensure current convo has a valid model
     if (selectedConversation) {
-      console.log("IN ENSURE CURRENT CONVO HAS A VALID MODEL, USING MODEL: ", model)
       const convo_with_valid_model = selectedConversation
       convo_with_valid_model.model = model
-      console.log("IN ENSURE CURRENT CONVO HAS A VALID MODEL, USING MODEL (after): ", convo_with_valid_model.model)
+      console.debug("IN ENSURE CURRENT CONVO HAS A VALID MODEL, USING MODEL: ", model)
       dispatch({
         field: 'selectedConversation',
         value: convo_with_valid_model,
@@ -164,48 +157,9 @@ const Home = () => {
     }
   }, [selectedConversation, conversations])
 
-  // THIS CODE BELOW hints at HOW TO FILTER sidebar conversation history if they don't match the current course.
-
-  // try {
-  //   if (isCourseMetadataLoading) return
-  //   // TODO: FIX TYPES HERE. see this issue: https://github.com/UIUC-Chatbot/ai-ta-backend/issues/87
-  //   if (
-  //     course_metadata &&
-  //     selectedConversation &&
-  //     selectedConversation.messages &&
-  //     selectedConversation.messages.length > 0 &&
-  //     selectedConversation?.messages[0]?.contexts &&
-  //     selectedConversation.messages[0].contexts.length > 0 &&
-  //     // eslint-disable-next-line
-  //     // @ts-ignore
-  //     selectedConversation?.messages[0]?.contexts[0]?.['course_name '] &&
-  //     course_name !==
-  //     // eslint-disable-next-line
-  //     // @ts-ignore
-  //     selectedConversation.messages[0].contexts[0]['course_name ']
-  //   ) {
-  //     handleNewConversation()
-  //     console.log(
-  //       'Auto-created new conversation. Old course_name',
-  //       // eslint-disable-next-line
-  //       // @ts-ignore
-  //       selectedConversation.messages[0].contexts[0]['course_name '],
-  //       'new course_name',
-  //       course_name,
-  //     )
-  // console.log("PASSED CHECK, SHOULD CREATE NEW CONVO ")
-  // console.log("selectedConversation.messages[0].contexts[0].course_name", selectedConversation.messages[0].contexts[0])
-  //   }
-  // } catch (error) {
-  //   console.error('An error occurred in useEffect: ', error)
-  // }
-  // }, [])
-
   const clerk_user_outer = useUser()
-  // const course_exists = course_metadata != null
 
   useEffect(() => {
-    // console.log("In useEffect for clerk_user_outer, home.tsx, clerk_user_outer: ", clerk_user_outer)
     if (!clerk_user_outer.isLoaded || isCourseMetadataLoading) {
       return
     }
@@ -364,23 +318,12 @@ const Home = () => {
   const handleNewConversation = () => {
     const lastConversation = conversations[conversations.length - 1]
     console.debug("Models available: ", models)
-    // let defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
-    // let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
-    // if (!defaultModel) {
-    //   defaultModel = OpenAIModels['gpt-4']
-    // }
     console.debug("IN NEW CONVERSATION Using model: ", defaultModelId)
 
     const newConversation: Conversation = {
       id: uuidv4(),
       name: t('New Conversation'),
       messages: [],
-      // model: lastConversation?.model || {
-      //   id: defaultModel?.id as string,
-      //   name: defaultModel?.name as string,
-      //   maxLength: defaultModel?.maxLength as number,
-      //   tokenLimit: defaultModel?.tokenLimit as number,
-      // },
       model: OpenAIModels[defaultModelId],
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
@@ -435,25 +378,6 @@ const Home = () => {
   }, [defaultModelId, serverSidePluginKeysSet]) // serverSideApiKeyIsSet,
 
   // ON LOAD --------------------------------------------
-
-
-  // useEffect(() => {
-  //   // JUST FOR TESTING 
-  //   console.log("Inside my useEffect for conversations, home.tsx, conversations: ", conversations)
-  //   if (conversations) {
-  //     let counter = 0;
-  //     conversations.forEach((conversation) => {
-  //       // print out the conversation
-  //       console.log("Conversation: ", counter)
-  //       console.log("Conversation model: ", conversation.name)
-  //       console.log("Conversation model: ", conversation.model)
-  //       counter++;
-  //     })
-  //   }
-
-  // }, [conversations])
-
-
 
   useEffect(() => {
     if (isInitialSetupDone) return
@@ -510,9 +434,6 @@ const Home = () => {
         parsedSelectedConversation,
       )
 
-      // Ensure selected conversation has a valid model name, given available models. 
-
-
       dispatch({
         field: 'selectedConversation',
         value: cleanedSelectedConversation,
@@ -539,11 +460,9 @@ const Home = () => {
       })
     }
     setIsInitialSetupDone(true)
-  }, [dispatch, models, conversations, isInitialSetupDone])
-  // }, [dispatch, models, conversations]) // ! CERTAINLY `conversations` is causing the infinite loop... but is needed for convo saving
-  // ! serverSidePluginKeysSet, removed 
-
+  }, [dispatch, models, conversations, isInitialSetupDone]) // ! serverSidePluginKeysSet, removed 
   // }, [defaultModelId, dispatch, serverSidePluginKeysSet, models, conversations]) // original!
+
   if (isLoading) {
     // show blank page during loading
     return <></>

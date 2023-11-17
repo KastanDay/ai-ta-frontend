@@ -25,25 +25,15 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
 
     const { t } = useTranslation('chat')
 
-    // console.debug("Models available: ", models)
-    // let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
-    // if (!defaultModel) {
-    //   defaultModel = OpenAIModels['gpt-4']
-    // }
-    // console.debug("In ModelSelect Using model: ", defaultModel)
-
-    // On page load, run handleModelClick with the model from the selectedConversation
-    // useEffect(() => {
-    // }, []);
-
     const handleModelClick = (modelId: string) => {
-      console.log('handleModelClick clicked:', modelId)
-      console.log('handleModelClick avail models: ', models)
+      console.debug('handleModelClick clicked:', modelId)
+      console.debug('handleModelClick avail models: ', models)
+
       // First try to use selectedconversation model, if not available, use default model
       const defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
       const model = models.find((model) => model.id === modelId) || defaultModel
 
-      console.log('handleModelClick SETTING IT TO: ', model)
+      console.debug('handleModelClick SETTING IT TO: ', model)
 
       selectedConversation &&
         handleUpdateConversation(selectedConversation, {
@@ -52,20 +42,6 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
         })
     }
 
-    // Ensure model is valid for this env, if already set in the convo
-    if (selectedConversation?.model.id) {
-      // handleModelClick(selectedConversation.model.id);
-
-      // Try GPT-4 fist, fallback to first model. Then fallback to GPT-4 again if no models.
-      const defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
-      const model = models.find((model) => model.id === selectedConversation.model.id) || defaultModel
-
-      console.log('Ensure model is valid for this env: ', model)
-
-    }
-
-    console.log('BOTTOM OF ModelSelect.tsx selectedConversation: ', selectedConversation?.model.id)
-    console.log('BOTTOM OF ModelSelect.tsx selectedConversation: ', defaultModelId)
     return (
       <div
         className="flex flex-col md:mx-auto md:max-w-xl md:gap-6 md:py-3 md:pt-6 lg:w-[30rem] lg:max-w-2xl lg:px-0 xl:max-w-3xl"
