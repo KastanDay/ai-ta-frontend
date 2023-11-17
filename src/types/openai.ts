@@ -14,7 +14,7 @@ export enum OpenAIModelID {
   GPT_4_1106_PREVIEW = 'gpt-4-1106-preview',
   // GPT_4_32K = 'gpt-4-32k',
   // Azure (gpt-4 and gpt-4-32k is same in openai and azure)
-  // GPT_4_AZURE = 'gpt-4-from-canada-east',
+  GPT_4_AZURE = 'gpt-4-from-canada-east',
   // GPT_3_5_AZ = 'gpt-35-turbo',
   // GPT_3_5_16k_AZURE = 'gpt-35-turbo-16k'
 }
@@ -67,10 +67,10 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   //   maxLength: 96000,
   //   tokenLimit: 32768,
   // },
-  // [OpenAIModelID.GPT_4_AZURE]: {
-  //   id: OpenAIModelID.GPT_4_AZURE,
-  //   name: 'GPT-4 Azure',
-  //   maxLength: 24000,
-  //   tokenLimit: 8192,
-  // },
+  [OpenAIModelID.GPT_4_AZURE]: {
+    id: OpenAIModelID.GPT_4_AZURE,
+    name: 'GPT-4 Azure',
+    maxLength: 24000,
+    tokenLimit: 8192,
+  },
 }

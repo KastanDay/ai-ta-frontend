@@ -165,6 +165,14 @@ const ChatNavbar = ({
     dispatch: homeDispatch,
   } = useContext(HomeContext)
 
+  // const [modelName, setModelName] = useState(selectedConversation?.model.name)
+
+  // useEffect(() => {
+  //   console.log("&&&&&&&& IN ChatNavbar useEffect, selectedConversation is ", selectedConversation)
+  //   console.log("&&&&&&&& IN ChatNavbar useEffect, selectedConversation?.model.name is ", selectedConversation?.model.name)
+  //   setModelName(selectedConversation?.model.name)
+  // }, [selectedConversation])
+
   const modelSettingsContainer = useRef<HTMLDivElement | null>(null)
   const topBarRef = useRef<HTMLDivElement | null>(null)
   const getCurrentCourseName = () => {
@@ -407,6 +415,7 @@ const ChatNavbar = ({
                         style={{ marginLeft: '5px', whiteSpace: 'nowrap' }}
                         className={`${montserrat_heading.variable} font-montserratHeading`}
                       >
+                        {/* Model: {modelName} */}
                         Model: {selectedConversation?.model.name}
                       </span>
                     </span>

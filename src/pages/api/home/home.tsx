@@ -82,6 +82,52 @@ const Home = () => {
     null,
   )
 
+  // TODO: CHECK HERE
+  useEffect(() => {
+    console.debug("Models available: ", models)
+
+    const modelId = selectedConversation?.model.id
+
+    console.log('Home.tsx -- setting DefaultModelId -- avail models: ', models)
+    console.log('Home.tsx -- setting DefaultModelId -- from selectedConto:', modelId)
+    // First try to use selectedconversation model, if not available, use default model
+
+
+
+    let defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
+    let model = models.find((model) => model.id === modelId) || defaultModel
+
+
+    if (!model) {
+      console.log('NO MODELS FOUND -- Falling back to GPT-4 standard: ', OpenAIModels['gpt-4'])
+      model = OpenAIModels['gpt-4']
+    }
+    console.log('Home.tsx -- setting DefaultModelId SETTING IT TO: ', model)
+
+    // Default to GPT-4 (either OpenAI or Azure), otherwise fallback to the first model in the list (random)
+    // let defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
+    // let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
+    // Dispatch default model
+    dispatch({
+      field: 'defaultModelId',
+      value: model.id,
+    })
+
+    // Ensure current convo has a valid model
+    if (selectedConversation) {
+      console.log("IN ENSURE CURRENT CONVO HAS A VALID MODEL, USING MODEL: ", model)
+      let convo_with_valid_model = selectedConversation
+      convo_with_valid_model.model = model
+      console.log("IN ENSURE CURRENT CONVO HAS A VALID MODEL, USING MODEL (after): ", convo_with_valid_model.model)
+      dispatch({
+        field: 'selectedConversation',
+        value: convo_with_valid_model,
+      })
+    }
+    console.debug("In effect of home Using model: ", defaultModel)
+  }, [models])
+
+
   useEffect(() => {
     if (!course_name && curr_route_path != '/gpt4') return
     const courseMetadata = async () => {
@@ -318,11 +364,12 @@ const Home = () => {
   const handleNewConversation = () => {
     const lastConversation = conversations[conversations.length - 1]
     console.debug("Models available: ", models)
-    let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
-    if (!defaultModel) {
-      defaultModel = OpenAIModels['gpt-4']
-    }
-    console.debug("Using model: ", defaultModel)
+    // let defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
+    // let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
+    // if (!defaultModel) {
+    //   defaultModel = OpenAIModels['gpt-4']
+    // }
+    console.debug("IN NEW CONVERSATION Using model: ", defaultModelId)
 
     const newConversation: Conversation = {
       id: uuidv4(),
@@ -334,7 +381,7 @@ const Home = () => {
       //   maxLength: defaultModel?.maxLength as number,
       //   tokenLimit: defaultModel?.tokenLimit as number,
       // },
-      model: lastConversation?.model || defaultModel,
+      model: OpenAIModels[defaultModelId],
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
@@ -462,6 +509,9 @@ const Home = () => {
       const cleanedSelectedConversation = cleanSelectedConversation(
         parsedSelectedConversation,
       )
+
+      // Ensure selected conversation has a valid model name, given available models. 
+
 
       dispatch({
         field: 'selectedConversation',
