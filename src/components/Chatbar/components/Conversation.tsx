@@ -32,6 +32,9 @@ export const ConversationComponent = ({ conversation }: Props) => {
     handleUpdateConversation,
   } = useContext(HomeContext)
 
+  const courseName = conversation.messages[0]?.contexts?.[0]?.['course_name '];
+
+
   const { handleDeleteConversation } = useContext(ChatbarContext)
 
   const [isDeleting, setIsDeleting] = useState(false)
@@ -116,25 +119,33 @@ export const ConversationComponent = ({ conversation }: Props) => {
         </div>
       ) : (
         <button
-          className={`flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-sm transition-colors duration-200 hover:bg-[#343541]/90 ${
-            messageIsStreaming ? 'disabled:cursor-not-allowed' : ''
-          } ${
-            selectedConversation?.id === conversation.id
+          className={`flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-sm transition-colors duration-200 hover:bg-[#343541]/90 ${messageIsStreaming ? 'disabled:cursor-not-allowed' : ''
+            } ${selectedConversation?.id === conversation.id
               ? 'bg-[#343541]/90'
               : ''
-          }`}
+            }`}
           onClick={() => handleSelectConversation(conversation)}
           disabled={messageIsStreaming}
           draggable="true"
           onDragStart={(e) => handleDragStart(e, conversation)}
         >
           <IconMessage size={18} />
+          {/* <div
+            className={`relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all text-left text-[12.5px] leading-3 ${selectedConversation?.id === conversation.id ? 'pr-12' : 'pr-1'
+              }`}
+          > */}
           <div
-            className={`relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all text-left text-[12.5px] leading-3 ${
-              selectedConversation?.id === conversation.id ? 'pr-12' : 'pr-1'
-            }`}
+            className={`relative flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all text-left text-[12.5px] leading-3 ${selectedConversation?.id === conversation.id ? 'pr-12' : 'pr-1'
+              }`}
           >
             {conversation.name}
+            {/* Add a new div to display the course_name */}
+            {courseName && (
+              <div className="text-xs text-gray-400">
+                {courseName.trim()}
+              </div>
+            )}
+
           </div>
         </button>
       )}

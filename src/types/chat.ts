@@ -18,6 +18,7 @@ export interface ContextWithMetadata {
   text: string
   readable_filename: string
   course_name: string
+  'course_name ': string
   s3_path: string
   pagenumber: string
   url: string
@@ -41,7 +42,7 @@ export interface Conversation {
   id: string
   name: string
   messages: Message[]
-  model: OpenAIModel
+  model: OpenAIModel // ! consider allowing null models: | null
   prompt: string
   temperature: number
   folderId: string | null

@@ -1,6 +1,8 @@
 import { IconFolderPlus, IconMistOff, IconPlus } from '@tabler/icons-react'
 import { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Switch } from '@mantine/core';
+
 
 import {
   CloseSidebarButton,
@@ -17,6 +19,8 @@ interface Props<T> {
   itemComponent: ReactNode
   folderComponent: ReactNode
   footerComponent?: ReactNode
+  showCurrentCourseOnly: boolean;
+  onToggleCurrentCourseOnly: (checked: boolean) => void;
   searchTerm: string
   handleSearchTerm: (searchTerm: string) => void
   toggleOpen: () => void
@@ -24,6 +28,7 @@ interface Props<T> {
   handleCreateFolder: () => void
   handleDrop: (e: any) => void
 }
+
 
 const Sidebar = <T,>({
   isOpen,
@@ -34,6 +39,8 @@ const Sidebar = <T,>({
   folderComponent,
   footerComponent,
   searchTerm,
+  showCurrentCourseOnly,
+  onToggleCurrentCourseOnly,
   handleSearchTerm,
   toggleOpen,
   handleCreateItem,
@@ -83,6 +90,15 @@ const Sidebar = <T,>({
           searchTerm={searchTerm}
           onSearch={handleSearchTerm}
         />
+        {/* Only show filter option on "Convo history bar (left sidebar), NOT in prompt library (right sidebar)" */}
+        {side === 'right' ? null : (
+          <Switch
+            label={t('Only show conversations from current project')}
+            checked={showCurrentCourseOnly}
+            onChange={(event) => onToggleCurrentCourseOnly(event.currentTarget.checked)}
+            color='violet.7'
+          />
+        )}
 
         <div className="flex-grow overflow-auto">
           {items?.length > 0 && (

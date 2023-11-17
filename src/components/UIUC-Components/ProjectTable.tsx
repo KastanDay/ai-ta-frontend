@@ -54,7 +54,7 @@ const ListProjectTable: React.FC = () => {
                 return (
                   <StyledRow
                     key={courseName}
-                    onClick={() => router.push(`/${courseName}/gpt4`)}
+                    onClick={() => router.push(`/${courseName}/chat`)}
                     style={{ cursor: 'pointer' }}
                   >
                     <td>{courseName}</td>

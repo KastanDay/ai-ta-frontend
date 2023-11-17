@@ -40,7 +40,7 @@ export default function ResumeToChat({
 
   const handleClick = () => {
     setIsLoading(true)
-    router.push(`/${course_name}/gpt4`)
+    router.push(`/${course_name}/chat`)
   }
 
   if (!course_name) {

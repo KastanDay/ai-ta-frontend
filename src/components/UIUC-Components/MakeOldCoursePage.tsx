@@ -47,6 +47,7 @@ const MakeOldCoursePage = ({
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
+  const [bannerUrl, setBannerUrl] = useState<string>('')
   const [currentEmail, setCurrentEmail] = useState('')
 
   const router = useRouter()
@@ -68,6 +69,18 @@ const MakeOldCoursePage = ({
           metadata.is_private = JSON.parse(
             metadata.is_private as unknown as string,
           )
+        }
+
+        // fetch banner image url
+        console.log("Getting banner image: ", metadata.banner_image_s3)
+        if (metadata?.banner_image_s3 && metadata.banner_image_s3 !== '') {
+          try {
+            const url = await fetchPresignedUrl(metadata.banner_image_s3)
+            setBannerUrl(url)
+            console.log("Got banner image: ", url)
+          } catch (error) {
+            console.error("Error fetching banner image: ", error)
+          }
         }
         setCourseMetadata(metadata)
       } catch (error) {
@@ -98,14 +111,13 @@ const MakeOldCoursePage = ({
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-        // current_email={currentEmail as string}
       />
     )
   }
 
   return (
     <>
-      <Navbar course_name={course_name} />
+      <Navbar course_name={course_name} bannerUrl={bannerUrl} />
 
       <Head>
         <title>{course_name}</title>
@@ -304,15 +316,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colorScheme === 'dark'
-                      ? theme.colors.gray[2]
-                      : theme.colors.gray[1]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colorScheme === 'dark'
+                        ? theme.colors.gray[2]
+                        : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colors.gray[8]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colors.gray[8]
                 }}
               >
                 <IconDownload className="h-5 w-5 text-gray-800" />
@@ -330,15 +342,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colorScheme === 'dark'
-                      ? theme.colors.gray[2]
-                      : theme.colors.gray[1]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colorScheme === 'dark'
+                        ? theme.colors.gray[2]
+                        : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colors.red[6]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colors.red[6]
                 }}
               >
                 <IconTrash className="h-5 w-5 text-red-600" />
@@ -375,8 +387,7 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${
-          response.statusText || response.status
+        `Error fetching course metadata: ${response.statusText || response.status
         }`,
       )
     }

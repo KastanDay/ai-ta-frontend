@@ -57,7 +57,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
       )
       console.log('EXTREME STUFFED PROMPT\n:', promptToSend)
     } else if (course_name == 'gpt4') {
-      console.log('NO CONTEXT STUFFING FOR /gpt4 slug')
+      console.log('NO CONTEXT STUFFING FOR /chat slug')
     }
     // else if (course_name == 'global' || course_name == 'search-all') {
     // todo
@@ -96,8 +96,8 @@ const handler = async (req: Request): Promise<NextResponse> => {
     }
     encoding.free() // keep this
 
-    console.log('Prompt being sent to OpenAI: ', promptToSend)
-    console.log('Message history being sent to OpenAI: ', messagesToSend)
+    // console.log('Prompt being sent to OpenAI: ', promptToSend)
+    // console.log('Message history being sent to OpenAI: ', messagesToSend)
 
     // Add custom instructions to system prompt
     const systemPrompt =
@@ -115,7 +115,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
   } catch (error) {
     if (error instanceof OpenAIError) {
       const { name, message } = error
-      console.log('Printing message here', message)
+      console.error('OpenAI Completion Error', message)
       const resp = NextResponse.json(
         {
           statusCode: 400,
