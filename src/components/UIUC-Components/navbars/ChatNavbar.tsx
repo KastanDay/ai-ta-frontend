@@ -165,6 +165,14 @@ const ChatNavbar = ({
     dispatch: homeDispatch,
   } = useContext(HomeContext)
 
+  // const [modelName, setModelName] = useState(selectedConversation?.model.name)
+
+  // useEffect(() => {
+  //   console.log("&&&&&&&& IN ChatNavbar useEffect, selectedConversation is ", selectedConversation)
+  //   console.log("&&&&&&&& IN ChatNavbar useEffect, selectedConversation?.model.name is ", selectedConversation?.model.name)
+  //   setModelName(selectedConversation?.model.name)
+  // }, [selectedConversation])
+
   const modelSettingsContainer = useRef<HTMLDivElement | null>(null)
   const topBarRef = useRef<HTMLDivElement | null>(null)
   const getCurrentCourseName = () => {
@@ -212,43 +220,23 @@ const ChatNavbar = ({
     toggle()
   }
 
-  const items = isAdminOrOwner
-    ? [
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Chat
-            </span>
-          ),
-          icon: <MessageChatIcon />,
-          link: `/${getCurrentCourseName()}/gpt4`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Materials
-            </span>
-          ),
-          icon: <FolderIcon />,
-          link: `/${getCurrentCourseName()}/materials`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Analysis
-            </span>
-          ),
-          icon: <ReportIcon />,
-          link: `/${getCurrentCourseName()}/query-analysis`,
-        },
-      ]
-    : []
+  const items = isAdminOrOwner ? [
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
+      icon: <MessageChatIcon />,
+      link: `/${getCurrentCourseName()}/chat`
+    },
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>,
+      icon: <FolderIcon />,
+      link: `/${getCurrentCourseName()}/materials`
+    },
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
+      icon: <ReportIcon />,
+      link: `/${getCurrentCourseName()}/query-analysis`
+    }
+  ] : [];
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -323,6 +311,8 @@ const ChatNavbar = ({
                     width={2000}
                     height={2000}
                     alt="The course creator uploaded a logo for this chatbot."
+                    aria-label="The course creator uploaded a logo for this chatbot."
+                    onError={(e) => e.currentTarget.style.display = 'none'} // display nothing if image fails
                   />
                 </div>
               )}
@@ -432,6 +422,7 @@ const ChatNavbar = ({
                         style={{ marginLeft: '5px', whiteSpace: 'nowrap' }}
                         className={`${montserrat_heading.variable} font-montserratHeading`}
                       >
+                        {/* Model: {modelName} */}
                         Model: {selectedConversation?.model.name}
                       </span>
                     </span>

@@ -154,7 +154,7 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
         </span>
       ),
       icon: <MessageChatIcon />,
-      link: `/${getCurrentCourseName()}/gpt4`,
+      link: `/${getCurrentCourseName()}/chat`,
     },
     {
       name: (
@@ -204,7 +204,7 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
               </Link>
             </div>
 
-            {/* {bannerUrl && (
+            {bannerUrl && (
               <div style={{ ...styles.logoContainerBox }}>
                 <Image
                   src={bannerUrl}
@@ -215,7 +215,7 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                   alt="The course creator uploaded a logo for this chatbot."
                 />
               </div>
-            )} */}
+            )}
 
             <Transition
               transition="pop-top-right"

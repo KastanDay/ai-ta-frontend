@@ -40,6 +40,11 @@ export const OpenAIStream = async (
   key: string,
   messages: OpenAIChatMessage[],
 ) => {
+
+  console.debug("In OpenAIStream, model: ", model)
+  messages.forEach((message, index) => {
+    console.log(`Message ${index}:`, message.role, message.content)
+  })
   let apiKey = key
   let apiType = OPENAI_API_TYPE
   let endpoint = OPENAI_API_HOST
@@ -66,6 +71,24 @@ export const OpenAIStream = async (
     const deploymentName = process.env.AZURE_OPENAI_ENGINE
     url = `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${OPENAI_API_VERSION}`
   }
+
+  // ! DEBUGGING to view the full message as sent to OpenAI.
+  // const final_request_to_openai = JSON.stringify({
+  //   ...(OPENAI_API_TYPE === 'openai' && { model: model.id }),
+  //   messages: [
+  //     {
+  //       role: 'system',
+  //       content: systemPrompt,
+  //     },
+  //     ...messages,
+  //   ],
+  //   max_tokens: 1000,
+  //   temperature: temperature,
+  //   stream: true,
+  // })
+  // console.debug("Final request sent to OpenAI ", JSON.stringify(JSON.parse(final_request_to_openai), null, 2))
+
+
   const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -77,8 +100,8 @@ export const OpenAIStream = async (
       }),
       ...(apiType === 'openai' &&
         OPENAI_ORGANIZATION && {
-          'OpenAI-Organization': OPENAI_ORGANIZATION,
-        }),
+        'OpenAI-Organization': OPENAI_ORGANIZATION,
+      }),
     },
     method: 'POST',
     body: JSON.stringify({
@@ -110,8 +133,7 @@ export const OpenAIStream = async (
       )
     } else {
       throw new Error(
-        `OpenAI API returned an error: ${
-          decoder.decode(result?.value) || result.statusText
+        `OpenAI API returned an error: ${decoder.decode(result?.value) || result.statusText
         }`,
       )
     }

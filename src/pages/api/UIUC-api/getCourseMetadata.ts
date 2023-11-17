@@ -42,9 +42,9 @@ export default async (req: any, res: any) => {
         course_metadata.is_private as unknown as string,
       )
     }
-    log.debug('getCourseMetadata() success', {
-      course_metadata: course_metadata,
-    })
+    // log.debug('getCourseMetadata() success', {
+    //   course_metadata: course_metadata,
+    // })
     return NextResponse.json({ course_metadata: course_metadata })
   } catch (error) {
     console.log('Error occurred while fetching courseMetadata', error)
