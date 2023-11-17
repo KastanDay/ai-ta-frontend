@@ -159,53 +159,93 @@ export const ChatInput = ({
     setContent(value)
     updatePromptListVisibility(value)
   }
+  // Assuming Message, Role, and Plugin types are already defined in your codebase
+  // Add a new type for the content of the message that includes image_url
+  type Content = {
+    type: string;
+    text?: string;
+    image_url?: {
+      url: string;
+    };
+  };
 
+  type Role = 'user' | 'system'; // Add other roles as needed
+
+  // Adjust the Message type as necessary
+  interface MessageForGPT4Vision {
+    role: Role;
+    content: string; // Assuming the Message type expects content to be a string
+  }
+  
   const handleSend = async () => {
     if (messageIsStreaming) {
       return;
     }
-  
-    let finalContent = content;
-  
+
+    let textContent = content;
+    let imageContent: Content[] = []; // Explicitly declare the type for imageContent
+
     if (imageFiles.length > 0 && !uploadingImage) {
       setUploadingImage(true);
       try {
         // Upload all images and get their URLs
-        const imageUrls = await Promise.all(imageFiles.map(file => 
-          uploadToS3(file).catch(error => {
+        const imageUrls = await Promise.all(imageFiles.map(async (file) => {
+          const uploadedImageUrl = await uploadToS3(file).catch(error => {
             console.error('Upload failed for file', file.name, error);
+            setImageError(`Upload failed for file: ${file.name}`);
             return ''; // Return a placeholder or an empty string if the upload fails
-          })
-        ));
-          
-        // Append all image URLs to the message content
-        finalContent += imageUrls.map(url => `\n![image](${url})`).join('');
-  
+          });
+          return uploadedImageUrl;
+        }));
+
+        // Construct image content for the message
+        imageContent = imageUrls
+          .filter((url): url is string => url !== '') // Type-guard to filter out empty strings
+          .map(url => ({
+            type: "image_url",
+            image_url: { url }
+          }));
+
         // Clear the files after uploading
         setImageFiles([]);
         setImagePreviewUrls([]);
       } catch (error) {
         console.error('Error uploading files:', error);
         setImageError('Error uploading files');
-        showToastOnInvalidImage();
       } finally {
         setUploadingImage(false);
       }
     }
 
-    if (!finalContent) {
-      alert(t('Please enter a message'));
+    if (!textContent && imageContent.length === 0) {
+      alert(t('Please enter a message or upload an image'));
       return;
     }
+    
+    // Construct the content array
+    let contentArray: Content[] = [
+      ...(textContent ? [{ type: "text", text: textContent }] : []),
+      ...imageContent
+    ];
 
-    onSend({ role: 'user', content: finalContent }, plugin);
+    // Serialize the content array into a string to match the expected Message type
+    let serializedContent = JSON.stringify(contentArray);
+
+    // Create a structured message for GPT-4 Vision
+    const messageForGPT4Vision: MessageForGPT4Vision = {
+      role: 'user',
+      content: serializedContent
+    };
+
+  
+
+    // Use the onSend prop to send the structured message
+    onSend(messageForGPT4Vision as unknown as Message, plugin); // Cast to unknown then to Message if needed
+
+    // Reset states
     setContent('');
     setPlugin(null);
-    setImagePreviews([]); // This will clear the image previews
-
-    if (window.innerWidth < 640 && textareaRef && textareaRef.current) {
-      textareaRef.current.blur();
-    }
+    setImagePreviews([]);
   };
 
   const handleStopConversation = () => {
