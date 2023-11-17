@@ -94,7 +94,7 @@ const Home = () => {
 
 
 
-    let defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
+    const defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
     let model = models.find((model) => model.id === modelId) || defaultModel
 
 
@@ -116,7 +116,7 @@ const Home = () => {
     // Ensure current convo has a valid model
     if (selectedConversation) {
       console.log("IN ENSURE CURRENT CONVO HAS A VALID MODEL, USING MODEL: ", model)
-      let convo_with_valid_model = selectedConversation
+      const convo_with_valid_model = selectedConversation
       convo_with_valid_model.model = model
       console.log("IN ENSURE CURRENT CONVO HAS A VALID MODEL, USING MODEL (after): ", convo_with_valid_model.model)
       dispatch({

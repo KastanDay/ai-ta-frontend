@@ -40,8 +40,8 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       console.log('handleModelClick clicked:', modelId)
       console.log('handleModelClick avail models: ', models)
       // First try to use selectedconversation model, if not available, use default model
-      let defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
-      let model = models.find((model) => model.id === modelId) || defaultModel
+      const defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
+      const model = models.find((model) => model.id === modelId) || defaultModel
 
       console.log('handleModelClick SETTING IT TO: ', model)
 
@@ -57,8 +57,8 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       // handleModelClick(selectedConversation.model.id);
 
       // Try GPT-4 fist, fallback to first model. Then fallback to GPT-4 again if no models.
-      let defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
-      let model = models.find((model) => model.id === selectedConversation.model.id) || defaultModel
+      const defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
+      const model = models.find((model) => model.id === selectedConversation.model.id) || defaultModel
 
       console.log('Ensure model is valid for this env: ', model)
 
