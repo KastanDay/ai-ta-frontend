@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 
@@ -11,7 +12,9 @@ const Gpt4 = () => {
         return router.asPath.slice(1).split('/')[0] as string
     }
 
-    router.replace(`/${getCurrentPageName()}/chat`)
+    useEffect(() => {
+        router.replace(`/${getCurrentPageName()}/chat`)
+    }, [])
 
     return (
         <MainPageBackground>
