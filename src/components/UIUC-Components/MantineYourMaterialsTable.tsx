@@ -7,6 +7,8 @@ import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { modals, openConfirmModal, useModals, ModalsProvider } from '@mantine/modals';
+import { showToastOnFileDeleted } from './MakeOldCoursePage';
+import axios from 'axios';
 
 
 // import { employees } from '~/data';
@@ -42,7 +44,7 @@ export async function getPresignedUrl(s3_path: string) {
 }
 
 export function ComplexUsageExample({ course_materials }: CourseFilesListProps) {
-  const { classes } = useStyles();
+  const { classes, theme } = useStyles();
 
   const router = useRouter();
   const getCurrentPageName = (): string => {
@@ -98,17 +100,32 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
   }, [debouncedQuery, course_materials]);
 
 
-  // const openModal = () => modals.openConfirmModal({
-  //   title: 'Please confirm your action',
-  //   children: (
-  //     <Text size="sm">
-  //       {`File Name: ${materials}`}
-  //     </Text>
-  //   ),
-  //   labels: { confirm: 'Close', cancel: 'Cancel' },
-  //   // onCancel: () => console.log('Cancel'),
-  //   // onConfirm: () => console.log('Confirmed'),
-  // });
+
+  // const CourseFilesList = ({ course_materials }: CourseFilesListProps) => {
+  //   const router = useRouter()
+  // const { classes, theme } = useStyles()
+  const handleDelete = async (
+    course_name: string,
+    s3_path: string,
+    url: string,
+  ) => {
+    try {
+      const API_URL = 'https://flask-production-751b.up.railway.app'
+      const response = await axios.delete(`${API_URL}/delete`, {
+        params: { course_name, s3_path, url },
+      })
+      // Handle successful deletion, show a success message
+      showToastOnFileDeleted(theme)
+      // Skip refreshing the page for now, for better UX let them click a bunch then manually refresh.
+      // await router.push(router.asPath)
+      await router.reload()
+    } catch (error) {
+      console.error(error)
+      // Show error message
+      showToastOnFileDeleted(theme, true)
+    }
+    // }
+  }
 
   return (
     // <MantineProvider>
@@ -120,7 +137,7 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
       styles={{
         header: { color: 'white' },
       }}
-      height="100%"
+      height="60vh"
       withColumnBorders
       records={materials}
       columns={
@@ -205,15 +222,16 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
                   console.log(urlToOpen);
                   window.open(urlToOpen, '_blank');
                 }
-                else {
+                else if (action === 'delete') {
                   modals.openConfirmModal({
                     title: 'Please confirm your action',
                     children: (
                       <Text size="sm" style={{ color: 'white' }}>
-                        {`File Name: ${materials.s3_path ? materials.s3_path : materials.url}`}
+                        {`Are you sure you want to delete the file: ${materials.s3_path ? materials.s3_path : materials.url}`}
                       </Text>
                     ),
-                    labels: { confirm: 'Close', cancel: 'Cancel' },
+                    labels: { confirm: 'Delete', cancel: 'Cancel' },
+                    onConfirm: () => handleDelete(materials.course_name, materials.s3_path, materials.url),
                   });
                 }
               };
@@ -229,14 +247,14 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
                     >
                       <IconEye size={16} />
                     </ActionIcon>
-                    {/* <ActionIcon
+                    <ActionIcon
                       size="sm"
                       variant="subtle"
                       color="red"
                       onClick={() => openModal('delete')}
                     >
                       <IconTrash size={16} />
-                    </ActionIcon> */}
+                    </ActionIcon>
                   </Group>
                 </ModalsProvider>
               );
