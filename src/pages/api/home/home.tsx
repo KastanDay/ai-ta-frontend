@@ -65,7 +65,7 @@ const Home = () => {
       selectedConversation,
       prompts,
       temperature,
-      models
+      models,
     },
     dispatch,
   } = contextValue

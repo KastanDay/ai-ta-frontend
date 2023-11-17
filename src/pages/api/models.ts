@@ -95,7 +95,7 @@ const handler = async (req: Request): Promise<Response> => {
               name: OpenAIModels[value].name,
               maxLength: OpenAIModels[value].maxLength,
               tokenLimit: OpenAIModels[value].tokenLimit
-            };
+            }
           }
         }
         return undefined;

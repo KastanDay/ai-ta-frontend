@@ -1,4 +1,4 @@
-import { OPENAI_API_TYPE } from '../utils/app/const'
+// import { OPENAI_API_TYPE } from '../utils/app/const'
 
 export interface OpenAIModel {
   id: string
@@ -13,7 +13,7 @@ export enum OpenAIModelID {
   GPT_4 = 'gpt-4',
   GPT_4_1106_PREVIEW = 'gpt-4-1106-preview',
   // GPT_4_32K = 'gpt-4-32k',
-  // Azure (gpt-4 and gpt-4-32k is same in openai and azure)
+  // Azure -- ONLY GPT-4 supported for now... due to deployment param being env var...
   GPT_4_AZURE = 'gpt-4-from-canada-east',
   // GPT_3_5_AZ = 'gpt-35-turbo',
   // GPT_3_5_16k_AZURE = 'gpt-35-turbo-16k'
