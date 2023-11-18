@@ -11,18 +11,16 @@ import { showToastOnFileDeleted } from './MakeOldCoursePage';
 import axios from 'axios';
 
 
-// import { employees } from '~/data';
-// const initialRecords = employees.slice(0, 100);
-
 const useStyles = createStyles((theme) => ({
-  root: {
-    '& tr': {
-      backgroundColor: theme.colorScheme === 'dark' ? '#15162a' : '#fff',
-    },
-    '& tr:nth-child(odd)': {
-      backgroundColor: theme.colorScheme === 'dark' ? '#15162a' : '#fff',
-    },
-  },
+  // How to change hearder color 
+  // root: {
+  //   '& tr': {
+  //     backgroundColor: theme.colorScheme === 'dark' ? '#15162a' : '#fff',
+  //   },
+  //   '& tr:nth-child(odd)': {
+  //     backgroundColor: theme.colorScheme === 'dark' ? '#15162a' : '#fff',
+  //   },
+  // },
 }));
 
 interface CourseDocuments {
@@ -103,9 +101,6 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
 
 
 
-  // const CourseFilesList = ({ course_materials }: CourseFilesListProps) => {
-  //   const router = useRouter()
-  // const { classes, theme } = useStyles()
   const handleDelete = async (
     course_name: string,
     s3_path: string,
@@ -138,14 +133,13 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
       highlightOnHover
       style={{
         width: '100%',
-        backgroundColor: '#f0f7f1',
       }}
-      rowStyle={(record, index) => ({
-        backgroundColor: index % 2 === 0 ? '#15162a' : '#1d1737',
-      })}
-      classNames={classes}
-      // className="my-custom-table"
-      height="70vh"
+      // How to change row background color
+      // rowStyle={(record, index) => ({
+      //   backgroundColor: index % 2 === 0 ? '#15162a' : '#1d1737',
+      // })}
+      // classNames={classes}
+      height="80vh"
       records={materials}
       columns={
         [
