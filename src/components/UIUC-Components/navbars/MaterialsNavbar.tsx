@@ -204,6 +204,7 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
               </Link>
             </div>
 
+            {/* TODO: Make sticky-left Remove the Banner image bceause I can't get it centered properly (works on /chat page tho) */}
             {bannerUrl && (
               <div style={{ ...styles.logoContainerBox }}>
                 <Image
