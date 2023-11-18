@@ -204,7 +204,8 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
               </Link>
             </div>
 
-            {bannerUrl && (
+            {/* Remove the Banner image bceause I can't get it centered properly (works on /chat page tho) */}
+            {/* {bannerUrl && (
               <div style={{ ...styles.logoContainerBox }}>
                 <Image
                   src={bannerUrl}
@@ -215,7 +216,7 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
                   alt="The course creator uploaded a logo for this chatbot."
                 />
               </div>
-            )}
+            )} */}
 
             <Transition
               transition="pop-top-right"
