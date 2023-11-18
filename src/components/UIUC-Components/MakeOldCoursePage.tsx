@@ -211,6 +211,8 @@ import { montserrat_heading } from 'fonts'
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
   const { classes, theme } = useStyles()
+  const [selectedRecords, setSelectedRecords] = useState<Company[]>([]);
+
   const handleDelete = async (
     course_name: string,
     s3_path: string,
