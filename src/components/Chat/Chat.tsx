@@ -173,6 +173,18 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
   }
 
+  const generateCitationLink = async (context: ContextWithMetadata) => {
+    let url = ''
+    console.log("context: ", context)
+
+    if (context.url !== '') {
+      url = context.url
+    } else if (context.s3_path !== '') {
+      url = await fetchPresignedUrl(context.s3_path)
+    }
+    return url
+  }
+
   // THIS IS WHERE MESSAGES ARE SENT.
   const handleSend = useCallback(
     async (message: Message, deleteCount = 0, plugin: Plugin | null = null) => {
@@ -315,57 +327,87 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           let done = false
           let isFirst = true
           let text = ''
-          while (!done) {
-            if (stopConversationRef.current === true) {
-              controller.abort()
-              done = true
-              break
-            }
-            const { value, done: doneReading } = await reader.read()
-            done = doneReading
-            const chunkValue = decoder.decode(value)
-            text += chunkValue
-            if (isFirst) {
-              // isFirst refers to the first chunk of data received from the API (happens once for each new message from API)
-              isFirst = false
-              const updatedMessages: Message[] = [
-                ...updatedConversation.messages,
-                {
-                  role: 'assistant',
-                  content: chunkValue,
-                  contexts: message.contexts,
-                },
-              ]
-              updatedConversation = {
-                ...updatedConversation,
-                messages: updatedMessages,
+          try {
+            while (!done) {
+              if (stopConversationRef.current === true) {
+                controller.abort()
+                done = true
+                break
               }
-              homeDispatch({
-                field: 'selectedConversation',
-                value: updatedConversation,
-              })
-            } else {
-              const updatedMessages: Message[] =
-                updatedConversation.messages.map((message, index) => {
-                  if (index === updatedConversation.messages.length - 1) {
-                    return {
-                      ...message,
-                      content: text,
-                      // responseTimeSec: // TODO: try to track this.. mostly in ChatMessage.tsx
-                    }
-                  }
-                  return message
+              const { value, done: doneReading } = await reader.read()
+              done = doneReading
+              const chunkValue = decoder.decode(value)
+              text += chunkValue
+              if (isFirst) {
+                // isFirst refers to the first chunk of data received from the API (happens once for each new message from API)
+                isFirst = false
+                const updatedMessages: Message[] = [
+                  ...updatedConversation.messages,
+                  {
+                    role: 'assistant',
+                    content: chunkValue,
+                    contexts: message.contexts,
+                  },
+                ]
+                updatedConversation = {
+                  ...updatedConversation,
+                  messages: updatedMessages,
+                }
+                homeDispatch({
+                  field: 'selectedConversation',
+                  value: updatedConversation,
                 })
-              updatedConversation = {
-                ...updatedConversation,
-                messages: updatedMessages,
+              } else {
+                const updatedMessages: Message[] = await Promise.all(
+                  updatedConversation.messages.map(async (message, index) => {
+                    if (index === updatedConversation.messages.length - 1) {
+                      let content = text
+                      if (message.contexts) {
+                        const links = await Promise.all(
+                          message.contexts.map(async (context, index) => {
+                            const link = await generateCitationLink(context)
+                            const citationRegex = new RegExp(`\\[${context.readable_filename}\\]`, 'g')
+                            return { link, citationRegex, readable_filename: context.readable_filename }
+                          })
+                        )
+                        links.forEach(({ link, citationRegex, readable_filename }, index) => {
+                          const citationLink = `[${index + 1}](${link})`;
+                          const filenameLink = `[${readable_filename}](${link})`;
+                          // This replaces placeholders with clickable links but Markdown rendering removes the placeholder and only shows the number.
+                          // content = content.replace(new RegExp(`\\[${index + 1}\\](?!\\()`, 'g'), citationLink);
+
+                          content = content.replace(new RegExp(`\\[${readable_filename}\\]\\(\\#\\)`, 'g'), filenameLink);
+                        })
+                        return {
+                          ...message,
+                          content,
+                        }
+                      }
+                    }
+                    return message
+                  })
+                )
+                updatedConversation = {
+                  ...updatedConversation,
+                  messages: await Promise.all(updatedMessages),
+                }
+                homeDispatch({
+                  field: 'selectedConversation',
+                  value: updatedConversation,
+                })
               }
-              homeDispatch({
-                field: 'selectedConversation',
-                value: updatedConversation,
-              })
             }
+          } catch (error) {
+            console.error('Error reading from stream:', error);
+            homeDispatch({ field: 'loading', value: false });
+            homeDispatch({ field: 'messageIsStreaming', value: false });
+            return;
           }
+
+          if (!done) {
+            throw new Error('Stream ended prematurely');
+          }
+
           saveConversation(updatedConversation)
           // todo: add clerk user info to onMessagereceived for logging.
           if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {

@@ -350,6 +350,19 @@ export const ChatMessage: FC<Props> = memo(
                           </td>
                         )
                       },
+                      link({ node, children, ...props }) {
+                        const { href, title } = props;
+                        return (
+                          <a
+                            href={href}
+                            target="_blank"
+                            title={title}
+                            rel="noopener noreferrer"
+                          >
+                            {children}
+                          </a>
+                        )
+                      },
                     }}
                   >
                     {`${message.content}${messageIsStreaming &&
