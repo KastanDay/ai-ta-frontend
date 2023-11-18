@@ -15,10 +15,12 @@ import axios from 'axios';
 // const initialRecords = employees.slice(0, 100);
 
 const useStyles = createStyles((theme) => ({
-  header: {
-    '& tr th': {
-      color: theme.colorScheme === 'dark' ? theme.colors.dark[0] : 'white',
-      fontSize: '100%',
+  root: {
+    '& tr': {
+      backgroundColor: theme.colorScheme === 'dark' ? '#15162a' : '#fff',
+    },
+    '& tr:nth-child(odd)': {
+      backgroundColor: theme.colorScheme === 'dark' ? '#15162a' : '#fff',
     },
   },
 }));
@@ -43,7 +45,7 @@ export async function getPresignedUrl(s3_path: string) {
   return data.presignedUrl;
 }
 
-export function ComplexUsageExample({ course_materials }: CourseFilesListProps) {
+export function MantineYourMaterialsTable({ course_materials }: CourseFilesListProps) {
   const { classes, theme } = useStyles();
 
   const router = useRouter();
@@ -136,20 +138,19 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
       highlightOnHover
       style={{
         width: '100%',
-        // TODO: still can't get the background color to work. I want it the same as the "ProjectTable.tsx" background color from the landing page
-        backgroundColor: '#f0f7f1'
-        // backgroundColor: theme.colorScheme === 'dark' ? '#15162b' : '#f0f7f1',
+        backgroundColor: '#f0f7f1',
       }}
+      rowStyle={(record, index) => ({
+        backgroundColor: index % 2 === 0 ? '#15162a' : '#1d1737',
+      })}
       classNames={classes}
-      styles={{
-        header: { color: 'white' },
-      }}
+      // className="my-custom-table"
       height="70vh"
       records={materials}
       columns={
         [
           {
-            accessor: 'File Name',
+            accessor: 'Name',
             // render: ({ readable_filename }) => `${readable_filename}`,
             render: ({ readable_filename }) => readable_filename ? `${readable_filename}` : '',
             filter: (
