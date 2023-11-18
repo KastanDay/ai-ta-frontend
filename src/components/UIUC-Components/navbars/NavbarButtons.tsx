@@ -105,7 +105,7 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
     if (!e.ctrlKey && !e.metaKey) {
       e.preventDefault()
       setIsLoading(true)
-      router.push(`/${course_name}/gpt4`)
+      router.push(`/${course_name}/chat`)
     }
     // If ctrl/cmd key is pressed, do nothing and let the browser handle the new tab opening
   }
@@ -118,7 +118,7 @@ export function ResumeToChat({ course_name }: { course_name?: string }) {
     <div className={classes.wrapper}>
       <a
         onClick={handleClick}
-        href={`/${course_name}/gpt4`}
+        href={`/${course_name}/chat`}
         className={`btn rounded-full ${classes.button}`}
         style={{
           backgroundColor: 'transparent',

@@ -243,7 +243,7 @@ function CourseCard() {
       title: 'Electrical & Computer Engineering, ECE 120',
       badge: 'ECE @ UIUC',
       description:
-        'Prof. Volodymyr (Vlad) Kindratenko, Director of the Center for Artificial Intelligence Innovation at NCSA, in Fall 2023. We also have <a href="/ECE220FA23/gpt4">ECE 220</a> & <a href="/ECE408FA23/gpt4">ECE 408</a>.',
+        'Prof. Volodymyr (Vlad) Kindratenko, Director of the Center for Artificial Intelligence Innovation at NCSA, in Fall 2023. We also have <a href="/ECE220FA23/chat">ECE 220</a> & <a href="/ECE408FA23/chat">ECE 408</a>.',
     },
     {
       course_slug: 'NCSA',
@@ -309,7 +309,7 @@ function CourseCard() {
             {card.imageSrc && (
               // <Card.Section style={{ height: 'auto' }}>
               <Card.Section style={{ height: '15vw' }}>
-                <Link href={`/${card.course_slug}/gpt4`}>
+                <Link href={`/${card.course_slug}/chat`}>
                   <Image
                     src={card.imageSrc}
                     width={720}
@@ -349,7 +349,7 @@ function CourseCard() {
                 />
               </Text>
 
-              <Link href={`/${card.course_slug}/gpt4`}>
+              <Link href={`/${card.course_slug}/chat`}>
                 <Button
                   variant="light"
                   color="blue"
