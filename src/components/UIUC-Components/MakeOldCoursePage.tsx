@@ -111,10 +111,6 @@ const MakeOldCoursePage = ({
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-<<<<<<< HEAD
-      // current_email={currentEmail as string}
-=======
->>>>>>> main
       />
     )
   }
