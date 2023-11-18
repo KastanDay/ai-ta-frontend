@@ -47,6 +47,7 @@ const MakeOldCoursePage = ({
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
+  const [bannerUrl, setBannerUrl] = useState<string>('')
   const [currentEmail, setCurrentEmail] = useState('')
 
   const router = useRouter()
@@ -68,6 +69,18 @@ const MakeOldCoursePage = ({
           metadata.is_private = JSON.parse(
             metadata.is_private as unknown as string,
           )
+        }
+
+        // fetch banner image url
+        console.log("Getting banner image: ", metadata.banner_image_s3)
+        if (metadata?.banner_image_s3 && metadata.banner_image_s3 !== '') {
+          try {
+            const url = await fetchPresignedUrl(metadata.banner_image_s3)
+            setBannerUrl(url)
+            console.log("Got banner image: ", url)
+          } catch (error) {
+            console.error("Error fetching banner image: ", error)
+          }
         }
         setCourseMetadata(metadata)
       } catch (error) {
@@ -98,14 +111,17 @@ const MakeOldCoursePage = ({
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
+<<<<<<< HEAD
       // current_email={currentEmail as string}
+=======
+>>>>>>> main
       />
     )
   }
 
   return (
     <>
-      <Navbar course_name={course_name} />
+      <Navbar course_name={course_name} bannerUrl={bannerUrl} />
 
       <Head>
         <title>{course_name}</title>

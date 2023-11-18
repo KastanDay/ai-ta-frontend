@@ -185,7 +185,9 @@ export const ChatMessage: FC<Props> = memo(
     }
 
     useEffect(() => {
-      setMessageContent(message.content)
+      // setMessageContent(message.content)
+      console.log('IN ChatMessage 189 adding hi to messages: ', message)
+      setMessageContent(`${message.content} hi`)
 
       // RIGHT HERE, run context search.
 
@@ -205,11 +207,10 @@ export const ChatMessage: FC<Props> = memo(
 
     return (
       <div
-        className={`group md:px-4 ${
-          message.role === 'assistant'
-            ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
-            : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
-        }`}
+        className={`group md:px-4 ${message.role === 'assistant'
+          ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
+          : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
+          }`}
         style={{ overflowWrap: 'anywhere' }}
       >
         <div className="relative m-auto flex p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-5xl lg:px-0 xl:max-w-3xl">
@@ -351,13 +352,12 @@ export const ChatMessage: FC<Props> = memo(
                       },
                     }}
                   >
-                    {`${message.content}${
-                      messageIsStreaming &&
+                    {`${message.content}${messageIsStreaming &&
                       messageIndex ==
-                        (selectedConversation?.messages.length ?? 0) - 1
-                        ? '`▍`'
-                        : ''
-                    }`}
+                      (selectedConversation?.messages.length ?? 0) - 1
+                      ? '`▍`'
+                      : ''
+                      }`}
                   </MemoizedReactMarkdown>
                   {message.contexts && message.contexts.length > 0 && (
                     <Group variant="row" spacing="xs">

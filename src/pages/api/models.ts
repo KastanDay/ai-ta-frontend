@@ -35,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
     // console.log('models.ts Final openai key: ', apiKey)
 
     if (apiKey && !apiKey.startsWith('sk-')) {
-      console.log('setting azure variables')
+      // console.log('setting azure variables')
       apiType = 'azure'
       endpoint = process.env.AZURE_OPENAI_ENDPOINT || OPENAI_API_HOST
     }
@@ -60,8 +60,8 @@ const handler = async (req: Request): Promise<Response> => {
         }),
         ...(apiType === 'openai' &&
           OPENAI_ORGANIZATION && {
-            'OpenAI-Organization': OPENAI_ORGANIZATION,
-          }),
+          'OpenAI-Organization': OPENAI_ORGANIZATION,
+        }),
       },
     })
 
@@ -72,8 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
       })
     } else if (response.status !== 200) {
       console.error(
-        `OpenAI API returned an error ${
-          response.status
+        `OpenAI API returned an error ${response.status
         }: ${await response.text()}`,
       )
       throw new Error('OpenAI API returned an error')
@@ -81,21 +80,27 @@ const handler = async (req: Request): Promise<Response> => {
 
     const json = await response.json()
 
-    const models: OpenAIModel[] = json.data
-      .map((model: any) => {
-        const model_name = apiType === 'azure' ? model.model : model.id
+    const uniqueModels: string[] = Array.from(new Set(json.data.map((model: any) => apiType === 'azure' ? model.model : model.id)));
+
+    const models: OpenAIModel[] = uniqueModels
+      .map((modelId: string) => {
+        const model = json.data.find((m: any) => (apiType === 'azure' ? m.model : m.id) === modelId);
+        if (!model) return undefined;
+
+        const model_name = apiType === 'azure' ? model.model : model.id;
         for (const [key, value] of Object.entries(OpenAIModelID)) {
           if (value === model_name) {
             return {
               id: model.id,
               name: OpenAIModels[value].name,
               maxLength: OpenAIModels[value].maxLength,
-              tokenLimit: OpenAIModels[value].tokenLimit,
+              tokenLimit: OpenAIModels[value].tokenLimit
             }
           }
         }
+        return undefined;
       })
-      .filter(Boolean)
+      .filter((model): model is OpenAIModel => model !== undefined);
 
     return new Response(JSON.stringify(models), { status: 200 })
   } catch (error) {

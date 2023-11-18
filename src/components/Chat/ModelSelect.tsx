@@ -1,7 +1,7 @@
 import { IconExternalLink } from '@tabler/icons-react'
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react'
 import { useTranslation } from 'next-i18next'
-import { type OpenAIModel } from '@/types/openai'
+import { OpenAIModels, type OpenAIModel } from '@/types/openai'
 import HomeContext from '~/pages/api/home/home.context'
 import { ModelParams } from './ModelParams'
 import { montserrat_heading } from 'fonts'
@@ -26,10 +26,19 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
     const { t } = useTranslation('chat')
 
     const handleModelClick = (modelId: string) => {
+      console.debug('handleModelClick clicked:', modelId)
+      console.debug('handleModelClick avail models: ', models)
+
+      // First try to use selectedconversation model, if not available, use default model
+      const defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
+      const model = models.find((model) => model.id === modelId) || defaultModel
+
+      console.debug('handleModelClick SETTING IT TO: ', model)
+
       selectedConversation &&
         handleUpdateConversation(selectedConversation, {
           key: 'model',
-          value: models.find((model) => model.id === modelId) as OpenAIModel,
+          value: model as OpenAIModel,
         })
     }
 
@@ -67,8 +76,9 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               <div tabIndex={0} className="relative w-full">
                 <NativeSelect
                   className="menu absolute z-[1]"
-                  value={selectedConversation?.model.id || defaultModelId}
+                  value={selectedConversation?.model.id || defaultModelId} // selectedConversation?.model.id || 
                   onChange={(e) => handleModelClick(e.target.value)}
+                  // onClick={(e) => handleModelClick((e.target as HTMLSelectElement).value)}
                   data={models.map((model) => ({
                     value: model.id,
                     label: model.name,
