@@ -128,23 +128,30 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
   }
 
   return (
-    // <MantineProvider>
     <DataTable
+      borderRadius="lg"
+      withColumnBorders
+      withBorder={true}
+      striped
+      highlightOnHover
       style={{
-        width: '90%',
+        width: '100%',
+        // TODO: still can't get the background color to work. I want it the same as the "ProjectTable.tsx" background color from the landing page
+        backgroundColor: '#f0f7f1'
+        // backgroundColor: theme.colorScheme === 'dark' ? '#15162b' : '#f0f7f1',
       }}
       classNames={classes}
       styles={{
         header: { color: 'white' },
       }}
-      height="60vh"
-      withColumnBorders
+      height="70vh"
       records={materials}
       columns={
         [
           {
             accessor: 'File Name',
-            render: ({ readable_filename }) => `${readable_filename}`,
+            // render: ({ readable_filename }) => `${readable_filename}`,
+            render: ({ readable_filename }) => readable_filename ? `${readable_filename}` : '',
             filter: (
               <TextInput
                 label="File Name"
@@ -169,7 +176,12 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
           },
           {
             accessor: 'URL',
-            render: ({ url }) => `${url}`,
+            render: ({ url }) => url ? `${url}` : '',
+            // How to enable per-cell styling (of text and background)
+            // cellsStyle: (record: CourseDocuments, recordIndex: number) => ({
+            //   color: 'violet',
+            //   background: 'blue',
+            // }),
             filter: (
               <TextInput
                 label="URL"
@@ -189,7 +201,8 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
           },
           {
             accessor: 'Starting URL of Web Scrape',
-            render: ({ base_url }) => `${base_url}`,
+            // render: ({ base_url }) => `${base_url}`,
+            render: ({ base_url }) => base_url ? `${base_url}` : '',
             filter: (
               <TextInput
                 label="Starting URL of Web Scrape"
@@ -209,7 +222,8 @@ export function ComplexUsageExample({ course_materials }: CourseFilesListProps) 
           },
           {
             accessor: 'actions',
-            title: <Box mr={6}>Row actions</Box>,
+            title: <Box mr={6}>Actions</Box>,
+            width: 81, // Force 2 actions to be on the same line
             render: (materials: any, index: number) => {
               const openModal = async (action: string) => {
                 let urlToOpen = materials.url;
