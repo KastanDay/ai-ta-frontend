@@ -1,14 +1,12 @@
 import Head from 'next/head'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 // import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
 import { fetchPresignedUrl } from '~/components/UIUC-Components/ContextCards'
-import { montserrat_heading } from 'fonts'
+
 import {
-  // Card,
-  // Image,
-  Text,
   // Badge,
   // MantineProvider,
-  // Button,
+  Button,
   // Group,
   // Stack,
   // createStyles,
@@ -16,7 +14,6 @@ import {
   // rem,
   Title,
   Flex,
-  Group,
   createStyles,
   // Divider,
   MantineTheme,
@@ -24,11 +21,46 @@ import {
   // Tooltip,
 } from '@mantine/core'
 // const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
-import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
-const useStyles = createStyles((theme) => ({}))
+import { LoadingSpinner } from './LoadingSpinner'
+
+const useStyles = createStyles((theme: MantineTheme) => ({
+  downloadButton: {
+    fontFamily: 'var(--font-montserratHeading)',
+    outline: 'none',
+    border: 'solid 1.5px',
+    borderColor: theme.colors.grape[8],
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.xs,
+    borderRadius: theme.radius.xl,
+    cursor: 'pointer',
+    transition: 'background-color 0.2s ease-in-out',
+    height: '48px', 
+    backgroundColor: '#0E1116',  
+    
+    '&:hover': {
+      backgroundColor: theme.colors.grape[8],  
+    },
+    '@media (max-width: 768px)': {
+      fontSize: theme.fontSizes.xs,
+      padding: '10px',
+      width: '70%', 
+    },
+    '@media (min-width: 769px) and (max-width: 1024px)': {
+      fontSize: theme.fontSizes.xs,
+      padding: '12px',
+      width: '90%', 
+    },
+    '@media (min-width: 1025px)': {
+      fontSize: theme.fontSizes.sm,
+      padding: '15px',
+      width: '100%',
+    },
+  },
+}))
 
 import { useAuth, useUser } from '@clerk/nextjs'
 
@@ -45,7 +77,7 @@ const MakeQueryAnalysisPage = ({
   course_data: any
 }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  // const { classes, } = useStyles()
+  const { classes, } = useStyles()
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
   // const { isSignedIn, user } = useUser()
   const clerk_user = useUser()
@@ -57,6 +89,8 @@ const MakeQueryAnalysisPage = ({
   const router = useRouter()
 
   const currentPageName = GetCurrentPageName()
+
+  const [isLoading, setIsLoading] = useState(false);
 
   // TODO: remove this hook... we should already have this from the /materials props???
   useEffect(() => {
@@ -135,6 +169,34 @@ const MakeQueryAnalysisPage = ({
     )
   }
 
+  const downloadConversationHistory = async (courseName: string) => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(`https://flask-ai-ta-backend-pr-141.up.railway.app/export-convo-history-csv?course_name=${courseName}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', courseName + '_conversation_history.csv');
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error('Error fetching conversation history:', error);
+      notifications.show({
+        id: 'error-notification',
+        title: 'Error',
+        message: 'Failed to fetch conversation history. Please try again later.',
+        color: 'red',
+        radius: 'lg',
+        icon: <IconAlertCircle />,
+        className: 'my-notification-class',
+        style: { backgroundColor: '#15162c' },
+        loading: false,
+      });
+    } finally {
+      setIsLoading(false); 
+    }
+  }
+
   return (
     <>
       <Navbar course_name={course_name} />
@@ -178,8 +240,12 @@ const MakeQueryAnalysisPage = ({
                     What questions are people asking?
                   </Title>
                 </div>
-                <div className="me-6 mt-4 flex flex-row items-end justify-end">
+                <div className="me-6 flex flex-row items-center justify-end">
                   {/* Can add more buttons here */}
+                  <Button className={`${montserrat_paragraph.variable} font-montserratParagraph ${classes.downloadButton}`} rightIcon={isLoading ? <LoadingSpinner size="sm" /> : <IconCloudDownload/>}
+                  onClick={() => downloadConversationHistory(course_name)}>
+                  Download Conversation History
+                  </Button>
                 </div>
               </Flex>
             </div>
@@ -247,7 +313,7 @@ const MakeQueryAnalysisPage = ({
   )
 }
 
-import { IconCheck, IconDownload, IconLock } from '@tabler/icons-react'
+import { IconAlertCircle, IconCheck, IconCloudDownload, IconDownload } from '@tabler/icons-react'
 
 import { CannotEditCourse } from './CannotEditCourse'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -268,7 +334,6 @@ interface CourseFilesListProps {
 }
 import { IconTrash } from '@tabler/icons-react'
 import { MainPageBackground } from './MainPageBackground'
-import { LoadingSpinner } from './LoadingSpinner'
 import { extractEmailsFromClerk } from './clerkHelpers'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
