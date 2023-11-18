@@ -53,6 +53,8 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
     return courseName;
   }
   const [materials, setMaterials] = useState(course_materials);
+  const [selectedRecords, setSelectedRecords] = useState<Company[]>([]);
+
 
   useEffect(() => {
     const fetchCourseDocuments = async () => {
