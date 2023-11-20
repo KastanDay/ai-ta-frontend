@@ -38,21 +38,21 @@ const useStyles = createStyles((theme: MantineTheme) => ({
     borderRadius: theme.radius.xl,
     cursor: 'pointer',
     transition: 'background-color 0.2s ease-in-out',
-    height: '48px', 
-    backgroundColor: '#0E1116',  
-    
+    height: '48px',
+    backgroundColor: '#0E1116',
+
     '&:hover': {
-      backgroundColor: theme.colors.grape[8],  
+      backgroundColor: theme.colors.grape[8],
     },
     '@media (max-width: 768px)': {
       fontSize: theme.fontSizes.xs,
       padding: '10px',
-      width: '70%', 
+      width: '70%',
     },
     '@media (min-width: 769px) and (max-width: 1024px)': {
       fontSize: theme.fontSizes.xs,
       padding: '12px',
-      width: '90%', 
+      width: '90%',
     },
     '@media (min-width: 1025px)': {
       fontSize: theme.fontSizes.sm,
@@ -164,7 +164,7 @@ const MakeQueryAnalysisPage = ({
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-        // current_email={currentEmail as string}
+      // current_email={currentEmail as string}
       />
     )
   }
@@ -172,7 +172,7 @@ const MakeQueryAnalysisPage = ({
   const downloadConversationHistory = async (courseName: string) => {
     try {
       setIsLoading(true);
-      const response = await axios.get(`https://flask-ai-ta-backend-pr-141.up.railway.app/export-convo-history-csv?course_name=${courseName}`, { responseType: 'blob' });
+      const response = await axios.get(`https://flask-production-751b.up.railway.app/export-convo-history-csv?course_name=${courseName}`, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -193,7 +193,7 @@ const MakeQueryAnalysisPage = ({
         loading: false,
       });
     } finally {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   }
 
@@ -242,9 +242,9 @@ const MakeQueryAnalysisPage = ({
                 </div>
                 <div className="me-6 flex flex-row items-center justify-end">
                   {/* Can add more buttons here */}
-                  <Button className={`${montserrat_paragraph.variable} font-montserratParagraph ${classes.downloadButton}`} rightIcon={isLoading ? <LoadingSpinner size="sm" /> : <IconCloudDownload/>}
-                  onClick={() => downloadConversationHistory(course_name)}>
-                  Download Conversation History
+                  <Button className={`${montserrat_paragraph.variable} font-montserratParagraph ${classes.downloadButton}`} rightIcon={isLoading ? <LoadingSpinner size="sm" /> : <IconCloudDownload />}
+                    onClick={() => downloadConversationHistory(course_name)}>
+                    Download Conversation History
                   </Button>
                 </div>
               </Flex>
@@ -431,15 +431,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colorScheme === 'dark'
-                      ? theme.colors.gray[2]
-                      : theme.colors.gray[1]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colorScheme === 'dark'
+                        ? theme.colors.gray[2]
+                        : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colors.gray[8]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colors.gray[8]
                 }}
               >
                 <IconDownload className="h-5 w-5 text-gray-800" />
@@ -456,15 +456,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colorScheme === 'dark'
-                      ? theme.colors.gray[2]
-                      : theme.colors.gray[1]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colorScheme === 'dark'
+                        ? theme.colors.gray[2]
+                        : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colors.red[6]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colors.red[6]
                 }}
               >
                 <IconTrash className="h-5 w-5 text-red-600" />
@@ -501,8 +501,7 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${
-          response.statusText || response.status
+        `Error fetching course metadata: ${response.statusText || response.status
         }`,
       )
     }
