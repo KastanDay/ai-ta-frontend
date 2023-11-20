@@ -1,6 +1,6 @@
 'use client';
 
-import { ActionIcon, Box, Button, Group, MultiSelect, Stack, TextInput, Text, MantineProvider, createStyles } from '@mantine/core';
+import { ActionIcon, Box, Button, Group, MultiSelect, Stack, TextInput, Text, MantineProvider, createStyles, Paper, Center } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { IconEdit, IconEye, IconSearch, IconTrash, IconX } from '@tabler/icons-react';
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
@@ -9,6 +9,7 @@ import { useRouter } from 'next/router';
 import { modals, openConfirmModal, useModals, ModalsProvider } from '@mantine/modals';
 import { showToastOnFileDeleted } from './MakeOldCoursePage';
 import axios from 'axios';
+import { showNotification } from '@mantine/notifications';
 
 
 const useStyles = createStyles((theme) => ({
@@ -53,7 +54,7 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
     return courseName;
   }
   const [materials, setMaterials] = useState(course_materials);
-  const [selectedRecords, setSelectedRecords] = useState<Company[]>([]);
+  const [selectedRecords, setSelectedRecords] = useState<CourseDocuments[]>([]);
 
 
   useEffect(() => {
@@ -77,10 +78,10 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
   }, []);
 
 
-  const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
-    columnAccessor: 'File Name',
-    direction: 'asc',
-  });
+  // const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
+  //   columnAccessor: 'File Name',
+  //   direction: 'asc',
+  // });
 
   const [query, setQuery] = useState('');
   const [debouncedQuery] = useDebouncedValue(query, 200);
@@ -127,157 +128,181 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
   }
 
   return (
-    <DataTable
-      borderRadius="lg"
-      withColumnBorders
-      withBorder={true}
-      striped
-      highlightOnHover
-      style={{
-        width: '100%',
-      }}
-      // How to change row background color
-      // rowStyle={(record, index) => ({
-      //   backgroundColor: index % 2 === 0 ? '#15162a' : '#1d1737',
-      // })}
-      // classNames={classes}
-      height="80vh"
-      records={materials}
-      columns={
-        [
-          {
-            accessor: 'Name',
-            // render: ({ readable_filename }) => `${readable_filename}`,
-            render: ({ readable_filename }) => readable_filename ? `${readable_filename}` : '',
-            filter: (
-              <TextInput
-                label="File Name"
-                description="Show uploaded files that include the specified text"
-                placeholder="Search files..."
-                rightSection={
-                  < ActionIcon
-                    size="sm"
-                    variant="transparent"
-                    c="dimmed"
-                    onClick={() => setQuery('')
-                    } >
-                    <IconX size={14} />
-                  </ActionIcon >
-                }
-                value={query}
-                onChange={(e) => setQuery(e.currentTarget.value)}
-              // style={{ color: 'yellow' }}
-              />
-            ),
-            filtering: query !== '',
-          },
-          {
-            accessor: 'URL',
-            render: ({ url }) => url ? `${url}` : '',
-            // How to enable per-cell styling (of text and background)
-            // cellsStyle: (record: CourseDocuments, recordIndex: number) => ({
-            //   color: 'violet',
-            //   background: 'blue',
-            // }),
-            filter: (
-              <TextInput
-                label="URL"
-                description="Show all urls "
-                placeholder="Search urls..."
-                rightSection={
-                  <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
-                    <IconX size={14} />
-                  </ActionIcon>
-                }
-                value={query}
-                onChange={(e) => setQuery(e.currentTarget.value)}
-              // style={{ color: 'yellow' }}
-              />
-            ),
-            filtering: query !== '',
-          },
-          {
-            accessor: 'Starting URL of Web Scrape',
-            // render: ({ base_url }) => `${base_url}`,
-            render: ({ base_url }) => base_url ? `${base_url}` : '',
-            filter: (
-              <TextInput
-                label="Starting URL of Web Scrape"
-                description="Show all urls "
-                placeholder="Search urls..."
-                rightSection={
-                  <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
-                    <IconX size={14} />
-                  </ActionIcon>
-                }
-                value={query}
-                onChange={(e) => setQuery(e.currentTarget.value)}
-              // style={{ color: 'yellow' }}
-              />
-            ),
-            filtering: query !== '',
-          },
-          {
-            accessor: 'actions',
-            title: <Box mr={6}>Actions</Box>,
-            width: 81, // Force 2 actions to be on the same line
-            render: (materials: any, index: number) => {
-              const openModal = async (action: string) => {
-                let urlToOpen = materials.url;
-                // If url is empty and s3_path is available, generate a presigned URL for viewing the file
-                if (!materials.url && materials.s3_path) {
-                  const presignedUrl = await getPresignedUrl(materials.s3_path);
-                  urlToOpen = presignedUrl;
-                }
-                if (action === 'view' && urlToOpen) {
-                  console.log(urlToOpen);
-                  window.open(urlToOpen, '_blank');
-                }
-                else if (action === 'delete') {
-                  modals.openConfirmModal({
-                    title: 'Please confirm your action',
-                    children: (
-                      <Text size="sm" style={{ color: 'white' }}>
-                        {`Are you sure you want to delete the file: ${materials.s3_path ? materials.s3_path : materials.url}`}
-                      </Text>
-                    ),
-                    labels: { confirm: 'Delete', cancel: 'Cancel' },
-                    onConfirm: () => handleDelete(materials.course_name, materials.s3_path, materials.url),
-                  });
-                }
-              };
-
-              return (
-                <ModalsProvider>
-                  <Group>
+    <>
+      <DataTable
+        borderRadius="lg"
+        withColumnBorders
+        withBorder={true}
+        striped
+        highlightOnHover
+        style={{
+          width: '100%',
+        }}
+        height="80vh"
+        records={materials}
+        columns={
+          [
+            {
+              accessor: 'Name',
+              render: ({ readable_filename }) => readable_filename ? `${readable_filename}` : '',
+              filter: (
+                <TextInput
+                  label="File Name"
+                  description="Show uploaded files that include the specified text"
+                  placeholder="Search files..."
+                  rightSection={
                     <ActionIcon
                       size="sm"
-                      variant="subtle"
-                      color="green"
-                      onClick={() => openModal('view')}
+                      variant="transparent"
+                      c="dimmed"
+                      onClick={() => setQuery('')}
                     >
-                      <IconEye size={16} />
+                      <IconX size={14} />
                     </ActionIcon>
-                    <ActionIcon
-                      size="sm"
-                      variant="subtle"
-                      color="red"
-                      onClick={() => openModal('delete')}
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
-                  </Group>
-                </ModalsProvider>
-              );
+                  }
+                  value={query}
+                  onChange={(e) => setQuery(e.currentTarget.value)}
+                />
+              ),
+              filtering: query !== '',
             },
-          },
-        ]}
-    // sortStatus={sortStatus}
-    // onSortStatusChange={setSortStatus}
-    />
-    // </MantineProvider>
-  );
+            {
+              accessor: 'URL',
+              render: ({ url }) => url ? `${url}` : '',
+              filter: (
+                <TextInput
+                  label="URL"
+                  description="Show all urls "
+                  placeholder="Search urls..."
+                  rightSection={
+                    <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
+                      <IconX size={14} />
+                    </ActionIcon>
+                  }
+                  value={query}
+                  onChange={(e) => setQuery(e.currentTarget.value)}
+                />
+              ),
+              filtering: query !== '',
+            },
+            {
+              accessor: 'Starting URL of Web Scrape',
+              render: ({ base_url }) => base_url ? `${base_url}` : '',
+              filter: (
+                <TextInput
+                  label="Starting URL of Web Scrape"
+                  description="Show all urls "
+                  placeholder="Search urls..."
+                  rightSection={
+                    <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
+                      <IconX size={14} />
+                    </ActionIcon>
+                  }
+                  value={query}
+                  onChange={(e) => setQuery(e.currentTarget.value)}
+                />
+              ),
+              filtering: query !== '',
+            },
+            {
+              accessor: 'actions',
+              title: <Box mr={6}>Actions</Box>,
+              width: 81,
+              render: (materials: any, index: number) => {
+                const openModal = async (action: string) => {
+                  let urlToOpen = materials.url;
+                  if (!materials.url && materials.s3_path) {
+                    const presignedUrl = await getPresignedUrl(materials.s3_path);
+                    urlToOpen = presignedUrl;
+                  }
+                  if (action === 'view' && urlToOpen) {
+                    console.log(urlToOpen);
+                    window.open(urlToOpen, '_blank');
+                  }
+                  else if (action === 'delete') {
+                    modals.openConfirmModal({
+                      title: 'Please confirm your action',
+                      children: (
+                        <Text size="sm" style={{ color: 'white' }}>
+                          {`Are you sure you want to delete the file: ${materials.s3_path ? materials.s3_path : materials.url}`}
+                        </Text>
+                      ),
+                      labels: { confirm: 'Delete', cancel: 'Cancel' },
+                      onConfirm: () => handleDelete(materials.course_name, materials.s3_path, materials.url),
+                    });
+                  }
+                };
 
+                return (
+                  <ModalsProvider>
+                    <Group>
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color="green"
+                        onClick={() => openModal('view')}
+                      >
+                        <IconEye size={16} />
+                      </ActionIcon>
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color="red"
+                        onClick={() => openModal('delete')}
+                      >
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Group>
+                  </ModalsProvider>
+                );
+              },
+            },
+          ]}
+        selectedRecords={selectedRecords}
+        onSelectedRecordsChange={(newSelectedRecords) => {
+          if (newSelectedRecords.length > 0) {
+            setSelectedRecords(newSelectedRecords);
+          } else {
+            setSelectedRecords([]);
+          }
+        }}
+        idAccessor="readable_filename"
+      />
+      <Paper my="xl" py="xl" withBorder radius={0}>
+        <Center>
+          <Button
+            uppercase
+            leftIcon={<IconTrash size={16} />}
+            color="red"
+            disabled={!selectedRecords.length}
+            onClick={() => {
+              if (selectedRecords.length) {
+                modals.openConfirmModal({
+                  title: 'Please confirm your action',
+                  children: (
+                    <Text size="sm" style={{ color: 'white' }}>
+                      {`Are you sure you want to delete the selected records?`}
+                    </Text>
+                  ),
+                  labels: { confirm: 'Delete', cancel: 'Cancel' },
+                  onConfirm: async () => {
+                    for (const record of selectedRecords) {
+                      await handleDelete(record.readable_filename, record.s3_path, record.url);
+                    }
+                  },
+                });
+              }
+            }}
+          >
+            {selectedRecords.length
+              ? `Delete ${selectedRecords.length === 1 ? 'one selected record' : `${selectedRecords.length} selected records`
+              }`
+              : 'Select records to delete'}
+          </Button>
+        </Center>
+      </Paper>
+    </>
+  );
 }
 
 async function fetchCourseMetadata(course_name: string) {
