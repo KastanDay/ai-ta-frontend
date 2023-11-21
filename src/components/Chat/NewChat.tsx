@@ -289,7 +289,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       // TODO: MOVE THIS INTO ChatMessage
       // console.log('IN handleSend: ', message)
       // setSearchQuery(message.content)
-      const searchQuery = message.content
+      const searchQuery = Array.isArray(message.content)
+        ? message.content.map((content) => content.text).join(' ')
+        : message.content;
 
       if (selectedConversation) {
         let updatedConversation: Conversation
@@ -408,13 +410,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }
         if (!plugin) {
           if (updatedConversation.messages.length === 1) {
-            const { content } = message
+            const { content } = message;
+            // Use only texts instead of content itself
+            const contentText = Array.isArray(content)
+              ? content.map((content) => content.text).join(' ')
+              : content;
             const customName =
-              content.length > 30 ? content.substring(0, 30) + '...' : content
+              contentText.length > 30 ? contentText.substring(0, 30) + '...' : contentText;
             updatedConversation = {
               ...updatedConversation,
               name: customName,
-            }
+            };
           }
           homeDispatch({ field: 'loading', value: false })
           const reader = data.getReader()

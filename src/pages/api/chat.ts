@@ -1,7 +1,7 @@
 // src/pages/api/chat.ts
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const'
 import { OpenAIError, OpenAIStream } from '@/utils/server'
-import { ChatBody, ContextWithMetadata, OpenAIChatMessage } from '@/types/chat'
+import { ChatBody, Content, ContextWithMetadata, OpenAIChatMessage } from '@/types/chat'
 // @ts-expect-error - no types
 import wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module'
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
@@ -40,7 +40,13 @@ const handler = async (req: Request): Promise<NextResponse> => {
     }
 
     // ! PROMPT STUFFING
-    const search_query = messages[messages.length - 1]?.content as string // most recent message
+    let search_query: string;
+    if (typeof messages[messages.length - 1]?.content === 'string') {
+      search_query = messages[messages.length - 1]?.content as string;
+    } else {
+      search_query = (messages[messages.length - 1]?.content as Content[]).map(c => c.text || '').join(' ');
+    }
+    // most recent message
     const contexts_arr = messages[messages.length - 1]
       ?.contexts as ContextWithMetadata[]
 
@@ -70,7 +76,22 @@ const handler = async (req: Request): Promise<NextResponse> => {
         contexts_arr,
         token_limit,
       )) as string
-      messages[messages.length - 1]!.content = stuffedPrompt
+      if (typeof messages[messages.length - 1]?.content === 'string') {
+        messages[messages.length - 1]!.content = stuffedPrompt;
+      } else if (Array.isArray(messages[messages.length - 1]?.content) &&
+        (messages[messages.length - 1]!.content as Content[]).every(item => 'type' in item)) {
+
+        const contentArray = messages[messages.length - 1]!.content as Content[];
+        const textContentIndex = contentArray.findIndex(item => item.type === 'text') || 0;
+
+        if (textContentIndex !== -1 && contentArray[textContentIndex]) {
+          // Replace existing text content with the new stuffed prompt
+          contentArray[textContentIndex] = { ...contentArray[textContentIndex], text: stuffedPrompt, type: 'text' };
+        } else {
+          // Add new stuffed prompt if no text content exists
+          contentArray.push({ type: 'text', text: stuffedPrompt });
+        }
+      }
     }
 
     // Take most recent N messages that will fit in the context window
@@ -82,14 +103,20 @@ const handler = async (req: Request): Promise<NextResponse> => {
     for (let i = messages.length - 1; i >= 0; i--) {
       const message = messages[i]
       if (message) {
-        const tokens = encoding.encode(message.content)
+        let content: string;
+        if (typeof message.content === 'string') {
+          content = message.content;
+        } else {
+          content = message.content.map(c => c.text || '').join(' ');
+        }
+        const tokens = encoding.encode(content)
 
         if (tokenCount + tokens.length + 1000 > token_limit) {
           break
         }
         tokenCount += tokens.length
         messagesToSend = [
-          { role: message.role, content: message.content },
+          { role: message.role, content: message.content as Content[] },
           ...messagesToSend,
         ]
       }

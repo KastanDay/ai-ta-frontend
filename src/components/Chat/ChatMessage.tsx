@@ -12,7 +12,7 @@ import { FC, memo, useContext, useEffect, useRef, useState } from 'react'
 
 import { useTranslation } from 'next-i18next'
 import { updateConversation } from '@/utils/app/conversation'
-import { ContextWithMetadata, Message } from '@/types/chat'
+import { Content, ContextWithMetadata, Message } from '@/types/chat'
 import HomeContext from '~/pages/api/home/home.context'
 import { CodeBlock } from '../Markdown/CodeBlock'
 import { MemoizedReactMarkdown } from '../Markdown/MemoizedReactMarkdown'
@@ -75,7 +75,14 @@ export const ChatMessage: FC<Props> = memo(
 
     const [isEditing, setIsEditing] = useState<boolean>(false)
     const [isTyping, setIsTyping] = useState<boolean>(false)
-    const [messageContent, setMessageContent] = useState(message.content)
+    const [messageContent, setMessageContent] = useState(
+      Array.isArray(message.content)
+        ? message.content
+          .filter((content) => content.type === 'text')
+          .map((content) => content.text)
+          .join(' ')
+        : message.content
+    )
     const [messagedCopied, setMessageCopied] = useState(false)
 
     const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -177,7 +184,7 @@ export const ChatMessage: FC<Props> = memo(
     const copyOnClick = () => {
       if (!navigator.clipboard) return
 
-      navigator.clipboard.writeText(message.content).then(() => {
+      navigator.clipboard.writeText(message.content as string).then(() => {
         setMessageCopied(true)
         setTimeout(() => {
           setMessageCopied(false)
@@ -260,7 +267,7 @@ export const ChatMessage: FC<Props> = memo(
                       <button
                         className="h-[40px] rounded-md border border-neutral-300 px-4 py-1 text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
                         onClick={() => {
-                          setMessageContent(message.content)
+                          setMessageContent(messageContent)
                           setIsEditing(false)
                         }}
                       >
@@ -270,7 +277,19 @@ export const ChatMessage: FC<Props> = memo(
                   </div>
                 ) : (
                   <div className="dark:prose-invert prose flex-1 whitespace-pre-wrap">
-                    {message.content}
+                      {Array.isArray(message.content) ? (
+                        message.content.map((content, index) => {
+                          if (content.type === 'image_url') {
+                            return <img key={index} src={content.image_url?.url} alt="Chat message" />;
+                          } else if (content.type === 'text') {
+                            return <p key={index}>{content.text}</p>;
+                          } else {
+                            return null;
+                          }
+                        })
+                      ) : (
+                        message.content
+                      )}
                   </div>
                 )}
 

@@ -21,7 +21,7 @@ import {
 } from 'react'
 
 import { useTranslation } from 'next-i18next'
-import { Message } from '@/types/chat'
+import { Content, Message } from '@/types/chat'
 import { Plugin } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
 
@@ -161,22 +161,9 @@ export const ChatInput = ({
     updatePromptListVisibility(value)
   }
   // Assuming Message, Role, and Plugin types are already defined in your codebase
-  // Add a new type for the content of the message that includes image_url
-  type Content = {
-    type: string;
-    text?: string;
-    image_url?: {
-      url: string;
-    };
-  };
 
   type Role = 'user' | 'system'; // Add other roles as needed
 
-  // Adjust the Message type as necessary
-  interface MessageForGPT4Vision {
-    role: Role;
-    content: string; // Assuming the Message type expects content to be a string
-  }
   
   const handleSend = async () => {
     if (messageIsStreaming) {
@@ -228,18 +215,15 @@ export const ChatInput = ({
       ...(textContent ? [{ type: "text", text: textContent }] : []),
       ...imageContent
     ];
-  
-    // Serialize the content array into a string to match the expected Message type
-    const serializedContent = JSON.stringify(contentArray);
-  
+
     // Create a structured message for GPT-4 Vision
-    const messageForGPT4Vision: MessageForGPT4Vision = {
+    const messageForGPT4Vision: Message = {
       role: 'user',
-      content: serializedContent
+      content: contentArray
     };
   
     // Use the onSend prop to send the structured message
-    onSend(messageForGPT4Vision as unknown as Message, plugin); // Cast to unknown then to Message if needed
+    onSend(messageForGPT4Vision, plugin); // Cast to unknown then to Message if needed
   
     // Reset states
     setContent('');
@@ -383,7 +367,11 @@ export const ChatInput = ({
     // Generate a unique file name using uuidv4
     const uniqueFileName = `${uuidv4()}.${file.name.split('.').pop()}`;
     const s3_filepath = `courses/${courseName}/${uniqueFileName}`; // Define s3_filepath here
-  
+
+    console.log('uploadToS3 called with uniqueFileName:', uniqueFileName);
+    console.log('uploadToS3 called with s3_filepath:', s3_filepath);
+
+    // Prepare the request body for the API call
     // Prepare the request body for the API call
     const requestObject = {
       method: 'POST',
@@ -391,7 +379,7 @@ export const ChatInput = ({
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        fileName: uniqueFileName,
+        uniqueFileName: uniqueFileName,
         fileType: file.type,
         courseName: courseName,
       }),

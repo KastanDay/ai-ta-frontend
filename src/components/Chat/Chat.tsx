@@ -180,7 +180,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       // TODO: MOVE THIS INTO ChatMessage
       // console.log('IN handleSend: ', message)
       // setSearchQuery(message.content)
-      const searchQuery = message.content
+      const searchQuery = Array.isArray(message.content)
+        ? message.content.map((content) => content.text).join(' ')
+        : message.content;
+
+      console.log("QUERY: ", searchQuery)
+
+      // TODO: Add a GPT4V call here to get img > text for retrieval.
 
       if (selectedConversation) {
         let updatedConversation: Conversation
@@ -223,10 +229,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         
         const chatBody: ChatBody = {
           model: updatedConversation.model,
-          messages: updatedConversation.messages.map((message) => ({
-            role: message.role,
-            content: message.image_url ? JSON.stringify({ image_url: message.image_url }) : message.content,
-          })),
+          messages: updatedConversation.messages,
           key:
             courseMetadata?.openai_api_key &&
               courseMetadata?.openai_api_key != ''
@@ -304,13 +307,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }
         if (!plugin) {
           if (updatedConversation.messages.length === 1) {
-            const { content } = message
+            const { content } = message;
+            // Use only texts instead of content itself
+            const contentText = Array.isArray(content)
+              ? content.map((content) => content.text).join(' ')
+              : content;
             const customName =
-              content.length > 30 ? content.substring(0, 30) + '...' : content
+              contentText.length > 30 ? contentText.substring(0, 30) + '...' : contentText;
             updatedConversation = {
               ...updatedConversation,
               name: customName,
-            }
+            };
           }
           homeDispatch({ field: 'loading', value: false })
           const reader = data.getReader()
@@ -580,14 +587,18 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
   // Inside Chat function before the return statement
   const renderMessageContent = (message: Message) => {
-    // If message is of type 'image', render an <img> tag
-    if (message.type === 'image' && message.content) {
-      return <img src={message.content} alt="Uploaded content" onError={(e) => {
-        // Handle image load error, maybe replace with a placeholder
-        e.currentTarget.src = 'path/to/placeholder.png';
-      }} />;
+    if (Array.isArray(message.content)) {
+      return (
+        <>
+          {message.content.map((content, index) => {
+            if (content.type === 'image' && content.image_url) {
+              return <img key={index} src={content.image_url.url} alt="Uploaded content" />;
+            }
+            return <span key={index}>{content.text}</span>;
+          })}
+        </>
+      );
     }
-    // If message is of type 'text' or any other type, render text
     return <span>{message.content}</span>;
   };
   

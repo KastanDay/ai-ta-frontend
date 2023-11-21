@@ -88,6 +88,21 @@ export const OpenAIStream = async (
   // })
   // console.debug("Final request sent to OpenAI ", JSON.stringify(JSON.parse(final_request_to_openai), null, 2))
 
+  const body = JSON.stringify({
+    ...(OPENAI_API_TYPE === 'openai' && { model: model.id }),
+    messages: [
+      {
+        role: 'system',
+        content: systemPrompt,
+      },
+      ...messages,
+    ],
+    max_tokens: 1000,
+    temperature: temperature,
+    stream: true,
+  })
+  // This could be logged and tracked better
+  // console.log("openai api body: ", body)
 
   const res = await fetch(url, {
     headers: {
@@ -104,19 +119,7 @@ export const OpenAIStream = async (
       }),
     },
     method: 'POST',
-    body: JSON.stringify({
-      ...(OPENAI_API_TYPE === 'openai' && { model: model.id }),
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        ...messages,
-      ],
-      max_tokens: 1000,
-      temperature: temperature,
-      stream: true,
-    }),
+    body: body,
   })
 
   const encoder = new TextEncoder()

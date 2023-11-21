@@ -3,16 +3,22 @@ import { OpenAIModel } from './openai'
 export interface Message {
   // id: string;
   role: Role
-  content: string
+  content: string | Content[]
   contexts?: ContextWithMetadata[] // todo: make sure things works.
   responseTimeSec?: number
-  type?: 'text' | 'image';
-  image_url?: string;
 }
+
+export interface Content {
+  type: string;
+  text?: string;
+  image_url?: {
+    url: string;
+  };
+};
 
 export interface OpenAIChatMessage {
   role: Role
-  content: string
+  content: Content[]
 }
 
 export interface ContextWithMetadata {
