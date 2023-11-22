@@ -41,7 +41,9 @@ import React from 'react'
 
 import { CSSProperties } from 'react';
 
-import { aws_config } from '../../pages/api/UIUC-api/uploadToS3'
+import { fetchPresignedUrl, uploadToS3 } from 'src/utils/apiUtils';
+import { ImagePreview } from './ImagePreview'
+import { OpenAIModelID } from '~/types/openai'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -176,23 +178,19 @@ export const ChatInput = ({
     if (imageFiles.length > 0 && !uploadingImage) {
       setUploadingImage(true);
       try {
-        // Upload all images and get their URLs
-        const imageUrls = await Promise.all(imageFiles.map(async (file) => {
-          const uploadedImageUrl = await uploadToS3(file).catch(error => {
-            console.error('Upload failed for file', file.name, error);
-            setImageError(`Upload failed for file: ${file.name}`);
-            return ''; // Return a placeholder or an empty string if the upload fails
-          });
-          return uploadedImageUrl;
-        }));
+        // If imageUrls is empty, upload all images and get their URLs
+        const imageUrlsToUse = imageUrls.length > 0 ? imageUrls : 
+          await Promise.all(imageFiles.map(file => uploadImageAndGetUrl(file, courseName)));
   
         // Construct image content for the message
-        imageContent = imageUrls
+        imageContent = imageUrlsToUse
           .filter((url): url is string => url !== '') // Type-guard to filter out empty strings
           .map(url => ({
             type: "image_url",
             image_url: { url }
           }));
+
+        console.log("Final imageUrls: ", imageContent)
   
         // Clear the files after uploading
         setImageFiles([]);
@@ -215,7 +213,7 @@ export const ChatInput = ({
       ...(textContent ? [{ type: "text", text: textContent }] : []),
       ...imageContent
     ];
-
+  
     // Create a structured message for GPT-4 Vision
     const messageForGPT4Vision: Message = {
       role: 'user',
@@ -358,66 +356,66 @@ export const ChatInput = ({
       return validImageTypes.includes(`.${ext}`);
   }
 
-  const uploadToS3 = async (file: File) => {
-    if (!file) {
-      console.error('No file provided for upload');
-      return;
-    }
+  // const uploadToS3 = async (file: File) => {
+  //   if (!file) {
+  //     console.error('No file provided for upload');
+  //     return;
+  //   }
   
-    // Generate a unique file name using uuidv4
-    const uniqueFileName = `${uuidv4()}.${file.name.split('.').pop()}`;
-    const s3_filepath = `courses/${courseName}/${uniqueFileName}`; // Define s3_filepath here
+  //   // Generate a unique file name using uuidv4
+  //   const uniqueFileName = `${uuidv4()}.${file.name.split('.').pop()}`;
+  //   const s3_filepath = `courses/${courseName}/${uniqueFileName}`; // Define s3_filepath here
 
-    console.log('uploadToS3 called with uniqueFileName:', uniqueFileName);
-    console.log('uploadToS3 called with s3_filepath:', s3_filepath);
+  //   console.log('uploadToS3 called with uniqueFileName:', uniqueFileName);
+  //   console.log('uploadToS3 called with s3_filepath:', s3_filepath);
 
-    // Prepare the request body for the API call
-    // Prepare the request body for the API call
-    const requestObject = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        uniqueFileName: uniqueFileName,
-        fileType: file.type,
-        courseName: courseName,
-      }),
-    };
+  //   // Prepare the request body for the API call
+  //   // Prepare the request body for the API call
+  //   const requestObject = {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({
+  //       uniqueFileName: uniqueFileName,
+  //       fileType: file.type,
+  //       courseName: courseName,
+  //     }),
+  //   };
   
-    try {
-      // Call your API to get the presigned POST data
-      const response = await fetch('/api/UIUC-api/uploadToS3', requestObject);
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      const { post } = await response.json();
+  //   try {
+  //     // Call your API to get the presigned POST data
+  //     const response = await fetch('/api/UIUC-api/uploadToS3', requestObject);
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! Status: ${response.status}`);
+  //     }
+  //     const { post } = await response.json();
   
-      // Use the presigned POST data to upload the file to S3
-      const formData = new FormData();
-      Object.entries(post.fields).forEach(([key, value]) => {
-        formData.append(key, value as string);
-      });
-      formData.append('file', file);
+  //     // Use the presigned POST data to upload the file to S3
+  //     const formData = new FormData();
+  //     Object.entries(post.fields).forEach(([key, value]) => {
+  //       formData.append(key, value as string);
+  //     });
+  //     formData.append('file', file);
   
-      // Post the file to the S3 bucket using the presigned URL and form data
-      const uploadResponse = await fetch(post.url, {
-        method: 'POST',
-        body: formData,
-      });
+  //     // Post the file to the S3 bucket using the presigned URL and form data
+  //     const uploadResponse = await fetch(post.url, {
+  //       method: 'POST',
+  //       body: formData,
+  //     });
   
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload the file to S3');
-      }
+  //     if (!uploadResponse.ok) {
+  //       throw new Error('Failed to upload the file to S3');
+  //     }
   
-      // Construct the URL to the uploaded file using the response from the presigned POST
-      const uploadedImageUrl = `https://${aws_config.bucketName}.s3.${aws_config.region}.amazonaws.com/${encodeURIComponent(s3_filepath)}`;
+  //     // Construct the URL to the uploaded file using the response from the presigned POST
+  //     const uploadedImageUrl = `https://${aws_config.bucketName}.s3.${aws_config.region}.amazonaws.com/${encodeURIComponent(s3_filepath)}`;
   
-      return uploadedImageUrl;
-    } catch (error) {
-      console.error('Error uploading file:', error);
-    }
-  };
+  //     return uploadedImageUrl;
+  //   } catch (error) {
+  //     console.error('Error uploading file:', error);
+  //   }
+  // };
   
   
 
@@ -488,7 +486,7 @@ export const ChatInput = ({
   
     if (invalidFilesCount > 0) {
       setImageError(`${invalidFilesCount} invalid file type(s). Please upload .jpg or .png images.`);
-      showToastOnInvalidImage(); // This already shows a toast, you might want to pass a custom message
+      showToastOnInvalidImage();
     }
   
     const imageProcessingPromises = validFiles.map(file => {
@@ -562,12 +560,12 @@ export const ChatInput = ({
       setImagePreviewUrls(prev => [...prev, ...processedImages.map(img => img.dataUrl)]);
   
       // Store the URLs of the uploaded images
-      const uploadedImageUrls = (await Promise.all(processedImages.map(img => uploadToS3(img.resizedFile)))).filter(Boolean);
+      const uploadedImageUrls = (await Promise.all(processedImages.map(img => uploadImageAndGetUrl(img.resizedFile, courseName)))).filter(Boolean);
       setImageUrls(uploadedImageUrls as string[]);
     } catch (error) {
       console.error('Error processing files:', error);
     }    
-  }, [setImageError, setImageFiles, setImagePreviewUrls, showToastOnInvalidImage, uploadToS3]);  
+  }, [setImageError, setImageFiles, setImagePreviewUrls, showToastOnInvalidImage, courseName]);  
 
   // Function to open the modal with the selected image
   const openModal = (imageSrc: string) => {
@@ -662,6 +660,19 @@ export const ChatInput = ({
     }
   }, []);  
 
+  // This is where we upload images and generate their presigned url
+  async function uploadImageAndGetUrl(file: File, courseName: string): Promise<string> {
+    try {
+      const uploadedImageUrl = await uploadToS3(file, courseName);
+      const presignedUrl = await fetchPresignedUrl(uploadedImageUrl as string);
+      return presignedUrl;
+    } catch (error) {
+      console.error('Upload failed for file', file.name, error);
+      setImageError(`Upload failed for file: ${file.name}`);
+      return '';
+    }
+  }
+
   return (
     <div className={`absolute bottom-0 left-0 w-full border-transparent bg-transparent pt-6 dark:border-white/20 md:pt-2 ${isDragging ? 'border-4 border-dashed border-blue-400' : ''}`}>
       {isDragging && (
@@ -704,12 +715,14 @@ export const ChatInput = ({
         </button>
 
           {/* Image Icon and Input */}
+          {selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
           <button 
               className="absolute left-8 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
               onClick={() => document.getElementById('imageUpload')?.click()}
           >
               <IconPhoto size={20} />
           </button>
+          )}
           <input
             type="file"
             multiple
@@ -762,13 +775,7 @@ export const ChatInput = ({
             <div className="flex space-x-3" style={{ display: imagePreviewUrls.length > 0 ? 'flex' : 'none' }}>
               {imagePreviewUrls.map((src, index) => (
                 <div key={src} className="relative w-12 h-12">
-                  <img
-                    src={src}
-                    alt={`Preview ${index}`}
-                    className="object-cover w-full h-full rounded-lg"
-                    onClick={() => openModal(src)}
-                    style={{ cursor: 'pointer' }}
-                  />
+                  <ImagePreview src={src} alt={`Preview ${index}`} />
                   <Tooltip
                     label="Remove File"
                     position="top"

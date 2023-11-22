@@ -1,5 +1,5 @@
 // ChatMessage.tsx
-import { Text, Group } from '@mantine/core'
+import { Text, Group, createStyles } from '@mantine/core'
 import {
   IconCheck,
   IconCopy,
@@ -22,6 +22,25 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
 import { ContextCards } from '~/components/UIUC-Components/ContextCards'
+import { ImagePreview } from './ImagePreview'
+
+const useStyles = createStyles((theme) => ({
+  imageContainerStyle: {
+    maxWidth: '25%',
+    flex: '1 0 21%',
+    padding: '0.5rem',
+    borderRadius: '0.5rem',
+  },
+  imageStyle: {
+    width: '100%',
+    height: '100px',
+    objectFit: 'cover',
+    borderRadius: '0.5rem',
+    borderColor: theme.colors.gray[6],
+    borderWidth: '1px',
+    borderStyle: 'solid',
+  }
+}))
 
 // Component that's the Timer for GPT's response duration.
 const Timer: React.FC<{ timerVisible: boolean }> = ({ timerVisible }) => {
@@ -89,6 +108,8 @@ export const ChatMessage: FC<Props> = memo(
 
     // SET TIMER for message writing (from gpt-4)
     const [timerVisible, setTimerVisible] = useState(false)
+
+    const { classes } = useStyles() // for Accordion
     useEffect(() => {
       if (message.role === 'assistant') {
         if (
@@ -278,19 +299,25 @@ export const ChatMessage: FC<Props> = memo(
                 ) : (
                   <div className="dark:prose-invert prose flex-1 whitespace-pre-wrap">
                       {Array.isArray(message.content) ? (
-                        message.content.map((content, index) => {
-                          if (content.type === 'image_url') {
-                            return <img key={index} src={content.image_url?.url} alt="Chat message" />;
-                          } else if (content.type === 'text') {
-                            return <p key={index}>{content.text}</p>;
-                          } else {
-                            return null;
-                          }
-                        })
+                        <div className="flex flex-col items-start space-y-2">
+                          {message.content.filter(item => item.type === 'text').map((content, index) => (
+                            <p key={index} className="self-start text-base font-medium">{content.text}</p>
+                          ))}
+                          <div className="flex flex-wrap -m-1 justify-start w-full">
+                            {message.content.filter(item => item.type === 'image_url').map((content, index) => (
+                              <div key={index} className={classes.imageContainerStyle}>
+                                <div className="shadow-lg rounded-lg overflow-hidden">
+                                  <ImagePreview src={content.image_url?.url as string} alt="Chat message" className={classes.imageStyle} />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       ) : (
                         message.content
                       )}
-                  </div>
+                    </div>
+
                 )}
 
                 {!isEditing && (
