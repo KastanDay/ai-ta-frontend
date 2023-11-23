@@ -213,7 +213,7 @@ export const ChatInput = ({
       ...(textContent ? [{ type: "text", text: textContent }] : []),
       ...imageContent
     ];
-  
+
     // Create a structured message for GPT-4 Vision
     const messageForGPT4Vision: Message = {
       role: 'user',
@@ -811,14 +811,6 @@ export const ChatInput = ({
               ))}
             </div>
 
-            {/* Modal for full image preview */}
-            <Modal
-              opened={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
-              title="Image Preview"
-            >
-              <img src={selectedImage || undefined} alt="Selected Preview" />
-            </Modal>
             <textarea
               ref={textareaRef}
               className="flex-grow m-0 w-full resize-none bg-[#070712] p-0 py-2 pl-16 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-2 md:pl-16"

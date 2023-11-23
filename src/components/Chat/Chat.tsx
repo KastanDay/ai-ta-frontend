@@ -29,15 +29,13 @@ import {
   useRef,
   useState,
 } from 'react'
-import toast from 'react-hot-toast'
-import { Button, Container, Text, Title } from '@mantine/core'
+import { Button, Text } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
 import {
   saveConversation,
   saveConversations,
-  updateConversation,
 } from '@/utils/app/conversation'
 import { throttle } from '@/utils/data/throttle'
 
@@ -76,8 +74,6 @@ import ChatNavbar from '../UIUC-Components/navbars/ChatNavbar'
 import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
-import { NextResponse } from 'next/server'
-import { set } from 'zod'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -127,8 +123,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   // const [showSettings, setShowSettings] = useState<boolean>(false)
   const [showScrollDownButton, setShowScrollDownButton] =
     useState<boolean>(false)
-
-  // const [isImg2TextLoading, setIsImg2TextLoading] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -252,8 +246,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           // Add the image description to the searchQuery and the current message content
           searchQuery += ` Image description: ${imgDesc}`;
           (message.content as Content[]).push({ type: 'text', text: `Image description: ${imgDesc}` });
-          console.log("NEW SEARCH QUERY: ", searchQuery);
-          console.log("NEW MESSAGE CONTENT: ", message.content);
+          // Uncomment for debugging
+          // console.log("NEW SEARCH QUERY: ", searchQuery);
+          // console.log("NEW MESSAGE CONTENT: ", message.content);
         })
         .catch(error => {
           console.error('Error in chat.tsx running onResponseCompletion():', error);
@@ -285,9 +280,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ? message.content.map((content) => content.text).join(' ')
         : message.content;
 
-      console.log("QUERY: ", searchQuery)
-
-      // TODO: Add a GPT4V call here to get img > text for retrieval.
+      // console.log("QUERY: ", searchQuery)
 
       if (selectedConversation) {
         let updatedConversation: Conversation
