@@ -190,7 +190,7 @@ export const ChatInput = ({
             image_url: { url }
           }));
 
-        console.log("Final imageUrls: ", imageContent)
+        // console.log("Final imageUrls: ", imageContent)
   
         // Clear the files after uploading
         setImageFiles([]);

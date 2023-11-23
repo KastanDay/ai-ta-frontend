@@ -1,6 +1,6 @@
 import Head from 'next/head'
 // import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
-import { fetchPresignedUrl } from '~/components/UIUC-Components/ContextCards'
+import { fetchPresignedUrl } from '~/utils/apiUtils'
 import { montserrat_heading } from 'fonts'
 import {
   // Card,

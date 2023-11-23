@@ -1,8 +1,23 @@
 // ImagePreview.tsx
 import { useState } from 'react';
-import { Modal } from '@mantine/core';
+import { Modal, createStyles } from '@mantine/core';
 import { montserrat_heading } from 'fonts'
 
+const useStyles = createStyles((theme) => ({
+    imageLoading: {
+        background: 'linear-gradient(90deg, #f0f0f0 0px, rgba(229,229,229,0.8) 40px, #f0f0f0 80px)',
+        backgroundSize: '600px',
+        animation: '$loading 1.2s infinite',
+    },
+    '@keyframes loading': {
+        '0%': {
+            backgroundPosition: '-600px 0',
+        },
+        '100%': {
+            backgroundPosition: '600px 0',
+        },
+    },
+}));
 
 interface ImagePreviewProps {
     src: string;
@@ -11,8 +26,9 @@ interface ImagePreviewProps {
 }
 
 export const ImagePreview: React.FC<ImagePreviewProps> = ({ src, alt, className }) => {
+    const { classes, theme } = useStyles();
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    const [isImageLoaded, setIsImageLoaded] = useState(false);
     return (
         <>
             <img
@@ -20,7 +36,8 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({ src, alt, className 
                 alt={alt}
                 onClick={() => setIsModalOpen(true)}
                 style={{ cursor: 'pointer' }}
-                className={className}
+                onLoad={() => setIsImageLoaded(true)}
+                className={isImageLoaded ? className : `${className} ${classes.imageLoading}`}
             />
             <Modal
                 opened={isModalOpen}

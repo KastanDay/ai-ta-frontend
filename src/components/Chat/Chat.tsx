@@ -258,6 +258,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           console.log("Setting is loading to: ", isImg2TextLoading);
         });
     }
+    return searchQuery
   }
 
   const handleContextSearch = async (message: Message, selectedConversation: Conversation, searchQuery: string) => {
@@ -310,7 +311,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
         // Run image to text conversion, attach to Message object.
         if (Array.isArray(message.content)) {
-          await handleImageContent(message, endpoint, updatedConversation, searchQuery);
+          searchQuery = await handleImageContent(message, endpoint, updatedConversation, searchQuery);
         }
 
         // Run context search, attach to Message object.
@@ -695,7 +696,32 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
     return <span>{message.content}</span>;
   };
-  
+
+  const onImageUrlsUpdate = useCallback((updatedMessage: Message) => {
+    if (selectedConversation) {
+      const updatedMessages = selectedConversation.messages.map((message) =>
+        message === currentMessage ? updatedMessage : message
+      );
+
+      const updatedConversation = {
+        ...selectedConversation,
+        messages: updatedMessages,
+      };
+
+      homeDispatch({
+        field: 'selectedConversation',
+        value: updatedConversation,
+      });
+
+      const updatedConversations = conversations.map((conversation) =>
+        conversation.id === selectedConversation.id ? updatedConversation : conversation
+      );
+
+      homeDispatch({ field: 'conversations', value: updatedConversations });
+      saveConversations(updatedConversations);
+    }
+  }, [selectedConversation, currentMessage, conversations]);
+
 
   return (
     <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
@@ -801,6 +827,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                           selectedConversation?.messages.length - index,
                         )
                       }}
+                      onImageUrlsUpdate={onImageUrlsUpdate}
                     />
                   ))}
                   {loading && <ChatLoader />}

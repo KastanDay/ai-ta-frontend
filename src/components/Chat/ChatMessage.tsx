@@ -24,6 +24,7 @@ import remarkMath from 'remark-math'
 import { ContextCards } from '~/components/UIUC-Components/ContextCards'
 import { ImagePreview } from './ImagePreview'
 import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
+import { fetchPresignedUrl } from '~/utils/apiUtils'
 
 const useStyles = createStyles((theme) => ({
   imageContainerStyle: {
@@ -77,10 +78,11 @@ export interface Props {
   onEdit?: (editedMessage: Message) => void
   context?: ContextWithMetadata[]
   contentRenderer?: (message: Message) => JSX.Element;
+  onImageUrlsUpdate?: (message: Message) => void;
 }
 
 export const ChatMessage: FC<Props> = memo(
-  ({ message, messageIndex, onEdit }) => {
+  ({ message, messageIndex, onEdit, onImageUrlsUpdate }) => {
     const { t } = useTranslation('chat')
 
     const {
@@ -96,14 +98,10 @@ export const ChatMessage: FC<Props> = memo(
 
     const [isEditing, setIsEditing] = useState<boolean>(false)
     const [isTyping, setIsTyping] = useState<boolean>(false)
-    const [messageContent, setMessageContent] = useState(
-      Array.isArray(message.content)
-        ? message.content
-          .filter((content) => content.type === 'text')
-          .map((content) => content.text)
-          .join(' ')
-        : message.content
-    )
+    const [messageContent, setMessageContent] = useState<string>('')
+
+    const [imageUrls, setImageUrls] = useState<string[]>([]);
+
     const [messagedCopied, setMessageCopied] = useState(false)
 
     const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -144,6 +142,36 @@ export const ChatMessage: FC<Props> = memo(
         }
       }
     }, [message.role, messageIsStreaming, messageIndex, selectedConversation])
+
+    useEffect(() => {
+      const fetchUrl = async () => {
+        if (Array.isArray(message.content)) {
+          const updatedContent = await Promise.all(message.content.map(async (content) => {
+            if (content.type === 'image_url' && content.image_url) {
+              console.log("Checking if image url is valid: ", content.image_url.url)
+              const isValid = await checkIfUrlIsValid(content.image_url.url);
+              if (isValid) {
+                setImageUrls(prevUrls => [...prevUrls, content.image_url?.url as string]);
+                return content;
+              } else {
+                const path = extractPathFromUrl(content.image_url.url);
+                console.log("Fetching presigned url for: ", path)
+                const presignedUrl = await getPresignedUrl(path);
+                setImageUrls(prevUrls => [...prevUrls, presignedUrl]);
+                return { ...content, image_url: { url: presignedUrl } };
+              }
+            }
+            return content;
+          }));
+          console.log("Updated content: ", updatedContent)
+          if (onImageUrlsUpdate) {
+            onImageUrlsUpdate({ ...message, content: updatedContent });
+          }
+        }
+      };
+
+      fetchUrl();
+    }, [message.content]);
 
     const toggleEditing = () => {
       setIsEditing(!isEditing)
@@ -217,8 +245,16 @@ export const ChatMessage: FC<Props> = memo(
 
     useEffect(() => {
       // setMessageContent(message.content)
-      console.log('IN ChatMessage 189 adding hi to messages: ', message)
-      setMessageContent(`${message.content} hi`)
+      if (Array.isArray(message.content)) {
+        const textContent = message.content
+          .filter((content) => content.type === 'text')
+          .map((content) => content.text)
+          .join(' ')
+        setMessageContent(textContent)
+      } else {
+        console.log('IN ChatMessage 189 adding hi to messages: ', message)
+        setMessageContent(`${message.content} hi`)
+      }
 
       // RIGHT HERE, run context search.
 
@@ -230,11 +266,52 @@ export const ChatMessage: FC<Props> = memo(
     }, [message.content])
 
     useEffect(() => {
+      setImageUrls([]);
+    }, [message]);
+
+    useEffect(() => {
       if (textareaRef.current) {
         textareaRef.current.style.height = 'inherit'
         textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
       }
     }, [isEditing])
+
+    async function getPresignedUrl(uploadedImageUrl: string): Promise<string> {
+      try {
+        const presignedUrl = await fetchPresignedUrl(uploadedImageUrl);
+        return presignedUrl;
+      } catch (error) {
+        console.error('Failed to fetch presigned URL for', uploadedImageUrl, error);
+        return '';
+      }
+    }
+
+    async function checkIfUrlIsValid(url: string): Promise<boolean> {
+      try {
+        const response = await fetch('/api/UIUC-api/validateS3Url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ url }),
+        });
+        const data = await response.json();
+        console.log('checkIfUrlIsValid data: ', data)
+        return data.isValid;
+      } catch (error) {
+        console.error('Failed to validate URL', url, error);
+        return false;
+      }
+    }
+
+    function extractPathFromUrl(url: string): string {
+      const urlObject = new URL(url);
+      let path = urlObject.pathname
+      if (path.startsWith('/')) {
+        path = path.substring(1);
+      }
+      return path;
+    }
 
     return (
       <div
@@ -315,7 +392,7 @@ export const ChatMessage: FC<Props> = memo(
                             {message.content.filter(item => item.type === 'image_url').map((content, index) => (
                               <div key={index} className={classes.imageContainerStyle}>
                                 <div className="shadow-lg rounded-lg overflow-hidden">
-                                  <ImagePreview src={content.image_url?.url as string} alt="Chat message" className={classes.imageStyle} />
+                                  <ImagePreview src={imageUrls[index] as string} alt="Chat message" className={classes.imageStyle} />
                                 </div>
                               </div>
                             ))}

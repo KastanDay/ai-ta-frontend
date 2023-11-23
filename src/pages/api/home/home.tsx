@@ -359,6 +359,11 @@ const Home = () => {
     dispatch({ field: 'conversations', value: all })
   }
 
+  // Image to Text
+  const setIsImg2TextLoading = (isImg2TextLoading: boolean) => {
+    dispatch({ field: 'isImg2TextLoading', value: isImg2TextLoading });
+  };
+
   // EFFECTS  --------------------------------------------
 
   useEffect(() => {
@@ -477,6 +482,7 @@ const Home = () => {
         handleUpdateFolder,
         handleSelectConversation,
         handleUpdateConversation,
+        setIsImg2TextLoading
       }}
     >
       <Head>

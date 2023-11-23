@@ -161,7 +161,7 @@ import { ChatInput } from './ChatInput'
 import { ChatLoader } from './ChatLoader'
 import { ErrorMessageDiv } from './ErrorMessageDiv'
 import { MemoizedChatMessage } from './MemoizedChatMessage'
-import { fetchPresignedUrl } from '~/components/UIUC-Components/ContextCards'
+
 
 import { type CourseMetadata } from '~/types/courseMetadata'
 
@@ -183,6 +183,7 @@ import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import ChatNavbar from '../UIUC-Components/navbars/ChatNavbar'
+import { fetchPresignedUrl } from '~/utils/apiUtils'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -343,6 +344,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
           course_name: getCurrentPageName(),
+          stream: true
         }
         const endpoint = getEndpoint(plugin) // THIS is where we could support EXTREME prompt stuffing.
         let body
