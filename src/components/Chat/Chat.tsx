@@ -178,6 +178,102 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
   }
 
+  const handleImageContent = async (message: Message, endpoint: string, updatedConversation: Conversation, searchQuery: string) => {
+    const imageContent = (message.content as Content[]).filter(content => content.type === 'image_url');
+    if (imageContent.length > 0) {
+      homeDispatch({ field: 'isImg2TextLoading', value: true })
+      const chatBody: ChatBody = {
+        model: updatedConversation.model,
+        messages: [
+          {
+            ...message,
+            content: [
+              ...imageContent,
+              { type: 'text', text: 'Describe the image, be concise' }
+            ]
+          }
+        ],
+        key: courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != '' ? courseMetadata.openai_api_key : apiKey,
+        prompt: updatedConversation.prompt,
+        temperature: updatedConversation.temperature,
+        course_name: getCurrentPageName(),
+        stream: false
+      };
+
+      fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(chatBody),
+      })
+        .then(async response => {
+          if (!response.ok) {
+            const final_response = await response.json();
+            homeDispatch({ field: 'loading', value: false });
+            homeDispatch({ field: 'messageIsStreaming', value: false });
+            notifications.show({
+              id: 'error-notification',
+              withCloseButton: true,
+              closeButtonProps: { color: 'blue' },
+              onClose: () => console.log('error unmounted'),
+              onOpen: () => console.log('error mounted'),
+              autoClose: 12000,
+              title: (
+                <Text size={'lg'} className={`${montserrat_med.className}`}>
+                  {final_response.name}
+                </Text>
+              ),
+              message: (
+                <Text className={`${montserrat_med.className} text-neutral-200`}>
+                  {final_response.message}
+                </Text>
+              ),
+              color: 'red',
+              radius: 'lg',
+              icon: <IconAlertCircle />,
+              className: 'my-notification-class',
+              style: {
+                backgroundColor: 'rgba(42,42,64,0.3)',
+                backdropFilter: 'blur(10px)',
+                borderLeft: '5px solid red',
+              },
+              withBorder: true,
+              loading: false,
+            });
+            throw new Error(final_response.message);
+          }
+          return response.json();
+        })
+        .then(data => {
+          const imgDesc = data.choices[0].message.content || '';
+          console.log("Image > Text response: ", data);
+
+          // Add the image description to the searchQuery and the current message content
+          searchQuery += ` Image description: ${imgDesc}`;
+          (message.content as Content[]).push({ type: 'text', text: `Image description: ${imgDesc}` });
+          console.log("NEW SEARCH QUERY: ", searchQuery);
+          console.log("NEW MESSAGE CONTENT: ", message.content);
+        })
+        .catch(error => {
+          console.error('Error in chat.tsx running onResponseCompletion():', error);
+        })
+        .finally(() => {
+          homeDispatch({ field: 'isImg2TextLoading', value: false })
+          console.log("Setting is loading to: ", isImg2TextLoading);
+        });
+    }
+  }
+
+  const handleContextSearch = async (message: Message, selectedConversation: Conversation, searchQuery: string) => {
+    if (getCurrentPageName() != 'gpt4') {
+      const token_limit = OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
+      await fetchContexts(getCurrentPageName(), searchQuery, token_limit).then((curr_contexts) => {
+        message.contexts = curr_contexts as ContextWithMetadata[]
+      })
+    }
+  }
+
   // THIS IS WHERE MESSAGES ARE SENT.
   const handleSend = useCallback(
     async (message: Message, deleteCount = 0, plugin: Plugin | null = null) => {
@@ -219,107 +315,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
         const endpoint = getEndpoint(plugin);
 
+        // Run image to text conversion, attach to Message object.
         if (Array.isArray(message.content)) {
-          const imageContent = message.content.filter(content => content.type === 'image_url');
-          if (imageContent.length > 0) {
-            homeDispatch({ field: 'isImg2TextLoading', value: true })
-            const chatBody: ChatBody = {
-              model: updatedConversation.model,
-              messages: [
-                {
-                  ...message,
-                  content: [
-                    ...imageContent,
-                    { type: 'text', text: 'Describe the image, be concise' }
-                  ]
-                }
-              ],
-              key: courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != '' ? courseMetadata.openai_api_key : apiKey,
-              prompt: updatedConversation.prompt,
-              temperature: updatedConversation.temperature,
-              course_name: getCurrentPageName(),
-              stream: false
-            };
-
-            fetch(endpoint, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(chatBody),
-            })
-              .then(async response => {
-                if (!response.ok) {
-                  const final_response = await response.json();
-                  homeDispatch({ field: 'loading', value: false });
-                  homeDispatch({ field: 'messageIsStreaming', value: false });
-                  notifications.show({
-                    id: 'error-notification',
-                    withCloseButton: true,
-                    closeButtonProps: { color: 'blue' },
-                    onClose: () => console.log('error unmounted'),
-                    onOpen: () => console.log('error mounted'),
-                    autoClose: 12000,
-                    title: (
-                      <Text size={'lg'} className={`${montserrat_med.className}`}>
-                        {final_response.name}
-                      </Text>
-                    ),
-                    message: (
-                      <Text className={`${montserrat_med.className} text-neutral-200`}>
-                        {final_response.message}
-                      </Text>
-                    ),
-                    color: 'red',
-                    radius: 'lg',
-                    icon: <IconAlertCircle />,
-                    className: 'my-notification-class',
-                    style: {
-                      backgroundColor: 'rgba(42,42,64,0.3)',
-                      backdropFilter: 'blur(10px)',
-                      borderLeft: '5px solid red',
-                    },
-                    withBorder: true,
-                    loading: false,
-                  });
-                  throw new Error(final_response.message);
-                }
-                return response.json();
-              })
-              .then(data => {
-                const imgDesc = data.choices[0].message.content || '';
-                console.log("Image > Text response: ", data);
-
-                // Add the image description to the searchQuery and the current message content
-                searchQuery += ` Image description: ${imgDesc}`;
-                (message.content as Content[]).push({ type: 'text', text: `Image description: ${imgDesc}` });
-                console.log("NEW SEARCH QUERY: ", searchQuery);
-                console.log("NEW MESSAGE CONTENT: ", message.content);
-              })
-              .catch(error => {
-                console.error('Error in chat.tsx running onResponseCompletion():', error);
-              })
-              .finally(() => {
-                homeDispatch({ field: 'isImg2TextLoading', value: false })
-                console.log("Setting is loading to: ", isImg2TextLoading);
-              });
-          }
+          await handleImageContent(message, endpoint, updatedConversation, searchQuery);
         }
 
         // Run context search, attach to Message object.
-        if (getCurrentPageName() != 'gpt4') {
-          // THE ONLY place we fetch contexts (except ExtremePromptStuffing is still in api/chat.ts)
-          const token_limit =
-            OpenAIModels[selectedConversation?.model.id as OpenAIModelID]
-              .tokenLimit
-          await fetchContexts(
-            getCurrentPageName(),
-            searchQuery,
-            token_limit,
-          ).then((curr_contexts) => {
-            message.contexts = curr_contexts as ContextWithMetadata[]
-          })
-        }
+        await handleContextSearch(message, selectedConversation, searchQuery);
         
         const chatBody: ChatBody = {
           model: updatedConversation.model,
@@ -352,6 +354,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
 
         const controller = new AbortController()
+
+        // This is where we call the OpenAI API
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
