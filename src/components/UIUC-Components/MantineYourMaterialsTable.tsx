@@ -1,6 +1,6 @@
 'use client';
 
-import { ActionIcon, Box, Button, Group, MultiSelect, Stack, TextInput, Text, MantineProvider, createStyles, Paper, Center } from '@mantine/core';
+import { ActionIcon, Box, Button, Modal, Group, MultiSelect, Stack, TextInput, Text, MantineProvider, createStyles, Paper, Center } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { IconEdit, IconEye, IconSearch, IconTrash, IconX } from '@tabler/icons-react';
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
@@ -85,6 +85,7 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
 
   const [query, setQuery] = useState('');
   const [debouncedQuery] = useDebouncedValue(query, 200);
+  const [modalOpened, setModalOpened] = useState(false);
 
 
   useEffect(() => {
@@ -220,40 +221,29 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
                     window.open(urlToOpen, '_blank');
                   }
                   else if (action === 'delete') {
-                    modals.openConfirmModal({
-                      title: 'Please confirm your action',
-                      children: (
-                        <Text size="sm" style={{ color: 'white' }}>
-                          {`Are you sure you want to delete the file: ${materials.s3_path ? materials.s3_path : materials.url}`}
-                        </Text>
-                      ),
-                      labels: { confirm: 'Delete', cancel: 'Cancel' },
-                      onConfirm: () => handleDelete(materials.course_name, materials.s3_path, materials.url),
-                    });
+                    setModalOpened(true);
                   }
                 };
 
                 return (
-                  <ModalsProvider>
-                    <Group>
-                      <ActionIcon
-                        size="sm"
-                        variant="subtle"
-                        color="green"
-                        onClick={() => openModal('view')}
-                      >
-                        <IconEye size={16} />
-                      </ActionIcon>
-                      <ActionIcon
-                        size="sm"
-                        variant="subtle"
-                        color="red"
-                        onClick={() => openModal('delete')}
-                      >
-                        <IconTrash size={16} />
-                      </ActionIcon>
-                    </Group>
-                  </ModalsProvider>
+                  <Group>
+                    <ActionIcon
+                      size="sm"
+                      variant="subtle"
+                      color="green"
+                      onClick={() => openModal('view')}
+                    >
+                      <IconEye size={16} />
+                    </ActionIcon>
+                    <ActionIcon
+                      size="sm"
+                      variant="subtle"
+                      color="red"
+                      onClick={() => openModal('delete')}
+                    >
+                      <IconTrash size={16} />
+                    </ActionIcon>
+                  </Group>
                 );
               },
             },
@@ -275,23 +265,7 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
             leftIcon={<IconTrash size={16} />}
             color="red"
             disabled={!selectedRecords.length}
-            onClick={async () => {
-              if (selectedRecords.length) {
-                modals.openConfirmModal({
-                  title: 'Please confirm your action',
-                  children: (
-                    <Text size="sm" style={{ color: 'white' }}>
-                      {`Are you sure you want to delete the selected records?`}
-                    </Text>
-                  ),
-                  labels: { confirm: 'Delete', cancel: 'Cancel' },
-                  onConfirm: async () => {
-                    const promises = selectedRecords.map(record => handleDelete(record.readable_filename, record.s3_path, record.url));
-                    await Promise.all(promises);
-                  },
-                });
-              }
-            }}
+            onClick={() => setModalOpened(true)}
           >
             {selectedRecords.length
               ? `Delete ${selectedRecords.length === 1 ? 'one selected record' : `${selectedRecords.length} selected records`
@@ -300,6 +274,37 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
           </Button>
         </Center>
       </Paper>
+      <Modal
+        opened={modalOpened}
+        onClose={() => setModalOpened(false)}
+        title="Please confirm your action"
+      >
+        <Text size="sm" style={{ color: 'white' }}>
+          {`Are you sure you want to delete the selected records?`}
+        </Text>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+          <Button
+            color="purple"
+            onClick={() => {
+              console.log('Cancel button clicked')
+              setModalOpened(false);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            color="purple"
+            onClick={async () => {
+              for (const record of selectedRecords) {
+                await handleDelete(record.readable_filename, record.s3_path, record.url);
+              }
+              setModalOpened(false);
+            }}
+          >
+            Delete
+          </Button>
+        </div>
+      </Modal>
     </>
   );
 }
