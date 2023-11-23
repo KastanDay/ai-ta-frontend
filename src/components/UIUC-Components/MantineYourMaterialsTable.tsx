@@ -275,7 +275,7 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
             leftIcon={<IconTrash size={16} />}
             color="red"
             disabled={!selectedRecords.length}
-            onClick={() => {
+            onClick={async () => {
               if (selectedRecords.length) {
                 modals.openConfirmModal({
                   title: 'Please confirm your action',
@@ -286,9 +286,8 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
                   ),
                   labels: { confirm: 'Delete', cancel: 'Cancel' },
                   onConfirm: async () => {
-                    for (const record of selectedRecords) {
-                      await handleDelete(record.readable_filename, record.s3_path, record.url);
-                    }
+                    const promises = selectedRecords.map(record => handleDelete(record.readable_filename, record.s3_path, record.url));
+                    await Promise.all(promises);
                   },
                 });
               }
