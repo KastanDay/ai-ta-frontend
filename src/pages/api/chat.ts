@@ -17,7 +17,7 @@ export const config = {
 
 const handler = async (req: Request): Promise<NextResponse> => {
   try {
-    const { model, messages, key, prompt, temperature, course_name } =
+    const { model, messages, key, prompt, temperature, course_name, stream } =
       (await req.json()) as ChatBody
 
     await init((imports) => WebAssembly.instantiate(wasm, imports))
@@ -68,7 +68,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
     // else if (course_name == 'global' || course_name == 'search-all') {
     // todo
     // }
-    else {
+    else if (stream) {
       // regular context stuffing
       const stuffedPrompt = (await getStuffedPrompt(
         course_name,
@@ -123,22 +123,27 @@ const handler = async (req: Request): Promise<NextResponse> => {
     }
     encoding.free() // keep this
 
-    // console.log('Prompt being sent to OpenAI: ', promptToSend)
-    // console.log('Message history being sent to OpenAI: ', messagesToSend)
+    console.log('Prompt being sent to OpenAI: ', promptToSend)
+    console.log('Message history being sent to OpenAI: ', messagesToSend)
 
     // Add custom instructions to system prompt
     const systemPrompt =
       promptToSend + "Only answer if it's related to the course materials."
 
-    const stream = await OpenAIStream(
+    const apiStream = await OpenAIStream(
       model,
       systemPrompt,
       temperatureToUse,
       key,
       messagesToSend,
+      stream
     )
+    if (stream) {
+      return new NextResponse(apiStream)
+    } else {
+      return new NextResponse(JSON.stringify(apiStream))
+    }
 
-    return new NextResponse(stream)
   } catch (error) {
     if (error instanceof OpenAIError) {
       const { name, message } = error

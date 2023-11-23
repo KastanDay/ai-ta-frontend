@@ -42,6 +42,7 @@ export interface ChatBody {
   prompt: string
   temperature: number
   course_name: string
+  stream: boolean
   // NO FOLDER ID
 }
 

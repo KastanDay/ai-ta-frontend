@@ -23,6 +23,7 @@ import remarkMath from 'remark-math'
 
 import { ContextCards } from '~/components/UIUC-Components/ContextCards'
 import { ImagePreview } from './ImagePreview'
+import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
 
 const useStyles = createStyles((theme) => ({
   imageContainerStyle: {
@@ -75,7 +76,7 @@ export interface Props {
   messageIndex: number
   onEdit?: (editedMessage: Message) => void
   context?: ContextWithMetadata[]
-  contentRenderer?: (message: Message) => JSX.Element; // Add this line
+  contentRenderer?: (message: Message) => JSX.Element;
 }
 
 export const ChatMessage: FC<Props> = memo(
@@ -88,6 +89,7 @@ export const ChatMessage: FC<Props> = memo(
         conversations,
         currentMessage,
         messageIsStreaming,
+        isImg2TextLoading
       },
       dispatch: homeDispatch,
     } = useContext(HomeContext)
@@ -303,6 +305,12 @@ export const ChatMessage: FC<Props> = memo(
                           {message.content.filter(item => item.type === 'text').map((content, index) => (
                             <p key={index} className="self-start text-base font-medium">{content.text}</p>
                           ))}
+                          {isImg2TextLoading && (
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                              <p style={{ marginRight: '10px', fontWeight: 'bold' }}>Generating Image Description:</p>
+                              <LoadingSpinner />
+                            </div>
+                          )}
                           <div className="flex flex-wrap -m-1 justify-start w-full">
                             {message.content.filter(item => item.type === 'image_url').map((content, index) => (
                               <div key={index} className={classes.imageContainerStyle}>

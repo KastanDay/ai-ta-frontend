@@ -34,7 +34,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({ src, alt, className 
                 overlayProps={{ blur: 3, opacity: 0.55 }}
                 styles={{
                     header: {
-                        backgroundColor: '#15162c',
+                        backgroundColor: '[rgba(42,42,120,0.55)]',
                     },
                     body: {
                         backgroundColor: '#15162c',
