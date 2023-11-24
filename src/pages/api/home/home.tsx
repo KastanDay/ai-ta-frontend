@@ -364,7 +364,80 @@ const Home = () => {
     dispatch({ field: 'isImg2TextLoading', value: isImg2TextLoading });
   };
 
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [dragEnterCounter, setDragEnterCounter] = useState(0);
+
+  const GradientIconPhoto = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-photo" width="256" height="256" viewBox="0 0 24 24" strokeWidth="1.5" stroke="url(#gradient)" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <defs>
+        <linearGradient id="gradient" x1="100%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stopColor="#8A3FFC" />
+          <stop offset="100%" stopColor="#E94057" />
+        </linearGradient>
+      </defs>
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <line x1="15" y1="8" x2="15.01" y2="8" />
+      <rect x="4" y="4" width="16" height="16" rx="3" />
+      <path d="M4 15l4 -4a3 5 0 0 1 3 0l 4 4" />
+      <path d="M14 14l1 -1a3 5 0 0 1 3 0l2 2" />
+    </svg>
+  );
+
   // EFFECTS  --------------------------------------------
+  useEffect(() => {
+    const handleDocumentDragOver = (e: DragEvent) => {
+      e.preventDefault();
+    };
+  
+    const handleDocumentDragEnter = (e: DragEvent) => {
+      setDragEnterCounter((prev) => prev + 1);
+      setIsDragging(true);
+    };
+  
+    const handleDocumentDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      setDragEnterCounter((prev) => prev - 1);
+      if (dragEnterCounter === 1 || e.relatedTarget === null) {
+        setIsDragging(false);
+      }
+    };
+  
+    const handleDocumentDrop = (e: DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      setDragEnterCounter(0);
+    };
+  
+    const handleDocumentKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsDragging(false);
+        setDragEnterCounter(0);
+      }
+    };
+  
+    const handleMouseOut = (e: MouseEvent) => {
+      if (!e.relatedTarget) {
+        setIsDragging(false);
+        setDragEnterCounter(0);
+      }
+    };
+  
+    document.addEventListener('dragover', handleDocumentDragOver);
+    document.addEventListener('dragenter', handleDocumentDragEnter);
+    document.addEventListener('dragleave', handleDocumentDragLeave);
+    document.addEventListener('drop', handleDocumentDrop);
+    document.addEventListener('keydown', handleDocumentKeyDown);
+    window.addEventListener('mouseout', handleMouseOut);
+  
+    return () => {
+      document.removeEventListener('dragover', handleDocumentDragOver);
+      document.removeEventListener('dragenter', handleDocumentDragEnter);
+      document.removeEventListener('dragleave', handleDocumentDragLeave);
+      document.removeEventListener('drop', handleDocumentDrop);
+      document.removeEventListener('keydown', handleDocumentKeyDown);
+      window.removeEventListener('mouseout', handleMouseOut);
+    };
+  }, []);
 
   useEffect(() => {
     if (window.innerWidth < 640) {
@@ -473,55 +546,65 @@ const Home = () => {
     return <></>
   }
   return (
-    <HomeContext.Provider
-      value={{
-        ...contextValue,
-        handleNewConversation,
-        handleCreateFolder,
-        handleDeleteFolder,
-        handleUpdateFolder,
-        handleSelectConversation,
-        handleUpdateConversation,
-        setIsImg2TextLoading
-      }}
-    >
-      <Head>
-        <title>UIUC.chat</title>
-        <meta name="description" content="ChatGPT but better." />
-        <meta
-          name="viewport"
-          content="height=device-height ,width=device-width, initial-scale=1, user-scalable=no"
-        />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      {selectedConversation && (
-        <main
-          className={`flex h-screen w-screen flex-col text-sm text-white dark:text-white ${lightMode}`}
-        >
-          <div className="fixed top-0 w-full sm:hidden">
-            <Navbar
-              selectedConversation={selectedConversation}
-              onNewConversation={handleNewConversation}
-            />
-          </div>
-
-          <div className="flex h-full w-full pt-[48px] sm:pt-0">
-            <Chatbar />
-
-            <div className="flex flex-1">
-              {course_metadata && (
-                <Chat
-                  stopConversationRef={stopConversationRef}
-                  courseMetadata={course_metadata}
-                />
-              )}
+    <div>
+      <HomeContext.Provider
+        value={{
+          ...contextValue,
+          handleNewConversation,
+          handleCreateFolder,
+          handleDeleteFolder,
+          handleUpdateFolder,
+          handleSelectConversation,
+          handleUpdateConversation,
+          setIsImg2TextLoading
+        }}
+      >
+        <Head>
+          <title>UIUC.chat</title>
+          <meta name="description" content="ChatGPT but better." />
+          <meta
+            name="viewport"
+            content="height=device-height ,width=device-width, initial-scale=1, user-scalable=no"
+          />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
+        {selectedConversation && (
+          <main
+            className={`flex h-screen w-screen flex-col text-sm text-white dark:text-white ${lightMode}`}
+          >
+            <div className="fixed top-0 w-full sm:hidden">
+              <Navbar
+                selectedConversation={selectedConversation}
+                onNewConversation={handleNewConversation}
+              />
             </div>
 
-            <Promptbar />
-          </div>
-        </main>
-      )}
-    </HomeContext.Provider>
+            <div className="flex h-full w-full pt-[48px] sm:pt-0">
+              {isDragging && (
+                <div
+                  className="absolute inset-0 w-full h-full flex flex-col justify-center items-center bg-black opacity-75 z-10"
+                >
+                  <GradientIconPhoto />
+                  <span className="text-3xl font-extrabold text-white">Drop your image here!</span>
+                </div>
+              )}
+              <Chatbar />
+
+              <div className="flex flex-1">
+                {course_metadata && (
+                  <Chat
+                    stopConversationRef={stopConversationRef}
+                    courseMetadata={course_metadata}
+                  />
+                )}
+              </div>
+
+              <Promptbar />
+            </div>
+          </main>
+        )}
+      </HomeContext.Provider>
+    </div>
   )
 }
 export default Home

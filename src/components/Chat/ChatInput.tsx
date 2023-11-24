@@ -674,14 +674,7 @@ export const ChatInput = ({
   }
 
   return (
-    <div className={`absolute bottom-0 left-0 w-full border-transparent bg-transparent pt-6 dark:border-white/20 md:pt-2 ${isDragging ? 'border-4 border-dashed border-blue-400' : ''}`}>
-      {isDragging && (
-          <div
-            className="absolute inset-0 w-full h-full flex justify-center items-center bg-black opacity-75 z-10"  // Added z-10 to ensure it's on top, changed background to a semi-transparent black
-          >
-            <span className="text-2xl font-extrabold text-white">Drop your image here!</span>
-          </div>
-      )}
+    <div className={`absolute bottom-0 left-0 w-full border-transparent bg-transparent pt-6 dark:border-white/20 md:pt-2`}>
       <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
         {messageIsStreaming && (
           <button
