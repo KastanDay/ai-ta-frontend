@@ -775,7 +775,7 @@ export const ChatInput = ({
             <div className="flex space-x-3" style={{ display: imagePreviewUrls.length > 0 ? 'flex' : 'none' }}>
               {imagePreviewUrls.map((src, index) => (
                 <div key={src} className="relative w-12 h-12">
-                  <ImagePreview src={src} alt={`Preview ${index}`} />
+                  <ImagePreview src={src} alt={`Preview ${index}`} className="object-cover w-full h-full rounded-lg" />
                   <Tooltip
                     label="Remove File"
                     position="top"
