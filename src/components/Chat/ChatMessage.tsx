@@ -25,6 +25,8 @@ import { ContextCards } from '~/components/UIUC-Components/ContextCards'
 import { ImagePreview } from './ImagePreview'
 import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
 const useStyles = createStyles((theme) => ({
   imageContainerStyle: {
@@ -78,7 +80,7 @@ export interface Props {
   onEdit?: (editedMessage: Message) => void
   context?: ContextWithMetadata[]
   contentRenderer?: (message: Message) => JSX.Element;
-  onImageUrlsUpdate?: (message: Message) => void;
+  onImageUrlsUpdate?: (message: Message, messageIndex: number) => void;
 }
 
 export const ChatMessage: FC<Props> = memo(
@@ -145,11 +147,12 @@ export const ChatMessage: FC<Props> = memo(
 
     useEffect(() => {
       const fetchUrl = async () => {
+        let isValid = false;
         if (Array.isArray(message.content)) {
           const updatedContent = await Promise.all(message.content.map(async (content) => {
             if (content.type === 'image_url' && content.image_url) {
               console.log("Checking if image url is valid: ", content.image_url.url)
-              const isValid = await checkIfUrlIsValid(content.image_url.url);
+              isValid = await checkIfUrlIsValid(content.image_url.url);
               if (isValid) {
                 setImageUrls(prevUrls => [...prevUrls, content.image_url?.url as string]);
                 return content;
@@ -163,15 +166,15 @@ export const ChatMessage: FC<Props> = memo(
             }
             return content;
           }));
-          console.log("Updated content: ", updatedContent)
-          if (onImageUrlsUpdate) {
-            onImageUrlsUpdate({ ...message, content: updatedContent });
+          if (!isValid && onImageUrlsUpdate && updatedContent !== message.content) {
+            console.log("Updated content: ", updatedContent, "Previous content: ", message.content)
+            onImageUrlsUpdate({ ...message, content: updatedContent }, messageIndex);
           }
         }
       };
 
       fetchUrl();
-    }, [message.content]);
+    }, [message.content, messageIndex, onImageUrlsUpdate]);
 
     const toggleEditing = () => {
       setIsEditing(!isEditing)
@@ -251,10 +254,12 @@ export const ChatMessage: FC<Props> = memo(
           .map((content) => content.text)
           .join(' ')
         setMessageContent(textContent)
+        // console.log('IN ChatMessage 188 adding hi to messages: ', message)
       } else {
-        console.log('IN ChatMessage 189 adding hi to messages: ', message)
+        // console.log('IN ChatMessage 189 adding hi to messages: ', message)
         setMessageContent(`${message.content} hi`)
       }
+      console.log('IN ChatMessage 189 adding hi to messages: ', message)
 
       // RIGHT HERE, run context search.
 
@@ -288,18 +293,32 @@ export const ChatMessage: FC<Props> = memo(
 
     async function checkIfUrlIsValid(url: string): Promise<boolean> {
       try {
-        const response = await fetch('/api/UIUC-api/validateS3Url', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ url }),
-        });
-        const data = await response.json();
-        console.log('checkIfUrlIsValid data: ', data)
-        return data.isValid;
+        dayjs.extend(utc);
+        const urlObject = new URL(url);
+        let creationDateString = urlObject.searchParams.get('X-Amz-Date') as string
+
+        // Manually reformat the creationDateString to standard ISO 8601 format
+        creationDateString = creationDateString.replace(
+          /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
+          '$1-$2-$3T$4:$5:$6Z'
+        );
+
+        // Adjust the format in the dayjs.utc function if necessary
+        const creationDate = dayjs.utc(creationDateString, 'YYYYMMDDTHHmmss[Z]');
+
+        const expiresInSecs = Number(urlObject.searchParams.get('X-Amz-Expires') as string);
+
+        const expiryDate = creationDate.add(expiresInSecs, 'second');
+        const isExpired = expiryDate.toDate() < new Date();
+
+        if (isExpired) {
+          console.log('URL is expired'); // Keep this log if necessary for debugging
+          return false;
+        } else {
+          return true;
+        }
       } catch (error) {
-        console.error('Failed to validate URL', url, error);
+        console.error('Failed to validate URL', url, error); 
         return false;
       }
     }
@@ -382,7 +401,7 @@ export const ChatMessage: FC<Props> = memo(
                           {message.content.filter(item => item.type === 'text').map((content, index) => (
                             <p key={index} className="self-start text-base font-medium">{content.text}</p>
                           ))}
-                          {isImg2TextLoading && (
+                          {isImg2TextLoading && messageIndex == (selectedConversation?.messages.length ?? 0) - 1 && (
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                               <p style={{ marginRight: '10px', fontWeight: 'bold' }}>Generating Image Description:</p>
                               <LoadingSpinner />

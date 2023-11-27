@@ -495,6 +495,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             updatedConversations.push(updatedConversation)
           }
           homeDispatch({ field: 'conversations', value: updatedConversations })
+          console.log('updatedConversations: ', updatedConversations)
           saveConversations(updatedConversations)
           homeDispatch({ field: 'messageIsStreaming', value: false })
         } else {
@@ -697,30 +698,46 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     return <span>{message.content}</span>;
   };
 
-  const onImageUrlsUpdate = useCallback((updatedMessage: Message) => {
-    if (selectedConversation) {
-      const updatedMessages = selectedConversation.messages.map((message) =>
-        message === currentMessage ? updatedMessage : message
-      );
+  const updateMessages = (updatedMessage: Message, messageIndex: number) => {
+    return selectedConversation?.messages.map((message, index) => {
+      return index === messageIndex ? updatedMessage : message;
+    });
+  };
 
-      const updatedConversation = {
-        ...selectedConversation,
-        messages: updatedMessages,
-      };
+  const updateConversations = (updatedConversation: Conversation) => {
+    return conversations.map((conversation) =>
+      conversation.id === selectedConversation?.id ? updatedConversation : conversation
+    );
+  };
 
-      homeDispatch({
-        field: 'selectedConversation',
-        value: updatedConversation,
-      });
-
-      const updatedConversations = conversations.map((conversation) =>
-        conversation.id === selectedConversation.id ? updatedConversation : conversation
-      );
-
-      homeDispatch({ field: 'conversations', value: updatedConversations });
-      saveConversations(updatedConversations);
+  const onImageUrlsUpdate = useCallback((updatedMessage: Message, messageIndex: number) => {
+    if (!selectedConversation) {
+      throw new Error("No selected conversation found");
     }
-  }, [selectedConversation, currentMessage, conversations]);
+
+    const updatedMessages = updateMessages(updatedMessage, messageIndex);
+    if (!updatedMessages) {
+      throw new Error("Failed to update messages");
+    }
+
+    const updatedConversation = {
+      ...selectedConversation,
+      messages: updatedMessages,
+    };
+
+    homeDispatch({
+      field: 'selectedConversation',
+      value: updatedConversation,
+    });
+
+    const updatedConversations = updateConversations(updatedConversation);
+    if (!updatedConversations) {
+      throw new Error("Failed to update conversations");
+    }
+
+    homeDispatch({ field: 'conversations', value: updatedConversations });
+    saveConversations(updatedConversations);
+  }, [selectedConversation, conversations]);
 
 
   return (
