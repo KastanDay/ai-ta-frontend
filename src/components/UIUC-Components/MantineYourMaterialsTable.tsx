@@ -10,10 +10,31 @@ import { modals, openConfirmModal, useModals, ModalsProvider } from '@mantine/mo
 import { showToastOnFileDeleted } from './MakeOldCoursePage';
 import axios from 'axios';
 import { showNotification } from '@mantine/notifications';
+import { createGlobalStyle } from 'styled-components';
 
+const GlobalStyle = createGlobalStyle`
+// these mantine class names may change in future versions
+
+  .mantine-ja02in:checked {
+    background-color: #1d1d32;
+    border-color: hsl(280,100%,70%);
+  } 
+
+  .mantine-Table-root thead tr {
+    background-color: #15162a; 
+  }
+
+  .mantine-12xbt4w[data-hover] tbody tr {
+    background-color: purple;
+}
+
+  // .table[data-striped] tbody .mantine-1azweqx.mantine-1azweqx:nth-of-type {
+  //   background: white; 
+  // }
+`;
 
 const useStyles = createStyles((theme) => ({
-  // How to change hearder color 
+  // How to change header color 
   // root: {
   //   '& tr': {
   //     backgroundColor: theme.colorScheme === 'dark' ? '#15162a' : '#fff',
@@ -22,6 +43,12 @@ const useStyles = createStyles((theme) => ({
   //     backgroundColor: theme.colorScheme === 'dark' ? '#15162a' : '#fff',
   //   },
   // },
+  selected: {
+    backgroundColor: theme.colorScheme === 'dark' ? '#5a30b5' : '#d6b5f6', // purple color for selected row
+  },
+  hovered: {
+    backgroundColor: theme.colorScheme === 'dark' ? '#5a30b5' : '#d6b5f6', // purple color for hovered row
+  },
 }));
 
 interface CourseDocuments {
@@ -130,6 +157,8 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
 
   return (
     <>
+      <GlobalStyle />
+
       <DataTable
         borderRadius="lg"
         withColumnBorders
@@ -173,7 +202,7 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
               filter: (
                 <TextInput
                   label="URL"
-                  description="Show all urls "
+                  description="Show all urls that include the specified text"
                   placeholder="Search urls..."
                   rightSection={
                     <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
@@ -187,12 +216,12 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
               filtering: query !== '',
             },
             {
-              accessor: 'Starting URL of Web Scrape',
+              accessor: 'The Hostname of URL',
               render: ({ base_url }) => base_url ? `${base_url}` : '',
               filter: (
                 <TextInput
-                  label="Starting URL of Web Scrape"
-                  description="Show all urls "
+                  label="The Hostname of URL"
+                  description="Show all urls that include the specified text"
                   placeholder="Search urls..."
                   rightSection={
                     <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
@@ -284,16 +313,20 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
         </Text>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
           <Button
-            color="purple"
+            className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
             onClick={() => {
               console.log('Cancel button clicked')
               setModalOpened(false);
+            }}
+            style={{
+              backgroundColor: 'transparent',
+              marginRight: '7px',
             }}
           >
             Cancel
           </Button>
           <Button
-            color="purple"
+            className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
             onClick={async () => {
               for (const record of selectedRecords) {
                 await handleDelete(record.readable_filename, record.s3_path, record.url);
