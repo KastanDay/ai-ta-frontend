@@ -16,21 +16,14 @@ const GlobalStyle = createGlobalStyle`
 // these mantine class names may change in future versions
 
   .mantine-ja02in:checked {
-    background-color: #1d1d32;
-    border-color: hsl(280,100%,70%);
+    background-color: purple;
+    border-color: hsl(280,100%,80%);
   } 
 
   .mantine-Table-root thead tr {
     background-color: #15162a; 
   }
 
-  .mantine-12xbt4w[data-hover] tbody tr {
-    background-color: purple;
-}
-
-  // .table[data-striped] tbody .mantine-1azweqx.mantine-1azweqx:nth-of-type {
-  //   background: white; 
-  // }
 `;
 
 const useStyles = createStyles((theme) => ({
@@ -43,12 +36,12 @@ const useStyles = createStyles((theme) => ({
   //     backgroundColor: theme.colorScheme === 'dark' ? '#15162a' : '#fff',
   //   },
   // },
-  selected: {
-    backgroundColor: theme.colorScheme === 'dark' ? '#5a30b5' : '#d6b5f6', // purple color for selected row
-  },
-  hovered: {
-    backgroundColor: theme.colorScheme === 'dark' ? '#5a30b5' : '#d6b5f6', // purple color for hovered row
-  },
+  // selected: {
+  //   backgroundColor: theme.colorScheme === 'dark' ? '#5a30b5' : '#d6b5f6', // purple color for selected row
+  // },
+  // hovered: {
+  //   backgroundColor: theme.colorScheme === 'dark' ? '#5a30b5' : '#d6b5f6', // purple color for hovered row
+  // },
 }));
 
 interface CourseDocuments {
@@ -160,6 +153,12 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
       <GlobalStyle />
 
       <DataTable
+        rowStyle={(row) => {
+          if (selectedRecords.includes(row)) {
+            return { backgroundColor: 'hsla(280, 100%, 70%, 0.5)' };
+          }
+          return {};
+        }}
         borderRadius="lg"
         withColumnBorders
         withBorder={true}
@@ -287,17 +286,18 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
         }}
         idAccessor="readable_filename"
       />
-      <Paper my="xl" py="xl" withBorder radius={0}>
+      <Paper my="sm" py="sm" withBorder={false} radius={0} style={{ backgroundColor: 'transparent' }}>
         <Center>
           <Button
             uppercase
             leftIcon={<IconTrash size={16} />}
-            color="red"
+            color={selectedRecords.length ? "red" : "gray"}
             disabled={!selectedRecords.length}
             onClick={() => setModalOpened(true)}
+            style={{ backgroundColor: selectedRecords.length ? '#8B0000' : 'transparent' }}
           >
             {selectedRecords.length
-              ? `Delete ${selectedRecords.length === 1 ? 'one selected record' : `${selectedRecords.length} selected records`
+              ? `Delete ${selectedRecords.length === 1 ? '1 selected record' : `${selectedRecords.length} selected records`
               }`
               : 'Select records to delete'}
           </Button>
