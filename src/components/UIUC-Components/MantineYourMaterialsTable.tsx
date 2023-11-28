@@ -24,6 +24,10 @@ const GlobalStyle = createGlobalStyle`
     background-color: #15162a; 
   }
 
+  .mantine-7q4wt4 {
+    background-color: hsl(280,100%,70%, 0);
+  }
+
 `;
 
 const useStyles = createStyles((theme) => ({
@@ -123,7 +127,18 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
     }
   }, [debouncedQuery, course_materials]);
 
+  useEffect(() => {
+    // Load the selected records from local storage when the component mounts
+    const savedRecords = localStorage.getItem('selectedRecords');
+    if (savedRecords) {
+      setSelectedRecords(JSON.parse(savedRecords));
+    }
+  }, []);
 
+  useEffect(() => {
+    // Save the selected records to local storage whenever they change
+    localStorage.setItem('selectedRecords', JSON.stringify(selectedRecords));
+  }, [selectedRecords]);
 
   const handleDelete = async (
     course_name: string,
@@ -291,7 +306,6 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
           <Button
             uppercase
             leftIcon={<IconTrash size={16} />}
-            color={selectedRecords.length ? "red" : "gray"}
             disabled={!selectedRecords.length}
             onClick={() => setModalOpened(true)}
             style={{ backgroundColor: selectedRecords.length ? '#8B0000' : 'transparent' }}
