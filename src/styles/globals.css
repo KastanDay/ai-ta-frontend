@@ -100,6 +100,10 @@ pre:has(div.codeblock) {
   background-repeat: no-repeat;
 }
 
+#styledLink.a.styled-link {
+  text-decoration: underline;
+  color: blue !important;
+}
 .fade-2-lines {
   overflow: hidden;
   position: relative;

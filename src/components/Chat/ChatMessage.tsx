@@ -350,17 +350,28 @@ export const ChatMessage: FC<Props> = memo(
                           </td>
                         )
                       },
-                      link({ node, children, ...props }) {
+                      link({ node, className, children, ...props }) {
+                        console.log("className: ", className)
                         const { href, title } = props;
                         return (
+                          // <>
+                          //   <StyledLink href={href as string} title={title as string}>
+                          //   </StyledLink>
+                          // </>
+                          <Group variant="row" spacing="xs">
+
                           <a
+                              id="styledLink"
                             href={href}
                             target="_blank"
                             title={title}
                             rel="noopener noreferrer"
+                              className="styled-link"
                           >
                             {children}
                           </a>
+
+                          </Group>
                         )
                       },
                     }}

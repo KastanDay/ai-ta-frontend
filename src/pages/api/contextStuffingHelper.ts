@@ -31,8 +31,8 @@ export async function getStuffedPrompt(
       termed 'your documents', and integrate information from them as appropriate. Avoid irrelevant parts. 
       When quoting directly from your documents, use Markdown footnotes for citations. 
       Apply ReactMarkdown formatting for superscript citations and clickable links. 
-      Insert citations at the end of sentences in square brackets, like [1], [2], etc. 
-      At the end of the response, list the full document names(with extensions) with corresponding numbers as clickable links ONLY for relevant documents. 
+      Insert citations at the end of sentences in superscript notation, like [^1], [^2], etc.
+      At the end of the response, list the document names(with extensions) with corresponding numbers as clickable links ONLY for relevant documents.
       The response style should be semi-formal. If the answer is not found in the provided documents, feel free to state that you don't know.
       Structure your response to include relevant information from these documents, 
       following the inline citations format with clickable links. 
