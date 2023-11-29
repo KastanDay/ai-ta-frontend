@@ -294,7 +294,7 @@ export const ChatMessage: FC<Props> = memo(
               <div className="flex flex-row">
                 <div className="flex-1">
                   <MemoizedReactMarkdown
-                    className="dark:prose-invert prose flex-1"
+                      className="dark:prose-invert prose flex-1 linkMarkDown"
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeMathjax]}
                     components={{
@@ -354,10 +354,6 @@ export const ChatMessage: FC<Props> = memo(
                         console.log("className: ", className)
                         const { href, title } = props;
                         return (
-                          // <>
-                          //   <StyledLink href={href as string} title={title as string}>
-                          //   </StyledLink>
-                          // </>
                           <Group variant="row" spacing="xs">
 
                           <a
@@ -366,7 +362,7 @@ export const ChatMessage: FC<Props> = memo(
                             target="_blank"
                             title={title}
                             rel="noopener noreferrer"
-                              className="styled-link"
+                              className="linkMarkDown"
                           >
                             {children}
                           </a>

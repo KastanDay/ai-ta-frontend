@@ -100,9 +100,30 @@ pre:has(div.codeblock) {
   background-repeat: no-repeat;
 }
 
-#styledLink.a.styled-link {
+.linkMarkDown a {
+  color: #007bff;
+  /* Set the text color for links */
+  text-decoration: none;
+  /* Remove underline from links */
+  background-color: transparent;
+  /* Optional: set background color */
+}
+
+.linkMarkDown a:hover {
+  color: #0056b3;
+  /* Change text color on hover */
+  /* Add underline on hover */
   text-decoration: underline;
-  color: blue !important;
+}
+
+.linkMarkDown a:active {
+  color: #004085;
+  /* Change text color when clicked */
+}
+
+.linkMarkDown a:visited {
+  color: #a7c0f3;
+  /* Change text color for visited links */
 }
 .fade-2-lines {
   overflow: hidden;
