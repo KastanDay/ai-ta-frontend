@@ -146,7 +146,7 @@ export const OpenAIStream = async (
           const data = event.data
 
           try {
-            console.log('data: ', data)
+            // console.log('data: ', data) // ! DEBUGGING
             if (data.trim() !== "[DONE]") {
               const json = JSON.parse(data)
               if (json.choices[0].finish_reason != null) {
