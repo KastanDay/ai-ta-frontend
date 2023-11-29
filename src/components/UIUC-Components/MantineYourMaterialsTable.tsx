@@ -11,6 +11,9 @@ import { showToastOnFileDeleted } from './MakeOldCoursePage';
 import axios from 'axios';
 import { showNotification } from '@mantine/notifications';
 import { createGlobalStyle } from 'styled-components';
+import { Badge } from '@mantine/core';
+import { useColorScheme } from '@mantine/hooks';
+
 
 const GlobalStyle = createGlobalStyle`
 // these mantine class names may change in future versions
@@ -70,6 +73,7 @@ export async function getPresignedUrl(s3_path: string) {
 
 export function MantineYourMaterialsTable({ course_materials }: CourseFilesListProps) {
   const { classes, theme } = useStyles();
+  const colorScheme = useColorScheme();
 
   const router = useRouter();
   const getCurrentPageName = (): string => {
@@ -127,18 +131,11 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
     }
   }, [debouncedQuery, course_materials]);
 
-  useEffect(() => {
-    // Load the selected records from local storage when the component mounts
-    const savedRecords = localStorage.getItem('selectedRecords');
-    if (savedRecords) {
-      setSelectedRecords(JSON.parse(savedRecords));
-    }
-  }, []);
+  // useEffect(() => {
+  //   // Clear the selected records when the component mounts
+  //   setSelectedRecords([]);
+  // }, []);
 
-  useEffect(() => {
-    // Save the selected records to local storage whenever they change
-    localStorage.setItem('selectedRecords', JSON.stringify(selectedRecords));
-  }, [selectedRecords]);
 
   const handleDelete = async (
     course_name: string,
@@ -299,7 +296,7 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
             setSelectedRecords([]);
           }
         }}
-        idAccessor="readable_filename"
+        idAccessor="s3_path"
       />
       <Paper my="sm" py="sm" withBorder={false} radius={0} style={{ backgroundColor: 'transparent' }}>
         <Center>
