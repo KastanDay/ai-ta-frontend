@@ -155,11 +155,15 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
         })
       );
       // Handle successful deletion, show a success message
-      showToastOnFileDeleted(theme)
       await Promise.all(deletePromises);
+      showToastOnFileDeleted(theme)
+
       // Skip refreshing the page for now, for better UX let them click a bunch then manually refresh.
       // await router.push(router.asPath)
-      await router.reload()
+      setTimeout(async () => {
+        await router.reload();
+      }, 2000);
+      // await router.reload()
     } catch (error) {
       console.error(error)
       // Show error message
