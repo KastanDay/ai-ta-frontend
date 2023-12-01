@@ -52,6 +52,7 @@ const useStyles = createStyles((theme) => ({
 }));
 
 interface CourseDocuments {
+  course_name: string;
   readable_filename: string;
   url: string;
   s3_path: string;
@@ -114,6 +115,7 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
   const [query, setQuery] = useState('');
   const [debouncedQuery] = useDebouncedValue(query, 200);
   const [modalOpened, setModalOpened] = useState(false);
+  const [recordsToDelete, setRecordsToDelete] = useState<CourseDocuments[]>([]);
 
 
   useEffect(() => {
@@ -257,11 +259,12 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
                     urlToOpen = presignedUrl;
                   }
                   if (action === 'view' && urlToOpen) {
-                    console.log(urlToOpen);
                     window.open(urlToOpen, '_blank');
                   }
                   else if (action === 'delete') {
+                    setRecordsToDelete([materials]);
                     setModalOpened(true);
+                    // await handleDelete(materials.course_name, materials.s3_path, materials.url);
                   }
                 };
 
@@ -284,6 +287,7 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
                       <IconTrash size={16} />
                     </ActionIcon>
                   </Group>
+
                 );
               },
             },
@@ -292,6 +296,7 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
         onSelectedRecordsChange={(newSelectedRecords) => {
           if (newSelectedRecords.length > 0) {
             setSelectedRecords(newSelectedRecords);
+            console.log('New selection:', newSelectedRecords);
           } else {
             setSelectedRecords([]);
           }
@@ -304,7 +309,10 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
             uppercase
             leftIcon={<IconTrash size={16} />}
             disabled={!selectedRecords.length}
-            onClick={() => setModalOpened(true)}
+            onClick={() => {
+              setRecordsToDelete(selectedRecords);
+              setModalOpened(true);
+            }}
             style={{ backgroundColor: selectedRecords.length ? '#8B0000' : 'transparent' }}
           >
             {selectedRecords.length
@@ -326,7 +334,6 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
           <Button
             className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
             onClick={() => {
-              console.log('Cancel button clicked')
               setModalOpened(false);
             }}
             style={{
@@ -339,10 +346,12 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
           <Button
             className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
             onClick={async () => {
-              for (const record of selectedRecords) {
-                await handleDelete(record.readable_filename, record.s3_path, record.url);
-              }
               setModalOpened(false);
+              for (const record of recordsToDelete) {
+                console.log('Deleting record:', record);
+                await handleDelete(record.course_name, record.s3_path, record.url);
+              }
+              setRecordsToDelete([]);
             }}
           >
             Delete
