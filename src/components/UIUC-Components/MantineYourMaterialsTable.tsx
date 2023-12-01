@@ -146,11 +146,17 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
   ) => {
     try {
       const API_URL = 'https://flask-production-751b.up.railway.app'
-      const response = await axios.delete(`${API_URL}/delete`, {
-        params: { course_name, s3_path, url },
-      })
+      // const response = await axios.delete(`${API_URL}/delete`, {
+      //   params: { course_name, s3_path, url },
+      // })
+      const deletePromises = recordsToDelete.map(record =>
+        axios.delete(`${API_URL}/delete`, {
+          params: { course_name: record.course_name, s3_path: record.s3_path, url: record.url },
+        })
+      );
       // Handle successful deletion, show a success message
       showToastOnFileDeleted(theme)
+      await Promise.all(deletePromises);
       // Skip refreshing the page for now, for better UX let them click a bunch then manually refresh.
       // await router.push(router.asPath)
       await router.reload()
@@ -264,7 +270,6 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
                   else if (action === 'delete') {
                     setRecordsToDelete([materials]);
                     setModalOpened(true);
-                    // await handleDelete(materials.course_name, materials.s3_path, materials.url);
                   }
                 };
 
@@ -301,7 +306,7 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
             setSelectedRecords([]);
           }
         }}
-        idAccessor="s3_path"
+        idAccessor={(row: any) => row.url ? row.url : row.s3_path}
       />
       <Paper my="sm" py="sm" withBorder={false} radius={0} style={{ backgroundColor: 'transparent' }}>
         <Center>
