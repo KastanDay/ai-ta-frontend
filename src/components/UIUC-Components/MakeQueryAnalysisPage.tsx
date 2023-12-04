@@ -1,7 +1,7 @@
 import Head from 'next/head'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 // import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
-import { montserrat_heading } from 'fonts'
 import {
   // Badge,
   // MantineProvider,
