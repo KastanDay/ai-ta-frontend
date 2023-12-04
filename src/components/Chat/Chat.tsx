@@ -183,7 +183,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ...message,
             content: [
               ...imageContent,
-              { type: 'text', text: 'Describe the image, be concise' }
+              { type: 'text', text: 'Describe the image(s), be concise' }
             ]
           }
         ],
