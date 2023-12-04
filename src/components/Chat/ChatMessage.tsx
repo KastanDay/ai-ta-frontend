@@ -404,7 +404,7 @@ export const ChatMessage: FC<Props> = memo(
                           {isImg2TextLoading && messageIndex == (selectedConversation?.messages.length ?? 0) - 1 && (
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                               <p style={{ marginRight: '10px', fontWeight: 'bold' }}>Generating Image Description:</p>
-                              <LoadingSpinner />
+                              <LoadingSpinner size='xs' />
                             </div>
                           )}
                           <div className="flex flex-wrap -m-1 justify-start w-full">
@@ -427,7 +427,8 @@ export const ChatMessage: FC<Props> = memo(
                 {!isEditing && (
                   <div className="ml-1 flex flex-col items-center justify-end gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-start md:gap-1">
                     <button
-                      className="invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300"
+                      className={`invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300 
+                        ${Array.isArray(message.content) && message.content.some(content => content.type === 'image_url') ? 'hidden' : ''}`}
                       onClick={toggleEditing}
                     >
                       <IconEdit size={20} />

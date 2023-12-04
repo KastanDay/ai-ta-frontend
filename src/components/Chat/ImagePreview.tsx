@@ -42,7 +42,6 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({ src, alt, className 
             <Modal
                 opened={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={`Image Preview`}
                 size={'xxl'}
                 closeOnEscape={true}
                 transitionProps={{ transition: 'fade', duration: 200 }}

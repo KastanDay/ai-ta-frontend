@@ -245,7 +245,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
           // Add the image description to the searchQuery and the current message content
           searchQuery += ` Image description: ${imgDesc}`;
+
+          // Find the index of the existing image description
+          const imgDescIndex = (message.content as Content[]).findIndex(content => content.type === 'text' && (content.text as string).startsWith('Image description: '));
+
+          if (imgDescIndex !== -1) {
+            // Replace the existing image description
+            (message.content as Content[])[imgDescIndex] = { type: 'text', text: `Image description: ${imgDesc}` };
+          } else {
+          // Add the new image description
           (message.content as Content[]).push({ type: 'text', text: `Image description: ${imgDesc}` });
+          }
           // Uncomment for debugging
           // console.log("NEW SEARCH QUERY: ", searchQuery);
           // console.log("NEW MESSAGE CONTENT: ", message.content);
@@ -539,6 +549,20 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       stopConversationRef,
     ],
   )
+
+  const handleRegenerate = useCallback(() => {
+    if (currentMessage) {
+      // Find the index of the existing image description
+      const imgDescIndex = (currentMessage.content as Content[]).findIndex(content => content.type === 'text' && (content.text as string).startsWith('Image description: '));
+
+      if (imgDescIndex !== -1) {
+        // Remove the existing image description
+        (currentMessage.content as Content[]).splice(imgDescIndex, 1);
+      }
+
+      handleSend(currentMessage, 2, null);
+    }
+  }, [currentMessage, handleSend]);
 
   const scrollToBottom = useCallback(() => {
     if (autoScrollEnabled) {
@@ -864,11 +888,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 handleSend(message, 0, plugin)
               }}
               onScrollDownClick={handleScrollDown}
-              onRegenerate={() => {
-                if (currentMessage) {
-                  handleSend(currentMessage, 2, null)
-                }
-              }}
+                  onRegenerate={handleRegenerate}
               showScrollDownButton={showScrollDownButton}
               inputContent={inputContent}
               setInputContent={setInputContent}
