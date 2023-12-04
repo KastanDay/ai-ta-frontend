@@ -139,37 +139,33 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
   // }, []);
 
 
-  const handleDelete = async (
-    course_name: string,
-    s3_path: string,
-    url: string,
-  ) => {
+  const handleDelete = async (recordsToDelete: CourseDocuments[]) => {
     try {
       const API_URL = 'https://flask-production-751b.up.railway.app'
-      // const response = await axios.delete(`${API_URL}/delete`, {
-      //   params: { course_name, s3_path, url },
-      // })
       const deletePromises = recordsToDelete.map(record =>
         axios.delete(`${API_URL}/delete`, {
           params: { course_name: record.course_name, s3_path: record.s3_path, url: record.url },
         })
       );
-      // Handle successful deletion, show a success message
-      await Promise.all(deletePromises);
-      showToastOnFileDeleted(theme)
-
-      // Skip refreshing the page for now, for better UX let them click a bunch then manually refresh.
-      // await router.push(router.asPath)
-      setTimeout(async () => {
-        await router.reload();
-      }, 2000);
-      // await router.reload()
+      Promise.all(deletePromises)
+        .then(() => {
+          // Handle successful deletion, show a success message
+          showToastOnFileDeleted(theme);
+          // Start the timer to refresh the page only after all deletions are successful
+          setTimeout(async () => {
+            await router.reload();
+          }, 3000);
+        })
+        .catch((error) => {
+          console.error(error);
+          // Show error message
+          showToastOnFileDeleted(theme, true);
+        });
     } catch (error) {
-      console.error(error)
+      console.error(error);
       // Show error message
-      showToastOnFileDeleted(theme, true)
+      showToastOnFileDeleted(theme, true);
     }
-    // }
   }
 
   return (
@@ -239,11 +235,11 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
               filtering: query !== '',
             },
             {
-              accessor: 'The Hostname of URL',
+              accessor: 'The Starting URL of Web Scraping',
               render: ({ base_url }) => base_url ? `${base_url}` : '',
               filter: (
                 <TextInput
-                  label="The Hostname of URL"
+                  label="The Starting URL of Web Scraping"
                   description="Show all urls that include the specified text"
                   placeholder="Search urls..."
                   rightSection={
@@ -356,10 +352,8 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
             className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
             onClick={async () => {
               setModalOpened(false);
-              for (const record of recordsToDelete) {
-                console.log('Deleting record:', record);
-                await handleDelete(record.course_name, record.s3_path, record.url);
-              }
+              console.log('Deleting records:', recordsToDelete);
+              await handleDelete(recordsToDelete);
               setRecordsToDelete([]);
             }}
           >
