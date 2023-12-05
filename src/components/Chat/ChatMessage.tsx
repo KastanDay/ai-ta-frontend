@@ -197,9 +197,10 @@ export const ChatMessage: FC<Props> = memo(
           }
         }
       };
-
-      fetchUrl();
-    }, [message.content, messageIndex, onImageUrlsUpdate]);
+      if (message.role === 'user') {
+        fetchUrl();
+      }
+    }, [message.content, messageIndex]);
 
     const toggleEditing = () => {
       setIsEditing(!isEditing)
@@ -279,12 +280,12 @@ export const ChatMessage: FC<Props> = memo(
           .map((content) => content.text)
           .join(' ')
         setMessageContent(textContent)
-        // console.log('IN ChatMessage 188 adding hi to messages: ', message)
+        console.log('IN ChatMessage 188 not adding hi to messages: ', message)
       } else {
-        // console.log('IN ChatMessage 189 adding hi to messages: ', message)
+        console.log('IN ChatMessage 189 adding hi to messages: ', message)
         setMessageContent(`${message.content} hi`)
       }
-      console.log('IN ChatMessage 189 adding hi to messages: ', message)
+      // console.log('IN ChatMessage 189 adding hi to messages: ', message)
 
       // RIGHT HERE, run context search.
 

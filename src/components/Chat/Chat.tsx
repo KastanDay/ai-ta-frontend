@@ -551,7 +551,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   )
 
   const handleRegenerate = useCallback(() => {
-    if (currentMessage) {
+    if (currentMessage && Array.isArray(currentMessage.content)) {
       // Find the index of the existing image description
       const imgDescIndex = (currentMessage.content as Content[]).findIndex(content => content.type === 'text' && (content.text as string).startsWith('Image description: '));
 
@@ -761,7 +761,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
     homeDispatch({ field: 'conversations', value: updatedConversations });
     saveConversations(updatedConversations);
-  }, [selectedConversation, conversations]);
+  }, []);
+  // }, [selectedConversation, conversations]); // Uncomment if running into issues with useCallback
 
 
   return (
