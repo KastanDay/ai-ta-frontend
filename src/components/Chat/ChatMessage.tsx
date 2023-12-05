@@ -294,7 +294,7 @@ export const ChatMessage: FC<Props> = memo(
               <div className="flex flex-row">
                 <div className="flex-1">
                   <MemoizedReactMarkdown
-                      className="dark:prose-invert prose flex-1 linkMarkDown"
+                      className="dark:prose-invert prose flex-1 linkMarkDown data-footnote-backref"
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeMathjax]}
                     components={{
@@ -351,7 +351,6 @@ export const ChatMessage: FC<Props> = memo(
                         )
                       },
                       link({ node, className, children, ...props }) {
-                        console.log("className: ", className)
                         const { href, title } = props;
                         return (
                           <Group variant="row" spacing="xs">
@@ -372,18 +371,18 @@ export const ChatMessage: FC<Props> = memo(
                       },
                     }}
                   >
-                    {`${message.content}${messageIsStreaming &&
+                      {`${message.content}${messageIsStreaming &&
                       messageIndex ==
                       (selectedConversation?.messages.length ?? 0) - 1
                       ? '`▍`'
                       : ''
                       }`}
                   </MemoizedReactMarkdown>
-                  {message.contexts && message.contexts.length > 0 && (
+                    {/* {message.contexts && message.contexts.length > 0 && (
                     <Group variant="row" spacing="xs">
                       <ContextCards contexts={message.contexts} />
                     </Group>
-                  )}
+                  )} */}
                 </div>
 
                 <div className="ml-1 flex flex-col items-center justify-end gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-start md:gap-1">

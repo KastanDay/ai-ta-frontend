@@ -101,30 +101,61 @@ pre:has(div.codeblock) {
 }
 
 .linkMarkDown a {
-  color: #007bff;
-  /* Set the text color for links */
-  text-decoration: none;
-  /* Remove underline from links */
+  display: inline;
+    padding: 2px 4px;
+    font-size: inherit;
+    font-weight: normal;
+    color: rgb(74, 74, 232);
   background-color: transparent;
-  /* Optional: set background color */
+  border: none;
+    text-decoration: none;
+    transition: color 0.15s ease-in-out, transform 0.15s ease-in-out;
 }
 
-.linkMarkDown a:hover {
-  color: #0056b3;
-  /* Change text color on hover */
-  /* Add underline on hover */
+.linkMarkDown a:hover,
+.linkMarkDown a:focus {
+  color: #FFFFFF;
   text-decoration: underline;
+  cursor: pointer;
 }
 
 .linkMarkDown a:active {
-  color: #004085;
-  /* Change text color when clicked */
+  color: #FFFFFF;
+    transform: scale(0.98);
 }
 
 .linkMarkDown a:visited {
-  color: #a7c0f3;
-  /* Change text color for visited links */
+  color: rgb(173, 92, 227);
+  }
+  
+  .linkMarkDown sup {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 1.25em;
+    height: 1.25em;
+    border-radius: 50%;
+    font-size: 75%;
+    line-height: 1;
+    color: #ffffff;
+    background-color: #2d2d2d;
+    margin-right: 4px;
+    /* New margin for spacing */
+  }
+  
+  .linkMarkDown sup>a {
+    padding: 2px 4px;
+    border: none;
+    background-color: transparent;
+    color: rgb(74, 74, 232);
+    text-decoration: none;
+  }
+  
+  .linkMarkDown sup>a:visited {
+    color: rgb(173, 92, 227);
+    text-decoration: none;
 }
+
 .fade-2-lines {
   overflow: hidden;
   position: relative;
@@ -322,4 +353,7 @@ li {
 ::-webkit-scrollbar-thumb:hover {
   background-color: #807f7f;
   border-radius: 4px;
+}
+a[data-footnote-backref] {
+  visibility: hidden;
 }
