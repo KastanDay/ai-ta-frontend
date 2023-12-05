@@ -1,5 +1,5 @@
 // ChatMessage.tsx
-import { Text, Group, createStyles } from '@mantine/core'
+import { Text, Group, createStyles, Tooltip, Paper, Collapse, Accordion } from '@mantine/core'
 import {
   IconCheck,
   IconCopy,
@@ -27,6 +27,7 @@ import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { montserrat_paragraph } from 'fonts'
 
 const useStyles = createStyles((theme) => ({
   imageContainerStyle: {
@@ -398,12 +399,32 @@ export const ChatMessage: FC<Props> = memo(
                   <div className="dark:prose-invert prose flex-1 whitespace-pre-wrap">
                       {Array.isArray(message.content) ? (
                         <div className="flex flex-col items-start space-y-2">
-                          {message.content.filter(item => item.type === 'text').map((content, index) => (
-                            <p key={index} className="self-start text-base font-medium">{content.text}</p>
-                          ))}
+                          {message.content.map((content, index) => {
+                            if (content.type === 'text') {
+                              if ((content.text as string).trim().startsWith('Image description:')) {
+                                console.log("Image description found: ", content.text)
+                                return (
+                                  <Accordion className='shadow-lg rounded-md bg-[#2e026d]'>
+                                    <Accordion.Item value="imageDescription">
+                                      <Accordion.Control className={`text-gray-200 rounded-md hover:bg-purple-900 ${montserrat_paragraph.variable} font-montserratParagraph`}>
+                                        Following image description will be used to search over your documents to provide intelligent responses
+                                      </Accordion.Control>
+                                      <Accordion.Panel className={`bg-[#1d1f32] rounded-md text-gray-200 p-4 ${montserrat_paragraph.variable} font-montserratParagraph`}>
+                                        {content.text}
+                                      </Accordion.Panel>
+                                    </Accordion.Item>
+                                  </Accordion>
+                                );
+                              } else {
+                                return (
+                                  <p key={index} className="self-start text-base font-medium">{content.text}</p>
+                                );
+                              }
+                            }
+                          })}
                           {isImg2TextLoading && messageIndex == (selectedConversation?.messages.length ?? 0) - 1 && (
                             <div style={{ display: 'flex', alignItems: 'center' }}>
-                              <p style={{ marginRight: '10px', fontWeight: 'bold' }}>Generating Image Description:</p>
+                              <p style={{ marginRight: '10px', fontWeight: 'bold', textShadow: '0 0 10px' }} className=' pulsate'>Generating Image Description:</p>
                               <LoadingSpinner size='xs' />
                             </div>
                           )}

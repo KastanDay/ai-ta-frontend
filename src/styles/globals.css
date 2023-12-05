@@ -298,3 +298,17 @@ li {
   background-color: #807f7f;
   border-radius: 4px;
 }
+
+@keyframes pulsate {
+  0% {
+    color: #ffffff;
+  }
+
+  100% {
+    color: #9D4EDD;
+  }
+}
+
+.pulsate {
+  animation: pulsate 1s infinite alternate;
+}
