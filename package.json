@@ -52,7 +52,7 @@
     "@vercel/edge-config": "^0.2.0",
     "@vercel/kv": "^0.2.1",
     "aws-sdk": "^2.1380.0",
-    "axios": "^1.4.0",
+    "axios": "^1.6.0",
     "dayjs": "^1.11.7",
     "dotenv": "^16.3.1",
     "embla-carousel-react": "^7.1.0",
