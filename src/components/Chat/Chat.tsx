@@ -172,10 +172,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
   }
 
-  const handleImageContent = async (message: Message, endpoint: string, updatedConversation: Conversation, searchQuery: string) => {
+  const handleImageContent = async (message: Message, endpoint: string, updatedConversation: Conversation, searchQuery: string, controller: AbortController) => {
     const imageContent = (message.content as Content[]).filter(content => content.type === 'image_url');
     if (imageContent.length > 0) {
       homeDispatch({ field: 'isImg2TextLoading', value: true })
+      // This is where prompt for first call is created
       const chatBody: ChatBody = {
         model: updatedConversation.model,
         messages: [
@@ -183,7 +184,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ...message,
             content: [
               ...imageContent,
-              { type: 'text', text: 'Describe the image(s), be concise' }
+              { type: 'text', text: 'Provide detailed description of the image(s) focusing on any text (OCR information), distinct objects, colors, and actions depicted. Include contextual information, subtle details, and specific terminologies relevant for semantic document retrieval.' }
             ]
           }
         ],
@@ -200,6 +201,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(chatBody),
+        signal: controller.signal,
       })
         .then(async response => {
           if (!response.ok) {
@@ -262,6 +264,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         })
         .catch(error => {
           console.error('Error in chat.tsx running onResponseCompletion():', error);
+          controller.abort();
         })
         .finally(() => {
           homeDispatch({ field: 'isImg2TextLoading', value: false })
@@ -283,6 +286,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   // THIS IS WHERE MESSAGES ARE SENT.
   const handleSend = useCallback(
     async (message: Message, deleteCount = 0, plugin: Plugin | null = null) => {
+
+      setCurrentMessage(message)
       // New way with React Context API
       // TODO: MOVE THIS INTO ChatMessage
       // console.log('IN handleSend: ', message)
@@ -319,9 +324,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
         const endpoint = getEndpoint(plugin);
 
+        const controller = new AbortController()
+
         // Run image to text conversion, attach to Message object.
         if (Array.isArray(message.content)) {
-          searchQuery = await handleImageContent(message, endpoint, updatedConversation, searchQuery);
+          searchQuery = await handleImageContent(message, endpoint, updatedConversation, searchQuery, controller);
         }
 
         // Run context search, attach to Message object.
@@ -355,9 +362,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               ?.requiredKeys.find((key) => key.key === 'GOOGLE_CSE_ID')?.value,
           })
         }
-
-
-        const controller = new AbortController()
 
         // This is where we call the OpenAI API
         const response = await fetch(endpoint, {
@@ -761,8 +765,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
     homeDispatch({ field: 'conversations', value: updatedConversations });
     saveConversations(updatedConversations);
-  }, []);
-  // }, [selectedConversation, conversations]); // Uncomment if running into issues with useCallback
+  }, [selectedConversation, conversations]);
 
 
   return (
@@ -863,7 +866,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                       contentRenderer={renderMessageContent}
                       messageIndex={index}
                       onEdit={(editedMessage) => {
-                        setCurrentMessage(editedMessage)
+                        // setCurrentMessage(editedMessage)
                         handleSend(
                           editedMessage,
                           selectedConversation?.messages.length - index,
@@ -885,7 +888,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               stopConversationRef={stopConversationRef}
               textareaRef={textareaRef}
               onSend={(message, plugin) => {
-                setCurrentMessage(message)
+                // setCurrentMessage(message)
                 handleSend(message, 0, plugin)
               }}
               onScrollDownClick={handleScrollDown}

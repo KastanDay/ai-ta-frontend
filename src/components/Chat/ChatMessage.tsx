@@ -429,12 +429,12 @@ export const ChatMessage: FC<Props> = memo(
                               if ((content.text as string).trim().startsWith('Image description:')) {
                                 console.log("Image description found: ", content.text)
                                 return (
-                                  <Accordion key={index} className='shadow-lg rounded-md bg-[#2e026d]'>
-                                    <Accordion.Item value="imageDescription">
-                                      <Accordion.Control className={`text-gray-200 rounded-md hover:bg-purple-900 ${montserrat_paragraph.variable} font-montserratParagraph`}>
+                                  <Accordion variant='filled' key={index} className=' shadow-lg rounded-lg bg-[#2e026d]'>
+                                    <Accordion.Item value="imageDescription rounded-lg">
+                                      <Accordion.Control className={`text-gray-200 rounded-lg hover:bg-purple-900 ${montserrat_paragraph.variable} font-montserratParagraph`}>
                                         Following image description will be used to search over your documents to provide intelligent responses
                                       </Accordion.Control>
-                                      <Accordion.Panel className={`bg-[#1d1f32] rounded-md text-gray-200 p-4 ${montserrat_paragraph.variable} font-montserratParagraph`}>
+                                      <Accordion.Panel className={`bg-[#1d1f32] rounded-lg text-gray-200 p-4 ${montserrat_paragraph.variable} font-montserratParagraph`}>
                                         {content.text}
                                       </Accordion.Panel>
                                     </Accordion.Item>
