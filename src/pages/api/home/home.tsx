@@ -580,7 +580,7 @@ const Home = () => {
             </div>
 
             <div className="flex h-full w-full pt-[48px] sm:pt-0">
-              {isDragging && (
+              {isDragging && selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
                 <div
                   className="absolute inset-0 w-full h-full flex flex-col justify-center items-center bg-black opacity-75 z-10"
                 >

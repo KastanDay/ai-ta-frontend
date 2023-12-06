@@ -576,6 +576,10 @@ export const ChatInput = ({
   const theme = useMantineTheme();
 
   useEffect(() => {
+    if (selectedConversation?.model.id !== OpenAIModelID.GPT_4_VISION) {
+      return; // Exit early if the model is not GPT-4 Vision
+    }
+
     const handleDocumentDragOver = (e: DragEvent) => {
       e.preventDefault();
       setIsDragging(true);
@@ -610,7 +614,7 @@ export const ChatInput = ({
       document.removeEventListener('drop', handleDocumentDrop);
       document.removeEventListener('dragleave', handleDocumentDragLeave);
     };
-  }, [handleImageUpload]);  
+  }, [handleImageUpload, selectedConversation?.model.id]);  
 
   useEffect(() => {
     if (imageError) {
