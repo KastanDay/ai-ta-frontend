@@ -344,7 +344,7 @@ export const ChatMessage: FC<Props> = memo(
           return true;
         }
       } catch (error) {
-        console.error('Failed to validate URL', url, error); 
+        console.error('Failed to validate URL', url, error);
         return false;
       }
     }
@@ -422,51 +422,51 @@ export const ChatMessage: FC<Props> = memo(
                   </div>
                 ) : (
                   <div className="dark:prose-invert prose flex-1 whitespace-pre-wrap">
-                      {Array.isArray(message.content) ? (
-                        <div className="flex flex-col items-start space-y-2">
-                          {message.content.map((content, index) => {
-                            if (content.type === 'text') {
-                              if ((content.text as string).trim().startsWith('Image description:')) {
-                                console.log("Image description found: ", content.text)
-                                return (
-                                  <Accordion variant='filled' key={index} className=' shadow-lg rounded-lg bg-[#2e026d]'>
-                                    <Accordion.Item value="imageDescription rounded-lg">
-                                      <Accordion.Control className={`text-gray-200 rounded-lg hover:bg-purple-900 ${montserrat_paragraph.variable} font-montserratParagraph`}>
-                                        Following image description will be used to search over your documents to provide intelligent responses
-                                      </Accordion.Control>
-                                      <Accordion.Panel className={`bg-[#1d1f32] rounded-lg text-gray-200 p-4 ${montserrat_paragraph.variable} font-montserratParagraph`}>
-                                        {content.text}
-                                      </Accordion.Panel>
-                                    </Accordion.Item>
-                                  </Accordion>
-                                );
-                              } else {
-                                return (
-                                  <p key={index} className="self-start text-base font-medium">{content.text}</p>
-                                );
-                              }
+                    {Array.isArray(message.content) ? (
+                      <div className="flex flex-col items-start space-y-2">
+                        {message.content.map((content, index) => {
+                          if (content.type === 'text') {
+                            if ((content.text as string).trim().startsWith('Image description:')) {
+                              console.log("Image description found: ", content.text)
+                              return (
+                                <Accordion variant='filled' key={index} className=' shadow-lg rounded-lg bg-[#2e026d]'>
+                                  <Accordion.Item value="imageDescription rounded-lg">
+                                    <Accordion.Control className={`text-gray-200 rounded-lg hover:bg-purple-900 ${montserrat_paragraph.variable} font-montserratParagraph`}>
+                                      This image description is used to find relevant documents and provide intelligent context for GPT-4 Vision.
+                                    </Accordion.Control>
+                                    <Accordion.Panel className={`bg-[#1d1f32] rounded-lg text-gray-200 p-4 ${montserrat_paragraph.variable} font-montserratParagraph`}>
+                                      {content.text}
+                                    </Accordion.Panel>
+                                  </Accordion.Item>
+                                </Accordion>
+                              );
+                            } else {
+                              return (
+                                <p key={index} className="self-start text-base font-medium">{content.text}</p>
+                              );
                             }
-                          })}
-                          {isImg2TextLoading && messageIndex == (selectedConversation?.messages.length ?? 0) - 1 && (
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                              <p style={{ marginRight: '10px', fontWeight: 'bold', textShadow: '0 0 10px' }} className=' pulsate'>Generating Image Description:</p>
-                              <LoadingSpinner size='xs' />
-                            </div>
-                          )}
-                          <div className="flex flex-wrap -m-1 justify-start w-full">
-                            {message.content.filter(item => item.type === 'image_url').map((content, index) => (
-                              <div key={index} className={classes.imageContainerStyle}>
-                                <div className="shadow-lg rounded-lg overflow-hidden">
-                                  <ImagePreview src={imageUrls[index] as string} alt="Chat message" className={classes.imageStyle} />
-                                </div>
-                              </div>
-                            ))}
+                          }
+                        })}
+                        {isImg2TextLoading && messageIndex == (selectedConversation?.messages.length ?? 0) - 1 && (
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <p style={{ marginRight: '10px', fontWeight: 'bold', textShadow: '0 0 10px' }} className=' pulsate'>Generating Image Description:</p>
+                            <LoadingSpinner size='xs' />
                           </div>
+                        )}
+                        <div className="flex flex-wrap -m-1 justify-start w-full">
+                          {message.content.filter(item => item.type === 'image_url').map((content, index) => (
+                            <div key={index} className={classes.imageContainerStyle}>
+                              <div className="shadow-lg rounded-lg overflow-hidden">
+                                <ImagePreview src={imageUrls[index] as string} alt="Chat message" className={classes.imageStyle} />
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ) : (
-                        message.content
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      message.content
+                    )}
+                  </div>
 
                 )}
 

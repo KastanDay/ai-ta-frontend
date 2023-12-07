@@ -353,7 +353,7 @@ export const ChatInput = ({
   const validImageTypes = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 
   const isImageValid = (fileName: string): boolean => {
-    const ext = fileName.slice(((fileName.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
+    const ext = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase();
     return validImageTypes.includes(`.${ext}`);
   }
 
