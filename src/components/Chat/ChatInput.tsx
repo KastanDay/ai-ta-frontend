@@ -349,7 +349,8 @@ export const ChatInput = ({
     }
   }, [variables, setContent, textareaRef]); // Add dependencies used in the function
 
-  const validImageTypes = ['.jpg', '.jpeg', '.png'];
+  // https://platform.openai.com/docs/guides/vision/what-type-of-files-can-i-upload
+  const validImageTypes = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 
   const isImageValid = (fileName: string): boolean => {
     const ext = fileName.slice(((fileName.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
