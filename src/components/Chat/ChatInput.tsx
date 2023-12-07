@@ -1,7 +1,6 @@
 // chatinput.tsx
 import {
   IconArrowDown,
-  IconBolt,
   IconBrandGoogle,
   IconPlayerStop,
   IconRepeat,
@@ -10,6 +9,7 @@ import {
   IconAlertCircle,
   IconX
 } from '@tabler/icons-react'
+import { Switch } from '@mantine/core';
 import {
   KeyboardEvent,
   MutableRefObject,
@@ -700,7 +700,7 @@ export const ChatInput = ({
             </button>
           )}
 
-        <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#15162c] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4">
+        <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#15162c] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4 pl-8">
 
           {/* BUTTON 1: Plugins */}
           <button
@@ -734,6 +734,12 @@ export const ChatInput = ({
                 handleImageUpload(Array.from(files));
               }
             }}
+          />
+          {/* BUTTON 1: UseMQRetrieval Switch */}
+          <Switch
+            className="absolute left-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+            checked={localStorage.getItem('UseMQRetrieval') === 'true'}
+            onChange={(checked) => localStorage.setItem('UseMQRetrieval', String(checked))}
           />
           {showPluginSelect && (
             <div className="absolute bottom-14 left-0 rounded bg-white dark:bg-[#15162c]">
