@@ -374,10 +374,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                     if (message.contexts) {
                       citationLinks.forEach(({ link, citationRegex, readable_filename }, index) => {
                         const citationLink = `[${index + 1}](${link})`;
-                        const filenameLink = `[${readable_filename}](${link})`;
+                        const filenameLink = `${index + 1}. [${readable_filename}](${link})`;
                       // This replaces placeholders with clickable links but Markdown rendering removes the placeholder and only shows the number.
                         content = content.replace(new RegExp(`\\[${index + 1}\\](?!\\:\\s\\[)`, 'g'), citationLink);
-                        content = content.replace(new RegExp(`\\[${readable_filename}\\]\\(\\#\\)`, 'g'), filenameLink);
+                        content = content.replace(new RegExp(`\\[${index + 1}\\]\\:\\s\\[${readable_filename}\\]\\(\\#\\)`, 'g'), filenameLink);
                       })
                       // Uncomment for debugging
                       // console.log('content: ', content) 

@@ -27,19 +27,28 @@ export async function getStuffedPrompt(
       prePrompt =
         "Please answer the following question. Use the documents below, and ONLY the documents below, to answer the question. This is for the law domain and we train law students to stick to facts that are in the record. Do not improvise or use your world knowledge, stick to only the information provided and make heavy use of direct quotes instead of paraphrasing or summarizing. When citing the documents, always use Markdown footnotes in the react-markdown format. Use react-markdown superscript to number the sources at the end of sentences (1, 2, 3...) and use react-markdown Footnotes to list the full document names for each number. Use ReactMarkdown aka 'react-markdown' formatting for super script citations, use semi-formal style. Say that 'the topic is not discussed in these documents' when the answer is not directly available in the documents. If there are related documents, tell the user that they might be able to learn more in that document.\nHere's a few passages of the documents:\n"
     } else {
-      prePrompt = `Please answer the following question. Utilize the context provided below, 
-      termed 'your documents', and integrate information from them as appropriate. Avoid irrelevant parts. 
-      When quoting directly from your documents, use Markdown footnotes for citations. 
-      Apply ReactMarkdown formatting for superscript citations and clickable links. 
-      Insert citations at the end of sentences in square brackets, like [1], [2], etc.
-      At the end of the response, list the document names(with extensions) with corresponding numbers as clickable links ONLY for relevant documents.
-      The response style should be semi-formal. If the answer is not found in the provided documents, feel free to state that you don't know.
-      Structure your response to include relevant information from these documents, 
-      following the inline citations format with clickable links. 
-      For each statement or fact drawn from a document, add a numerical citation in square brackets 
-      immediately after the sentence. End your response with a list of the document titles as clickable links, 
-      corresponding to each numerical citation.
-      Here are excerpts from the high-quality documents provided:\n"`
+      prePrompt = `Please analyze and respond to the following question using the excerpts from the provided documents. These documents can be pdf files or web pages.
+      Integrate relevant information from these documents, ensuring each reference is linked to the document's number.
+      Use Markdown to format citations as clickable links. Your response should be semi-formal. 
+      When quoting directly, cite with footnotes linked to the document number. 
+      Summarize or paraphrase other relevant information with inline citations, again referencing the document number. 
+      If the answer is not in the provided documents, state so. 
+      Conclude your response with a LIST of the document titles as clickable links, each linked to its respective document number.
+      ALWAYS follow the examples below:
+      If you're referencing the first document, insert a citation like this in your response: "[1]" 
+      At the end of your response, list the document title with a clickable link, like this: "[1]:[document_name]"
+      Nothing else should prefixxed or suffixed to the citation or document name. 
+      
+      Suppose a document name is shared with you along with the number below like "27: www.pdf, page: 2" where 27 is the number and www.pdf is the document_name, then cite it in the response as follows:
+      """
+      The sky is blue. [27] The grass is green. [28]
+      Relevant Sources:
+
+      [27]: [document_name](#)
+      [28]: [document_name](#)
+      """
+      Here are excerpts from the high-quality documents provided:
+      \n"`
       // "Please answer the following question. Use the context below, called your documents, only if it's helpful and don't use parts that are very irrelevant. It's good to quote from your documents directly, when you do always use Markdown footnotes for citations. Use react-markdown superscript to number the sources at the end of sentences (1, 2, 3...) and use react-markdown Footnotes to list the full document names for each number. Use ReactMarkdown aka 'react-markdown' formatting for super script citations, use semi-formal style. Feel free to say you don't know. \nHere's a few passages of the high quality documents:\n"
     }
 
@@ -47,8 +56,8 @@ export async function getStuffedPrompt(
       prePrompt + '\n\nNow please respond to my query: ' + searchQuery,
     ).length
     const validDocs = []
-    for (const d of contexts) {
-      const docString = `---\nDocument: ${d.readable_filename}${
+    for (const [index, d] of contexts.entries()) {
+      const docString = `---\n${index + 1}: ${d.readable_filename}${
         d.pagenumber ? ', page: ' + d.pagenumber : ''
       }\n${d.text}\n`
       const numTokens = encoding.encode(docString).length
@@ -57,7 +66,7 @@ export async function getStuffedPrompt(
       )
       if (tokenCounter + numTokens <= tokenLimit) {
         tokenCounter += numTokens
-        validDocs.push(d)
+        validDocs.push({ index, d })
       } else {
         continue
       }
@@ -66,8 +75,8 @@ export async function getStuffedPrompt(
     const separator = '---\n' // between each context
     const contextText = validDocs
       .map(
-        (d) =>
-          `Document: ${d.readable_filename}${
+        ({ index, d }) =>
+          `${index + 1}: ${d.readable_filename}${
             d.pagenumber ? ', page: ' + d.pagenumber : ''
           }\n${d.text}\n`,
       )
