@@ -327,6 +327,16 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           let done = false
           let isFirst = true
           let text = ''
+          let citationLinks: { link: string, citationRegex: RegExp, readable_filename: string }[] = [];
+          if (message.contexts) {
+            citationLinks = await Promise.all(
+              message.contexts.map(async (context, index) => {
+                const link = await generateCitationLink(context)
+                const citationRegex = new RegExp(`\\[${context.readable_filename}\\]`, 'g')
+                return { link, citationRegex, readable_filename: context.readable_filename }
+              })
+            )
+          }
           try {
             while (!done) {
               if (stopConversationRef.current === true) {
@@ -358,38 +368,30 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   value: updatedConversation,
                 })
               } else {
-                const updatedMessages: Message[] = await Promise.all(
-                  updatedConversation.messages.map(async (message, index) => {
-                    if (index === updatedConversation.messages.length - 1) {
-                      let content = text
-                      if (message.contexts) {
-                        const links = await Promise.all(
-                          message.contexts.map(async (context, index) => {
-                            const link = await generateCitationLink(context)
-                            const citationRegex = new RegExp(`\\[${context.readable_filename}\\]`, 'g')
-                            return { link, citationRegex, readable_filename: context.readable_filename }
-                          })
-                        )
-                        links.forEach(({ link, citationRegex, readable_filename }, index) => {
-                          const citationLink = `[${index + 1}](${link})`;
-                          const filenameLink = `[${readable_filename}](${link})`;
-                          // This replaces placeholders with clickable links but Markdown rendering removes the placeholder and only shows the number.
-                          // content = content.replace(new RegExp(`\\[${index + 1}\\](?!\\()`, 'g'), citationLink);
-
-                          content = content.replace(new RegExp(`\\[${readable_filename}\\]\\(\\#\\)`, 'g'), filenameLink);
-                        })
-                        return {
-                          ...message,
-                          content,
-                        }
+                const updatedMessages: Message[] = updatedConversation.messages.map((message, index) => {
+                  if (index === updatedConversation.messages.length - 1) {
+                    let content = text
+                    if (message.contexts) {
+                      citationLinks.forEach(({ link, citationRegex, readable_filename }, index) => {
+                        const citationLink = `[${index + 1}](${link})`;
+                        const filenameLink = `[${readable_filename}](${link})`;
+                      // This replaces placeholders with clickable links but Markdown rendering removes the placeholder and only shows the number.
+                        content = content.replace(new RegExp(`\\[${index + 1}\\](?!\\:\\s\\[)`, 'g'), citationLink);
+                        content = content.replace(new RegExp(`\\[${readable_filename}\\]\\(\\#\\)`, 'g'), filenameLink);
+                      })
+                      // Uncomment for debugging
+                      // console.log('content: ', content) 
+                      return {
+                        ...message,
+                        content,
                       }
                     }
-                    return message
-                  })
-                )
+                  }
+                  return message
+                })
                 updatedConversation = {
                   ...updatedConversation,
-                  messages: await Promise.all(updatedMessages),
+                  messages: updatedMessages,
                 }
                 homeDispatch({
                   field: 'selectedConversation',

@@ -100,74 +100,7 @@ pre:has(div.codeblock) {
   background-repeat: no-repeat;
 }
 
-.linkMarkDown a {
-  text-wrap: wrap;
-    min-height: 100%;
-    min-width: 30%;
-    display: flex;
-    /* Flex display to allow for inner content alignment */
-    flex-direction: column;
-    /* Stack content vertically */
-    justify-content: space-between;
-    /* Space out the content */
-    padding: 10px;
-    font-size: inherit;
-    font-weight: normal;
-    color: rgb(74, 74, 232);
-    background-color: #15162c;
-      /* Removes background from sup */
-      border-radius: 5px;
-  border: none;
-  text-decoration: none;
-    transition: color 0.15s ease-in-out, transform 0.15s ease-in-out;
-}
 
-.linkMarkDown a:hover,
-.linkMarkDown a:focus,
-.linkMarkDown a:visited:focus,
-.linkMarkDown a:visited:hover {
-  background-color: blueviolet;
-  color: #FFFFFF;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.linkMarkDown a:active {
-  color: #FFFFFF;
-  transform: scale(0.98);
-}
-
-.linkMarkDown a:visited {
-  color: rgb(173, 92, 227);
-}
-  
-.linkMarkDown sup {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  min-width: 1.25em;
-  height: 1.25em;
-  border-radius: 50%;
-  font-size: 75%;
-  line-height: 1;
-  color: #ffffff;
-  background-color: #2d2d2d;
-  margin-right: 4px;
-  /* New margin for spacing */
-}
-  
-.linkMarkDown sup>a {
-  padding: 2px 4px;
-  border: none;
-  background-color: transparent;
-  color: rgb(74, 74, 232);
-  text-decoration: none;
-}
-
-.linkMarkDown sup>a:visited {
-  color: rgb(173, 92, 227);
-  text-decoration: none;
-}
 
 .fade-2-lines {
   overflow: hidden;
@@ -370,47 +303,100 @@ li {
 a[data-footnote-backref] {
   visibility: hidden;
 }
-[data-footnotes] {
-  margin-top: 1rem;
-  display: flex;
-  flex-wrap: nowrap;
-  /* Prevents wrapping to the next line */
-  overflow-x: auto;
-  /* Allows horizontal scrolling */
-  overflow-y: hidden;
-  /* Prevents vertical scrolling */
+/* Styling for citation links */
+.supMarkdown a {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 1.25em;
+  height: 1.25em;
+  border-radius: 50%;
+  font-size: 75%;
+  line-height: 1;
+  color: #4a4ae8;
+  background-color: #2d2d2d;
+  margin-right: 4px;
+  padding: 2px 4px;
+  border: none;
+  text-decoration: none;
 }
 
-[data-footnotes] ol {
-  display: flex;
-  flex-wrap: nowrap;
-  /* Prevents wrapping within the ol element */
-  gap: 10px;
-  /* Space between items */
-  align-content: flex-start;
-  overflow-x: auto;
-  /* Allows horizontal scrolling */
-  overflow-y: hidden;
-  /* Prevents vertical scrolling */
+/* Styling for visited citation links */
+.supMarkdown a:visited {
+  color: rgb(173, 92, 227);
 }
 
-[data-footnotes] li {
-  flex: 0 0 calc(33.33% - 10px);
-  /* Each item takes up a third of the row, minus the gap */
-  display: flex;
-  flex-direction: column;
-  border-radius: 5px;
-  box-sizing: border-box;
-  /* Include padding and border in element's total width and height */
-  max-width: calc(33.33% - 10px);
-  /* Limit the width of each item */
+.supMarkdown a:hover,
+.supMarkdown a:focus {
+  background-color: blueviolet;
+  color: #FFFFFF;
+  cursor: pointer;
 }
 
-[data-footnotes] li p {
+/* Styling for document buttons */
+.linkMarkDown button {
+  width: 100%;
   height: 100%;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Button occupies full width of its container (li) */
+  text-align: center;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9rem;
+  /* Adjust font size to fit the buttons */
+  padding: 10px;
+  color: #4a4ae8;
+  background-color: #15162c;
+  border-radius: 5px;
+  border: none;
+  text-decoration: none;
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
 }
+
+/* Hover and focus states for document buttons */
+.linkMarkDown button:hover,
+.linkMarkDown button:focus {
+  background-color: blueviolet;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+
+/* Active state for document buttons */
+.linkMarkDown button:active {
+  transform: scale(0.98);
+}
+
+/* Visited state for document buttons */
+.linkMarkDown button:visited {
+  color: rgb(173, 92, 227);
+}
+
+/* Horizontal scroll for the list of document buttons */
+.linkMarkDown ol {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+    list-style: none;
+    gap: 2px;
+    /* Spacing between buttons */
+    padding: 0;
+    /* Remove default padding */
+    margin: 1rem;
+    /* Remove default margin */
+    scroll-snap-type: x mandatory;
+    /* Snap scrolling */
+}
+
+.linkMarkDown ol li {
+  flex: 0 0 20%;
+  /* Each button will take up 20% of the container's width */
+  scroll-snap-align: start;
+  /* Align to the start of the scroll container */
+  margin-right: 10px;
+  /* Spacing between buttons */
+}
+
+.linkMarkDown ol li:last-child {
+  margin-right: 0;
+}
+/* For hiding the scrollbar but allowing the scroll feature */

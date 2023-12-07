@@ -294,7 +294,7 @@ export const ChatMessage: FC<Props> = memo(
               <div className="flex flex-row">
                 <div className="flex-1">
                   <MemoizedReactMarkdown
-                      className="dark:prose-invert prose flex-1 linkMarkDown data-footnote-backref data-footnotes"
+                      className="dark:prose-invert prose flex-1 linkMarkDown supMarkdown"
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeMathjax]}
                     components={{
@@ -350,22 +350,38 @@ export const ChatMessage: FC<Props> = memo(
                           </td>
                         )
                       },
-                      link({ node, className, children, ...props }) {
+                      a({ node, className, children, ...props }) {
                         const { href, title } = props;
-                        return (
-
-                          <a
+                        // console.log("href:", href);
+                        // console.log("title:", title);
+                        console.log("children:", children);
+                        const isCitationLink = /^\d+$/.test(children[0] as string);
+                        if (isCitationLink) {
+                          return (
+                            <a
                               id="styledLink"
-                            href={href}
-                            target="_blank"
-                            title={title}
-                            rel="noopener noreferrer"
-                              className="linkMarkDown"
-                          >
-                            {children}
-                          </a>
+                              href={href}
+                              target="_blank"
+                              title={title}
+                              rel="noopener noreferrer"
+                              className={'supMarkdown'}
+                            >
+                              {children}
+                            </a>
+                          )
+                        } else {
 
-                        )
+                          return (
+                            <button
+                              id="styledLink"
+                              onClick={() => window.open(href, '_blank')}
+                              title={title}
+                              className={'linkMarkDown'}
+                            >
+                              {children}
+                            </button>
+                          )
+                        }
                       },
                     }}
                   >
