@@ -87,14 +87,12 @@ pre:has(div.codeblock) {
 /* Make the purple background fade out  */
 .course-page-main {
   /* height: 400px;     */
-  background: -webkit-gradient(
-    linear,
-    left top,
-    left bottom,
-    from(#2e026d),
-    to(#020307),
-    color-stop(0.75, #15162c)
-  );
+  background: -webkit-gradient(linear,
+        left top,
+        left bottom,
+        from(#2e026d),
+        to(#020307),
+      color-stop(0.75, #15162c));
   background-color: #020307;
   background-size: 100% 45%, 0%;
   background-repeat: no-repeat;
@@ -196,7 +194,7 @@ li {
   margin: 0 0.3rem 0.3rem 0;
 }
 
-.tag-item > .button {
+.tag-item>.button {
   background-color: blueviolet;
   width: 22px;
   height: 22px;
@@ -257,13 +255,11 @@ li {
   bottom: 0;
   left: 0;
   transform: translateX(-100%);
-  background-image: linear-gradient(
-    90deg,
-    rgba(99, 39, 175, 0) 0,
-    rgba(75, 85, 72, 0.2) 20%,
-    rgba(30, 64, 175, 0.5) 60%,
-    rgba(66, 1, 95, 0)
-  );
+  background-image: linear-gradient(90deg,
+        rgba(99, 39, 175, 0) 0,
+        rgba(75, 85, 72, 0.2) 20%,
+        rgba(30, 64, 175, 0.5) 60%,
+      rgba(66, 1, 95, 0));
   /* Changed the primary color to purple-900 */
   animation: shimmer 5s infinite;
   content: '';
@@ -300,9 +296,11 @@ li {
   background-color: #807f7f;
   border-radius: 4px;
 }
+
 a[data-footnote-backref] {
   visibility: hidden;
 }
+
 /* Styling for citation links */
 .supMarkdown a {
   display: inline-flex;
@@ -333,70 +331,108 @@ a[data-footnote-backref] {
   cursor: pointer;
 }
 
+@media (max-width: 768px) {
+  .linkMarkDown button {
+    font-size: 0.8rem;
+    /* Smaller font size on smaller screens */
+    padding: 5px 10px;
+    /* Adjust padding to ensure text doesn't overlap */
+  }
+}
 /* Styling for document buttons */
-.linkMarkDown button {
+.linkMarkDown button:not(.codeblock-button) {
+  min-height: 100px;
+  min-width: 150px;
   width: 100%;
   height: 100%;
   /* Button occupies full width of its container (li) */
   text-align: center;
-  display: inline-flex;
+  display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 0.9rem;
+  font-size: 1rem;
   /* Adjust font size to fit the buttons */
-  padding: 10px;
+  padding: 10px 0;
   color: #4a4ae8;
   background-color: #15162c;
   border-radius: 5px;
   border: none;
   text-decoration: none;
   transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+  white-space: normal;
+    /* Allow text wrapping inside buttons */
+    overflow: hidden;
+    /* Hide overflowed text */
+    text-overflow: ellipsis;
+    /* Add ellipsis to overflowed text */
+    position: relative;
 }
 
 /* Hover and focus states for document buttons */
-.linkMarkDown button:hover,
-.linkMarkDown button:focus {
+.linkMarkDown button:not(.codeblock-button):hover,
+.linkMarkDown button:not(.codeblock-button):focus {
   background-color: blueviolet;
   color: #FFFFFF;
   cursor: pointer;
 }
 
 /* Active state for document buttons */
-.linkMarkDown button:active {
+.linkMarkDown button:not(.codeblock-button):active {
   transform: scale(0.98);
 }
 
 /* Visited state for document buttons */
-.linkMarkDown button:visited {
+.linkMarkDown button:not(.codeblock-button):visited {
   color: rgb(173, 92, 227);
 }
 
-/* Horizontal scroll for the list of document buttons */
 .linkMarkDown ol {
   display: flex;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-    list-style: none;
-    gap: 2px;
+  flex: nowrap;
+    overflow-x: auto;
+    gap: 10px;
     /* Spacing between buttons */
-    padding: 0;
-    /* Remove default padding */
-    margin: 1rem;
-    /* Remove default margin */
+  padding: 20px;
+    /* Padding inside the card */
+    margin: 20px 0;
+    /* Margin around the card */
+    background-color: #1e1e2f;
+    /* Slightly lighter than the button background for contrast */
+    border-radius: 10px;
+    /* Rounded corners for the card */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow for depth */
     scroll-snap-type: x mandatory;
     /* Snap scrolling */
+  counter-reset: section;
+    list-style-type: none;
 }
 
+/* Style for individual list items */
 .linkMarkDown ol li {
-  flex: 0 0 20%;
-  /* Each button will take up 20% of the container's width */
+  max-width: 150px;
+    flex: 0 0 calc(25% - 10px);
+    /* Adjusting for the gap */
   scroll-snap-align: start;
   /* Align to the start of the scroll container */
-  margin-right: 10px;
-  /* Spacing between buttons */
+  height: 100%;
+    /* Ensure all buttons are the same height */
+  }
+  
+  /* Style for the buttons inside the list items */
+  .linkMarkDown button:not(.codeblock-button) {
+    width: 100%;
+    /* Button occupies full width of its container (li) */
+    text-align: center;
+    /* Ensure text is centered */
+    border-radius: 5px;
+    /* Match border-radius of ol but smaller */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    /* Slight shadow for each button for consistency */
 }
 
 .linkMarkDown ol li:last-child {
   margin-right: 0;
 }
+
 /* For hiding the scrollbar but allowing the scroll feature */
