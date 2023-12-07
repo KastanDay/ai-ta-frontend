@@ -26,13 +26,13 @@ export const fallbackModelID = OpenAIModelID.GPT_4
 export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   [OpenAIModelID.GPT_3_5]: {
     id: OpenAIModelID.GPT_3_5,
-    name: 'GPT-3.5-4k',
+    name: 'GPT-3.5 Turbo',
     maxLength: 12000,
     tokenLimit: 4096,
   },
   [OpenAIModelID.GPT_3_5_16k]: {
     id: OpenAIModelID.GPT_3_5_16k,
-    name: 'GPT-3.5-16k (large context)',
+    name: 'GPT-3.5 (16k large context)',
     maxLength: 49000,
     tokenLimit: 16385,
   },
@@ -44,7 +44,7 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   },
   [OpenAIModelID.GPT_4_1106_PREVIEW]: {
     id: OpenAIModelID.GPT_4_1106_PREVIEW,
-    name: 'GPT-4-1106-preview (128k)',
+    name: 'GPT-4 Turbo (128k)',
     maxLength: 24000,
     tokenLimit: 128000,
   },
