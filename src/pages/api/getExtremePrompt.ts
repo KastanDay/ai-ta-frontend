@@ -24,3 +24,5 @@ export async function getExtremePrompt(
   // console.log('finalPromptStr:\n', finalPromptStr)
   return finalPromptStr
 }
+
+export default getExtremePrompt;

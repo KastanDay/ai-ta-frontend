@@ -17,7 +17,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
       req.body as GoogleBody
 
     const userMessage = messages?.[messages.length - 1] ?? { content: '' }
-    const query = encodeURIComponent(userMessage.content.trim())
+    let queryContent = '';
+    if (typeof userMessage.content === 'string') {
+      queryContent = userMessage.content.trim();
+    } else if (Array.isArray(userMessage.content)) {
+      queryContent = userMessage.content.map(content => content.text).join(' ').trim();
+    }
+    const query = encodeURIComponent(queryContent);
     // const userMessage = messages[messages.length - 1]
     // const query = encodeURIComponent(userMessage.content.trim())
 
@@ -107,7 +113,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
     It's 70 degrees and sunny in San Francisco today. [[1]](https://www.google.com/search?q=weather+san+francisco)
 
     Input:
-    ${userMessage.content.trim()}
+    ${queryContent}
 
     Sources:
     ${filteredSources.map((source) => {
