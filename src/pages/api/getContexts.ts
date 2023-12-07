@@ -5,6 +5,29 @@ export const config = {
   runtime: 'edge',
 }
 
+export const fetchMQRContexts = async (
+  course_name: string,
+  search_query: string,
+  token_limit = 4000,
+) => {
+  try {
+    const response: AxiosResponse<ContextWithMetadata[]> = await axios.get(
+      `https://example.com/getMQRContexts`,
+      {
+        params: {
+          course_name: course_name,
+          search_query: search_query,
+          token_limit: token_limit,
+        },
+      },
+    )
+    return response.data
+  } catch (error) {
+    console.error(error)
+    return []
+  }
+}
+
 export const fetchContexts = async (
   course_name: string,
   search_query: string,
