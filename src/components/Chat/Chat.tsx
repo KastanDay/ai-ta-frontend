@@ -65,7 +65,7 @@ interface Props {
 
 import { useRouter } from 'next/router'
 // import CustomBanner from '../UIUC-Components/CustomBanner'
-import { fetchContexts } from '~/pages/api/getContexts'
+import { fetchContexts, fetchMQRContexts } from '~/pages/api/getContexts'
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
@@ -236,7 +236,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const handleContextSearch = async (message: Message, selectedConversation: Conversation, searchQuery: string) => {
     if (getCurrentPageName() != 'gpt4') {
       const token_limit = OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
-      await fetchContexts(getCurrentPageName(), searchQuery, token_limit).then((curr_contexts) => {
+      const useMQRetrieval = localStorage.getItem('UseMQRetrieval') === 'true';
+      const fetchContextsFunc = useMQRetrieval ? fetchMQRContexts : fetchContexts;
+      await fetchContextsFunc(getCurrentPageName(), searchQuery, token_limit).then((curr_contexts) => {
         message.contexts = curr_contexts as ContextWithMetadata[]
       })
     }
