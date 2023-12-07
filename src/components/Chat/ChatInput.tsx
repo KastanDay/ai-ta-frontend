@@ -1,3 +1,4 @@
+// chatinput.tsx
 import {
   IconArrowDown,
   IconBolt,
@@ -5,6 +6,9 @@ import {
   IconPlayerStop,
   IconRepeat,
   IconSend,
+  IconPhoto,
+  IconAlertCircle,
+  IconX
 } from '@tabler/icons-react'
 import {
   KeyboardEvent,
@@ -17,8 +21,7 @@ import {
 } from 'react'
 
 import { useTranslation } from 'next-i18next'
-
-import { Message } from '@/types/chat'
+import { Content, Message } from '@/types/chat'
 import { Plugin } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
 
@@ -27,6 +30,26 @@ import HomeContext from '~/pages/api/home/home.context'
 import { PluginSelect } from './PluginSelect'
 import { PromptList } from './PromptList'
 import { VariableModal } from './VariableModal'
+
+import { notifications } from '@mantine/notifications';
+import { useMantineTheme, Modal, Tooltip } from '@mantine/core';
+import { Montserrat } from 'next/font/google'
+
+import { v4 as uuidv4 } from 'uuid';
+
+import React from 'react'
+
+import { CSSProperties } from 'react';
+
+import { fetchPresignedUrl, uploadToS3 } from 'src/utils/apiUtils';
+import { ImagePreview } from './ImagePreview'
+import { OpenAIModelID } from '~/types/openai'
+
+const montserrat_med = Montserrat({
+  weight: '500',
+  subsets: ['latin'],
+})
+
 
 interface Props {
   onSend: (message: Message, plugin: Plugin | null) => void
@@ -37,6 +60,12 @@ interface Props {
   showScrollDownButton: boolean
   inputContent: string
   setInputContent: (content: string) => void
+  courseName: string
+}
+
+interface ProcessedImage {
+  resizedFile: File;
+  dataUrl: string;
 }
 
 export const ChatInput = ({
@@ -48,6 +77,7 @@ export const ChatInput = ({
   showScrollDownButton,
   inputContent,
   setInputContent,
+  courseName,
 }: Props) => {
   const { t } = useTranslation('chat')
 
@@ -57,7 +87,7 @@ export const ChatInput = ({
     dispatch: homeDispatch,
   } = useContext(HomeContext)
 
-  const [content, setContent] = useState<string>()
+  const [content, setContent] = useState<string>(() => inputContent);
   const [isTyping, setIsTyping] = useState<boolean>(false)
   const [showPromptList, setShowPromptList] = useState(false)
   const [activePromptIndex, setActivePromptIndex] = useState(0)
@@ -66,8 +96,50 @@ export const ChatInput = ({
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [showPluginSelect, setShowPluginSelect] = useState(false)
   const [plugin, setPlugin] = useState<Plugin | null>(null)
-
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const imageUploadRef = useRef<HTMLInputElement | null>(null);
   const promptListRef = useRef<HTMLUListElement | null>(null)
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const chatInputContainerRef = useRef<HTMLDivElement>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+
+
+  const removeButtonStyle: CSSProperties = {
+    position: 'absolute',
+    top: '-8px',
+    right: '-8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    borderRadius: '50%',
+    backgroundColor: '#A9A9A9', // Changed to a darker gray
+    color: 'white', // White icon color
+    border: '2px solid white', // White border
+    cursor: 'pointer',
+    zIndex: 2,
+  };
+
+  const removeButtonHoverStyle: CSSProperties = {
+    backgroundColor: '#505050', // Even darker gray for hover state
+  };
+
+  // Dynamically set the padding based on image previews presence
+  const chatInputContainerStyle: CSSProperties = {
+    paddingTop: imagePreviewUrls.length > 0 ? '10px' : '0',
+    paddingRight: imagePreviewUrls.length > 0 ? '10px' : '0',
+    paddingBottom: '0',
+    paddingLeft: '10px',
+    borderRadius: '4px', // This will round the edges slightly
+  };
 
   const filteredPrompts = prompts.filter((prompt) =>
     prompt.name.toLowerCase().includes(promptInputValue.toLowerCase()),
@@ -90,25 +162,72 @@ export const ChatInput = ({
     setContent(value)
     updatePromptListVisibility(value)
   }
+  // Assuming Message, Role, and Plugin types are already defined in your codebase
 
-  const handleSend = () => {
+  type Role = 'user' | 'system'; // Add other roles as needed
+
+
+  const handleSend = async () => {
     if (messageIsStreaming) {
-      return
+      return;
     }
 
-    if (!content) {
-      alert(t('Please enter a message'))
-      return
+    const textContent = content;
+    let imageContent: Content[] = []; // Explicitly declare the type for imageContent
+
+    if (imageFiles.length > 0 && !uploadingImage) {
+      setUploadingImage(true);
+      try {
+        // If imageUrls is empty, upload all images and get their URLs
+        const imageUrlsToUse = imageUrls.length > 0 ? imageUrls :
+          await Promise.all(imageFiles.map(file => uploadImageAndGetUrl(file, courseName)));
+
+        // Construct image content for the message
+        imageContent = imageUrlsToUse
+          .filter((url): url is string => url !== '') // Type-guard to filter out empty strings
+          .map(url => ({
+            type: "image_url",
+            image_url: { url }
+          }));
+
+        // console.log("Final imageUrls: ", imageContent)
+
+        // Clear the files after uploading
+        setImageFiles([]);
+        setImagePreviewUrls([]);
+      } catch (error) {
+        console.error('Error uploading files:', error);
+        setImageError('Error uploading files');
+      } finally {
+        setUploadingImage(false);
+      }
     }
 
-    onSend({ role: 'user', content }, plugin)
-    setContent('')
-    setPlugin(null)
-
-    if (window.innerWidth < 640 && textareaRef && textareaRef.current) {
-      textareaRef.current.blur()
+    if (!textContent && imageContent.length === 0) {
+      alert(t('Please enter a message or upload an image'));
+      return;
     }
-  }
+
+    // Construct the content array
+    const contentArray: Content[] = [
+      ...(textContent ? [{ type: "text", text: textContent }] : []),
+      ...imageContent
+    ];
+
+    // Create a structured message for GPT-4 Vision
+    const messageForGPT4Vision: Message = {
+      role: 'user',
+      content: contentArray
+    };
+
+    // Use the onSend prop to send the structured message
+    onSend(messageForGPT4Vision, plugin); // Cast to unknown then to Message if needed
+
+    // Reset states
+    setContent('');
+    setPlugin(null);
+    setImagePreviews([]);
+  };
 
   const handleStopConversation = () => {
     stopConversationRef.current = true
@@ -199,7 +318,7 @@ export const ChatInput = ({
     }
   }, [])
 
-  const handlePromptSelect = (prompt: Prompt) => {
+  const handlePromptSelect = useCallback((prompt: Prompt) => {
     const parsedVariables = parseVariables(prompt.content)
     const filteredVariables = parsedVariables.filter(
       (variable) => variable !== undefined,
@@ -215,24 +334,9 @@ export const ChatInput = ({
       })
       updatePromptListVisibility(prompt.content)
     }
-  }
+  }, [parseVariables, setContent, updatePromptListVisibility]);
 
-  // const handlePromptSelect = (prompt: Prompt) => {
-  //   const parsedVariables = parseVariables(prompt.content);
-  //   setVariables(parsedVariables);
-
-  //   if (parsedVariables.length > 0) {
-  //     setIsModalVisible(true);
-  //   } else {
-  //     setContent((prevContent) => {
-  //       const updatedContent = prevContent?.replace(/\/\w*$/, prompt.content);
-  //       return updatedContent;
-  //     });
-  //     updatePromptListVisibility(prompt.content);
-  //   }
-  // };
-
-  const handleSubmit = (updatedVariables: string[]) => {
+  const handleSubmit = useCallback((updatedVariables: string[]) => {
     const newContent = content?.replace(/{{(.*?)}}/g, (match, variable) => {
       const index = variables.indexOf(variable)
       return updatedVariables[index] || ''
@@ -243,14 +347,283 @@ export const ChatInput = ({
     if (textareaRef && textareaRef.current) {
       textareaRef.current.focus()
     }
+  }, [variables, setContent, textareaRef]); // Add dependencies used in the function
+
+  // https://platform.openai.com/docs/guides/vision/what-type-of-files-can-i-upload
+  const validImageTypes = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+
+  const isImageValid = (fileName: string): boolean => {
+    const ext = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase();
+    return validImageTypes.includes(`.${ext}`);
   }
 
-  useEffect(() => {
-    setContent(inputContent)
-    if (textareaRef.current) {
-      textareaRef.current.focus()
+  // const uploadToS3 = async (file: File) => {
+  //   if (!file) {
+  //     console.error('No file provided for upload');
+  //     return;
+  //   }
+
+  //   // Generate a unique file name using uuidv4
+  //   const uniqueFileName = `${uuidv4()}.${file.name.split('.').pop()}`;
+  //   const s3_filepath = `courses/${courseName}/${uniqueFileName}`; // Define s3_filepath here
+
+  //   console.log('uploadToS3 called with uniqueFileName:', uniqueFileName);
+  //   console.log('uploadToS3 called with s3_filepath:', s3_filepath);
+
+  //   // Prepare the request body for the API call
+  //   // Prepare the request body for the API call
+  //   const requestObject = {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({
+  //       uniqueFileName: uniqueFileName,
+  //       fileType: file.type,
+  //       courseName: courseName,
+  //     }),
+  //   };
+
+  //   try {
+  //     // Call your API to get the presigned POST data
+  //     const response = await fetch('/api/UIUC-api/uploadToS3', requestObject);
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! Status: ${response.status}`);
+  //     }
+  //     const { post } = await response.json();
+
+  //     // Use the presigned POST data to upload the file to S3
+  //     const formData = new FormData();
+  //     Object.entries(post.fields).forEach(([key, value]) => {
+  //       formData.append(key, value as string);
+  //     });
+  //     formData.append('file', file);
+
+  //     // Post the file to the S3 bucket using the presigned URL and form data
+  //     const uploadResponse = await fetch(post.url, {
+  //       method: 'POST',
+  //       body: formData,
+  //     });
+
+  //     if (!uploadResponse.ok) {
+  //       throw new Error('Failed to upload the file to S3');
+  //     }
+
+  //     // Construct the URL to the uploaded file using the response from the presigned POST
+  //     const uploadedImageUrl = `https://${aws_config.bucketName}.s3.${aws_config.region}.amazonaws.com/${encodeURIComponent(s3_filepath)}`;
+
+  //     return uploadedImageUrl;
+  //   } catch (error) {
+  //     console.error('Error uploading file:', error);
+  //   }
+  // };
+
+
+
+  const ingestFile = async (file: File | null) => {
+    if (!file) return;
+
+    const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2);
+    const uniqueFileName = `${uuidv4()}.${fileExtension}`;
+
+    const queryParams = new URLSearchParams({
+      courseName: courseName,
+      fileName: uniqueFileName,
+    }).toString();
+
+    const requestObject = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      query: {
+        fileName: file.name,
+        courseName: courseName,
+      },
     }
-  }, [inputContent, textareaRef])
+
+    // Actually we CAN await here, just don't await this function.
+    console.log('right before call /ingest...')
+    const response = await fetch(
+      `/api/UIUC-api/ingest?${queryParams}`,
+      requestObject,
+    )
+
+    // check if the response was ok
+    if (response.ok) {
+      const data = await response.json()
+      // console.log(file.name as string + ' ingested successfully!!')
+      console.log('Success or Failure:', data)
+      return data
+    } else {
+      console.log('Error during ingest:', response.statusText)
+      console.log('Full Response message:', response)
+      return response
+    }
+  }
+
+  const showToastOnInvalidImage = useCallback(() => {
+    notifications.show({
+      id: 'error-notification',
+      withCloseButton: true,
+      onClose: () => console.log('error unmounted'),
+      onOpen: () => console.log('error mounted'),
+      autoClose: 8000,
+      title: 'Invalid Image Type',
+      message: 'Unsupported file type. Please upload .jpg or .png images.',
+      color: 'red',
+      radius: 'lg',
+      icon: <IconAlertCircle />,
+      className: 'my-notification-class',
+      style: { backgroundColor: '#15162c' },
+      withBorder: true,
+      loading: false,
+    });
+  }, []);
+
+  const handleImageUpload = useCallback(async (files: File[]) => {
+    const validFiles = files.filter(file => isImageValid(file.name));
+    const invalidFilesCount = files.length - validFiles.length;
+
+    if (invalidFilesCount > 0) {
+      setImageError(`${invalidFilesCount} invalid file type(s). Please upload .jpg or .png images.`);
+      showToastOnInvalidImage();
+    }
+
+    const imageProcessingPromises = validFiles.map(file => {
+      return new Promise<ProcessedImage>((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+          const result = reader.result;
+          if (typeof result === 'string') {
+            const img = new Image();
+            img.src = result;
+
+            img.onload = () => {
+              let newWidth, newHeight;
+              const MAX_WIDTH = 2048;
+              const MAX_HEIGHT = 2048;
+              const MIN_SIDE = 768;
+
+              if (img.width > img.height) {
+                newHeight = MIN_SIDE;
+                newWidth = (img.width / img.height) * newHeight;
+                if (newWidth > MAX_WIDTH) {
+                  newWidth = MAX_WIDTH;
+                  newHeight = (img.height / img.width) * newWidth;
+                }
+              } else {
+                newWidth = MIN_SIDE;
+                newHeight = (img.height / img.width) * newWidth;
+                if (newHeight > MAX_HEIGHT) {
+                  newHeight = MAX_HEIGHT;
+                  newWidth = (img.width / img.height) * newHeight;
+                }
+              }
+
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+                canvas.toBlob((blob) => {
+                  if (blob) {
+                    const resizedFile = new File([blob], file.name, {
+                      type: 'image/jpeg',
+                      lastModified: Date.now(),
+                    });
+
+                    resolve({ resizedFile, dataUrl: canvas.toDataURL('image/jpeg') });
+                  } else {
+                    reject(new Error('Canvas toBlob failed'));
+                  }
+                }, 'image/jpeg', 0.9);
+              } else {
+                reject(new Error('Canvas Context is null'));
+              }
+            };
+          } else {
+            reject(new Error('FileReader did not return a string result'));
+          }
+        };
+
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    });
+
+    try {
+      const processedImages = await Promise.all(imageProcessingPromises);
+      setImageFiles(prev => [...prev, ...processedImages.map(img => img.resizedFile)]);
+      setImagePreviewUrls(prev => [...prev, ...processedImages.map(img => img.dataUrl)]);
+
+      // Store the URLs of the uploaded images
+      const uploadedImageUrls = (await Promise.all(processedImages.map(img => uploadImageAndGetUrl(img.resizedFile, courseName)))).filter(Boolean);
+      setImageUrls(uploadedImageUrls as string[]);
+    } catch (error) {
+      console.error('Error processing files:', error);
+    }
+  }, [setImageError, setImageFiles, setImagePreviewUrls, showToastOnInvalidImage, courseName]);
+
+  // Function to open the modal with the selected image
+  const openModal = (imageSrc: string) => {
+    setSelectedImage(imageSrc);
+    setIsModalOpen(true);
+  };
+
+  const theme = useMantineTheme();
+
+  useEffect(() => {
+    if (selectedConversation?.model.id !== OpenAIModelID.GPT_4_VISION) {
+      return; // Exit early if the model is not GPT-4 Vision
+    }
+
+    const handleDocumentDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+    };
+
+    const handleDocumentDrop = (e: DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      if (e.dataTransfer && e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+        const files = Array.from(e.dataTransfer.items)
+          .filter(item => item.kind === 'file')
+          .map(item => item.getAsFile())
+          .filter(file => file !== null) as File[];
+        if (files.length > 0) {
+          handleImageUpload(files);
+        }
+      }
+    };
+
+
+    const handleDocumentDragLeave = (e: DragEvent) => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener('dragover', handleDocumentDragOver);
+    document.addEventListener('drop', handleDocumentDrop);
+    document.addEventListener('dragleave', handleDocumentDragLeave);
+
+    return () => {
+      // Clean up the event listeners when the component is unmounted
+      document.removeEventListener('dragover', handleDocumentDragOver);
+      document.removeEventListener('drop', handleDocumentDrop);
+      document.removeEventListener('dragleave', handleDocumentDragLeave);
+    };
+  }, [handleImageUpload, selectedConversation?.model.id]);
+
+  useEffect(() => {
+    if (imageError) {
+      showToastOnInvalidImage();
+      setImageError(null);
+    }
+  }, [imageError, showToastOnInvalidImage]);
+
 
   useEffect(() => {
     if (promptListRef.current) {
@@ -262,9 +635,8 @@ export const ChatInput = ({
     if (textareaRef && textareaRef.current) {
       textareaRef.current.style.height = 'inherit'
       textareaRef.current.style.height = `${textareaRef.current?.scrollHeight}px`
-      textareaRef.current.style.overflow = `${
-        textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
-      }`
+      textareaRef.current.style.overflow = `${textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
+        }`
     }
   }, [content])
 
@@ -285,8 +657,28 @@ export const ChatInput = ({
     }
   }, [])
 
+  useEffect(() => {
+    // This will focus the div as soon as the component mounts
+    if (chatInputContainerRef.current) {
+      chatInputContainerRef.current.focus();
+    }
+  }, []);
+
+  // This is where we upload images and generate their presigned url
+  async function uploadImageAndGetUrl(file: File, courseName: string): Promise<string> {
+    try {
+      const uploadedImageUrl = await uploadToS3(file, courseName);
+      const presignedUrl = await fetchPresignedUrl(uploadedImageUrl as string);
+      return presignedUrl;
+    } catch (error) {
+      console.error('Upload failed for file', file.name, error);
+      setImageError(`Upload failed for file: ${file.name}`);
+      return '';
+    }
+  }
+
   return (
-    <div className="absolute bottom-0 left-0 w-full border-transparent bg-transparent pt-6 dark:border-white/20 md:pt-2">
+    <div className={`absolute bottom-0 left-0 w-full border-transparent bg-transparent pt-6 dark:border-white/20 md:pt-2`}>
       <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
         {messageIsStreaming && (
           <button
@@ -309,16 +701,40 @@ export const ChatInput = ({
           )}
 
         <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#15162c] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4">
+
+          {/* BUTTON 1: Plugins */}
           <button
-            className="absolute left-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+            className="absolute left-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
             onClick={() => setShowPluginSelect(!showPluginSelect)}
             onKeyDown={(e) => {
               console.log(e)
             }}
           >
-            {plugin ? <IconBrandGoogle size={20} /> : <IconBolt size={20} />}
+            {plugin ? <IconBrandGoogle size={22} /> : <IconBolt size={22} />}
           </button>
 
+          {/* BUTTON 2: Image Icon and Input */}
+          {selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
+            <button
+              className="absolute left-10 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+              onClick={() => document.getElementById('imageUpload')?.click()}
+            >
+              <IconPhoto size={22} />
+            </button>
+          )}
+          <input
+            type="file"
+            multiple
+            id="imageUpload"
+            ref={imageUploadRef}
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const files = e.target.files;
+              if (files) {
+                handleImageUpload(Array.from(files));
+              }
+            }}
+          />
           {showPluginSelect && (
             <div className="absolute bottom-14 left-0 rounded bg-white dark:bg-[#15162c]">
               <PluginSelect
@@ -341,88 +757,129 @@ export const ChatInput = ({
               />
             </div>
           )}
-
-          <textarea
-            ref={textareaRef}
-            className="m-0 w-full resize-none bg-[#070712] p-0 py-2 pl-10 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-3 md:pl-10"
+          {/* Chat input and preview container */}
+          <div
+            ref={chatInputContainerRef}
+            className="chat-input-container m-0 w-full resize-none bg-[#070712] p-0 text-black dark:bg-[#070712] dark:text-white"
+            tabIndex={0}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            onClick={() => textareaRef.current?.focus()} // Add this line
             style={{
-              resize: 'none',
-              bottom: `${textareaRef?.current?.scrollHeight}px`,
-              maxHeight: '400px',
-              overflow: `${
-                textareaRef.current && textareaRef.current.scrollHeight > 400
-                  ? 'auto'
-                  : 'hidden'
-              }`,
+              outline: isFocused ? '2px solid #9acafa' : 'none', // Adjust the outline as needed
+              ...chatInputContainerStyle // Apply the dynamic padding here
             }}
-            placeholder={
-              t('Type a message or type "/" to select a prompt...') || ''
-            }
-            value={content}
-            rows={1}
-            onCompositionStart={() => setIsTyping(true)}
-            onCompositionEnd={() => setIsTyping(false)}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-          />
-
-          <button
-            className="absolute right-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
-            onClick={handleSend}
           >
-            {messageIsStreaming ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
-            ) : (
-              <IconSend size={18} />
-            )}
-          </button>
-
-          {showScrollDownButton && (
-            <div className="absolute bottom-12 right-0 lg:-right-10 lg:bottom-0">
-              <button
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-300 text-gray-800 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-neutral-200"
-                onClick={onScrollDownClick}
-              >
-                <IconArrowDown size={18} />
-              </button>
+            {/* Image preview section */}
+            <div className="flex space-x-3" style={{ display: imagePreviewUrls.length > 0 ? 'flex' : 'none' }}>
+              {imagePreviewUrls.map((src, index) => (
+                <div key={src} className="relative w-12 h-12">
+                  <ImagePreview src={src} alt={`Preview ${index}`} className="object-cover w-full h-full rounded-lg" />
+                  <Tooltip
+                    label="Remove File"
+                    position="top"
+                    withArrow
+                    style={{
+                      backgroundColor: '#505050',
+                      color: 'white',
+                    }}
+                  >
+                    <button
+                      className="remove-button"
+                      onClick={() => {
+                        // Filter out the image from both imageFiles and imagePreviewUrls
+                        setImageFiles(prev => prev.filter((_, i) => i !== index));
+                        setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+                      }}
+                      style={removeButtonStyle}
+                      onMouseEnter={e => {
+                        const current = e.currentTarget;
+                        current.style.backgroundColor = removeButtonHoverStyle.backgroundColor!;
+                        current.style.color = removeButtonHoverStyle.color!;
+                      }}
+                      onMouseLeave={e => {
+                        const current = e.currentTarget;
+                        current.style.backgroundColor = removeButtonStyle.backgroundColor!;
+                        current.style.color = removeButtonStyle.color!;
+                      }}
+                    >
+                      <IconX size={16} />
+                    </button>
+                  </Tooltip>
+                </div>
+              ))}
             </div>
-          )}
 
-          {showPromptList && filteredPrompts.length > 0 && (
-            <div className="absolute bottom-12 w-full">
-              <PromptList
-                activePromptIndex={activePromptIndex}
-                prompts={filteredPrompts}
-                onSelect={handleInitModal}
-                onMouseOver={setActivePromptIndex}
-                promptListRef={promptListRef}
+            {/* Button 3: main input text area  */}
+            <div className={selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION ? "pl-16" : "pl-8"}>
+              <textarea
+                ref={textareaRef}
+                className="flex-grow m-0 w-full resize-none bg-[#070712] p-0 py-2 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-2"
+                placeholder={t('Type a message or type "/" to select a prompt...') || ''}
+                value={content}
+                rows={1}
+                onCompositionStart={() => setIsTyping(true)}
+                onCompositionEnd={() => setIsTyping(false)}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                style={{
+                  resize: 'none',
+                  maxHeight: '400px',
+                  overflow: 'hidden',
+                  outline: 'none', // Add this line to remove the outline from the textarea
+                  paddingTop: '14px'
+                }}
               />
             </div>
-          )}
 
-          {isModalVisible && filteredPrompts[activePromptIndex] && (
-            <VariableModal
-              prompt={filteredPrompts[activePromptIndex]}
-              variables={variables}
-              onSubmit={handleSubmit}
-              onClose={() => setIsModalVisible(false)}
-            />
-          )}
+
+
+            <button
+              className="absolute right-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+              onClick={handleSend}
+            >
+              {messageIsStreaming ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
+              ) : (
+                <IconSend size={18} />
+              )}
+            </button>
+
+
+            {showScrollDownButton && (
+              <div className="absolute bottom-12 right-0 lg:-right-10 lg:bottom-0">
+                <button
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-300 text-gray-800 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-neutral-200"
+                  onClick={onScrollDownClick}
+                >
+                  <IconArrowDown size={18} />
+                </button>
+              </div>
+            )}
+
+            {showPromptList && filteredPrompts.length > 0 && (
+              <div className="absolute bottom-12 w-full">
+                <PromptList
+                  activePromptIndex={activePromptIndex}
+                  prompts={filteredPrompts}
+                  onSelect={handleInitModal}
+                  onMouseOver={setActivePromptIndex}
+                  promptListRef={promptListRef}
+                />
+              </div>
+            )}
+
+            {isModalVisible && filteredPrompts[activePromptIndex] && (
+              <VariableModal
+                prompt={filteredPrompts[activePromptIndex]}
+                variables={variables}
+                onSubmit={handleSubmit}
+                onClose={() => setIsModalVisible(false)}
+              />
+            )}
+          </div>
         </div>
       </div>
-      {/* Small title below the main chat input bar */}
-      {/* <div className="px-3 pb-3 pt-2 text-center text-[12px] text-black/50 dark:text-white/50 md:px-4 md:pb-6 md:pt-3">
-        {t('Advanced version of ChatGPT, built for UIUC. Forked from ')}
-        <a
-          href="https://github.com/mckaywrigley/chatbot-ui"
-          target="_blank"
-          rel="noreferrer"
-          className="underline"
-        >
-          ChatBot UI
-        </a>
-        .{' '}
-      </div> */}
     </div>
   )
 }

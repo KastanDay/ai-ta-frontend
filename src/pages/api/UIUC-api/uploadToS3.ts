@@ -3,12 +3,12 @@ import { S3Client } from '@aws-sdk/client-s3'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post'
 
-const aws_config = {
+export const aws_config = {
   bucketName: 'uiuc-chatbot',
   region: 'us-east-1',
   accessKeyId: process.env.AWS_KEY,
   secretAccessKey: process.env.AWS_SECRET,
-}
+};
 
 console.log('bucket name ---------------', process.env.S3_BUCKET_NAME)
 console.log('aws ---------------', process.env.AWS_KEY)

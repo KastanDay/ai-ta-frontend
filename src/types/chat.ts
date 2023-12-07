@@ -3,14 +3,22 @@ import { OpenAIModel } from './openai'
 export interface Message {
   // id: string;
   role: Role
-  content: string
+  content: string | Content[]
   contexts?: ContextWithMetadata[] // todo: make sure things works.
   responseTimeSec?: number
 }
 
+export interface Content {
+  type: string;
+  text?: string;
+  image_url?: {
+    url: string;
+  };
+};
+
 export interface OpenAIChatMessage {
   role: Role
-  content: string
+  content: Content[]
 }
 
 export interface ContextWithMetadata {
@@ -34,6 +42,7 @@ export interface ChatBody {
   prompt: string
   temperature: number
   course_name: string
+  stream: boolean
   // NO FOLDER ID
 }
 

@@ -1,3 +1,4 @@
+//MemoizedChatMessage.tsx
 import { FC, memo } from 'react'
 import { ChatMessage, Props } from './ChatMessage'
 

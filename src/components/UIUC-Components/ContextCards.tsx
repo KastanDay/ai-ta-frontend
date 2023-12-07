@@ -5,18 +5,7 @@ import Link from 'next/link'
 import axios from 'axios'
 import { ContextWithMetadata } from '~/types/chat'
 import { montserrat_paragraph } from 'fonts'
-
-export async function fetchPresignedUrl(filePath: string) {
-  try {
-    const response = await axios.post('/api/download', {
-      filePath,
-    })
-    return response.data.url
-  } catch (error) {
-    console.error('Error fetching presigned URL:', error)
-    return null
-  }
-}
+import { fetchPresignedUrl } from '~/utils/apiUtils'
 
 export const ContextCards = ({
   contexts,

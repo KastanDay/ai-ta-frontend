@@ -38,7 +38,7 @@ import { useRouter } from 'next/router'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 // import axios from 'axios'
 import { WebScrape } from '~/components/UIUC-Components/WebScrape'
-import { callSetCourseMetadata } from '~/utils/apiUtils'
+import { callSetCourseMetadata, uploadToS3 } from '~/utils/apiUtils'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { notifications } from '@mantine/notifications'
 import SetExampleQuestions from './SetExampleQuestions'
@@ -172,57 +172,6 @@ const EditCourseCard = ({
     })
 
     return response
-  }
-
-  const uploadToS3 = async (file: File | null) => {
-    if (!file) return
-
-    const requestObject = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        fileName: file.name,
-        fileType: file.type,
-        courseName: course_name,
-      }),
-    }
-
-    try {
-      interface PresignedPostResponse {
-        post: {
-          url: string
-          fields: { [key: string]: string }
-        }
-      }
-
-      // Then, update the lines where you fetch the response and parse the JSON
-      const response = await fetch('/api/UIUC-api/uploadToS3', requestObject)
-      const data = (await response.json()) as PresignedPostResponse
-
-      const { url, fields } = data.post as {
-        url: string
-        fields: { [key: string]: string }
-      }
-      const formData = new FormData()
-
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value)
-      })
-
-      formData.append('file', file)
-
-      await fetch(url, {
-        method: 'POST',
-        body: formData,
-      })
-
-      console.log(file.name + 'uploaded to S3 successfully!!')
-      return data.post.fields.key
-    } catch (error) {
-      console.error('Error uploading file:', error)
-    }
   }
 
   const handleKeyUpdate = async (inputValue: string, isAzure: boolean) => {
@@ -721,7 +670,7 @@ const EditCourseCard = ({
                       if (e.target.files?.length) {
                         console.log('Uploading to s3')
                         const banner_s3_image = await uploadToS3(
-                          e.target.files?.[0] ?? null,
+                          e.target.files?.[0] ?? null, course_name
                         )
                         if (banner_s3_image && courseMetadata) {
                           courseMetadata.banner_image_s3 = banner_s3_image

@@ -20,6 +20,7 @@ export interface HomeContextProps {
     conversation: Conversation,
     data: KeyValuePair,
   ) => void
+  setIsImg2TextLoading: (isImg2TextLoading: boolean) => void;
 }
 
 const HomeContext = createContext<HomeContextProps>(undefined!)
