@@ -166,22 +166,22 @@ export const ChatInput = ({
 
   type Role = 'user' | 'system'; // Add other roles as needed
 
-  
+
   const handleSend = async () => {
     if (messageIsStreaming) {
       return;
     }
-  
+
     const textContent = content;
     let imageContent: Content[] = []; // Explicitly declare the type for imageContent
-  
+
     if (imageFiles.length > 0 && !uploadingImage) {
       setUploadingImage(true);
       try {
         // If imageUrls is empty, upload all images and get their URLs
-        const imageUrlsToUse = imageUrls.length > 0 ? imageUrls : 
+        const imageUrlsToUse = imageUrls.length > 0 ? imageUrls :
           await Promise.all(imageFiles.map(file => uploadImageAndGetUrl(file, courseName)));
-  
+
         // Construct image content for the message
         imageContent = imageUrlsToUse
           .filter((url): url is string => url !== '') // Type-guard to filter out empty strings
@@ -191,7 +191,7 @@ export const ChatInput = ({
           }));
 
         // console.log("Final imageUrls: ", imageContent)
-  
+
         // Clear the files after uploading
         setImageFiles([]);
         setImagePreviewUrls([]);
@@ -202,12 +202,12 @@ export const ChatInput = ({
         setUploadingImage(false);
       }
     }
-  
+
     if (!textContent && imageContent.length === 0) {
       alert(t('Please enter a message or upload an image'));
       return;
     }
-    
+
     // Construct the content array
     const contentArray: Content[] = [
       ...(textContent ? [{ type: "text", text: textContent }] : []),
@@ -219,10 +219,10 @@ export const ChatInput = ({
       role: 'user',
       content: contentArray
     };
-  
+
     // Use the onSend prop to send the structured message
     onSend(messageForGPT4Vision, plugin); // Cast to unknown then to Message if needed
-  
+
     // Reset states
     setContent('');
     setPlugin(null);
@@ -334,7 +334,7 @@ export const ChatInput = ({
       })
       updatePromptListVisibility(prompt.content)
     }
-  }, [parseVariables, setContent, updatePromptListVisibility]); 
+  }, [parseVariables, setContent, updatePromptListVisibility]);
 
   const handleSubmit = useCallback((updatedVariables: string[]) => {
     const newContent = content?.replace(/{{(.*?)}}/g, (match, variable) => {
@@ -352,8 +352,8 @@ export const ChatInput = ({
   const validImageTypes = ['.jpg', '.jpeg', '.png'];
 
   const isImageValid = (fileName: string): boolean => {
-      const ext = fileName.slice(((fileName.lastIndexOf(".") - 1) >>> 0) + 2);
-      return validImageTypes.includes(`.${ext}`);
+    const ext = fileName.slice(((fileName.lastIndexOf(".") - 1) >>> 0) + 2);
+    return validImageTypes.includes(`.${ext}`);
   }
 
   // const uploadToS3 = async (file: File) => {
@@ -361,7 +361,7 @@ export const ChatInput = ({
   //     console.error('No file provided for upload');
   //     return;
   //   }
-  
+
   //   // Generate a unique file name using uuidv4
   //   const uniqueFileName = `${uuidv4()}.${file.name.split('.').pop()}`;
   //   const s3_filepath = `courses/${courseName}/${uniqueFileName}`; // Define s3_filepath here
@@ -382,7 +382,7 @@ export const ChatInput = ({
   //       courseName: courseName,
   //     }),
   //   };
-  
+
   //   try {
   //     // Call your API to get the presigned POST data
   //     const response = await fetch('/api/UIUC-api/uploadToS3', requestObject);
@@ -390,34 +390,34 @@ export const ChatInput = ({
   //       throw new Error(`HTTP error! Status: ${response.status}`);
   //     }
   //     const { post } = await response.json();
-  
+
   //     // Use the presigned POST data to upload the file to S3
   //     const formData = new FormData();
   //     Object.entries(post.fields).forEach(([key, value]) => {
   //       formData.append(key, value as string);
   //     });
   //     formData.append('file', file);
-  
+
   //     // Post the file to the S3 bucket using the presigned URL and form data
   //     const uploadResponse = await fetch(post.url, {
   //       method: 'POST',
   //       body: formData,
   //     });
-  
+
   //     if (!uploadResponse.ok) {
   //       throw new Error('Failed to upload the file to S3');
   //     }
-  
+
   //     // Construct the URL to the uploaded file using the response from the presigned POST
   //     const uploadedImageUrl = `https://${aws_config.bucketName}.s3.${aws_config.region}.amazonaws.com/${encodeURIComponent(s3_filepath)}`;
-  
+
   //     return uploadedImageUrl;
   //   } catch (error) {
   //     console.error('Error uploading file:', error);
   //   }
   // };
-  
-  
+
+
 
   const ingestFile = async (file: File | null) => {
     if (!file) return;
@@ -483,28 +483,28 @@ export const ChatInput = ({
   const handleImageUpload = useCallback(async (files: File[]) => {
     const validFiles = files.filter(file => isImageValid(file.name));
     const invalidFilesCount = files.length - validFiles.length;
-  
+
     if (invalidFilesCount > 0) {
       setImageError(`${invalidFilesCount} invalid file type(s). Please upload .jpg or .png images.`);
       showToastOnInvalidImage();
     }
-  
+
     const imageProcessingPromises = validFiles.map(file => {
       return new Promise<ProcessedImage>((resolve, reject) => {
         const reader = new FileReader();
-  
+
         reader.onloadend = () => {
           const result = reader.result;
           if (typeof result === 'string') {
             const img = new Image();
             img.src = result;
-  
+
             img.onload = () => {
               let newWidth, newHeight;
               const MAX_WIDTH = 2048;
               const MAX_HEIGHT = 2048;
               const MIN_SIDE = 768;
-  
+
               if (img.width > img.height) {
                 newHeight = MIN_SIDE;
                 newWidth = (img.width / img.height) * newHeight;
@@ -520,21 +520,21 @@ export const ChatInput = ({
                   newWidth = (img.width / img.height) * newHeight;
                 }
               }
-  
+
               const canvas = document.createElement('canvas');
               const ctx = canvas.getContext('2d');
               if (ctx) {
                 canvas.width = newWidth;
                 canvas.height = newHeight;
                 ctx.drawImage(img, 0, 0, newWidth, newHeight);
-  
+
                 canvas.toBlob((blob) => {
                   if (blob) {
                     const resizedFile = new File([blob], file.name, {
                       type: 'image/jpeg',
                       lastModified: Date.now(),
                     });
-  
+
                     resolve({ resizedFile, dataUrl: canvas.toDataURL('image/jpeg') });
                   } else {
                     reject(new Error('Canvas toBlob failed'));
@@ -548,24 +548,24 @@ export const ChatInput = ({
             reject(new Error('FileReader did not return a string result'));
           }
         };
-  
+
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
     });
-  
+
     try {
       const processedImages = await Promise.all(imageProcessingPromises);
       setImageFiles(prev => [...prev, ...processedImages.map(img => img.resizedFile)]);
       setImagePreviewUrls(prev => [...prev, ...processedImages.map(img => img.dataUrl)]);
-  
+
       // Store the URLs of the uploaded images
       const uploadedImageUrls = (await Promise.all(processedImages.map(img => uploadImageAndGetUrl(img.resizedFile, courseName)))).filter(Boolean);
       setImageUrls(uploadedImageUrls as string[]);
     } catch (error) {
       console.error('Error processing files:', error);
-    }    
-  }, [setImageError, setImageFiles, setImagePreviewUrls, showToastOnInvalidImage, courseName]);  
+    }
+  }, [setImageError, setImageFiles, setImagePreviewUrls, showToastOnInvalidImage, courseName]);
 
   // Function to open the modal with the selected image
   const openModal = (imageSrc: string) => {
@@ -584,7 +584,7 @@ export const ChatInput = ({
       e.preventDefault();
       setIsDragging(true);
     };
-  
+
     const handleDocumentDrop = (e: DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
@@ -598,23 +598,23 @@ export const ChatInput = ({
         }
       }
     };
-    
-  
+
+
     const handleDocumentDragLeave = (e: DragEvent) => {
       setIsDragging(false);
     };
-  
+
     document.addEventListener('dragover', handleDocumentDragOver);
     document.addEventListener('drop', handleDocumentDrop);
     document.addEventListener('dragleave', handleDocumentDragLeave);
-  
+
     return () => {
       // Clean up the event listeners when the component is unmounted
       document.removeEventListener('dragover', handleDocumentDragOver);
       document.removeEventListener('drop', handleDocumentDrop);
       document.removeEventListener('dragleave', handleDocumentDragLeave);
     };
-  }, [handleImageUpload, selectedConversation?.model.id]);  
+  }, [handleImageUpload, selectedConversation?.model.id]);
 
   useEffect(() => {
     if (imageError) {
@@ -622,7 +622,7 @@ export const ChatInput = ({
       setImageError(null);
     }
   }, [imageError, showToastOnInvalidImage]);
-  
+
 
   useEffect(() => {
     if (promptListRef.current) {
@@ -634,9 +634,8 @@ export const ChatInput = ({
     if (textareaRef && textareaRef.current) {
       textareaRef.current.style.height = 'inherit'
       textareaRef.current.style.height = `${textareaRef.current?.scrollHeight}px`
-      textareaRef.current.style.overflow = `${
-        textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
-      }`
+      textareaRef.current.style.overflow = `${textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
+        }`
     }
   }, [content])
 
@@ -662,7 +661,7 @@ export const ChatInput = ({
     if (chatInputContainerRef.current) {
       chatInputContainerRef.current.focus();
     }
-  }, []);  
+  }, []);
 
   // This is where we upload images and generate their presigned url
   async function uploadImageAndGetUrl(file: File, courseName: string): Promise<string> {
@@ -701,24 +700,26 @@ export const ChatInput = ({
           )}
 
         <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#15162c] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4">
-        <button
+
+          {/* BUTTON 1: Plugins */}
+          <button
             className="absolute left-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
             onClick={() => setShowPluginSelect(!showPluginSelect)}
             onKeyDown={(e) => {
               console.log(e)
             }}
           >
-            {plugin ? <IconBrandGoogle size={20} /> : <IconBolt size={20} />}
-        </button>
-
-          {/* Image Icon and Input */}
-          {selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
-          <button 
-              className="absolute left-8 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
-              onClick={() => document.getElementById('imageUpload')?.click()}
-          >
-              <IconPhoto size={20} />
+            {plugin ? <IconBrandGoogle size={22} /> : <IconBolt size={22} />}
           </button>
+
+          {/* BUTTON 2: Image Icon and Input */}
+          {selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
+            <button
+              className="absolute left-10 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+              onClick={() => document.getElementById('imageUpload')?.click()}
+            >
+              <IconPhoto size={22} />
+            </button>
           )}
           <input
             type="file"
@@ -755,19 +756,19 @@ export const ChatInput = ({
               />
             </div>
           )}
-           {/* Chat input and preview container */}
-           <div 
-              ref={chatInputContainerRef} 
-              className="chat-input-container m-0 w-full resize-none bg-[#070712] p-0 text-black dark:bg-[#070712] dark:text-white"
-              tabIndex={0}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              onClick={() => textareaRef.current?.focus()} // Add this line
-              style={{ 
-                outline: isFocused ? '2px solid #9acafa' : 'none', // Adjust the outline as needed
-                ...chatInputContainerStyle // Apply the dynamic padding here
-              }}
-            >
+          {/* Chat input and preview container */}
+          <div
+            ref={chatInputContainerRef}
+            className="chat-input-container m-0 w-full resize-none bg-[#070712] p-0 text-black dark:bg-[#070712] dark:text-white"
+            tabIndex={0}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            onClick={() => textareaRef.current?.focus()} // Add this line
+            style={{
+              outline: isFocused ? '2px solid #9acafa' : 'none', // Adjust the outline as needed
+              ...chatInputContainerStyle // Apply the dynamic padding here
+            }}
+          >
             {/* Image preview section */}
             <div className="flex space-x-3" style={{ display: imagePreviewUrls.length > 0 ? 'flex' : 'none' }}>
               {imagePreviewUrls.map((src, index) => (
@@ -808,36 +809,39 @@ export const ChatInput = ({
               ))}
             </div>
 
-            <textarea
-              ref={textareaRef}
-              className="flex-grow m-0 w-full resize-none bg-[#070712] p-0 py-2 pl-16 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-2 md:pl-16"
-              placeholder={t('Type a message or type "/" to select a prompt...') || ''}
-              value={content}
-              rows={1}
-              onCompositionStart={() => setIsTyping(true)}
-              onCompositionEnd={() => setIsTyping(false)}
-              onChange={handleChange}
-              onKeyDown={handleKeyDown}
-              style={{
-                resize: 'none',
-                maxHeight: '400px',
-                overflow: 'hidden',
-                outline: 'none', // Add this line to remove the outline from the textarea
-                paddingTop: '14px'
-              }}
-            />
+            {/* Button 3: main input text area  */}
+            <div className={selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION ? "pl-16" : "pl-8"}>
+              <textarea
+                ref={textareaRef}
+                className="flex-grow m-0 w-full resize-none bg-[#070712] p-0 py-2 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-2"
+                placeholder={t('Type a message or type "/" to select a prompt...') || ''}
+                value={content}
+                rows={1}
+                onCompositionStart={() => setIsTyping(true)}
+                onCompositionEnd={() => setIsTyping(false)}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                style={{
+                  resize: 'none',
+                  maxHeight: '400px',
+                  overflow: 'hidden',
+                  outline: 'none', // Add this line to remove the outline from the textarea
+                  paddingTop: '14px'
+                }}
+              />
+            </div>
 
 
 
             <button
-                className="absolute right-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
-                onClick={handleSend}
-              >
-                {messageIsStreaming ? (
-                  <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
-                ) : (
-                  <IconSend size={18} />
-                )}
+              className="absolute right-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+              onClick={handleSend}
+            >
+              {messageIsStreaming ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
+              ) : (
+                <IconSend size={18} />
+              )}
             </button>
 
 
