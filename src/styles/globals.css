@@ -88,7 +88,7 @@ pre:has(div.codeblock) {
 .course-page-main {
   /* height: 400px;     */
   background: -webkit-gradient(linear,
-        left top,
+      left top,
         left bottom,
         from(#2e026d),
         to(#020307),
@@ -256,7 +256,7 @@ li {
   left: 0;
   transform: translateX(-100%);
   background-image: linear-gradient(90deg,
-        rgba(99, 39, 175, 0) 0,
+      rgba(99, 39, 175, 0) 0,
         rgba(75, 85, 72, 0.2) 20%,
         rgba(30, 64, 175, 0.5) 60%,
       rgba(66, 1, 95, 0));
@@ -339,33 +339,36 @@ a[data-footnote-backref] {
     /* Adjust padding to ensure text doesn't overlap */
   }
 }
+
 /* Styling for document buttons */
 .linkMarkDown button:not(.codeblock-button) {
-  min-height: 100px;
-  min-width: 150px;
-  width: 100%;
-  height: 100%;
+  height: 100px;
+    width: 150px;
+    /* width: 100%; */
+    /* height: 100%; */
   /* Button occupies full width of its container (li) */
   text-align: center;
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   font-size: 1rem;
   /* Adjust font size to fit the buttons */
-  padding: 10px 0;
+  padding: 10px 10px;
   color: #4a4ae8;
   background-color: #15162c;
   border-radius: 5px;
   border: none;
   text-decoration: none;
   transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
-  white-space: normal;
+  white-space: break-spaces;
     /* Allow text wrapping inside buttons */
     overflow: hidden;
     /* Hide overflowed text */
     text-overflow: ellipsis;
     /* Add ellipsis to overflowed text */
     position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* Hover and focus states for document buttons */
@@ -389,11 +392,11 @@ a[data-footnote-backref] {
 .linkMarkDown ol {
   display: flex;
   flex: nowrap;
-    overflow-x: auto;
+  overflow-x: auto;
     gap: 10px;
     /* Spacing between buttons */
   padding: 20px;
-    /* Padding inside the card */
+  /* Padding inside the card */
     margin: 20px 0;
     /* Margin around the card */
     background-color: #1e1e2f;
@@ -405,30 +408,18 @@ a[data-footnote-backref] {
     scroll-snap-type: x mandatory;
     /* Snap scrolling */
   counter-reset: section;
-    list-style-type: none;
+  list-style-type: none;
 }
 
 /* Style for individual list items */
 .linkMarkDown ol li {
   max-width: 150px;
-    flex: 0 0 calc(25% - 10px);
+  flex: 0 0 calc(25% - 10px);
     /* Adjusting for the gap */
   scroll-snap-align: start;
   /* Align to the start of the scroll container */
   height: 100%;
-    /* Ensure all buttons are the same height */
-  }
-  
-  /* Style for the buttons inside the list items */
-  .linkMarkDown button:not(.codeblock-button) {
-    width: 100%;
-    /* Button occupies full width of its container (li) */
-    text-align: center;
-    /* Ensure text is centered */
-    border-radius: 5px;
-    /* Match border-radius of ol but smaller */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    /* Slight shadow for each button for consistency */
+  /* Ensure all buttons are the same height */
 }
 
 .linkMarkDown ol li:last-child {
