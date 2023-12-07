@@ -352,7 +352,7 @@ export const ChatInput = ({
   const validImageTypes = ['.jpg', '.jpeg', '.png'];
 
   const isImageValid = (fileName: string): boolean => {
-    const ext = fileName.slice(((fileName.lastIndexOf(".") - 1) >>> 0) + 2);
+    const ext = fileName.slice(((fileName.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
     return validImageTypes.includes(`.${ext}`);
   }
 
@@ -467,7 +467,7 @@ export const ChatInput = ({
       withCloseButton: true,
       onClose: () => console.log('error unmounted'),
       onOpen: () => console.log('error mounted'),
-      autoClose: 4000,
+      autoClose: 8000,
       title: 'Invalid Image Type',
       message: 'Unsupported file type. Please upload .jpg or .png images.',
       color: 'red',
