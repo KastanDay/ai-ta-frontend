@@ -404,7 +404,7 @@ a[data-footnote-backref] {
 
 .linkMarkDown ol:has(> li > button) {
   display: flex;
-  flex: nowrap;
+  flex-wrap: nowrap;
   overflow-x: auto;
     gap: 10px;
     /* Spacing between buttons */
