@@ -183,7 +183,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ...message,
             content: [
               ...imageContent,
-              { type: 'text', text: 'Provide detailed description of the image(s) focusing on any text (OCR information), distinct objects, colors, and actions depicted. ONLY Include contextual information, subtle details, and specific terminologies relevant for semantic document retrieval.' }
+              {
+                type: 'text', text: `"Provide a detailed description of the image(s), focusing exclusively on the elements and details that are visibly present. Include descriptions of text (OCR information), distinct objects, spatial relationships, colors, actions, annotations, labels, or significant color usage. Use specific, technical, or domain-specific terminology to accurately describe elements, particularly for specialized fields like medicine, agriculture, technology, etc. Classify the image into relevant categories and list key terms associated with that category. Identify and list potential keywords or key phrases that summarize the main elements and themes. If the image contains abstract or emotional content, infer the overall message or content. Emphasize the most prominent features first, moving to less significant details. Also, provide synonyms or related terms for technical aspects. DO NOT reference or mention any features, elements, or aspects that are absent in the image. The GOAL is to create a precise, focused, and keyword-rich description that encapsulates only the observable details, suitable for semantic document retrieval across various domains."`
+              }
             ]
           }
         ],
