@@ -151,20 +151,26 @@ export const OpenAIStream = async (
           if (event.type === 'event') {
             const data = event.data
 
-            try {
+          try {
+            // console.log('data: ', data) // ! DEBUGGING
+            if (data.trim() !== "[DONE]") {
               const json = JSON.parse(data)
               if (json.choices[0].finish_reason != null) {
                 controller.close()
                 return
-              }
+              } 
               const text = json.choices[0].delta.content
               const queue = encoder.encode(text)
               controller.enqueue(queue)
-            } catch (e) {
-              controller.error(e)
+            } else {
+              controller.close()
+              return;
             }
+          } catch (e) {
+            controller.error(e)
           }
         }
+      }
 
         const parser = createParser(onParse)
 
