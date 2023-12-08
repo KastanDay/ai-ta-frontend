@@ -12,7 +12,7 @@ export const fetchMQRContexts = async (
 ) => {
   try {
     const response: AxiosResponse<ContextWithMetadata[]> = await axios.get(
-      `https://example.com/getMQRContexts`,
+      `https://flask-production-751b.up.railway.app/getTopContextsWithMQR`,
       {
         params: {
           course_name: course_name,
