@@ -183,7 +183,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ...message,
             content: [
               ...imageContent,
-              { type: 'text', text: 'Provide detailed description of the image(s) focusing on any text (OCR information), distinct objects, colors, and actions depicted. Include contextual information, subtle details, and specific terminologies relevant for semantic document retrieval.' }
+              { type: 'text', text: 'Provide detailed description of the image(s) focusing on any text (OCR information), distinct objects, colors, and actions depicted. ONLY Include contextual information, subtle details, and specific terminologies relevant for semantic document retrieval.' }
             ]
           }
         ],
