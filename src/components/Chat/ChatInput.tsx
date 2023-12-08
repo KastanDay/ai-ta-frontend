@@ -677,6 +677,14 @@ export const ChatInput = ({
     }
   }
 
+  // Toggle to enable Fancy retrieval method: Multi-Query Retrieval
+  const [useMQRetrieval, setUseMQRetrieval] = useState(localStorage.getItem('UseMQRetrieval') === 'true');
+  // Update localStorage whenever useMQRetrieval changes
+  useEffect(() => {
+    localStorage.setItem('UseMQRetrieval', useMQRetrieval ? 'true' : 'false');
+  }, [useMQRetrieval]);
+
+
   return (
     <div className={`absolute bottom-0 left-0 w-full border-transparent bg-transparent pt-6 dark:border-white/20 md:pt-2`}>
       <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
@@ -702,8 +710,8 @@ export const ChatInput = ({
 
         <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#15162c] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4 pl-8">
 
-          {/* BUTTON 1: Plugins */}
-          <button
+          {/* BUTTON 1: Plugins Button -- DEPRECATED */}
+          {/* <button
             className="absolute left-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
             onClick={() => setShowPluginSelect(!showPluginSelect)}
             onKeyDown={(e) => {
@@ -711,7 +719,23 @@ export const ChatInput = ({
             }}
           >
             {plugin ? <IconBrandGoogle size={22} /> : <IconBolt size={22} />}
-          </button>
+          </button> */}
+
+          {/* BUTTON 1: UseMQRetrieval Switch */}
+          <Tooltip // not working... :(
+            className="absolute bottom-1.5"
+            refProp="rootRef"
+            label="Switch tooltip MY LABEL"
+          >
+            <Switch
+              style={{ left: '70px', bottom: '8px' }}
+              className="absolute rounded-sm p-1 " //  bottom-1.5
+              // label={t('Only show conversations from current project')}
+              checked={useMQRetrieval}
+              onChange={(event) => setUseMQRetrieval(event.currentTarget.checked)}
+              color='violet.7'
+            />
+          </Tooltip>
 
           {/* BUTTON 2: Image Icon and Input */}
           {selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
@@ -735,12 +759,7 @@ export const ChatInput = ({
               }
             }}
           />
-          {/* BUTTON 1: UseMQRetrieval Switch */}
-          <Switch
-            className="absolute left-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
-            checked={localStorage.getItem('UseMQRetrieval') === 'true'}
-            onChange={(checked) => localStorage.setItem('UseMQRetrieval', String(checked))}
-          />
+
           {showPluginSelect && (
             <div className="absolute bottom-14 left-0 rounded bg-white dark:bg-[#15162c]">
               <PluginSelect
@@ -817,7 +836,7 @@ export const ChatInput = ({
             </div>
 
             {/* Button 3: main input text area  */}
-            <div className={selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION ? "pl-16" : "pl-8"}>
+            <div className={selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION ? "pl-20" : "pl-8"}>
               <textarea
                 ref={textareaRef}
                 className="flex-grow m-0 w-full resize-none bg-[#070712] p-0 py-2 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-2"
