@@ -39,6 +39,7 @@ export const OpenAIStream = async (
   temperature: number,
   key: string,
   messages: OpenAIChatMessage[],
+  stream: boolean,
 ) => {
 
   console.debug("In OpenAIStream, model: ", model)
@@ -88,6 +89,21 @@ export const OpenAIStream = async (
   // })
   // console.debug("Final request sent to OpenAI ", JSON.stringify(JSON.parse(final_request_to_openai), null, 2))
 
+  const body = JSON.stringify({
+    ...(OPENAI_API_TYPE === 'openai' && { model: model.id }),
+    messages: [
+      {
+        role: 'system',
+        content: systemPrompt,
+      },
+      ...messages,
+    ],
+    max_tokens: 1000,
+    temperature: temperature,
+    stream: stream,
+  })
+  // This could be logged and tracked better
+  // console.log("openai api body: ", body)
 
   const res = await fetch(url, {
     headers: {
@@ -104,19 +120,7 @@ export const OpenAIStream = async (
       }),
     },
     method: 'POST',
-    body: JSON.stringify({
-      ...(OPENAI_API_TYPE === 'openai' && { model: model.id }),
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        ...messages,
-      ],
-      max_tokens: 1000,
-      temperature: temperature,
-      stream: true,
-    }),
+    body: body,
   })
 
   const encoder = new TextEncoder()
@@ -139,11 +143,13 @@ export const OpenAIStream = async (
     }
   }
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      const onParse = (event: ParsedEvent | ReconnectInterval) => {
-        if (event.type === 'event') {
-          const data = event.data
+  if (stream) {
+    console.log("Streaming response ")
+    const apiStream = new ReadableStream({
+      async start(controller) {
+        const onParse = (event: ParsedEvent | ReconnectInterval) => {
+          if (event.type === 'event') {
+            const data = event.data
 
           try {
             // console.log('data: ', data) // ! DEBUGGING
@@ -163,13 +169,20 @@ export const OpenAIStream = async (
         }
       }
 
-      const parser = createParser(onParse)
+        const parser = createParser(onParse)
 
-      for await (const chunk of res.body as any) {
-        parser.feed(decoder.decode(chunk))
-      }
-    },
-  })
+        for await (const chunk of res.body as any) {
+          parser.feed(decoder.decode(chunk))
+        }
+      },
+    })
 
-  return stream
+    return apiStream
+  } else {
+    console.log("Non Streaming response ")
+    const json = await res.json()
+    console.log('Final OpenAI response: ', json)
+    return json
+  }
+
 }

@@ -211,9 +211,14 @@ export const Chatbar = () => {
         (context) => context['course_name '] === currentCourseName,
       );
       const searchTermMatch = conversation.messages[0]?.contexts?.[0]?.['course_name '].toLocaleLowerCase().includes(searchTerm.toLowerCase()) ||
-        conversation.messages.some((message) =>
-          message.content.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        conversation.messages.some((message) => {
+          if (typeof message.content === 'string') {
+            return message.content.toLowerCase().includes(searchTerm.toLowerCase());
+          } else if (Array.isArray(message.content)) {
+            return message.content.some(content => content.text?.toLowerCase().includes(searchTerm.toLowerCase()));
+          }
+          return false;
+        });
       const isMatch = (showCurrentCourseOnly ? courseMatch : true) && searchTermMatch;
       return isMatch;
     };

@@ -161,7 +161,7 @@ import { ChatInput } from './ChatInput'
 import { ChatLoader } from './ChatLoader'
 import { ErrorMessageDiv } from './ErrorMessageDiv'
 import { MemoizedChatMessage } from './MemoizedChatMessage'
-import { fetchPresignedUrl } from '~/components/UIUC-Components/ContextCards'
+
 
 import { type CourseMetadata } from '~/types/courseMetadata'
 
@@ -183,6 +183,7 @@ import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import ChatNavbar from '../UIUC-Components/navbars/ChatNavbar'
+import { fetchPresignedUrl } from '~/utils/apiUtils'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -289,7 +290,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       // TODO: MOVE THIS INTO ChatMessage
       // console.log('IN handleSend: ', message)
       // setSearchQuery(message.content)
-      const searchQuery = message.content
+      const searchQuery = Array.isArray(message.content)
+        ? message.content.map((content) => content.text).join(' ')
+        : message.content;
 
       if (selectedConversation) {
         let updatedConversation: Conversation
@@ -341,6 +344,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
           course_name: getCurrentPageName(),
+          stream: true
         }
         const endpoint = getEndpoint(plugin) // THIS is where we could support EXTREME prompt stuffing.
         let body
@@ -408,13 +412,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }
         if (!plugin) {
           if (updatedConversation.messages.length === 1) {
-            const { content } = message
+            const { content } = message;
+            // Use only texts instead of content itself
+            const contentText = Array.isArray(content)
+              ? content.map((content) => content.text).join(' ')
+              : content;
             const customName =
-              content.length > 30 ? content.substring(0, 30) + '...' : content
+              contentText.length > 30 ? contentText.substring(0, 30) + '...' : contentText;
             updatedConversation = {
               ...updatedConversation,
               name: customName,
-            }
+            };
           }
           homeDispatch({ field: 'loading', value: false })
           const reader = data.getReader()
@@ -807,6 +815,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           </div>
 
           <ChatInput
+            courseName={getCurrentPageName()} // Add the missing prop here
             stopConversationRef={stopConversationRef}
             textareaRef={textareaRef}
             onSend={(message, plugin) => {

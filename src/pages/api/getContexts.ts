@@ -28,6 +28,7 @@ export const fetchContexts = async (
   }
 }
 
+export default fetchContexts;
 // Axios doesn't work in Next.js Edge runtime, so using standard fetch instead.
 // export async function fetchContextsNOAXIOS(
 //   course_name: string,

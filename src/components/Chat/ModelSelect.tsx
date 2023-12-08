@@ -1,7 +1,7 @@
 import { IconExternalLink } from '@tabler/icons-react'
 import { useContext, useEffect } from 'react'
 import { useTranslation } from 'next-i18next'
-import { OpenAIModels, type OpenAIModel } from '@/types/openai'
+import { OpenAIModels, type OpenAIModel, OpenAIModelID } from '@/types/openai'
 import HomeContext from '~/pages/api/home/home.context'
 import { ModelParams } from './ModelParams'
 import { montserrat_heading } from 'fonts'

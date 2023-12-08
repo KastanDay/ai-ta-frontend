@@ -1,5 +1,5 @@
 // ChatMessage.tsx
-import { Text, Group } from '@mantine/core'
+import { Text, Group, createStyles, Tooltip, Paper, Collapse, Accordion } from '@mantine/core'
 import {
   IconCheck,
   IconCopy,
@@ -12,7 +12,7 @@ import { FC, memo, useContext, useEffect, useRef, useState } from 'react'
 
 import { useTranslation } from 'next-i18next'
 import { updateConversation } from '@/utils/app/conversation'
-import { ContextWithMetadata, Message } from '@/types/chat'
+import { Content, ContextWithMetadata, Message } from '@/types/chat'
 import HomeContext from '~/pages/api/home/home.context'
 import { CodeBlock } from '../Markdown/CodeBlock'
 import { MemoizedReactMarkdown } from '../Markdown/MemoizedReactMarkdown'
@@ -22,6 +22,30 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
 import { ContextCards } from '~/components/UIUC-Components/ContextCards'
+import { ImagePreview } from './ImagePreview'
+import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
+import { fetchPresignedUrl } from '~/utils/apiUtils'
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { montserrat_paragraph } from 'fonts'
+
+const useStyles = createStyles((theme) => ({
+  imageContainerStyle: {
+    maxWidth: '25%',
+    flex: '1 0 21%',
+    padding: '0.5rem',
+    borderRadius: '0.5rem',
+  },
+  imageStyle: {
+    width: '100%',
+    height: '100px',
+    objectFit: 'cover',
+    borderRadius: '0.5rem',
+    borderColor: theme.colors.gray[6],
+    borderWidth: '1px',
+    borderStyle: 'solid',
+  }
+}))
 
 // Component that's the Timer for GPT's response duration.
 const Timer: React.FC<{ timerVisible: boolean }> = ({ timerVisible }) => {
@@ -56,10 +80,12 @@ export interface Props {
   messageIndex: number
   onEdit?: (editedMessage: Message) => void
   context?: ContextWithMetadata[]
+  contentRenderer?: (message: Message) => JSX.Element;
+  onImageUrlsUpdate?: (message: Message, messageIndex: number) => void;
 }
 
 export const ChatMessage: FC<Props> = memo(
-  ({ message, messageIndex, onEdit }) => {
+  ({ message, messageIndex, onEdit, onImageUrlsUpdate }) => {
     const { t } = useTranslation('chat')
 
     const {
@@ -68,19 +94,25 @@ export const ChatMessage: FC<Props> = memo(
         conversations,
         currentMessage,
         messageIsStreaming,
+        isImg2TextLoading
       },
       dispatch: homeDispatch,
     } = useContext(HomeContext)
 
     const [isEditing, setIsEditing] = useState<boolean>(false)
     const [isTyping, setIsTyping] = useState<boolean>(false)
-    const [messageContent, setMessageContent] = useState(message.content)
+    const [messageContent, setMessageContent] = useState<string>('')
+
+    const [imageUrls, setImageUrls] = useState<string[]>([]);
+
     const [messagedCopied, setMessageCopied] = useState(false)
 
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
     // SET TIMER for message writing (from gpt-4)
     const [timerVisible, setTimerVisible] = useState(false)
+
+    const { classes } = useStyles() // for Accordion
     useEffect(() => {
       if (message.role === 'assistant') {
         if (
@@ -113,6 +145,62 @@ export const ChatMessage: FC<Props> = memo(
         }
       }
     }, [message.role, messageIsStreaming, messageIndex, selectedConversation])
+
+    function deepEqual(a: any, b: any) {
+      if (a === b) {
+        return true;
+      }
+
+      if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
+        return false;
+      }
+
+      const keysA = Object.keys(a), keysB = Object.keys(b);
+
+      if (keysA.length !== keysB.length) {
+        return false;
+      }
+
+      for (const key of keysA) {
+        if (!keysB.includes(key) || !deepEqual(a[key], b[key])) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    useEffect(() => {
+      const fetchUrl = async () => {
+        let isValid = false;
+        if (Array.isArray(message.content)) {
+          const updatedContent = await Promise.all(message.content.map(async (content) => {
+            if (content.type === 'image_url' && content.image_url) {
+              console.log("Checking if image url is valid: ", content.image_url.url)
+              isValid = await checkIfUrlIsValid(content.image_url.url);
+              if (isValid) {
+                setImageUrls(prevUrls => [...prevUrls, content.image_url?.url as string]);
+                return content;
+              } else {
+                const path = extractPathFromUrl(content.image_url.url);
+                console.log("Fetching presigned url for: ", path)
+                const presignedUrl = await getPresignedUrl(path);
+                setImageUrls(prevUrls => [...prevUrls, presignedUrl]);
+                return { ...content, image_url: { url: presignedUrl } };
+              }
+            }
+            return content;
+          }));
+          if (!isValid && onImageUrlsUpdate && !deepEqual(updatedContent, message.content)) {
+            console.log("Updated content: ", updatedContent, "Previous content: ", message.content)
+            onImageUrlsUpdate({ ...message, content: updatedContent }, messageIndex);
+          }
+        }
+      };
+      if (message.role === 'user') {
+        fetchUrl();
+      }
+    }, [message.content, messageIndex]);
 
     const toggleEditing = () => {
       setIsEditing(!isEditing)
@@ -176,7 +264,7 @@ export const ChatMessage: FC<Props> = memo(
     const copyOnClick = () => {
       if (!navigator.clipboard) return
 
-      navigator.clipboard.writeText(message.content).then(() => {
+      navigator.clipboard.writeText(message.content as string).then(() => {
         setMessageCopied(true)
         setTimeout(() => {
           setMessageCopied(false)
@@ -186,8 +274,18 @@ export const ChatMessage: FC<Props> = memo(
 
     useEffect(() => {
       // setMessageContent(message.content)
-      console.log('IN ChatMessage 189 adding hi to messages: ', message)
-      setMessageContent(`${message.content} hi`)
+      if (Array.isArray(message.content)) {
+        const textContent = message.content
+          .filter((content) => content.type === 'text')
+          .map((content) => content.text)
+          .join(' ')
+        setMessageContent(textContent)
+        console.log('IN ChatMessage 188 not adding hi to messages: ', message)
+      } else {
+        console.log('IN ChatMessage 189 adding hi to messages: ', message)
+        setMessageContent(`${message.content} hi`)
+      }
+      // console.log('IN ChatMessage 189 adding hi to messages: ', message)
 
       // RIGHT HERE, run context search.
 
@@ -199,11 +297,66 @@ export const ChatMessage: FC<Props> = memo(
     }, [message.content])
 
     useEffect(() => {
+      setImageUrls([]);
+    }, [message]);
+
+    useEffect(() => {
       if (textareaRef.current) {
         textareaRef.current.style.height = 'inherit'
         textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
       }
     }, [isEditing])
+
+    async function getPresignedUrl(uploadedImageUrl: string): Promise<string> {
+      try {
+        const presignedUrl = await fetchPresignedUrl(uploadedImageUrl);
+        return presignedUrl;
+      } catch (error) {
+        console.error('Failed to fetch presigned URL for', uploadedImageUrl, error);
+        return '';
+      }
+    }
+
+    async function checkIfUrlIsValid(url: string): Promise<boolean> {
+      try {
+        dayjs.extend(utc);
+        const urlObject = new URL(url);
+        let creationDateString = urlObject.searchParams.get('X-Amz-Date') as string
+
+        // Manually reformat the creationDateString to standard ISO 8601 format
+        creationDateString = creationDateString.replace(
+          /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
+          '$1-$2-$3T$4:$5:$6Z'
+        );
+
+        // Adjust the format in the dayjs.utc function if necessary
+        const creationDate = dayjs.utc(creationDateString, 'YYYYMMDDTHHmmss[Z]');
+
+        const expiresInSecs = Number(urlObject.searchParams.get('X-Amz-Expires') as string);
+
+        const expiryDate = creationDate.add(expiresInSecs, 'second');
+        const isExpired = expiryDate.toDate() < new Date();
+
+        if (isExpired) {
+          console.log('URL is expired'); // Keep this log if necessary for debugging
+          return false;
+        } else {
+          return true;
+        }
+      } catch (error) {
+        console.error('Failed to validate URL', url, error);
+        return false;
+      }
+    }
+
+    function extractPathFromUrl(url: string): string {
+      const urlObject = new URL(url);
+      let path = urlObject.pathname
+      if (path.startsWith('/')) {
+        path = path.substring(1);
+      }
+      return path;
+    }
 
     return (
       <div
@@ -259,7 +412,7 @@ export const ChatMessage: FC<Props> = memo(
                       <button
                         className="h-[40px] rounded-md border border-neutral-300 px-4 py-1 text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
                         onClick={() => {
-                          setMessageContent(message.content)
+                          setMessageContent(messageContent)
                           setIsEditing(false)
                         }}
                       >
@@ -269,14 +422,59 @@ export const ChatMessage: FC<Props> = memo(
                   </div>
                 ) : (
                   <div className="dark:prose-invert prose flex-1 whitespace-pre-wrap">
-                    {message.content}
+                    {Array.isArray(message.content) ? (
+                      <div className="flex flex-col items-start space-y-2">
+                        {message.content.map((content, index) => {
+                          if (content.type === 'text') {
+                            if ((content.text as string).trim().startsWith('Image description:')) {
+                              console.log("Image description found: ", content.text)
+                              return (
+                                <Accordion variant='filled' key={index} className=' shadow-lg rounded-lg bg-[#2e026d]'>
+                                  <Accordion.Item value="imageDescription rounded-lg">
+                                    <Accordion.Control className={`text-gray-200 rounded-lg hover:bg-purple-900 ${montserrat_paragraph.variable} font-montserratParagraph`}>
+                                      This image description is used to find relevant documents and provide intelligent context for GPT-4 Vision.
+                                    </Accordion.Control>
+                                    <Accordion.Panel className={`bg-[#1d1f32] rounded-lg text-gray-200 p-4 ${montserrat_paragraph.variable} font-montserratParagraph`}>
+                                      {content.text}
+                                    </Accordion.Panel>
+                                  </Accordion.Item>
+                                </Accordion>
+                              );
+                            } else {
+                              return (
+                                <p key={index} className="self-start text-base font-medium">{content.text}</p>
+                              );
+                            }
+                          }
+                        })}
+                        {isImg2TextLoading && messageIndex == (selectedConversation?.messages.length ?? 0) - 1 && (
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <p style={{ marginRight: '10px', fontWeight: 'bold', textShadow: '0 0 10px' }} className=' pulsate'>Generating Image Description:</p>
+                            <LoadingSpinner size='xs' />
+                          </div>
+                        )}
+                        <div className="flex flex-wrap -m-1 justify-start w-full">
+                          {message.content.filter(item => item.type === 'image_url').map((content, index) => (
+                            <div key={index} className={classes.imageContainerStyle}>
+                              <div className="shadow-lg rounded-lg overflow-hidden">
+                                <ImagePreview src={imageUrls[index] as string} alt="Chat message" className={classes.imageStyle} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      message.content
+                    )}
                   </div>
+
                 )}
 
                 {!isEditing && (
                   <div className="ml-1 flex flex-col items-center justify-end gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-start md:gap-1">
                     <button
-                      className="invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300"
+                      className={`invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300 
+                        ${Array.isArray(message.content) && message.content.some(content => content.type === 'image_url') ? 'hidden' : ''}`}
                       onClick={toggleEditing}
                     >
                       <IconEdit size={20} />

@@ -89,10 +89,10 @@ export async function getStuffedPrompt(
       '\n\nNow please respond to my query: ' +
       searchQuery
     const totalNumTokens = encoding.encode(stuffedPrompt).length
-    console.log('Stuffed prompt', stuffedPrompt.substring(0, 3700))
-    console.log(
-      `Total number of tokens: ${totalNumTokens}. Number of docs: ${contexts.length}, number of valid docs: ${validDocs.length}`,
-    )
+    // console.log('Stuffed prompt', stuffedPrompt.substring(0, 3700))
+    // console.log(
+    // `Total number of tokens: ${totalNumTokens}. Number of docs: ${contexts.length}, number of valid docs: ${validDocs.length}`,
+    // )
 
     return stuffedPrompt
   } catch (e) {

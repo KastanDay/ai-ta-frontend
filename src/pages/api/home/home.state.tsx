@@ -29,6 +29,7 @@ export interface HomeInitialState {
   serverSidePluginKeysSet: boolean
   cooldown: number
   showModelSettings: boolean
+  isImg2TextLoading: boolean
 }
 
 export const initialState: HomeInitialState = {
@@ -55,4 +56,5 @@ export const initialState: HomeInitialState = {
   serverSidePluginKeysSet: false,
   cooldown: 0,
   showModelSettings: false,
+  isImg2TextLoading: false,
 }

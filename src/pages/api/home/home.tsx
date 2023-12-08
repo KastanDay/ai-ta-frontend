@@ -26,7 +26,7 @@ import { getSettings } from '@/utils/app/settings'
 import { type Conversation } from '@/types/chat'
 import { type KeyValuePair } from '@/types/data'
 import { type FolderInterface, type FolderType } from '@/types/folder'
-import { OpenAIModelID, OpenAIModels, fallbackModelID } from '@/types/openai'
+import { OpenAIModel, OpenAIModelID, OpenAIModels, fallbackModelID } from '@/types/openai'
 import { type Prompt } from '@/types/prompt'
 
 import { Chat } from '@/components/Chat/Chat'
@@ -49,7 +49,7 @@ const Home = () => {
   const { getModelsError } = useErrorService()
   const [isLoading, setIsLoading] = useState<boolean>(true) // Add a new state for loading
 
-  const defaultModelId = 'gpt-4'
+  const defaultModelId = OpenAIModelID.GPT_4
   const serverSidePluginKeysSet = true
 
   const contextValue = useCreateReducer<HomeInitialState>({
@@ -84,23 +84,10 @@ const Home = () => {
 
   useEffect(() => {
     // Set model (to only available models)
-    // First try to use selectedconversation model, if not available, use default model
     const modelId = selectedConversation?.model.id
-    // 1. Default to GPT-4 (either OpenAI or Azure) if available
-    // Fallback 
-
-    // , otherwise fallback to the first model in the list (random)
-    const defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
-    let model = models.find((model) => model.id === modelId) || defaultModel
-
-    console.debug('Home.tsx -- setting DefaultModelId -- avail models: ', models)
-    console.debug('Home.tsx -- setting DefaultModelId -- from selectedConto:', modelId)
-
-    if (!model) {
-      console.log('NO MODELS FOUND -- Falling back to GPT-4 standard: ', OpenAIModels['gpt-4'])
-      model = OpenAIModels['gpt-4']
-    }
-    console.log('Home.tsx -- setting DefaultModelId SETTING IT TO: ', model)
+    console.log("In effect of home, selectedConversation model id: ", modelId)
+    const lastConversation = conversations[conversations.length - 1]
+    const model = selectBestModel(lastConversation, models, defaultModelId);
 
     dispatch({
       field: 'defaultModelId',
@@ -117,7 +104,7 @@ const Home = () => {
         value: convo_with_valid_model,
       })
     }
-    console.debug("In effect of home Using model: ", defaultModel)
+    // console.debug("In effect of home Using model: ", defaultModel)
   }, [models])
 
 
@@ -313,6 +300,29 @@ const Home = () => {
     saveFolders(updatedFolders)
   }
 
+
+  const selectBestModel = (lastConversation: Conversation | undefined, models: OpenAIModel[], defaultModelId: OpenAIModelID): OpenAIModel => {
+    // If models array is empty, return defaultModelId
+    if (!models.length) {
+      return OpenAIModels[defaultModelId]
+    }
+
+    // If the last conversation's model is available, use it
+    if (lastConversation && lastConversation.model && models.some(model => model.id === lastConversation.model.id)) {
+      return lastConversation.model as OpenAIModel;
+    } else {
+      // If 'gpt-4-from-canada-east' or 'gpt-4' are available, use whichever is available
+      const preferredModel = models.find(model => ['gpt-4-from-canada-east', 'gpt-4'].includes(model.id));
+
+      if (preferredModel) {
+        return preferredModel;
+      } else {
+        // Fallback to the default model
+        return models.find((model) => model.id === defaultModelId) || models[0] || OpenAIModels[defaultModelId];
+      }
+    }
+  }
+
   // CONVERSATION OPERATIONS  --------------------------------------------
 
   const handleNewConversation = () => {
@@ -320,11 +330,15 @@ const Home = () => {
     console.debug("Models available: ", models)
     console.debug("IN NEW CONVERSATION Using model: ", defaultModelId)
 
+    // Determine the model to use for the new conversation
+    const model = selectBestModel(lastConversation, models, defaultModelId);
+    console.debug('NEW CONVO : handleNewConversation SETTING IT TO: ', model);
+
     const newConversation: Conversation = {
       id: uuidv4(),
       name: t('New Conversation'),
       messages: [],
-      model: OpenAIModels[defaultModelId],
+      model: model,
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
@@ -359,7 +373,85 @@ const Home = () => {
     dispatch({ field: 'conversations', value: all })
   }
 
+  // Image to Text
+  const setIsImg2TextLoading = (isImg2TextLoading: boolean) => {
+    dispatch({ field: 'isImg2TextLoading', value: isImg2TextLoading });
+  };
+
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [dragEnterCounter, setDragEnterCounter] = useState(0);
+
+  const GradientIconPhoto = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-photo" width="256" height="256" viewBox="0 0 24 24" strokeWidth="1.5" stroke="url(#gradient)" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <defs>
+        <linearGradient id="gradient" x1="100%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stopColor="#8A3FFC" />
+          <stop offset="100%" stopColor="#E94057" />
+        </linearGradient>
+      </defs>
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <line x1="15" y1="8" x2="15.01" y2="8" />
+      <rect x="4" y="4" width="16" height="16" rx="3" />
+      <path d="M4 15l4 -4a3 5 0 0 1 3 0l 4 4" />
+      <path d="M14 14l1 -1a3 5 0 0 1 3 0l2 2" />
+    </svg>
+  );
+
   // EFFECTS  --------------------------------------------
+  useEffect(() => {
+    const handleDocumentDragOver = (e: DragEvent) => {
+      e.preventDefault();
+    };
+
+    const handleDocumentDragEnter = (e: DragEvent) => {
+      setDragEnterCounter((prev) => prev + 1);
+      setIsDragging(true);
+    };
+
+    const handleDocumentDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      setDragEnterCounter((prev) => prev - 1);
+      if (dragEnterCounter === 1 || e.relatedTarget === null) {
+        setIsDragging(false);
+      }
+    };
+
+    const handleDocumentDrop = (e: DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      setDragEnterCounter(0);
+    };
+
+    const handleDocumentKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsDragging(false);
+        setDragEnterCounter(0);
+      }
+    };
+
+    const handleMouseOut = (e: MouseEvent) => {
+      if (!e.relatedTarget) {
+        setIsDragging(false);
+        setDragEnterCounter(0);
+      }
+    };
+
+    document.addEventListener('dragover', handleDocumentDragOver);
+    document.addEventListener('dragenter', handleDocumentDragEnter);
+    document.addEventListener('dragleave', handleDocumentDragLeave);
+    document.addEventListener('drop', handleDocumentDrop);
+    document.addEventListener('keydown', handleDocumentKeyDown);
+    window.addEventListener('mouseout', handleMouseOut);
+
+    return () => {
+      document.removeEventListener('dragover', handleDocumentDragOver);
+      document.removeEventListener('dragenter', handleDocumentDragEnter);
+      document.removeEventListener('dragleave', handleDocumentDragLeave);
+      document.removeEventListener('drop', handleDocumentDrop);
+      document.removeEventListener('keydown', handleDocumentKeyDown);
+      window.removeEventListener('mouseout', handleMouseOut);
+    };
+  }, []);
 
   useEffect(() => {
     if (window.innerWidth < 640) {
@@ -468,54 +560,65 @@ const Home = () => {
     return <></>
   }
   return (
-    <HomeContext.Provider
-      value={{
-        ...contextValue,
-        handleNewConversation,
-        handleCreateFolder,
-        handleDeleteFolder,
-        handleUpdateFolder,
-        handleSelectConversation,
-        handleUpdateConversation,
-      }}
-    >
-      <Head>
-        <title>UIUC.chat</title>
-        <meta name="description" content="ChatGPT but better." />
-        <meta
-          name="viewport"
-          content="height=device-height ,width=device-width, initial-scale=1, user-scalable=no"
-        />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      {selectedConversation && (
-        <main
-          className={`flex h-screen w-screen flex-col text-sm text-white dark:text-white ${lightMode}`}
-        >
-          <div className="fixed top-0 w-full sm:hidden">
-            <Navbar
-              selectedConversation={selectedConversation}
-              onNewConversation={handleNewConversation}
-            />
-          </div>
-
-          <div className="flex h-full w-full pt-[48px] sm:pt-0">
-            <Chatbar />
-
-            <div className="flex flex-1">
-              {course_metadata && (
-                <Chat
-                  stopConversationRef={stopConversationRef}
-                  courseMetadata={course_metadata}
-                />
-              )}
+    <div>
+      <HomeContext.Provider
+        value={{
+          ...contextValue,
+          handleNewConversation,
+          handleCreateFolder,
+          handleDeleteFolder,
+          handleUpdateFolder,
+          handleSelectConversation,
+          handleUpdateConversation,
+          setIsImg2TextLoading
+        }}
+      >
+        <Head>
+          <title>UIUC.chat</title>
+          <meta name="description" content="ChatGPT but better." />
+          <meta
+            name="viewport"
+            content="height=device-height ,width=device-width, initial-scale=1, user-scalable=no"
+          />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
+        {selectedConversation && (
+          <main
+            className={`flex h-screen w-screen flex-col text-sm text-white dark:text-white ${lightMode}`}
+          >
+            <div className="fixed top-0 w-full sm:hidden">
+              <Navbar
+                selectedConversation={selectedConversation}
+                onNewConversation={handleNewConversation}
+              />
             </div>
 
-            <Promptbar />
-          </div>
-        </main>
-      )}
-    </HomeContext.Provider>
+            <div className="flex h-full w-full pt-[48px] sm:pt-0">
+              {isDragging && selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
+                <div
+                  className="absolute inset-0 w-full h-full flex flex-col justify-center items-center bg-black opacity-75 z-10"
+                >
+                  <GradientIconPhoto />
+                  <span className="text-3xl font-extrabold text-white">Drop your image here!</span>
+                </div>
+              )}
+              <Chatbar />
+
+              <div className="flex flex-1">
+                {course_metadata && (
+                  <Chat
+                    stopConversationRef={stopConversationRef}
+                    courseMetadata={course_metadata}
+                  />
+                )}
+              </div>
+
+              <Promptbar />
+            </div>
+          </main>
+        )}
+      </HomeContext.Provider>
+    </div>
   )
 }
 export default Home
