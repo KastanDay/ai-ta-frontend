@@ -568,9 +568,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         // Remove the existing image description
         (currentMessage.content as Content[]).splice(imgDescIndex, 1);
       }
-
-      handleSend(currentMessage, 2, null);
     }
+    handleSend(currentMessage as Message, 2, null);
   }, [currentMessage, handleSend]);
 
   const scrollToBottom = useCallback(() => {
