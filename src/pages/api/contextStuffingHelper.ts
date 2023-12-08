@@ -44,8 +44,8 @@ export async function getStuffedPrompt(
       The sky is blue. [27] The grass is green. [28]
       Relevant Sources:
 
-      [27]: [document_name](#)
-      [28]: [document_name](#)
+      27. [document_name](#)
+      28. [document_name](#)
       """
       ONLY return the documents with relevant information and cited in the response. If there are no relevant sources, don't include the "Relevant Sources" section in response.
       Here are excerpts from the high-quality documents provided:
