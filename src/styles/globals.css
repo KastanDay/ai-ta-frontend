@@ -389,7 +389,7 @@ a[data-footnote-backref] {
   color: rgb(173, 92, 227);
 }
 
-.linkMarkDown ol {
+.linkMarkDown ol:has(> li > button) {
   display: flex;
   flex: nowrap;
   overflow-x: auto;
@@ -412,7 +412,7 @@ a[data-footnote-backref] {
 }
 
 /* Style for individual list items */
-.linkMarkDown ol li {
+.linkMarkDown ol li:has(> button) {
   max-width: 150px;
   flex: 0 0 calc(25% - 10px);
     /* Adjusting for the gap */
@@ -422,7 +422,7 @@ a[data-footnote-backref] {
   /* Ensure all buttons are the same height */
 }
 
-.linkMarkDown ol li:last-child {
+.linkMarkDown ol li:last-child:has(> button) {
   margin-right: 0;
 }
 
