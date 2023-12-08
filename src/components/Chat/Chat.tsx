@@ -183,7 +183,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ...message,
             content: [
               ...imageContent,
-              { type: 'text', text: 'Provide detailed description of the image(s) focusing on any text (OCR information), distinct objects, colors, and actions depicted. Include contextual information, subtle details, and specific terminologies relevant for semantic document retrieval.' }
+              {
+                type: 'text', text: `"Provide a detailed description of the image(s), focusing exclusively on the elements and details that are visibly present. Include descriptions of text (OCR information), distinct objects, spatial relationships, colors, actions, annotations, labels, or significant color usage. Use specific, technical, or domain-specific terminology to accurately describe elements, particularly for specialized fields like medicine, agriculture, technology, etc. Classify the image into relevant categories and list key terms associated with that category. Identify and list potential keywords or key phrases that summarize the main elements and themes. If the image contains abstract or emotional content, infer the overall message or content. Emphasize the most prominent features first, moving to less significant details. Also, provide synonyms or related terms for technical aspects. DO NOT reference or mention any features, elements, or aspects that are absent in the image. The GOAL is to create a precise, focused, and keyword-rich description that encapsulates only the observable details, suitable for semantic document retrieval across various domains."`
+              }
             ]
           }
         ],
@@ -242,6 +244,18 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         message.contexts = curr_contexts as ContextWithMetadata[]
       })
     }
+  }
+
+  const generateCitationLink = async (context: ContextWithMetadata) => {
+    let url = ''
+    console.log("context: ", context)
+
+    if (context.url !== '') {
+      url = context.url
+    } else if (context.s3_path !== '') {
+      url = await fetchPresignedUrl(context.s3_path)
+    }
+    return url
   }
 
   // THIS IS WHERE MESSAGES ARE SENT.
@@ -395,57 +409,89 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           let done = false
           let isFirst = true
           let text = ''
-          while (!done) {
-            if (stopConversationRef.current === true) {
-              controller.abort()
-              done = true
-              break
-            }
-            const { value, done: doneReading } = await reader.read()
-            done = doneReading
-            const chunkValue = decoder.decode(value)
-            text += chunkValue
-            if (isFirst) {
-              // isFirst refers to the first chunk of data received from the API (happens once for each new message from API)
-              isFirst = false
-              const updatedMessages: Message[] = [
-                ...updatedConversation.messages,
-                {
-                  role: 'assistant',
-                  content: chunkValue,
-                  contexts: message.contexts,
-                },
-              ]
-              updatedConversation = {
-                ...updatedConversation,
-                messages: updatedMessages,
-              }
-              homeDispatch({
-                field: 'selectedConversation',
-                value: updatedConversation,
+          let citationLinks: { link: string, citationRegex: RegExp, readable_filename: string }[] = [];
+          if (message.contexts) {
+            citationLinks = await Promise.all(
+              message.contexts.map(async (context, index) => {
+                const link = await generateCitationLink(context)
+                const citationRegex = new RegExp(`\\[${context.readable_filename}\\]`, 'g')
+                return { link, citationRegex, readable_filename: context.readable_filename }
               })
-            } else {
-              const updatedMessages: Message[] =
-                updatedConversation.messages.map((message, index) => {
+            )
+          }
+          try {
+            while (!done) {
+              if (stopConversationRef.current === true) {
+                controller.abort()
+                done = true
+                break
+              }
+              const { value, done: doneReading } = await reader.read()
+              done = doneReading
+              const chunkValue = decoder.decode(value)
+              text += chunkValue
+              if (isFirst) {
+                // isFirst refers to the first chunk of data received from the API (happens once for each new message from API)
+                isFirst = false
+                const updatedMessages: Message[] = [
+                  ...updatedConversation.messages,
+                  {
+                    role: 'assistant',
+                    content: chunkValue,
+                    contexts: message.contexts,
+                  },
+                ]
+                updatedConversation = {
+                  ...updatedConversation,
+                  messages: updatedMessages,
+                }
+                homeDispatch({
+                  field: 'selectedConversation',
+                  value: updatedConversation,
+                })
+              } else {
+                const updatedMessages: Message[] = updatedConversation.messages.map((message, index) => {
                   if (index === updatedConversation.messages.length - 1) {
-                    return {
-                      ...message,
-                      content: text,
-                      // responseTimeSec: // TODO: try to track this.. mostly in ChatMessage.tsx
+                    let content = text
+                    if (message.contexts) {
+                      citationLinks.forEach(({ link, citationRegex, readable_filename }, index) => {
+                        const citationLink = `[${index + 1}](${link})`;
+                        const filenameLink = `${index + 1}. [${readable_filename}](${link})`;
+                      // This replaces placeholders with clickable links but Markdown rendering removes the placeholder and only shows the number.
+                        content = content.replace(new RegExp(`\\[${index + 1}\\](?!\\:\\s\\[)`, 'g'), citationLink);
+                        content = content.replace(new RegExp(`${index + 1}\\.\\s\\[${readable_filename}\\]\\(\\#\\)`, 'g'), filenameLink);
+                      })
+                      // Uncomment for debugging
+                      // console.log('content: ', content) 
+                      return {
+                        ...message,
+                        content,
+                      }
                     }
                   }
                   return message
                 })
-              updatedConversation = {
-                ...updatedConversation,
-                messages: updatedMessages,
+                updatedConversation = {
+                  ...updatedConversation,
+                  messages: updatedMessages,
+                }
+                homeDispatch({
+                  field: 'selectedConversation',
+                  value: updatedConversation,
+                })
               }
-              homeDispatch({
-                field: 'selectedConversation',
-                value: updatedConversation,
-              })
             }
+          } catch (error) {
+            console.error('Error reading from stream:', error);
+            homeDispatch({ field: 'loading', value: false });
+            homeDispatch({ field: 'messageIsStreaming', value: false });
+            return;
           }
+
+          if (!done) {
+            throw new Error('Stream ended prematurely');
+          }
+
           saveConversation(updatedConversation)
           // todo: add clerk user info to onMessagereceived for logging.
           if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
@@ -524,9 +570,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         // Remove the existing image description
         (currentMessage.content as Content[]).splice(imgDescIndex, 1);
       }
-
-      handleSend(currentMessage, 2, null);
     }
+    handleSend(currentMessage as Message, 2, null);
   }, [currentMessage, handleSend]);
 
   const scrollToBottom = useCallback(() => {
