@@ -248,9 +248,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     let url = ''
     console.log("context: ", context)
 
-    if (context.url !== '') {
+    if (context.url !== '' || context.url !== null || context.url !== undefined) {
       url = context.url
-    } else if (context.s3_path !== '') {
+    } else if (context.s3_path !== '' || context.s3_path !== null || context.s3_path !== undefined) {
       url = await fetchPresignedUrl(context.s3_path)
     }
     return url
