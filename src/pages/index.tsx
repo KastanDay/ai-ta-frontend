@@ -292,6 +292,14 @@ function CourseCard() {
       description:
         "Using all of Ansible's documentation, this bot will write excellent Ansible scripts. Just ask it to program whatever you'd like.",
     },
+    {
+      course_slug: 'lilian-weng-blog',
+      // imageSrc: '/media/hero_courses_banners/lilian_weng_blog.png',
+      title: 'Lilian Wang Blog (OpenAI popular topics)',
+      badge: 'LLMs',
+      description:
+        'A collection of Lilian Wang\'s blog posts, some of the best in the AI world, from here: <a href="https://lilianweng.github.io/" target="_blank" rel="noopener noreferrer">https://lilianweng.github.io</a>.',
+    },
     // Add more cards here
   ]
 
