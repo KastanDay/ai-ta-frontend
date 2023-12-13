@@ -466,12 +466,16 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               } else {
                 const citationLinkCache = new Map<number, string>();
 
+                function escapeRegExp(string: string) {
+                  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+                }
+
                 const updatedMessagesPromises: Promise<Message>[] = updatedConversation.messages.map(async (message, index) => {
                   if (index === updatedConversation.messages.length - 1 && message.contexts) {
                     let content = text;
                     for (const context of message.contexts) {
                       // Extract page number from the content string
-                      const pageMatch = content.match(new RegExp(`\\[${context.readable_filename}, page: (\\d+)\\]\\(#\\)`));
+                      const pageMatch = content.match(new RegExp(`\\[${escapeRegExp(context.readable_filename)}, page: (\\d+)\\]\\(#\\)`));
                       const pageNumber = pageMatch ? `#page=${pageMatch[1]}` : '';
 
                       const citationIndex = message.contexts.indexOf(context) + 1;
