@@ -213,6 +213,7 @@ if (stream) {
       console.log('Final OpenAIError resp: ', resp)
       return resp
     } else {
+      console.error('Unexpected Error', error)
       const resp = NextResponse.json({ name: 'Error' }, { status: 500 })
       console.log('Final Error resp: ', resp)
       return resp
