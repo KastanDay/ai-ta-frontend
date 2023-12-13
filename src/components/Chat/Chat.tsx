@@ -235,25 +235,51 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     return searchQuery;
   }
 
-  const handleContextSearch = async (message: Message, selectedConversation: Conversation, searchQuery: string) => {
+  const handleContextSearch = async (message: Message, selectedConversation: Conversation) => {
     if (getCurrentPageName() != 'gpt4') {
-      const token_limit = OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
-      await fetchContexts(getCurrentPageName(), searchQuery, token_limit).then((curr_contexts) => {
-        message.contexts = curr_contexts as ContextWithMetadata[]
-      })
+      // Extract text from all user messages in the conversation
+      const userMessagesText = selectedConversation.messages
+        .filter(msg => msg.role === 'user') //TODO: Remove this when we add message filtering/summarizing step to backend
+        .map(msg => {
+          if (typeof msg.content === 'string') {
+            return msg.content;
+          } else if (Array.isArray(msg.content)) {
+            // Concatenate all text contents
+            return msg.content
+              .filter(content => content.type === 'text')
+              .map(content => content.text)
+              .join(' ');
+          }
+          return '';
+        })
+        .join('\n'); // Join all user messages into a single string
+
+      const token_limit = OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit;
+      await fetchContexts(getCurrentPageName(), userMessagesText, token_limit).then((curr_contexts) => {
+        message.contexts = curr_contexts as ContextWithMetadata[];
+      });
     }
   }
 
   const generateCitationLink = async (context: ContextWithMetadata) => {
-    let url = ''
-    console.log("context: ", context)
-
-    if (context.url !== '' || context.url !== null || context.url !== undefined) {
-      url = context.url
-    } else if (context.s3_path !== '' || context.s3_path !== null || context.s3_path !== undefined) {
-      url = await fetchPresignedUrl(context.s3_path)
+    console.log('context: ', context);
+    if (context.url) {
+      return context.url;
+    } else if (context.s3_path) {
+      return fetchPresignedUrl(context.s3_path);
     }
-    return url
+    return '';
+  }
+
+  const getCitationLink = async (context: ContextWithMetadata, citationLinkCache: Map<number, string>, citationIndex: number) => {
+    const cachedLink = citationLinkCache.get(citationIndex);
+    if (cachedLink) {
+      return cachedLink;
+    } else {
+      const link = await generateCitationLink(context);
+      citationLinkCache.set(citationIndex, link);
+      return link;
+    }
   }
 
   // THIS IS WHERE MESSAGES ARE SENT.
@@ -305,7 +331,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }
 
         // Run context search, attach to Message object.
-        await handleContextSearch(message, selectedConversation, searchQuery);
+        await handleContextSearch(message, selectedConversation);
 
         const chatBody: ChatBody = {
           model: updatedConversation.model,
@@ -407,16 +433,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           let done = false
           let isFirst = true
           let text = ''
-          let citationLinks: { link: string, citationRegex: RegExp, readable_filename: string }[] = [];
-          if (message.contexts) {
-            citationLinks = await Promise.all(
-              message.contexts.map(async (context, index) => {
-                const link = await generateCitationLink(context)
-                const citationRegex = new RegExp(`\\[${context.readable_filename}\\]`, 'g')
-                return { link, citationRegex, readable_filename: context.readable_filename }
-              })
-            )
-          }
           try {
             while (!done) {
               if (stopConversationRef.current === true) {
@@ -448,27 +464,45 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   value: updatedConversation,
                 })
               } else {
-                const updatedMessages: Message[] = updatedConversation.messages.map((message, index) => {
-                  if (index === updatedConversation.messages.length - 1) {
-                    let content = text
-                    if (message.contexts) {
-                      citationLinks.forEach(({ link, citationRegex, readable_filename }, index) => {
-                        const citationLink = `[${index + 1}](${link})`;
-                        const filenameLink = `${index + 1}. [${readable_filename}](${link})`;
-                      // This replaces placeholders with clickable links but Markdown rendering removes the placeholder and only shows the number.
-                        content = content.replace(new RegExp(`\\[${index + 1}\\](?!\\:\\s\\[)`, 'g'), citationLink);
-                        content = content.replace(new RegExp(`${index + 1}\\.\\s\\[${readable_filename}\\]\\(\\#\\)`, 'g'), filenameLink);
-                      })
-                      // Uncomment for debugging
-                      // console.log('content: ', content) 
-                      return {
-                        ...message,
-                        content,
-                      }
+                const citationLinkCache = new Map<number, string>();
+
+                const updatedMessagesPromises: Promise<Message>[] = updatedConversation.messages.map(async (message, index) => {
+                  if (index === updatedConversation.messages.length - 1 && message.contexts) {
+                    let content = text;
+                    for (const context of message.contexts) {
+                      // Extract page number from the content string
+                      const pageMatch = content.match(new RegExp(`\\[${context.readable_filename}, page: (\\d+)\\]\\(#\\)`));
+                      const pageNumber = pageMatch ? `#page=${pageMatch[1]}` : '';
+
+                      const citationIndex = message.contexts.indexOf(context) + 1;
+                      const link = await getCitationLink(context, citationLinkCache, citationIndex);
+
+                      const citationLinkPattern = new RegExp(`\\[${citationIndex}\\](?!\\([^)]*\\))`, 'g');
+                      const citationLinkReplacement = `[${citationIndex}](${link}${pageNumber})`;
+                      content = content.replace(citationLinkPattern, citationLinkReplacement);
+
+                      const filenameLinkPattern = new RegExp(`(\\b${citationIndex}\\.)\\s*\\[(.*?)\\]\\(\\#\\)`, 'g');
+
+                      // The replacement pattern uses backreferences ($1 and $2) to keep the original citation index and the filename provided by OpenAI intact.
+                      // $1 is the citation index and period, $2 is the filename provided by OpenAI.
+                      const filenameLinkReplacement = `$1 [${context.readable_filename}](${link}${pageNumber})`;
+
+                      // Perform the replacement
+                      content = content.replace(filenameLinkPattern, (match, index, filename) => {
+                        // Use the filename provided by OpenAI in the link text
+                        return `${index} [${index} ${filename}](${link}${pageNumber})`;
+                      });
                     }
+                // Uncomment for debugging
+                    console.log('content: ', content);
+                    return { ...message, content };
                   }
-                  return message
-                })
+                  return message;
+                });
+
+                // Use Promise.all to wait for all promises to resolve
+                const updatedMessages = await Promise.all(updatedMessagesPromises);
+
                 updatedConversation = {
                   ...updatedConversation,
                   messages: updatedMessages,

@@ -39,13 +39,13 @@ export async function getStuffedPrompt(
       At the end of your response, list the document title with a clickable link, like this: "[1]:[document_name]"
       Nothing else should prefixxed or suffixed to the citation or document name. 
       
-      Suppose a document name is shared with you along with the number below like "27: www.pdf, page: 2" where 27 is the number and www.pdf is the document_name, then cite it in the response as follows:
+      Suppose a document name is shared with you along with the number below like "27: www.pdf, page: 2", "28: www.osd" where 27, 28 are numbers, www.pdf, www.osd are document_name, and 2 is the pageNumber, then cite it in the response as follows:
       """
       The sky is blue. [27] The grass is green. [28]
       Relevant Sources:
 
-      27. [document_name](#)
-      28. [document_name](#)
+      27. [www.pdf, page: 2](#)
+      28. [www.osd](#)
       """
       ONLY return the documents with relevant information and cited in the response. If there are no relevant sources, don't include the "Relevant Sources" section in response.
       Here are excerpts from the high-quality documents provided:
@@ -54,7 +54,7 @@ export async function getStuffedPrompt(
     }
 
     let tokenCounter = encoding.encode(
-      prePrompt + '\n\nNow please respond to my query: ' + searchQuery,
+      prePrompt + '\n\nNow please respond to my conversation: ' + searchQuery,
     ).length
     const validDocs = []
     for (const [index, d] of contexts.entries()) {
