@@ -15,6 +15,12 @@ export const config = {
   runtime: 'edge',
 }
 
+/**
+ * Handles the incoming request and processes the chat messages.
+ * 
+ * @param req - The incoming request object.
+ * @returns A promise that resolves to the NextResponse.
+ */
 const handler = async (req: Request): Promise<NextResponse> => {
   try {
     console.log("Top of /api/chat.ts. req: ", req)
