@@ -37,6 +37,27 @@ const config = {
   experimental: {
     esmExternals: false, // To make upload thing work with /pages router.
   },
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET,PUT,POST,DELETE,OPTIONS',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept',
+          },
+        ],
+      },
+    ]
+  },
 }
 
 const withAxiomConfig = withAxiom(config)
