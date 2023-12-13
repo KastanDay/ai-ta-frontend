@@ -17,8 +17,10 @@ export const config = {
 
 const handler = async (req: Request): Promise<NextResponse> => {
   try {
+    console.log("Top of /api/chat.ts. req: ", req)
     const { model, messages, key, prompt, temperature, course_name, stream } =
       (await req.json()) as ChatBody
+    console.log("After message parsing: ", model, messages, key, prompt, temperature, course_name, stream)
 
     await init((imports) => WebAssembly.instantiate(wasm, imports))
     const encoding = new Tiktoken(
@@ -27,7 +29,9 @@ const handler = async (req: Request): Promise<NextResponse> => {
       tiktokenModel.pat_str,
     )
 
+
     const token_limit = OpenAIModels[model.id as OpenAIModelID].tokenLimit
+    console.log("Model's token limit", token_limit)
 
     let promptToSend = prompt
     if (!promptToSend) {
