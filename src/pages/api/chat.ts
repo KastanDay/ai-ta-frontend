@@ -61,6 +61,10 @@ const handler = async (req: Request): Promise<NextResponse> => {
     const contexts_arr = messages[messages.length - 1]
       ?.contexts as ContextWithMetadata[]
 
+    console.log('CONTEXTS ARRAY: ', contexts_arr)
+    console.log('Type of contexts array: ', typeof contexts_arr);
+    console.log('Contexts array is derrived from: ', messages[messages.length - 1]?.contexts)
+
     if (course_name == 'extreme' || course_name == 'zotero-extreme') {
       console.log('CONTEXT STUFFING FOR /extreme and /zotero-extreme slugs')
       promptToSend = await getExtremePrompt(course_name, search_query).catch(
@@ -134,12 +138,12 @@ const handler = async (req: Request): Promise<NextResponse> => {
     }
     encoding.free() // keep this
 
-    console.log('Prompt being sent to OpenAI: ', promptToSend)
-    console.log('Message history being sent to OpenAI: ', messagesToSend)
-
     // Add custom instructions to system prompt
     const systemPrompt =
       promptToSend + "Only answer if it's related to the course materials."
+
+    console.log('System prompt being sent to OpenAI: ', promptToSend)
+    console.log('Message history being sent to OpenAI: ', messagesToSend)
 
     const apiStream = await OpenAIStream(
       modelObj,
