@@ -75,10 +75,6 @@ if (temperatureToUse == null) {
     const contexts_arr = messages[messages.length - 1]
       ?.contexts as ContextWithMetadata[]
 
-    console.log('CONTEXTS ARRAY: ', contexts_arr)
-    console.log('Type of contexts array: ', typeof contexts_arr);
-    console.log('Contexts array is derrived from: ', messages[messages.length - 1]?.contexts)
-
     if (course_name == 'extreme' || course_name == 'zotero-extreme') {
       console.log('CONTEXT STUFFING FOR /extreme and /zotero-extreme slugs')
       promptToSend = await getExtremePrompt(course_name, search_query).catch(
@@ -97,29 +93,28 @@ if (temperatureToUse == null) {
     // else if (course_name == 'global' || course_name == 'search-all') {
     // todo
     // }
-    else if (stream) {
-      // regular context stuffing
-      const stuffedPrompt = (await getStuffedPrompt(
-        course_name,
-        search_query,
-        contexts_arr,
-        token_limit,
-      )) as string
-      if (typeof messages[messages.length - 1]?.content === 'string') {
-        messages[messages.length - 1]!.content = stuffedPrompt;
-      } else if (Array.isArray(messages[messages.length - 1]?.content) &&
-        (messages[messages.length - 1]!.content as Content[]).every(item => 'type' in item)) {
 
-        const contentArray = messages[messages.length - 1]!.content as Content[];
-        const textContentIndex = contentArray.findIndex(item => item.type === 'text') || 0;
+    // regular context stuffing
+    const stuffedPrompt = (await getStuffedPrompt(
+      course_name,
+      search_query,
+      contexts_arr,
+      token_limit,
+    )) as string
+    if (typeof messages[messages.length - 1]?.content === 'string') {
+      messages[messages.length - 1]!.content = stuffedPrompt;
+    } else if (Array.isArray(messages[messages.length - 1]?.content) &&
+      (messages[messages.length - 1]!.content as Content[]).every(item => 'type' in item)) {
 
-        if (textContentIndex !== -1 && contentArray[textContentIndex]) {
-          // Replace existing text content with the new stuffed prompt
-          contentArray[textContentIndex] = { ...contentArray[textContentIndex], text: stuffedPrompt, type: 'text' };
-        } else {
-          // Add new stuffed prompt if no text content exists
-          contentArray.push({ type: 'text', text: stuffedPrompt });
-        }
+      const contentArray = messages[messages.length - 1]!.content as Content[];
+      const textContentIndex = contentArray.findIndex(item => item.type === 'text') || 0;
+
+      if (textContentIndex !== -1 && contentArray[textContentIndex]) {
+        // Replace existing text content with the new stuffed prompt
+        contentArray[textContentIndex] = { ...contentArray[textContentIndex], text: stuffedPrompt, type: 'text' };
+      } else {
+        // Add new stuffed prompt if no text content exists
+        contentArray.push({ type: 'text', text: stuffedPrompt });
       }
     }
 
