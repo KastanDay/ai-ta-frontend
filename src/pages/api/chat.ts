@@ -29,8 +29,15 @@ const handler = async (req: Request): Promise<NextResponse> => {
       tiktokenModel.pat_str,
     )
 
+    let modelObj;
+    if (typeof model === 'string') {
+      modelObj = OpenAIModels[model as OpenAIModelID];
+    } else {
+      modelObj = model;
+    }
 
-    const token_limit = OpenAIModels[model.id as OpenAIModelID].tokenLimit
+
+    const token_limit = OpenAIModels[modelObj.id as OpenAIModelID].tokenLimit
     console.log("Model's token limit", token_limit)
 
     let promptToSend = prompt
@@ -135,7 +142,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
       promptToSend + "Only answer if it's related to the course materials."
 
     const apiStream = await OpenAIStream(
-      model,
+      modelObj,
       systemPrompt,
       temperatureToUse,
       key,
