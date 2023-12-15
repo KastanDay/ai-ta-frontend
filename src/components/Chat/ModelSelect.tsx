@@ -101,14 +101,11 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 Fancy Retrieval
               </Title>
               <Switch
-                // style={{ left: '70px', bottom: '8px' }}
                 className='pl-2 pt-2'
-                // className="absolute rounded-sm p-1 " //  bottom-1.5
                 label={t('Multi Query Retrieval (slow 30 second response time)')}
                 checked={useMQRetrieval}
                 onChange={(event) => setUseMQRetrieval(event.currentTarget.checked)}
                 description={t('A LLM generates multiple queries based on your original for improved semantic search. Then every retrieved context is filtered by a smaller LLM (Mistral 7b) so that only high quality and relevant documents are included in the final GPT-4 call.')}
-                // label='Multi-Query Retrieval'
                 color='violet.7'
               />
               <ModelParams
