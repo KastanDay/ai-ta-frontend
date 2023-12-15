@@ -5,30 +5,6 @@ export const config = {
   runtime: 'edge',
 }
 
-export const fetchMQRContexts = async (
-  course_name: string,
-  search_query: string,
-  token_limit = 4000,
-) => {
-  try {
-    const response: AxiosResponse<ContextWithMetadata[]> = await axios.get(
-      // `https://flask-production-751b.up.railway.app/getTopContextsWithMQR`,
-      `https://flask-ai-ta-backend-pr-130.up.railway.app/getTopContextsWithMQR`,
-      {
-        params: {
-          course_name: course_name,
-          search_query: search_query,
-          token_limit: token_limit,
-        },
-      },
-    )
-    return response.data
-  } catch (error) {
-    console.error(error)
-    return []
-  }
-}
-
 export const fetchContexts = async (
   course_name: string,
   search_query: string,
