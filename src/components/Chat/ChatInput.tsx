@@ -677,12 +677,12 @@ export const ChatInput = ({
     }
   }
 
-  // Toggle to enable Fancy retrieval method: Multi-Query Retrieval
-  const [useMQRetrieval, setUseMQRetrieval] = useState(localStorage.getItem('UseMQRetrieval') === 'true');
-  // Update localStorage whenever useMQRetrieval changes
-  useEffect(() => {
-    localStorage.setItem('UseMQRetrieval', useMQRetrieval ? 'true' : 'false');
-  }, [useMQRetrieval]);
+  // // Toggle to enable Fancy retrieval method: Multi-Query Retrieval
+  // const [useMQRetrieval, setUseMQRetrieval] = useState(localStorage.getItem('UseMQRetrieval') === 'true');
+  // // Update localStorage whenever useMQRetrieval changes
+  // useEffect(() => {
+  //   localStorage.setItem('UseMQRetrieval', useMQRetrieval ? 'true' : 'false');
+  // }, [useMQRetrieval]);
 
 
   return (
@@ -722,7 +722,7 @@ export const ChatInput = ({
           </button> */}
 
           {/* BUTTON 1: UseMQRetrieval Switch */}
-          <Tooltip // not working... :(
+          {/* <Tooltip // not working... :(
             className="absolute bottom-1.5"
             refProp="rootRef"
             label="Switch tooltip MY LABEL"
@@ -735,7 +735,7 @@ export const ChatInput = ({
               onChange={(event) => setUseMQRetrieval(event.currentTarget.checked)}
               color='violet.7'
             />
-          </Tooltip>
+          </Tooltip> */}
 
           {/* BUTTON 2: Image Icon and Input */}
           {selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
@@ -836,7 +836,7 @@ export const ChatInput = ({
             </div>
 
             {/* Button 3: main input text area  */}
-            <div className={selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION ? "pl-20" : "pl-8"}>
+            <div className={selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION ? "pl-8" : "pl-1"}>
               <textarea
                 ref={textareaRef}
                 className="flex-grow m-0 w-full resize-none bg-[#070712] p-0 py-2 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-2"
@@ -856,8 +856,6 @@ export const ChatInput = ({
                 }}
               />
             </div>
-
-
 
             <button
               className="absolute right-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"

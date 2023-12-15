@@ -1,11 +1,11 @@
 import { IconExternalLink } from '@tabler/icons-react'
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'next-i18next'
 import { OpenAIModels, type OpenAIModel, OpenAIModelID } from '@/types/openai'
 import HomeContext from '~/pages/api/home/home.context'
 import { ModelParams } from './ModelParams'
 import { montserrat_heading } from 'fonts'
-import { Input, NativeSelect, Title } from '@mantine/core'
+import { Input, NativeSelect, Switch, Title, Tooltip } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
 
@@ -41,6 +41,13 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
           value: model as OpenAIModel,
         })
     }
+
+    // Toggle to enable Fancy retrieval method: Multi-Query Retrieval
+    const [useMQRetrieval, setUseMQRetrieval] = useState(localStorage.getItem('UseMQRetrieval') === 'true');
+    // Update localStorage whenever useMQRetrieval changes
+    useEffect(() => {
+      localStorage.setItem('UseMQRetrieval', useMQRetrieval ? 'true' : 'false');
+    }, [useMQRetrieval]);
 
     return (
       <div
@@ -87,6 +94,23 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               </div>
             </div>
             <div style={{ paddingTop: '47px' }}>
+              <Title
+                className={`pb-0 pl-2 pt-4 ${montserrat_heading.variable} font-montserratHeading`}
+                order={4}
+              >
+                Fancy Retrieval
+              </Title>
+              <Switch
+                // style={{ left: '70px', bottom: '8px' }}
+                className='pl-2 pt-2'
+                // className="absolute rounded-sm p-1 " //  bottom-1.5
+                label={t('Multi Query Retrieval (slow 30 second response time)')}
+                checked={useMQRetrieval}
+                onChange={(event) => setUseMQRetrieval(event.currentTarget.checked)}
+                description={t('A LLM generates multiple queries based on your original for improved semantic search. Then every retrieved context is filtered by a smaller LLM (Mistral 7b) so that only high quality and relevant documents are included in the final GPT-4 call.')}
+                // label='Multi-Query Retrieval'
+                color='violet.7'
+              />
               <ModelParams
                 selectedConversation={selectedConversation}
                 prompts={prompts}
