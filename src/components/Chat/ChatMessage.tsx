@@ -280,15 +280,8 @@ export const ChatMessage: FC<Props> = memo(
           .map((content) => content.text)
           .join(' ')
         setMessageContent(textContent)
-        console.log('IN ChatMessage 188 not adding hi to messages: ', message)
-      } else {
-        console.log('IN ChatMessage 189 adding hi to messages: ', message)
-        setMessageContent(`${message.content} hi`)
       }
-      // console.log('IN ChatMessage 189 adding hi to messages: ', message)
-
       // RIGHT HERE, run context search.
-
       // WARNING! Kastan trying to set message context.
       // console.log('IN handleSend: ', message)
       // if (message.role === 'user') {
@@ -489,10 +482,10 @@ export const ChatMessage: FC<Props> = memo(
                 )}
               </div>
             ) : (
-                <div className="flex flex-row ">
-                  <div className="flex-1 max-w-full w-full overflow-hidden">
+              <div className="flex flex-row ">
+                <div className="flex-1 max-w-full w-full overflow-hidden">
                   <MemoizedReactMarkdown
-                      className="dark:prose-invert prose flex-1 linkMarkDown supMarkdown "
+                    className="dark:prose-invert prose flex-1 linkMarkDown supMarkdown "
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeMathjax]}
                     components={{
@@ -583,14 +576,14 @@ export const ChatMessage: FC<Props> = memo(
                       },
                     }}
                   >
-                      {`${message.content}${messageIsStreaming &&
+                    {`${message.content}${messageIsStreaming &&
                       messageIndex ==
                       (selectedConversation?.messages.length ?? 0) - 1
                       ? '`▍`'
                       : ''
                       }`}
                   </MemoizedReactMarkdown>
-                    {/* {message.contexts && message.contexts.length > 0 && (
+                  {/* {message.contexts && message.contexts.length > 0 && (
                     <Group variant="row" spacing="xs">
                       <ContextCards contexts={message.contexts} />
                     </Group>
