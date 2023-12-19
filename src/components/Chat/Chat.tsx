@@ -266,7 +266,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       setCacheMetrics((prevMetrics) => {
         const newMetrics = { ...prevMetrics, hits: prevMetrics.hits + 1 };
         // Uncomment for debugging
-        console.log(`Cache hit for citation index ${citationIndex}. Current cache hit ratio: ${(newMetrics.hits / (newMetrics.hits + newMetrics.misses)).toFixed(2)}`);
+        // console.log(`Cache hit for citation index ${citationIndex}. Current cache hit ratio: ${(newMetrics.hits / (newMetrics.hits + newMetrics.misses)).toFixed(2)}`);
         return newMetrics;
       });
       return cachedLink;
@@ -274,7 +274,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       setCacheMetrics((prevMetrics) => {
         const newMetrics = { ...prevMetrics, misses: prevMetrics.misses + 1 };
         // Uncomment for debugging
-        console.log(`Cache miss for citation index ${citationIndex}. Current cache hit ratio: ${(newMetrics.hits / (newMetrics.hits + newMetrics.misses)).toFixed(2)}`);
+        // console.log(`Cache miss for citation index ${citationIndex}. Current cache hit ratio: ${(newMetrics.hits / (newMetrics.hits + newMetrics.misses)).toFixed(2)}`);
         return newMetrics;
       });
       const link = await generateCitationLink(context);
