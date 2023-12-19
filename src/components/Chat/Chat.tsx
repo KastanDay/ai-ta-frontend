@@ -260,7 +260,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   const getCitationLink = async (context: ContextWithMetadata, citationLinkCache: Map<number, string>, citationIndex: number) => {
-    console.log("Generating citation link for context: ", citationIndex, context.readable_filename)
+    // console.log("Generating citation link for context: ", citationIndex, context.readable_filename)
     const cachedLink = citationLinkCache.get(citationIndex);
     if (cachedLink) {
       setCacheMetrics((prevMetrics) => {
