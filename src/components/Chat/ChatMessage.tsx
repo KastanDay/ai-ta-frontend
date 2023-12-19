@@ -552,7 +552,7 @@ export const ChatMessage: FC<Props> = memo(
                         const { href, title } = props;
                         // console.log("href:", href);
                         // console.log("title:", title);
-                        console.log("children:", children);
+                        // console.log("children:", children);
                         const isCitationLink = /^\d+$/.test(children[0] as string);
                         if (isCitationLink) {
                           return (

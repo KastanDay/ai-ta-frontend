@@ -145,13 +145,12 @@ export const OpenAIStream = async (
 
   if (stream) {
     console.log("Streaming response ")
+    let isStreamClosed = false; // Flag to track the state of the stream
     const apiStream = new ReadableStream({
       async start(controller) {
         const onParse = (event: ParsedEvent | ReconnectInterval) => {
           if (event.type === 'event') {
             const data = event.data
-
-            let isStreamClosed = false; // Flag to track the state of the stream
 
             try {
               // console.log('data: ', data) // ! DEBUGGING
@@ -185,8 +184,17 @@ export const OpenAIStream = async (
 
         const parser = createParser(onParse)
 
-        for await (const chunk of res.body as any) {
-          parser.feed(decoder.decode(chunk))
+        try {
+          for await (const chunk of res.body as any) {
+            if (!isStreamClosed) { // Only feed the parser if the stream is not closed
+              parser.feed(decoder.decode(chunk))
+            }
+          }
+        } catch (e) {
+          if (!isStreamClosed) {
+            controller.error(e)
+            isStreamClosed = true;
+          }
         }
       },
     })
