@@ -17,8 +17,10 @@ export const config = {
 
 const handler = async (req: Request): Promise<NextResponse> => {
   try {
+    console.log("Top of /api/chat.ts. req: ", req)
     const { model, messages, key, prompt, temperature, course_name, stream } =
       (await req.json()) as ChatBody
+    console.log("After message parsing: ", model, messages, key, prompt, temperature, course_name, stream)
 
     await init((imports) => WebAssembly.instantiate(wasm, imports))
     const encoding = new Tiktoken(
@@ -27,7 +29,16 @@ const handler = async (req: Request): Promise<NextResponse> => {
       tiktokenModel.pat_str,
     )
 
-    const token_limit = OpenAIModels[model.id as OpenAIModelID].tokenLimit
+    let modelObj;
+    if (typeof model === 'string') {
+      modelObj = OpenAIModels[model as OpenAIModelID];
+    } else {
+      modelObj = model;
+    }
+
+
+    const token_limit = OpenAIModels[modelObj.id as OpenAIModelID].tokenLimit
+    console.log("Model's token limit", token_limit)
 
     let promptToSend = prompt
     if (!promptToSend) {
@@ -68,29 +79,28 @@ const handler = async (req: Request): Promise<NextResponse> => {
     // else if (course_name == 'global' || course_name == 'search-all') {
     // todo
     // }
-    else if (stream) {
-      // regular context stuffing
-      const stuffedPrompt = (await getStuffedPrompt(
-        course_name,
-        search_query,
-        contexts_arr,
-        token_limit,
-      )) as string
-      if (typeof messages[messages.length - 1]?.content === 'string') {
-        messages[messages.length - 1]!.content = stuffedPrompt;
-      } else if (Array.isArray(messages[messages.length - 1]?.content) &&
-        (messages[messages.length - 1]!.content as Content[]).every(item => 'type' in item)) {
 
-        const contentArray = messages[messages.length - 1]!.content as Content[];
-        const textContentIndex = contentArray.findIndex(item => item.type === 'text') || 0;
+    // regular context stuffing
+    const stuffedPrompt = (await getStuffedPrompt(
+      course_name,
+      search_query,
+      contexts_arr,
+      token_limit,
+    )) as string
+    if (typeof messages[messages.length - 1]?.content === 'string') {
+      messages[messages.length - 1]!.content = stuffedPrompt;
+    } else if (Array.isArray(messages[messages.length - 1]?.content) &&
+      (messages[messages.length - 1]!.content as Content[]).every(item => 'type' in item)) {
 
-        if (textContentIndex !== -1 && contentArray[textContentIndex]) {
-          // Replace existing text content with the new stuffed prompt
-          contentArray[textContentIndex] = { ...contentArray[textContentIndex], text: stuffedPrompt, type: 'text' };
-        } else {
-          // Add new stuffed prompt if no text content exists
-          contentArray.push({ type: 'text', text: stuffedPrompt });
-        }
+      const contentArray = messages[messages.length - 1]!.content as Content[];
+      const textContentIndex = contentArray.findIndex(item => item.type === 'text') || 0;
+
+      if (textContentIndex !== -1 && contentArray[textContentIndex]) {
+        // Replace existing text content with the new stuffed prompt
+        contentArray[textContentIndex] = { ...contentArray[textContentIndex], text: stuffedPrompt, type: 'text' };
+      } else {
+        // Add new stuffed prompt if no text content exists
+        contentArray.push({ type: 'text', text: stuffedPrompt });
       }
     }
 
@@ -123,15 +133,15 @@ const handler = async (req: Request): Promise<NextResponse> => {
     }
     encoding.free() // keep this
 
-    console.log('Prompt being sent to OpenAI: ', promptToSend)
-    console.log('Message history being sent to OpenAI: ', messagesToSend)
-
     // Add custom instructions to system prompt
     const systemPrompt =
       promptToSend + "Only answer if it's related to the course materials."
 
+    console.log('System prompt being sent to OpenAI: ', promptToSend)
+    console.log('Message history being sent to OpenAI: ', messagesToSend)
+
     const apiStream = await OpenAIStream(
-      model,
+      modelObj,
       systemPrompt,
       temperatureToUse,
       key,
@@ -159,6 +169,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
       console.log('Final OpenAIError resp: ', resp)
       return resp
     } else {
+      console.error('Unexpected Error', error)
       const resp = NextResponse.json({ name: 'Error' }, { status: 500 })
       console.log('Final Error resp: ', resp)
       return resp

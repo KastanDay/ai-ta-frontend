@@ -175,9 +175,8 @@ const useStyles = createStyles((theme) => ({
   },
 
   card: {
-    border: `${rem(1)} solid ${
-      theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
-    }`,
+    border: `${rem(1)} solid ${theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[1]
+      }`,
   },
 
   cardTitle: {
@@ -270,8 +269,16 @@ function CourseCard() {
         "Using all of Clowder's documentation, this bot will answer questions and point you to the right docs and YouTube videos about Clowder.",
     },
     {
+      course_slug: 'cropwizard',
+      imageSrc: '/media/hero_courses_banners/aifarms_wide_logo.png',
+      title: 'Crop Wizard',
+      badge: 'AIFARMS',
+      description:
+        'Using documents collected from the <a href="https://www.nifa.usda.gov/about-nifa/how-we-work/extension" target="_blank" rel="noopener noreferrer">Farm Extension division</a> at all the US\'s public land-grant universities, this bot acts as a crop advisor. Useful to both farmers and professional farm advisors. Make sure to use image uploads with GPT4-Vision whenever possible!',
+    },
+    {
       course_slug: 'langchain-docs',
-      // imageSrc: "https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fit=contain",
+      // imageSrc: "",
       title: 'Langchain',
       badge: 'Coding',
       description:
@@ -279,11 +286,19 @@ function CourseCard() {
     },
     {
       course_slug: 'ansible',
-      // imageSrc: "https://images.unsplash.com/photo-1527004013197-933c4bb611b3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fit=contain",
+      // imageSrc: "",
       title: 'Ansible',
       badge: 'Coding',
       description:
         "Using all of Ansible's documentation, this bot will write excellent Ansible scripts. Just ask it to program whatever you'd like.",
+    },
+    {
+      course_slug: 'lilian-weng-blog',
+      // imageSrc: '/media/hero_courses_banners/lilian_weng_blog.png',
+      title: 'Lilian Wang Blog (OpenAI popular topics)',
+      badge: 'LLMs',
+      description:
+        'A collection of Lilian Wang\'s blog posts, some of the best in the AI world, from here: <a href="https://lilianweng.github.io/" target="_blank" rel="noopener noreferrer">https://lilianweng.github.io</a>.',
     },
     // Add more cards here
   ]

@@ -66,6 +66,8 @@ interface Props {
 import { useRouter } from 'next/router'
 // import CustomBanner from '../UIUC-Components/CustomBanner'
 import { fetchContexts } from '~/pages/api/getContexts'
+import { fetchMQRContexts } from '~/pages/api/getContextsMQR'
+
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import { type OpenAIModelID, OpenAIModels } from '~/types/openai'
@@ -184,9 +186,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ...message,
             content: [
               ...imageContent,
-              {
-                type: 'text', text: `"Provide a detailed description of the image(s), focusing exclusively on the elements and details that are visibly present. Include descriptions of text (OCR information), distinct objects, spatial relationships, colors, actions, annotations, labels, or significant color usage. Use specific, technical, or domain-specific terminology to accurately describe elements, particularly for specialized fields like medicine, agriculture, technology, etc. Classify the image into relevant categories and list key terms associated with that category. Identify and list potential keywords or key phrases that summarize the main elements and themes. If the image contains abstract or emotional content, infer the overall message or content. Emphasize the most prominent features first, moving to less significant details. Also, provide synonyms or related terms for technical aspects. DO NOT reference or mention any features, elements, or aspects that are absent in the image. The GOAL is to create a precise, focused, and keyword-rich description that encapsulates only the observable details, suitable for semantic document retrieval across various domains."`
-              }
+              { type: 'text', text: 'Provide detailed description of the image(s) focusing on any text (OCR information), distinct objects, colors, and actions depicted. Include contextual information, subtle details, and specific terminologies relevant for semantic document retrieval.' }
             ]
           }
         ],
@@ -240,7 +240,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     if (getCurrentPageName() != 'gpt4') {
       // Extract text from all user messages in the conversation
       const token_limit = OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
-      await fetchContexts(getCurrentPageName(), searchQuery, token_limit).then((curr_contexts) => {
+      const useMQRetrieval = localStorage.getItem('UseMQRetrieval') === 'true';
+      const fetchContextsFunc = useMQRetrieval ? fetchMQRContexts : fetchContexts;
+      await fetchContextsFunc(getCurrentPageName(), searchQuery, token_limit).then((curr_contexts) => {
         message.contexts = curr_contexts as ContextWithMetadata[]
       })
     }
@@ -617,8 +619,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         // Remove the existing image description
         (currentMessage.content as Content[]).splice(imgDescIndex, 1);
       }
+
+      handleSend(currentMessage, 2, null);
     }
-    handleSend(currentMessage as Message, 2, null);
   }, [currentMessage, handleSend]);
 
   const scrollToBottom = useCallback(() => {
