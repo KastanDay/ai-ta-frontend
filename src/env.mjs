@@ -21,6 +21,9 @@ export const env = createEnv({
     AZURE_OPENAI_ENGINE: z.string().min(1),
     NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1),
     NEXT_PUBLIC_POSTHOG_HOST: z.string().min(1),
+    NEXT_PUBLIC_PUSHER_KEY: z.string().min(1),
+    NEXT_PUBLIC_PUSHER_CLUSTER: z.string().min(1),
+    NEXT_PUBLIC_MAGIC_BELL_API: z.string().min(1),
     // NEXTAUTH_SECRET:
     //   process.env.NODE_ENV === "production"
     //     ? z.string().min(1)
@@ -66,9 +69,8 @@ export const env = createEnv({
     AZURE_OPENAI_ENGINE: process.env.AZURE_OPENAI_ENGINE,
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-    // NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-    // NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-    // DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
-    // DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
+    NEXT_PUBLIC_PUSHER_KEY: process.env.NEXT_PUBLIC_PUSHER_KEY,
+    NEXT_PUBLIC_PUSHER_CLUSTER: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
+    NEXT_PUBLIC_MAGIC_BELL_API: process.env.NEXT_PUBLIC_MAGIC_BELL_API,
   },
 })
