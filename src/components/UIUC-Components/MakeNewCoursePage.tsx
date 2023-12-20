@@ -1,26 +1,6 @@
 import Head from 'next/head'
-// import {
-//   Card,
-//   Text,
-//   Flex,
-//   Group,
-//   Checkbox,
-//   Col,
-//   Paper,
-//   Input,
-//   Textarea,
-//   FileInput,
-//   MediaQuery,
-//   type CheckboxProps,
-//   Title,
-// } from '@mantine/core'
-
 import React, { useState } from 'react'
-// import GlobalHeader from './GlobalHeader'
-// import GlobalFooter from './GlobalFooter'
-// import EmailChipsComponent from './EmailChipsComponent'
-// import { type CourseMetadata } from '~/types/courseMetadata'
-// import LargeDropzone from './LargeDropzone'
+
 import PlainNavbar from '~/components/UIUC-Components/navbars/PlainNavbar'
 import { useMediaQuery } from '@mantine/hooks'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
@@ -32,15 +12,6 @@ const MakeNewCoursePage = ({
   course_name: string
   current_user_email: string
 }) => {
-  const [introMessage, setIntroMessage] = useState('')
-  const [courseName, setCourseName] = useState(course_name || '')
-  const [isCourseAvailable, setIsCourseAvailable] = useState<
-    boolean | undefined
-  >(undefined)
-  const [allExistingCourseNames, setAllExistingCourseNames] = useState<
-    string[]
-  >([])
-  const isSmallScreen = useMediaQuery('(max-width: 960px)')
 
   return (
     <>
@@ -49,7 +20,7 @@ const MakeNewCoursePage = ({
         <title>{course_name}</title>
         <meta
           name="description"
-          content="The AI teaching assistant built for students at UIUC."
+          content="Create a new project on UIUC.chat."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
