@@ -20,6 +20,7 @@
     "@clerk/themes": "^1.7.5",
     "@dqbd/tiktoken": "^1.0.7",
     "@emotion/react": "^11.11.1",
+    "@magicbell/magicbell-react": "^10.9.10",
     "@mantine/carousel": "^6.0.10",
     "@mantine/core": "^6.0.10",
     "@mantine/dates": "^6.0.10",
