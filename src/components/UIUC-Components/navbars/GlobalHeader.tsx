@@ -299,7 +299,7 @@ export const magicBellTheme = {
     borderColor: '#807f7f',
   },
   footer: {
-    backgroundColor: '#15162c',
+    backgroundColor: '#fff',
     backgroundOpacity: 1,
     borderRadius: '8px',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',

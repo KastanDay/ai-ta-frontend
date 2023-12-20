@@ -442,14 +442,19 @@ a[data-footnote-backref] {
 
 /* For styling MagicBell. We hide the logo, but keep the CTA button.  */
 /* `EnablePushNotificationsButton` works on localhost, `css-s37qmw` works on production. */
-body button[class$="EnablePushNotificationsButton"] {
+/* body button[class$="EnablePushNotificationsButton"] {
   background-color: #f8fafc !important;
   color: #15162c !important;
-}
+} */
 
-button.css-s37qmw {
-  /* padding: 10px !important; */
-  /* border-radius: 4px !important; */
+/* padding: 10px !important; */
+/* border-radius: 4px !important; */
+/* button.css-s37qmw {
   background: #f8fafc !important;
   color: #15162c !important;
+} */
+
+/* Remove footer from MagicBell */
+div.prvh8i {
+  display: none !important;
 }
