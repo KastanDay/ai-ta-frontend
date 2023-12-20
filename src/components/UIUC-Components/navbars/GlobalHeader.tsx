@@ -29,13 +29,15 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
-      console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
-      const emails = extractEmailsFromClerk(clerk_obj.user)
-      setUserEmail(emails[0] || 'no_email')
+    if (clerk_obj.isLoaded) {
+      if (clerk_obj.isSignedIn) {
+        console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
+        const emails = extractEmailsFromClerk(clerk_obj.user)
+        setUserEmail(emails[0] || 'no_email')
+      }
       setIsLoaded(true)
     } else {
-      console.log('NOT LOADED OR SIGNED IN')
+      console.debug('NOT LOADED OR SIGNED IN')
     }
   }, [clerk_obj.isLoaded])
 
@@ -61,6 +63,8 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
           userEmail={userEmail}
           theme={magicBellTheme}
           locale="en"
+          images={{ emptyInboxUrl: 'https://public-static-assets-kastan.s3.amazonaws.com/empty_chat_art.png' }}
+
         >
           {(props) => <FloatingNotificationInbox width={400} height={500} {...props} />}
         </MagicBell>
@@ -125,13 +129,15 @@ export function LandingPageHeader({
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
-      console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
-      const emails = extractEmailsFromClerk(clerk_obj.user)
-      setUserEmail(emails[0] || 'no_email')
+    if (clerk_obj.isLoaded) {
+      if (clerk_obj.isSignedIn) {
+        console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
+        const emails = extractEmailsFromClerk(clerk_obj.user)
+        setUserEmail(emails[0] || 'no_email')
+      }
       setIsLoaded(true)
     } else {
-      console.log('NOT LOADED OR SIGNED IN')
+      console.debug('NOT LOADED OR SIGNED IN')
     }
   }, [clerk_obj.isLoaded])
 
@@ -181,6 +187,7 @@ export function LandingPageHeader({
             userEmail={userEmail}
             theme={magicBellTheme}
             locale="en"
+            images={{ emptyInboxUrl: 'https://public-static-assets-kastan.s3.amazonaws.com/empty_chat_art.png' }}
           >
             {(props) => <FloatingNotificationInbox width={400} height={500} {...props} />}
           </MagicBell>
