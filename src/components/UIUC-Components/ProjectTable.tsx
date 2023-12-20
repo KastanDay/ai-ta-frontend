@@ -51,6 +51,10 @@ const ListProjectTable: React.FC = () => {
               const courseName = Object.keys(course)[0]
               const courseMetadata = course[courseName as string]
               if (courseMetadata) {
+                // Don't show that Kastan is an admin on ALL courses. It's confusing, unnecessary.
+                const filteredAdmins = courseMetadata.course_admins.filter(
+                  (admin) => admin !== 'kvday2@illinois.edu'
+                )
                 return (
                   <StyledRow
                     key={courseName}
@@ -60,7 +64,7 @@ const ListProjectTable: React.FC = () => {
                     <td>{courseName}</td>
                     <td>{courseMetadata.is_private ? 'Private' : 'Public'}</td>
                     <td>{courseMetadata.course_owner}</td>
-                    <td>{courseMetadata.course_admins.join(', ')}</td>
+                    <td>{filteredAdmins.join(', ')}</td>
                   </StyledRow>
                 )
               }
