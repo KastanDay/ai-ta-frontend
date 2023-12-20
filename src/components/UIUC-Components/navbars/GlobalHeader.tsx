@@ -95,11 +95,10 @@ export function LandingPageHeader({
   const { classes, theme } = useStyles()
   const headerStyle = forGeneralPurposeNotLandingpage
     ? {
-      backgroundColor: 'transparent',
+      backgroundColor: '#2e026d',
       display: 'flex',
       justifyContent: 'flex-end',
-      padding: '0.2em 0.2em',
-      paddingRight: '0.3em',
+      padding: '2em 2em',
     }
     : {
       backgroundColor: '#2e026d',
@@ -112,9 +111,7 @@ export function LandingPageHeader({
     // Header links
     {
       name: (
-        <span
-          className={`${montserrat_heading.variable} font-montserratHeading`}
-        >
+        <span className={`${montserrat_heading.variable} font-montserratHeading`}>
           New project
         </span>
       ),
@@ -146,6 +143,18 @@ export function LandingPageHeader({
       <header style={headerStyle} className="py-16">
         {/* Skeleton placeholders for two icons */}
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          {forGeneralPurposeNotLandingpage === false && items.map((item, index) => (
+            <Link
+              key={index}
+              href={item.link}
+              className={classes.link}
+            >
+              <span style={{ display: 'flex', alignItems: 'center' }}>
+                {item.icon}
+                {item.name}
+              </span>
+            </Link>
+          ))}
           <div className="skeleton-box" style={{ width: '35px', height: '35px', borderRadius: '50%' }}></div>
           <div style={{ paddingLeft: '0px', paddingRight: '10px' }} />
           <div className="skeleton-box" style={{ width: '35px', height: '35px', borderRadius: '50%' }}></div>
@@ -156,14 +165,7 @@ export function LandingPageHeader({
 
   return (
     <header
-      // style={{ display: "flex", justifyContent: "space-between", padding: 20 }}
-      style={{
-        backgroundColor: forGeneralPurposeNotLandingpage ? '#2e026d' : '#2e026d',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        padding: '1em',
-      }}
-      className="py-16"
+      style={headerStyle}
     >
       <Group spacing={'xs'}>
         {forGeneralPurposeNotLandingpage === false && items.map((item, index) => (
