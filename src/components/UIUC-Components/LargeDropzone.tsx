@@ -77,11 +77,18 @@ export function LargeDropzone({
   // console.log("in LargeDropzone.tsx ALL emailAddresses: ", user?.emailAddresses )
 
   const refreshOrRedirect = async (redirect_to_gpt_4: boolean) => {
+    if (is_new_course) {
+      // refresh current page
+      await new Promise((resolve) => setTimeout(resolve, 200))
+      router.push(`/${courseName}/materials`)
+      return
+    }
+
     if (redirect_to_gpt_4) {
       router.push(`/${courseName}/chat`)
     }
     // refresh current page
-    await new Promise((resolve) => setTimeout(resolve, 700))
+    await new Promise((resolve) => setTimeout(resolve, 200))
     router.reload()
   }
   const uploadToS3 = async (file: File | null, uniqueFileName: string) => {
