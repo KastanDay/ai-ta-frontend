@@ -191,7 +191,8 @@ export function LandingPageHeader({
           >
             {(props) => <FloatingNotificationInbox width={400} height={500} {...props} />}
           </MagicBell>
-          {/* Mount the UserButton component */}
+          {/* Add a bit of spacing with an empty div */}
+          <div />
           <UserButton afterSignOutUrl="/" />
         </SignedIn>
         <SignedOut>
