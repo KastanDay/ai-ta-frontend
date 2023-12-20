@@ -133,11 +133,7 @@ export const WebScrape = ({
         showToast()
 
         if (is_new_course) {
-          // Make course exist in kv store
-          // Removing this for kv refactor
-          // await setCourseExistsAPI(courseName)
-
-          // set course exists in new metadata endpoint. Works great.
+          // set course exists in new metadata endpoint
           const response = callSetCourseMetadata(courseName, {
             course_owner: current_user_email,
             // Don't set properties we don't know about. We'll just upsert and use the defaults.
@@ -153,7 +149,7 @@ export const WebScrape = ({
           if (!response) {
             throw new Error('Error while setting course metadata')
           }
-          router.replace(`/${courseName}/materials`)
+          router.push(`/${courseName}/materials`)
         }
         router.push(`/${courseName}/materials`)
       } else if (url.includes('canvas.illinois.edu/courses/')) {
@@ -498,11 +494,9 @@ export const WebScrape = ({
             }}
             size="md"
             radius={'xl'}
-            className={`rounded-s-md ${
-              isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
-            } overflow-ellipsis text-ellipsis p-2 ${
-              isUrlUpdated ? 'text-white' : 'text-gray-500'
-            } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
+            className={`rounded-s-md ${isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
+              } overflow-ellipsis text-ellipsis p-2 ${isUrlUpdated ? 'text-white' : 'text-gray-500'
+              } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
             w={`${isSmallScreen ? 'auto' : 'auto'}`}
             disabled={isDisabled}
           >
