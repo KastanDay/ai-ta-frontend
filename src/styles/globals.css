@@ -451,3 +451,10 @@ body button[class$="EnablePushNotificationsButton"] {
   background-color: #f8fafc;
   color: #15162c;
 }
+
+body .css-s37qmw {
+  padding: 10px !important;
+  border-radius: 4px !important;
+  background: rgb(21, 22, 44) !important;
+  color: rgb(21, 22, 44) !important;
+}
