@@ -1,22 +1,22 @@
 import {
-  ClerkProvider,
   SignedIn,
   SignedOut,
   SignInButton,
   UserButton,
 } from '@clerk/nextjs'
 import Link from 'next/link'
-import GlobalHeader from '~/components/UIUC-Components/navbars/GlobalHeader'
-import { Flex, Stack } from '@mantine/core'
+import { magicBellTheme } from '~/components/UIUC-Components/navbars/GlobalHeader'
+import { } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { GoToQueryAnalysis, ResumeToChat } from './NavbarButtons'
+// import { GoToQueryAnalysis, ResumeToChat } from './NavbarButtons'
 import Image from 'next/image'
 import { useEffect, useState, useContext, useRef } from 'react'
 import {
   createStyles,
-  Header,
+  // Header,
+  Flex,
   Container,
-  Anchor,
+  // Anchor,
   Group,
   Burger,
   rem,
@@ -30,19 +30,20 @@ import {
   Settings,
 } from 'tabler-icons-react'
 import {
-  IconExternalLink,
+  // IconExternalLink,
   IconRobot,
-  IconCloudUpload,
+  // IconCloudUpload,
   // IconSettings,
 } from '@tabler/icons-react'
 import { useRouter } from 'next/router'
-import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { montserrat_heading } from 'fonts'
 import { useUser } from '@clerk/nextjs'
-import { getCoursesByOwnerOrAdmin } from '../getAllCourseMetaData'
+// import { getCoursesByOwnerOrAdmin } from '../getAllCourseMetaData'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import HomeContext from '~/pages/api/home/home.context'
 import { ModelSelect } from '../../Chat/ModelSelect'
+import MagicBell, { FloatingNotificationInbox } from '@magicbell/magicbell-react'
 
 const styles: Record<string, React.CSSProperties> = {
   logoContainerBox: {
@@ -81,7 +82,7 @@ const useStyles = createStyles((theme) => ({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    [theme.fn.smallerThan(1148)]: {
+    [theme.fn.smallerThan(1118)]: {
       display: 'none',
     },
   },
@@ -108,7 +109,7 @@ const useStyles = createStyles((theme) => ({
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
       textAlign: 'right',
     },
-    [theme.fn.smallerThan(1148)]: {
+    [theme.fn.smallerThan(1118)]: {
       display: 'list-item',
       textAlign: 'right',
       borderRadius: 0,
@@ -116,7 +117,7 @@ const useStyles = createStyles((theme) => ({
     },
   },
   burger: {
-    [theme.fn.largerThan(1148)]: {
+    [theme.fn.largerThan(1118)]: {
       display: 'none',
     },
     marginRight: '14px',
@@ -129,7 +130,7 @@ const useStyles = createStyles((theme) => ({
     zIndex: 10,
     borderRadius: '10px',
     overflow: 'hidden',
-    [theme.fn.largerThan(1148)]: {
+    [theme.fn.largerThan(1118)]: {
       display: 'none',
     },
   },
@@ -179,11 +180,13 @@ const ChatNavbar = ({
     return router.asPath.split('/')[1]
   }
 
+  const [userEmail, setUserEmail] = useState('no_email')
   useEffect(() => {
     const fetchCourses = async () => {
       if (clerk_user.isLoaded && clerk_user.isSignedIn) {
         const emails = extractEmailsFromClerk(clerk_user.user)
         const currUserEmail = emails[0]
+        setUserEmail(emails[0] || 'no_email')
         if (!currUserEmail) {
           throw new Error('No email found for the user')
         }
@@ -468,7 +471,22 @@ const ChatNavbar = ({
               }}
             >
               <SignedIn>
-                <UserButton afterSignOutUrl="/" />
+                <Group grow spacing={'xs'}>
+                  {/* <div style={{ display: 'flex', flexDirection: 'row' }}> */}
+                  <MagicBell
+                    apiKey={process.env.NEXT_PUBLIC_MAGIC_BELL_API as string}
+                    userEmail={userEmail}
+                    theme={magicBellTheme}
+                    locale="en"
+                    images={{ emptyInboxUrl: 'https://public-static-assets-kastan.s3.amazonaws.com/empty_chat_art.png' }}
+
+                  >
+                    {(props) => <FloatingNotificationInbox width={400} height={500} {...props} />}
+                  </MagicBell>
+                  {/* <div style={{ paddingLeft: '10px', paddingRight: '8px' }} /> */}
+                  <UserButton afterSignOutUrl="/" />
+                </Group>
+                {/* </div> */}
               </SignedIn>
               <SignedOut>
                 <SignInButton>
@@ -489,8 +507,8 @@ const ChatNavbar = ({
           </div>
         </Flex>
         {/* </div> */}
-      </div>
-    </div>
+      </div >
+    </div >
   )
 }
 export default ChatNavbar

@@ -262,7 +262,7 @@ const useStyles = createStyles((theme) => ({
 }))
 
 // DOCS: https://www.magicbell.com/docs/libraries/react#custom-themes
-const magicBellTheme = {
+export const magicBellTheme = {
   prose: {
     headings: '#ffffff',
     links: '#9D4EDD',
