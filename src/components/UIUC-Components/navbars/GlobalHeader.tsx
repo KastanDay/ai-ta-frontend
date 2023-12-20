@@ -309,7 +309,7 @@ export const magicBellTheme = {
     fontSize: '14px',
     fontWeight: 'inherit',
     textColor: '#15162c',
-    textAlign: 'right' as "center" | "left" | "right" | "inherit" | "initial" | "justify",
+    textAlign: 'left' as "center" | "left" | "right" | "inherit" | "initial" | "justify",
     // textTransform: 'none',
     padding: '16px 24px',
     borderColor: '#807f7f',
