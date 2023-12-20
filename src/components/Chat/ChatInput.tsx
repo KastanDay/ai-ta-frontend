@@ -357,111 +357,6 @@ export const ChatInput = ({
     return validImageTypes.includes(`.${ext}`);
   }
 
-  // const uploadToS3 = async (file: File) => {
-  //   if (!file) {
-  //     console.error('No file provided for upload');
-  //     return;
-  //   }
-
-  //   // Generate a unique file name using uuidv4
-  //   const uniqueFileName = `${uuidv4()}.${file.name.split('.').pop()}`;
-  //   const s3_filepath = `courses/${courseName}/${uniqueFileName}`; // Define s3_filepath here
-
-  //   console.log('uploadToS3 called with uniqueFileName:', uniqueFileName);
-  //   console.log('uploadToS3 called with s3_filepath:', s3_filepath);
-
-  //   // Prepare the request body for the API call
-  //   // Prepare the request body for the API call
-  //   const requestObject = {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({
-  //       uniqueFileName: uniqueFileName,
-  //       fileType: file.type,
-  //       courseName: courseName,
-  //     }),
-  //   };
-
-  //   try {
-  //     // Call your API to get the presigned POST data
-  //     const response = await fetch('/api/UIUC-api/uploadToS3', requestObject);
-  //     if (!response.ok) {
-  //       throw new Error(`HTTP error! Status: ${response.status}`);
-  //     }
-  //     const { post } = await response.json();
-
-  //     // Use the presigned POST data to upload the file to S3
-  //     const formData = new FormData();
-  //     Object.entries(post.fields).forEach(([key, value]) => {
-  //       formData.append(key, value as string);
-  //     });
-  //     formData.append('file', file);
-
-  //     // Post the file to the S3 bucket using the presigned URL and form data
-  //     const uploadResponse = await fetch(post.url, {
-  //       method: 'POST',
-  //       body: formData,
-  //     });
-
-  //     if (!uploadResponse.ok) {
-  //       throw new Error('Failed to upload the file to S3');
-  //     }
-
-  //     // Construct the URL to the uploaded file using the response from the presigned POST
-  //     const uploadedImageUrl = `https://${aws_config.bucketName}.s3.${aws_config.region}.amazonaws.com/${encodeURIComponent(s3_filepath)}`;
-
-  //     return uploadedImageUrl;
-  //   } catch (error) {
-  //     console.error('Error uploading file:', error);
-  //   }
-  // };
-
-
-
-  const ingestFile = async (file: File | null) => {
-    if (!file) return;
-
-    const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2);
-    const uniqueFileName = `${uuidv4()}.${fileExtension}`;
-
-    const queryParams = new URLSearchParams({
-      courseName: courseName,
-      fileName: uniqueFileName,
-    }).toString();
-
-    const requestObject = {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      query: {
-        fileName: file.name,
-        courseName: courseName,
-      },
-    }
-
-    // Actually we CAN await here, just don't await this function.
-    console.log('right before call /ingest...')
-    const response = await fetch(
-      `/api/UIUC-api/ingest?${queryParams}`,
-      requestObject,
-    )
-
-    // check if the response was ok
-    if (response.ok) {
-      const data = await response.json()
-      // console.log(file.name as string + ' ingested successfully!!')
-      console.log('Success or Failure:', data)
-      return data
-    } else {
-      console.log('Error during ingest:', response.statusText)
-      console.log('Full Response message:', response)
-      return response
-    }
-  }
-
   const showToastOnInvalidImage = useCallback(() => {
     notifications.show({
       id: 'error-notification',
@@ -663,6 +558,13 @@ export const ChatInput = ({
       chatInputContainerRef.current.focus();
     }
   }, []);
+
+  useEffect(() => {
+    setContent(inputContent)
+    if (textareaRef.current) {
+      textareaRef.current.focus()
+    }
+  }, [inputContent, textareaRef])
 
   // This is where we upload images and generate their presigned url
   async function uploadImageAndGetUrl(file: File, courseName: string): Promise<string> {
