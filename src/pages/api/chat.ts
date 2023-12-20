@@ -18,16 +18,10 @@ export const config = {
 const handler = async (req: Request): Promise<NextResponse> => {
   try {
     console.log("Top of /api/chat.ts. req: ", req)
-    const { model, messages, key, prompt, temperature, course_name, stream } =
-      (await req.json()) as ChatBody
+    const parsedRequest = parseRequest(req);
     console.log("After message parsing: ", model, messages, key, prompt, temperature, course_name, stream)
 
-    await init((imports) => WebAssembly.instantiate(wasm, imports))
-    const encoding = new Tiktoken(
-      tiktokenModel.bpe_ranks,
-      tiktokenModel.special_tokens,
-      tiktokenModel.pat_str,
-    )
+    const encoding = initModel(wasm, tiktokenModel);
 
     let modelObj;
     if (typeof model === 'string') {
@@ -45,10 +39,9 @@ const handler = async (req: Request): Promise<NextResponse> => {
       promptToSend = DEFAULT_SYSTEM_PROMPT
     }
 
-    let temperatureToUse = temperature
-    if (temperatureToUse == null) {
-      temperatureToUse = DEFAULT_TEMPERATURE
-    }
+    let promptToSend = typeof parsedRequest.prompt === 'string' ? parsedRequest.prompt : DEFAULT_SYSTEM_PROMPT;
+    let temperatureToUse = typeof parsedRequest.temperature === 'number' ? parsedRequest.temperature : DEFAULT_TEMPERATURE;
+
 
     // ! PROMPT STUFFING
     let search_query: string;
@@ -107,9 +100,9 @@ const handler = async (req: Request): Promise<NextResponse> => {
     }
 
     // Take most recent N messages that will fit in the context window
-    const prompt_tokens = encoding.encode(promptToSend)
+    const tokenizedPrompt = tokenizePrompt(encoding, promptToSend);
 
-    let tokenCount = prompt_tokens.length
+    let tokenCount = tokenizedPrompt.length
     let messagesToSend: OpenAIChatMessage[] = []
 
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -142,14 +135,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
     console.log('System prompt being sent to OpenAI: ', promptToSend)
     console.log('Message history being sent to OpenAI: ', messagesToSend)
 
-    const apiStream = await OpenAIStream(
-      modelObj,
-      systemPrompt,
-      temperatureToUse,
-      key,
-      messagesToSend,
-      stream
-    )
+    const apiStream = makeApiCall(modelObj, systemPrompt, temperatureToUse, key, messagesToSend, stream);
     if (stream) {
       return new NextResponse(apiStream)
     } else {
