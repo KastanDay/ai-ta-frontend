@@ -445,3 +445,9 @@ body button[class$="EnablePushNotificationsButton"] {
   background-color: #f8fafc !important;
   color: #15162c !important;
 }
+
+/* Testing if MagicBell styling will remain consistent. */
+.css-s37qmw {
+  background-color: #f8fafc !important;
+  color: #15162c !important;
+}
