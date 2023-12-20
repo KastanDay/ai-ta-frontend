@@ -92,6 +92,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   const [inputContent, setInputContent] = useState<string>('')
+  const [cacheMetrics, setCacheMetrics] = useState({ hits: 0, misses: 0 });
 
   useEffect(() => {
     if (courseMetadata?.banner_image_s3 && courseMetadata.banner_image_s3 !== '') {
@@ -185,7 +186,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ...message,
             content: [
               ...imageContent,
-              { type: 'text', text: 'Provide detailed description of the image(s) focusing on any text (OCR information), distinct objects, colors, and actions depicted. Include contextual information, subtle details, and specific terminologies relevant for semantic document retrieval.' }
+              { type: 'text', text: `"Provide a detailed description of the image(s), focusing exclusively on the elements and details that are visibly present. Include descriptions of text (OCR information), distinct objects, spatial relationships, colors, actions, annotations, labels, or significant color usage. Use specific, technical, or domain-specific terminology to accurately describe elements, particularly for specialized fields like medicine, agriculture, technology, etc. Classify the image into relevant categories and list key terms associated with that category. Identify and list potential keywords or key phrases that summarize the main elements and themes. If the image contains abstract or emotional content, infer the overall message or content. Emphasize the most prominent features first, moving to less significant details. Also, provide synonyms or related terms for technical aspects. DO NOT reference or mention any features, elements, or aspects that are absent in the image. The GOAL is to create a precise, focused, and keyword-rich description that encapsulates only the observable details, suitable for semantic document retrieval across various domains."` }
             ]
           }
         ],
@@ -226,7 +227,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           (message.content as Content[]).push({ type: 'text', text: `Image description: ${imgDesc}` });
         }
       } catch (error) {
-        console.error('Error in chat.tsx running onResponseCompletion():', error);
+        console.error('Error in chat.tsx running handleImageContent():', error);
         controller.abort();
       } finally {
         homeDispatch({ field: 'isImg2TextLoading', value: false })
@@ -237,13 +238,60 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const handleContextSearch = async (message: Message, selectedConversation: Conversation, searchQuery: string) => {
     if (getCurrentPageName() != 'gpt4') {
+      // Extract text from all user messages in the conversation
       const token_limit = OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
       const useMQRetrieval = localStorage.getItem('UseMQRetrieval') === 'true';
       const fetchContextsFunc = useMQRetrieval ? fetchMQRContexts : fetchContexts;
       await fetchContextsFunc(getCurrentPageName(), searchQuery, token_limit).then((curr_contexts) => {
         message.contexts = curr_contexts as ContextWithMetadata[]
+        console.log('message.contexts: ', message.contexts)
       })
     }
+  }
+
+  const generateCitationLink = async (context: ContextWithMetadata) => {
+    // Uncomment for debugging
+    // console.log('context: ', context);
+    if (context.url) {
+      return context.url;
+    } else if (context.s3_path) {
+      return fetchPresignedUrl(context.s3_path);
+    }
+    return '';
+  }
+
+  const getCitationLink = async (context: ContextWithMetadata, citationLinkCache: Map<number, string>, citationIndex: number) => {
+    // console.log("Generating citation link for context: ", citationIndex, context.readable_filename)
+    const cachedLink = citationLinkCache.get(citationIndex);
+    if (cachedLink) {
+      setCacheMetrics((prevMetrics) => {
+        const newMetrics = { ...prevMetrics, hits: prevMetrics.hits + 1 };
+        // Uncomment for debugging
+        // console.log(`Cache hit for citation index ${citationIndex}. Current cache hit ratio: ${(newMetrics.hits / (newMetrics.hits + newMetrics.misses)).toFixed(2)}`);
+        return newMetrics;
+      });
+      return cachedLink;
+    } else {
+      setCacheMetrics((prevMetrics) => {
+        const newMetrics = { ...prevMetrics, misses: prevMetrics.misses + 1 };
+        // Uncomment for debugging
+        // console.log(`Cache miss for citation index ${citationIndex}. Current cache hit ratio: ${(newMetrics.hits / (newMetrics.hits + newMetrics.misses)).toFixed(2)}`);
+        return newMetrics;
+      });
+      const link = await generateCitationLink(context);
+      citationLinkCache.set(citationIndex, link);
+      return link;
+    }
+  }
+
+  const resetCacheMetrics = () => {
+    // console.log(`Final cache hit ratio for the message: ${(cacheMetrics.hits / (cacheMetrics.hits + cacheMetrics.misses)).toFixed(2)}`);
+    console.log(`Final Cache metrics: ${JSON.stringify(cacheMetrics)}`);
+    setCacheMetrics({ hits: 0, misses: 0 });
+  }
+
+  function escapeRegExp(string: string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
   }
 
   // THIS IS WHERE MESSAGES ARE SENT.
@@ -397,57 +445,103 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           let done = false
           let isFirst = true
           let text = ''
-          while (!done) {
-            if (stopConversationRef.current === true) {
-              controller.abort()
-              done = true
-              break
-            }
-            const { value, done: doneReading } = await reader.read()
-            done = doneReading
-            const chunkValue = decoder.decode(value)
-            text += chunkValue
-            if (isFirst) {
-              // isFirst refers to the first chunk of data received from the API (happens once for each new message from API)
-              isFirst = false
-              const updatedMessages: Message[] = [
-                ...updatedConversation.messages,
-                {
-                  role: 'assistant',
-                  content: chunkValue,
-                  contexts: message.contexts,
-                },
-              ]
-              updatedConversation = {
-                ...updatedConversation,
-                messages: updatedMessages,
+          const citationLinkCache = new Map<number, string>();
+          try {
+            while (!done) {
+              if (stopConversationRef.current === true) {
+                controller.abort()
+                done = true
+                break
               }
-              homeDispatch({
-                field: 'selectedConversation',
-                value: updatedConversation,
-              })
-            } else {
-              const updatedMessages: Message[] =
-                updatedConversation.messages.map((message, index) => {
-                  if (index === updatedConversation.messages.length - 1) {
-                    return {
-                      ...message,
-                      content: text,
-                      // responseTimeSec: // TODO: try to track this.. mostly in ChatMessage.tsx
-                    }
-                  }
-                  return message
+              const { value, done: doneReading } = await reader.read()
+              done = doneReading
+              const chunkValue = decoder.decode(value)
+              text += chunkValue
+
+              if (isFirst) {
+                // isFirst refers to the first chunk of data received from the API (happens once for each new message from API)
+                isFirst = false
+                const updatedMessages: Message[] = [
+                  ...updatedConversation.messages,
+                  {
+                    role: 'assistant',
+                    content: chunkValue,
+                    contexts: message.contexts,
+                  },
+                ]
+                updatedConversation = {
+                  ...updatedConversation,
+                  messages: updatedMessages,
+                }
+                homeDispatch({
+                  field: 'selectedConversation',
+                  value: updatedConversation,
                 })
-              updatedConversation = {
-                ...updatedConversation,
-                messages: updatedMessages,
+              } else {
+
+                const updatedMessagesPromises: Promise<Message>[] = updatedConversation.messages.map(async (message, index) => {
+                  if (index === updatedConversation.messages.length - 1 && message.contexts) {
+                    let content = text;
+
+                    // Identify all unique citation indices in the content
+                    const citationIndices = new Set<number>();
+                    const citationPattern = /\[(\d+)\](?!\([^)]*\))/g;
+                    let match;
+                    while ((match = citationPattern.exec(content)) !== null) {
+                      citationIndices.add(parseInt(match[1] as string));
+                    }
+
+                    // Generate citation links only for the referenced indices
+                    for (const citationIndex of citationIndices) {
+                      const context = message.contexts[citationIndex - 1]; // Adjust index for zero-based array
+                      if (context) {
+                        const link = await getCitationLink(context, citationLinkCache, citationIndex);
+                        const pageNumberMatch = content.match(new RegExp(`\\[${escapeRegExp(context.readable_filename)}, page: (\\d+)\\]\\(#\\)`));
+                        const pageNumber = pageNumberMatch ? `#page=${pageNumberMatch[1]}` : '';
+
+                        // Replace citation index with link
+                        content = content.replace(new RegExp(`\\[${citationIndex}\\](?!\\([^)]*\\))`, 'g'), `[${citationIndex}](${link}${pageNumber})`);
+
+                        // Replace filename with link
+                        content = content.replace(new RegExp(`(\\b${citationIndex}\\.)\\s*\\[(.*?)\\]\\(\\#\\)`, 'g'), (match, index, filename) => {
+                          return `${index} [${index} ${filename}](${link}${pageNumber})`;
+                        });
+                      }
+                    }
+                // Uncomment for debugging
+                    // console.log('content: ', content);
+                    return { ...message, content };
+                  }
+                  return message;
+                });
+
+                // Use Promise.all to wait for all promises to resolve
+                const updatedMessages = await Promise.all(updatedMessagesPromises);
+
+                updatedConversation = {
+                  ...updatedConversation,
+                  messages: updatedMessages,
+                }
+                homeDispatch({
+                  field: 'selectedConversation',
+                  value: updatedConversation,
+                })
               }
-              homeDispatch({
-                field: 'selectedConversation',
-                value: updatedConversation,
-              })
             }
+          } catch (error) {
+            console.error('Error reading from stream:', error);
+            homeDispatch({ field: 'loading', value: false });
+            homeDispatch({ field: 'messageIsStreaming', value: false });
+            return;
+          } finally {
+            // Reset cache metrics after each message
+            resetCacheMetrics();
           }
+
+          if (!done) {
+            throw new Error('Stream ended prematurely');
+          }
+
           saveConversation(updatedConversation)
           // todo: add clerk user info to onMessagereceived for logging.
           if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
