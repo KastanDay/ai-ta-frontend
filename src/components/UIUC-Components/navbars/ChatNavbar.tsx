@@ -462,9 +462,9 @@ const ChatNavbar = ({
 
             {/* Sign in buttons */}
             <div
-              className="pl-1 pr-1"
+              className="pl-1 pr-2"
               style={{
-                marginLeft: '-5px',
+                // marginLeft: '-5px',
                 position: 'relative',
                 top: '-2px',
                 justifyContent: 'flex-center',
@@ -472,7 +472,8 @@ const ChatNavbar = ({
             >
               <SignedIn>
                 <Group grow spacing={'xs'}>
-                  {/* <div style={{ display: 'flex', flexDirection: 'row' }}> */}
+                  {/* <div /> */}
+                  {/* <div style={{ paddingLeft: '10px', paddingRight: '8px' }} /> */}
                   <MagicBell
                     apiKey={process.env.NEXT_PUBLIC_MAGIC_BELL_API as string}
                     userEmail={userEmail}
@@ -483,10 +484,8 @@ const ChatNavbar = ({
                   >
                     {(props) => <FloatingNotificationInbox width={400} height={500} {...props} />}
                   </MagicBell>
-                  {/* <div style={{ paddingLeft: '10px', paddingRight: '8px' }} /> */}
                   <UserButton afterSignOutUrl="/" />
                 </Group>
-                {/* </div> */}
               </SignedIn>
               <SignedOut>
                 <SignInButton>
