@@ -454,7 +454,7 @@ a[data-footnote-backref] {
   color: #15162c !important;
 } */
 
-/* Remove footer from MagicBell */
-div.prvh8i {
+/* Remove branded footer from MagicBell (only works on prod w/ compiled css) */
+div.css-prvh8i {
   display: none !important;
 }
