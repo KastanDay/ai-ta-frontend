@@ -108,10 +108,11 @@ export const uploadToS3 = async (file: File | null, course_name: string) => {
   }
 }
 
-export async function fetchPresignedUrl(filePath: string) {
+export async function fetchPresignedUrl(filePath: string, page?: string) {
   try {
     const response = await axios.post('/api/download', {
       filePath,
+      page,
     })
     return response.data.url
   } catch (error) {

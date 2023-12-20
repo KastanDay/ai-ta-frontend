@@ -145,37 +145,56 @@ export const OpenAIStream = async (
 
   if (stream) {
     console.log("Streaming response ")
+    let isStreamClosed = false; // Flag to track the state of the stream
     const apiStream = new ReadableStream({
       async start(controller) {
         const onParse = (event: ParsedEvent | ReconnectInterval) => {
           if (event.type === 'event') {
             const data = event.data
 
-          try {
-            // console.log('data: ', data) // ! DEBUGGING
-            if (data.trim() !== "[DONE]") {
-              const json = JSON.parse(data)
-              if (json.choices[0].finish_reason != null) {
-                controller.close()
-                return
-              } 
-              const text = json.choices[0].delta.content
-              const queue = encoder.encode(text)
-              controller.enqueue(queue)
-            } else {
-              controller.close()
-              return;
+            try {
+              // console.log('data: ', data) // ! DEBUGGING
+              if (data.trim() !== "[DONE]") {
+                const json = JSON.parse(data)
+                if (json.choices[0].finish_reason != null) {
+                  if (!isStreamClosed) {
+                    controller.close()
+                    isStreamClosed = true; // Update the flag after closing the stream
+                  }
+                  return
+                }
+                const text = json.choices[0].delta.content
+                const queue = encoder.encode(text)
+                controller.enqueue(queue)
+              } else {
+                if (!isStreamClosed) {
+                  controller.close()
+                  isStreamClosed = true; // Update the flag after closing the stream
+                }
+                return;
+              }
+            } catch (e) {
+              if (!isStreamClosed) {
+                controller.error(e)
+                isStreamClosed = true; // Update the flag if an error occurs
+              }
             }
-          } catch (e) {
-            controller.error(e)
           }
         }
-      }
 
         const parser = createParser(onParse)
 
-        for await (const chunk of res.body as any) {
-          parser.feed(decoder.decode(chunk))
+        try {
+          for await (const chunk of res.body as any) {
+            if (!isStreamClosed) { // Only feed the parser if the stream is not closed
+              parser.feed(decoder.decode(chunk))
+            }
+          }
+        } catch (e) {
+          if (!isStreamClosed) {
+            controller.error(e)
+            isStreamClosed = true;
+          }
         }
       },
     })
