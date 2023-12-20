@@ -88,14 +88,14 @@ import { extractEmailsFromClerk } from '../clerkHelpers';
 import { useEffect, useState } from 'react';
 
 export function LandingPageHeader({
-  isNavbar = false,
+  forGeneralPurposeNotLandingpage = false,
 }: {
-  isNavbar?: boolean
+  forGeneralPurposeNotLandingpage?: boolean
 }) {
   const { classes, theme } = useStyles()
-  const headerStyle = isNavbar
+  const headerStyle = forGeneralPurposeNotLandingpage
     ? {
-      backgroundColor: '#15162c',
+      backgroundColor: 'transparent',
       display: 'flex',
       justifyContent: 'flex-end',
       padding: '0.2em 0.2em',
@@ -158,7 +158,7 @@ export function LandingPageHeader({
     <header
       // style={{ display: "flex", justifyContent: "space-between", padding: 20 }}
       style={{
-        backgroundColor: isNavbar ? '#15162c' : '#2e026d',
+        backgroundColor: forGeneralPurposeNotLandingpage ? '#2e026d' : '#2e026d',
         display: 'flex',
         justifyContent: 'flex-end',
         padding: '1em',
@@ -166,12 +166,10 @@ export function LandingPageHeader({
       className="py-16"
     >
       <Group spacing={'xs'}>
-        {items.map((item, index) => (
+        {forGeneralPurposeNotLandingpage === false && items.map((item, index) => (
           <Link
             key={index}
             href={item.link}
-            // onClick={() => }
-            // data-active={activeLink === item.link}
             className={classes.link}
           >
             <span style={{ display: 'flex', alignItems: 'center' }}>
