@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import React, { ReactNode } from 'react'
-import GlobalHeader from './navbars/GlobalHeader'
+import { LandingPageHeader } from './navbars/GlobalHeader'
 
 interface MainPageBackgroundProps {
   children: ReactNode
@@ -11,7 +11,7 @@ export const MainPageBackground: React.FC<MainPageBackgroundProps> = ({
 }) => {
   return (
     <>
-      <GlobalHeader />
+      <LandingPageHeader forGeneralPurposeNotLandingpage={true} />
       <main className="items-left justify-left course-page-main flex min-h-screen flex-col">
         <div className="container flex flex-col items-center justify-center gap-8 px-4 py-5 ">
           <Link href="/">
