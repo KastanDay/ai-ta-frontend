@@ -63,7 +63,7 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
           userEmail={userEmail}
           theme={magicBellTheme}
           locale="en"
-          images={{ emptyInboxUrl: 'https://public-static-assets-kastan.s3.amazonaws.com/empty_chat_art.png' }}
+          images={{ emptyInboxUrl: 'https://assets.kastan.ai/minified_empty_chat_art.png' }}
 
         >
           {(props) => <FloatingNotificationInbox width={400} height={500} {...props} />}
@@ -185,7 +185,7 @@ export function LandingPageHeader({
             userEmail={userEmail}
             theme={magicBellTheme}
             locale="en"
-            images={{ emptyInboxUrl: 'https://public-static-assets-kastan.s3.amazonaws.com/empty_chat_art.png' }}
+            images={{ emptyInboxUrl: 'https://assets.kastan.ai/minified_empty_chat_art.png' }}
           >
             {(props) => <FloatingNotificationInbox width={400} height={500} {...props} />}
           </MagicBell>
