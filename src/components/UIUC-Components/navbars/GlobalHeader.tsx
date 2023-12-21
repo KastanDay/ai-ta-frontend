@@ -25,6 +25,7 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
     }
 
   const clerk_obj = useUser()
+  const posthog = usePostHog()
   const [userEmail, setUserEmail] = useState('no_email')
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -34,6 +35,11 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
         console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
         const emails = extractEmailsFromClerk(clerk_obj.user)
         setUserEmail(emails[0] || 'no_email')
+
+        // Posthog identify
+        posthog?.identify(clerk_obj.user.id, {
+          email: emails[0] || 'no_email',
+        })
       }
       setIsLoaded(true)
     } else {
@@ -86,6 +92,7 @@ import { montserrat_heading } from 'fonts'
 import { createStyles, Group, rem } from '@mantine/core'
 import { extractEmailsFromClerk } from '../clerkHelpers';
 import { useEffect, useState } from 'react';
+import { usePostHog } from 'posthog-js/react';
 
 export function LandingPageHeader({
   forGeneralPurposeNotLandingpage = false,
@@ -124,6 +131,8 @@ export function LandingPageHeader({
   const clerk_obj = useUser()
   const [userEmail, setUserEmail] = useState('no_email')
   const [isLoaded, setIsLoaded] = useState(false)
+  const posthog = usePostHog()
+
 
   useEffect(() => {
     if (clerk_obj.isLoaded) {
@@ -131,6 +140,11 @@ export function LandingPageHeader({
         console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
         const emails = extractEmailsFromClerk(clerk_obj.user)
         setUserEmail(emails[0] || 'no_email')
+
+        // Posthog identify
+        posthog?.identify(clerk_obj.user.id, {
+          email: emails[0] || 'no_email',
+        })
       }
       setIsLoaded(true)
     } else {
