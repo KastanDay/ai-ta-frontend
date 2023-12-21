@@ -44,6 +44,7 @@ import { type CourseMetadata } from '~/types/courseMetadata'
 import HomeContext from '~/pages/api/home/home.context'
 import { ModelSelect } from '../../Chat/ModelSelect'
 import MagicBell, { FloatingNotificationInbox } from '@magicbell/magicbell-react'
+import { usePostHog } from 'posthog-js/react'
 
 const styles: Record<string, React.CSSProperties> = {
   logoContainerBox: {
@@ -161,6 +162,7 @@ const ChatNavbar = ({
   const [show, setShow] = useState(true)
   const [isAdminOrOwner, setIsAdminOrOwner] = useState(false)
   const clerk_user = useUser()
+  const posthog = usePostHog()
   const {
     state: { showModelSettings, selectedConversation },
     dispatch: homeDispatch,
@@ -186,10 +188,15 @@ const ChatNavbar = ({
       if (clerk_user.isLoaded && clerk_user.isSignedIn) {
         const emails = extractEmailsFromClerk(clerk_user.user)
         const currUserEmail = emails[0]
-        setUserEmail(emails[0] || 'no_email')
+        setUserEmail(currUserEmail || 'no_email')
         if (!currUserEmail) {
           throw new Error('No email found for the user')
         }
+        // Posthog identify
+        posthog?.identify(clerk_user.user.id, {
+          email: currUserEmail || 'no_email',
+        })
+
         const response = await fetch(
           `/api/UIUC-api/getAllCourseMetadata?currUserEmail=${currUserEmail}`,
         )
