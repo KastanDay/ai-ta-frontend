@@ -57,3 +57,14 @@ export interface Conversation {
   folderId: string | null
   user_email?: string
 }
+
+export interface ChatApiBody {
+  model: string;
+  conversation: Conversation;
+  openai_key?: string;
+  prompt: string;
+  temperature: number;
+  course_name: string;
+  stream: boolean;
+  api_key: string;
+}

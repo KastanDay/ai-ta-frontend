@@ -6,6 +6,7 @@ import {
 import { log } from 'next-axiom'
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios'
+import { NextApiRequest } from 'next';
 
 export const config = {
   runtime: 'edge',
@@ -114,9 +115,46 @@ export async function fetchPresignedUrl(filePath: string, page?: string) {
       filePath,
       page,
     })
+    if (response.status >= 400) {
+      throw new Error(`Server responded with status code ${response.status}`);
+    }
     return response.data.url
   } catch (error) {
     console.error('Error fetching presigned URL:', error)
     return null
+  }
+}
+
+export async function fetchCourseMetadata(course_name: string) {
+  try {
+
+    const baseUrl = process.env.VERCEL_URL || 'http://localhost:3000';
+    console.log('baseUrl:', baseUrl);
+    const response = await fetch(
+      `${baseUrl}/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
+    )
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success === false) {
+        throw new Error(
+          data.message || 'An error occurred while fetching course metadata',
+        );
+      }
+      if (
+        data.course_metadata &&
+        typeof data.course_metadata.is_private === 'string'
+      ) {
+        data.course_metadata.is_private =
+          data.course_metadata.is_private.toLowerCase() === 'true';
+      }
+      return data.course_metadata;
+    } else {
+      throw new Error(
+        `Error fetching course metadata: ${response.statusText || response.status}`,
+      );
+    }
+  } catch (error) {
+    console.error('Error fetching course metadata:', error);
+    throw error;
   }
 }

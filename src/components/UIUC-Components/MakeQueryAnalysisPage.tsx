@@ -336,7 +336,7 @@ import { MainPageBackground } from './MainPageBackground'
 import { extractEmailsFromClerk } from './clerkHelpers'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
-import Navbar from './navbars/MaterialsNavbar'
+import Navbar from './navbars/Navbar'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()

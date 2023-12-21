@@ -72,8 +72,8 @@ const MakeOldCoursePage = ({
         }
 
         // fetch banner image url
-        console.log("Getting banner image: ", metadata.banner_image_s3)
         if (metadata?.banner_image_s3 && metadata.banner_image_s3 !== '') {
+          console.log("Getting banner image: ", metadata.banner_image_s3)
           try {
             const url = await fetchPresignedUrl(metadata.banner_image_s3)
             setBannerUrl(url)
@@ -222,7 +222,7 @@ import { IconTrash } from '@tabler/icons-react'
 import { MainPageBackground } from './MainPageBackground'
 import { LoadingSpinner } from './LoadingSpinner'
 import { extractEmailsFromClerk } from './clerkHelpers'
-import Navbar from '~/components/UIUC-Components/navbars/MaterialsNavbar'
+import Navbar from './navbars/Navbar'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'

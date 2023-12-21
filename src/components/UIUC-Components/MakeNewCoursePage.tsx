@@ -1,9 +1,8 @@
 import Head from 'next/head'
-import React, { useState } from 'react'
+import React from 'react'
 
-import PlainNavbar from '~/components/UIUC-Components/navbars/PlainNavbar'
-import { useMediaQuery } from '@mantine/hooks'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
+import Navbar from './navbars/Navbar'
 
 const MakeNewCoursePage = ({
   course_name,
@@ -15,7 +14,7 @@ const MakeNewCoursePage = ({
 
   return (
     <>
-      <PlainNavbar />
+      <Navbar isPlain={true} />
       <Head>
         <title>{course_name}</title>
         <meta
