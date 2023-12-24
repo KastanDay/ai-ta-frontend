@@ -236,15 +236,15 @@ const MakeFlowisePage = ({
                     }}
                   >
                     {' '}
-                    What questions are people asking?
+                    Adjust Model Flow
                   </Title>
                 </div>
                 <div className="me-6 flex flex-row items-center justify-end">
                   {/* Can add more buttons here */}
-                  <Button className={`${montserrat_paragraph.variable} font-montserratParagraph ${classes.downloadButton}`} rightIcon={isLoading ? <LoadingSpinner size="sm" /> : <IconCloudDownload />}
+                  {/* <Button className={`${montserrat_paragraph.variable} font-montserratParagraph ${classes.downloadButton}`} rightIcon={isLoading ? <LoadingSpinner size="sm" /> : <IconCloudDownload />}
                     onClick={() => downloadConversationHistory(course_name)}>
                     Download Conversation History
-                  </Button>
+                  </Button> */}
                 </div>
               </Flex>
             </div>
@@ -268,24 +268,24 @@ const MakeFlowisePage = ({
                   order={6}
                   className={`w-full text-center ${montserrat_heading.variable} mt-2 font-montserratHeading`}
                 >
-                  A conceptual map of the questions asked by users on this page.
+                  A conceptual flow chart of the pre and post processing of context for the LLM.
                   <br></br>
                   Read more about{' '}
                   <a
                     className={'text-purple-600'}
-                    href="https://home.nomic.ai/about"
+                    href="https://docs.flowiseai.com/?q="
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ textDecoration: 'underline', paddingRight: '5px' }}
                   >
-                    semantic similarity visualizations
+                    Flowise
                   </a>
                 </Title>
               </>
             )}
           </Flex>
         </div>
-        <GlobalFooter />
+        <GlobalFooter /> 
       </main>
     </>
   )
