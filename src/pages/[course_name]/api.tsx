@@ -75,7 +75,7 @@ const ApiPage: NextPage = () => {
 
 				if (courseMetadata.banner_image_s3) {
 					const url = await fetchPresignedUrl(courseMetadata.banner_image_s3);
-					setBannerUrl(url);
+					setBannerUrl(url as string);
 					console.log("Got banner image: ", url);
 				}
 

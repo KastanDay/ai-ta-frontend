@@ -423,7 +423,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
               <button
                 onClick={() =>
                   fetchPresignedUrl(file.s3_path).then((url) => {
-                    window.open(url, '_blank')
+                    window.open(url as string, '_blank')
                   })
                 }
                 className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"

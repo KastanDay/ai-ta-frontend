@@ -57,6 +57,7 @@ import { MemoizedChatMessage } from './MemoizedChatMessage'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
 
 import { type CourseMetadata } from '~/types/courseMetadata'
+import { replaceCitationLinks } from '~/utils/citations'
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>
@@ -76,6 +77,7 @@ import ChatNavbar from '../UIUC-Components/navbars/ChatNavbar'
 import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -92,7 +94,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   const [inputContent, setInputContent] = useState<string>('')
-  const [cacheMetrics, setCacheMetrics] = useState({ hits: 0, misses: 0 });
 
   useEffect(() => {
     if (courseMetadata?.banner_image_s3 && courseMetadata.banner_image_s3 !== '') {
@@ -179,43 +180,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     const imageContent = (message.content as Content[]).filter(content => content.type === 'image_url');
     if (imageContent.length > 0) {
       homeDispatch({ field: 'isImg2TextLoading', value: true })
-      const chatBody: ChatBody = {
-        model: updatedConversation.model,
-        messages: [
-          {
-            ...message,
-            content: [
-              ...imageContent,
-              { type: 'text', text: `"Provide a detailed description of the image(s), focusing exclusively on the elements and details that are visibly present. Include descriptions of text (OCR information), distinct objects, spatial relationships, colors, actions, annotations, labels, or significant color usage. Use specific, technical, or domain-specific terminology to accurately describe elements, particularly for specialized fields like medicine, agriculture, technology, etc. Classify the image into relevant categories and list key terms associated with that category. Identify and list potential keywords or key phrases that summarize the main elements and themes. If the image contains abstract or emotional content, infer the overall message or content. Emphasize the most prominent features first, moving to less significant details. Also, provide synonyms or related terms for technical aspects. DO NOT reference or mention any features, elements, or aspects that are absent in the image. The GOAL is to create a precise, focused, and keyword-rich description that encapsulates only the observable details, suitable for semantic document retrieval across various domains."` }
-            ]
-          }
-        ],
-        key: courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != '' ? courseMetadata.openai_api_key : apiKey,
-        prompt: updatedConversation.prompt,
-        temperature: updatedConversation.temperature,
-        course_name: getCurrentPageName(),
-        stream: false,
-      };
+
+      const key = courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != '' ? courseMetadata.openai_api_key : apiKey;
 
       try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(chatBody),
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          const final_response = await response.json();
-          homeDispatch({ field: 'loading', value: false });
-          homeDispatch({ field: 'messageIsStreaming', value: false });
-          throw new Error(final_response.message);
-        }
-
-        const data = await response.json();
-        const imgDesc = data.choices[0].message.content || '';
+        const imgDesc = await fetchImageDescription(message, getCurrentPageName(), endpoint, updatedConversation, key, controller);
 
         searchQuery += ` Image description: ${imgDesc}`;
 
@@ -247,51 +216,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         console.log('message.contexts: ', message.contexts)
       })
     }
-  }
-
-  const generateCitationLink = async (context: ContextWithMetadata) => {
-    // Uncomment for debugging
-    // console.log('context: ', context);
-    if (context.url) {
-      return context.url;
-    } else if (context.s3_path) {
-      return fetchPresignedUrl(context.s3_path);
-    }
-    return '';
-  }
-
-  const getCitationLink = async (context: ContextWithMetadata, citationLinkCache: Map<number, string>, citationIndex: number) => {
-    // console.log("Generating citation link for context: ", citationIndex, context.readable_filename)
-    const cachedLink = citationLinkCache.get(citationIndex);
-    if (cachedLink) {
-      setCacheMetrics((prevMetrics) => {
-        const newMetrics = { ...prevMetrics, hits: prevMetrics.hits + 1 };
-        // Uncomment for debugging
-        // console.log(`Cache hit for citation index ${citationIndex}. Current cache hit ratio: ${(newMetrics.hits / (newMetrics.hits + newMetrics.misses)).toFixed(2)}`);
-        return newMetrics;
-      });
-      return cachedLink;
-    } else {
-      setCacheMetrics((prevMetrics) => {
-        const newMetrics = { ...prevMetrics, misses: prevMetrics.misses + 1 };
-        // Uncomment for debugging
-        // console.log(`Cache miss for citation index ${citationIndex}. Current cache hit ratio: ${(newMetrics.hits / (newMetrics.hits + newMetrics.misses)).toFixed(2)}`);
-        return newMetrics;
-      });
-      const link = await generateCitationLink(context);
-      citationLinkCache.set(citationIndex, link);
-      return link;
-    }
-  }
-
-  const resetCacheMetrics = () => {
-    // console.log(`Final cache hit ratio for the message: ${(cacheMetrics.hits / (cacheMetrics.hits + cacheMetrics.misses)).toFixed(2)}`);
-    console.log(`Final Cache metrics: ${JSON.stringify(cacheMetrics)}`);
-    setCacheMetrics({ hits: 0, misses: 0 });
-  }
-
-  function escapeRegExp(string: string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
   }
 
   // THIS IS WHERE MESSAGES ARE SENT.
@@ -356,7 +280,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
           course_name: getCurrentPageName(),
-          stream: true
+          stream: true,
+          isImage: false
         }
 
         let body
@@ -479,96 +404,78 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 })
               } else {
 
-                const updatedMessagesPromises: Promise<Message>[] = updatedConversation.messages.map(async (message, index) => {
-                  if (index === updatedConversation.messages.length - 1 && message.contexts) {
-                    let content = text;
+                if (updatedConversation.messages.length > 0) {
+                  const lastMessageIndex = updatedConversation.messages.length - 1;
+                  const lastMessage = updatedConversation.messages[lastMessageIndex];
 
-                    // Identify all unique citation indices in the content
-                    const citationIndices = new Set<number>();
-                    const citationPattern = /\[(\d+)\](?!\([^)]*\))/g;
-                    let match;
-                    while ((match = citationPattern.exec(content)) !== null) {
-                      citationIndices.add(parseInt(match[1] as string));
-                    }
+                  if (lastMessage && lastMessage.contexts) {
+                    // Call the replaceCitationLinks method and await its result
+                    const updatedContent = await replaceCitationLinks(text, lastMessage, citationLinkCache);
 
-                    // Generate citation links only for the referenced indices
-                    for (const citationIndex of citationIndices) {
-                      const context = message.contexts[citationIndex - 1]; // Adjust index for zero-based array
-                      if (context) {
-                        const link = await getCitationLink(context, citationLinkCache, citationIndex);
-                        const pageNumberMatch = content.match(new RegExp(`\\[${escapeRegExp(context.readable_filename)}, page: (\\d+)\\]\\(#\\)`));
-                        const pageNumber = pageNumberMatch ? `#page=${pageNumberMatch[1]}` : '';
+                    // Update the last message with the new content
+                    const updatedMessages = updatedConversation.messages.map((msg, index) =>
+                      index === lastMessageIndex ? { ...msg, content: updatedContent } : msg
+                    );
 
-                        // Replace citation index with link
-                        content = content.replace(new RegExp(`\\[${citationIndex}\\](?!\\([^)]*\\))`, 'g'), `[${citationIndex}](${link}${pageNumber})`);
+                    // Update the conversation with the new messages
+                    updatedConversation = {
+                      ...updatedConversation,
+                      messages: updatedMessages,
+                    };
 
-                        // Replace filename with link
-                        content = content.replace(new RegExp(`(\\b${citationIndex}\\.)\\s*\\[(.*?)\\]\\(\\#\\)`, 'g'), (match, index, filename) => {
-                          return `${index} [${index} ${filename}](${link}${pageNumber})`;
-                        });
-                      }
-                    }
-                // Uncomment for debugging
-                    // console.log('content: ', content);
-                    return { ...message, content };
+                    // Dispatch the updated conversation
+                    homeDispatch({
+                      field: 'selectedConversation',
+                      value: updatedConversation,
+                    });
                   }
-                  return message;
-                });
-
-                // Use Promise.all to wait for all promises to resolve
-                const updatedMessages = await Promise.all(updatedMessagesPromises);
-
-                updatedConversation = {
-                  ...updatedConversation,
-                  messages: updatedMessages,
                 }
-                homeDispatch({
-                  field: 'selectedConversation',
-                  value: updatedConversation,
-                })
               }
+
             }
           } catch (error) {
             console.error('Error reading from stream:', error);
             homeDispatch({ field: 'loading', value: false });
             homeDispatch({ field: 'messageIsStreaming', value: false });
             return;
-          } finally {
-            // Reset cache metrics after each message
-            resetCacheMetrics();
           }
 
           if (!done) {
             throw new Error('Stream ended prematurely');
           }
 
-          saveConversation(updatedConversation)
-          // todo: add clerk user info to onMessagereceived for logging.
-          if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
-            console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
-            const emails = extractEmailsFromClerk(clerk_obj.user)
-            updatedConversation.user_email = emails[0]
-            onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
-          } else {
-            console.log('NOT LOADED OR SIGNED IN')
-            onMessageReceived(updatedConversation)
-          }
+          try {
+            saveConversation(updatedConversation);
+            // todo: add clerk user info to onMessagereceived for logging.
+            if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
+              console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn');
+              const emails = extractEmailsFromClerk(clerk_obj.user);
+              updatedConversation.user_email = emails[0];
+              onMessageReceived(updatedConversation); // kastan here, trying to save message AFTER done streaming. This only saves the user message...
+            } else {
+              console.log('NOT LOADED OR SIGNED IN');
+              onMessageReceived(updatedConversation);
+            }
 
-          const updatedConversations: Conversation[] = conversations.map(
-            (conversation) => {
-              if (conversation.id === selectedConversation.id) {
-                return updatedConversation
-              }
-              return conversation
-            },
-          )
-          if (updatedConversations.length === 0) {
-            updatedConversations.push(updatedConversation)
+            const updatedConversations: Conversation[] = conversations.map(
+              (conversation) => {
+                if (conversation.id === selectedConversation.id) {
+                  return updatedConversation;
+                }
+                return conversation;
+              },
+            );
+            if (updatedConversations.length === 0) {
+              updatedConversations.push(updatedConversation);
+            }
+            homeDispatch({ field: 'conversations', value: updatedConversations });
+            console.log('updatedConversations: ', updatedConversations);
+            saveConversations(updatedConversations);
+            homeDispatch({ field: 'messageIsStreaming', value: false });
+          } catch (error) {
+            console.error('An error occurred: ', error);
+            controller.abort();
           }
-          homeDispatch({ field: 'conversations', value: updatedConversations })
-          console.log('updatedConversations: ', updatedConversations)
-          saveConversations(updatedConversations)
-          homeDispatch({ field: 'messageIsStreaming', value: false })
         } else {
           const { answer } = await response.json()
           const updatedMessages: Message[] = [

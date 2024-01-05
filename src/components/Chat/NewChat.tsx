@@ -343,7 +343,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
           course_name: getCurrentPageName(),
-          stream: true
+          stream: true,
+          isImage: false,
         }
         const endpoint = getEndpoint(plugin) // THIS is where we could support EXTREME prompt stuffing.
         let body

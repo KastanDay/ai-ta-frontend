@@ -43,6 +43,7 @@ export interface ChatBody {
   temperature: number
   course_name: string
   stream: boolean
+  isImage: boolean
   // NO FOLDER ID
 }
 
