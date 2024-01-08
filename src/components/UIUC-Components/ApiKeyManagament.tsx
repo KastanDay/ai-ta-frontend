@@ -1,6 +1,6 @@
 // src/components/UIUC-Components/ApiKeyManagement.tsx
 import React, { useEffect, useState } from 'react';
-import { Card, Title, Button, Text, Flex, Group, Input, useMantineTheme, Textarea } from '@mantine/core';
+import { Card, Title, Button, Text, Flex, Group, Input, useMantineTheme, Textarea, Select } from '@mantine/core';
 import { useClipboard, useMediaQuery } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
 import { type UserResource } from '@clerk/types';
@@ -19,6 +19,99 @@ const ApiKeyManagement = ({ course_name, clerk_user }: {
 	const { copy } = useClipboard();
 	const [apiKey, setApiKey] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
+	// Define a type for the keys of codeSnippets
+	type Language = 'curl' | 'python' | 'node';
+
+	// Ensure selectedLanguage is of type Language
+	const [selectedLanguage, setSelectedLanguage] = useState<Language>('curl');
+
+
+	const languageOptions = [
+		{ value: 'curl', label: 'cURL' },
+		{ value: 'python', label: 'Python' },
+		{ value: 'node', label: 'Node.js' },
+	];
+
+	const apiKeyPlaceholder = '\"your-api-key\" // replace with your API key';
+
+	const codeSnippets = {
+		'curl': `curl -X POST https://www.uiuc.chat/api/chat-api/stream \\
+-H "Content-Type: application/json" \\
+-d '{
+  "model": "gpt-3.5-turbo",
+  "conversation": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello, how can I help you today?"
+      }
+    ]
+  },
+  "openai_key": "your-openai-key", // replace with your OpenAI key
+  "prompt": "",
+  "temperature": 0.7,
+  "course_name": "${course_name}",
+  "stream": true,
+  "api_key": ${apiKey || apiKeyPlaceholder}
+}'`,
+		'python': `import requests
+
+url = "https://www.uiuc.chat/api/chat-api/stream"
+headers = {
+  'Content-Type': 'application/json'
+}
+data = {
+  "model": "gpt-3.5-turbo",
+  "conversation": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello, how can I help you today?"
+      }
+    ]
+  },
+  "openai_key": "your-openai-key", // replace with your OpenAI key
+  "prompt": "",
+  "temperature": 0.7,
+  "course_name": "${course_name}",
+  "stream": true,
+  "api_key": ${apiKey || apiKeyPlaceholder}
+}
+
+response = requests.post(url, headers=headers, json=data)
+print(response.text)`,
+		'node': `const axios = require('axios');
+
+const data = {
+  "model": "gpt-3.5-turbo",
+  "conversation": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello, how can I help you today?"
+      }
+    ]
+  },
+  "openai_key": "your-openai-key", // replace with your OpenAI key
+  "prompt": "",
+  "temperature": 0.7,
+  "course_name": "${course_name}",
+  "stream": true,
+  "api_key": ${apiKey || apiKeyPlaceholder}
+};
+
+axios.post('https://www.uiuc.chat/api/chat-api/stream', data, {
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+.then((response) => {
+  console.log(response.data);
+})
+.catch((error) => {
+  console.error(error);
+});`
+	};
 
 	useEffect(() => {
 		const fetchApiKey = async () => {
@@ -139,7 +232,7 @@ const ApiKeyManagement = ({ course_name, clerk_user }: {
 							m="3rem"
 							align="center"
 							variant='column'
-							style={{ justifyContent: 'center', width: '75%', alignSelf: 'center' }}
+							style={{ justifyContent: 'center', width: '75%', alignSelf: 'center', overflow: 'hidden' }}
 						>
 							<Title
 								order={2}
@@ -153,85 +246,40 @@ const ApiKeyManagement = ({ course_name, clerk_user }: {
 							<Title order={4} w={'90%'}>
 								Access the following API endpoint for real-time chat functionality. Utilize the ChatApiBody type for your request payload. Below you will find the endpoint URL and a sample request body to integrate into your app.
 							</Title>
-							<Title order={3}
-								align='center'
-								variant="gradient"
-								gradient={{ from: 'gold', to: 'white', deg: 50 }}
-								style={{ marginBottom: '1rem', width: '100%' }}>Endpoint URL</Title>
-							<Input
-								value={`https://www.uiuc.chat/api/chat-api/stream`}
-								className="mt-2 mb-4 w-[90%] min-w-[20rem]"
-								radius={'xl'}
-								size={'md'}
-								readOnly
-								rightSection={
-									<Button onClick={() => copy(`${process.env.VERCEL_URL}/api/chat-api/stream`)} variant="subtle" size="sm"
-										radius={'xl'}
-										className='min-w-[5rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none'>
+							<div style={{ width: '90%', display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#15162c', paddingTop: '1rem', borderRadius: '1rem' }}>
+								<div style={{ width: '95%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#15162c', paddingBottom: '1rem' }}>
+
+									<Title order={3}
+										align='left'
+										variant="gradient"
+										gradient={{ from: 'gold', to: 'white', deg: 50 }}
+										style={{ width: '100%', marginLeft: '1rem' }}>Example Request</Title>
+									<Select
+										placeholder="Select an option"
+										data={languageOptions}
+										value={selectedLanguage}
+										onChange={(value: string | null) => {
+											if (value === 'curl' || value === 'python' || value === 'node') {
+												setSelectedLanguage(value);
+											}
+										}}
+										style={{ width: '30%' }}
+									/>
+									<Button onClick={() => copy(codeSnippets[selectedLanguage])} variant="subtle" size="xs"
+										className='min-h-[2.5rem] transform rounded-tl-md rounded-bl-xl bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none rounded-tr-xl rounded-br-md ms-2 self-end'>
 										<IconCopy />
 									</Button>
-								}
-								rightSectionWidth={'auto'}
-							/>
-							<Title order={3}
-								align='center'
-								variant="gradient"
-								gradient={{ from: 'gold', to: 'white', deg: 50 }}
-								style={{ marginBottom: '1rem', width: '100%' }}>POST Request Body:</Title>
-							{/* Enclose Input and Button in a div with relative positioning */}
-							<Textarea
-								value={
-									`{
-	"model": "gpt-3.5-turbo",
-	"conversation": {
-		"messages": [
-			{
-				"role": "user",
-				"content": "Hello, how can I help you today?"
-			}
-		]
-	},
-	"openai_key": "your-openai-key",
-	"prompt": "",
-	"temperature": 0.7,
-	"course_name": "${course_name}",
-	"stream": true,
-	"api_key": "your-api-key" // replace with your own API key with format: uc_XXXXXXXX
-}`
-								}
-								autosize
-								className="mt-4 w-[90%] min-w-[20rem] overflow-y-auto relative"
-								radius={'lg'}
-								size={'lg'}
-								readOnly
-								rightSection={
-									<Button onClick={() => copy(
-										`
-{
-	"model": "gpt-3.5-turbo",
-	"conversation": {
-		"messages": [
-			{
-				"role": "user",
-				"content": "Hello, how can I help you today?"
-			}
-		]
-	},
-	"openai_key": "your-openai-key",
-	"prompt": "",
-	"temperature": 0.7,
-	"course_name": "${course_name}",
-	"stream": true,
-	"api_key": "your-api-key"	// replace with your own API key with format: uc_XXXXXXXX
-}`
-									)} variant="subtle" size="sm"
-										// radius={'xl'}
-										className='absolute top-1 right-0 min-h-[3rem] -translate-x-1 transform rounded-tl-md rounded-bl-xl bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none rounded-tr-xl rounded-br-md'>
-										<IconCopy />
-									</Button>
-								}
-								rightSectionWidth={'auto'}
-							/>
+								</div>
+								<Textarea
+									value={codeSnippets[selectedLanguage] as string}
+									autosize
+									variant='unstyled'
+									wrapperProps={{ overflow: 'hidden' }}
+									className="w-[100%] min-w-[20rem] overflow-hidden relative rounded-b-xl border-t-2 pl-8 bg-[#0c0c27] border-gray-400 text-white"
+									readOnly
+
+								/>
+							</div>
 						</Group>
 					</div>
 				</div>

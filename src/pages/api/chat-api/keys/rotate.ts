@@ -50,7 +50,10 @@ export default async function rotateKey(req: NextRequest, res: NextResponse) {
 	}
 
 	// Generate a new API key.
-	const newApiKey = uuidv4();
+	const rawApiKey = uuidv4();
+
+	// Create a sanitized API key by removing dashes and adding a prefix
+	const newApiKey = `uc_${rawApiKey.replace(/-/g, '')}`;
 
 	// Update the API key in the database with the new key.
 	const { data, error } = await supabase
