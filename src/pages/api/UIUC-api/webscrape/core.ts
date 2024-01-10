@@ -86,7 +86,7 @@ export function getPageHtml(page: Page, selector = "body") {
         XPathResult.ANY_TYPE,
         null,
       );
-      let result = elements.iterateNext();
+      const result = elements.iterateNext();
       return result ? result.textContent || "" : "";
     } else {
       // Handle as a CSS selector
@@ -118,7 +118,7 @@ export async function crawl(config: Config) {
   configSchema.parse(config);
 
   // All results stored here!
-  let results: Array<{ title: string; url: string; html: string }> = [];
+  const results: Array<{ title: string; url: string; html: string }> = [];
 
 
   if (config.url) {
