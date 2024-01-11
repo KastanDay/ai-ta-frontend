@@ -3,10 +3,12 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { crawl } from './core';
 import { Config } from './config_validation';
 
-// This function can run for a maximum of 5 seconds
-export const config = {
-  maxDuration: 10,
-};
+// Max duration: https://vercel.com/changelog/serverless-functions-can-now-run-up-to-5-minutes
+// Hobby: 10s, pro 300s. Edge: 25s. 
+// export const config = {
+//   maxDuration: 10,
+// };
+export const runtime = 'edge'
 
 export default async function (req: VercelRequest, res: VercelResponse): Promise<void> {
   try {
