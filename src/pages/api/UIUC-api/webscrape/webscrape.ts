@@ -5,10 +5,11 @@ import { Config } from './config_validation';
 
 // Max duration: https://vercel.com/changelog/serverless-functions-can-now-run-up-to-5-minutes
 // Hobby: 10s, pro 300s. Edge: 25s. 
-// export const config = {
-//   maxDuration: 10,
-// };
-export const runtime = 'edge'
+export const config = {
+  maxDuration: 10,
+};
+
+// export const runtime = 'edge' // Crawlee note supported on Edge runtime
 
 export default async function (req: VercelRequest, res: VercelResponse): Promise<void> {
   try {
