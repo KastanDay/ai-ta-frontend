@@ -186,37 +186,47 @@ export async function validateModelWithKey(apiKey: string, modelId: string): Pro
 
 /**
  * Validates the structure of the request body against the ChatApiBody type.
+ * Throws an error with a specific message when validation fails.
  * @param {ChatApiBody} body - The request body to validate.
- * @returns {boolean} A boolean indicating if the body is a valid ChatApiBody.
  */
-export function validateRequestBody(body: ChatApiBody): boolean {
-  if (typeof body.model !== 'string' || !(body.model in OpenAIModels)) {
-    console.error('Invalid model provided:', body.model);
-    return false;
+export function validateRequestBody(body: ChatApiBody): void {
+  // Check for required fields
+  const requiredFields = ['model', 'messages', 'course_name', 'api_key'];
+  for (const field of requiredFields) {
+    if (!body.hasOwnProperty(field)) {
+      throw new Error(`Missing required field: ${field}`);
+    }
   }
 
-  if (!body.messages || !Array.isArray(body.messages) || body.messages.length === 0) {
-    console.error('Invalid or empty messages provided');
-    return false;
+  if (typeof body.model !== 'string' || !(body.model in OpenAIModels)) {
+    throw new Error('Invalid model provided');
+  }
+
+  if (!body.messages || !Array.isArray(body.messages) || body.messages.length === 0 || !body.messages.some(message => message.role === 'user')) {
+    throw new Error('Invalid or empty messages provided');
   }
 
   if (body.temperature && (typeof body.temperature !== 'number' || body.temperature < 0 || body.temperature > 1)) {
-    console.error('Invalid temperature provided:', body.temperature);
-    return false;
+    throw new Error('Invalid temperature provided');
   }
 
   if (typeof body.course_name !== 'string') {
-    console.error('Invalid course_name provided:', body.course_name);
-    return false;
+    throw new Error('Invalid course_name provided');
   }
 
   if (body.stream && typeof body.stream !== 'boolean') {
-    console.error('Invalid stream provided:', body.stream);
-    return false;
+    throw new Error('Invalid stream provided');
+  }
+
+  const hasImageContent = body.messages.some(message => 
+    Array.isArray(message.content) && 
+    message.content.some(content => content.type === 'image_url')
+  );
+  if (hasImageContent && body.model !== OpenAIModelID.GPT_4_VISION) {
+    throw new Error('Invalid model provided for image content');
   }
 
   // Additional validation for other fields can be added here if needed
-  return true;
 }
 
 /**

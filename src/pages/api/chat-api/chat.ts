@@ -50,13 +50,20 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
 
 	// Parse and validate the request body
 	const body = await req.json();
-	if (!validateRequestBody(body)) {
-		console.error('Invalid request body:', body);
+	try {
+		// Validate the request body
+		validateRequestBody(body);
+	} catch (error: any) {
+		// Log the error and capture it with PostHog
+		console.error('Invalid request body:', body, 'Error:', error.message);
 		posthog.capture('Invalid Request Body', {
 			distinct_id: req.headers.get('x-forwarded-for') || req.ip,
 			body: body,
+			error: error.message,
 		});
-		return new NextResponse(JSON.stringify({ error: 'Invalid request body' }), { status: 400 });
+	
+		// Return a response with the error message
+		return new NextResponse(JSON.stringify({ error: `Invalid request body: ${error.message}` }), { status: 400 });
 	}
 
 	// Destructure the necessary properties from the request body

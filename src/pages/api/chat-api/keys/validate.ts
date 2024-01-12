@@ -20,7 +20,7 @@ export const config = {
  */
 export async function validateApiKeyAndRetrieveData(apiKey: string, course_name: string) {
 
-	console.log('apiKey', apiKey, 'course_name', course_name);
+	console.log('Validating apiKey', apiKey, ' for course_name', course_name);
 	// Attempt to retrieve the user ID associated with the API key from the database.
 	const { data, error } = await supabase
 		.from('api_keys')
