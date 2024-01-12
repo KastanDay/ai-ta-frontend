@@ -52,13 +52,13 @@ const ApiKeyManagement = ({ course_name, clerk_user }: {
 		{ value: 'node', label: 'Node.js' },
 	];
 
-	const apiKeyPlaceholder = '\"your-api-key\" // replace with your API key';
+	const apiKeyPlaceholder = '\"your-api-key\"'; // replace with your API key
 
-	const codeSnippets = {
-		'curl': `curl -X POST ${baseUrl}/api/chat-api/chat \\
+const codeSnippets = {
+	'curl': `curl -X POST ${baseUrl}/api/chat-api/chat \\
 	-H "Content-Type: application/json" \\
 	-d '{
-		"model": "gpt-3.5-turbo",
+		"model": "gpt-4",
 		"messages": [
 			{
 				"role": "system",
@@ -69,20 +69,20 @@ const ApiKeyManagement = ({ course_name, clerk_user }: {
 				"content": "Hello, how can I help you today?"
 			}
 		],
-		"openai_key": "your-openai-key", // replace with your OpenAI key
+		"openai_key": "your-openai-key",
 		"temperature": 0.7,
 		"course_name": "${course_name}",
 		"stream": true,
-		"api_key": ${apiKey || apiKeyPlaceholder}
+		"api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder}
 	}'`,
-		'python': `import requests
+	'python': `import requests
 	
 	url = "${baseUrl}/api/chat-api/chat"
 	headers = {
 		'Content-Type': 'application/json'
 	}
 	data = {
-		"model": "gpt-3.5-turbo",
+		"model": "gpt-4",
 		"messages": [
 			{
 				"role": "system",
@@ -93,19 +93,19 @@ const ApiKeyManagement = ({ course_name, clerk_user }: {
 				"content": "Hello, how can I help you today?"
 			}
 		],
-		"openai_key": "your-openai-key", // replace with your OpenAI key
+		"openai_key": "your-openai-key",
 		"temperature": 0.7,
 		"course_name": "${course_name}",
 		"stream": true,
-		"api_key": ${apiKey || apiKeyPlaceholder}
+		"api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder}
 	}
 	
 	response = requests.post(url, headers=headers, json=data)
 	print(response.text)`,
-		'node': `const axios = require('axios');
+	'node': `const axios = require('axios');
 	
 	const data = {
-		"model": "gpt-3.5-turbo",
+		"model": "gpt-4",
 		"messages": [
 			{
 				"role": "system",
@@ -116,11 +116,11 @@ const ApiKeyManagement = ({ course_name, clerk_user }: {
 				"content": "Hello, how can I help you today?"
 			}
 		],
-		"openai_key": "your-openai-key", // replace with your OpenAI key
+		"openai_key": "your-openai-key",
 		"temperature": 0.7,
 		"course_name": "${course_name}",
 		"stream": true,
-		"api_key": ${apiKey || apiKeyPlaceholder}
+		"api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder}
 	};
 	
 	axios.post('${baseUrl}/api/chat-api/chat', data, {
@@ -134,7 +134,7 @@ const ApiKeyManagement = ({ course_name, clerk_user }: {
 	.catch((error) => {
 		console.error(error);
 	});`
-	};
+};
 
 	useEffect(() => {
 		const fetchApiKey = async () => {

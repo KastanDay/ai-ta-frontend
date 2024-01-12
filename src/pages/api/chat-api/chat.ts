@@ -129,7 +129,8 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
 	}
 
 	// Handle image content if it exists
-	const imageContent = (lastMessage.content as Content[]).filter(content => content.type === 'image_url');
+	// Check if the content is an array and filter out image content
+	const imageContent = Array.isArray(lastMessage.content) ? (lastMessage.content as Content[]).filter(content => content.type === 'image_url') : [];
 	if (imageContent.length > 0) {
 		searchQuery = await handleImageContent(lastMessage, course_name, conversation, searchQuery, courseMetadata, openai_key, new AbortController())
 	}
