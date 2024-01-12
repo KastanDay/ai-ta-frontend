@@ -268,7 +268,7 @@ const ApiKeyManagement = ({ course_name, clerk_user }: {
 								API Key Management
 							</Title>
 							<Title order={4} w={'90%'}>
-								This API is stateless, meaning each request is independent of others. If you need to use the response from one call in a subsequent call, append the messages from the first call to the 'messages' array in the next call. For more information on how to structure the 'messages' array, please refer to the <a href="https://platform.openai.com/docs/api-reference/chat/create"
+								This API is stateless, meaning each request is independent of others. If you need to use the response from one call in a subsequent call, append the messages from the first call to the &apos;messages&apos; array in the next call. For more information on how to structure the &apos;messages&apos; array, please refer to the <a href="https://platform.openai.com/docs/api-reference/chat/create"
 									target="_blank"
 									rel="noopener noreferrer"
 									className={`text-purple-500 hover:underline ${montserrat_heading.variable} font-montserratHeading`}
