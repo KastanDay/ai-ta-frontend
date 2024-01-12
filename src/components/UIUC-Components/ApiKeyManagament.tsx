@@ -4,7 +4,7 @@ import { Card, Title, Button, Text, Flex, Group, Input, useMantineTheme, Textare
 import { useClipboard, useMediaQuery } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
 import { type UserResource } from '@clerk/types';
-import { IconCopy } from '@tabler/icons-react';
+import { IconCheck, IconCopy, IconExternalLink } from '@tabler/icons-react';
 import { montserrat_heading } from 'fonts';
 
 const ApiKeyManagement = ({ course_name, clerk_user }: {
@@ -18,12 +18,32 @@ const ApiKeyManagement = ({ course_name, clerk_user }: {
 	const isSmallScreen = useMediaQuery('(max-width: 960px)');
 	const { copy } = useClipboard();
 	const [apiKey, setApiKey] = useState<string | null>(null);
+	const baseUrl = process.env.VERCEL_URL || window.location.origin;
 	const [loading, setLoading] = useState(true);
 	// Define a type for the keys of codeSnippets
 	type Language = 'curl' | 'python' | 'node';
 
 	// Ensure selectedLanguage is of type Language
 	const [selectedLanguage, setSelectedLanguage] = useState<Language>('curl');
+
+	// State to track whether code snippet has been copied
+	const [copiedCodeSnippet, setCopiedCodeSnippet] = useState(false);
+	// State to track whether API key has been copied
+	const [copiedApiKey, setCopiedApiKey] = useState(false);
+
+	// Function to handle copying of code snippet
+	const handleCopyCodeSnippet = (text: string) => {
+		copy(text);
+		setCopiedCodeSnippet(true);
+		setTimeout(() => setCopiedCodeSnippet(false), 2000); // Reset after 2 seconds
+	};
+
+	// Function to handle copying of API key
+	const handleCopyApiKey = (text: string) => {
+		copy(text);
+		setCopiedApiKey(true);
+		setTimeout(() => setCopiedApiKey(false), 2000); // Reset after 2 seconds
+	};
 
 
 	const languageOptions = [
@@ -35,82 +55,85 @@ const ApiKeyManagement = ({ course_name, clerk_user }: {
 	const apiKeyPlaceholder = '\"your-api-key\" // replace with your API key';
 
 	const codeSnippets = {
-		'curl': `curl -X POST https://www.uiuc.chat/api/chat-api/stream \\
--H "Content-Type: application/json" \\
--d '{
-  "model": "gpt-3.5-turbo",
-  "conversation": {
-    "messages": [
-      {
-        "role": "user",
-        "content": "Hello, how can I help you today?"
-      }
-    ]
-  },
-  "openai_key": "your-openai-key", // replace with your OpenAI key
-  "prompt": "",
-  "temperature": 0.7,
-  "course_name": "${course_name}",
-  "stream": true,
-  "api_key": ${apiKey || apiKeyPlaceholder}
-}'`,
+		'curl': `curl -X POST ${baseUrl}/api/chat-api/chat \\
+	-H "Content-Type: application/json" \\
+	-d '{
+		"model": "gpt-3.5-turbo",
+		"messages": [
+			{
+				"role": "system",
+				"content": "Your system prompt here"
+			},
+			{
+				"role": "user",
+				"content": "Hello, how can I help you today?"
+			}
+		],
+		"openai_key": "your-openai-key", // replace with your OpenAI key
+		"temperature": 0.7,
+		"course_name": "${course_name}",
+		"stream": true,
+		"api_key": ${apiKey || apiKeyPlaceholder}
+	}'`,
 		'python': `import requests
-
-url = "https://www.uiuc.chat/api/chat-api/stream"
-headers = {
-  'Content-Type': 'application/json'
-}
-data = {
-  "model": "gpt-3.5-turbo",
-  "conversation": {
-    "messages": [
-      {
-        "role": "user",
-        "content": "Hello, how can I help you today?"
-      }
-    ]
-  },
-  "openai_key": "your-openai-key", // replace with your OpenAI key
-  "prompt": "",
-  "temperature": 0.7,
-  "course_name": "${course_name}",
-  "stream": true,
-  "api_key": ${apiKey || apiKeyPlaceholder}
-}
-
-response = requests.post(url, headers=headers, json=data)
-print(response.text)`,
+	
+	url = "${baseUrl}/api/chat-api/chat"
+	headers = {
+		'Content-Type': 'application/json'
+	}
+	data = {
+		"model": "gpt-3.5-turbo",
+		"messages": [
+			{
+				"role": "system",
+				"content": "Your system prompt here"
+			},
+			{
+				"role": "user",
+				"content": "Hello, how can I help you today?"
+			}
+		],
+		"openai_key": "your-openai-key", // replace with your OpenAI key
+		"temperature": 0.7,
+		"course_name": "${course_name}",
+		"stream": true,
+		"api_key": ${apiKey || apiKeyPlaceholder}
+	}
+	
+	response = requests.post(url, headers=headers, json=data)
+	print(response.text)`,
 		'node': `const axios = require('axios');
-
-const data = {
-  "model": "gpt-3.5-turbo",
-  "conversation": {
-    "messages": [
-      {
-        "role": "user",
-        "content": "Hello, how can I help you today?"
-      }
-    ]
-  },
-  "openai_key": "your-openai-key", // replace with your OpenAI key
-  "prompt": "",
-  "temperature": 0.7,
-  "course_name": "${course_name}",
-  "stream": true,
-  "api_key": ${apiKey || apiKeyPlaceholder}
-};
-
-axios.post('https://www.uiuc.chat/api/chat-api/stream', data, {
-  headers: {
-    'Content-Type': 'application/json'
-  }
-})
-.then((response) => {
-  console.log(response.data);
-})
-.catch((error) => {
-  console.error(error);
-});`
+	
+	const data = {
+		"model": "gpt-3.5-turbo",
+		"messages": [
+			{
+				"role": "system",
+				"content": "Your system prompt here"
+			},
+			{
+				"role": "user",
+				"content": "Hello, how can I help you today?"
+			}
+		],
+		"openai_key": "your-openai-key", // replace with your OpenAI key
+		"temperature": 0.7,
+		"course_name": "${course_name}",
+		"stream": true,
+		"api_key": ${apiKey || apiKeyPlaceholder}
+	};
+	
+	axios.post('${baseUrl}/api/chat-api/chat', data, {
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	})
+	.then((response) => {
+		console.log(response.data);
+	})
+	.catch((error) => {
+		console.error(error);
+	});`
 	};
 
 	useEffect(() => {
@@ -238,13 +261,24 @@ axios.post('https://www.uiuc.chat/api/chat-api/stream', data, {
 								order={2}
 								variant="gradient"
 								gradient={{ from: 'gold', to: 'white', deg: 50 }}
-								style={{ marginBottom: '1rem' }}
+								style={{ marginBottom: '0.5rem' }}
 								align='center'
+								className={`label ${montserrat_heading.variable} font-montserratHeading`}
 							>
 								API Key Management
 							</Title>
 							<Title order={4} w={'90%'}>
-								Access the following API endpoint for real-time chat functionality. Utilize the ChatApiBody type for your request payload. Below you will find the endpoint URL and a sample request body to integrate into your app.
+								This API is stateless, meaning each request is independent of others. If you need to use the response from one call in a subsequent call, append the messages from the first call to the 'messages' array in the next call. For more information on how to structure the 'messages' array, please refer to the <a href="https://platform.openai.com/docs/api-reference/chat/create"
+									target="_blank"
+									rel="noopener noreferrer"
+									className={`text-purple-500 hover:underline ${montserrat_heading.variable} font-montserratHeading`}
+								>
+									OpenAI API documentation
+									<IconExternalLink
+										className="mr-2 inline-block"
+										style={{ position: 'relative', top: '-3px' }}
+									/>
+								</a>.
 							</Title>
 							<div style={{ width: '90%', display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#15162c', paddingTop: '1rem', borderRadius: '1rem' }}>
 								<div style={{ width: '95%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#15162c', paddingBottom: '1rem' }}>
@@ -265,9 +299,9 @@ axios.post('https://www.uiuc.chat/api/chat-api/stream', data, {
 										}}
 										style={{ width: '30%' }}
 									/>
-									<Button onClick={() => copy(codeSnippets[selectedLanguage])} variant="subtle" size="xs"
+									<Button onClick={() => handleCopyCodeSnippet(codeSnippets[selectedLanguage])} variant="subtle" size="xs"
 										className='min-h-[2.5rem] transform rounded-tl-md rounded-bl-xl bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none rounded-tr-xl rounded-br-md ms-2 self-end'>
-										<IconCopy />
+										{copiedCodeSnippet ? <IconCheck /> : <IconCopy />}
 									</Button>
 								</div>
 								<Textarea
@@ -311,10 +345,10 @@ axios.post('https://www.uiuc.chat/api/chat-api/stream', data, {
 									size={'md'}
 									readOnly
 									rightSection={
-										<Button onClick={() => copy(apiKey)} variant="subtle" size="sm"
+										<Button onClick={() => handleCopyApiKey(apiKey)} variant="subtle" size="sm"
 											radius={'xl'}
 											className='min-w-[5rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none'>
-											<IconCopy />
+											{copiedApiKey ? <IconCheck /> : <IconCopy />}
 										</Button>
 									}
 									rightSectionWidth={'auto'}

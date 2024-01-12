@@ -33,7 +33,7 @@ export interface ContextWithMetadata {
   base_url: string
 }
 
-export type Role = 'assistant' | 'user'
+export type Role = 'assistant' | 'user' | 'system'
 
 export interface ChatBody {
   model: OpenAIModel
@@ -61,11 +61,10 @@ export interface Conversation {
 
 export interface ChatApiBody {
   model: string;
-  conversation: Conversation;
+  messages: Message[];
   openai_key?: string;
-  prompt: string;
-  temperature: number;
+  temperature?: number;
   course_name: string;
-  stream: boolean;
+  stream?: boolean;
   api_key: string;
 }

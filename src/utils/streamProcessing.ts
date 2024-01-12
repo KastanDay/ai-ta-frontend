@@ -10,6 +10,7 @@ import logConversationToSupabase from '~/pages/api/UIUC-api/logConversationToSup
 import posthog from 'posthog-js';
 import { replaceCitationLinks } from './citations';
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription';
+import { DEFAULT_SYSTEM_PROMPT } from './app/const';
 
 export const config = {
   runtime: 'edge',
@@ -194,8 +195,23 @@ export function validateRequestBody(body: ChatApiBody): boolean {
     return false;
   }
 
-  if (!body.conversation || !Array.isArray(body.conversation.messages) || body.conversation.messages.length === 0) {
-    console.error('Invalid or empty conversation provided');
+  if (!body.messages || !Array.isArray(body.messages) || body.messages.length === 0) {
+    console.error('Invalid or empty messages provided');
+    return false;
+  }
+
+  if (body.temperature && (typeof body.temperature !== 'number' || body.temperature < 0 || body.temperature > 1)) {
+    console.error('Invalid temperature provided:', body.temperature);
+    return false;
+  }
+
+  if (typeof body.course_name !== 'string') {
+    console.error('Invalid course_name provided:', body.course_name);
+    return false;
+  }
+
+  if (body.stream && typeof body.stream !== 'boolean') {
+    console.error('Invalid stream provided:', body.stream);
     return false;
   }
 
@@ -208,8 +224,8 @@ export function validateRequestBody(body: ChatApiBody): boolean {
  * @param {Conversation} conversation - The conversation object containing messages.
  * @returns {string} A string representing the search query.
  */
-export function constructSearchQuery(conversation: Conversation): string {
-  return conversation.messages
+export function constructSearchQuery(messages: Message[] ): string {
+  return messages
     .filter(msg => msg.role === 'user')
     .map(msg => {
       if (typeof msg.content === 'string') {
@@ -250,20 +266,17 @@ export function attachContextsToLastMessage(lastMessage: Message, contexts: Cont
  * @returns {ChatBody} The constructed ChatBody object.
  */
 export function constructChatBody(
-  model: string,
   conversation: Conversation,
   key: string,
-  prompt: string,
-  temperature: number,
   course_name: string,
   stream: boolean
 ): ChatBody {
   return {
-    model: OpenAIModels[model as OpenAIModelID],
+    model: conversation.model,
     messages: conversation.messages,
     key: key,
-    prompt: prompt,
-    temperature: temperature,
+    prompt: conversation.prompt,
+    temperature: conversation.temperature,
     course_name: course_name,
     stream: stream,
     isImage: false,
