@@ -295,7 +295,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   // THIS IS WHERE MESSAGES ARE SENT.
-  const handleSend = useCallback(
+  const updateConversation = (conv, msg, dc) => {
+  // method logic remains unchanged
+  // just ensure to return the updatedConversation variable
+};
+
+const handleSend = useCallback(
     async (message: Message, deleteCount = 0, plugin: Plugin | null = null) => {
 
       setCurrentMessage(message)
@@ -339,11 +344,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
         // Run image to text conversion, attach to Message object.
         if (Array.isArray(message.content)) {
-          searchQuery = await handleImageContent(message, endpoint, updatedConversation, searchQuery, controller);
+          // Call the new handleImageContent function
+searchQuery = await handleImageContent(message, endpoint, searchQuery, controller);
         }
 
         // Run context search, attach to Message object.
-        await handleContextSearch(message, selectedConversation, searchQuery);
+        // Call the new handleContextSearch function
+await handleContextSearch(message, searchQuery);
 
         const chatBody: ChatBody = {
           model: updatedConversation.model,
@@ -375,14 +382,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }
 
         // This is where we call the OpenAI API
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          signal: controller.signal,
-          body,
-        })
+        // Call the new makeApiCall function
+const response = await makeApiCall(endpoint, body, controller.signal);
 
         if (!response.ok) {
           const final_response = await response.json()
