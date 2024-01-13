@@ -21,6 +21,7 @@ import {
   Folder,
   ReportAnalytics,
   Settings,
+  ChartDots3,
 } from 'tabler-icons-react'
 import { useRouter } from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
@@ -178,6 +179,17 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true }) => {
       icon: <ReportIcon />,
       link: `/${getCurrentCourseName()}/query-analysis`,
     },
+    {
+      name: (
+        <span
+          className={`${montserrat_heading.variable} font-montserratHeading`}
+        >
+          Flow
+        </span>
+      ),
+      icon: <ChartDots3Icon />,
+      link: `/${getCurrentCourseName()}/flow`,
+    },
     // {
     //   name: (
     //     <span
@@ -307,6 +319,17 @@ export function ReportIcon() {
       strokeWidth={2}
       // color={isSelected ? 'hsl(280,100%,70%)' : 'white'}
       style={{ marginRight: '5px', marginLeft: '5px' }}
+    />
+  )
+}
+
+export function ChartDots3Icon() {
+  return (
+    <ChartDots3
+      size={20}
+      strokeWidth={2}
+      // color={'white'}
+      style={{ marginRight: '4px', marginLeft: '4px' }}
     />
   )
 }

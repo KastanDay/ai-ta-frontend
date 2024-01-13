@@ -28,6 +28,7 @@ import {
   Folder,
   ReportAnalytics,
   Settings,
+  ChartDots3,
 } from 'tabler-icons-react'
 import {
   // IconExternalLink,
@@ -245,7 +246,12 @@ const ChatNavbar = ({
       name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
       icon: <ReportIcon />,
       link: `/${getCurrentCourseName()}/query-analysis`
-    }
+    },
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Flow</span>,
+      icon: <ChartDots3Icon />,
+      link: `/${getCurrentCourseName()}/flow`
+    },
   ] : [];
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -555,6 +561,17 @@ export function ReportIcon() {
 export function SettingIcon() {
   return (
     <Settings
+      size={20}
+      strokeWidth={2}
+      // color={'white'}
+      style={{ marginRight: '4px', marginLeft: '4px' }}
+    />
+  )
+}
+
+export function ChartDots3Icon() {
+  return (
+    <ChartDots3
       size={20}
       strokeWidth={2}
       // color={'white'}
