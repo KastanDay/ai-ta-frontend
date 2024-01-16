@@ -15,7 +15,6 @@ import {
 	constructChatBody,
 	constructSearchQuery,
 	determineAndValidateOpenAIKey,
-	getBaseUrl,
 	handleImageContent,
 	handleNonStreamingResponse,
 	handleStreamingResponse,
@@ -23,6 +22,7 @@ import {
 } from '~/utils/streamProcessing';
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '~/utils/app/const';
 import { v4 as uuidv4 } from 'uuid';
+import { getBaseUrl } from '~/utils/api';
 
 // Configuration for the runtime environment
 export const config = {
