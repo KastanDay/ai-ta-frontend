@@ -113,6 +113,7 @@ export async function fetchCourseMetadata(course_name: string): Promise<any> {
   try {
     const baseUrl = process.env.VERCEL_URL || 'http://localhost:3000';
     const endpoint = `${baseUrl}/api/UIUC-api/getCourseMetadata?course_name=${course_name}`;
+    console.log('endpoint: ', endpoint);
     const response = await fetch(endpoint);
 
     if (!response.ok) {
