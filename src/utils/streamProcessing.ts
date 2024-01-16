@@ -109,9 +109,13 @@ export async function processChunkWithStateMachine(
 
       case State.InFilenameLink:
         if (char === ')') {
-          state = State.Normal;
           processedChunk += await replaceCitationLinks(buffer + char, lastMessage, citationLinkCache);
           buffer = '';
+          if (i < chunk.length - 1 && chunk[i + 1]?.match(/\d/)) {
+            state = State.InCitation;
+          } else {
+            state = State.Normal;
+          }
         } else {
           buffer += char;
         }
@@ -219,8 +223,8 @@ export function validateRequestBody(body: ChatApiBody): void {
     throw new Error('Invalid stream provided');
   }
 
-  const hasImageContent = body.messages.some(message => 
-    Array.isArray(message.content) && 
+  const hasImageContent = body.messages.some(message =>
+    Array.isArray(message.content) &&
     message.content.some(content => content.type === 'image_url')
   );
   if (hasImageContent && body.model !== OpenAIModelID.GPT_4_VISION) {
@@ -235,7 +239,7 @@ export function validateRequestBody(body: ChatApiBody): void {
  * @param {Conversation} conversation - The conversation object containing messages.
  * @returns {string} A string representing the search query.
  */
-export function constructSearchQuery(messages: Message[] ): string {
+export function constructSearchQuery(messages: Message[]): string {
   return messages
     .filter(msg => msg.role === 'user')
     .map(msg => {
