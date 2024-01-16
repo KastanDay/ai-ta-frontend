@@ -11,6 +11,7 @@ import posthog from 'posthog-js';
 import { replaceCitationLinks } from './citations';
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription';
 import { DEFAULT_SYSTEM_PROMPT } from './app/const';
+import { getBaseUrl } from './api';
 
 export const config = {
   runtime: 'edge',
@@ -501,7 +502,3 @@ export async function handleImageContent(message: Message, course_name: string, 
   console.log("Returning search query with image description: ", searchQuery);
   return searchQuery;
 }
-
-export const getBaseUrl = (): string => {
-  return process.env.VERCEL_URL || 'http://localhost:3000';
-};

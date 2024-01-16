@@ -5,8 +5,7 @@ import {
 } from '~/types/courseMetadata';
 import { log } from 'next-axiom';
 import { v4 as uuidv4 } from 'uuid';
-import axios from 'axios';
-import { NextApiRequest } from 'next';
+import { getBaseUrl } from './api';
 
 // Configuration for runtime environment
 export const config = {
@@ -87,7 +86,7 @@ export const uploadToS3 = async (file: File | null, course_name: string): Promis
  */
 export async function fetchPresignedUrl(filePath: string, page?: string): Promise<string | null> {
   try {
-    const endpoint = '/api/download';
+    const endpoint = `${getBaseUrl()}/api/download`;
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -112,7 +111,7 @@ export async function fetchCourseMetadata(course_name: string): Promise<any> {
   try {
     // const baseUrl = process.env.VERCEL_URL || 'http://localhost:3000';
     // const endpoint = `${baseUrl}/api/UIUC-api/getCourseMetadata?course_name=${course_name}`;
-    const endpoint = `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`;
+    const endpoint = `${getBaseUrl()}/api/UIUC-api/getCourseMetadata?course_name=${course_name}`;
     console.log('endpoint: ', endpoint);
     const response = await fetch(endpoint);
 
@@ -135,18 +134,6 @@ export async function fetchCourseMetadata(course_name: string): Promise<any> {
     throw error;
   }
 }
-
-/**
- * Retrieves the base URL of the current runtime environment.
- * @returns {string} - The base URL of the current runtime environment.
- */
-export const getBaseUrl = (): string => {
-  let baseUrl = process.env.VERCEL_URL || 'http://localhost:3000';
-  if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
-    baseUrl = 'https://' + baseUrl;
-  }
-  return baseUrl;
-};
 
 // Helper Types
 interface PresignedPostResponse {
