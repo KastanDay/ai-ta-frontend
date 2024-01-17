@@ -22,7 +22,7 @@ const ApiPage: NextPage = () => {
 	const router = useRouter();
 	const user = useUser();
 	const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(null);
-	const [courseExists, setCourseExists] = useState<boolean>(false);
+	const [courseExists, setCourseExists] = useState<boolean | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [permission, setPermission] = useState<string | null>(null);
 	const [bannerUrl, setBannerUrl] = useState<string>('')
@@ -60,6 +60,11 @@ const ApiPage: NextPage = () => {
 
 	// Second useEffect to handle permissions and other dependent data
 	useEffect(() => {
+		if (isLoading || !user.isLoaded || courseExists === null) {
+			// Do not proceed if we are still loading or if the user data is not loaded yet.
+			return;
+		}
+
 		if (!courseMetadata || !user.isLoaded) {
 			return;
 		}
@@ -79,7 +84,7 @@ const ApiPage: NextPage = () => {
 					console.log("Got banner image: ", url);
 				}
 
-				if (!courseExists) {
+				if (courseExists === false) {
 					console.log("Course does not exist, redirecting to new course page");
 					router.replace(`/${router.query.course_name}/new`);
 				}
@@ -95,7 +100,7 @@ const ApiPage: NextPage = () => {
 		};
 
 		handlePermissionsAndData();
-	}, [courseMetadata, user.isLoaded, isLoading]);
+	}, [courseMetadata, user.isLoaded, isLoading, router]);
 
 
 	if (isLoading || !user.isLoaded) {
