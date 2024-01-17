@@ -7,7 +7,7 @@ import { fetchCourseMetadata } from '~/utils/apiUtils';
 import { validateApiKeyAndRetrieveData } from './keys/validate';
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck';
 import posthog from 'posthog-js';
-import { User } from '@clerk/nextjs/dist/types/server';
+import { User } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server';
 import { CourseMetadata } from '~/types/courseMetadata';
 import {
@@ -23,6 +23,7 @@ import {
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '~/utils/app/const';
 import { v4 as uuidv4 } from 'uuid';
 import { getBaseUrl } from '~/utils/api';
+import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers';
 
 // Configuration for the runtime environment
 export const config = {
@@ -73,11 +74,15 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
 	// Validate the API key and retrieve user data
 	const { isValidApiKey, userObject }: { isValidApiKey: boolean; userObject: User | null } = await validateApiKeyAndRetrieveData(api_key, course_name);
 
+	const email = extractEmailsFromClerk(userObject as User)[0];
+
+	console.log('Received /chat request for: ', email);
+
 	if (!isValidApiKey) {
 		posthog.capture('stream_api_invalid_api_key', {
 			distinct_id: req.headers.get('x-forwarded-for') || req.ip,
 			api_key: api_key,
-			user_id: userObject?.id,
+			user_id: email,
 		});
 		return new NextResponse(JSON.stringify({ error: 'Invalid API key' }), { status: 403 });
 	}
@@ -107,7 +112,7 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
 		posthog.capture('stream_api_permission_denied', {
 			distinct_id: req.headers.get('x-forwarded-for') || req.ip,
 			permission: permission,
-			user_id: userObject?.id,
+			user_id: email,
 		});
 		return NextResponse.json({ error: 'You do not have permission to perform this action' }, { status: 403 });
 	}
@@ -133,6 +138,7 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
 		prompt: messages.filter(message => message.role === 'system').length > 0 ? messages.filter(message => message.role === 'system')[0]?.content as string ?? messages.filter(message => message.role === 'system')[0]?.content as string : DEFAULT_SYSTEM_PROMPT,
 		temperature: temperature || DEFAULT_TEMPERATURE,
 		folderId: null,
+		user_email: email,
 	}
 
 	// Handle image content if it exists
@@ -150,7 +156,7 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
 		console.error('No contexts found');
 		posthog.capture('stream_api_no_contexts_found', {
 			distinct_id: req.headers.get('x-forwarded-for') || req.ip,
-			user_id: userObject?.id,
+			user_id: email,
 		});
 		return NextResponse.json({ error: 'No contexts found' }, { status: 500 });
 	}
@@ -179,7 +185,7 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
 			distinct_id: req.headers.get('x-forwarded-for') || req.ip,
 			error: apiResponse.statusText,
 			status: apiResponse.status,
-			user_id: userObject?.id,
+			user_id: email,
 		});
 		return new NextResponse(JSON.stringify({ error: `API error: ${apiResponse.statusText}` }), { status: apiResponse.status });
 	}
@@ -188,14 +194,14 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
 	if (stream) {
 		posthog.capture('stream_api_streaming_started', {
 			distinct_id: req.headers.get('x-forwarded-for') || req.ip,
-			user_id: userObject?.id,
+			user_id: email,
 		});
-		return await handleStreamingResponse(apiResponse, conversation, req, userObject as User);
+		return await handleStreamingResponse(apiResponse, conversation, req, course_name);
 	} else {
 		posthog.capture('stream_api_response_sent', {
 			distinct_id: req.headers.get('x-forwarded-for') || req.ip,
-			user_id: userObject?.id,
+			user_id: email,
 		});
-		return await handleNonStreamingResponse(apiResponse, conversation, req, userObject as User);
+		return await handleNonStreamingResponse(apiResponse, conversation, req, course_name);
 	}
 }

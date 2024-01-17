@@ -11,33 +11,36 @@ import { fetchPresignedUrl } from "./apiUtils";
 export async function replaceCitationLinks(content: string, lastMessage: Message, citationLinkCache: Map<number, string>): Promise<string> {
   console.log("Chunk before replacement: ", content);
   if (lastMessage.contexts) {
-    const citationPattern = /\[(\d+)\](?!\([^)]*\))/g;
-    const citationIndices = new Set<number>();
-    let match;
-    while ((match = citationPattern.exec(content)) !== null) {
-      citationIndices.add(parseInt(match[1] as string, 10));
+    const citationPattern = /\[(\d+)(?:,\s*page:\s*(\d+))?\]/g;
+  let match;
+  while ((match = citationPattern.exec(content)) !== null) {
+    const citationIndex = parseInt(match[1] as string, 10);
+    const pageNumber = match[2]; // This will be undefined if there is no page number.
+    const context = lastMessage.contexts[citationIndex - 1];
+    if (context) {
+      const link = await getCitationLink(context, citationLinkCache, citationIndex);
+      const replacementText = pageNumber ? `[${citationIndex}](${link}#page=${pageNumber})` : `[${citationIndex}](${link})`;
+      content = content.replace(match[0], replacementText);
+    }
+  }
+
+    // Extract filename indices
+    const filenamePattern = /(\b\d+\.)\s*\[(.*?)\]\(#\)/g;
+    const filenameIndices = new Set<number>();
+    while ((match = filenamePattern.exec(content)) !== null) {
+      filenameIndices.add(parseInt(match[1] as string, 10));
     }
 
-    for (const citationIndex of citationIndices) {
-      const context = lastMessage.contexts[citationIndex - 1];
+    // Replace filename indices with links
+    for (const filenameIndex of filenameIndices) {
+      const context = lastMessage.contexts[filenameIndex - 1];
       if (context) {
-        const link = await getCitationLink(context, citationLinkCache, citationIndex);
-        const pageNumberMatch = content.match(new RegExp(`\\[${escapeRegExp(context.readable_filename)}, page: (\\d+)\\]\\(#\\)`));
-        const pageNumber = pageNumberMatch ? `#page=${pageNumberMatch[1]}` : '';
-        content = content.replace(new RegExp(`\\[${citationIndex}\\](?!\\([^)]*\\))`, 'g'), `[${citationIndex}](${link}${pageNumber})`);
-      }
-    }
-
-    const filenameLinkPattern = /(\b\d+\.)\s*\[(.*?)\]\(#\)/g;
-    while ((match = filenameLinkPattern.exec(content)) !== null) {
-      const citationIndex = parseInt(match[1] as string, 10);
-      const context = lastMessage.contexts[citationIndex - 1];
-      if (context) {
-        const link = await getCitationLink(context, citationLinkCache, citationIndex);
-        const pageNumberMatch = (match[2] as string).match(/page: (\d+)/);
-        const pageNumber = pageNumberMatch ? `#page=${pageNumberMatch[1]}` : '';
-        content = content.replace(new RegExp(`(\\b${citationIndex}\\.)\\s*\\[(.*?)\\]\\(\\#\\)`, 'g'), (match, index, filename) => {
-          return `${index} [${index} ${filename}](${link}${pageNumber})`;
+        const link = await getCitationLink(context, citationLinkCache, filenameIndex);
+        content = content.replace(new RegExp(`(\\b${filenameIndex}\\.)\\s*\\[(.*?)\\]\\(\\#\\)`, 'g'), (match, index, filename) => {
+          const pageNumberMatch = filename.match(/page: (\d+)/);
+          const pageNumber = pageNumberMatch ? `#page=${pageNumberMatch[1]}` : '';
+          console.log("pageNumber: ", pageNumber);
+          return `${index} [${filename}](${link}${pageNumber})`;
         });
       }
     }

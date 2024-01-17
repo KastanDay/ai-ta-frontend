@@ -1,17 +1,13 @@
 import { ChatApiBody, ChatBody, Content, ContextWithMetadata, Conversation, Message } from '~/types/chat';
-import { fetchPresignedUrl } from './apiUtils';
 import { CourseMetadata } from '~/types/courseMetadata';
 import { decrypt } from './crypto';
 import { OpenAIError } from './server';
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '~/types/openai';
 import { NextRequest, NextResponse } from 'next/server';
-import { User } from '@clerk/nextjs/dist/types/server';
-import logConversationToSupabase from '~/pages/api/UIUC-api/logConversationToSupabase';
-import posthog from 'posthog-js';
 import { replaceCitationLinks } from './citations';
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription';
-import { DEFAULT_SYSTEM_PROMPT } from './app/const';
 import { getBaseUrl } from './api';
+import posthog from 'posthog-js';
 
 export const config = {
   runtime: 'edge',
@@ -24,8 +20,12 @@ export enum State {
   Normal,
   PossibleCitationOrFilename,
   InCitation,
+  InCitationPage,
   InFilename,
-  InFilenameLink
+  InFilenameLink,
+  PossibleFilename,
+  AfterDigitPeriod,
+  AfterDigitPeriodSpace,
 }
 
 /**
@@ -42,6 +42,7 @@ export async function processChunkWithStateMachine(
   stateMachineContext: { state: State, buffer: string },
   citationLinkCache: Map<number, string>
 ): Promise<string> {
+  // console.log('in processChunkWithStateMachine with chunk: ', chunk)
   let { state, buffer } = stateMachineContext;
   let processedChunk = '';
 
@@ -49,18 +50,31 @@ export async function processChunkWithStateMachine(
     const char = chunk[i]!;
     switch (state) {
       case State.Normal:
+        // console.log('in state normal with char: ', char)
         if (char === '[') {
           state = State.PossibleCitationOrFilename;
+          // console.log('state changed to possible citation or filename')
           buffer += char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
         } else if (char.match(/\d/)) {
           let j = i + 1;
+          // console.log(chunk[j])
           while (j < chunk.length && /\d/.test(chunk[j] as string)) {
             j++;
           }
           if (j < chunk.length && chunk[j] === '.') {
-            state = State.InFilename;
+            state = State.AfterDigitPeriod;
+            // console.log('state changed to after digit period')
             buffer += chunk.substring(i, j + 1);
+            // console.log(`added chunk to buffer: ${chunk.substring(i, j + 1)}, buffer: ${buffer}`)
             i = j;
+          } else if (j === chunk.length) {
+            // If the chunk ends with a digit, keep it in the buffer and continue to the next chunk
+            // console.log('chunk ends with a digit, keeping it in the buffer and continuing to the next chunk')
+            state = State.PossibleFilename;
+            // console.log('state changed to possible filename')
+            buffer += char;
+            // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
           } else {
             processedChunk += char;
           }
@@ -69,55 +83,163 @@ export async function processChunkWithStateMachine(
         }
         break;
 
+      case State.PossibleFilename:
+        if (char === '.') {
+          // console.log('in state possible filename with char: ', char)
+          state = State.AfterDigitPeriod;
+          buffer += char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
+        } else if (char.match(/\d/)) {
+          // console.log('in state possible filename with char: ', char)
+          buffer += char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
+
+        } else {
+          processedChunk += buffer + char;
+          buffer = '';
+          // console.log('Clearing buffer after invalid filename')
+          state = State.Normal;
+          // console.log('state changed to normal')
+        }
+        break;
+
       case State.PossibleCitationOrFilename:
+        // console.log('in state possible citation or filename with char: ', char)
         if (char.match(/\d/)) {
           state = State.InCitation;
+          // console.log('state changed to in citation')
           buffer += char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
         } else if (char === '.') {
           state = State.InFilename;
+          // console.log('state changed to in filename')
           buffer += char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
+        } else if (char.match(/[a-zA-Z0-9-]/)) {
+          state = State.InFilenameLink; // Change state to InFilenameLink
+          // console.log('state changed to in filename link')
+          buffer += char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
         } else {
           state = State.Normal;
+          // console.log('state changed to normal')
           processedChunk += buffer + char;
+          // console.log(`added buffer and char to processed chunk: ${buffer + char}, processedChunk: ${processedChunk}`)
           buffer = '';
         }
         break;
 
       case State.InCitation:
+        // console.log('in state in citation with char: ', char)
         if (char === ']') {
           state = State.Normal;
+          // console.log('state changed to normal')
           processedChunk += await replaceCitationLinks(buffer + char, lastMessage, citationLinkCache);
           buffer = '';
+          // console.log('Clearing buffer after citation replacement')
+        } else if (char === ',' && buffer.match(/\[\d+$/)) {
+          // Detecting the start of a page number after the citation index
+          buffer += char;
+          state = State.InCitationPage; // Add a new state for handling page numbers
+          // console.log('state changed to in citation page')
         } else {
           buffer += char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
+        }
+        break;
+
+      case State.InCitationPage:
+        // Handle characters after the page number prefix
+        if (char === ']') {
+          state = State.Normal;
+          // console.log('state changed to normal')
+          processedChunk += await replaceCitationLinks(buffer + char, lastMessage, citationLinkCache);
+          buffer = '';
+          // console.log('Clearing buffer after citation page replacement')
+        } else {
+          buffer += char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
         }
         break;
 
       case State.InFilename:
-        if (char === '[') {
+        // console.log('in state in filename with char: ', char)
+        if (char.match(/\s/)) {
           buffer += char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
+        } else if (char === '[') {
+          buffer += char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
           state = State.InFilenameLink;
-        } else if (char.match(/\s/)) {
-          buffer += char;
+          // console.log('state changed to in filename link')
         } else if (char.match(/\d/) && chunk[i + 1] === '.') {
           processedChunk += await replaceCitationLinks(buffer, lastMessage, citationLinkCache);
           buffer = char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
         } else {
           buffer += char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
         }
         break;
 
       case State.InFilenameLink:
+        // console.log('in state in filename link with char: ', char)
         if (char === ')') {
           processedChunk += await replaceCitationLinks(buffer + char, lastMessage, citationLinkCache);
           buffer = '';
+          // console.log('Clearing buffer after filename replacement')
           if (i < chunk.length - 1 && chunk[i + 1]?.match(/\d/)) {
             state = State.InCitation;
+            // console.log('state changed to in citation')
           } else {
             state = State.Normal;
+            // console.log('state changed to normal')
           }
         } else {
           buffer += char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
+        }
+        break;
+
+      case State.AfterDigitPeriod:
+        // console.log('in state after digit period with char: ', char)
+        if (char === ' ') {
+          // console.log('char is a space')
+          // Transition to a new state to handle the space after a digit and a period
+          state = State.AfterDigitPeriodSpace;
+          buffer += char;
+        } else if (char === '[') {
+          // console.log('char is a [, transition to in filename link')
+          // It's a filename link, transition to the appropriate state
+          state = State.InFilenameLink;
+          buffer += char;
+        } else {
+          // console.log('char is not a space or [, transition to normal')
+          // If it's neither, revert to normal text processing
+          state = State.Normal;
+          // console.log('state changed to normal')
+          processedChunk += buffer;
+          // console.log(`added buffer to processed chunk: ${buffer}, processedChunk: ${processedChunk}`)
+          buffer = '';
+          // console.log('Clearing buffer after invalid filename')
+          i--; // Re-evaluate this character in the Normal state
+        }
+        break;
+
+      case State.AfterDigitPeriodSpace:
+        if (char === '[') {
+          // It's a filename link, transition to the appropriate state
+          state = State.InFilenameLink;
+          // console.log('state changed to in filename link')
+          buffer += char;
+          // console.log(`added char to buffer: ${char}, buffer: ${buffer}`)
+        } else {
+          // It's a list item, output the buffer and revert to normal
+          state = State.Normal;
+          // console.log('state changed to normal')
+          processedChunk += buffer + char;
+          // console.log(`added buffer and char to processed chunk: ${buffer + char}, processedChunk: ${processedChunk}`)
+          buffer = '';
         }
         break;
     }
@@ -303,14 +425,14 @@ export function constructChatBody(
  * @param {NextResponse} apiResponse - The response from the chat handler.
  * @param {Conversation} conversation - The conversation object for logging purposes.
  * @param {NextRequest} req - The incoming Next.js API request object.
- * @param {User} userObject - The user object for logging purposes.
+ * @param {string} course_name - The name of the course associated with the conversation.
  * @returns {Promise<NextResponse>} A NextResponse object representing the streaming response.
  */
 export async function handleStreamingResponse(
   apiResponse: NextResponse,
   conversation: Conversation,
   req: NextRequest,
-  userObject: User
+  course_name: string,
 ): Promise<NextResponse> {
   if (!apiResponse.body) {
     console.error('API response body is null');
@@ -320,6 +442,7 @@ export async function handleStreamingResponse(
   const lastMessage = conversation.messages[conversation.messages.length - 1] as Message;
   const stateMachineContext = { state: State.Normal, buffer: '' };
   const citationLinkCache = new Map<number, string>();
+  let fullAssistantResponse = '';
 
   const transformer = new TransformStream({
     async transform(chunk, controller) {
@@ -328,6 +451,7 @@ export async function handleStreamingResponse(
 
       try {
         decodedChunk = await processChunkWithStateMachine(decodedChunk, lastMessage, stateMachineContext, citationLinkCache);
+        fullAssistantResponse += decodedChunk
       } catch (error) {
         console.error('Error processing chunk with state machine:', error);
         controller.error(error);
@@ -340,7 +464,6 @@ export async function handleStreamingResponse(
 
       if (chunk.done) {
         controller.terminate();
-        await updateConversationInDatabase(conversation, decodedChunk, req, userObject);
       }
     },
     flush(controller) {
@@ -358,6 +481,14 @@ export async function handleStreamingResponse(
       } else {
         controller.terminate();
       }
+      // Append the processed response to the conversation
+      conversation.messages.push({
+        role: 'assistant',
+        content: fullAssistantResponse,
+      });
+
+      // Log the conversation to the database
+      updateConversationInDatabase(conversation, course_name, req);
     }
   });
 
@@ -370,14 +501,14 @@ export async function handleStreamingResponse(
  * @param {string} data - The response data as a string.
  * @param {Conversation} conversation - The conversation object for logging purposes.
  * @param {NextRequest} req - The incoming Next.js API request object.
- * @param {User} userObject - The user object for logging purposes.
+ * @param {string} course_name - The name of the course associated with the conversation.
  * @returns {Promise<string>} The processed data.
  */
 async function processResponseData(
   data: string,
   conversation: Conversation,
   req: NextRequest,
-  userObject: User
+  course_name: string,
 ): Promise<string> {
   const lastMessage = conversation.messages[conversation.messages.length - 1] as Message;
   const stateMachineContext = { state: State.Normal, buffer: '' };
@@ -385,7 +516,7 @@ async function processResponseData(
 
   try {
     const processedData = await processChunkWithStateMachine(data, lastMessage, stateMachineContext, citationLinkCache);
-    await updateConversationInDatabase(conversation, processedData, req, userObject);
+    await updateConversationInDatabase(conversation, course_name, req);
     return processedData;
   } catch (error) {
     console.error('Error processing response data:', error);
@@ -398,14 +529,14 @@ async function processResponseData(
  * @param {NextResponse} apiResponse - The response from the chat handler.
  * @param {Conversation} conversation - The conversation object for logging purposes.
  * @param {NextRequest} req - The incoming Next.js API request object.
- * @param {User} userObject - The user object for logging purposes.
+ * @param {string} course_name - The name of the course associated with the conversation.
  * @returns {Promise<NextResponse>} A NextResponse object representing the JSON response.
  */
 export async function handleNonStreamingResponse(
   apiResponse: NextResponse,
   conversation: Conversation,
   req: NextRequest,
-  userObject: User
+  course_name: string,
 ): Promise<NextResponse> {
   if (!apiResponse.body) {
     console.error('API response body is null');
@@ -415,7 +546,7 @@ export async function handleNonStreamingResponse(
   try {
     const json = await apiResponse.json();
     const response = json.choices[0].message.content || '';
-    const processedResponse = await processResponseData(response, conversation, req, userObject);
+    const processedResponse = await processResponseData(response, conversation, req, course_name);
     return new NextResponse(JSON.stringify({ message: processedResponse }), { status: 200 });
   } catch (error) {
     console.error('Error handling non-streaming response:', error);
@@ -426,45 +557,38 @@ export async function handleNonStreamingResponse(
 /**
  * Updates the conversation in the database with the full text response.
  * @param {Conversation} conversation - The conversation object.
- * @param {string} fullText - The full text response from the assistant.
+ * @param {string} course_name - The name of the course associated with the conversation.
  * @param {NextRequest} req - The incoming Next.js API request object.
- * @param {User} userObject - The user object for logging purposes.
  */
 export async function updateConversationInDatabase(
   conversation: Conversation,
-  fullText: string,
+  course_name: string,
   req: NextRequest,
-  userObject: User
 ) {
-  const course_name = conversation.messages[conversation.messages.length - 1]?.contexts?.[0]?.course_name || '';
-
-  await logConversationToSupabase({
-    body: {
-      course_name: course_name,
-      conversation: {
-        ...conversation,
-        messages: conversation.messages.map(message => ({
-          ...message,
-          ...(message.role === 'assistant' && { content: fullText })
-        }))
-      }
-    }
-  } as any, {
-    status: (statusCode: number) => ({
-      json: (data: any) => {
-        if (statusCode !== 200) {
-          console.error('Error updating conversation in database:', data);
-        } else {
-          console.log('Conversation updated in database:', data);
-        }
-      }
+  // Log conversation to Supabase
+  try {
+    const response = await fetch(`${getBaseUrl()}/api/UIUC-api/logConversationToSupabase`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        course_name: course_name,
+        conversation: conversation,
+      }),
     })
-  } as any);
+    const data = await response.json()
+    console.log('Updated conversation in Supabase:', data)
+    // return data.success
+  } catch (error) {
+    console.error('Error setting course data:', error)
+    // return false
+  }
 
   posthog.capture('stream_api_conversation_updated', {
     distinct_id: req.headers.get('x-forwarded-for') || req.ip,
     conversation_id: conversation.id,
-    user_id: userObject?.id,
+    user_id: conversation.user_email,
   });
 }
 

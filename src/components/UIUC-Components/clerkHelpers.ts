@@ -1,7 +1,8 @@
+import { User } from '@clerk/nextjs/server'
 import { type UserResource } from '@clerk/types'
 
 export function extractEmailsFromClerk(
-  clerk_user: UserResource | undefined | null,
+  clerk_user: UserResource | User | undefined | null,
 ): string[] {
   // Extract all possible emails from Clerk user object.
   // Both manually set emails and social logins.

@@ -78,6 +78,7 @@ import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
+import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -370,7 +371,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           let done = false
           let isFirst = true
           let text = ''
+          let finalAssistantRespose = ''
           const citationLinkCache = new Map<number, string>();
+          const stateMachineContext = { state: State.Normal, buffer: '' };
           try {
             while (!done) {
               if (stopConversationRef.current === true) {
@@ -410,11 +413,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
                   if (lastMessage && lastMessage.contexts) {
                     // Call the replaceCitationLinks method and await its result
-                    const updatedContent = await replaceCitationLinks(text, lastMessage, citationLinkCache);
+                    // const updatedContent = await replaceCitationLinks(text, lastMessage, citationLinkCache);
+                    const updatedContent = await processChunkWithStateMachine(chunkValue, lastMessage, stateMachineContext, citationLinkCache);
+
+                    finalAssistantRespose += updatedContent;
 
                     // Update the last message with the new content
                     const updatedMessages = updatedConversation.messages.map((msg, index) =>
-                      index === lastMessageIndex ? { ...msg, content: updatedContent } : msg
+                      index === lastMessageIndex ? { ...msg, content: finalAssistantRespose } : msg
                     );
 
                     // Update the conversation with the new messages
