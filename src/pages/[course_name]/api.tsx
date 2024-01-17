@@ -32,10 +32,11 @@ const ApiPage: NextPage = () => {
 
 	// First useEffect to fetch course metadata
 	useEffect(() => {
+		if (!router.isReady || !course_name) {
+			return;
+		}
+
 		const fetchMetadata = async () => {
-			if (!course_name) {
-				return;
-			}
 
 			setIsLoading(true);
 
@@ -56,7 +57,7 @@ const ApiPage: NextPage = () => {
 		};
 
 		fetchMetadata();
-	}, [course_name]);
+	}, [course_name, router.isReady]);
 
 	// Second useEffect to handle permissions and other dependent data
 	useEffect(() => {
