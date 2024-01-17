@@ -111,7 +111,7 @@ export const ModelParams = ({
                 </Input.Description>
               </div>
 
-              <div style={{ minHeight: '3em' }}>
+              {/* <div style={{ minHeight: '3em' }}>
                 <SystemPrompt
                   conversation={selectedConversation}
                   prompts={prompts}
@@ -122,7 +122,7 @@ export const ModelParams = ({
                     })
                   }
                 />
-              </div>
+              </div> */}
 
               <TemperatureSlider
                 label={t('Temperature')}
