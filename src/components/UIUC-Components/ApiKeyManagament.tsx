@@ -54,8 +54,8 @@ const ApiKeyManagement = ({ course_name, clerk_user }: {
 
 	const apiKeyPlaceholder = '\"your-api-key\"'; // replace with your API key
 
-const codeSnippets = {
-	'curl': `curl -X POST ${baseUrl}/api/chat-api/chat \\
+	const codeSnippets = {
+		'curl': `curl -X POST ${baseUrl}/api/chat-api/chat \\
 	-H "Content-Type: application/json" \\
 	-d '{
 		"model": "gpt-4",
@@ -66,16 +66,16 @@ const codeSnippets = {
 			},
 			{
 				"role": "user",
-				"content": "Hello, how can I help you today?"
+				"content": "What is in these documents?"
 			}
 		],
-		"openai_key": "your-openai-key",
+		"openai_key": "YOUR-OPENAI-KEY-HERE",
 		"temperature": 0.7,
 		"course_name": "${course_name}",
 		"stream": true,
 		"api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder}
 	}'`,
-	'python': `import requests
+		'python': `import requests
 	
 	url = "${baseUrl}/api/chat-api/chat"
 	headers = {
@@ -90,10 +90,10 @@ const codeSnippets = {
 			},
 			{
 				"role": "user",
-				"content": "Hello, how can I help you today?"
+				"content": "What is in these documents?"
 			}
 		],
-		"openai_key": "your-openai-key",
+		"openai_key": "YOUR-OPENAI-KEY-HERE",
 		"temperature": 0.7,
 		"course_name": "${course_name}",
 		"stream": true,
@@ -102,7 +102,7 @@ const codeSnippets = {
 	
 	response = requests.post(url, headers=headers, json=data)
 	print(response.text)`,
-	'node': `const axios = require('axios');
+		'node': `const axios = require('axios');
 	
 	const data = {
 		"model": "gpt-4",
@@ -113,10 +113,10 @@ const codeSnippets = {
 			},
 			{
 				"role": "user",
-				"content": "Hello, how can I help you today?"
+				"content": "What is in these documents?"
 			}
 		],
-		"openai_key": "your-openai-key",
+		"openai_key": "YOUR-OPENAI-KEY-HERE",
 		"temperature": 0.7,
 		"course_name": "${course_name}",
 		"stream": true,
@@ -134,7 +134,7 @@ const codeSnippets = {
 	.catch((error) => {
 		console.error(error);
 	});`
-};
+	};
 
 	useEffect(() => {
 		const fetchApiKey = async () => {
@@ -268,7 +268,7 @@ const codeSnippets = {
 								API Key Management
 							</Title>
 							<Title order={4} w={'90%'}>
-								This API is stateless, meaning each request is independent of others. If you need to use the response from one call in a subsequent call, append the messages from the first call to the &apos;messages&apos; array in the next call. For more information on how to structure the &apos;messages&apos; array, please refer to the <a href="https://platform.openai.com/docs/api-reference/chat/create"
+								This API is <i>stateless</i>, meaning each request is independent of others. For multi-turn conversations, simply append new messages to the &apos;messages&apos; array in the next call. Our API closely mirrors OpenAI's Chat API, please refer to the <a href="https://platform.openai.com/docs/api-reference/chat/create"
 									target="_blank"
 									rel="noopener noreferrer"
 									className={`text-purple-500 hover:underline ${montserrat_heading.variable} font-montserratHeading`}
@@ -278,29 +278,33 @@ const codeSnippets = {
 										className="mr-2 inline-block"
 										style={{ position: 'relative', top: '-3px' }}
 									/>
-								</a>.
+								</a>
 							</Title>
-							<div style={{ width: '90%', display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#15162c', paddingTop: '1rem', borderRadius: '1rem' }}>
+							<Title order={4} w={'90%'}>
+								Just add your <code style={{ backgroundColor: '#020307', borderRadius: '5px', padding: '1px 5px', fontFamily: 'monospace', alignItems: 'center', justifyItems: 'center' }}>openai_key</code>{' '} to the request.
+							</Title>
+							<div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#15162c', paddingTop: '1rem', borderRadius: '1rem' }}>
 								<div style={{ width: '95%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#15162c', paddingBottom: '1rem' }}>
 
 									<Title order={3}
 										align='left'
 										variant="gradient"
 										gradient={{ from: 'gold', to: 'white', deg: 50 }}
-										style={{ width: '100%', marginLeft: '1rem' }}>Example Request</Title>
+										style={{ flexGrow: 2, marginLeft: '1rem' }}>Example Request</Title>
 									<Select
 										placeholder="Select an option"
 										data={languageOptions}
 										value={selectedLanguage}
+										style={{ width: '7rem' }} // Ensures the button is wide enough to show all text and does not shrink
 										onChange={(value: string | null) => {
 											if (value === 'curl' || value === 'python' || value === 'node') {
 												setSelectedLanguage(value);
 											}
 										}}
-										style={{ width: '30%' }}
+									// style={{ width: '30%', minWidth: '20px' }}
 									/>
 									<Button onClick={() => handleCopyCodeSnippet(codeSnippets[selectedLanguage])} variant="subtle" size="xs"
-										className='min-h-[2.5rem] transform rounded-tl-md rounded-bl-xl bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none rounded-tr-xl rounded-br-md ms-2 self-end'>
+										className='min-h-[2.5rem] transform rounded-tl-md rounded-bl-xl bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none rounded-tr-xl rounded-br-md ms-2'>
 										{copiedCodeSnippet ? <IconCheck /> : <IconCopy />}
 									</Button>
 								</div>
@@ -382,8 +386,8 @@ const codeSnippets = {
 
 					</div>
 				</div>
-			</Flex>
-		</Card>
+			</Flex >
+		</Card >
 	);
 };
 
