@@ -268,7 +268,7 @@ const ApiKeyManagement = ({ course_name, clerk_user }: {
 								API Key Management
 							</Title>
 							<Title order={4} w={'90%'}>
-								This API is <i>stateless</i>, meaning each request is independent of others. For multi-turn conversations, simply append new messages to the &apos;messages&apos; array in the next call. Our API closely mirrors OpenAI's Chat API, please refer to the <a href="https://platform.openai.com/docs/api-reference/chat/create"
+								This API is <i>stateless</i>, meaning each request is independent of others. For multi-turn conversations, simply append new messages to the &apos;messages&apos; array in the next call. Our API closely mirrors OpenAI&apos;s Chat API, please refer to the <a href="https://platform.openai.com/docs/api-reference/chat/create"
 									target="_blank"
 									rel="noopener noreferrer"
 									className={`text-purple-500 hover:underline ${montserrat_heading.variable} font-montserratHeading`}
