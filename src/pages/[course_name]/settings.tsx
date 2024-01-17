@@ -1,48 +1,59 @@
-import { SystemPrompt } from "~/components/Chat/SystemPrompt";
-import { useState } from 'react'
-import { DEFAULT_SYSTEM_PROMPT } from "~/utils/app/const";
+import { useState, useEffect } from 'react'
+import { CourseMetadata } from '~/types/courseMetadata'
+import router from "next/router";
+import { DEFAULT_SYSTEM_PROMPT } from '~/utils/app/const';
+import { callSetCourseMetadata } from '~/utils/apiUtils';
+import { getAllCourseMetadata } from '../api/UIUC-api/getAllCourseMetadata';
 
-interface ModelParamsProps {
-  selectedConversation: any // Replace 'any' with the appropriate type
-  prompts: any // Replace 'any' with the appropriate type
-  handleUpdateConversation: (
-    conversation: any,
-    update: { key: string; value: any },
-  ) => void // Replace 'any' with the appropriate types
+interface SettingsProps {
   t: (key: string) => string
 }
 
-const Settings = ({
-  selectedConversation,
-  prompts = [{ name: DEFAULT_SYSTEM_PROMPT }], // provide a default value
-  handleUpdateConversation,
-  t,
-}: ModelParamsProps) => {
-  const [isChecked, setIsChecked] = useState(false)
-  const [systemPrompt, setSystemPrompt] = useState(''); // new state for system prompt
+const getCurrentCourseName = () => {
+  return router.asPath.split('/')[1];
+}
 
-  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setIsChecked(event.target.checked)
+const Settings = ({ t }: SettingsProps) => {
+  const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
+  const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(null);
+
+  const fetchCourseMetadata = async () => {
+    const courseName = getCurrentCourseName();
+    if (!courseName) {
+      throw new Error('Course name is undefined');
+    }
+    const allMetadata = await getAllCourseMetadata();
+    const metadata = allMetadata?.find(meta => Object.keys(meta)[0] === courseName);
+    setCourseMetadata(metadata);
+    if (metadata) {
+      setSystemPrompt(metadata.system_prompt || DEFAULT_SYSTEM_PROMPT);
+    }
+  }
+
+  useEffect(() => {
+    fetchCourseMetadata();
+  }, []);
+
+  const handleSystemPromptSubmit = async () => {
+    const courseName = getCurrentCourseName();
+    if (courseMetadata && courseName) {
+      courseMetadata.system_prompt = systemPrompt;
+      const success = await callSetCourseMetadata(courseName, courseMetadata);
+      if (!success) {
+        console.log('Error updating course metadata');
+      }
+    }
   }
 
   return (
-    <div style={{ minHeight: '3em' }}>
-      <SystemPrompt
-        conversation={selectedConversation}
-        prompts={prompts}
-        onChangePrompt={(prompt) =>
-          handleUpdateConversation(selectedConversation, {
-            key: 'prompt',
-            value: prompt,
-          })
-        }
-      />
+    <div style={{ height: '20px' }}>
       <input
         type="text"
         value={systemPrompt}
         onChange={(e) => setSystemPrompt(e.target.value)}
+        style={{ width: '100%', height: '30px' }}
       />
-      <button onClick={updateSystemPrompt}>Update System Prompt</button>
+      <button onClick={handleSystemPromptSubmit}>Update System Prompt</button>
     </div>
   )
 }

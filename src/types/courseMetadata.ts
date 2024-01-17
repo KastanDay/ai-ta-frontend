@@ -22,4 +22,5 @@ export interface CourseMetadataOptionalForUpsert {
   banner_image_s3: string | undefined
   course_intro_message: string | undefined
   openai_api_key: string | undefined
+  system_prompt: string | undefined
 }
