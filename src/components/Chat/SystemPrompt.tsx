@@ -44,6 +44,7 @@ export const SystemPrompt: FC<Props> = ({
     prompt.name.toLowerCase().includes(promptInputValue.toLowerCase()),
   )
 
+
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
     const maxLength = conversation.model.maxLength
@@ -171,13 +172,21 @@ export const SystemPrompt: FC<Props> = ({
     }
   }, [value])
 
+  // useEffect(() => {
+  //   if (conversation.prompt) {
+  //     setValue(conversation.prompt)
+  //   } else {
+  //     setValue(DEFAULT_SYSTEM_PROMPT)
+  //   }
+  // }, [conversation])
+
   useEffect(() => {
     if (conversation.prompt) {
       setValue(conversation.prompt)
     } else {
-      setValue(DEFAULT_SYSTEM_PROMPT)
+      setValue(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
     }
-  }, [conversation])
+  }, [conversation, courseMetadata.system_prompt])
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -209,11 +218,10 @@ export const SystemPrompt: FC<Props> = ({
           bottom: `${textareaRef?.current?.scrollHeight}px`,
           maxHeight: '300px',
           minHeight: '4em', // Add this line
-          overflow: `${
-            textareaRef.current && textareaRef.current.scrollHeight > 400
-              ? 'auto'
-              : 'hidden'
-          }`,
+          overflow: `${textareaRef.current && textareaRef.current.scrollHeight > 400
+            ? 'auto'
+            : 'hidden'
+            }`,
         }}
         placeholder={
           t(`Enter a prompt or type "/" to select a prompt...`) || ''
