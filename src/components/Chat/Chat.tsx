@@ -397,6 +397,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                     contexts: message.contexts,
                   },
                 ]
+                finalAssistantRespose += chunkValue
                 updatedConversation = {
                   ...updatedConversation,
                   messages: updatedMessages,
