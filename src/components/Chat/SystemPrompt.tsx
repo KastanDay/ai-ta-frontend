@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'next-i18next'
 
 import { DEFAULT_SYSTEM_PROMPT } from '@/utils/app/const'
+import { CourseMetadata } from '~/types/courseMetadata'
 
 import { type Conversation } from '@/types/chat'
 import { type Prompt } from '@/types/prompt'
@@ -21,12 +22,14 @@ interface Props {
   conversation: Conversation
   prompts: Prompt[]
   onChangePrompt: (prompt: string) => void
+  courseMetadata: CourseMetadata
 }
 
 export const SystemPrompt: FC<Props> = ({
   conversation,
   prompts,
   onChangePrompt,
+  courseMetadata,
 }) => {
   const { t } = useTranslation('chat')
 
