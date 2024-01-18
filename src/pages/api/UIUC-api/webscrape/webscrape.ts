@@ -1,7 +1,7 @@
 // api/crawl.ts
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { crawl } from './core';
-import { Config } from './config_validation';
+import { Config } from './configValidation';
 
 // Max duration: https://vercel.com/changelog/serverless-functions-can-now-run-up-to-5-minutes
 // Hobby: 10s, pro 300s. Edge: 25s. 

@@ -9,7 +9,7 @@ import { PathLike } from "fs";
 import axios from 'axios';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
-import { Config, configSchema } from "./config_validation";
+import { Config, configSchema } from "./configValidation";
 import { aws_config } from '../uploadToS3';
 
 // import * as https from 'https';
@@ -123,7 +123,7 @@ export async function crawl(config: Config) {
 
   if (config.url) {
     if (config.url.endsWith('.pdf')) {
-      console.log(`Found a PDF: ${config.url}`);
+      console.log(`Found a PDF, config url: ${config.url}`);
       await handlePdf(config.url, config.courseName);
     }
     else {
@@ -133,6 +133,8 @@ export async function crawl(config: Config) {
         // browser controlled by the Playwright library.
         crawler = new PlaywrightCrawler({
           // Use the requestHandler to process each of the crawled pages.
+
+          // async requestHandler({ request, page, enqueueLinks, log, pushData }: { request: Request, page: Page, enqueueLinks: (links: EnqueueLinksOptions) => Promise<void>, log: Log, pushData: (data: any) => Promise<void> }) {
           async requestHandler({ request, page, enqueueLinks, log, pushData }) {
             const title = await page.title();
             pageCounter++;
@@ -164,6 +166,20 @@ export async function crawl(config: Config) {
             // Instead of pushing data to a file, add it to the results array
             if (request.loadedUrl) {
               results.push({ title, url: request.loadedUrl, html });
+              // Asynchronously call the ingestWebscrape endpoint without awaiting the result
+              axios.get('https://flask-production-751b.up.railway.app/ingest-web-text', {
+                params: {
+                  base_url: config.url,
+                  url: request.loadedUrl,
+                  title: title,
+                  content: html,
+                  courseName: config.courseName,
+                },
+              }).then(response => {
+                console.log(`Data ingested for URL: ${request.loadedUrl}`);
+              }).catch(error => {
+                console.error(`Failed to ingest data for URL: ${request.loadedUrl}`, error);
+              });
             } else {
               console.error('Error: URL is undefined. Title is: ', title);
             }
