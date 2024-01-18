@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build && npx playwright install --with-deps",
+    "build": "next build && npx playwright install",
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
@@ -91,6 +91,7 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^13.4.3",
+    "@playwright/test": "^1.41.0",
     "@types/eslint": "^8.21.3",
     "@types/jsdom": "^21.1.1",
     "@types/node": "^18.16.13",
