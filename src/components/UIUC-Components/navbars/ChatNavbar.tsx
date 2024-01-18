@@ -8,7 +8,6 @@ import Link from 'next/link'
 import { magicBellTheme } from '~/components/UIUC-Components/navbars/GlobalHeader'
 import { } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-// import { GoToQueryAnalysis, ResumeToChat } from './NavbarButtons'
 import Image from 'next/image'
 import { useEffect, useState, useContext, useRef } from 'react'
 import {

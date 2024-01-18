@@ -18,9 +18,9 @@ export const config = {
 const handler = async (req: Request): Promise<NextResponse> => {
   try {
     console.log("Top of /api/chat.ts. req: ", req)
-    const { model, messages, key, prompt, temperature, course_name, stream } =
+    const { model, messages, key, prompt, temperature, course_name, stream, isImage } =
       (await req.json()) as ChatBody
-    console.log("After message parsing: ", model, messages, key, prompt, temperature, course_name, stream)
+    console.log("After message parsing: ", model, messages, key, prompt, temperature, course_name, stream, isImage)
 
     await init((imports) => WebAssembly.instantiate(wasm, imports))
     const encoding = new Tiktoken(
@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
     // todo
     // }
 
-    else if (stream) {
+    else if (!isImage) {
       // regular context stuffing
       const stuffedPrompt = (await getStuffedPrompt(
         course_name,
