@@ -8,15 +8,12 @@ import { Config } from './configValidation';
 export const config = {
   maxDuration: 10,
 };
-
 // export const runtime = 'edge' // Crawlee note supported on Edge runtime
+
 
 export default async function (req: VercelRequest, res: VercelResponse): Promise<void> {
   try {
     const { url, match, maxPagesToCrawl, maxTokens, courseName } = req.body;
-
-    // Validate input parameters
-    // You can use zod or any other validation library to validate the input
 
     const config: Config = {
       url,
@@ -30,27 +27,7 @@ export default async function (req: VercelRequest, res: VercelResponse): Promise
     // Instead of writing to a file, return the results as JSON
     res.status(200).json(results);
   } catch (error) {
-    res.status(500).json({ error: 'An error occurred during crawling', errorTitle: error, errorMessage: error.message });
+    const e = error as Error;
+    res.status(500).json({ error: 'An error occurred during crawling', errorTitle: e, errorMessage: e.message });
   }
 }
-
-// Example usage 
-// fetch('/api/crawl', {
-//   method: 'POST',
-//   headers: {
-//     'Content-Type': 'application/json',
-//   },
-//   body: JSON.stringify({
-//     url: "https://kastanday.com/",
-//     match: "https://kastanday.com/**",
-//     maxPagesToCrawl: 10,
-//     maxTokens: 2000000,
-//   }),
-// })
-// .then(response => response.json())
-// .then(data => {
-//   console.log(data);
-// })
-// .catch((error) => {
-//   console.error('Error:', error);
-// });
