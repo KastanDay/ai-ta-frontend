@@ -1,10 +1,11 @@
 // For more information, see https://crawlee.dev/
-import { KeyValueStore, PlaywrightCrawler, downloadListOfUrls } from "crawlee";
+import { Configuration, KeyValueStore, PlaywrightCrawler, downloadListOfUrls } from "crawlee";
 import { Page } from "playwright";
 import axios from 'axios';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 // import { isWithinTokenLimit } from "gpt-tokenizer";
 import * as path from 'path';
+import aws_chromium from '@sparticuz/chromium';
 
 import { Config, configSchema } from "./configValidation";
 import { aws_config } from '../uploadToS3';
@@ -115,6 +116,13 @@ export async function crawl(config: Config) {
       // PlaywrightCrawler crawls the web using a headless
       // browser controlled by the Playwright library.
       const crawler = new PlaywrightCrawler({
+        launchContext: {
+          launchOptions: {
+            executablePath: await aws_chromium.executablePath(),
+            args: aws_chromium.args,
+            headless: true
+          }
+        },
         // Use the requestHandler to process each of the crawled pages.
         async requestHandler({ request, page, enqueueLinks, log, pushData }) {
           console.log(`Crawling: ${request.loadedUrl}...`);
@@ -218,7 +226,10 @@ export async function crawl(config: Config) {
             );
           },
         ],
-      });
+      },
+        new Configuration({
+          persistStorage: false,
+        }));
 
       const isUrlASitemap = /sitemap.*\.xml$/.test(config.url);
       if (isUrlASitemap) {
