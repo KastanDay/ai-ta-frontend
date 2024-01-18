@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import axios, { AxiosResponse } from 'axios'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  console.log('Getting to our /ingest-webscrape endpoint')
   try {
     const { base_url, url, title, content, courseName } = req.query as {
       base_url: string

@@ -30,7 +30,7 @@ export default async function (req: VercelRequest, res: VercelResponse): Promise
     // Instead of writing to a file, return the results as JSON
     res.status(200).json(results);
   } catch (error) {
-    res.status(500).json({ error: 'An error occurred during crawling' });
+    res.status(500).json({ error: 'An error occurred during crawling', errorTitle: error, errorMessage: error.message });
   }
 }
 
