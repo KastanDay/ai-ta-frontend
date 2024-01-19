@@ -58,6 +58,27 @@ const formatUrl = (url: string) => {
   return url
 }
 
+const formatUrlAndMatchRegex = (url: string) => {
+  // fullUrl always starts with http://. Is the starting place of the scrape. 
+  // baseUrl is used to construct the match statement.
+
+
+  // Ensure the url starts with 'http://'
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'http://' + url;
+  }
+
+  // Extract the base url including the path
+  const baseUrl = (url.replace(/^https?:\/\//i, '').split('?')[0] as string).replace(/\/$/, ''); // Remove protocol (http/s), split at '?', and remove trailing slash
+
+  const matchRegex = `http://*.${baseUrl}/**`
+
+  return {
+    fullUrl: url,
+    matchRegex: matchRegex
+  };
+}
+
 export const WebScrape = ({
   is_new_course,
   courseName,
@@ -209,10 +230,6 @@ export const WebScrape = ({
           maxUrls.trim() !== ''
             ? parseInt(maxUrls) - 1
             : webScrapeConfig.num_sites,
-          maxDepth.trim() !== ''
-            ? parseInt(maxDepth) - 1
-            : webScrapeConfig.recursive_depth,
-          webScrapeConfig.timeout_sec,
           stayOnBaseUrl,
         )
 
@@ -338,24 +355,27 @@ export const WebScrape = ({
     url: string | null,
     courseName: string | null,
     maxUrls: number,
-    maxDepth: number,
-    timeout: number,
     stay_on_baseurl: boolean,
   ) => {
     try {
       if (!url || !courseName) return null
-      url = formatUrl(url) // ensure we have http://
       console.log('SCRAPING', url)
-      const response = await axios.get(
-        `https://flask-production-751b.up.railway.app/web-scrape`,
+
+      const { fullUrl, matchRegex } = formatUrlAndMatchRegex(url)
+      let match = '**' // scrape everything, or just the base url
+      if (!stay_on_baseurl) {
+        match = matchRegex
+      }
+
+      const response = await axios.post(
+        `https://crawlee-production.up.railway.app/crawl`,
         {
           params: {
-            url: url,
-            course_name: courseName,
-            max_urls: maxUrls,
-            max_depth: maxDepth,
-            timeout: timeout,
-            stay_on_baseurl: stay_on_baseurl,
+            url: fullUrl,
+            courseName: courseName,
+            maxPagesToCrawl: maxUrls,
+            match: match,
+            maxTokens: 2000000, // basically inf.
           },
         },
       )
