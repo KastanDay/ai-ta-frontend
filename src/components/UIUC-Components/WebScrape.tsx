@@ -105,17 +105,25 @@ export const WebScrape = ({
     console.log('Selected Contents:', selectedContents)
   }
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    variable: string,
-  ) => {
-    const value = e.target.value
-    if (variable === 'maxUrls') {
-      setMaxUrls(value)
-    } else if (variable === 'maxDepth') {
-      setMaxDepth(value)
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>, variable: string) => {
+    const value = event.target.value;
+    switch (variable) {
+      case 'maxUrls':
+        setMaxUrls(value);
+        break;
+      case 'maxDepth':
+        setMaxDepth(value);
+        break;
+      default:
+        break;
     }
-  }
+  };
+
+  const handleCheckBoxChange = (event: React.ChangeEvent<HTMLInputElement>, variable: string) => {
+    if (variable === 'stayOnBaseUrl') {
+      setStayOnBaseUrl(event.target.checked);
+    }
+  };
 
   const handleSubmit = async () => {
     if (validateUrl(url)) {
@@ -128,9 +136,9 @@ export const WebScrape = ({
           'Coursera ingest is not yet automated (auth is hard). Please email kvday2@illinois.edu to do it for you',
         )
       } else if (url.includes('ocw.mit.edu')) {
-        data = downloadMITCourse(url, courseName, 'local_dir') // no await -- do in background
+        data = await downloadMITCourseContent(url, courseName, 'local_dir') // now using await as per refactoring
 
-        showToast()
+        showToastNotification()
 
         if (is_new_course) {
           // set course exists in new metadata endpoint
@@ -197,13 +205,13 @@ export const WebScrape = ({
           console.error('Error while ingesting Canvas content:', error)
         }
       } else {
-        showToast()
+        showToastNotification()
 
         const response = await fetch('/api/UIUC-api/webScrapeConfig')
         let webScrapeConfig = await response.json()
         webScrapeConfig = webScrapeConfig.config
 
-        data = scrapeWeb(
+        data = await scrapeWebContent(
           url,
           courseName,
           maxUrls.trim() !== ''
@@ -250,6 +258,10 @@ export const WebScrape = ({
   })
 
   const validateInputs = () => {
+    // Code shifted to separate validateInputs function
+  };
+
+  const performInputValidation = () => {
     const errors = {
       maxUrls: { error: false, message: '' },
       maxDepth: { error: false, message: '' },
@@ -296,7 +308,7 @@ export const WebScrape = ({
     return !Object.values(errors).some((error) => error.error)
   }
 
-  const showToast = () => {
+  const showToastNotification = () => {
     return (
       // docs: https://mantine.dev/others/notifications/
 
@@ -334,7 +346,7 @@ export const WebScrape = ({
     )
   }
 
-  const scrapeWeb = async (
+  const scrapeWebContent = async (
     url: string | null,
     courseName: string | null,
     maxUrls: number,
@@ -366,7 +378,7 @@ export const WebScrape = ({
     }
   }
 
-  const downloadMITCourse = async (
+  const downloadMITCourseContent = async (
     url: string | null,
     courseName: string | null,
     localDir: string | null,
@@ -488,7 +500,7 @@ export const WebScrape = ({
           <Button
             onClick={(e) => {
               e.preventDefault()
-              if (validateInputs() && validateUrl(url)) {
+              if (performInputValidation() && validateUrl(url)) {
                 handleSubmit()
               }
             }}
