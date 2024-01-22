@@ -16,7 +16,7 @@ import {
   Group,
 } from '@mantine/core'
 
-import GlobalHeader, {
+import {
   LandingPageHeader,
 } from '~/components/UIUC-Components/navbars/GlobalHeader'
 import GlobalFooter from '~/components/UIUC-Components/GlobalFooter'

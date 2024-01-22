@@ -303,7 +303,7 @@ export const ChatMessage: FC<Props> = memo(
     async function getPresignedUrl(uploadedImageUrl: string): Promise<string> {
       try {
         const presignedUrl = await fetchPresignedUrl(uploadedImageUrl);
-        return presignedUrl;
+        return presignedUrl as string;
       } catch (error) {
         console.error('Failed to fetch presigned URL for', uploadedImageUrl, error);
         return '';
