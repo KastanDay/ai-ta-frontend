@@ -3,7 +3,6 @@ import { CourseMetadata } from '~/types/courseMetadata'
 import router from "next/router";
 import { DEFAULT_SYSTEM_PROMPT } from '~/utils/app/const';
 import { callSetCourseMetadata } from '~/utils/apiUtils';
-import { getAllCourseMetadata } from '../api/UIUC-api/getAllCourseMetadata';
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers';
 import { useUser } from '@clerk/nextjs';
 

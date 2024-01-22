@@ -11,16 +11,18 @@ import { getStuffedPrompt } from './contextStuffingHelper'
 import { OpenAIModelID, OpenAIModels } from '~/types/openai'
 import { NextResponse } from 'next/server'
 
+
 export const config = {
   runtime: 'edge',
 }
 
 const handler = async (req: Request): Promise<NextResponse> => {
+  // console.log("handling request")
   try {
     console.log("Top of /api/chat.ts. req: ", req)
     const { model, messages, key, prompt, temperature, course_name, stream } =
       (await req.json()) as ChatBody
-    console.log("After message parsing: ", model, messages, key, prompt, temperature, course_name, stream)
+    console.log("After message parsing: ", model, messages, key, "prompt:", prompt, temperature, course_name, stream)
 
     await init((imports) => WebAssembly.instantiate(wasm, imports))
     const encoding = new Tiktoken(

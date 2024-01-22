@@ -77,6 +77,7 @@ import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 
+
 const montserrat_med = Montserrat({
   weight: '500',
   subsets: ['latin'],
@@ -179,6 +180,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     const imageContent = (message.content as Content[]).filter(content => content.type === 'image_url');
     if (imageContent.length > 0) {
       homeDispatch({ field: 'isImg2TextLoading', value: true })
+
       const chatBody: ChatBody = {
         model: updatedConversation.model,
         messages: [
@@ -191,7 +193,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           }
         ],
         key: courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != '' ? courseMetadata.openai_api_key : apiKey,
-        prompt: updatedConversation.prompt,
+        prompt: courseMetadata?.system_prompt || updatedConversation.prompt,
         temperature: updatedConversation.temperature,
         course_name: getCurrentPageName(),
         stream: false,
@@ -345,6 +347,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         // Run context search, attach to Message object.
         await handleContextSearch(message, selectedConversation, searchQuery);
 
+        const emails = extractEmailsFromClerk(clerk_obj.user);
+        const currUserEmail = emails[0];
+        const metadataResponse = await fetch(`/api/UIUC-api/getAllCourseMetadata?currUserEmail=${currUserEmail}`);
+        const allMetadata = await metadataResponse.json();
+        const metadataObj = allMetadata?.find((meta: { [key: string]: CourseMetadata }) => Object.keys(meta)[0] === getCurrentPageName()) || null;
+        const metadata = metadataObj ? Object.values(metadataObj)[0] as CourseMetadata : null;
+        const systemPromptFromMetadata = metadata?.system_prompt;
+
         const chatBody: ChatBody = {
           model: updatedConversation.model,
           messages: updatedConversation.messages,
@@ -353,7 +363,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
-          prompt: updatedConversation.prompt,
+          prompt: systemPromptFromMetadata || updatedConversation.prompt,
           temperature: updatedConversation.temperature,
           course_name: getCurrentPageName(),
           stream: true
@@ -508,7 +518,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                         });
                       }
                     }
-                // Uncomment for debugging
+                    // Uncomment for debugging
                     // console.log('content: ', content);
                     return { ...message, content };
                   }

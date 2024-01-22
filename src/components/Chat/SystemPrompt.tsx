@@ -22,14 +22,14 @@ interface Props {
   conversation: Conversation
   prompts: Prompt[]
   onChangePrompt: (prompt: string) => void
-  courseMetadata: CourseMetadata
+  // courseMetadata: CourseMetadata
 }
 
 export const SystemPrompt: FC<Props> = ({
   conversation,
   prompts,
   onChangePrompt,
-  courseMetadata,
+  // courseMetadata,
 }) => {
   const { t } = useTranslation('chat')
 
@@ -175,21 +175,21 @@ export const SystemPrompt: FC<Props> = ({
     }
   }, [value])
 
-  // useEffect(() => {
-  //   if (conversation.prompt) {
-  //     setValue(conversation.prompt)
-  //   } else {
-  //     setValue(DEFAULT_SYSTEM_PROMPT)
-  //   }
-  // }, [conversation])
-
   useEffect(() => {
     if (conversation.prompt) {
       setValue(conversation.prompt)
     } else {
-      setValue(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
+      setValue(DEFAULT_SYSTEM_PROMPT)
     }
-  }, [conversation, courseMetadata.system_prompt])
+  }, [conversation])
+
+  // useEffect(() => {
+  //   if (conversation.prompt) {
+  //     setValue(conversation.prompt)
+  //   } else {
+  //     setValue(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
+  //   }
+  // }, [conversation, courseMetadata.system_prompt])
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
