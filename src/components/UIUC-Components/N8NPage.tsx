@@ -68,7 +68,7 @@ export const GetCurrentPageName = () => {
   return useRouter().asPath.slice(1).split('/')[0] as string
 }
 
-const MakeFlowisePage = ({
+const MakeN8NPage = ({
   course_name,
   course_data,
 }: {
@@ -273,12 +273,12 @@ const MakeFlowisePage = ({
                   Read more about{' '}
                   <a
                     className={'text-purple-600'}
-                    href="https://docs.flowiseai.com/?q="
+                    href="https://docs.n8n.io/"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ textDecoration: 'underline', paddingRight: '5px' }}
                   >
-                    Flowise
+                    n8n
                   </a>
                 </Title>
               </>
@@ -533,4 +533,4 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
   )
 }
 
-export default MakeFlowisePage
+export default MakeN8NPage

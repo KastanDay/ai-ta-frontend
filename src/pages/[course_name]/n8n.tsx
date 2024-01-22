@@ -11,7 +11,7 @@ import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackgro
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { Title } from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
-import MakeFlowisePage from '~/components/UIUC-Components/FlowisePage'
+import MakeN8NPage from '~/components/UIUC-Components/N8NPage'
 
 const montserrat = Montserrat({
   weight: '700',
@@ -122,7 +122,7 @@ const CourseMain: NextPage = () => {
 
   return (
     <>
-      <MakeFlowisePage
+      <MakeN8NPage
         course_name={course_name as string}
         course_data={courseData}
       />
