@@ -262,7 +262,7 @@ const MakeN8NPage = ({
                   className="nomic-iframe pl-7 pr-7 pt-4 pt-4"
                   // id={nomicMapData.map_id}
                   allow="clipboard-read; clipboard-write"
-                  src={'https://flowiseai-railway-production-8baf.up.railway.app/canvas'}
+                  src={'https://primary-production-60d0.up.railway.app/setup'}
                 />
                 <Title
                   order={6}
@@ -315,7 +315,7 @@ import { MainPageBackground } from './MainPageBackground'
 import { extractEmailsFromClerk } from './clerkHelpers'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
-import Navbar from './navbars/MaterialsNavbar'
+import Navbar from './navbars/Navbar'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
@@ -402,7 +402,9 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
               <button
                 onClick={() =>
                   fetchPresignedUrl(file.s3_path).then((url) => {
-                    window.open(url, '_blank')
+                    if (url) {
+                      window.open(url, '_blank')
+                    }
                   })
                 }
                 className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"

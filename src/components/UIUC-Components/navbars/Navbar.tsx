@@ -188,7 +188,7 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, isPlain = fal
         </span>
       ),
       icon: <ChartDots3Icon />,
-      link: `/${getCurrentCourseName()}/flow`,
+      link: `/${getCurrentCourseName()}/n8n`,
     },
 		// {
 		//   name: (
