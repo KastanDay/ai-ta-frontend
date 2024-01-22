@@ -33,7 +33,7 @@ export interface ContextWithMetadata {
   base_url: string
 }
 
-export type Role = 'assistant' | 'user'
+export type Role = 'assistant' | 'user' | 'system'
 
 export interface ChatBody {
   model: OpenAIModel
@@ -43,6 +43,7 @@ export interface ChatBody {
   temperature: number
   course_name: string
   stream: boolean
+  isImage: boolean
   // NO FOLDER ID
 }
 
@@ -56,4 +57,14 @@ export interface Conversation {
   temperature: number
   folderId: string | null
   user_email?: string
+}
+
+export interface ChatApiBody {
+  model: string;
+  messages: Message[];
+  openai_key?: string;
+  temperature?: number;
+  course_name: string;
+  stream?: boolean;
+  api_key: string;
 }

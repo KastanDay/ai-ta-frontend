@@ -336,7 +336,7 @@ import { MainPageBackground } from './MainPageBackground'
 import { extractEmailsFromClerk } from './clerkHelpers'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
-import Navbar from './navbars/MaterialsNavbar'
+import Navbar from './navbars/Navbar'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
@@ -423,7 +423,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
               <button
                 onClick={() =>
                   fetchPresignedUrl(file.s3_path).then((url) => {
-                    window.open(url, '_blank')
+                    window.open(url as string, '_blank')
                   })
                 }
                 className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
