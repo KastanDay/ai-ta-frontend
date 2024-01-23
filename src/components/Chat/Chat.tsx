@@ -20,6 +20,28 @@ import {
   // IconClearAll,
   // IconSettings,
 } from '@tabler/icons-react'
+// src/components/Chat/Chat.tsx
+import {
+  // IconBrain,
+  // IconClearAll,
+  IconArrowRight,
+  // IconCloudUpload,
+  IconExternalLink,
+  // IconRobot,
+  // IconSettings,
+  IconAlertTriangle,
+  IconArrowLeft,
+  IconLock,
+  IconBrain,
+  IconCreditCard,
+  IconAlertCircle,
+  // IconArrowUpRight,
+  // IconFileTextAi,
+  // IconX,
+  // IconDownload,
+  // IconClearAll,
+  // IconSettings,
+} from '@tabler/icons-react'
 import {
   type MutableRefObject,
   memo,
@@ -30,6 +52,7 @@ import {
   useState,
 } from 'react'
 import { Button, Text } from '@mantine/core'
+import { Button, Text } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -39,6 +62,14 @@ import {
 } from '@/utils/app/conversation'
 import { throttle } from '@/utils/data/throttle'
 
+import {
+  type ContextWithMetadata,
+  type ChatBody,
+  type Conversation,
+  type Message,
+  Content,
+} from '@/types/chat'
+import { type Plugin } from '@/types/plugin'
 import {
   type ContextWithMetadata,
   type ChatBody,
@@ -102,6 +133,24 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       })
     }
   }, [courseMetadata])
+  const clerk_obj = useUser()
+  const router = useRouter()
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null)
+  const getCurrentPageName = () => {
+    // /CS-125/materials --> CS-125
+    return router.asPath.slice(1).split('/')[0] as string
+  }
+
+  const [inputContent, setInputContent] = useState<string>('')
+  const [cacheMetrics, setCacheMetrics] = useState({ hits: 0, misses: 0 });
+
+  useEffect(() => {
+    if (courseMetadata?.banner_image_s3 && courseMetadata.banner_image_s3 !== '') {
+      fetchPresignedUrl(courseMetadata.banner_image_s3).then((url) => {
+        setBannerUrl(url)
+      })
+    }
+  }, [courseMetadata])
 
   const {
     state: {
@@ -117,6 +166,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       prompts,
       showModelSettings,
       isImg2TextLoading
+      showModelSettings,
+      isImg2TextLoading
     },
     handleUpdateConversation,
     dispatch: homeDispatch,
@@ -124,6 +175,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const [currentMessage, setCurrentMessage] = useState<Message>()
   const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true)
+  // const [showSettings, setShowSettings] = useState<boolean>(false)
   // const [showSettings, setShowSettings] = useState<boolean>(false)
   const [showScrollDownButton, setShowScrollDownButton] =
     useState<boolean>(false)
@@ -367,7 +419,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           temperature: updatedConversation.temperature,
           course_name: getCurrentPageName(),
           stream: true
+          course_name: getCurrentPageName(),
+          stream: true
         }
+
 
         let body
         if (!plugin) {
@@ -385,6 +440,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }
 
         // This is where we call the OpenAI API
+
+        // This is where we call the OpenAI API
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
@@ -394,10 +451,41 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           body,
         })
 
+
         if (!response.ok) {
+          const final_response = await response.json()
           const final_response = await response.json()
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
+          notifications.show({
+            id: 'error-notification',
+            withCloseButton: true,
+            closeButtonProps: { color: 'red' },
+            onClose: () => console.log('error unmounted'),
+            onOpen: () => console.log('error mounted'),
+            autoClose: 12000,
+            title: (
+              <Text size={'lg'} className={`${montserrat_med.className}`}>
+                {final_response.name}
+              </Text>
+            ),
+            message: (
+              <Text className={`${montserrat_med.className} text-neutral-200`}>
+                {final_response.message}
+              </Text>
+            ),
+            color: 'red',
+            radius: 'lg',
+            icon: <IconAlertCircle />,
+            className: 'my-notification-class',
+            style: {
+              backgroundColor: 'rgba(42,42,64,0.3)',
+              backdropFilter: 'blur(10px)',
+              borderLeft: '5px solid red',
+            },
+            withBorder: true,
+            loading: false,
+          })
           notifications.show({
             id: 'error-notification',
             withCloseButton: true,
