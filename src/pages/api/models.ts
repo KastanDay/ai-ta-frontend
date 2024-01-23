@@ -80,16 +80,18 @@ const handler = async (req: Request): Promise<Response> => {
 
     const json = await response.json()
 
-    const uniqueModels: string[] = Array.from(new Set(json.data.map((model: any) => apiType === 'azure' ? model.model : model.id)));
+    const uniqueModels: string[] = Array.from(new Set(json.data.map((model: any) => model.id)));
+
+    // console.log('Unique models: ', uniqueModels)
 
     const models: OpenAIModel[] = uniqueModels
       .map((modelId: string) => {
-        const model = json.data.find((m: any) => (apiType === 'azure' ? m.model : m.id) === modelId);
-        if (!model) return undefined;
 
-        const model_name = apiType === 'azure' ? model.model : model.id;
+        const model = json.data.find((m: any) => m.id === modelId);
+        if (!model) return undefined;
+        
         for (const [key, value] of Object.entries(OpenAIModelID)) {
-          if (value === model_name) {
+          if (value === model.id) {
             return {
               id: model.id,
               name: OpenAIModels[value].name,
@@ -101,6 +103,8 @@ const handler = async (req: Request): Promise<Response> => {
         return undefined;
       })
       .filter((model): model is OpenAIModel => model !== undefined);
+
+      // console.log('Final list of Models: ', models)
 
     return new Response(JSON.stringify(models), { status: 200 })
   } catch (error) {
