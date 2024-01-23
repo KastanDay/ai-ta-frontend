@@ -21,27 +21,7 @@ import {
   // IconSettings,
 } from '@tabler/icons-react'
 // src/components/Chat/Chat.tsx
-import {
-  // IconBrain,
-  // IconClearAll,
-  IconArrowRight,
-  // IconCloudUpload,
-  IconExternalLink,
-  // IconRobot,
-  // IconSettings,
-  IconAlertTriangle,
-  IconArrowLeft,
-  IconLock,
-  IconBrain,
-  IconCreditCard,
-  IconAlertCircle,
-  // IconArrowUpRight,
-  // IconFileTextAi,
-  // IconX,
-  // IconDownload,
-  // IconClearAll,
-  // IconSettings,
-} from '@tabler/icons-react'
+
 import {
   type MutableRefObject,
   memo,
@@ -52,7 +32,6 @@ import {
   useState,
 } from 'react'
 import { Button, Text } from '@mantine/core'
-import { Button, Text } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -62,14 +41,7 @@ import {
 } from '@/utils/app/conversation'
 import { throttle } from '@/utils/data/throttle'
 
-import {
-  type ContextWithMetadata,
-  type ChatBody,
-  type Conversation,
-  type Message,
-  Content,
-} from '@/types/chat'
-import { type Plugin } from '@/types/plugin'
+
 import {
   type ContextWithMetadata,
   type ChatBody,
@@ -133,16 +105,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       })
     }
   }, [courseMetadata])
-  const clerk_obj = useUser()
-  const router = useRouter()
-  const [bannerUrl, setBannerUrl] = useState<string | null>(null)
-  const getCurrentPageName = () => {
-    // /CS-125/materials --> CS-125
-    return router.asPath.slice(1).split('/')[0] as string
-  }
 
-  const [inputContent, setInputContent] = useState<string>('')
-  const [cacheMetrics, setCacheMetrics] = useState({ hits: 0, misses: 0 });
+
 
   useEffect(() => {
     if (courseMetadata?.banner_image_s3 && courseMetadata.banner_image_s3 !== '') {
@@ -164,8 +128,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       modelError,
       loading,
       prompts,
-      showModelSettings,
-      isImg2TextLoading
       showModelSettings,
       isImg2TextLoading
     },
@@ -419,8 +381,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           temperature: updatedConversation.temperature,
           course_name: getCurrentPageName(),
           stream: true
-          course_name: getCurrentPageName(),
-          stream: true
         }
 
 
@@ -453,7 +413,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
 
         if (!response.ok) {
-          const final_response = await response.json()
           const final_response = await response.json()
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })

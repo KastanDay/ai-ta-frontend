@@ -1,8 +1,6 @@
 import {
   type FC,
   type KeyboardEvent,
-  type FC,
-  type KeyboardEvent,
   useCallback,
   useEffect,
   useRef,
@@ -13,10 +11,7 @@ import { useTranslation } from 'next-i18next'
 
 import { DEFAULT_SYSTEM_PROMPT } from '@/utils/app/const'
 import { CourseMetadata } from '~/types/courseMetadata'
-import { CourseMetadata } from '~/types/courseMetadata'
 
-import { type Conversation } from '@/types/chat'
-import { type Prompt } from '@/types/prompt'
 import { type Conversation } from '@/types/chat'
 import { type Prompt } from '@/types/prompt'
 
@@ -180,19 +175,11 @@ export const SystemPrompt: FC<Props> = ({
     }
   }, [value])
 
-  // useEffect(() => {
-  //   if (conversation.prompt) {
-  //     setValue(conversation.prompt)
-  //   } else {
-  //     setValue(DEFAULT_SYSTEM_PROMPT)
-  //   }
-  // }, [conversation])
-
   useEffect(() => {
     if (conversation.prompt) {
       setValue(conversation.prompt)
     } else {
-      setValue(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
+      setValue(DEFAULT_SYSTEM_PROMPT)
     }
   }, [conversation])
 
@@ -202,7 +189,7 @@ export const SystemPrompt: FC<Props> = ({
   //   } else {
   //     setValue(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
   //   }
-  // }, [conversation, courseMetadata.system_prompt])
+  // }, [conversation])
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
