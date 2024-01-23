@@ -232,7 +232,7 @@ export const WebScrape = ({
           url,
           courseName,
           maxUrls.trim() !== ''
-            ? parseInt(maxUrls) - 1
+            ? parseInt(maxUrls)
             : webScrapeConfig.num_sites,
           scrapeStrategy,
         )
