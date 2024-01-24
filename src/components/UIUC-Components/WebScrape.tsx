@@ -144,6 +144,7 @@ export const WebScrape = ({
             course_intro_message: undefined,
             openai_api_key: undefined,
             example_questions: undefined,
+            system_prompt: undefined,
           })
 
           if (!response) {
@@ -228,6 +229,7 @@ export const WebScrape = ({
             course_intro_message: undefined,
             openai_api_key: undefined,
             example_questions: undefined,
+            system_prompt: undefined,
           })
 
           if (!response) {
