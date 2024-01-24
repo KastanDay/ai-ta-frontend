@@ -14,7 +14,7 @@ import {
   rem,
   List,
 } from '@mantine/core'
-import { IconEye, IconHome, IconSitemap, IconWorld, IconWorldDownload } from '@tabler/icons-react'
+import { IconEye, IconHome, IconSitemap, IconSubtask, IconWorld, IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
@@ -75,7 +75,8 @@ const formatUrlAndMatchRegex = (url: string) => {
   // Extract the base url including the path
   const baseUrl = (url.replace(/^https?:\/\//i, '').split('?')[0] as string).replace(/\/$/, ''); // Remove protocol (http/s), split at '?', and remove trailing slash
 
-  const matchRegex = `**${baseUrl}/**`
+
+  const matchRegex = `http?(s)://**${baseUrl}/**`
 
   return {
     fullUrl: baseUrl,
@@ -224,16 +225,12 @@ export const WebScrape = ({
       } else {
         showToast()
 
-        const response = await fetch('/api/UIUC-api/webScrapeConfig')
-        let webScrapeConfig = await response.json()
-        webScrapeConfig = webScrapeConfig.config
-
         data = scrapeWeb(
           url,
           courseName,
           maxUrls.trim() !== ''
             ? parseInt(maxUrls)
-            : webScrapeConfig.num_sites,
+            : 50,
           scrapeStrategy,
         )
 
@@ -444,6 +441,7 @@ export const WebScrape = ({
         styles={{ input: { backgroundColor: '#1A1B1E' } }}
         placeholder="Enter URL"
         radius={'xl'}
+        type="url" // Set the type to 'url' to avoid thinking it's a username or pw.
         value={url}
         size={'lg'}
         disabled={isDisabled}
@@ -698,7 +696,7 @@ export const WebScrape = ({
           {/* <Text style={{ color: '#C1C2C5', fontSize: '16px' }} className={`${montserrat_paragraph.variable} font-montserratParagraph`}>Limit web crawl (from least to most inclusive)</Text> */}
           <div className='pl-3'>
             <List>
-              <List.Item><strong>Equal and Below:</strong> Only scrape content below the given URL. E.g. nasa.gov/blogs will scrape all blogs but never go to nasa.gov/events.</List.Item>
+              <List.Item><strong>Equal and Below:</strong> Only scrape content that starts will the given URL. E.g. nasa.gov/blogs will scrape all blogs like nasa.gov/blogs/new-rocket but never go to nasa.gov/events.</List.Item>
               <List.Item><strong>Entire domain:</strong> Crawl as much of this entire website as possible. E.g. nasa.gov also includes docs.nasa.gov</List.Item>
               <List.Item><strong>All:</strong> Start on the given URL, but will to wander the web.</List.Item>
             </List>
@@ -713,6 +711,7 @@ export const WebScrape = ({
             onChange={(strat) => setScrapeStrategy(strat)}
             data={[
               {
+                // Maybe use IconArrowBarDown ?? 
                 value: 'equal-and-below',
                 label: (
                   <Center style={{ gap: 10 }}>
@@ -721,6 +720,15 @@ export const WebScrape = ({
                   </Center>
                 ),
               },
+              // {
+              //   value: 'same-hostname',
+              //   label: (
+              //     <Center style={{ gap: 10 }}>
+              //       <IconSubtask style={{ width: rem(16), height: rem(16) }} />
+              //       <span>Subdomain</span>
+              //     </Center>
+              //   ),
+              // },
               {
                 value: 'same-domain',
                 label: (
