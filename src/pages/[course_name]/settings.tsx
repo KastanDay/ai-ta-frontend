@@ -5,6 +5,20 @@ import { DEFAULT_SYSTEM_PROMPT } from '~/utils/app/const';
 import { callSetCourseMetadata } from '~/utils/apiUtils';
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers';
 import { useUser } from '@clerk/nextjs';
+import { createStyles } from '@mantine/core';
+
+const useStyles = createStyles((theme) => ({
+
+  button: {
+    backgroundColor: 'white',
+    color: 'black',
+    border: '2px solid purple',
+    '&:hover': {
+      backgroundColor: 'purple',
+      color: 'white',
+    },
+  },
+}))
 
 interface SettingsProps {
   t: (key: string) => string
@@ -54,15 +68,24 @@ const Settings = ({ t }: SettingsProps) => {
     }
   }
 
+  const { classes } = useStyles()
+
   return (
-    <div style={{ height: '20px' }}>
-      <input
-        type="text"
-        value={systemPrompt}
-        onChange={(e) => setSystemPrompt(e.target.value)}
-        style={{ width: '100%', height: '30px' }}
-      />
-      <button onClick={handleSystemPromptSubmit}>Update System Prompt</button>
+    <div>
+      <h2 style={{ textAlign: 'center', color: 'white', padding: '10px', fontSize: '20px' }}>System Prompt</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
+        <textarea
+          value={systemPrompt}
+          onChange={(e) => setSystemPrompt(e.target.value)}
+          style={{ width: '60%', height: '100px', marginBottom: '10px', color: 'white' }}
+        />
+        <button
+          onClick={handleSystemPromptSubmit}
+          className={classes.button}
+        >
+          Update System Prompt
+        </button>
+      </div>
     </div>
   )
 }
