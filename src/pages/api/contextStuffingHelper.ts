@@ -36,7 +36,7 @@ export async function getStuffedPrompt(
       
       Suppose a document name is shared with you along with the number below like "27: www.pdf, page: 2", "28: www.osd" where 27, 28 are numbers, www.pdf, www.osd are document_name, and 2 is the pageNumber, then cite it in the response as follows:
       """
-      The sky is blue. [27] The grass is green. [28]
+      The sky is blue. [27, page: 2] The grass is green. [28]
       Relevant Sources:
 
       27. [www.pdf, page: 2](#)

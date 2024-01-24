@@ -9,14 +9,18 @@ import {
   Checkbox,
   TextInput,
   Text,
+  SegmentedControl,
+  Center,
+  rem,
+  List,
 } from '@mantine/core'
-import { IconWorldDownload } from '@tabler/icons-react'
+import { IconEye, IconHome, IconSitemap, IconSubtask, IconWorld, IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import { useMediaQuery } from '@mantine/hooks'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
-import { montserrat_heading } from 'fonts'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { useRef } from 'react'
 
 interface WebScrapeProps {
@@ -58,6 +62,28 @@ const formatUrl = (url: string) => {
   return url
 }
 
+const formatUrlAndMatchRegex = (url: string) => {
+  // fullUrl always starts with http://. Is the starting place of the scrape. 
+  // baseUrl is used to construct the match statement.
+
+
+  // Ensure the url starts with 'http://'
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'http://' + url;
+  }
+
+  // Extract the base url including the path
+  const baseUrl = (url.replace(/^https?:\/\//i, '').split('?')[0] as string).replace(/\/$/, ''); // Remove protocol (http/s), split at '?', and remove trailing slash
+
+
+  const matchRegex = `http?(s)://**${baseUrl}/**`
+
+  return {
+    fullUrl: baseUrl,
+    matchRegex: matchRegex
+  };
+}
+
 export const WebScrape = ({
   is_new_course,
   courseName,
@@ -73,7 +99,7 @@ export const WebScrape = ({
   const theme = useMantineTheme()
   const [maxUrls, setMaxUrls] = useState('50')
   const [maxDepth, setMaxDepth] = useState('2')
-  const [stayOnBaseUrl, setStayOnBaseUrl] = useState(false)
+  const [scrapeStrategy, setScrapeStrategy] = useState<string>('equal-and-below')
   const [courseID, setCourseID] = useState<string>('')
   const [selectedContents, setSelectedContents] = useState<string[]>([])
   const [showContentOptions, setShowContentOptions] = useState<boolean>(false)
@@ -199,21 +225,13 @@ export const WebScrape = ({
       } else {
         showToast()
 
-        const response = await fetch('/api/UIUC-api/webScrapeConfig')
-        let webScrapeConfig = await response.json()
-        webScrapeConfig = webScrapeConfig.config
-
         data = scrapeWeb(
           url,
           courseName,
           maxUrls.trim() !== ''
-            ? parseInt(maxUrls) - 1
-            : webScrapeConfig.num_sites,
-          maxDepth.trim() !== ''
-            ? parseInt(maxDepth) - 1
-            : webScrapeConfig.recursive_depth,
-          webScrapeConfig.timeout_sec,
-          stayOnBaseUrl,
+            ? parseInt(maxUrls)
+            : 50,
+          scrapeStrategy,
         )
 
         if (is_new_course) {
@@ -273,25 +291,6 @@ export const WebScrape = ({
       }
     }
 
-    // Check for maxDepth
-    if (!maxDepth) {
-      errors.maxDepth = {
-        error: true,
-        message: 'Please provide an input for Max Depth',
-      }
-    } else if (!/^\d+$/.test(maxDepth)) {
-      // Using regex to ensure the entire string is a number
-      errors.maxDepth = {
-        error: true,
-        message: 'Max Depth should be a valid number',
-      }
-    } else if (parseInt(maxDepth) < 1 || parseInt(maxDepth) > 500) {
-      errors.maxDepth = {
-        error: true,
-        message: 'Max Depth should be between 1 and 500',
-      }
-    }
-
     setInputErrors(errors)
     return !Object.values(errors).some((error) => error.error)
   }
@@ -338,27 +337,31 @@ export const WebScrape = ({
     url: string | null,
     courseName: string | null,
     maxUrls: number,
-    maxDepth: number,
-    timeout: number,
-    stay_on_baseurl: boolean,
+    scrapeStrategy: string,
   ) => {
     try {
       if (!url || !courseName) return null
-      url = formatUrl(url) // ensure we have http://
       console.log('SCRAPING', url)
-      const response = await axios.get(
-        `https://flask-production-751b.up.railway.app/web-scrape`,
+
+      const fullUrl = formatUrl(url)
+
+      const postParams = {
+        url: fullUrl,
+        courseName: courseName,
+        maxPagesToCrawl: maxUrls,
+        scrapeStrategy: scrapeStrategy,
+        match: formatUrlAndMatchRegex(fullUrl).matchRegex,
+        maxTokens: 2000000, // basically inf.
+      }
+      console.log("About to post to the web scraping endpoint, with params:", postParams)
+
+      const response = await axios.post(
+        `https://crawlee-production.up.railway.app/crawl`,
         {
-          params: {
-            url: url,
-            course_name: courseName,
-            max_urls: maxUrls,
-            max_depth: maxDepth,
-            timeout: timeout,
-            stay_on_baseurl: stay_on_baseurl,
-          },
+          params: postParams,
         },
       )
+      console.log("Response from web scraping endpoint:", response.data)
       return response.data
     } catch (error) {
       console.error('Error during web scraping:', error)
@@ -434,9 +437,11 @@ export const WebScrape = ({
         icon={icon}
         // I can't figure out how to change the background colors.
         className={`mt-4 w-[80%] min-w-[20rem] disabled:bg-purple-200 lg:w-[75%]`}
-        wrapperProps={{ backgroundColor: '#020307', borderRadius: 'xl' }}
+        wrapperProps={{ borderRadius: 'xl' }}
+        styles={{ input: { backgroundColor: '#1A1B1E' } }}
         placeholder="Enter URL"
         radius={'xl'}
+        type="url" // Set the type to 'url' to avoid thinking it's a username or pw.
         value={url}
         size={'lg'}
         disabled={isDisabled}
@@ -653,7 +658,7 @@ export const WebScrape = ({
             event.preventDefault()
           }}
         >
-          <div>
+          <div className="pt-2 pb-2">
             <Tooltip
               multiline
               w={400}
@@ -664,63 +669,86 @@ export const WebScrape = ({
               position="bottom-start"
               label="We will attempt to visit this number of pages, but not all will be scraped if they're duplicates, broken or otherwise inaccessible."
             >
-              <TextInput
-                label="Max URLs (1 to 500)"
-                name="maximumUrls"
-                placeholder="Default 100"
-                value={maxUrls}
-                onChange={(e) => {
-                  handleInputChange(e, 'maxUrls')
-                }}
-                error={inputErrors.maxUrls.error}
-              />
+              <div>
+                <Text style={{ color: '#C1C2C5', fontSize: '16px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Max URLs (1 to 500)</Text>
+                <TextInput
+                  styles={{ input: { backgroundColor: '#1A1B1E' } }}
+                  name="maximumUrls"
+                  radius='md'
+                  placeholder="Default 50"
+                  value={maxUrls}
+                  onChange={(e) => {
+                    handleInputChange(e, 'maxUrls')
+                  }}
+                  error={inputErrors.maxUrls.error}
+                />
+              </div>
             </Tooltip>
           </div>
           {inputErrors.maxUrls.error && (
             <p style={{ color: 'red' }}>{inputErrors.maxUrls.message}</p>
           )}
-          <Tooltip
-            multiline
-            color="#15162b"
-            arrowPosition="side"
-            arrowSize={8}
-            withArrow
-            position="bottom-start"
-            label="Enter the maximum depth for clicking on links relative to the original URL."
-          >
-            {/* no need in this tooltip: w={400} */}
-            <TextInput
-              label="Max Depth (1 to 500)"
-              name="maxDepth"
-              placeholder="Default 3"
-              value={maxDepth}
-              onChange={(e) => {
-                handleInputChange(e, 'maxDepth')
-              }}
-              style={{ width: '100%' }}
-              error={inputErrors.maxDepth.error}
-            />
-          </Tooltip>
           {inputErrors.maxDepth.error && (
             <p style={{ color: 'red' }}>{inputErrors.maxDepth.message}</p>
           )}
-          <div style={{ fontSize: 'smaller' }}>Stay on Base URL</div>
-          <Tooltip
-            multiline
-            w={400}
-            color="#15162b"
-            arrowPosition="side"
-            arrowSize={8}
-            withArrow
-            position="bottom-start"
-            label="If true, we will *not* visit any other websites, only other pages on the website you entered. For example, entering illinois.edu/anything will restrict all materials to begin with illinois.edu, not uic.edu."
-          >
-            <Checkbox
-              checked={stayOnBaseUrl}
-              size="md"
-              onChange={() => setStayOnBaseUrl(!stayOnBaseUrl)}
-            />
-          </Tooltip>
+
+          <Text style={{ color: '#C1C2C5', fontSize: '16px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Limit web crawl</Text>
+          {/* <Text style={{ color: '#C1C2C5', fontSize: '16px' }} className={`${montserrat_paragraph.variable} font-montserratParagraph`}>Limit web crawl (from least to most inclusive)</Text> */}
+          <div className='pl-3'>
+            <List>
+              <List.Item><strong>Equal and Below:</strong> Only scrape content that starts will the given URL. E.g. nasa.gov/blogs will scrape all blogs like nasa.gov/blogs/new-rocket but never go to nasa.gov/events.</List.Item>
+              <List.Item><strong>Entire domain:</strong> Crawl as much of this entire website as possible. E.g. nasa.gov also includes docs.nasa.gov</List.Item>
+              <List.Item><strong>All:</strong> Start on the given URL, but will to wander the web.</List.Item>
+            </List>
+          </div>
+          <Text style={{ color: '#C1C2C5' }}><strong>I suggest starting with Equal and Below</strong>, then just re-run this if you need more later.</Text>
+          <div className='pt-2'></div>
+          <SegmentedControl
+            fullWidth
+            size="sm"
+            radius="md"
+            value={scrapeStrategy}
+            onChange={(strat) => setScrapeStrategy(strat)}
+            data={[
+              {
+                // Maybe use IconArrowBarDown ?? 
+                value: 'equal-and-below',
+                label: (
+                  <Center style={{ gap: 10 }}>
+                    <IconSitemap style={{ width: rem(16), height: rem(16) }} />
+                    <span>Equal and Below</span>
+                  </Center>
+                ),
+              },
+              // {
+              //   value: 'same-hostname',
+              //   label: (
+              //     <Center style={{ gap: 10 }}>
+              //       <IconSubtask style={{ width: rem(16), height: rem(16) }} />
+              //       <span>Subdomain</span>
+              //     </Center>
+              //   ),
+              // },
+              {
+                value: 'same-domain',
+                label: (
+                  <Center style={{ gap: 10 }}>
+                    <IconHome style={{ width: rem(16), height: rem(16) }} />
+                    <span>Entire domain</span>
+                  </Center>
+                ),
+              },
+              {
+                value: 'all',
+                label: (
+                  <Center style={{ gap: 10 }}>
+                    <IconWorld style={{ width: rem(16), height: rem(16) }} />
+                    <span>All</span>
+                  </Center>
+                ),
+              },
+            ]}
+          />
         </form>
       )}
     </>

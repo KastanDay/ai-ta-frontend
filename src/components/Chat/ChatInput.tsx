@@ -571,7 +571,7 @@ export const ChatInput = ({
     try {
       const uploadedImageUrl = await uploadToS3(file, courseName);
       const presignedUrl = await fetchPresignedUrl(uploadedImageUrl as string);
-      return presignedUrl;
+      return presignedUrl as string;
     } catch (error) {
       console.error('Upload failed for file', file.name, error);
       setImageError(`Upload failed for file: ${file.name}`);

@@ -69,7 +69,7 @@ export const OpenAIStream = async (
 
   let url = `${endpoint}/v1/chat/completions`
   if (apiType === 'azure') {
-    const deploymentName = process.env.AZURE_OPENAI_ENGINE
+    const deploymentName = model.id || process.env.AZURE_OPENAI_ENGINE
     url = `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${OPENAI_API_VERSION}`
   }
 

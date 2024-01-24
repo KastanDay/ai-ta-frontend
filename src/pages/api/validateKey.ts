@@ -6,7 +6,7 @@ import {
   OPENAI_ORGANIZATION,
 } from '@/utils/app/const'
 import { NextResponse } from 'next/server'
-
+import modelsHandler from './models'
 import { decrypt } from '~/utils/crypto'
 import { OpenAIError } from '~/utils/server'
 
@@ -43,9 +43,33 @@ const handler = async (req: Request): Promise<Response> => {
 
     let url = `${endpoint}/v1/chat/completions`
     if (apiType === 'azure') {
-      const deploymentName = process.env.AZURE_OPENAI_ENGINE
-      url = `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${OPENAI_API_VERSION}`
-      console.log('Created Azure url: ', url)
+      try {
+        const modelsRequest = new Request(req.url, {
+          method: req.method,
+          headers: req.headers,
+          body: JSON.stringify({ key: apiKey }),
+          signal: req.signal,
+        });
+      
+        const deploymentsResponse = await modelsHandler(modelsRequest);
+        if (!deploymentsResponse.ok) {
+          throw new Error(`Failed to retrieve deployments: ${deploymentsResponse.statusText}`);
+        }
+        const deployments = await deploymentsResponse.json();    
+        // console.log('deployments: ', deployments)
+        // Assumption: there is only one deployment
+        // How to handle multiple deployments? Maybe we should pass model.id all the way from home fetched from local storage?
+        const deploymentName = deployments[0]?.id || process.env.AZURE_OPENAI_ENGINE
+        if (!deploymentName) {
+          throw new Error('Deployment name not found');
+        }
+        // console.log('deploymentName: ', deploymentName)
+        url = `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${OPENAI_API_VERSION}`
+        console.log('Created Azure url: ', url)
+      } catch (error) {
+        console.error('Error fetching Azure deployments:', error);
+        throw error;
+      }
     }
 
     const response = await fetch(url, {
