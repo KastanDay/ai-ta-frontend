@@ -1,0 +1,7 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# https://platform.openai.com/docs/gptbot
+User-agent: GPTBot
+Allow: /
