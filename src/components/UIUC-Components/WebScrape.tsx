@@ -14,7 +14,7 @@ import {
   rem,
   List,
 } from '@mantine/core'
-import { IconEye, IconHome, IconSitemap, IconSubtask, IconWorld, IconWorldDownload } from '@tabler/icons-react'
+import { IconHome, IconSitemap, IconSubtask, IconWorld, IconWorldDownload } from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
@@ -93,17 +93,14 @@ export const WebScrape = ({
   const [isUrlUpdated, setIsUrlUpdated] = useState(false)
   const [url, setUrl] = useState('')
   const [icon, setIcon] = useState(<IconWorldDownload size={'50%'} />)
-  const [loadingSpinner, setLoadingSpinner] = useState(false)
+  const [loadingSpinner, setLoadingSpinner] = useState(false) // TODO: Implement loading for web scrape. Maybe refresh on completion.
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const theme = useMantineTheme()
   const [maxUrls, setMaxUrls] = useState('50')
-  const [maxDepth, setMaxDepth] = useState('2')
   const [scrapeStrategy, setScrapeStrategy] = useState<string>('equal-and-below')
   const [courseID, setCourseID] = useState<string>('')
-  const [selectedContents, setSelectedContents] = useState<string[]>([])
   const [showContentOptions, setShowContentOptions] = useState<boolean>(false)
-  const isCourseIDUpdated = courseID.trim() !== ''
   const logoRef = useRef(null)
   const [selectedCanvasOptions, setSelectedCanvasOptions] = useState<string[]>([
     'files',
@@ -122,15 +119,6 @@ export const WebScrape = ({
     }
   }
 
-  const handleCheckboxChange = (values: string[]) => {
-    setSelectedContents(values)
-  }
-
-  const canvasSubmit = () => {
-    console.log('Course ID:', courseID)
-    console.log('Selected Contents:', selectedContents)
-  }
-
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     variable: string,
@@ -139,7 +127,8 @@ export const WebScrape = ({
     if (variable === 'maxUrls') {
       setMaxUrls(value)
     } else if (variable === 'maxDepth') {
-      setMaxDepth(value)
+      // TODO: implement depth again.
+      // setMaxDepth(value)
     }
   }
 
@@ -438,8 +427,17 @@ export const WebScrape = ({
         // I can't figure out how to change the background colors.
         className={`mt-4 w-[80%] min-w-[20rem] disabled:bg-purple-200 lg:w-[75%]`}
         wrapperProps={{ borderRadius: 'xl' }}
-        styles={{ input: { backgroundColor: '#1A1B1E' } }}
-        placeholder="Enter URL"
+        // styles={{ input: { backgroundColor: '#1A1B1E' } }}
+        styles={{
+          input: {
+            backgroundColor: '#1A1B1E',
+            paddingRight: '6rem', // Adjust right padding to prevent text from hiding behind the button
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+          }
+        }}
+        placeholder="Enter URL..."
         radius={'xl'}
         type="url" // Set the type to 'url' to avoid thinking it's a username or pw.
         value={url}
@@ -697,14 +695,26 @@ export const WebScrape = ({
           <div className='pl-3'>
             <List>
               <List.Item><strong>Equal and Below:</strong> Only scrape content that starts will the given URL. E.g. nasa.gov/blogs will scrape all blogs like nasa.gov/blogs/new-rocket but never go to nasa.gov/events.</List.Item>
+              <List.Item><strong>Same subdomain:</strong> Crawl the entire subdomain. E.g. docs.nasa.gov will grab that entire subdomain, but not nasa.gov or api.nasa.gov.</List.Item>
               <List.Item><strong>Entire domain:</strong> Crawl as much of this entire website as possible. E.g. nasa.gov also includes docs.nasa.gov</List.Item>
-              <List.Item><strong>All:</strong> Start on the given URL, but will to wander the web.</List.Item>
+              <List.Item><span><strong>All:</strong> Start on the given URL and wander the web... <Text style={{ color: '#C1C2C5' }}>For more detail <a
+                className={'text-purple-600'}
+                href="https://docs.uiuc.chat/features/web-crawling-details"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                read the docs
+              </a>.</Text>
+              </span>
+              </List.Item>
             </List>
           </div>
+
           <Text style={{ color: '#C1C2C5' }}><strong>I suggest starting with Equal and Below</strong>, then just re-run this if you need more later.</Text>
           <div className='pt-2'></div>
           <SegmentedControl
             fullWidth
+            orientation="vertical"
             size="sm"
             radius="md"
             value={scrapeStrategy}
@@ -720,15 +730,15 @@ export const WebScrape = ({
                   </Center>
                 ),
               },
-              // {
-              //   value: 'same-hostname',
-              //   label: (
-              //     <Center style={{ gap: 10 }}>
-              //       <IconSubtask style={{ width: rem(16), height: rem(16) }} />
-              //       <span>Subdomain</span>
-              //     </Center>
-              //   ),
-              // },
+              {
+                value: 'same-hostname',
+                label: (
+                  <Center style={{ gap: 10 }}>
+                    <IconSubtask style={{ width: rem(16), height: rem(16) }} />
+                    <span>Subdomain</span>
+                  </Center>
+                ),
+              },
               {
                 value: 'same-domain',
                 label: (
@@ -749,7 +759,7 @@ export const WebScrape = ({
               },
             ]}
           />
-        </form>
+        </form >
       )}
     </>
   )
