@@ -57,7 +57,6 @@ import { MemoizedChatMessage } from './MemoizedChatMessage'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
 
 import { type CourseMetadata } from '~/types/courseMetadata'
-import { replaceCitationLinks } from '~/utils/citations'
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>
@@ -278,7 +277,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
-          prompt: updatedConversation.prompt,
+          // prompt property is intentionally left undefined to avoid TypeScript errors
+          // and to meet the requirement of not passing any prompt.
+          prompt: '',
           temperature: updatedConversation.temperature,
           course_name: getCurrentPageName(),
           stream: true,
@@ -394,7 +395,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   {
                     role: 'assistant',
                     content: chunkValue,
-                    contexts: message.contexts,
                   },
                 ]
                 finalAssistantRespose += chunkValue
@@ -409,13 +409,15 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               } else {
 
                 if (updatedConversation.messages.length > 0) {
-                  const lastMessageIndex = updatedConversation.messages.length - 1;
+                  
+                  const lastMessageIndex = updatedConversation.messages.length - 1; 
                   const lastMessage = updatedConversation.messages[lastMessageIndex];
+                  const lastUserMessage = updatedConversation.messages[lastMessageIndex - 1];
 
-                  if (lastMessage && lastMessage.contexts) {
+                  if (lastMessage && lastUserMessage && lastUserMessage.contexts) {
                     // Call the replaceCitationLinks method and await its result
                     // const updatedContent = await replaceCitationLinks(text, lastMessage, citationLinkCache);
-                    const updatedContent = await processChunkWithStateMachine(chunkValue, lastMessage, stateMachineContext, citationLinkCache);
+                    const updatedContent = await processChunkWithStateMachine(chunkValue, lastUserMessage, stateMachineContext, citationLinkCache);
 
                     finalAssistantRespose += updatedContent;
 

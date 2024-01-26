@@ -40,7 +40,7 @@ export async function replaceCitationLinks(content: string, lastMessage: Message
           const pageNumberMatch = filename.match(/page: (\d+)/);
           const pageNumber = pageNumberMatch ? `#page=${pageNumberMatch[1]}` : '';
           console.log("pageNumber: ", pageNumber);
-          return `${index} [${filename}](${link}${pageNumber})`;
+          return `${index} [${index} ${filename}](${link}${pageNumber})`;
         });
       }
     }

@@ -4,7 +4,7 @@ import { useTranslation } from 'next-i18next'
 import { OpenAIModels, type OpenAIModel, OpenAIModelID } from '@/types/openai'
 import HomeContext from '~/pages/api/home/home.context'
 import { ModelParams } from './ModelParams'
-import { montserrat_heading } from 'fonts'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Input, NativeSelect, Switch, Title, Tooltip } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
@@ -80,6 +80,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                   />
                 </Link>
               </Input.Description>
+          
               <div tabIndex={0} className="relative w-full">
                 <NativeSelect
                   className="menu absolute z-[1]"
@@ -115,6 +116,24 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 t={t}
               />
             </div>
+            <div className="flex h-full flex-col space-y-4 rounded-lg p-2">
+                <Input.Description
+                  className={`text-left text-sm ${montserrat_paragraph.variable} font-montserratParagraph`}
+                >
+                  <Link
+                    href="https://platform.openai.com/account/usage"
+                    target="_blank"
+                    className="hover:underline"
+                  >
+                    View account usage on OpenAI{' '}
+                    <IconExternalLink
+                      size={15}
+                      style={{ position: 'relative', top: '2px' }}
+                      className={'mb-2 inline'}
+                    />
+                  </Link>
+                </Input.Description>
+              </div>
           </div>
         </div>
       </div>
