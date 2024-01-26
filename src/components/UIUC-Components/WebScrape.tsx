@@ -514,7 +514,7 @@ export const WebScrape = ({
           <div className='pt-4' />
           {/* <Text className="mt-4 text-lg font-bold text-red-600 underline"> */}
           <Text style={{ color: '#C1C2C5', fontSize: '16px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Web scrape in progress...</Text>
-          <Text style={{ color: '#C1C2C5' }} className='pb-3'>Page refreshes upon completion. Your documents stay safe even if you navigate away.</Text>
+          <Text style={{ color: '#C1C2C5', textAlign: 'center', maxWidth: '80%' }} className={`pb-3 ${montserrat_paragraph.variable} font-montserratParagraph`}>Page refreshes upon completion. Your documents stay safe even if you navigate away.</Text>
           <LoadingSpinner />
         </>
       )}
