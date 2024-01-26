@@ -222,6 +222,8 @@ export const WebScrape = ({
             : 50,
           scrapeStrategy,
         )
+        // let ingest finalize things. It should be finished, but the DB is slow.
+        await new Promise(resolve => setTimeout(resolve, 3000))
 
         if (is_new_course) {
           // set course exists in fast course_metadatas KV db
