@@ -303,7 +303,7 @@ const Home = () => {
     }
 
     // Ordered list of preferred model IDs
-    const preferredModelIds = ['gpt-4-vision-preview', 'gpt-4-128k', 'gpt-4-1106-preview', 'gpt-4'];
+    const preferredModelIds = ['gpt-4-vision-preview', 'gpt-4-128k', 'gpt-4-1106-preview', 'gpt-4', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo'];
 
     // Find and return the first available preferred model
     for (const preferredId of preferredModelIds) {
