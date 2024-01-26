@@ -49,7 +49,6 @@ const Home = () => {
   const { getModelsError } = useErrorService()
   const [isLoading, setIsLoading] = useState<boolean>(true) // Add a new state for loading
 
-  const defaultModelId = OpenAIModelID.GPT_4
   const serverSidePluginKeysSet = true
 
   const contextValue = useCreateReducer<HomeInitialState>({
@@ -83,11 +82,8 @@ const Home = () => {
   )
 
   useEffect(() => {
-    // Set model (to only available models)
-    const modelId = selectedConversation?.model.id
-    console.log("In effect of home, selectedConversation model id: ", modelId)
-    const lastConversation = conversations[conversations.length - 1]
-    const model = selectBestModel(lastConversation, models, defaultModelId);
+    // Set model after we fetch available models
+    const model = selectBestModel();
 
     dispatch({
       field: 'defaultModelId',
@@ -98,13 +94,11 @@ const Home = () => {
     if (selectedConversation) {
       const convo_with_valid_model = selectedConversation
       convo_with_valid_model.model = model
-      console.debug("IN ENSURE CURRENT CONVO HAS A VALID MODEL, USING MODEL: ", model)
       dispatch({
         field: 'selectedConversation',
         value: convo_with_valid_model,
       })
     }
-    // console.debug("In effect of home Using model: ", defaultModel)
   }, [models])
 
 
@@ -300,39 +294,36 @@ const Home = () => {
     saveFolders(updatedFolders)
   }
 
+  const selectBestModel = (): OpenAIModel => {
+    const defaultModelId = OpenAIModelID.GPT_4_VISION
 
-  const selectBestModel = (lastConversation: Conversation | undefined, models: OpenAIModel[], defaultModelId: OpenAIModelID): OpenAIModel => {
-    // If models array is empty, return defaultModelId
-    if (!models.length) {
-      return OpenAIModels[defaultModelId]
+    // Return the default model if the models array is empty
+    if (models.length === 0) {
+      return OpenAIModels[defaultModelId];
     }
 
-    // If the last conversation's model is available, use it
-    if (lastConversation && lastConversation.model && models.some(model => model.id === lastConversation.model.id)) {
-      return lastConversation.model as OpenAIModel;
-    } else {
-      // If 'gpt-4-from-canada-east' or 'gpt-4' are available, use whichever is available
-      const preferredModel = models.find(model => ['gpt-4-from-canada-east', 'gpt-4'].includes(model.id));
+    // Ordered list of preferred model IDs
+    const preferredModelIds = ['gpt-4-vision-preview', 'gpt-4-128k', 'gpt-4-0125-preview', 'gpt-4-1106-preview', 'gpt-4', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo'];
 
-      if (preferredModel) {
-        return preferredModel;
-      } else {
-        // Fallback to the default model
-        return models.find((model) => model.id === defaultModelId) || models[0] || OpenAIModels[defaultModelId];
+    // Find and return the first available preferred model
+    for (const preferredId of preferredModelIds) {
+      const model = models.find(m => m.id === preferredId);
+      if (model) {
+        return model;
       }
     }
+
+    // Fallback to the first model in the list or the default model
+    return models[0] || OpenAIModels[defaultModelId];
   }
 
   // CONVERSATION OPERATIONS  --------------------------------------------
 
   const handleNewConversation = () => {
     const lastConversation = conversations[conversations.length - 1]
-    console.debug("Models available: ", models)
-    console.debug("IN NEW CONVERSATION Using model: ", defaultModelId)
 
     // Determine the model to use for the new conversation
-    const model = selectBestModel(lastConversation, models, defaultModelId);
-    console.debug('NEW CONVO : handleNewConversation SETTING IT TO: ', model);
+    const model = selectBestModel();
 
     const newConversation: Conversation = {
       id: uuidv4(),
@@ -460,14 +451,14 @@ const Home = () => {
   }, [selectedConversation])
 
   useEffect(() => {
-    defaultModelId &&
-      dispatch({ field: 'defaultModelId', value: defaultModelId })
+    // defaultModelId &&
+    //   dispatch({ field: 'defaultModelId', value: defaultModelId })
     serverSidePluginKeysSet &&
       dispatch({
         field: 'serverSidePluginKeysSet',
         value: serverSidePluginKeysSet,
       })
-  }, [defaultModelId, serverSidePluginKeysSet]) // serverSideApiKeyIsSet,
+  }, [serverSidePluginKeysSet]) // defaultModelId, 
 
   // ON LOAD --------------------------------------------
 
@@ -533,18 +524,19 @@ const Home = () => {
     } else {
       const lastConversation = conversations[conversations.length - 1]
       console.debug("Models available: ", models)
-      let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
-      if (!defaultModel) {
-        defaultModel = OpenAIModels['gpt-4']
-      }
-      console.debug("Using model: ", defaultModel)
+      // let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
+      const bestModel = selectBestModel();
+      // if (!defaultModel) {
+      //   defaultModel = OpenAIModels['gpt-4']
+      // }
+      console.debug("Using model: ", bestModel)
       dispatch({
         field: 'selectedConversation',
         value: {
           id: uuidv4(),
           name: t('New Conversation'),
           messages: [],
-          model: defaultModel,
+          model: bestModel,
           prompt: DEFAULT_SYSTEM_PROMPT,
           temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
           folderId: null,

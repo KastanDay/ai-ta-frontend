@@ -12,6 +12,7 @@ export enum OpenAIModelID {
   GPT_3_5_16k = 'gpt-3.5-turbo-16k',
   GPT_4 = 'gpt-4',
   GPT_4_1106_PREVIEW = 'gpt-4-1106-preview',
+  GPT_4_0125_PREVIEW = 'gpt-4-0125-preview',
   GPT_4_VISION = 'gpt-4-vision-preview',
   // GPT_4_32K = 'gpt-4-32k',
   // Azure -- ONLY GPT-4 supported for now... due to deployment param being env var...
@@ -44,7 +45,13 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   },
   [OpenAIModelID.GPT_4_1106_PREVIEW]: {
     id: OpenAIModelID.GPT_4_1106_PREVIEW,
-    name: 'GPT-4 Turbo (128k)',
+    name: 'GPT-4 Turbo 1106 (128k)',
+    maxLength: 24000,
+    tokenLimit: 128000,
+  },
+  [OpenAIModelID.GPT_4_0125_PREVIEW]: {
+    id: OpenAIModelID.GPT_4_0125_PREVIEW,
+    name: 'GPT-4 Turbo 0125 (128k)',
     maxLength: 24000,
     tokenLimit: 128000,
   },
@@ -78,6 +85,6 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
     id: OpenAIModelID.GPT_4_VISION,
     name: 'GPT-4 Vision',
     maxLength: 8000,
-    tokenLimit: 15000, // TPM of 40,000 -- so have to reduce this, despite it supporting up to 128k
+    tokenLimit: 110000, // slightly less to account for possible images 
   },
 }
