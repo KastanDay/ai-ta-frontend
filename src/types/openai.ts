@@ -85,6 +85,6 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
     id: OpenAIModelID.GPT_4_VISION,
     name: 'GPT-4 Vision',
     maxLength: 8000,
-    tokenLimit: 110000, // TPM of 40,000 -- so have to reduce this, despite it supporting up to 128k
+    tokenLimit: 110000, // slightly less to account for possible images 
   },
 }
