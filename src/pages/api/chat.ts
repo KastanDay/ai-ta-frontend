@@ -41,12 +41,26 @@ const handler = async (req: Request): Promise<NextResponse> => {
     console.log("Model's token limit", token_limit)
 
     let promptToSend = prompt
-    if (!promptToSend) {
+    export function determinePrompt(prompt: string): string {
+    if (!prompt) {
+        return DEFAULT_SYSTEM_PROMPT;
+    }
+    return prompt;
+}
+
+if (!promptToSend) {
       promptToSend = DEFAULT_SYSTEM_PROMPT
     }
 
     let temperatureToUse = temperature
-    if (temperatureToUse == null) {
+    export function determineTemperature(temperature: number | null): number {
+    if (temperature == null) {
+        return DEFAULT_TEMPERATURE;
+    }
+    return temperature;
+}
+
+if (temperatureToUse == null) {
       temperatureToUse = DEFAULT_TEMPERATURE
     }
 
@@ -106,7 +120,35 @@ const handler = async (req: Request): Promise<NextResponse> => {
       }
     }
 
-    // Take most recent N messages that will fit in the context window
+    export function prepareMessagesToSend(messages: OpenAIChatMessage[], encoding: Tiktoken, token_limit: number): OpenAIChatMessage[] {
+    let tokenCount = 0;
+    let messagesToSend: OpenAIChatMessage[] = [];
+
+    for (let i = messages.length - 1; i >= 0; i--) {
+        const message = messages[i];
+        if (message) {
+            let content: string;
+            if (typeof message.content === 'string') {
+                content = message.content;
+            } else {
+                content = message.content.map(c => c.text || '').join(' ');
+            }
+            const tokens = encoding.encode(content);
+
+            if (tokenCount + tokens.length + 1000 > token_limit) {
+                break;
+            }
+            tokenCount += tokens.length;
+            messagesToSend = [
+                { role: message.role, content: message.content as Content[] },
+                ...messagesToSend,
+            ];
+        }
+    }
+    return messagesToSend;
+}
+
+// Take most recent N messages that will fit in the context window
     const prompt_tokens = encoding.encode(promptToSend)
 
     let tokenCount = prompt_tokens.length
@@ -150,7 +192,15 @@ const handler = async (req: Request): Promise<NextResponse> => {
       messagesToSend,
       stream
     )
+    export function constructResponse(apiStream: string, stream: boolean): NextResponse {
     if (stream) {
+        return new NextResponse(apiStream);
+    } else {
+        return new NextResponse(JSON.stringify(apiStream));
+    }
+}
+
+if (stream) {
       return new NextResponse(apiStream)
     } else {
       return new NextResponse(JSON.stringify(apiStream))
@@ -179,4 +229,4 @@ const handler = async (req: Request): Promise<NextResponse> => {
   }
 }
 
-export default handler
+export { handler }
