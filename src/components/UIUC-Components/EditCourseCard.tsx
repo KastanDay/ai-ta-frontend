@@ -114,6 +114,7 @@ const EditCourseCard = ({
   )
   const [isKeyUpdated, setIsKeyUpdated] = useState(false)
 
+
   const checkCourseAvailability = () => {
     const courseExists =
       courseName != '' &&
@@ -712,6 +713,7 @@ const PrivateOrPublicCourse = ({
 }) => {
   const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
   const { classes } = useStyles() // for Accordion
+  const [courseAdmins, setCourseAdmins] = useState<string[]>([]);
   // const { user, isSignedIn, isLoaded } = useUser()
   // const user_emails = extractEmailsFromClerk(user)
   // console.log("in MakeNewCoursePage.tsx user email list: ", user_emails )
@@ -892,7 +894,7 @@ const PrivateOrPublicCourse = ({
       {isPrivate && (
         <EmailChipsComponent
           course_owner={current_user_email}
-          course_admins={[]} // TODO: add admin functionality
+          course_admins={courseAdmins} // TODO: add admin functionality
           course_name={course_name}
           is_private={isPrivate}
           onEmailAddressesChange={handleEmailAddressesChange}
@@ -902,6 +904,74 @@ const PrivateOrPublicCourse = ({
         />
       )}
       <Divider />
+      <Title
+        className={`${montserrat_heading.variable} font-montserratHeading`}
+        variant="gradient"
+        gradient={{ from: 'gold', to: 'white', deg: 170 }}
+        order={3}
+        pl={'md'}
+        pr={'md'}
+        pt={'sm'}
+        pb={0}
+        style={{ alignSelf: 'left', marginLeft: '-11px' }}
+      >
+        Admins{' '}
+      </Title>
+      <Accordion
+        pl={27}
+        pr={27}
+        pt={40}
+        pb={40}
+        m={-40}
+        // style={{ borderRadius: 'theme.radius.xl', width: '112%', maxWidth: 'min(50rem, )', marginLeft: 'max(-1rem, -10%)' }}
+        style={{ borderRadius: 'theme.radius.xl' }}
+        classNames={classes}
+        className={classes.root}
+      >
+        {/* ... Accordion items */}
+        <Accordion.Item value="openai-key-details">
+          <Accordion.Control>
+            <Text
+              className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+              size={'md'}
+            >
+              Admins have full edit permissions.
+              {/* <span className={'text-purple-600'}>Read more</span>{' '}
+              👇 */}
+            </Text>
+          </Accordion.Control>
+          <Accordion.Panel>
+            <Text
+              className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+              size={'sm'}
+            >
+              Read our{' '}
+              <a
+                className={'text-purple-600'}
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+              // style={{ textDecoration: 'underline' }}
+              >
+                strict security policy
+              </a>{' '}
+              on protecting your data. To add Admin users with full edit
+              permission, ideal for TA&apos;s and collaborators, please just
+              shoot me an email kvday2@illinois.edu.
+            </Text>
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
+        <EmailChipsComponent
+          course_owner={current_user_email}
+          course_admins={courseAdmins}
+          course_name={course_name}
+          is_private={isPrivate}
+          onEmailAddressesChange={handleEmailAddressesChange}
+          course_intro_message={courseMetadata.course_intro_message || ''}
+          banner_image_s3={courseMetadata.banner_image_s3 || ''}
+          openai_api_key={courseMetadata.openai_api_key as string}
+        />
     </>
   )
 }
