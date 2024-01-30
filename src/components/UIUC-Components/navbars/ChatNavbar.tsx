@@ -244,6 +244,11 @@ const ChatNavbar = ({
       name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
       icon: <ReportIcon />,
       link: `/${getCurrentCourseName()}/query-analysis`
+    },
+    {
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Settings</span>,
+      icon: <SettingIcon />,
+      link: `/${getCurrentCourseName()}/settings`
     }
   ] : [];
 
@@ -480,16 +485,20 @@ const ChatNavbar = ({
                 <Group grow spacing={'xs'}>
                   {/* <div /> */}
                   {/* <div style={{ paddingLeft: '10px', paddingRight: '8px' }} /> */}
-                  <MagicBell
-                    apiKey={process.env.NEXT_PUBLIC_MAGIC_BELL_API as string}
-                    userEmail={userEmail}
-                    theme={magicBellTheme}
-                    locale="en"
-                    images={{ emptyInboxUrl: 'https://assets.kastan.ai/minified_empty_chat_art.png' }}
 
-                  >
-                    {(props) => <FloatingNotificationInbox width={400} height={500} {...props} />}
-                  </MagicBell>
+                  {/* render the MagicBell untill userEmail is valid otherwise there is a warning message of userEmail */}
+                  {userEmail !== 'no_email' && (
+                    <MagicBell
+                      apiKey={process.env.NEXT_PUBLIC_MAGIC_BELL_API as string}
+                      userEmail={userEmail}
+                      theme={magicBellTheme}
+                      locale="en"
+                      images={{ emptyInboxUrl: 'https://assets.kastan.ai/minified_empty_chat_art.png' }}
+
+                    >
+                      {(props) => <FloatingNotificationInbox width={400} height={500} {...props} />}
+                    </MagicBell>
+                  )}
                   <UserButton afterSignOutUrl="/" />
                 </Group>
               </SignedIn>
