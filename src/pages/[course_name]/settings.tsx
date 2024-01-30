@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { CourseMetadata } from '~/types/courseMetadata'
-import router from "next/router";
+import router, { useRouter } from "next/router";
 import { DEFAULT_SYSTEM_PROMPT } from '~/utils/app/const';
 import { callSetCourseMetadata } from '~/utils/apiUtils';
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers';
@@ -32,12 +32,14 @@ interface SettingsProps {
   t: (key: string) => string
 }
 
-const getCurrentCourseName = () => {
-  return router.asPath.split('/')[1];
-}
+
 
 
 const Settings = ({ t }: SettingsProps) => {
+  const router = useRouter();
+  const getCurrentCourseName = () => {
+    return router.asPath.split('/')[1];
+  }
   const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(null);
   const clerk_user = useUser()
@@ -81,7 +83,7 @@ const Settings = ({ t }: SettingsProps) => {
   return (
     <>
       <div className="justify-center" style={{ height: '46px' }}>
-        <ChatNavbar isgpt4={true} />
+        {/* <ChatNavbar isgpt4={true} /> */}
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <div style={{ width: '60%' }}>
