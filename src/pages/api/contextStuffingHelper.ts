@@ -6,20 +6,13 @@ import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelper
 import { type CourseMetadata } from '~/types/courseMetadata'
 import { useUser } from '@clerk/nextjs'
 import router from 'next/router'
+import { getCoursesByOwnerOrAdmin } from './UIUC-api/getAllCourseMetadata'
+import { getCourseMetadata } from './UIUC-api/getCourseMetadata'
 
 export async function getSystemPrompt(course_name: string) {
-  const clerk_obj = useUser()
-  // const getCurrentPageName = () => {
-  //   // /CS-125/materials --> CS-125
-  //   return router.asPath.slice(1).split('/')[0] as string
-  // }
-  const emails = extractEmailsFromClerk(clerk_obj.user);
-  const currUserEmail = emails[0];
-  const metadataResponse = await fetch(`/api/UIUC-api/getAllCourseMetadata?currUserEmail=${currUserEmail}`);
-  const allMetadata = await metadataResponse.json();
-  const metadataObj = allMetadata?.find((meta: { [key: string]: CourseMetadata }) => Object.keys(meta)[0] === course_name) || null;
-  const metadata = metadataObj ? Object.values(metadataObj)[0] as CourseMetadata : null;
-  const systemPromptFromMetadata = metadata?.system_prompt;
+
+  const course_data = await getCourseMetadata(course_name);
+  const systemPrompt = course_data?.system_prompt;
 
   let prePrompt = `Please analyze and respond to the following question using the excerpts from the provided documents. These documents can be pdf files or web pages.
     Integrate relevant information from these documents, ensuring each reference is linked to the document's number.
@@ -57,7 +50,7 @@ export async function getSystemPrompt(course_name: string) {
     prePrompt = lawPreprompt + prePrompt
   }
 
-  return prePrompt + systemPromptFromMetadata + '\n\nNow please respond to my conversation: '
+  return systemPrompt + prePrompt + '\n\nNow please respond to my conversation: '
 
 }
 
