@@ -5,7 +5,14 @@ import { DEFAULT_SYSTEM_PROMPT } from '~/utils/app/const';
 import { callSetCourseMetadata } from '~/utils/apiUtils';
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers';
 import { useUser } from '@clerk/nextjs';
-import { createStyles } from '@mantine/core';
+import { Button, Text, Textarea, Title, createStyles } from '@mantine/core';
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { Montserrat } from 'next/font/google';
+
+const montserrat_light = Montserrat({
+  weight: '400',
+  subsets: ['latin'],
+})
 
 const useStyles = createStyles((theme) => ({
 
@@ -71,20 +78,45 @@ const Settings = ({ t }: SettingsProps) => {
   const { classes } = useStyles()
 
   return (
-    <div>
-      <h2 style={{ textAlign: 'center', color: 'white', padding: '10px', fontSize: '20px' }}>System Prompt</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
-        <textarea
-          value={systemPrompt}
-          onChange={(e) => setSystemPrompt(e.target.value)}
-          style={{ width: '60%', height: '100px', marginBottom: '10px', color: 'white' }}
-        />
-        <button
-          onClick={handleSystemPromptSubmit}
-          className={classes.button}
-        >
-          Update System Prompt
-        </button>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div style={{ width: '60%' }}>
+        <div className="form-control relative">
+          <Title
+            className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
+            variant="gradient"
+            gradient={{ from: 'gold', to: 'white', deg: 170 }}
+            order={3}
+          >
+            System Prompt{' '}
+          </Title>
+          <Text
+            className={`label ${montserrat_light.className} pt-0`}
+            size={'sm'}
+          >
+            Customize the system prompt for your project: {getCurrentCourseName()}
+          </Text>
+          <Textarea
+            autosize
+            minRows={2}
+            maxRows={4}
+            placeholder="Enter a system prompt"
+            className={`w-full ${montserrat_paragraph.variable} font-montserratParagraph`}
+            value={systemPrompt}
+            onChange={(e) => {
+              setSystemPrompt(e.target.value)
+            }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-start', paddingTop: '10px' }}>
+
+            <Button
+              className="relative m-1 w-[30%] self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
+              type="submit"
+              onClick={handleSystemPromptSubmit}
+            >
+              Update System Prompt
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )
