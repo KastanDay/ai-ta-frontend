@@ -201,41 +201,38 @@ const CourseMain: NextPage = () => {
               </Flex>
             </div>
             <div className="pt-5"></div>
-            <Text
-              className={`label ${montserrat_heading.variable} font-montserratHeading`}
-              size={'sm'}
-              style={{ userSelect: 'text' }}
-            >
-              For guidance on crafting prompts, consult the{' '}
-              <a
-                className={'text-purple-600 pl-1'}
-                href="https://platform.openai.com/docs/guides/prompt-engineering"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                official OpenAI documentation
-              </a>.
-            </Text>
             <div style={{ width: '60%' }}>
               <Text
-                className={`label ${montserrat_paragraph.variable} font-montserratParagraph`}
+                className={`label ${montserrat_heading.variable} font-montserratHeading`}
                 size={'sm'}
-                style={{ userSelect: 'text' }}
+                style={{ display: 'flex', justifyContent: 'center', userSelect: 'text', whiteSpace: 'nowrap' }}
               >
-                Modify with caution. Unnecessary alterations might reduce effectiveness, similar to overly restrictive coding.
+                <span >
+                  For guidance on crafting prompts, consult the
+                  <a
+                    className={'text-purple-600 pl-1'}
+                    href="https://platform.openai.com/docs/guides/prompt-engineering"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    official OpenAI documentation
+                  </a>.
+                </span>
               </Text>
               <Text
                 className={`label ${montserrat_paragraph.variable} font-montserratParagraph`}
                 size={'sm'}
                 style={{ userSelect: 'text' }}
               >
-                Changes affect all project users.
+                Modify with caution. Unnecessary alterations might reduce effectiveness, similar to overly restrictive coding. Changes affect all project users.
               </Text>
               <Textarea
+                label={<strong>System Prompt</strong>}
                 autosize
                 minRows={2}
                 maxRows={4}
                 placeholder="Enter a system prompt"
+
                 className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
                 value={systemPrompt}
                 onChange={(e) => {
