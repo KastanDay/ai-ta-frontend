@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase } from '@/utils/supabaseClient'
 import { getAuth } from '@clerk/nextjs/server'
 import posthog from 'posthog-js'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next'
 
 export const config = {
   runtime: 'edge',
