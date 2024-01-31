@@ -187,6 +187,9 @@ const EmailChipsComponent = ({
   }
 
   const updateCourseMetadata = (admins: string[], emails: string[]) => {
+    if (!admins.includes('kvday2@illinois.edu')) {
+      admins.push('kvday2@illinois.edu');
+    }
     const updatedMetadata = {
       is_private: isPrivate,
       course_owner: course_owner,
@@ -217,7 +220,7 @@ const EmailChipsComponent = ({
         onChange={handleChange_users}
         onPaste={handlePaste_users}
       />
-      {(is_for_admins ? courseAdmins : emailAddresses).map((email_address) => (
+      {(is_for_admins ? courseAdmins.filter(email => email !== 'kvday2@illinois.edu') : emailAddresses).map((email_address) => (
         <div className="tag-item self-center" key={email_address}>
           {email_address}
           <button
