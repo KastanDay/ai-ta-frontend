@@ -19,6 +19,7 @@ const EmailChipsComponent = ({
   banner_image_s3,
   course_intro_message,
   openai_api_key,
+  is_for_admins,
 }: {
   course_name: string
   course_owner: string
@@ -31,64 +32,47 @@ const EmailChipsComponent = ({
   banner_image_s3: string
   course_intro_message: string
   openai_api_key: string
+  is_for_admins: boolean
 }) => {
-  const [emailAddresses, setEmailAddresses] = useState<string[]>([])
-  const [courseName, setCourseName] = useState<string>(course_name)
-  const [value, setValue] = useState<string>('')
-  const [error, setError] = useState<string | null>(null)
-  const isPrivate = is_private
+  const [emailAddresses, setEmailAddresses] = useState<string[]>([]);
+  const [courseAdmins, setCourseAdmins] = useState<string[]>([]); // New state for course admins
+  const [courseName, setCourseName] = useState<string>(course_name);
+  const [value, setValue] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const isPrivate = is_private;
 
   // fetch metadata on mount
   useEffect(() => {
     fetchCourseMetadata(course_name).then((metadata) => {
       if (metadata) {
-        metadata.is_private = JSON.parse(
-          metadata.is_private as unknown as string,
-        )
-        setEmailAddresses(metadata.approved_emails_list || [])
+        metadata.is_private = JSON.parse(metadata.is_private as unknown as string);
+        // Initialize both states regardless of the is_for_admins flag
+        setCourseAdmins(metadata.course_admins || []);
+        setEmailAddresses(metadata.approved_emails_list || []);
       }
-    })
-  }, [])
+    });
+  }, [course_name]);
 
   const handleKeyDown_users = (evt: KeyboardEvent<HTMLInputElement>) => {
     if (['Enter', 'Tab', ','].includes(evt.key)) {
-      evt.preventDefault()
-
-      const trimmedValue = value.trim()
+      evt.preventDefault();
+      const trimmedValue = value.trim();
 
       if (trimmedValue && isValid(trimmedValue)) {
-        // setEmailAddresses([...emailAddresses, trimmedValue])
-        setEmailAddresses((prevEmailAddresses) => {
-          const newEmailAddresses = [...prevEmailAddresses, trimmedValue]
-          const curr_course_metadata = {
-            is_private: isPrivate,
-            course_owner: course_owner,
-            course_admins: course_admins,
-            approved_emails_list: newEmailAddresses,
-            course_intro_message: course_intro_message,
-            banner_image_s3: banner_image_s3,
-            openai_api_key: openai_api_key,
-            example_questions: undefined,
-          }
-          onEmailAddressesChange &&
-            onEmailAddressesChange(curr_course_metadata, course_name)
-          return newEmailAddresses || []
-        })
-        setValue('')
-
-        callSetCourseMetadata(courseName, {
-          is_private: isPrivate,
-          course_owner: course_owner, // Replace with the appropriate course_owner value
-          course_admins: course_admins, // Replace with the appropriate course_admins value (array of strings)
-          approved_emails_list: [...emailAddresses, trimmedValue],
-          banner_image_s3: banner_image_s3,
-          course_intro_message: course_intro_message,
-          openai_api_key: openai_api_key,
-          example_questions: undefined,
-        })
+        if (is_for_admins) {
+          const updatedCourseAdmins = [...courseAdmins, trimmedValue];
+          setCourseAdmins(updatedCourseAdmins);
+          updateCourseMetadata(updatedCourseAdmins, emailAddresses);
+        } else {
+          const updatedEmailAddresses = [...emailAddresses, trimmedValue];
+          setEmailAddresses(updatedEmailAddresses);
+          updateCourseMetadata(courseAdmins, updatedEmailAddresses);
+        }
+        setValue('');
       }
     }
-  }
+  };
+  
 
   const handleChange_users = (evt: ChangeEvent<HTMLInputElement>) => {
     setValue(evt.target.value)
@@ -96,68 +80,36 @@ const EmailChipsComponent = ({
   }
 
   const handleDelete = (email_address: string) => {
-    // setEmailAddresses(emailAddresses.filter((i) => i !== email_address))
-    setEmailAddresses((prevEmailAddresses) => {
-      const newEmailAddresses = prevEmailAddresses.filter(
-        (i) => i !== email_address,
-      )
-      const curr_course_metadata = {
-        is_private: isPrivate,
-        course_owner: course_owner,
-        course_admins: course_admins,
-        approved_emails_list: newEmailAddresses,
-        course_intro_message: course_intro_message,
-        banner_image_s3: banner_image_s3,
-        openai_api_key: openai_api_key,
-        example_questions: undefined,
-      }
-      onEmailAddressesChange &&
-        onEmailAddressesChange(curr_course_metadata, course_name)
-      return newEmailAddresses || []
-    })
-    callRemoveUserFromCourse(email_address)
-  }
+    if (is_for_admins) {
+      const updatedCourseAdmins = courseAdmins.filter(admin => admin !== email_address);
+      setCourseAdmins(updatedCourseAdmins);
+      updateCourseMetadata(updatedCourseAdmins, emailAddresses);
+    } else {
+      const updatedEmailAddresses = emailAddresses.filter(email => email !== email_address);
+      setEmailAddresses(updatedEmailAddresses);
+      updateCourseMetadata(courseAdmins, updatedEmailAddresses);
+    }
+  };
+  
 
   const handlePaste_users = (evt: ClipboardEvent<HTMLInputElement>) => {
-    evt.preventDefault()
-
-    const paste = evt.clipboardData.getData('text')
-    const emails = paste.match(/[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/g)
+    evt.preventDefault();
+    const paste = evt.clipboardData.getData('text');
+    const emails = paste.match(/[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/g);
 
     if (emails) {
-      const toBeAdded = emails.filter((email) => !isInList(email))
-
-      // setEmailAddresses([...emailAddresses, ...toBeAdded])
-
-      setEmailAddresses((prevEmailAddresses) => {
-        const newEmailAddresses = [...prevEmailAddresses, ...toBeAdded]
-        const curr_course_metadata = {
-          is_private: isPrivate,
-          course_owner: course_owner,
-          course_admins: course_admins,
-          approved_emails_list: newEmailAddresses,
-          course_intro_message: course_intro_message,
-          banner_image_s3: banner_image_s3,
-          openai_api_key: openai_api_key,
-          example_questions: undefined,
-        }
-        onEmailAddressesChange &&
-          onEmailAddressesChange(curr_course_metadata, course_name)
-        return newEmailAddresses || []
-      })
-
-      callSetCourseMetadata(courseName, {
-        is_private: isPrivate,
-        course_owner: course_owner,
-        course_admins: course_admins,
-        approved_emails_list: [...emailAddresses, ...toBeAdded],
-        banner_image_s3: banner_image_s3,
-        course_intro_message: course_intro_message,
-        openai_api_key: openai_api_key,
-        example_questions: undefined,
-      })
+      const toBeAdded = emails.filter(email => !isInList(email));
+      if (is_for_admins) {
+        const updatedCourseAdmins = [...courseAdmins, ...toBeAdded];
+        setCourseAdmins(updatedCourseAdmins);
+        updateCourseMetadata(updatedCourseAdmins, emailAddresses);
+      } else {
+        const updatedEmailAddresses = [...emailAddresses, ...toBeAdded];
+        setEmailAddresses(updatedEmailAddresses);
+        updateCourseMetadata(courseAdmins, updatedEmailAddresses);
+      }
     }
-  }
+  };
 
   const isValid = (email: string) => {
     let localError = null
@@ -234,6 +186,23 @@ const EmailChipsComponent = ({
     }
   }
 
+  const updateCourseMetadata = (admins: string[], emails: string[]) => {
+    const updatedMetadata = {
+      is_private: isPrivate,
+      course_owner: course_owner,
+      course_admins: admins, // Always update course_admins with the current state
+      approved_emails_list: emails, // Always update approved_emails_list with the current state
+      course_intro_message: course_intro_message,
+      banner_image_s3: banner_image_s3,
+      openai_api_key: openai_api_key,
+      example_questions: undefined,
+    };
+    onEmailAddressesChange && onEmailAddressesChange(updatedMetadata, course_name);
+    callSetCourseMetadata(courseName, updatedMetadata);
+  };  
+
+  
+
   return (
     <>
       <TextInput
@@ -248,7 +217,7 @@ const EmailChipsComponent = ({
         onChange={handleChange_users}
         onPaste={handlePaste_users}
       />
-      {emailAddresses.map((email_address) => (
+      {(is_for_admins ? courseAdmins : emailAddresses).map((email_address) => (
         <div className="tag-item self-center" key={email_address}>
           {email_address}
           <button
