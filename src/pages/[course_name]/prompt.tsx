@@ -202,11 +202,11 @@ const CourseMain: NextPage = () => {
             </div>
             <div className="pt-5"></div>
             <Text
-              className={`pb-4 label ${montserrat_heading.variable} font-montserratHeading`}
+              className={`label ${montserrat_heading.variable} font-montserratHeading`}
               size={'sm'}
               style={{ userSelect: 'text' }}
             >
-              For tactical advice on prompt engineering, see the{' '}
+              For guidance on crafting prompts, consult the{' '}
               <a
                 className={'text-purple-600 pl-1'}
                 href="https://platform.openai.com/docs/guides/prompt-engineering"
@@ -217,12 +217,26 @@ const CourseMain: NextPage = () => {
               </a>.
             </Text>
             <div style={{ width: '60%' }}>
+              <Text
+                className={`label ${montserrat_paragraph.variable} font-montserratParagraph`}
+                size={'sm'}
+                style={{ userSelect: 'text' }}
+              >
+                Modify with caution. Unnecessary alterations might reduce effectiveness, similar to overly restrictive coding.
+              </Text>
+              <Text
+                className={`label ${montserrat_paragraph.variable} font-montserratParagraph`}
+                size={'sm'}
+                style={{ userSelect: 'text' }}
+              >
+                Changes affect all project users.
+              </Text>
               <Textarea
                 autosize
                 minRows={2}
                 maxRows={4}
                 placeholder="Enter a system prompt"
-                className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
                 value={systemPrompt}
                 onChange={(e) => {
                   setSystemPrompt(e.target.value)
