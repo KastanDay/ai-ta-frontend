@@ -971,6 +971,7 @@ const PrivateOrPublicCourse = ({
           openai_api_key={courseMetadata.openai_api_key as string}
           is_for_admins={true}
         />
+        <Divider />
     </>
   )
 }
