@@ -199,6 +199,7 @@ const EmailChipsComponent = ({
       banner_image_s3: banner_image_s3,
       openai_api_key: openai_api_key,
       example_questions: undefined,
+      system_prompt: undefined,
     };
     onEmailAddressesChange && onEmailAddressesChange(updatedMetadata, course_name);
     callSetCourseMetadata(courseName, updatedMetadata);

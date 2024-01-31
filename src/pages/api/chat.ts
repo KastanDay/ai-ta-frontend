@@ -7,7 +7,7 @@ import wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?mod
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 import { getExtremePrompt } from './getExtremePrompt'
-import { getStuffedPrompt } from './contextStuffingHelper'
+import { getStuffedPrompt, getSystemPrompt } from './contextStuffingHelper'
 import { OpenAIModelID, OpenAIModels } from '~/types/openai'
 import { NextResponse } from 'next/server'
 
@@ -42,7 +42,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
 
     let promptToSend = prompt
     if (!promptToSend) {
-      promptToSend = DEFAULT_SYSTEM_PROMPT
+      promptToSend = await getSystemPrompt(course_name)
     }
 
     let temperatureToUse = temperature
@@ -87,6 +87,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
         search_query,
         contexts_arr,
         token_limit,
+        promptToSend
       )) as string
       if (typeof messages[messages.length - 1]?.content === 'string') {
         messages[messages.length - 1]!.content = stuffedPrompt;

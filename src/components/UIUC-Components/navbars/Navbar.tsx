@@ -6,20 +6,21 @@ import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import {
 	createStyles,
-	Header,
 	Container,
-	Anchor,
-	Group,
 	Burger,
 	rem,
 	Transition,
 	Paper,
+	// Header,
+	// Anchor,
+	// Group,
 } from '@mantine/core'
 import {
 	MessageChatbot,
 	Folder,
 	ReportAnalytics,
-	Settings,
+	// Settings,
+	MessageCode,
 	Key,
 } from 'tabler-icons-react'
 import { useRouter } from 'next/router'
@@ -51,22 +52,27 @@ const styles: Record<string, React.CSSProperties> = {
 const HEADER_HEIGHT = rem(84)
 
 const useStyles = createStyles((theme) => ({
-	inner: {
-		height: HEADER_HEIGHT,
-		display: 'flex',
-		alignItems: 'center',
-		justifyContent: 'space-between',
+	burger: {
+		[theme.fn.largerThan('md')]: {
+			display: 'none',
+		},
 	},
-
 	links: {
 		padding: 'theme.spacing.lg, 1em, 1em',
 		display: 'flex',
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 
-		[theme.fn.smallerThan('sm')]: {
+		[theme.fn.smallerThan('md')]: {
 			display: 'none',
 		},
+	},
+
+	inner: {
+		height: HEADER_HEIGHT,
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'space-between',
 	},
 	link: {
 		// textTransform: 'uppercase',
@@ -93,7 +99,7 @@ const useStyles = createStyles((theme) => ({
 			backgroundColor: 'rgba(255, 255, 255, 0.1)', // add a background color when the link is active
 			textAlign: 'right', // align the text to the right
 		},
-		[theme.fn.smallerThan('sm')]: {
+		[theme.fn.smallerThan('md')]: {
 			display: 'list-item', // change the display to list-item when 'sm'
 			textAlign: 'center',
 			borderRadius: 0,
@@ -101,20 +107,15 @@ const useStyles = createStyles((theme) => ({
 		},
 	},
 
-	burger: {
-		[theme.fn.largerThan('sm')]: {
-			display: 'none',
-		},
-	},
 	dropdown: {
 		position: 'absolute',
-		top: HEADER_HEIGHT,
+		top: rem(140),
 		left: '50%',
 		right: '10%',
-		zIndex: 1,
+		zIndex: 2,
 		borderRadius: '10px',
 		overflow: 'hidden',
-		[theme.fn.largerThan('sm')]: {
+		[theme.fn.largerThan('md')]: {
 			display: 'none',
 		},
 	},
@@ -178,17 +179,17 @@ const Navbar = ({ course_name = '', bannerUrl = '', isgpt4 = true, isPlain = fal
 			icon: <ReportIcon />,
 			link: `/${getCurrentCourseName()}/query-analysis`,
 		},
-		// {
-		//   name: (
-		//     <span
-		//       className={`${montserrat_heading.variable} font-montserratHeading`}
-		//     >
-		//       Setting
-		//     </span>
-		//   ),
-		//   icon: <SettingIcon />,
-		//   link: `/${getCurrentCourseName()}/setting`,
-		// },
+		{
+			name: (
+				<span
+					className={`${montserrat_heading.variable} font-montserratHeading`}
+				>
+					Prompting
+				</span>
+			),
+			icon: <MessageCodeIcon />,
+			link: `/${getCurrentCourseName()}/prompt`,
+		},
 		{
 			name: (
 				<span
@@ -296,6 +297,17 @@ export default Navbar
 export function MessageChatIcon() {
 	return (
 		<MessageChatbot
+			size={20}
+			strokeWidth={2}
+			// color={'white'}
+			style={{ marginRight: '5px', marginLeft: '5px' }}
+		/>
+	)
+}
+
+export function MessageCodeIcon() {
+	return (
+		<MessageCode
 			size={20}
 			strokeWidth={2}
 			// color={'white'}
