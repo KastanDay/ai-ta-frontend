@@ -26,7 +26,8 @@ import {
   MessageChatbot,
   Folder,
   ReportAnalytics,
-  Settings,
+  // Settings,
+  MessageCode,
 } from 'tabler-icons-react'
 import {
   // IconExternalLink,
@@ -246,9 +247,9 @@ const ChatNavbar = ({
       link: `/${getCurrentCourseName()}/query-analysis`
     },
     {
-      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Settings</span>,
+      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Prompting</span>,
       icon: <SettingIcon />,
-      link: `/${getCurrentCourseName()}/settings`
+      link: `/${getCurrentCourseName()}/prompt`
     }
   ] : [];
 
@@ -562,7 +563,7 @@ export function ReportIcon() {
 
 export function SettingIcon() {
   return (
-    <Settings
+    <MessageCode
       size={20}
       strokeWidth={2}
       // color={'white'}

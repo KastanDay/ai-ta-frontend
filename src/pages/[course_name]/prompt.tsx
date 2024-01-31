@@ -79,6 +79,18 @@ const CourseMain: NextPage = () => {
     }
   }
 
+  const resetSystemPrompt = async () => {
+    if (courseMetadata && course_name) {
+      courseMetadata.system_prompt = DEFAULT_SYSTEM_PROMPT;
+      const success = await callSetCourseMetadata(course_name, courseMetadata);
+      if (!success) {
+        alert('Error resetting system prompt')
+      }
+    } else {
+      alert('Error resetting system prompt')
+    }
+  }
+
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   if (!isLoaded || isLoading) {
     return (
@@ -189,6 +201,21 @@ const CourseMain: NextPage = () => {
               </Flex>
             </div>
             <div className="pt-5"></div>
+            <Text
+              className={`pb-4 label ${montserrat_heading.variable} font-montserratHeading`}
+              size={'sm'}
+              style={{ userSelect: 'text' }}
+            >
+              For tactical advice on prompt engineering, see the{' '}
+              <a
+                className={'text-purple-600 pl-1'}
+                href="https://platform.openai.com/docs/guides/prompt-engineering"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                official OpenAI documentation
+              </a>.
+            </Text>
             <div style={{ width: '60%' }}>
               <Textarea
                 autosize
@@ -202,14 +229,27 @@ const CourseMain: NextPage = () => {
                 }}
               />
               <div style={{ paddingTop: '10px', width: '100%' }}>
-                <Button
-                  className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
-                  type="submit"
-                  onClick={handleSystemPromptSubmit}
-                  style={{ minWidth: 'fit-content' }}
-                >
-                  Update System Prompt
-                </Button>
+                <div style={{ paddingTop: '10px', width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+
+                  <Button
+                    className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
+                    type="submit"
+                    onClick={handleSystemPromptSubmit}
+                    style={{ minWidth: 'fit-content' }}
+                  >
+                    Update System Prompt
+                  </Button>
+                  <Button
+                    className="relative m-1 self-end bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
+                    onClick={() => {
+                      setSystemPrompt(DEFAULT_SYSTEM_PROMPT)
+                      resetSystemPrompt()
+                    }}
+                    style={{ minWidth: 'fit-content' }}
+                  >
+                    Reset
+                  </Button>
+                </div>
               </div>
             </div>
 
