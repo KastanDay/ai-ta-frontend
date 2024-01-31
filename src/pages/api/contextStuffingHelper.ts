@@ -8,6 +8,7 @@ import { useUser } from '@clerk/nextjs'
 import router from 'next/router'
 import { getCoursesByOwnerOrAdmin } from './UIUC-api/getAllCourseMetadata'
 import { getCourseMetadata } from './UIUC-api/getCourseMetadata'
+import { getStuffedPrompt } from './contextStuffingHelper'
 
 export async function getSystemPrompt(course_name: string) {
   const course_data = await getCourseMetadata(course_name)
