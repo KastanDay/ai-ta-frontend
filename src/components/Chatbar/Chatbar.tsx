@@ -1,5 +1,4 @@
-import { useState } from 'react';
-
+import { useState } from 'react'
 
 import { useCallback, useContext, useEffect } from 'react'
 
@@ -39,8 +38,7 @@ export const Chatbar = () => {
     initialState,
   })
 
-  const [showCurrentCourseOnly, setShowCurrentCourseOnly] = useState(false);
-
+  const [showCurrentCourseOnly, setShowCurrentCourseOnly] = useState(false)
 
   const {
     state: { conversations, showChatbar, defaultModelId, folders, pluginKeys },
@@ -159,7 +157,10 @@ export const Chatbar = () => {
       const lastConversation =
         updatedConversations[updatedConversations.length - 1]
       if (lastConversation) {
-        console.log("ARE WE updating the lastConversation here EVER??? USING lastConversation ", lastConversation)
+        console.log(
+          'ARE WE updating the lastConversation here EVER??? USING lastConversation ',
+          lastConversation,
+        )
         homeDispatch({
           field: 'selectedConversation',
           value: lastConversation,
@@ -168,7 +169,10 @@ export const Chatbar = () => {
         saveConversation(lastConversation)
       }
     } else {
-      console.log("ARE WE CREATING NEW CONVOS HERE EVER??? USING DEFAULT MODEL ID ", defaultModelId)
+      console.log(
+        'ARE WE CREATING NEW CONVOS HERE EVER??? USING DEFAULT MODEL ID ',
+        defaultModelId,
+      )
       defaultModelId &&
         homeDispatch({
           field: 'selectedConversation',
@@ -204,31 +208,41 @@ export const Chatbar = () => {
   // SEARCH CONVO HISTORY (by message title, content and course-name)
   // Also implements "Only show conversations from current course" toggle
   useEffect(() => {
-    const currentCourseName = router.asPath.split('/')[1];
+    const currentCourseName = router.asPath.split('/')[1]
 
     const filterBySearchTermOrCourse = (conversation: Conversation) => {
       const courseMatch = conversation.messages[0]?.contexts?.some(
         (context) => context['course_name '] === currentCourseName,
-      );
-      const searchTermMatch = conversation.messages[0]?.contexts?.[0]?.['course_name '].toLocaleLowerCase().includes(searchTerm.toLowerCase()) ||
+      )
+      const searchTermMatch =
+        conversation.messages[0]?.contexts?.[0]?.['course_name ']
+          .toLocaleLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
         conversation.messages.some((message) => {
           if (typeof message.content === 'string') {
-            return message.content.toLowerCase().includes(searchTerm.toLowerCase());
+            return message.content
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())
           } else if (Array.isArray(message.content)) {
-            return message.content.some(content => content.text?.toLowerCase().includes(searchTerm.toLowerCase()));
+            return message.content.some((content) =>
+              content.text?.toLowerCase().includes(searchTerm.toLowerCase()),
+            )
           }
-          return false;
-        });
-      const isMatch = (showCurrentCourseOnly ? courseMatch : true) && searchTermMatch;
-      return isMatch;
-    };
+          return false
+        })
+      const isMatch =
+        (showCurrentCourseOnly ? courseMatch : true) && searchTermMatch
+      return isMatch
+    }
 
-    const filteredConversations = conversations.filter(filterBySearchTermOrCourse);
+    const filteredConversations = conversations.filter(
+      filterBySearchTermOrCourse,
+    )
     chatDispatch({
       field: 'filteredConversations',
       value: filteredConversations,
-    });
-  }, [searchTerm, conversations, showCurrentCourseOnly]);
+    })
+  }, [searchTerm, conversations, showCurrentCourseOnly])
 
   return (
     <ChatbarContext.Provider

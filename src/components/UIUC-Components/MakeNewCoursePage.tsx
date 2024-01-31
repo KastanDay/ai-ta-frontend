@@ -11,16 +11,12 @@ const MakeNewCoursePage = ({
   course_name: string
   current_user_email: string
 }) => {
-
   return (
     <>
       <Navbar isPlain={true} />
       <Head>
         <title>{course_name}</title>
-        <meta
-          name="description"
-          content="Create a new project on UIUC.chat."
-        />
+        <meta name="description" content="Create a new project on UIUC.chat." />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main

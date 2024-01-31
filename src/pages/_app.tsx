@@ -30,7 +30,7 @@ if (typeof window !== 'undefined') {
     // Enable debug mode in development
     loaded: (posthog) => {
       if (process.env.NODE_ENV === 'development') posthog.debug()
-    }
+    },
   })
 }
 
