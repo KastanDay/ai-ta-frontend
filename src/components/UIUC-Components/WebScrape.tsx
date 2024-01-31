@@ -150,7 +150,7 @@ export const WebScrape = ({
 
         if (is_new_course) {
           // set course exists in new metadata endpoint
-          const response = callSetCourseMetadata(courseName, {
+          const response = await callSetCourseMetadata(courseName, {
             course_owner: current_user_email,
             // Don't set properties we don't know about. We'll just upsert and use the defaults.
             course_admins: [],
@@ -166,7 +166,6 @@ export const WebScrape = ({
           if (!response) {
             throw new Error('Error while setting course metadata')
           }
-          router.push(`/${courseName}/materials`)
         }
         router.push(`/${courseName}/materials`)
       } else if (url.includes('canvas.illinois.edu/courses/')) {
@@ -228,7 +227,7 @@ export const WebScrape = ({
 
         if (is_new_course) {
           // set course exists in fast course_metadatas KV db
-          const response = callSetCourseMetadata(courseName, {
+          const response = await callSetCourseMetadata(courseName, {
             course_owner: current_user_email,
             // Don't set properties we don't know about. We'll just upsert and use the defaults.
             course_admins: [],
@@ -243,7 +242,8 @@ export const WebScrape = ({
           if (!response) {
             throw new Error('Error while setting course metadata')
           }
-          router.replace(`/${courseName}/materials`)
+          await router.push(`/${courseName}/materials`)
+          // router.replace(`/${courseName}/materials`)
         }
       }
     } else {
