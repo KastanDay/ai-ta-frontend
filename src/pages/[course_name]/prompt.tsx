@@ -195,7 +195,7 @@ const CourseMain: NextPage = () => {
                     }}
                   >
                     {' '}
-                    Customize the system prompt your project
+                    Customize your project's system prompt
                   </Title>
                 </div>
               </Flex>
