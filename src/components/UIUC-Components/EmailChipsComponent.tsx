@@ -59,6 +59,7 @@ const EmailChipsComponent = ({
       const trimmedValue = value.trim();
 
       if (trimmedValue && isValid(trimmedValue)) {
+<<<<<<< HEAD
         if (is_for_admins) {
           const updatedCourseAdmins = [...courseAdmins, trimmedValue];
           setCourseAdmins(updatedCourseAdmins);
@@ -69,6 +70,39 @@ const EmailChipsComponent = ({
           updateCourseMetadata(courseAdmins, updatedEmailAddresses);
         }
         setValue('');
+=======
+        // setEmailAddresses([...emailAddresses, trimmedValue])
+        setEmailAddresses((prevEmailAddresses) => {
+          const newEmailAddresses = [...prevEmailAddresses, trimmedValue]
+          const curr_course_metadata = {
+            is_private: isPrivate,
+            course_owner: course_owner,
+            course_admins: course_admins,
+            approved_emails_list: newEmailAddresses,
+            course_intro_message: course_intro_message,
+            banner_image_s3: banner_image_s3,
+            openai_api_key: openai_api_key,
+            example_questions: undefined,
+            system_prompt: undefined,
+          }
+          onEmailAddressesChange &&
+            onEmailAddressesChange(curr_course_metadata, course_name)
+          return newEmailAddresses || []
+        })
+        setValue('')
+
+        callSetCourseMetadata(courseName, {
+          is_private: isPrivate,
+          course_owner: course_owner, // Replace with the appropriate course_owner value
+          course_admins: course_admins, // Replace with the appropriate course_admins value (array of strings)
+          approved_emails_list: [...emailAddresses, trimmedValue],
+          banner_image_s3: banner_image_s3,
+          course_intro_message: course_intro_message,
+          openai_api_key: openai_api_key,
+          example_questions: undefined,
+          system_prompt: undefined,
+        })
+>>>>>>> origin/main
       }
     }
   };
@@ -80,6 +114,7 @@ const EmailChipsComponent = ({
   }
 
   const handleDelete = (email_address: string) => {
+<<<<<<< HEAD
     if (is_for_admins) {
       const updatedCourseAdmins = courseAdmins.filter(admin => admin !== email_address);
       setCourseAdmins(updatedCourseAdmins);
@@ -91,6 +126,30 @@ const EmailChipsComponent = ({
     }
   };
   
+=======
+    // setEmailAddresses(emailAddresses.filter((i) => i !== email_address))
+    setEmailAddresses((prevEmailAddresses) => {
+      const newEmailAddresses = prevEmailAddresses.filter(
+        (i) => i !== email_address,
+      )
+      const curr_course_metadata = {
+        is_private: isPrivate,
+        course_owner: course_owner,
+        course_admins: course_admins,
+        approved_emails_list: newEmailAddresses,
+        course_intro_message: course_intro_message,
+        banner_image_s3: banner_image_s3,
+        openai_api_key: openai_api_key,
+        example_questions: undefined,
+        system_prompt: undefined,
+      }
+      onEmailAddressesChange &&
+        onEmailAddressesChange(curr_course_metadata, course_name)
+      return newEmailAddresses || []
+    })
+    callRemoveUserFromCourse(email_address)
+  }
+>>>>>>> origin/main
 
   const handlePaste_users = (evt: ClipboardEvent<HTMLInputElement>) => {
     evt.preventDefault();
@@ -98,6 +157,7 @@ const EmailChipsComponent = ({
     const emails = paste.match(/[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/g);
 
     if (emails) {
+<<<<<<< HEAD
       const toBeAdded = emails.filter(email => !isInList(email));
       if (is_for_admins) {
         const updatedCourseAdmins = [...courseAdmins, ...toBeAdded];
@@ -108,6 +168,41 @@ const EmailChipsComponent = ({
         setEmailAddresses(updatedEmailAddresses);
         updateCourseMetadata(courseAdmins, updatedEmailAddresses);
       }
+=======
+      const toBeAdded = emails.filter((email) => !isInList(email))
+
+      // setEmailAddresses([...emailAddresses, ...toBeAdded])
+
+      setEmailAddresses((prevEmailAddresses) => {
+        const newEmailAddresses = [...prevEmailAddresses, ...toBeAdded]
+        const curr_course_metadata = {
+          is_private: isPrivate,
+          course_owner: course_owner,
+          course_admins: course_admins,
+          approved_emails_list: newEmailAddresses,
+          course_intro_message: course_intro_message,
+          banner_image_s3: banner_image_s3,
+          openai_api_key: openai_api_key,
+          example_questions: undefined,
+          system_prompt: undefined,
+        }
+        onEmailAddressesChange &&
+          onEmailAddressesChange(curr_course_metadata, course_name)
+        return newEmailAddresses || []
+      })
+
+      callSetCourseMetadata(courseName, {
+        is_private: isPrivate,
+        course_owner: course_owner,
+        course_admins: course_admins,
+        approved_emails_list: [...emailAddresses, ...toBeAdded],
+        banner_image_s3: banner_image_s3,
+        course_intro_message: course_intro_message,
+        openai_api_key: openai_api_key,
+        example_questions: undefined,
+        system_prompt: undefined,
+      })
+>>>>>>> origin/main
     }
   };
 
