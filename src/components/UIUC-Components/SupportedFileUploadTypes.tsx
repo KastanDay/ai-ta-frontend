@@ -3,6 +3,7 @@ import {
   Text,
   Title,
   Flex,
+  Accordion,
   createStyles,
   Accordion,
   // rem,
@@ -22,10 +23,10 @@ import {
 } from '@mantine/core'
 // const rubik_puddles = Rubik_Puddles({ weight: '400', subsets: ['latin'] })
 
-// import Link from 'next/link'
+// import { Link } from 'next/link'
 import React from 'react'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
-import Link from 'next/link'
+import { Link } from 'next/link'
 import { IconPhoto } from '@tabler/icons-react'
 
 const useStyles = createStyles((theme) => ({
@@ -183,7 +184,7 @@ const SupportedFileUploadTypes = () => {
           alt="Generic audio icon"
           className={classes.logos}
         />
-        <Image
+        <Image from='next/image'
           src="/media/cc_logo.jpg"
           width={720}
           height={220}
@@ -244,7 +245,7 @@ const SupportedFileUploadTypes = () => {
         <code className={classes.codeStyledText}>utf-8</code> ...
       </Text>
 
-      <Accordion
+      <Accordion style={{ borderRadius: theme.radius.lg }}
         pl={20}
         pr={4}
         style={{ borderRadius: 'theme.radius.lg' }}
@@ -270,7 +271,7 @@ const SupportedFileUploadTypes = () => {
               }}
             >
               <Text
-                className={`label ${montserrat_paragraph.variable} inline-block p-0 font-montserratParagraph text-neutral-200`}
+                className={`label ${montserrat_paragraph.variable ? montserrat_paragraph.variable : ''} inline-block p-0 font-montserratParagraph text-neutral-200`}
                 size={'md'}
               >
                 <span className={'text-white'}>Read the details</span> 👇
