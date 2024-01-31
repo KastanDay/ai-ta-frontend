@@ -167,7 +167,7 @@ export const WebScrape = ({
             throw new Error('Error while setting course metadata')
           }
         }
-        router.push(`/${courseName}/materials`)
+        await router.push(`/${courseName}/materials`)
       } else if (url.includes('canvas.illinois.edu/courses/')) {
         const canvasCourseIdParts = url.split('canvas.illinois.edu/courses/')
         const canvasCourseId = canvasCourseIdParts[1]?.split('/')[0]
@@ -204,7 +204,7 @@ export const WebScrape = ({
           if (response.data.outcome) {
             console.log('Canvas content ingestion was successful!')
             // Navigate to the course materials page or any other success behavior
-            router.push(`/${courseName}/materials`)
+            await router.push(`/${courseName}/materials`)
           } else {
             console.error('Canvas content ingestion failed.')
             // Handle the failure, maybe show a notification or alert to the user
@@ -243,7 +243,6 @@ export const WebScrape = ({
             throw new Error('Error while setting course metadata')
           }
           await router.push(`/${courseName}/materials`)
-          // router.replace(`/${courseName}/materials`)
         }
       }
     } else {
