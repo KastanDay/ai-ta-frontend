@@ -6,7 +6,7 @@ import {
 } from 'next-auth'
 import DiscordProvider from 'next-auth/providers/discord'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
-import { env } from '~/env.mjs'
+import { env } from '~/next-auth'
 import { prisma } from '~/server/db'
 
 /**
@@ -20,7 +20,7 @@ declare module 'next-auth' {
     user: {
       id: string
       // ...other properties
-      // role: UserRole;
+      role: UserRole;
     } & DefaultSession['user']
   }
 
