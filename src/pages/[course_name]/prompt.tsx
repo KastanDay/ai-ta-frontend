@@ -230,7 +230,7 @@ const CourseMain: NextPage = () => {
                 label={<strong>System Prompt</strong>}
                 autosize
                 minRows={2}
-                maxRows={4}
+                maxRows={10}
                 placeholder="Enter a system prompt"
 
                 className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
