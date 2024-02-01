@@ -53,8 +53,7 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
     url: string,
   ) => {
     try {
-      const API_URL = 'https://flask-production-751b.up.railway.app'
-      const response = await axios.delete(`${API_URL}/delete`, {
+      const response = await axios.delete(`https://${process.env.RAILWAY_URL}/delete`, {
         params: { course_name, s3_path, url },
       })
       // Handle successful deletion, show a success message
