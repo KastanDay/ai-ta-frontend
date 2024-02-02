@@ -15,13 +15,10 @@ const IfCourseExists: NextPage = () => {
   const router = useRouter()
   const course_name = router.query.course_name as string
   const clerk_user = useUser()
-  // const clerk_user = 'hi'
   const [courseMetadataIsLoaded, setCourseMetadataIsLoaded] = useState(false)
   const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
-
-  console.log("in [course_name]/index.tsx -- course_name: ", course_name)
 
   useEffect(() => {
     const fetchCourseMetadata = async () => {
@@ -38,9 +35,6 @@ const IfCourseExists: NextPage = () => {
   }, [course_name])
 
   useEffect(() => {
-    console.log("Course metadata: ", course_metadata)
-    console.log("Course metadata.is_private: ", course_metadata?.is_private)
-
     if (courseMetadataIsLoaded && course_metadata != null) {
       if (!course_metadata.is_private) {
         // Public
@@ -103,7 +97,6 @@ const IfCourseExists: NextPage = () => {
         }
       } else {
         // 🆕 MAKE A NEW COURSE
-        // TODO: better idea here?? 
         console.log('Course does not exist, redirecting to materials page')
         router.push(`/${course_name}/materials`)
       }
