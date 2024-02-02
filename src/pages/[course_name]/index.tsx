@@ -1,5 +1,9 @@
 // src/pages/[course_name]/index.tsx
 import { type NextPage } from 'next'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
+import { useUser } from '@clerk/nextjs'
+import { CourseMetadata } from '~/types/courseMetadata'
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
@@ -32,7 +36,17 @@ const IfCourseExists: NextPage = () => {
     }
 
     fetchCourseMetadata()
-  }, [course_name])
+}, [course_name])
+
+const fetchCourseMetadata = async () => {
+  const response = await fetch(`/api/UIUC-api/getCourseMetadata?course_name=${course_name}`)
+  const data = await response.json()
+  console.log("in [course_name]/index.tsx -- data: ", data.course_metadata)
+  setCourseMetadata(data.course_metadata)
+  setCourseMetadataIsLoaded(true)
+}
+
+fetchCourseMetadata()
 
   useEffect(() => {
     if (courseMetadataIsLoaded && course_metadata != null) {
