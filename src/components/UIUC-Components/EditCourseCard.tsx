@@ -511,7 +511,7 @@ const EditCourseCard = ({
                           }}
                           size="sm"
                           radius={'xl'}
-                          className={`min-w-[5rem] -translate-x-1 transform rounded-s-md ${isKeyUpdating? 'bg-indigo-600' : 'bg-purple-800'} text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
+                          className={`min-w-[5rem] -translate-x-1 transform rounded-s-md ${isKeyUpdating ? 'bg-indigo-600' : 'bg-purple-800'} text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
                           w={'auto'}
                         >
                           {isKeyUpdating ? <LoadingSpinner size={'sm'} /> : 'Submit'}
@@ -891,7 +891,7 @@ const PrivateOrPublicCourse = ({
       {/* <a href="/privacy">strict security policy</a>. Useful when setting a Course Wide OpenAI Key to limit usage. */}
       {isPrivate && (
         <EmailChipsComponent
-          course_owner={current_user_email}
+          course_owner={courseMetadata.course_owner as string}
           course_admins={courseAdmins} // TODO: add admin functionality
           course_name={course_name}
           is_private={isPrivate}
@@ -960,18 +960,18 @@ const PrivateOrPublicCourse = ({
           </Accordion.Panel>
         </Accordion.Item>
       </Accordion>
-        <EmailChipsComponent
-          course_owner={current_user_email}
-          course_admins={courseAdmins}
-          course_name={course_name}
-          is_private={isPrivate}
-          onEmailAddressesChange={handleEmailAddressesChange}
-          course_intro_message={courseMetadata.course_intro_message || ''}
-          banner_image_s3={courseMetadata.banner_image_s3 || ''}
-          openai_api_key={courseMetadata.openai_api_key as string}
-          is_for_admins={true}
-        />
-        <Divider />
+      <EmailChipsComponent
+        course_owner={courseMetadata.course_owner as string}
+        course_admins={courseAdmins}
+        course_name={course_name}
+        is_private={isPrivate}
+        onEmailAddressesChange={handleEmailAddressesChange}
+        course_intro_message={courseMetadata.course_intro_message || ''}
+        banner_image_s3={courseMetadata.banner_image_s3 || ''}
+        openai_api_key={courseMetadata.openai_api_key as string}
+        is_for_admins={true}
+      />
+      <Divider />
     </>
   )
 }
