@@ -15,7 +15,7 @@ const IfCourseExists: NextPage = () => {
   const router = useRouter()
   const course_name = router.query.course_name as string
   const clerk_user = useUser()
-  const [isLoading, setIsLoading] = useState(true)
+  const [courseMetadataIsLoaded, setCourseMetadataIsLoaded] = useState(false)
   const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
@@ -26,15 +26,24 @@ const IfCourseExists: NextPage = () => {
         `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
       )
       const data = await response.json()
+      console.log("in [course_name]/index.tsx -- data: ", data.course_metadata)
       setCourseMetadata(data.course_metadata)
-      setIsLoading(false)
+      setCourseMetadataIsLoaded(true)
     }
 
     fetchCourseMetadata()
   }, [course_name])
 
   useEffect(() => {
-    if (!clerk_user.isLoaded || isLoading) {
+    if (courseMetadataIsLoaded && course_metadata != null) {
+      if (!course_metadata.is_private) {
+        // Public
+        console.log("Public course, redirecting to chat page")
+        router.replace(`/${course_name}/chat`)
+      }
+    }
+
+    if (!clerk_user.isLoaded || !courseMetadataIsLoaded) {
       return
     }
     if (course_metadata == null) {
@@ -50,7 +59,8 @@ const IfCourseExists: NextPage = () => {
         clerk_user.isLoaded,
         course_name,
       )
-      router.replace(`/sign-in?${course_name}`)
+      console.log("in [course_name]/index.tsx -- course_metadata.is_private && !clerk_user.isSignedIn", course_metadata.is_private, clerk_user.isSignedIn)
+      // router.replace(`/sign-in?${course_name}`)
       return
     }
     if (clerk_user.isLoaded) {
@@ -74,7 +84,7 @@ const IfCourseExists: NextPage = () => {
           console.log(
             'in [course_name]/index.tsx - Course exists & user is properly authed, redirecting to gpt4 page',
           )
-          router.push(`/${course_name}/chat`)
+          router.replace(`/${course_name}/chat`)
         } else {
           // 🚫 NOT AUTHED
           console.log(
@@ -93,10 +103,10 @@ const IfCourseExists: NextPage = () => {
     } else {
       console.log('in [course_name]/index.tsx -- clerk_user NOT LOADED yet...')
     }
-  }, [clerk_user.isLoaded, course_metadata, isLoading])
+  }, [clerk_user.isLoaded, course_metadata, courseMetadataIsLoaded])
 
   if (
-    isLoading ||
+    !courseMetadataIsLoaded ||
     !clerk_user.isLoaded ||
     course_metadata == null ||
     (course_metadata.is_private && !clerk_user.isSignedIn)
