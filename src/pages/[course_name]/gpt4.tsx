@@ -13,6 +13,8 @@ const Gpt4 = () => {
     }
 
     useEffect(() => {
+        if (!router.isReady) return
+
         router.replace(`/${getCurrentPageName()}/chat`)
     }, [router])
 
