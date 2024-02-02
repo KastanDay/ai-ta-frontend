@@ -27,6 +27,12 @@ export default authMiddleware({
       return true;
     }
 
+    // Check if the URL path has a single level
+    const singleLevelPathRegex = /^\/[^\/]+$/;
+    if (singleLevelPathRegex.test(req.nextUrl.pathname)) {
+      return true;
+    }
+
     // Default to not public
     return false;
   },
