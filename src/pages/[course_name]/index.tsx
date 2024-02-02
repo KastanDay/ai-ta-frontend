@@ -1,4 +1,9 @@
 // src/pages/[course_name]/index.tsx
+
+/**
+ * File: index.tsx
+ * Description: This file contains the IfCourseExists and fetchCourseMetadata functions.
+ */
 import { type NextPage } from 'next'
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import { useRouter } from 'next/router'
@@ -11,6 +16,11 @@ import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 
+/**
+ * @function IfCourseExists
+ * @description This function checks if a course exists and handles authorization before redirecting to the chat page.
+ * @returns {JSX.Element} Returns the JSX Element
+ */
 const IfCourseExists: NextPage = () => {
   const router = useRouter()
   const course_name = router.query.course_name as string
@@ -20,6 +30,10 @@ const IfCourseExists: NextPage = () => {
     null,
   )
 
+  /**
+   * @function fetchCourseMetadata
+   * @description This function fetches the course metadata using the course name.
+   */
   useEffect(() => {
     const fetchCourseMetadata = async () => {
       const response = await fetch(
