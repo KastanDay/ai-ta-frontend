@@ -534,13 +534,7 @@ const EditCourseCard = ({
 
                 <PrivateOrPublicCourse
                   course_name={course_name}
-                  current_user_email={current_user_email}
                   courseMetadata={courseMetadata as CourseMetadata}
-                // course_intro_message={
-                //   courseMetadata?.course_intro_message || ''
-                // }
-                // is_private={courseMetadata?.is_private || false}
-                // banner_image_s3={courseBannerUrl}
                 />
 
                 <Title
@@ -603,29 +597,6 @@ const EditCourseCard = ({
                       >
                         Submit
                       </Button>
-                      {/* <button
-                        className="btn-outline btn absolute bottom-0 right-0 m-1 h-[2%] rounded-3xl border-violet-800 py-1 text-violet-800  hover:bg-violet-800 hover:text-white"
-                        onClick={async () => {
-                          setIsIntroMessageUpdated(false)
-                          if (courseMetadata) {
-                            courseMetadata.course_intro_message = introMessage
-                            // Update the courseMetadata object
-
-                            const resp = await callSetCourseMetadata(
-                              course_name,
-                              courseMetadata,
-                            )
-                            if (!resp) {
-                              console.log(
-                                'Error upserting course metadata for course: ',
-                                course_name,
-                              )
-                            }
-                          }
-                        }}
-                      >
-                        Submit
-                      </button> */}
                     </>
                   )}
                 </div>
@@ -704,19 +675,14 @@ const EditCourseCard = ({
 
 const PrivateOrPublicCourse = ({
   course_name,
-  current_user_email,
   courseMetadata,
 }: {
   course_name: string
-  current_user_email: string
   courseMetadata: CourseMetadata
 }) => {
   const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
   const { classes } = useStyles() // for Accordion
   const [courseAdmins, setCourseAdmins] = useState<string[]>([]);
-  // const { user, isSignedIn, isLoaded } = useUser()
-  // const user_emails = extractEmailsFromClerk(user)
-  // console.log("in MakeNewCoursePage.tsx user email list: ", user_emails )
 
   const CheckboxIcon: CheckboxProps['icon'] = ({ indeterminate, className }) =>
     indeterminate ? (
@@ -854,45 +820,10 @@ const PrivateOrPublicCourse = ({
         />
       </Group>
 
-      {/* <Text
-        className={`label p-0 ${montserrat_light.className} inline-block`}
-        size={'sm'}
-      >
-        Only these email address are able to access the content.
-        Read our{' '}
-        <a
-          className={'text-purple-600'}
-          href="/privacy"
-          target="_blank"
-          rel="noopener noreferrer"
-        // style={{ textDecoration: 'underline' }}
-        >
-          strict security policy{' '}
-        </a>
-        <IconExternalLink
-          size={'1.1em'}
-          className="mr-2 inline-block text-purple-600"
-          style={{ position: 'relative', top: '-3px' }}
-        />
-      </Text> */}
-      {/* <Tooltip
-        multiline
-        width={220}
-        withArrow
-        transitionProps={{ duration: 200 }}
-        label=""
-      >
-        <span>For admin users...</span>
-      </Tooltip> */}
-      {/* <Text className={`label p-0 ${montserrat_light.className}`} size={'sm'}>
-        To add Admin users, who will have full edit access on this page, please
-        just shoot me an email kvday2@illinois.edu.
-      </Text> */}
-      {/* <a href="/privacy">strict security policy</a>. Useful when setting a Course Wide OpenAI Key to limit usage. */}
       {isPrivate && (
         <EmailChipsComponent
           course_owner={courseMetadata.course_owner as string}
-          course_admins={courseAdmins} // TODO: add admin functionality
+          course_admins={courseAdmins}
           course_name={course_name}
           is_private={isPrivate}
           onEmailAddressesChange={handleEmailAddressesChange}
@@ -922,7 +853,6 @@ const PrivateOrPublicCourse = ({
         pt={40}
         pb={40}
         m={-40}
-        // style={{ borderRadius: 'theme.radius.xl', width: '112%', maxWidth: 'min(50rem, )', marginLeft: 'max(-1rem, -10%)' }}
         style={{ borderRadius: 'theme.radius.xl' }}
         classNames={classes}
         className={classes.root}
@@ -935,8 +865,6 @@ const PrivateOrPublicCourse = ({
               size={'md'}
             >
               Admins have full edit permissions.
-              {/* <span className={'text-purple-600'}>Read more</span>{' '}
-              👇 */}
             </Text>
           </Accordion.Control>
           <Accordion.Panel>
