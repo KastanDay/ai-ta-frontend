@@ -114,6 +114,7 @@ const EditCourseCard = ({
   )
   const [isKeyUpdated, setIsKeyUpdated] = useState(false)
 
+
   const checkCourseAvailability = () => {
     const courseExists =
       courseName != '' &&
@@ -510,7 +511,7 @@ const EditCourseCard = ({
                           }}
                           size="sm"
                           radius={'xl'}
-                          className={`min-w-[5rem] -translate-x-1 transform rounded-s-md ${isKeyUpdating? 'bg-indigo-600' : 'bg-purple-800'} text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
+                          className={`min-w-[5rem] -translate-x-1 transform rounded-s-md ${isKeyUpdating ? 'bg-indigo-600' : 'bg-purple-800'} text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
                           w={'auto'}
                         >
                           {isKeyUpdating ? <LoadingSpinner size={'sm'} /> : 'Submit'}
@@ -533,13 +534,7 @@ const EditCourseCard = ({
 
                 <PrivateOrPublicCourse
                   course_name={course_name}
-                  current_user_email={current_user_email}
                   courseMetadata={courseMetadata as CourseMetadata}
-                // course_intro_message={
-                //   courseMetadata?.course_intro_message || ''
-                // }
-                // is_private={courseMetadata?.is_private || false}
-                // banner_image_s3={courseBannerUrl}
                 />
 
                 <Title
@@ -602,29 +597,6 @@ const EditCourseCard = ({
                       >
                         Submit
                       </Button>
-                      {/* <button
-                        className="btn-outline btn absolute bottom-0 right-0 m-1 h-[2%] rounded-3xl border-violet-800 py-1 text-violet-800  hover:bg-violet-800 hover:text-white"
-                        onClick={async () => {
-                          setIsIntroMessageUpdated(false)
-                          if (courseMetadata) {
-                            courseMetadata.course_intro_message = introMessage
-                            // Update the courseMetadata object
-
-                            const resp = await callSetCourseMetadata(
-                              course_name,
-                              courseMetadata,
-                            )
-                            if (!resp) {
-                              console.log(
-                                'Error upserting course metadata for course: ',
-                                course_name,
-                              )
-                            }
-                          }
-                        }}
-                      >
-                        Submit
-                      </button> */}
                     </>
                   )}
                 </div>
@@ -703,18 +675,14 @@ const EditCourseCard = ({
 
 const PrivateOrPublicCourse = ({
   course_name,
-  current_user_email,
   courseMetadata,
 }: {
   course_name: string
-  current_user_email: string
   courseMetadata: CourseMetadata
 }) => {
   const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
   const { classes } = useStyles() // for Accordion
-  // const { user, isSignedIn, isLoaded } = useUser()
-  // const user_emails = extractEmailsFromClerk(user)
-  // console.log("in MakeNewCoursePage.tsx user email list: ", user_emails )
+  const [courseAdmins, setCourseAdmins] = useState<string[]>([]);
 
   const CheckboxIcon: CheckboxProps['icon'] = ({ indeterminate, className }) =>
     indeterminate ? (
@@ -828,9 +796,7 @@ const PrivateOrPublicCourse = ({
               >
                 strict security policy
               </a>{' '}
-              on protecting your data. To add Admin users with full edit
-              permission, ideal for TA&apos;s and collaborators, please just
-              shoot me an email kvday2@illinois.edu.
+              on protecting your data.
             </Text>
           </Accordion.Panel>
         </Accordion.Item>
@@ -854,53 +820,85 @@ const PrivateOrPublicCourse = ({
         />
       </Group>
 
-      {/* <Text
-        className={`label p-0 ${montserrat_light.className} inline-block`}
-        size={'sm'}
-      >
-        Only these email address are able to access the content.
-        Read our{' '}
-        <a
-          className={'text-purple-600'}
-          href="/privacy"
-          target="_blank"
-          rel="noopener noreferrer"
-        // style={{ textDecoration: 'underline' }}
-        >
-          strict security policy{' '}
-        </a>
-        <IconExternalLink
-          size={'1.1em'}
-          className="mr-2 inline-block text-purple-600"
-          style={{ position: 'relative', top: '-3px' }}
-        />
-      </Text> */}
-      {/* <Tooltip
-        multiline
-        width={220}
-        withArrow
-        transitionProps={{ duration: 200 }}
-        label=""
-      >
-        <span>For admin users...</span>
-      </Tooltip> */}
-      {/* <Text className={`label p-0 ${montserrat_light.className}`} size={'sm'}>
-        To add Admin users, who will have full edit access on this page, please
-        just shoot me an email kvday2@illinois.edu.
-      </Text> */}
-      {/* <a href="/privacy">strict security policy</a>. Useful when setting a Course Wide OpenAI Key to limit usage. */}
       {isPrivate && (
         <EmailChipsComponent
-          course_owner={current_user_email}
-          course_admins={[]} // TODO: add admin functionality
+          course_owner={courseMetadata.course_owner as string}
+          course_admins={courseAdmins}
           course_name={course_name}
           is_private={isPrivate}
           onEmailAddressesChange={handleEmailAddressesChange}
           course_intro_message={courseMetadata.course_intro_message || ''}
           banner_image_s3={courseMetadata.banner_image_s3 || ''}
           openai_api_key={courseMetadata.openai_api_key as string}
+          is_for_admins={false}
         />
       )}
+      <Divider />
+      <Title
+        className={`${montserrat_heading.variable} font-montserratHeading`}
+        variant="gradient"
+        gradient={{ from: 'gold', to: 'white', deg: 170 }}
+        order={3}
+        pl={'md'}
+        pr={'md'}
+        pt={'sm'}
+        pb={0}
+        style={{ alignSelf: 'left', marginLeft: '-11px' }}
+      >
+        Admins{' '}
+      </Title>
+      <Accordion
+        pl={27}
+        pr={27}
+        pt={40}
+        pb={40}
+        m={-40}
+        style={{ borderRadius: 'theme.radius.xl' }}
+        classNames={classes}
+        className={classes.root}
+      >
+        {/* ... Accordion items */}
+        <Accordion.Item value="openai-key-details">
+          <Accordion.Control>
+            <Text
+              className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+              size={'md'}
+            >
+              Admins have full edit permissions.
+            </Text>
+          </Accordion.Control>
+          <Accordion.Panel>
+            <Text
+              className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+              size={'sm'}
+            >
+              Read our{' '}
+              <a
+                className={'text-purple-600'}
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+              // style={{ textDecoration: 'underline' }}
+              >
+                strict security policy
+              </a>{' '}
+              on protecting your data. To add Admin users with full edit
+              permission, ideal for TA&apos;s and collaborators, please paste their emails below.
+            </Text>
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
+      <EmailChipsComponent
+        course_owner={courseMetadata.course_owner as string}
+        course_admins={courseAdmins}
+        course_name={course_name}
+        is_private={isPrivate}
+        onEmailAddressesChange={handleEmailAddressesChange}
+        course_intro_message={courseMetadata.course_intro_message || ''}
+        banner_image_s3={courseMetadata.banner_image_s3 || ''}
+        openai_api_key={courseMetadata.openai_api_key as string}
+        is_for_admins={true}
+      />
       <Divider />
     </>
   )
