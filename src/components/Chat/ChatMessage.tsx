@@ -1,5 +1,13 @@
 // ChatMessage.tsx
-import { Text, Group, createStyles, Tooltip, Paper, Collapse, Accordion } from '@mantine/core'
+import {
+  Text,
+  Group,
+  createStyles,
+  Tooltip,
+  Paper,
+  Collapse,
+  Accordion,
+} from '@mantine/core'
 import {
   IconCheck,
   IconCopy,
@@ -25,8 +33,8 @@ import { ContextCards } from '~/components/UIUC-Components/ContextCards'
 import { ImagePreview } from './ImagePreview'
 import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import { montserrat_paragraph } from 'fonts'
 
 const useStyles = createStyles((theme) => ({
@@ -44,7 +52,7 @@ const useStyles = createStyles((theme) => ({
     borderColor: theme.colors.gray[6],
     borderWidth: '1px',
     borderStyle: 'solid',
-  }
+  },
 }))
 
 // Component that's the Timer for GPT's response duration.
@@ -80,8 +88,8 @@ export interface Props {
   messageIndex: number
   onEdit?: (editedMessage: Message) => void
   context?: ContextWithMetadata[]
-  contentRenderer?: (message: Message) => JSX.Element;
-  onImageUrlsUpdate?: (message: Message, messageIndex: number) => void;
+  contentRenderer?: (message: Message) => JSX.Element
+  onImageUrlsUpdate?: (message: Message, messageIndex: number) => void
 }
 
 export const ChatMessage: FC<Props> = memo(
@@ -94,7 +102,7 @@ export const ChatMessage: FC<Props> = memo(
         conversations,
         currentMessage,
         messageIsStreaming,
-        isImg2TextLoading
+        isImg2TextLoading,
       },
       dispatch: homeDispatch,
     } = useContext(HomeContext)
@@ -103,7 +111,7 @@ export const ChatMessage: FC<Props> = memo(
     const [isTyping, setIsTyping] = useState<boolean>(false)
     const [messageContent, setMessageContent] = useState<string>('')
 
-    const [imageUrls, setImageUrls] = useState<string[]>([]);
+    const [imageUrls, setImageUrls] = useState<string[]>([])
 
     const [messagedCopied, setMessageCopied] = useState(false)
 
@@ -148,59 +156,85 @@ export const ChatMessage: FC<Props> = memo(
 
     function deepEqual(a: any, b: any) {
       if (a === b) {
-        return true;
+        return true
       }
 
-      if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
-        return false;
+      if (
+        typeof a !== 'object' ||
+        a === null ||
+        typeof b !== 'object' ||
+        b === null
+      ) {
+        return false
       }
 
-      const keysA = Object.keys(a), keysB = Object.keys(b);
+      const keysA = Object.keys(a),
+        keysB = Object.keys(b)
 
       if (keysA.length !== keysB.length) {
-        return false;
+        return false
       }
 
       for (const key of keysA) {
         if (!keysB.includes(key) || !deepEqual(a[key], b[key])) {
-          return false;
+          return false
         }
       }
 
-      return true;
+      return true
     }
 
     useEffect(() => {
       const fetchUrl = async () => {
-        let isValid = false;
+        let isValid = false
         if (Array.isArray(message.content)) {
-          const updatedContent = await Promise.all(message.content.map(async (content) => {
-            if (content.type === 'image_url' && content.image_url) {
-              console.log("Checking if image url is valid: ", content.image_url.url)
-              isValid = await checkIfUrlIsValid(content.image_url.url);
-              if (isValid) {
-                setImageUrls(prevUrls => [...prevUrls, content.image_url?.url as string]);
-                return content;
-              } else {
-                const path = extractPathFromUrl(content.image_url.url);
-                console.log("Fetching presigned url for: ", path)
-                const presignedUrl = await getPresignedUrl(path);
-                setImageUrls(prevUrls => [...prevUrls, presignedUrl]);
-                return { ...content, image_url: { url: presignedUrl } };
+          const updatedContent = await Promise.all(
+            message.content.map(async (content) => {
+              if (content.type === 'image_url' && content.image_url) {
+                console.log(
+                  'Checking if image url is valid: ',
+                  content.image_url.url,
+                )
+                isValid = await checkIfUrlIsValid(content.image_url.url)
+                if (isValid) {
+                  setImageUrls((prevUrls) => [
+                    ...prevUrls,
+                    content.image_url?.url as string,
+                  ])
+                  return content
+                } else {
+                  const path = extractPathFromUrl(content.image_url.url)
+                  console.log('Fetching presigned url for: ', path)
+                  const presignedUrl = await getPresignedUrl(path)
+                  setImageUrls((prevUrls) => [...prevUrls, presignedUrl])
+                  return { ...content, image_url: { url: presignedUrl } }
+                }
               }
-            }
-            return content;
-          }));
-          if (!isValid && onImageUrlsUpdate && !deepEqual(updatedContent, message.content)) {
-            console.log("Updated content: ", updatedContent, "Previous content: ", message.content)
-            onImageUrlsUpdate({ ...message, content: updatedContent }, messageIndex);
+              return content
+            }),
+          )
+          if (
+            !isValid &&
+            onImageUrlsUpdate &&
+            !deepEqual(updatedContent, message.content)
+          ) {
+            console.log(
+              'Updated content: ',
+              updatedContent,
+              'Previous content: ',
+              message.content,
+            )
+            onImageUrlsUpdate(
+              { ...message, content: updatedContent },
+              messageIndex,
+            )
           }
         }
-      };
-      if (message.role === 'user') {
-        fetchUrl();
       }
-    }, [message.content, messageIndex]);
+      if (message.role === 'user') {
+        fetchUrl()
+      }
+    }, [message.content, messageIndex])
 
     const toggleEditing = () => {
       setIsEditing(!isEditing)
@@ -290,8 +324,8 @@ export const ChatMessage: FC<Props> = memo(
     }, [message.content])
 
     useEffect(() => {
-      setImageUrls([]);
-    }, [message]);
+      setImageUrls([])
+    }, [message])
 
     useEffect(() => {
       if (textareaRef.current) {
@@ -302,61 +336,70 @@ export const ChatMessage: FC<Props> = memo(
 
     async function getPresignedUrl(uploadedImageUrl: string): Promise<string> {
       try {
-        const presignedUrl = await fetchPresignedUrl(uploadedImageUrl);
-        return presignedUrl as string;
+        const presignedUrl = await fetchPresignedUrl(uploadedImageUrl)
+        return presignedUrl as string
       } catch (error) {
-        console.error('Failed to fetch presigned URL for', uploadedImageUrl, error);
-        return '';
+        console.error(
+          'Failed to fetch presigned URL for',
+          uploadedImageUrl,
+          error,
+        )
+        return ''
       }
     }
 
     async function checkIfUrlIsValid(url: string): Promise<boolean> {
       try {
-        dayjs.extend(utc);
-        const urlObject = new URL(url);
-        let creationDateString = urlObject.searchParams.get('X-Amz-Date') as string
+        dayjs.extend(utc)
+        const urlObject = new URL(url)
+        let creationDateString = urlObject.searchParams.get(
+          'X-Amz-Date',
+        ) as string
 
         // Manually reformat the creationDateString to standard ISO 8601 format
         creationDateString = creationDateString.replace(
           /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
-          '$1-$2-$3T$4:$5:$6Z'
-        );
+          '$1-$2-$3T$4:$5:$6Z',
+        )
 
         // Adjust the format in the dayjs.utc function if necessary
-        const creationDate = dayjs.utc(creationDateString, 'YYYYMMDDTHHmmss[Z]');
+        const creationDate = dayjs.utc(creationDateString, 'YYYYMMDDTHHmmss[Z]')
 
-        const expiresInSecs = Number(urlObject.searchParams.get('X-Amz-Expires') as string);
+        const expiresInSecs = Number(
+          urlObject.searchParams.get('X-Amz-Expires') as string,
+        )
 
-        const expiryDate = creationDate.add(expiresInSecs, 'second');
-        const isExpired = expiryDate.toDate() < new Date();
+        const expiryDate = creationDate.add(expiresInSecs, 'second')
+        const isExpired = expiryDate.toDate() < new Date()
 
         if (isExpired) {
-          console.log('URL is expired'); // Keep this log if necessary for debugging
-          return false;
+          console.log('URL is expired') // Keep this log if necessary for debugging
+          return false
         } else {
-          return true;
+          return true
         }
       } catch (error) {
-        console.error('Failed to validate URL', url, error);
-        return false;
+        console.error('Failed to validate URL', url, error)
+        return false
       }
     }
 
     function extractPathFromUrl(url: string): string {
-      const urlObject = new URL(url);
+      const urlObject = new URL(url)
       let path = urlObject.pathname
       if (path.startsWith('/')) {
-        path = path.substring(1);
+        path = path.substring(1)
       }
-      return path;
+      return path
     }
 
     return (
       <div
-        className={`group md:px-4 ${message.role === 'assistant'
-          ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
-          : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
-          }`}
+        className={`group md:px-4 ${
+          message.role === 'assistant'
+            ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
+            : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
+        }`}
         style={{ overflowWrap: 'anywhere' }}
       >
         <div className="relative m-auto flex p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-5xl lg:px-0 xl:max-w-3xl">
@@ -419,55 +462,99 @@ export const ChatMessage: FC<Props> = memo(
                       <div className="flex flex-col items-start space-y-2">
                         {message.content.map((content, index) => {
                           if (content.type === 'text') {
-                            if ((content.text as string).trim().startsWith('Image description:')) {
-                              console.log("Image description found: ", content.text)
+                            if (
+                              (content.text as string)
+                                .trim()
+                                .startsWith('Image description:')
+                            ) {
+                              console.log(
+                                'Image description found: ',
+                                content.text,
+                              )
                               return (
-                                <Accordion variant='filled' key={index} className=' shadow-lg rounded-lg bg-[#2e026d]'>
+                                <Accordion
+                                  variant="filled"
+                                  key={index}
+                                  className=" rounded-lg bg-[#2e026d] shadow-lg"
+                                >
                                   <Accordion.Item value="imageDescription rounded-lg">
-                                    <Accordion.Control className={`text-gray-200 rounded-lg hover:bg-purple-900 ${montserrat_paragraph.variable} font-montserratParagraph`}>
-                                      This image description is used to find relevant documents and provide intelligent context for GPT-4 Vision.
+                                    <Accordion.Control
+                                      className={`rounded-lg text-gray-200 hover:bg-purple-900 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                    >
+                                      This image description is used to find
+                                      relevant documents and provide intelligent
+                                      context for GPT-4 Vision.
                                     </Accordion.Control>
-                                    <Accordion.Panel className={`bg-[#1d1f32] rounded-lg text-gray-200 p-4 ${montserrat_paragraph.variable} font-montserratParagraph`}>
+                                    <Accordion.Panel
+                                      className={`rounded-lg bg-[#1d1f32] p-4 text-gray-200 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                    >
                                       {content.text}
                                     </Accordion.Panel>
                                   </Accordion.Item>
                                 </Accordion>
-                              );
+                              )
                             } else {
                               return (
-                                <p key={index} className="self-start text-base font-medium">{content.text}</p>
-                              );
+                                <p
+                                  key={index}
+                                  className="self-start text-base font-medium"
+                                >
+                                  {content.text}
+                                </p>
+                              )
                             }
                           }
                         })}
-                        {isImg2TextLoading && messageIndex == (selectedConversation?.messages.length ?? 0) - 1 && (
-                          <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <p style={{ marginRight: '10px', fontWeight: 'bold', textShadow: '0 0 10px' }} className=' pulsate'>Generating Image Description:</p>
-                            <LoadingSpinner size='xs' />
-                          </div>
-                        )}
-                        <div className="flex flex-wrap -m-1 justify-start w-full">
-                          {message.content.filter(item => item.type === 'image_url').map((content, index) => (
-                            <div key={index} className={classes.imageContainerStyle}>
-                              <div className="shadow-lg rounded-lg overflow-hidden">
-                                <ImagePreview src={imageUrls[index] as string} alt="Chat message" className={classes.imageStyle} />
-                              </div>
+                        {isImg2TextLoading &&
+                          messageIndex ==
+                            (selectedConversation?.messages.length ?? 0) -
+                              1 && (
+                            <div
+                              style={{ display: 'flex', alignItems: 'center' }}
+                            >
+                              <p
+                                style={{
+                                  marginRight: '10px',
+                                  fontWeight: 'bold',
+                                  textShadow: '0 0 10px',
+                                }}
+                                className=" pulsate"
+                              >
+                                Generating Image Description:
+                              </p>
+                              <LoadingSpinner size="xs" />
                             </div>
-                          ))}
+                          )}
+                        <div className="-m-1 flex w-full flex-wrap justify-start">
+                          {message.content
+                            .filter((item) => item.type === 'image_url')
+                            .map((content, index) => (
+                              <div
+                                key={index}
+                                className={classes.imageContainerStyle}
+                              >
+                                <div className="overflow-hidden rounded-lg shadow-lg">
+                                  <ImagePreview
+                                    src={imageUrls[index] as string}
+                                    alt="Chat message"
+                                    className={classes.imageStyle}
+                                  />
+                                </div>
+                              </div>
+                            ))}
                         </div>
                       </div>
                     ) : (
                       message.content
                     )}
                   </div>
-
                 )}
 
                 {!isEditing && (
                   <div className="ml-1 flex flex-col items-center justify-end gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-start md:gap-1">
                     <button
                       className={`invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300 
-                        ${Array.isArray(message.content) && message.content.some(content => content.type === 'image_url') ? 'hidden' : ''}`}
+                        ${Array.isArray(message.content) && message.content.some((content) => content.type === 'image_url') ? 'hidden' : ''}`}
                       onClick={toggleEditing}
                     >
                       <IconEdit size={20} />
@@ -483,9 +570,9 @@ export const ChatMessage: FC<Props> = memo(
               </div>
             ) : (
               <div className="flex flex-row ">
-                <div className="flex-1 max-w-full w-full overflow-hidden">
+                <div className="w-full max-w-full flex-1 overflow-hidden">
                   <MemoizedReactMarkdown
-                    className="dark:prose-invert prose flex-1 linkMarkDown supMarkdown "
+                    className="dark:prose-invert linkMarkDown supMarkdown prose flex-1 "
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeMathjax]}
                     components={{
@@ -542,11 +629,13 @@ export const ChatMessage: FC<Props> = memo(
                         )
                       },
                       a({ node, className, children, ...props }) {
-                        const { href, title } = props;
+                        const { href, title } = props
                         // console.log("href:", href);
                         // console.log("title:", title);
                         // console.log("children:", children);
-                        const isCitationLink = /^\d+$/.test(children[0] as string);
+                        const isCitationLink = /^\d+$/.test(
+                          children[0] as string,
+                        )
                         if (isCitationLink) {
                           return (
                             <a
@@ -561,7 +650,6 @@ export const ChatMessage: FC<Props> = memo(
                             </a>
                           )
                         } else {
-
                           return (
                             <button
                               id="styledLink"
@@ -576,12 +664,13 @@ export const ChatMessage: FC<Props> = memo(
                       },
                     }}
                   >
-                    {`${message.content}${messageIsStreaming &&
+                    {`${message.content}${
+                      messageIsStreaming &&
                       messageIndex ==
-                      (selectedConversation?.messages.length ?? 0) - 1
-                      ? '`▍`'
-                      : ''
-                      }`}
+                        (selectedConversation?.messages.length ?? 0) - 1
+                        ? '`▍`'
+                        : ''
+                    }`}
                   </MemoizedReactMarkdown>
                   {/* {message.contexts && message.contexts.length > 0 && (
                     <Group variant="row" spacing="xs">

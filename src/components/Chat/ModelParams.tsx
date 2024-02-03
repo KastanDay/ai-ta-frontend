@@ -65,8 +65,6 @@ export const ModelParams = ({
   return (
     <div className="backdrop-filter-[blur(10px)] w-full rounded-lg ">
       <div className="flex h-full flex-col space-y-4 rounded-lg p-2">
-        
-
         <TemperatureSlider
           label={t('Temperature')}
           onChangeTemperature={(temperature) =>

@@ -41,12 +41,13 @@ const CourseMain: NextPage = () => {
   const [courseData, setCourseData] = useState(null)
   const [courseExists, setCourseExists] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [systemPrompt, setSystemPrompt] = useState("");
-  const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(null);
+  const [systemPrompt, setSystemPrompt] = useState('')
+  const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
+    null,
+  )
   const clerk_user = useUser()
   const emails = extractEmailsFromClerk(clerk_user.user)
   const currUserEmail = emails[0]
-
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -58,31 +59,32 @@ const CourseMain: NextPage = () => {
       )
       const data = await response.json()
       setCourseExists(data)
-      const response_metadata = await fetch(`/api/UIUC-api/getCourseMetadata?course_name=${course_name}`);
-      const courseMetadata = (await response_metadata.json()).course_metadata;
-      setCourseMetadata(courseMetadata);
-      setSystemPrompt(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT);
+      const response_metadata = await fetch(
+        `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
+      )
+      const courseMetadata = (await response_metadata.json()).course_metadata
+      setCourseMetadata(courseMetadata)
+      setSystemPrompt(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
 
       setIsLoading(false)
     }
     fetchCourseData()
-
   }, [router.isReady])
 
   const handleSystemPromptSubmit = async () => {
     if (courseMetadata && course_name && systemPrompt) {
-      courseMetadata.system_prompt = systemPrompt;
-      const success = await callSetCourseMetadata(course_name, courseMetadata);
+      courseMetadata.system_prompt = systemPrompt
+      const success = await callSetCourseMetadata(course_name, courseMetadata)
       if (!success) {
-        console.log('Error updating course metadata');
+        console.log('Error updating course metadata')
       }
     }
   }
 
   const resetSystemPrompt = async () => {
     if (courseMetadata && course_name) {
-      courseMetadata.system_prompt = DEFAULT_SYSTEM_PROMPT;
-      const success = await callSetCourseMetadata(course_name, courseMetadata);
+      courseMetadata.system_prompt = DEFAULT_SYSTEM_PROMPT
+      const success = await callSetCourseMetadata(course_name, courseMetadata)
       if (!success) {
         alert('Error resetting system prompt')
       }
@@ -205,18 +207,24 @@ const CourseMain: NextPage = () => {
               <Text
                 className={`label ${montserrat_heading.variable} font-montserratHeading`}
                 size={'sm'}
-                style={{ display: 'flex', justifyContent: 'center', userSelect: 'text', whiteSpace: 'nowrap' }}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  userSelect: 'text',
+                  whiteSpace: 'nowrap',
+                }}
               >
-                <span >
+                <span>
                   For guidance on crafting prompts, consult the
                   <a
-                    className={'text-purple-600 pl-1'}
+                    className={'pl-1 text-purple-600'}
                     href="https://platform.openai.com/docs/guides/prompt-engineering"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     official OpenAI documentation
-                  </a>.
+                  </a>
+                  .
                 </span>
               </Text>
               <Text
@@ -224,7 +232,9 @@ const CourseMain: NextPage = () => {
                 size={'sm'}
                 style={{ userSelect: 'text' }}
               >
-                Modify with caution. Unnecessary alterations might reduce effectiveness, similar to overly restrictive coding. Changes affect all project users.
+                Modify with caution. Unnecessary alterations might reduce
+                effectiveness, similar to overly restrictive coding. Changes
+                affect all project users.
               </Text>
               <Textarea
                 label={<strong>System Prompt</strong>}
@@ -232,7 +242,6 @@ const CourseMain: NextPage = () => {
                 minRows={2}
                 maxRows={10}
                 placeholder="Enter a system prompt"
-
                 className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
                 value={systemPrompt}
                 onChange={(e) => {
@@ -240,8 +249,14 @@ const CourseMain: NextPage = () => {
                 }}
               />
               <div style={{ paddingTop: '10px', width: '100%' }}>
-                <div style={{ paddingTop: '10px', width: '100%', display: 'flex', justifyContent: 'space-between' }}>
-
+                <div
+                  style={{
+                    paddingTop: '10px',
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                  }}
+                >
                   <Button
                     className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
                     type="submit"
@@ -263,7 +278,6 @@ const CourseMain: NextPage = () => {
                 </div>
               </div>
             </div>
-
           </Flex>
         </div>
       </main>
