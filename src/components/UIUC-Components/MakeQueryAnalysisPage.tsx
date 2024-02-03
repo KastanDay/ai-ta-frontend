@@ -76,7 +76,7 @@ const MakeQueryAnalysisPage = ({
   course_data: any
 }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  const { classes, } = useStyles()
+  const { classes } = useStyles()
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
   // const { isSignedIn, user } = useUser()
   const clerk_user = useUser()
@@ -89,7 +89,7 @@ const MakeQueryAnalysisPage = ({
 
   const currentPageName = GetCurrentPageName()
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
 
   // TODO: remove this hook... we should already have this from the /materials props???
   useEffect(() => {
@@ -163,36 +163,40 @@ const MakeQueryAnalysisPage = ({
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-      // current_email={currentEmail as string}
+        // current_email={currentEmail as string}
       />
     )
   }
 
   const downloadConversationHistory = async (courseName: string) => {
     try {
-      setIsLoading(true);
-      const response = await axios.get(`https://flask-production-751b.up.railway.app/export-convo-history-csv?course_name=${courseName}`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', courseName + '_conversation_history.csv');
-      document.body.appendChild(link);
-      link.click();
+      setIsLoading(true)
+      const response = await axios.get(
+        `https://flask-production-751b.up.railway.app/export-convo-history-csv?course_name=${courseName}`,
+        { responseType: 'blob' },
+      )
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', courseName + '_conversation_history.csv')
+      document.body.appendChild(link)
+      link.click()
     } catch (error) {
-      console.error('Error fetching conversation history:', error);
+      console.error('Error fetching conversation history:', error)
       notifications.show({
         id: 'error-notification',
         title: 'Error',
-        message: 'Failed to fetch conversation history. Please try again later.',
+        message:
+          'Failed to fetch conversation history. Please try again later.',
         color: 'red',
         radius: 'lg',
         icon: <IconAlertCircle />,
         className: 'my-notification-class',
         style: { backgroundColor: '#15162c' },
         loading: false,
-      });
+      })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
@@ -241,8 +245,17 @@ const MakeQueryAnalysisPage = ({
                 </div>
                 <div className="me-6 flex flex-row items-center justify-end">
                   {/* Can add more buttons here */}
-                  <Button className={`${montserrat_paragraph.variable} font-montserratParagraph ${classes.downloadButton}`} rightIcon={isLoading ? <LoadingSpinner size="sm" /> : <IconCloudDownload />}
-                    onClick={() => downloadConversationHistory(course_name)}>
+                  <Button
+                    className={`${montserrat_paragraph.variable} font-montserratParagraph ${classes.downloadButton}`}
+                    rightIcon={
+                      isLoading ? (
+                        <LoadingSpinner size="sm" />
+                      ) : (
+                        <IconCloudDownload />
+                      )
+                    }
+                    onClick={() => downloadConversationHistory(course_name)}
+                  >
                     Download Conversation History
                   </Button>
                 </div>
@@ -312,7 +325,12 @@ const MakeQueryAnalysisPage = ({
   )
 }
 
-import { IconAlertCircle, IconCheck, IconCloudDownload, IconDownload } from '@tabler/icons-react'
+import {
+  IconAlertCircle,
+  IconCheck,
+  IconCloudDownload,
+  IconDownload,
+} from '@tabler/icons-react'
 
 import { CannotEditCourse } from './CannotEditCourse'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -430,15 +448,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.gray[2]
-                        : theme.colors.gray[1]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colorScheme === 'dark'
+                      ? theme.colors.gray[2]
+                      : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colors.gray[8]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colors.gray[8]
                 }}
               >
                 <IconDownload className="h-5 w-5 text-gray-800" />
@@ -455,15 +473,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.gray[2]
-                        : theme.colors.gray[1]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colorScheme === 'dark'
+                      ? theme.colors.gray[2]
+                      : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colors.red[6]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colors.red[6]
                 }}
               >
                 <IconTrash className="h-5 w-5 text-red-600" />
@@ -500,7 +518,8 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${response.statusText || response.status
+        `Error fetching course metadata: ${
+          response.statusText || response.status
         }`,
       )
     }

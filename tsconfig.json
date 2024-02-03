@@ -19,8 +19,8 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"],
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["./src/*"],
+    },
   },
   "include": [
     ".eslintrc.cjs",
@@ -29,7 +29,7 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.mjs",
-    "next-i18next.config.mjs"
+    "next-i18next.config.mjs",
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
 }

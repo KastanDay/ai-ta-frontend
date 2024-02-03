@@ -87,18 +87,20 @@ pre:has(div.codeblock) {
 /* Make the purple background fade out  */
 .course-page-main {
   /* height: 400px;     */
-  background: -webkit-gradient(linear,
-      left top,
-      left bottom,
-      from(#2e026d),
-      to(#020307),
-      color-stop(0.75, #15162c));
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    from(#2e026d),
+    to(#020307),
+    color-stop(0.75, #15162c)
+  );
   background-color: #020307;
-  background-size: 100% 45%, 0%;
+  background-size:
+    100% 45%,
+    0%;
   background-repeat: no-repeat;
 }
-
-
 
 .fade-2-lines {
   overflow: hidden;
@@ -194,7 +196,7 @@ li {
   margin: 0 0.3rem 0.3rem 0;
 }
 
-.tag-item>.button {
+.tag-item > .button {
   background-color: blueviolet;
   width: 22px;
   height: 22px;
@@ -255,11 +257,13 @@ li {
   bottom: 0;
   left: 0;
   transform: translateX(-100%);
-  background-image: linear-gradient(90deg,
-      rgba(99, 39, 175, 0) 0,
-      rgba(75, 85, 72, 0.2) 20%,
-      rgba(30, 64, 175, 0.5) 60%,
-      rgba(66, 1, 95, 0));
+  background-image: linear-gradient(
+    90deg,
+    rgba(99, 39, 175, 0) 0,
+    rgba(75, 85, 72, 0.2) 20%,
+    rgba(30, 64, 175, 0.5) 60%,
+    rgba(66, 1, 95, 0)
+  );
   /* Changed the primary color to purple-900 */
   animation: shimmer 5s infinite;
   content: '';
@@ -303,7 +307,7 @@ li {
   }
 
   100% {
-    color: #9D4EDD;
+    color: #9d4edd;
   }
 }
 
@@ -341,7 +345,7 @@ a[data-footnote-backref] {
 .supMarkdown a:hover,
 .supMarkdown a:focus {
   background-color: blueviolet;
-  color: #FFFFFF;
+  color: #ffffff;
   cursor: pointer;
 }
 
@@ -374,7 +378,9 @@ a[data-footnote-backref] {
   border-radius: 5px;
   border: none;
   text-decoration: none;
-  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+  transition:
+    background-color 0.15s ease-in-out,
+    color 0.15s ease-in-out;
   white-space: break-spaces;
   /* Allow text wrapping inside buttons */
   overflow: hidden;
@@ -389,7 +395,7 @@ a[data-footnote-backref] {
 .linkMarkDown button:not(.codeblock-button):hover,
 .linkMarkDown button:not(.codeblock-button):focus {
   background-color: blueviolet;
-  color: #FFFFFF;
+  color: #ffffff;
   cursor: pointer;
 }
 
@@ -442,7 +448,7 @@ a[data-footnote-backref] {
 
 /* For styling MagicBell. We hide the logo, but keep the CTA button.  */
 /* `EnablePushNotificationsButton` works on localhost, `css-s37qmw` works on production. */
-body button[class$="EnablePushNotificationsButton"] {
+body button[class$='EnablePushNotificationsButton'] {
   background-color: #f8fafc !important;
   color: #15162c !important;
 }
