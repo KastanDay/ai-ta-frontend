@@ -162,7 +162,6 @@ import { ChatLoader } from './ChatLoader'
 import { ErrorMessageDiv } from './ErrorMessageDiv'
 import { MemoizedChatMessage } from './MemoizedChatMessage'
 
-
 import { type CourseMetadata } from '~/types/courseMetadata'
 
 interface Props {
@@ -291,7 +290,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       // setSearchQuery(message.content)
       const searchQuery = Array.isArray(message.content)
         ? message.content.map((content) => content.text).join(' ')
-        : message.content;
+        : message.content
 
       if (selectedConversation) {
         let updatedConversation: Conversation
@@ -412,17 +411,19 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }
         if (!plugin) {
           if (updatedConversation.messages.length === 1) {
-            const { content } = message;
+            const { content } = message
             // Use only texts instead of content itself
             const contentText = Array.isArray(content)
               ? content.map((content) => content.text).join(' ')
-              : content;
+              : content
             const customName =
-              contentText.length > 30 ? contentText.substring(0, 30) + '...' : contentText;
+              contentText.length > 30
+                ? contentText.substring(0, 30) + '...'
+                : contentText
             updatedConversation = {
               ...updatedConversation,
               name: customName,
-            };
+            }
           }
           homeDispatch({ field: 'loading', value: false })
           const reader = data.getReader()

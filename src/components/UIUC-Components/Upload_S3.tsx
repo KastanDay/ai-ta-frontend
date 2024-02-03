@@ -303,7 +303,7 @@ export function DropzoneS3Upload({
             e.currentTarget.style.backgroundColor = 'transparent'
           }
         }}
-      // maxSize={30 * 1024 ** 2} max file size
+        // maxSize={30 * 1024 ** 2} max file size
       >
         {redirect_to_gpt_4 ? (
           <div style={{ pointerEvents: 'none' }}>

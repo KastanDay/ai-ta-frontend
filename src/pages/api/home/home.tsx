@@ -26,7 +26,12 @@ import { getSettings } from '@/utils/app/settings'
 import { type Conversation } from '@/types/chat'
 import { type KeyValuePair } from '@/types/data'
 import { type FolderInterface, type FolderType } from '@/types/folder'
-import { OpenAIModel, OpenAIModelID, OpenAIModels, fallbackModelID } from '@/types/openai'
+import {
+  OpenAIModel,
+  OpenAIModelID,
+  OpenAIModels,
+  fallbackModelID,
+} from '@/types/openai'
 import { type Prompt } from '@/types/prompt'
 
 import { Chat } from '@/components/Chat/Chat'
@@ -83,7 +88,7 @@ const Home = () => {
 
   useEffect(() => {
     // Set model after we fetch available models
-    const model = selectBestModel();
+    const model = selectBestModel()
 
     dispatch({
       field: 'defaultModelId',
@@ -100,7 +105,6 @@ const Home = () => {
       })
     }
   }, [models])
-
 
   useEffect(() => {
     if (!course_name && curr_route_path != '/gpt4') return
@@ -299,22 +303,30 @@ const Home = () => {
 
     // Return the default model if the models array is empty
     if (models.length === 0) {
-      return OpenAIModels[defaultModelId];
+      return OpenAIModels[defaultModelId]
     }
 
     // Ordered list of preferred model IDs
-    const preferredModelIds = ['gpt-4-vision-preview', 'gpt-4-128k', 'gpt-4-0125-preview', 'gpt-4-1106-preview', 'gpt-4', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo'];
+    const preferredModelIds = [
+      'gpt-4-vision-preview',
+      'gpt-4-128k',
+      'gpt-4-0125-preview',
+      'gpt-4-1106-preview',
+      'gpt-4',
+      'gpt-3.5-turbo-16k',
+      'gpt-3.5-turbo',
+    ]
 
     // Find and return the first available preferred model
     for (const preferredId of preferredModelIds) {
-      const model = models.find(m => m.id === preferredId);
+      const model = models.find((m) => m.id === preferredId)
       if (model) {
-        return model;
+        return model
       }
     }
 
     // Fallback to the first model in the list or the default model
-    return models[0] || OpenAIModels[defaultModelId];
+    return models[0] || OpenAIModels[defaultModelId]
   }
 
   // CONVERSATION OPERATIONS  --------------------------------------------
@@ -323,7 +335,7 @@ const Home = () => {
     const lastConversation = conversations[conversations.length - 1]
 
     // Determine the model to use for the new conversation
-    const model = selectBestModel();
+    const model = selectBestModel()
 
     const newConversation: Conversation = {
       id: uuidv4(),
@@ -366,14 +378,25 @@ const Home = () => {
 
   // Image to Text
   const setIsImg2TextLoading = (isImg2TextLoading: boolean) => {
-    dispatch({ field: 'isImg2TextLoading', value: isImg2TextLoading });
-  };
+    dispatch({ field: 'isImg2TextLoading', value: isImg2TextLoading })
+  }
 
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [dragEnterCounter, setDragEnterCounter] = useState(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false)
+  const [dragEnterCounter, setDragEnterCounter] = useState(0)
 
   const GradientIconPhoto = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-photo" width="256" height="256" viewBox="0 0 24 24" strokeWidth="1.5" stroke="url(#gradient)" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="icon icon-tabler icon-tabler-photo"
+      width="256"
+      height="256"
+      viewBox="0 0 24 24"
+      strokeWidth="1.5"
+      stroke="url(#gradient)"
+      fill="none"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <defs>
         <linearGradient id="gradient" x1="100%" y1="100%" x2="0%" y2="0%">
           <stop offset="0%" stopColor="#8A3FFC" />
@@ -386,63 +409,63 @@ const Home = () => {
       <path d="M4 15l4 -4a3 5 0 0 1 3 0l 4 4" />
       <path d="M14 14l1 -1a3 5 0 0 1 3 0l2 2" />
     </svg>
-  );
+  )
 
   // EFFECTS  --------------------------------------------
   useEffect(() => {
     const handleDocumentDragOver = (e: DragEvent) => {
-      e.preventDefault();
-    };
+      e.preventDefault()
+    }
 
     const handleDocumentDragEnter = (e: DragEvent) => {
-      setDragEnterCounter((prev) => prev + 1);
-      setIsDragging(true);
-    };
+      setDragEnterCounter((prev) => prev + 1)
+      setIsDragging(true)
+    }
 
     const handleDocumentDragLeave = (e: DragEvent) => {
-      e.preventDefault();
-      setDragEnterCounter((prev) => prev - 1);
+      e.preventDefault()
+      setDragEnterCounter((prev) => prev - 1)
       if (dragEnterCounter === 1 || e.relatedTarget === null) {
-        setIsDragging(false);
+        setIsDragging(false)
       }
-    };
+    }
 
     const handleDocumentDrop = (e: DragEvent) => {
-      e.preventDefault();
-      setIsDragging(false);
-      setDragEnterCounter(0);
-    };
+      e.preventDefault()
+      setIsDragging(false)
+      setDragEnterCounter(0)
+    }
 
     const handleDocumentKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setIsDragging(false);
-        setDragEnterCounter(0);
+        setIsDragging(false)
+        setDragEnterCounter(0)
       }
-    };
+    }
 
     const handleMouseOut = (e: MouseEvent) => {
       if (!e.relatedTarget) {
-        setIsDragging(false);
-        setDragEnterCounter(0);
+        setIsDragging(false)
+        setDragEnterCounter(0)
       }
-    };
+    }
 
-    document.addEventListener('dragover', handleDocumentDragOver);
-    document.addEventListener('dragenter', handleDocumentDragEnter);
-    document.addEventListener('dragleave', handleDocumentDragLeave);
-    document.addEventListener('drop', handleDocumentDrop);
-    document.addEventListener('keydown', handleDocumentKeyDown);
-    window.addEventListener('mouseout', handleMouseOut);
+    document.addEventListener('dragover', handleDocumentDragOver)
+    document.addEventListener('dragenter', handleDocumentDragEnter)
+    document.addEventListener('dragleave', handleDocumentDragLeave)
+    document.addEventListener('drop', handleDocumentDrop)
+    document.addEventListener('keydown', handleDocumentKeyDown)
+    window.addEventListener('mouseout', handleMouseOut)
 
     return () => {
-      document.removeEventListener('dragover', handleDocumentDragOver);
-      document.removeEventListener('dragenter', handleDocumentDragEnter);
-      document.removeEventListener('dragleave', handleDocumentDragLeave);
-      document.removeEventListener('drop', handleDocumentDrop);
-      document.removeEventListener('keydown', handleDocumentKeyDown);
-      window.removeEventListener('mouseout', handleMouseOut);
-    };
-  }, []);
+      document.removeEventListener('dragover', handleDocumentDragOver)
+      document.removeEventListener('dragenter', handleDocumentDragEnter)
+      document.removeEventListener('dragleave', handleDocumentDragLeave)
+      document.removeEventListener('drop', handleDocumentDrop)
+      document.removeEventListener('keydown', handleDocumentKeyDown)
+      window.removeEventListener('mouseout', handleMouseOut)
+    }
+  }, [])
 
   useEffect(() => {
     if (window.innerWidth < 640) {
@@ -458,7 +481,7 @@ const Home = () => {
         field: 'serverSidePluginKeysSet',
         value: serverSidePluginKeysSet,
       })
-  }, [serverSidePluginKeysSet]) // defaultModelId, 
+  }, [serverSidePluginKeysSet]) // defaultModelId,
 
   // ON LOAD --------------------------------------------
 
@@ -523,13 +546,13 @@ const Home = () => {
       })
     } else {
       const lastConversation = conversations[conversations.length - 1]
-      console.debug("Models available: ", models)
+      console.debug('Models available: ', models)
       // let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
-      const bestModel = selectBestModel();
+      const bestModel = selectBestModel()
       // if (!defaultModel) {
       //   defaultModel = OpenAIModels['gpt-4']
       // }
-      console.debug("Using model: ", bestModel)
+      console.debug('Using model: ', bestModel)
       dispatch({
         field: 'selectedConversation',
         value: {
@@ -544,7 +567,7 @@ const Home = () => {
       })
     }
     setIsInitialSetupDone(true)
-  }, [dispatch, models, conversations, isInitialSetupDone]) // ! serverSidePluginKeysSet, removed 
+  }, [dispatch, models, conversations, isInitialSetupDone]) // ! serverSidePluginKeysSet, removed
   // }, [defaultModelId, dispatch, serverSidePluginKeysSet, models, conversations]) // original!
 
   if (isLoading) {
@@ -562,7 +585,7 @@ const Home = () => {
           handleUpdateFolder,
           handleSelectConversation,
           handleUpdateConversation,
-          setIsImg2TextLoading
+          setIsImg2TextLoading,
         }}
       >
         <Head>
@@ -586,14 +609,16 @@ const Home = () => {
             </div>
 
             <div className="flex h-full w-full pt-[48px] sm:pt-0">
-              {isDragging && selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
-                <div
-                  className="absolute inset-0 w-full h-full flex flex-col justify-center items-center bg-black opacity-75 z-10"
-                >
-                  <GradientIconPhoto />
-                  <span className="text-3xl font-extrabold text-white">Drop your image here!</span>
-                </div>
-              )}
+              {isDragging &&
+                selectedConversation?.model.id ===
+                  OpenAIModelID.GPT_4_VISION && (
+                  <div className="absolute inset-0 z-10 flex h-full w-full flex-col items-center justify-center bg-black opacity-75">
+                    <GradientIconPhoto />
+                    <span className="text-3xl font-extrabold text-white">
+                      Drop your image here!
+                    </span>
+                  </div>
+                )}
               <Chatbar />
 
               <div className="flex flex-1">

@@ -24,4 +24,4 @@ export const fetchMQRContexts = async (
   }
 }
 
-export default fetchMQRContexts;
+export default fetchMQRContexts

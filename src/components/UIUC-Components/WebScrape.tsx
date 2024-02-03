@@ -14,7 +14,13 @@ import {
   rem,
   List,
 } from '@mantine/core'
-import { IconHome, IconSitemap, IconSubtask, IconWorld, IconWorldDownload } from '@tabler/icons-react'
+import {
+  IconHome,
+  IconSitemap,
+  IconSubtask,
+  IconWorld,
+  IconWorldDownload,
+} from '@tabler/icons-react'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
@@ -64,25 +70,25 @@ const formatUrl = (url: string) => {
 }
 
 const formatUrlAndMatchRegex = (url: string) => {
-  // fullUrl always starts with http://. Is the starting place of the scrape. 
+  // fullUrl always starts with http://. Is the starting place of the scrape.
   // baseUrl is used to construct the match statement.
-
 
   // Ensure the url starts with 'http://'
   if (!/^https?:\/\//i.test(url)) {
-    url = 'http://' + url;
+    url = 'http://' + url
   }
 
   // Extract the base url including the path
-  const baseUrl = (url.replace(/^https?:\/\//i, '').split('?')[0] as string).replace(/\/$/, ''); // Remove protocol (http/s), split at '?', and remove trailing slash
-
+  const baseUrl = (
+    url.replace(/^https?:\/\//i, '').split('?')[0] as string
+  ).replace(/\/$/, '') // Remove protocol (http/s), split at '?', and remove trailing slash
 
   const matchRegex = `http?(s)://**${baseUrl}/**`
 
   return {
     fullUrl: baseUrl,
-    matchRegex: matchRegex
-  };
+    matchRegex: matchRegex,
+  }
 }
 
 export const WebScrape = ({
@@ -99,7 +105,8 @@ export const WebScrape = ({
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const theme = useMantineTheme()
   const [maxUrls, setMaxUrls] = useState('50')
-  const [scrapeStrategy, setScrapeStrategy] = useState<string>('equal-and-below')
+  const [scrapeStrategy, setScrapeStrategy] =
+    useState<string>('equal-and-below')
   const [courseID, setCourseID] = useState<string>('')
   const [showContentOptions, setShowContentOptions] = useState<boolean>(false)
   const logoRef = useRef(null)
@@ -217,13 +224,11 @@ export const WebScrape = ({
         data = await scrapeWeb(
           url,
           courseName,
-          maxUrls.trim() !== ''
-            ? parseInt(maxUrls)
-            : 50,
+          maxUrls.trim() !== '' ? parseInt(maxUrls) : 50,
           scrapeStrategy,
         )
         // let ingest finalize things. It should be finished, but the DB is slow.
-        await new Promise(resolve => setTimeout(resolve, 3000))
+        await new Promise((resolve) => setTimeout(resolve, 3000))
 
         if (is_new_course) {
           // set course exists in fast course_metadatas KV db
@@ -250,7 +255,7 @@ export const WebScrape = ({
     }
     setLoadingSpinner(false)
     setUrl('') // clear url
-    router.reload(); // Refresh the page
+    router.reload() // Refresh the page
   }
 
   const [inputErrors, setInputErrors] = useState({
@@ -344,7 +349,10 @@ export const WebScrape = ({
         match: formatUrlAndMatchRegex(fullUrl).matchRegex,
         maxTokens: 2000000, // basically inf.
       }
-      console.log("About to post to the web scraping endpoint, with params:", postParams)
+      console.log(
+        'About to post to the web scraping endpoint, with params:',
+        postParams,
+      )
 
       const response = await axios.post(
         `https://crawlee-production.up.railway.app/crawl`,
@@ -352,7 +360,7 @@ export const WebScrape = ({
           params: postParams,
         },
       )
-      console.log("Response from web scraping endpoint:", response.data)
+      console.log('Response from web scraping endpoint:', response.data)
       return response.data
     } catch (error) {
       console.error('Error during web scraping:', error)
@@ -439,7 +447,7 @@ export const WebScrape = ({
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
-              }
+              },
             }}
             placeholder="Enter URL..."
             radius={'xl'}
@@ -449,7 +457,9 @@ export const WebScrape = ({
             disabled={isDisabled}
             onChange={(e) => {
               setUrl(e.target.value)
-              setShowContentOptions(e.target.value.includes('canvas.illinois.edu'))
+              setShowContentOptions(
+                e.target.value.includes('canvas.illinois.edu'),
+              )
               if (e.target.value.includes('coursera.org')) {
                 setIcon(
                   <img
@@ -501,9 +511,11 @@ export const WebScrape = ({
                 }}
                 size="md"
                 radius={'xl'}
-                className={`rounded-s-md ${isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
-                  } overflow-ellipsis text-ellipsis p-2 ${isUrlUpdated ? 'text-white' : 'text-gray-500'
-                  } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
+                className={`rounded-s-md ${
+                  isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
+                } overflow-ellipsis text-ellipsis p-2 ${
+                  isUrlUpdated ? 'text-white' : 'text-gray-500'
+                } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
                 w={`${isSmallScreen ? 'auto' : 'auto'}`}
                 disabled={isDisabled}
               >
@@ -512,10 +524,21 @@ export const WebScrape = ({
             }
             rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
           />
-          <div className='pt-4' />
+          <div className="pt-4" />
           {/* <Text className="mt-4 text-lg font-bold text-red-600 underline"> */}
-          <Text style={{ color: '#C1C2C5', fontSize: '16px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Web scrape in progress...</Text>
-          <Text style={{ color: '#C1C2C5', textAlign: 'center', maxWidth: '80%' }} className={`pb-3 ${montserrat_paragraph.variable} font-montserratParagraph`}>Page refreshes upon completion. Your documents stay safe even if you navigate away.</Text>
+          <Text
+            style={{ color: '#C1C2C5', fontSize: '16px' }}
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            Web scrape in progress...
+          </Text>
+          <Text
+            style={{ color: '#C1C2C5', textAlign: 'center', maxWidth: '80%' }}
+            className={`pb-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+          >
+            Page refreshes upon completion. Your documents stay safe even if you
+            navigate away.
+          </Text>
           <LoadingSpinner />
         </>
       )}
@@ -536,7 +559,7 @@ export const WebScrape = ({
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
-              }
+              },
             }}
             placeholder="Enter URL..."
             radius={'xl'}
@@ -546,7 +569,9 @@ export const WebScrape = ({
             disabled={isDisabled}
             onChange={(e) => {
               setUrl(e.target.value)
-              setShowContentOptions(e.target.value.includes('canvas.illinois.edu'))
+              setShowContentOptions(
+                e.target.value.includes('canvas.illinois.edu'),
+              )
               if (e.target.value.includes('coursera.org')) {
                 setIcon(
                   <img
@@ -598,9 +623,11 @@ export const WebScrape = ({
                 }}
                 size="md"
                 radius={'xl'}
-                className={`rounded-s-md ${isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
-                  } overflow-ellipsis text-ellipsis p-2 ${isUrlUpdated ? 'text-white' : 'text-gray-500'
-                  } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
+                className={`rounded-s-md ${
+                  isUrlUpdated ? 'bg-purple-800' : 'border-purple-800'
+                } overflow-ellipsis text-ellipsis p-2 ${
+                  isUrlUpdated ? 'text-white' : 'text-gray-500'
+                } min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
                 w={`${isSmallScreen ? 'auto' : 'auto'}`}
                 disabled={isDisabled}
               >
@@ -740,10 +767,10 @@ export const WebScrape = ({
                 </div>
               </div>
               <Text className="mt-4 text-lg font-bold text-red-600 underline">
-                Please ensure that you have added the UIUC Chatbot as a student to
-                your course on Canvas before you begin ingesting the course content.
-                The bot email address is uiuc.chat@ad.uillinois.edu and the bot name
-                is UIUC Course AI.
+                Please ensure that you have added the UIUC Chatbot as a student
+                to your course on Canvas before you begin ingesting the course
+                content. The bot email address is uiuc.chat@ad.uillinois.edu and
+                the bot name is UIUC Course AI.
               </Text>
             </form>
           )}
@@ -756,7 +783,7 @@ export const WebScrape = ({
                 event.preventDefault()
               }}
             >
-              <div className="pt-2 pb-2">
+              <div className="pb-2 pt-2">
                 <Tooltip
                   multiline
                   w={400}
@@ -768,11 +795,16 @@ export const WebScrape = ({
                   label="We will attempt to visit this number of pages, but not all will be scraped if they're duplicates, broken or otherwise inaccessible."
                 >
                   <div>
-                    <Text style={{ color: '#C1C2C5', fontSize: '16px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Max URLs (1 to 500)</Text>
+                    <Text
+                      style={{ color: '#C1C2C5', fontSize: '16px' }}
+                      className={`${montserrat_heading.variable} font-montserratHeading`}
+                    >
+                      Max URLs (1 to 500)
+                    </Text>
                     <TextInput
                       styles={{ input: { backgroundColor: '#1A1B1E' } }}
                       name="maximumUrls"
-                      radius='md'
+                      radius="md"
                       placeholder="Default 50"
                       value={maxUrls}
                       onChange={(e) => {
@@ -790,28 +822,57 @@ export const WebScrape = ({
                 <p style={{ color: 'red' }}>{inputErrors.maxDepth.message}</p>
               )}
 
-              <Text style={{ color: '#C1C2C5', fontSize: '16px' }} className={`${montserrat_heading.variable} font-montserratHeading`}>Limit web crawl</Text>
+              <Text
+                style={{ color: '#C1C2C5', fontSize: '16px' }}
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Limit web crawl
+              </Text>
               {/* <Text style={{ color: '#C1C2C5', fontSize: '16px' }} className={`${montserrat_paragraph.variable} font-montserratParagraph`}>Limit web crawl (from least to most inclusive)</Text> */}
-              <div className='pl-3'>
+              <div className="pl-3">
                 <List>
-                  <List.Item><strong>Equal and Below:</strong> Only scrape content that starts will the given URL. E.g. nasa.gov/blogs will scrape all blogs like nasa.gov/blogs/new-rocket but never go to nasa.gov/events.</List.Item>
-                  <List.Item><strong>Same subdomain:</strong> Crawl the entire subdomain. E.g. docs.nasa.gov will grab that entire subdomain, but not nasa.gov or api.nasa.gov.</List.Item>
-                  <List.Item><strong>Entire domain:</strong> Crawl as much of this entire website as possible. E.g. nasa.gov also includes docs.nasa.gov</List.Item>
-                  <List.Item><span><strong>All:</strong> Start on the given URL and wander the web... <Text style={{ color: '#C1C2C5' }}>For more detail <a
-                    className={'text-purple-600'}
-                    href="https://docs.uiuc.chat/features/web-crawling-details"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    read the docs
-                  </a>.</Text>
-                  </span>
+                  <List.Item>
+                    <strong>Equal and Below:</strong> Only scrape content that
+                    starts will the given URL. E.g. nasa.gov/blogs will scrape
+                    all blogs like nasa.gov/blogs/new-rocket but never go to
+                    nasa.gov/events.
+                  </List.Item>
+                  <List.Item>
+                    <strong>Same subdomain:</strong> Crawl the entire subdomain.
+                    E.g. docs.nasa.gov will grab that entire subdomain, but not
+                    nasa.gov or api.nasa.gov.
+                  </List.Item>
+                  <List.Item>
+                    <strong>Entire domain:</strong> Crawl as much of this entire
+                    website as possible. E.g. nasa.gov also includes
+                    docs.nasa.gov
+                  </List.Item>
+                  <List.Item>
+                    <span>
+                      <strong>All:</strong> Start on the given URL and wander
+                      the web...{' '}
+                      <Text style={{ color: '#C1C2C5' }}>
+                        For more detail{' '}
+                        <a
+                          className={'text-purple-600'}
+                          href="https://docs.uiuc.chat/features/web-crawling-details"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          read the docs
+                        </a>
+                        .
+                      </Text>
+                    </span>
                   </List.Item>
                 </List>
               </div>
 
-              <Text style={{ color: '#C1C2C5' }}><strong>I suggest starting with Equal and Below</strong>, then just re-run this if you need more later.</Text>
-              <div className='pt-2'></div>
+              <Text style={{ color: '#C1C2C5' }}>
+                <strong>I suggest starting with Equal and Below</strong>, then
+                just re-run this if you need more later.
+              </Text>
+              <div className="pt-2"></div>
               <SegmentedControl
                 fullWidth
                 orientation="vertical"
@@ -821,11 +882,13 @@ export const WebScrape = ({
                 onChange={(strat) => setScrapeStrategy(strat)}
                 data={[
                   {
-                    // Maybe use IconArrowBarDown ?? 
+                    // Maybe use IconArrowBarDown ??
                     value: 'equal-and-below',
                     label: (
                       <Center style={{ gap: 10 }}>
-                        <IconSitemap style={{ width: rem(16), height: rem(16) }} />
+                        <IconSitemap
+                          style={{ width: rem(16), height: rem(16) }}
+                        />
                         <span>Equal and Below</span>
                       </Center>
                     ),
@@ -834,7 +897,9 @@ export const WebScrape = ({
                     value: 'same-hostname',
                     label: (
                       <Center style={{ gap: 10 }}>
-                        <IconSubtask style={{ width: rem(16), height: rem(16) }} />
+                        <IconSubtask
+                          style={{ width: rem(16), height: rem(16) }}
+                        />
                         <span>Subdomain</span>
                       </Center>
                     ),
@@ -852,18 +917,19 @@ export const WebScrape = ({
                     value: 'all',
                     label: (
                       <Center style={{ gap: 10 }}>
-                        <IconWorld style={{ width: rem(16), height: rem(16) }} />
+                        <IconWorld
+                          style={{ width: rem(16), height: rem(16) }}
+                        />
                         <span>All</span>
                       </Center>
                     ),
                   },
                 ]}
               />
-            </form >
+            </form>
           )}
         </>
-      )
-      }
+      )}
     </>
   )
 }

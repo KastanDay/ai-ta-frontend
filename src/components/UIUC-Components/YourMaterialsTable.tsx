@@ -38,10 +38,16 @@ import { useRouter } from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 const useStyles = createStyles((theme) => ({}))
 
-import { IconArrowsSort, IconCaretDown, IconCaretUp, IconSquareArrowUp } from '@tabler/icons-react'
+import {
+  IconArrowsSort,
+  IconCaretDown,
+  IconCaretUp,
+  IconSquareArrowUp,
+} from '@tabler/icons-react'
 
-export default function MyTableView({ course_materials }: CourseFilesListProps) {
-
+export default function MyTableView({
+  course_materials,
+}: CourseFilesListProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [data, setData] = React.useState(course_materials)
   const router = useRouter()
@@ -59,7 +65,10 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
       // Handle successful deletion, show a success message
       showToastOnFileDeleted(theme)
       // Refresh the page
-      await router.push(router.asPath, undefined, { scroll: false, shallow: false })
+      await router.push(router.asPath, undefined, {
+        scroll: false,
+        shallow: false,
+      })
     } catch (error) {
       console.error(error)
       // Show error message
@@ -67,10 +76,9 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
     }
   }
 
-
   const rerender = React.useReducer(() => ({}), {})[1]
 
-  console.log("course_materials")
+  console.log('course_materials')
   console.log(course_materials)
 
   const [rowSelection, setRowSelection] = React.useState({})
@@ -102,31 +110,37 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
         ),
       },
       {
-        accessorFn: row => row.readable_filename,
+        accessorFn: (row) => row.readable_filename,
         id: 'readable_filename',
-        cell: info => info.getValue(),
+        cell: (info) => info.getValue(),
         // sortType: (rowA, rowB, columnId) => {
-        sortType: (rowA: Row<CourseFile>, rowB: Row<CourseFile>, columnId: string) => {
+        sortType: (
+          rowA: Row<CourseFile>,
+          rowB: Row<CourseFile>,
+          columnId: string,
+        ) => {
           // @ts-ignore
-          const a = rowA.values[columnId];
+          const a = rowA.values[columnId]
           // @ts-ignore
-          const b = rowB.values[columnId];
-          return a.localeCompare(b);
+          const b = rowB.values[columnId]
+          return a.localeCompare(b)
         },
-        header: () => <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <Title
-            className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
-            variant="gradient"
-            gradient={{ from: 'gold', to: 'white', deg: 170 }}
-            order={3}
-          >
-            File name
-          </Title>
-        </div>,
+        header: () => (
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <Title
+              className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
+              variant="gradient"
+              gradient={{ from: 'gold', to: 'white', deg: 170 }}
+              order={3}
+            >
+              File name
+            </Title>
+          </div>
+        ),
       },
       {
         header: ' ', // I couldn't see how to fully delete the header.
-        footer: props => props.column.id,
+        footer: (props) => props.column.id,
         columns: [
           // {
           //   accessorKey: 'readable_filename',
@@ -148,41 +162,45 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
             accessorKey: 'url',
             // @ts-ignore
             sortType: (rowA, rowB, columnId) => {
-              const a = rowA.values[columnId];
-              const b = rowB.values[columnId];
-              return a.localeCompare(b);
+              const a = rowA.values[columnId]
+              const b = rowB.values[columnId]
+              return a.localeCompare(b)
             },
-            footer: props => props.column.id,
-            header: () => <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Title
-                className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
-                variant="gradient"
-                gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                order={3}
-              >
-                URL
-              </Title>
-            </div>,
+            footer: (props) => props.column.id,
+            header: () => (
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Title
+                  className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
+                  variant="gradient"
+                  gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                  order={3}
+                >
+                  URL
+                </Title>
+              </div>
+            ),
           },
           {
             accessorKey: 'base_url',
             // @ts-ignore
             sortType: (rowA, rowB, columnId) => {
-              const a = rowA.values[columnId];
-              const b = rowB.values[columnId];
-              return a.localeCompare(b);
+              const a = rowA.values[columnId]
+              const b = rowB.values[columnId]
+              return a.localeCompare(b)
             },
-            footer: props => props.column.id,
-            header: () => <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Title
-                className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
-                variant="gradient"
-                gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                order={3}
-              >
-                Starting URL of web scrape
-              </Title>
-            </div>,
+            footer: (props) => props.column.id,
+            header: () => (
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Title
+                  className={`label ${montserrat_heading.variable} p-0 pl-1 pt-2 font-montserratHeading`}
+                  variant="gradient"
+                  gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                  order={3}
+                >
+                  Starting URL of web scrape
+                </Title>
+              </div>
+            ),
           },
           // {
           //   accessorFn: row => row.s3_path,
@@ -194,7 +212,7 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
         ],
       },
     ],
-    []
+    [],
   )
 
   const table = useReactTable({
@@ -240,9 +258,9 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
         {/* <div className="h-2" /> */}
         <table>
           <thead>
-            {table.getHeaderGroups().map(headerGroup => (
+            {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
-                {headerGroup.headers.map(header => {
+                {headerGroup.headers.map((header) => {
                   return (
                     <th key={header.id} colSpan={header.colSpan}>
                       {header.isPlaceholder ? null : (
@@ -257,10 +275,13 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
                           <Group position="center" className={`pb-2`}>
                             {flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                             {/* TODO: improve icon settings.. */}
-                            {header.column.getCanSort() && !header.column.getIsSorted() ? <IconArrowsSort /> : null}
+                            {header.column.getCanSort() &&
+                            !header.column.getIsSorted() ? (
+                              <IconArrowsSort />
+                            ) : null}
                             {{
                               asc: <IconCaretUp></IconCaretUp>,
                               desc: <IconCaretDown></IconCaretDown>,
@@ -279,16 +300,18 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
               </tr>
             ))}
           </thead>
-          <tbody className={`${montserrat_paragraph.variable} font-montserratParagraph`}>
-            {table.getRowModel().rows.map(row => {
+          <tbody
+            className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+          >
+            {table.getRowModel().rows.map((row) => {
               return (
                 <tr key={row.id}>
-                  {row.getVisibleCells().map(cell => {
+                  {row.getVisibleCells().map((cell) => {
                     return (
                       <td key={cell.id}>
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </td>
                     )
@@ -308,35 +331,37 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
                   }}
                 />
               </td>
-              <td colSpan={20}>Select entire page ({table.getRowModel().rows.length} rows)</td>
+              <td colSpan={20}>
+                Select entire page ({table.getRowModel().rows.length} rows)
+              </td>
             </tr>
           </tfoot>
         </table>
         <div className="h-2" />
         <div className="flex items-center gap-2">
           <button
-            className="border rounded p-1"
+            className="rounded border p-1"
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
             {'<<'}
           </button>
           <button
-            className="border rounded p-1"
+            className="rounded border p-1"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
             {'<'}
           </button>
           <button
-            className="border rounded p-1"
+            className="rounded border p-1"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
             {'>'}
           </button>
           <button
-            className="border rounded p-1"
+            className="rounded border p-1"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >
@@ -354,20 +379,20 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
             <input
               type="number"
               defaultValue={table.getState().pagination.pageIndex + 1}
-              onChange={e => {
+              onChange={(e) => {
                 const page = e.target.value ? Number(e.target.value) - 1 : 0
                 table.setPageIndex(page)
               }}
-              className="border p-1 rounded w-16"
+              className="w-16 rounded border p-1"
             />
           </span>
           <select
             value={table.getState().pagination.pageSize}
-            onChange={e => {
+            onChange={(e) => {
               table.setPageSize(Number(e.target.value))
             }}
           >
-            {[20, 50, 100, 500].map(pageSize => (
+            {[20, 50, 100, 500].map((pageSize) => (
               <option key={pageSize} value={pageSize}>
                 Show {pageSize}
               </option>
@@ -379,10 +404,10 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
           <div>
             <Group>
               {Object.keys(rowSelection).length} of{' '}
-              {table.getPreFilteredRowModel().rows.length} total documents selected
-
+              {table.getPreFilteredRowModel().rows.length} total documents
+              selected
               <button
-                className="border rounded p-2 mb-2"
+                className="mb-2 rounded border p-2"
                 // TODO: implement delete and download
                 // @ts-ignore
                 onClick={() => deleteDocs(table.getPreFilteredRowModel().rows)}
@@ -396,7 +421,7 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
         <br />
         <div>
           <button
-            className="border rounded p-2 mb-2"
+            className="mb-2 rounded border p-2"
             onClick={() => console.info('rowSelection', rowSelection)}
           >
             Log `rowSelection` state
@@ -404,11 +429,11 @@ export default function MyTableView({ course_materials }: CourseFilesListProps) 
         </div>
         <div>
           <button
-            className="border rounded p-2 mb-2"
+            className="mb-2 rounded border p-2"
             onClick={() =>
               console.info(
                 'table.getSelectedRowModel().flatRows',
-                table.getSelectedRowModel().flatRows
+                table.getSelectedRowModel().flatRows,
               )
             }
           >
@@ -436,29 +461,29 @@ function Filter({
       <input
         type="number"
         value={((column.getFilterValue() as any)?.[0] ?? '') as string}
-        onChange={e =>
+        onChange={(e) =>
           column.setFilterValue((old: any) => [e.target.value, old?.[1]])
         }
         placeholder={`Min`}
-        className="w-24 border shadow rounded"
+        className="w-24 rounded border shadow"
       />
       <input
         type="number"
         value={((column.getFilterValue() as any)?.[1] ?? '') as string}
-        onChange={e =>
+        onChange={(e) =>
           column.setFilterValue((old: any) => [old?.[0], e.target.value])
         }
         placeholder={`Max`}
-        className="w-24 border shadow rounded"
+        className="w-24 rounded border shadow"
       />
     </div>
   ) : (
     <div className="flex justify-center">
       <TextInput
-        size='xs'
+        size="xs"
         type="text"
         value={(column.getFilterValue() ?? '') as string}
-        onChange={e => column.setFilterValue(e.target.value)}
+        onChange={(e) => column.setFilterValue(e.target.value)}
         placeholder={`Search...`}
         className="w-1/2 rounded"
       />
