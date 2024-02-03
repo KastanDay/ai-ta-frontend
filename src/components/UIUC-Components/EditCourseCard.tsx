@@ -114,7 +114,6 @@ const EditCourseCard = ({
   )
   const [isKeyUpdated, setIsKeyUpdated] = useState(false)
 
-
   const checkCourseAvailability = () => {
     const courseExists =
       courseName != '' &&
@@ -689,7 +688,7 @@ const PrivateOrPublicCourse = ({
 }) => {
   const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
   const { classes } = useStyles() // for Accordion
-  const [courseAdmins, setCourseAdmins] = useState<string[]>([]);
+  const [courseAdmins, setCourseAdmins] = useState<string[]>([])
 
   const CheckboxIcon: CheckboxProps['icon'] = ({ indeterminate, className }) =>
     indeterminate ? (
@@ -886,12 +885,13 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-              // style={{ textDecoration: 'underline' }}
+                // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
               on protecting your data. To add Admin users with full edit
-              permission, ideal for TA&apos;s and collaborators, please paste their emails below.
+              permission, ideal for TA&apos;s and collaborators, please paste
+              their emails below.
             </Text>
           </Accordion.Panel>
         </Accordion.Item>
