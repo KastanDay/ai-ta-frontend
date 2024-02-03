@@ -157,7 +157,7 @@ export const WebScrape = ({
 
         if (is_new_course) {
           // set course exists in new metadata endpoint
-          const response = callSetCourseMetadata(courseName, {
+          const response = await callSetCourseMetadata(courseName, {
             course_owner: current_user_email,
             // Don't set properties we don't know about. We'll just upsert and use the defaults.
             course_admins: [],
@@ -173,9 +173,8 @@ export const WebScrape = ({
           if (!response) {
             throw new Error('Error while setting course metadata')
           }
-          router.push(`/${courseName}/materials`)
         }
-        router.push(`/${courseName}/materials`)
+        await router.push(`/${courseName}/materials`)
       } else if (url.includes('canvas.illinois.edu/courses/')) {
         const canvasCourseIdParts = url.split('canvas.illinois.edu/courses/')
         const canvasCourseId = canvasCourseIdParts[1]?.split('/')[0]
@@ -212,7 +211,7 @@ export const WebScrape = ({
           if (response.data.outcome) {
             console.log('Canvas content ingestion was successful!')
             // Navigate to the course materials page or any other success behavior
-            router.push(`/${courseName}/materials`)
+            await router.push(`/${courseName}/materials`)
           } else {
             console.error('Canvas content ingestion failed.')
             // Handle the failure, maybe show a notification or alert to the user
@@ -233,7 +232,7 @@ export const WebScrape = ({
 
         if (is_new_course) {
           // set course exists in fast course_metadatas KV db
-          const response = callSetCourseMetadata(courseName, {
+          const response = await callSetCourseMetadata(courseName, {
             course_owner: current_user_email,
             // Don't set properties we don't know about. We'll just upsert and use the defaults.
             course_admins: [],
@@ -248,7 +247,7 @@ export const WebScrape = ({
           if (!response) {
             throw new Error('Error while setting course metadata')
           }
-          router.replace(`/${courseName}/materials`)
+          await router.push(`/${courseName}/materials`)
         }
       }
     } else {

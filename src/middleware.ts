@@ -30,6 +30,16 @@ export default authMiddleware({
     if (courseChatRegex.test(req.nextUrl.pathname)) {
       return true
     }
+    const courseGPT4Regex = /^\/[^\/]+\/gpt4$/;
+    if (courseGPT4Regex.test(req.nextUrl.pathname)) {
+      return true;
+    }
+
+    // Check if the URL path has a single level
+    const singleLevelPathRegex = /^\/[^\/]+$/;
+    if (singleLevelPathRegex.test(req.nextUrl.pathname)) {
+      return true;
+    }
 
     // Default to not public
     return false

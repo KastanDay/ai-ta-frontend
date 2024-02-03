@@ -12,9 +12,11 @@ const Gpt4 = () => {
     return router.asPath.slice(1).split('/')[0] as string
   }
 
-  useEffect(() => {
-    router.replace(`/${getCurrentPageName()}/chat`)
-  }, [router])
+    useEffect(() => {
+        if (!router.isReady) return
+
+        router.replace(`/${getCurrentPageName()}/chat`)
+    }, [router])
 
   return (
     <MainPageBackground>
