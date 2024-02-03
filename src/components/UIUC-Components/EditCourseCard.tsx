@@ -114,7 +114,6 @@ const EditCourseCard = ({
   )
   const [isKeyUpdated, setIsKeyUpdated] = useState(false)
 
-
   const checkCourseAvailability = () => {
     const courseExists =
       courseName != '' &&
@@ -195,7 +194,7 @@ const EditCourseCard = ({
     }
 
     if (inputValue === '' && courseMetadata?.openai_api_key !== '') {
-      ; (courseMetadata as CourseMetadata).openai_api_key = inputValue
+      ;(courseMetadata as CourseMetadata).openai_api_key = inputValue
       console.log('Removing api key')
       setApiKey(inputValue)
       await callSetCourseMetadata(course_name, courseMetadata as CourseMetadata)
@@ -313,11 +312,13 @@ const EditCourseCard = ({
                   autoFocus
                   disabled={!is_new_course}
                   className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${isCourseAvailable && courseName != ''
-                      ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                      : 'border-red-800 text-red-600 focus:border-red-800'
-                    } ${montserrat_paragraph.variable
-                    } font-montserratParagraph`}
+                                ${
+                                  isCourseAvailable && courseName != ''
+                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                                    : 'border-red-800 text-red-600 focus:border-red-800'
+                                } ${
+                                  montserrat_paragraph.variable
+                                } font-montserratParagraph`}
                 />
                 <Title
                   order={4}
@@ -514,7 +515,11 @@ const EditCourseCard = ({
                           className={`min-w-[5rem] -translate-x-1 transform rounded-s-md ${isKeyUpdating ? 'bg-indigo-600' : 'bg-purple-800'} text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
                           w={'auto'}
                         >
-                          {isKeyUpdating ? <LoadingSpinner size={'sm'} /> : 'Submit'}
+                          {isKeyUpdating ? (
+                            <LoadingSpinner size={'sm'} />
+                          ) : (
+                            'Submit'
+                          )}
                         </Button>
                       }
                       rightSectionWidth={'auto'}
@@ -643,7 +648,8 @@ const EditCourseCard = ({
                       if (e.target.files?.length) {
                         console.log('Uploading to s3')
                         const banner_s3_image = await uploadToS3(
-                          e.target.files?.[0] ?? null, course_name
+                          e.target.files?.[0] ?? null,
+                          course_name,
                         )
                         if (banner_s3_image && courseMetadata) {
                           courseMetadata.banner_image_s3 = banner_s3_image
@@ -682,7 +688,7 @@ const PrivateOrPublicCourse = ({
 }) => {
   const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
   const { classes } = useStyles() // for Accordion
-  const [courseAdmins, setCourseAdmins] = useState<string[]>([]);
+  const [courseAdmins, setCourseAdmins] = useState<string[]>([])
 
   const CheckboxIcon: CheckboxProps['icon'] = ({ indeterminate, className }) =>
     indeterminate ? (
@@ -792,7 +798,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-              // style={{ textDecoration: 'underline' }}
+                // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
@@ -804,8 +810,9 @@ const PrivateOrPublicCourse = ({
 
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${isPrivate ? 'private' : 'public'
-            }. Click to change.`}
+          label={`Course is ${
+            isPrivate ? 'private' : 'public'
+          }. Click to change.`}
           wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
@@ -878,12 +885,13 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-              // style={{ textDecoration: 'underline' }}
+                // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
               on protecting your data. To add Admin users with full edit
-              permission, ideal for TA&apos;s and collaborators, please paste their emails below.
+              permission, ideal for TA&apos;s and collaborators, please paste
+              their emails below.
             </Text>
           </Accordion.Panel>
         </Accordion.Item>

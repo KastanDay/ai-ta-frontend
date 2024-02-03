@@ -3,7 +3,7 @@ import { kv } from '@vercel/kv'
 import { NextResponse } from 'next/server'
 import { CourseMetadata } from '~/types/courseMetadata'
 import { log } from 'next-axiom'
-import { env } from "~/env.mjs";
+import { env } from '~/env.mjs'
 export const runtime = 'edge'
 
 // TODO: look for public anon key for supabase
@@ -12,9 +12,8 @@ export const runtime = 'edge'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL = process.env.SUPABASE_URL as string;
-const SUPABASE_SECRET = process.env.SUPABASE_SECRET as string;
-
+const SUPABASE_URL = process.env.SUPABASE_URL as string
+const SUPABASE_SECRET = process.env.SUPABASE_SECRET as string
 
 // Replace 'your_table' with the name of one of your tables
 // try {
@@ -30,7 +29,10 @@ const SUPABASE_SECRET = process.env.SUPABASE_SECRET as string;
 //   console.error('Unexpected error:', error);
 // }
 
-export const getCourseDocumentsHandler = async (req: NextApiRequest, res: NextApiResponse) => {
+export const getCourseDocumentsHandler = async (
+  req: NextApiRequest,
+  res: NextApiResponse,
+) => {
   const { fileName, courseNameFromBody } = req.body as {
     fileName: string
     courseNameFromBody: string
@@ -38,53 +40,57 @@ export const getCourseDocumentsHandler = async (req: NextApiRequest, res: NextAp
 
   // Ensure courseNameFromBody is provided
   if (!courseNameFromBody) {
-    return res.status(400).json({ error: 'Course name is missing in request body' });
+    return res
+      .status(400)
+      .json({ error: 'Course name is missing in request body' })
   }
 
-  const documents = await getCourseDocuments(courseNameFromBody);
+  const documents = await getCourseDocuments(courseNameFromBody)
 
   if (documents === null) {
-    return res.status(500).json({ error: 'Error fetching course documents' });
+    return res.status(500).json({ error: 'Error fetching course documents' })
   }
 
-  return res.status(200).json(documents);
+  return res.status(200).json(documents)
 }
 
 interface CourseDocuments {
-  readable_filename: string;
-  url: string;
-  s3_path: string;
-  created_at: string;
-  base_url: string;
+  readable_filename: string
+  url: string
+  s3_path: string
+  created_at: string
+  base_url: string
 }
 
 export const getCourseDocuments = async (
   course_name: string,
 ): Promise<CourseDocuments[] | null> => {
   if (!course_name) {
-    console.error('Course name is missing');
-    return null;
+    console.error('Course name is missing')
+    return null
   }
   try {
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SECRET);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SECRET)
 
     const { data: documents, error } = await supabase
       .from('documents')
       .select('readable_filename,url,s3_path,created_at,base_url')
-      .eq('course_name', course_name);
+      .eq('course_name', course_name)
 
     if (error) {
-      console.error('Error fetching course documents:', error);
-      return null;
+      console.error('Error fetching course documents:', error)
+      return null
     }
 
-    return documents;
+    return documents
   } catch (error) {
-    console.error('Unexpected error occurred while fetching course documents:', error);
-    return null;
+    console.error(
+      'Unexpected error occurred while fetching course documents:',
+      error,
+    )
+    return null
   }
 }
-
 
 // export default async (req: any, res: any) => {
 //   const course_name = req.nextUrl.searchParams.get('course_name')

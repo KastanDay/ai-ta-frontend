@@ -60,8 +60,8 @@ const handler = async (req: Request): Promise<Response> => {
         }),
         ...(apiType === 'openai' &&
           OPENAI_ORGANIZATION && {
-          'OpenAI-Organization': OPENAI_ORGANIZATION,
-        }),
+            'OpenAI-Organization': OPENAI_ORGANIZATION,
+          }),
       },
     })
 
@@ -72,7 +72,8 @@ const handler = async (req: Request): Promise<Response> => {
       })
     } else if (response.status !== 200) {
       console.error(
-        `OpenAI API returned an error ${response.status
+        `OpenAI API returned an error ${
+          response.status
         }: ${await response.text()}`,
       )
       throw new Error('OpenAI API returned an error')
@@ -80,31 +81,32 @@ const handler = async (req: Request): Promise<Response> => {
 
     const json = await response.json()
 
-    const uniqueModels: string[] = Array.from(new Set(json.data.map((model: any) => model.id)));
+    const uniqueModels: string[] = Array.from(
+      new Set(json.data.map((model: any) => model.id)),
+    )
 
     // console.log('Unique models: ', uniqueModels)
 
     const models: OpenAIModel[] = uniqueModels
       .map((modelId: string) => {
+        const model = json.data.find((m: any) => m.id === modelId)
+        if (!model) return undefined
 
-        const model = json.data.find((m: any) => m.id === modelId);
-        if (!model) return undefined;
-        
         for (const [key, value] of Object.entries(OpenAIModelID)) {
           if (value === model.id) {
             return {
               id: model.id,
               name: OpenAIModels[value].name,
               maxLength: OpenAIModels[value].maxLength,
-              tokenLimit: OpenAIModels[value].tokenLimit
+              tokenLimit: OpenAIModels[value].tokenLimit,
             }
           }
         }
-        return undefined;
+        return undefined
       })
-      .filter((model): model is OpenAIModel => model !== undefined);
+      .filter((model): model is OpenAIModel => model !== undefined)
 
-      // console.log('Final list of Models: ', models)
+    // console.log('Final list of Models: ', models)
 
     return new Response(JSON.stringify(models), { status: 200 })
   } catch (error) {

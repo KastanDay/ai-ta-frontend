@@ -14,21 +14,21 @@ export const fetchContexts = async (
     course_name: course_name,
     search_query: search_query,
     token_limit: token_limit.toString(),
-  }).toString();
+  }).toString()
 
-  const url = `https://flask-production-751b.up.railway.app/getTopContexts?${queryParams}`;
+  const url = `https://flask-production-751b.up.railway.app/getTopContexts?${queryParams}`
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url)
     if (!response.ok) {
-      throw new Error('Failed to fetch contexts. Err status:' + response.status);
+      throw new Error('Failed to fetch contexts. Err status:' + response.status)
     }
-    const data: ContextWithMetadata[] = await response.json();
-    return data;
+    const data: ContextWithMetadata[] = await response.json()
+    return data
   } catch (error) {
-    console.error(error);
-    return [];
+    console.error(error)
+    return []
   }
 }
 
-export default fetchContexts;
+export default fetchContexts
