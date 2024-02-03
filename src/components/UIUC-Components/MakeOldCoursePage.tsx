@@ -73,13 +73,13 @@ const MakeOldCoursePage = ({
 
         // fetch banner image url
         if (metadata?.banner_image_s3 && metadata.banner_image_s3 !== '') {
-          console.log("Getting banner image: ", metadata.banner_image_s3)
+          console.log('Getting banner image: ', metadata.banner_image_s3)
           try {
             const url = await fetchPresignedUrl(metadata.banner_image_s3)
             setBannerUrl(url)
-            console.log("Got banner image: ", url)
+            console.log('Got banner image: ', url)
           } catch (error) {
-            console.error("Error fetching banner image: ", error)
+            console.error('Error fetching banner image: ', error)
           }
         }
         setCourseMetadata(metadata)
@@ -108,11 +108,7 @@ const MakeOldCoursePage = ({
   ) {
     router.replace(`/${course_name}/not_authorized`)
 
-    return (
-      <CannotEditCourse
-        course_name={currentPageName as string}
-      />
-    )
+    return <CannotEditCourse course_name={currentPageName as string} />
   }
 
   return (
@@ -165,7 +161,6 @@ const MakeOldCoursePage = ({
                   </Title>
                 </div>
 
-
                 <div className="me-6 mt-4 flex flex-row items-end justify-end">
                   <DropzoneS3Upload
                     course_name={course_name}
@@ -177,12 +172,12 @@ const MakeOldCoursePage = ({
               {/* NOMIC not bad, not great */}
               {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
             </div>
-            <div className="pt-8 pb-2 flex w-[85%] flex-col items-center justify-center">
-
-              {course_data && <MantineYourMaterialsTable course_materials={course_data} />}
+            <div className="flex w-[85%] flex-col items-center justify-center pb-2 pt-8">
+              {course_data && (
+                <MantineYourMaterialsTable course_materials={course_data} />
+              )}
               {/* This is the old table view */}
               {/* <MyTableView course_materials={course_data} /> */}
-
 
               {/* <CourseFilesList files={course_data} /> */}
             </div>
@@ -397,7 +392,8 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${response.statusText || response.status
+        `Error fetching course metadata: ${
+          response.statusText || response.status
         }`,
       )
     }
@@ -423,7 +419,10 @@ async function fetchPresignedUrl(
     return null
   }
 }
-export const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
+export const showToastOnFileDeleted = (
+  theme: MantineTheme,
+  was_error = false,
+) => {
   return (
     // docs: https://mantine.dev/others/notifications/
     notifications.show({

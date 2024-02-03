@@ -10,9 +10,8 @@ import { getCoursesByOwnerOrAdmin } from './UIUC-api/getAllCourseMetadata'
 import { getCourseMetadata } from './UIUC-api/getCourseMetadata'
 
 export async function getSystemPrompt(course_name: string) {
-
-  const course_data = await getCourseMetadata(course_name);
-  const systemPrompt = course_data?.system_prompt;
+  const course_data = await getCourseMetadata(course_name)
+  const systemPrompt = course_data?.system_prompt
 
   let prePrompt = `Please analyze and respond to the following question using the excerpts from the provided documents. These documents can be pdf files or web pages.
     Integrate relevant information from these documents, ensuring each reference is linked to the document's number.
@@ -46,14 +45,15 @@ export async function getSystemPrompt(course_name: string) {
 
   // Law school "closed world" question answering
   if (course_name == 'Law794-TransactionalDraftingAlam') {
-    const lawPreprompt = "This is for the law domain and we train law students to stick to facts that are in the record. Do not improvise or use your world knowledge, stick to only the information provided and make heavy use of direct quotes instead of paraphrasing or summarizing.\n"
+    const lawPreprompt =
+      'This is for the law domain and we train law students to stick to facts that are in the record. Do not improvise or use your world knowledge, stick to only the information provided and make heavy use of direct quotes instead of paraphrasing or summarizing.\n'
     prePrompt = lawPreprompt + prePrompt
   }
 
-  return systemPrompt + prePrompt + '\n\nNow please respond to my conversation: '
-
+  return (
+    systemPrompt + prePrompt + '\n\nNow please respond to my conversation: '
+  )
 }
-
 
 export async function getStuffedPrompt(
   course_name: string,
@@ -75,13 +75,12 @@ export async function getStuffedPrompt(
       tiktokenModel.pat_str,
     )
 
-    let tokenCounter = encoding.encode(
-      system_prompt + searchQuery,
-    ).length
+    let tokenCounter = encoding.encode(system_prompt + searchQuery).length
     const validDocs = []
     for (const [index, d] of contexts.entries()) {
-      const docString = `---\n${index + 1}: ${d.readable_filename}${d.pagenumber ? ', page: ' + d.pagenumber : ''
-        }\n${d.text}\n`
+      const docString = `---\n${index + 1}: ${d.readable_filename}${
+        d.pagenumber ? ', page: ' + d.pagenumber : ''
+      }\n${d.text}\n`
       const numTokens = encoding.encode(docString).length
       console.log(
         `token_counter: ${tokenCounter}, num_tokens: ${numTokens}, token_limit: ${tokenLimit}`,
@@ -98,15 +97,14 @@ export async function getStuffedPrompt(
     const contextText = validDocs
       .map(
         ({ index, d }) =>
-          `${index + 1}: ${d.readable_filename}${d.pagenumber ? ', page: ' + d.pagenumber : ''
+          `${index + 1}: ${d.readable_filename}${
+            d.pagenumber ? ', page: ' + d.pagenumber : ''
           }\n${d.text}\n`,
       )
       .join(separator)
 
     const stuffedPrompt =
-      contextText +
-      '\n\nNow please respond to my query: ' +
-      searchQuery
+      contextText + '\n\nNow please respond to my query: ' + searchQuery
     const totalNumTokens = encoding.encode(stuffedPrompt).length
     // console.log('Stuffed prompt', stuffedPrompt.substring(0, 3700))
     // console.log(

@@ -6,23 +6,25 @@ import {
   useUser,
 } from '@clerk/nextjs'
 import { IconFile } from '@tabler/icons-react'
-import MagicBell, { FloatingNotificationInbox } from "@magicbell/magicbell-react";
+import MagicBell, {
+  FloatingNotificationInbox,
+} from '@magicbell/magicbell-react'
 
 export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
   const headerStyle = isNavbar
     ? {
-      backgroundColor: '#15162c',
-      display: 'flex',
-      justifyContent: 'flex-end',
-      padding: '0.2em 0.2em',
-      paddingRight: '0.3em',
-    }
+        backgroundColor: '#15162c',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '0.2em 0.2em',
+        paddingRight: '0.3em',
+      }
     : {
-      backgroundColor: '#2e026d',
-      display: 'flex',
-      justifyContent: 'flex-end',
-      padding: '1em',
-    }
+        backgroundColor: '#2e026d',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '1em',
+      }
 
   const clerk_obj = useUser()
   const posthog = usePostHog()
@@ -52,9 +54,15 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
       <header style={headerStyle} className="py-16">
         {/* Skeleton placeholders for two icons */}
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div className="skeleton-box" style={{ width: '35px', height: '35px', borderRadius: '50%' }}></div>
+          <div
+            className="skeleton-box"
+            style={{ width: '35px', height: '35px', borderRadius: '50%' }}
+          ></div>
           <div style={{ paddingLeft: '0px', paddingRight: '10px' }} />
-          <div className="skeleton-box" style={{ width: '35px', height: '35px', borderRadius: '50%' }}></div>
+          <div
+            className="skeleton-box"
+            style={{ width: '35px', height: '35px', borderRadius: '50%' }}
+          ></div>
         </div>
       </header>
     )
@@ -69,10 +77,14 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
           userEmail={userEmail}
           theme={magicBellTheme}
           locale="en"
-          images={{ emptyInboxUrl: 'https://assets.kastan.ai/minified_empty_chat_art.png' }}
-
+          images={{
+            emptyInboxUrl:
+              'https://assets.kastan.ai/minified_empty_chat_art.png',
+          }}
         >
-          {(props) => <FloatingNotificationInbox width={400} height={500} {...props} />}
+          {(props) => (
+            <FloatingNotificationInbox width={400} height={500} {...props} />
+          )}
         </MagicBell>
         {/* Add some padding for separation */}
         <div style={{ paddingLeft: '0px', paddingRight: '10px' }}></div>
@@ -83,16 +95,16 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
         {/* Signed out users get sign in button */}
         <SignInButton />
       </SignedOut>
-    </header >
+    </header>
   )
 }
 
 import Link from 'next/link'
 import { montserrat_heading } from 'fonts'
 import { createStyles, Group, rem } from '@mantine/core'
-import { extractEmailsFromClerk } from '../clerkHelpers';
-import { useEffect, useState } from 'react';
-import { usePostHog } from 'posthog-js/react';
+import { extractEmailsFromClerk } from '../clerkHelpers'
+import { useEffect, useState } from 'react'
+import { usePostHog } from 'posthog-js/react'
 
 export function LandingPageHeader({
   forGeneralPurposeNotLandingpage = false,
@@ -102,23 +114,25 @@ export function LandingPageHeader({
   const { classes, theme } = useStyles()
   const headerStyle = forGeneralPurposeNotLandingpage
     ? {
-      backgroundColor: '#2e026d',
-      display: 'flex',
-      justifyContent: 'flex-end',
-      padding: '2em 2em',
-    }
+        backgroundColor: '#2e026d',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '2em 2em',
+      }
     : {
-      backgroundColor: '#2e026d',
-      display: 'flex',
-      justifyContent: 'flex-end',
-      padding: '1em',
-    }
+        backgroundColor: '#2e026d',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '1em',
+      }
 
   const items = [
     // Header links
     {
       name: (
-        <span className={`${montserrat_heading.variable} font-montserratHeading`}>
+        <span
+          className={`${montserrat_heading.variable} font-montserratHeading`}
+        >
           New project
         </span>
       ),
@@ -127,12 +141,10 @@ export function LandingPageHeader({
     },
   ]
 
-
   const clerk_obj = useUser()
   const [userEmail, setUserEmail] = useState('no_email')
   const [isLoaded, setIsLoaded] = useState(false)
   const posthog = usePostHog()
-
 
   useEffect(() => {
     if (clerk_obj.isLoaded) {
@@ -157,43 +169,41 @@ export function LandingPageHeader({
       <header style={headerStyle} className="py-16">
         {/* Skeleton placeholders for two icons */}
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          {forGeneralPurposeNotLandingpage === false && items.map((item, index) => (
-            <Link
-              key={index}
-              href={item.link}
-              className={classes.link}
-            >
-              <span style={{ display: 'flex', alignItems: 'center' }}>
-                {item.icon}
-                {item.name}
-              </span>
-            </Link>
-          ))}
-          <div className="skeleton-box" style={{ width: '35px', height: '35px', borderRadius: '50%' }}></div>
+          {forGeneralPurposeNotLandingpage === false &&
+            items.map((item, index) => (
+              <Link key={index} href={item.link} className={classes.link}>
+                <span style={{ display: 'flex', alignItems: 'center' }}>
+                  {item.icon}
+                  {item.name}
+                </span>
+              </Link>
+            ))}
+          <div
+            className="skeleton-box"
+            style={{ width: '35px', height: '35px', borderRadius: '50%' }}
+          ></div>
           <div style={{ paddingLeft: '0px', paddingRight: '10px' }} />
-          <div className="skeleton-box" style={{ width: '35px', height: '35px', borderRadius: '50%' }}></div>
+          <div
+            className="skeleton-box"
+            style={{ width: '35px', height: '35px', borderRadius: '50%' }}
+          ></div>
         </div>
       </header>
     )
   }
 
   return (
-    <header
-      style={headerStyle}
-    >
+    <header style={headerStyle}>
       <Group spacing={'xs'}>
-        {forGeneralPurposeNotLandingpage === false && items.map((item, index) => (
-          <Link
-            key={index}
-            href={item.link}
-            className={classes.link}
-          >
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              {item.icon}
-              {item.name}
-            </span>
-          </Link>
-        ))}
+        {forGeneralPurposeNotLandingpage === false &&
+          items.map((item, index) => (
+            <Link key={index} href={item.link} className={classes.link}>
+              <span style={{ display: 'flex', alignItems: 'center' }}>
+                {item.icon}
+                {item.name}
+              </span>
+            </Link>
+          ))}
         <SignedIn>
           {/* Docs: https://www.magicbell.com/docs/libraries/react#custom-themes */}
           <MagicBell
@@ -201,9 +211,14 @@ export function LandingPageHeader({
             userEmail={userEmail}
             theme={magicBellTheme}
             locale="en"
-            images={{ emptyInboxUrl: 'https://assets.kastan.ai/minified_empty_chat_art.png' }}
+            images={{
+              emptyInboxUrl:
+                'https://assets.kastan.ai/minified_empty_chat_art.png',
+            }}
           >
-            {(props) => <FloatingNotificationInbox width={400} height={500} {...props} />}
+            {(props) => (
+              <FloatingNotificationInbox width={400} height={500} {...props} />
+            )}
           </MagicBell>
           {/* Add a bit of spacing with an empty div */}
           <div />
@@ -222,7 +237,7 @@ export function LandingPageHeader({
           </SignInButton>
         </SignedOut>
       </Group>
-    </header >
+    </header>
   )
 }
 
@@ -295,7 +310,8 @@ export const magicBellTheme = {
     tdBorders: '#9D4EDD',
     buttonBorders: '#9D4EDD',
     buttons: '#ffffff',
-    fontMono: 'ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace',
+    fontMono:
+      'ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace',
   },
   icon: {
     borderColor: '#fff',
@@ -305,13 +321,20 @@ export const magicBellTheme = {
     backgroundColor: '#15162c',
     backgroundOpacity: 1,
     borderRadius: '8px',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
     fontSize: '14px',
     fontWeight: 'inherit',
     textColor: '#e2e8f0',
     // textAlign: 'left' as "center" | "left" | "right" | "inherit" | "initial" | "justify",
     // textTransform: 'uppercase' as "uppercase" | "lowercase" | "capitalize" | "none" | "inherit" | "initial" | "revert" | "unset",
-    textTransform: 'uppercase' as "inherit" | "initial" | "none" | "capitalize" | "lowercase" | "uppercase",
+    textTransform: 'uppercase' as
+      | 'inherit'
+      | 'initial'
+      | 'none'
+      | 'capitalize'
+      | 'lowercase'
+      | 'uppercase',
     padding: '16px 24px',
     borderColor: '#807f7f',
   },
@@ -319,11 +342,18 @@ export const magicBellTheme = {
     backgroundColor: '#15162c',
     backgroundOpacity: 1,
     borderRadius: '8px',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
     fontSize: '14px',
     fontWeight: 'inherit',
     textColor: '#15162c',
-    textAlign: 'left' as "center" | "left" | "right" | "inherit" | "initial" | "justify",
+    textAlign: 'left' as
+      | 'center'
+      | 'left'
+      | 'right'
+      | 'inherit'
+      | 'initial'
+      | 'justify',
     // textTransform: 'none',
     padding: '16px 24px',
     borderColor: '#807f7f',
@@ -332,7 +362,8 @@ export const magicBellTheme = {
     backgroundColor: '#15162c',
     backgroundOpacity: 0.1,
     textColor: '#e2e8f0',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
     // textAlign: 'left',
     fontSize: '14px',
     boxShadow: 'none',
@@ -341,7 +372,8 @@ export const magicBellTheme = {
     backgroundColor: '#DF4759',
     backgroundOpacity: 1,
     borderRadius: '4px',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
     fontSize: '14px',
     fontWeight: 'inherit',
     textColor: 'white',
@@ -352,20 +384,23 @@ export const magicBellTheme = {
     backgroundColor: '#15162c',
     backgroundOpacity: 1,
     borderRadius: '8px',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
     fontWeight: 'inherit',
     fontSize: '14px',
     textColor: '#e2e8f0',
     // textAlign: 'left',
     // textTransform: 'none',
-    boxShadow: '0px 20px 25px rgba(84, 95, 111, 0.1), 0px 10px 10px rgba(84, 95, 111, 0.04)',
+    boxShadow:
+      '0px 20px 25px rgba(84, 95, 111, 0.1), 0px 10px 10px rgba(84, 95, 111, 0.04)',
   },
   notification: {
     default: {
       backgroundColor: 'transparent',
       backgroundOpacity: 0,
       borderRadius: '8px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+      fontFamily:
+        '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
       fontSize: '14px',
       fontWeight: 'inherit',
       textColor: '#e2e8f0',

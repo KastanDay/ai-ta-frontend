@@ -12,35 +12,39 @@
 import { authMiddleware } from '@clerk/nextjs'
 
 export default authMiddleware({
-  publicRoutes: req => {
+  publicRoutes: (req) => {
     if (req.nextUrl.pathname.startsWith('/api/chat-api/keys')) {
-      return false;
+      return false
     }
     // Check if the URL path starts with /api/chat-api/stream or is exactly '/'
-    if (req.nextUrl.pathname.startsWith('/api/chat-api/stream') || req.nextUrl.pathname === '/' || req.nextUrl.pathname.startsWith('/api')) {
-      return true;
+    if (
+      req.nextUrl.pathname.startsWith('/api/chat-api/stream') ||
+      req.nextUrl.pathname === '/' ||
+      req.nextUrl.pathname.startsWith('/api')
+    ) {
+      return true
     }
 
     // Check if the URL path matches the dynamic route pattern for course chat pages
-    const courseChatRegex = /^\/[^\/]+\/chat$/;
+    const courseChatRegex = /^\/[^\/]+\/chat$/
     if (courseChatRegex.test(req.nextUrl.pathname)) {
-      return true;
+      return true
     }
-    const courseGPT4Regex = /^\/[^\/]+\/gpt4$/;
+    const courseGPT4Regex = /^\/[^\/]+\/gpt4$/
     if (courseGPT4Regex.test(req.nextUrl.pathname)) {
-      return true;
+      return true
     }
 
     // Check if the URL path has a single level
-    const singleLevelPathRegex = /^\/[^\/]+$/;
+    const singleLevelPathRegex = /^\/[^\/]+$/
     if (singleLevelPathRegex.test(req.nextUrl.pathname)) {
-      return true;
+      return true
     }
 
     // Default to not public
-    return false;
+    return false
   },
-});
+})
 
 // Stop Middleware from running on static files
 export const config = {

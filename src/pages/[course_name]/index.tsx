@@ -26,7 +26,7 @@ export const IfCourseExists: FC = () => {
         `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
       )
       const data = await response.json()
-      console.log("in [course_name]/index.tsx -- data: ", data.course_metadata)
+      console.log('in [course_name]/index.tsx -- data: ', data.course_metadata)
       setCourseMetadata(data.course_metadata)
       setCourseMetadataIsLoaded(true)
     }
@@ -38,7 +38,7 @@ export const IfCourseExists: FC = () => {
     if (courseMetadataIsLoaded && course_metadata != null) {
       if (!course_metadata.is_private) {
         // Public
-        console.log("Public course, redirecting to chat page")
+        console.log('Public course, redirecting to chat page')
         router.replace(`/${course_name}/chat`)
       }
     }
@@ -59,7 +59,11 @@ export const IfCourseExists: FC = () => {
         clerk_user.isLoaded,
         course_name,
       )
-      console.log("in [course_name]/index.tsx -- course_metadata.is_private && !clerk_user.isSignedIn", course_metadata.is_private, clerk_user.isSignedIn)
+      console.log(
+        'in [course_name]/index.tsx -- course_metadata.is_private && !clerk_user.isSignedIn',
+        course_metadata.is_private,
+        clerk_user.isSignedIn,
+      )
       // router.replace(`/sign-in?${course_name}`)
       return
     }

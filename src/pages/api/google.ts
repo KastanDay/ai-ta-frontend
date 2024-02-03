@@ -17,13 +17,16 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
       req.body as GoogleBody
 
     const userMessage = messages?.[messages.length - 1] ?? { content: '' }
-    let queryContent = '';
+    let queryContent = ''
     if (typeof userMessage.content === 'string') {
-      queryContent = userMessage.content.trim();
+      queryContent = userMessage.content.trim()
     } else if (Array.isArray(userMessage.content)) {
-      queryContent = userMessage.content.map(content => content.text).join(' ').trim();
+      queryContent = userMessage.content
+        .map((content) => content.text)
+        .join(' ')
+        .trim()
     }
-    const query = encodeURIComponent(queryContent);
+    const query = encodeURIComponent(queryContent)
     // const userMessage = messages[messages.length - 1]
     // const query = encodeURIComponent(userMessage.content.trim())
 

@@ -15,3 +15,10 @@ A Next.js + React app enabeling the vision of **upload anything, search everythi
 - [Tailwind CSS](https://tailwindcss.com)
 
 The architecture follows the [T3 Stack](https://create.t3.gg/).
+
+## Developers
+
+[Install the Trunk "superlinter"](https://docs.trunk.io/check/cli) so your commits are formatted. Just one step:
+
+- Mac: `brew install trunk-io`
+- Linux: `curl https://get.trunk.io -fsSL | bash`

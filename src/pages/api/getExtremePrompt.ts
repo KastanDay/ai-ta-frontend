@@ -25,4 +25,4 @@ export async function getExtremePrompt(
   return finalPromptStr
 }
 
-export default getExtremePrompt;
+export default getExtremePrompt
