@@ -207,7 +207,7 @@ const CourseMain: NextPage = () => {
                         align="center"
                         className={`label ${montserrat_heading.variable} font-montserratHeading`}
                       >
-                        Customize your project&apos;s system prompt: {course_name}
+                        {course_name}
                       </Title>
                       <Title order={4} w={'90%'}>
                         For guidance on crafting prompts, consult the
@@ -258,7 +258,7 @@ const CourseMain: NextPage = () => {
                             gradient={{ from: 'gold', to: 'white', deg: 50 }}
                             style={{ flexGrow: 2, marginLeft: '1rem' }}
                           >
-                            Example Request
+                            Example
                           </Title>
                           {/* <Select
                             placeholder="Select an option"
@@ -308,7 +308,7 @@ const CourseMain: NextPage = () => {
                   }}
                 >
                   <div className="card flex h-full flex-col">
-                    <Group position="center" m="3rem" variant="column">
+                    <Group position="left" m="3rem" variant="column">
                       <Title
                         className={`label ${montserrat_heading.variable} font-montserratHeading`}
                         variant="gradient"
@@ -316,13 +316,14 @@ const CourseMain: NextPage = () => {
                         order={2}
                         style={{ marginBottom: '1rem' }}
                       >
-                        Current System Prompt
+                        Customize system prompt
                       </Title>
                       <Textarea
                         label={<strong>System Prompt</strong>}
                         autosize
-                        minRows={2}
-                        maxRows={10}
+                        minRows={3}
+                        maxRows={20}
+                        style={{ width: '100%' }}
                         placeholder="Enter a system prompt"
                         className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
                         value={systemPrompt}
