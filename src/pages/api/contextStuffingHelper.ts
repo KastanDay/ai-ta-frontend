@@ -1,12 +1,7 @@
 import { ContextWithMetadata } from '~/types/chat'
 
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
-import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
-import { type CourseMetadata } from '~/types/courseMetadata'
-import { useUser } from '@clerk/nextjs'
-import router from 'next/router'
-import { getCoursesByOwnerOrAdmin } from './UIUC-api/getAllCourseMetadata'
+import { Tiktoken } from '@dqbd/tiktoken/lite/init'
 import { getCourseMetadata } from './UIUC-api/getCourseMetadata'
 
 export async function getSystemPrompt(course_name: string) {
@@ -28,7 +23,7 @@ export async function getSystemPrompt(course_name: string) {
     At the end of your response, list the document title with a clickable link, like this: 
     "1. [document_name](#)" if you're referencing the first document or
     "1. [document_name, page: 2](#)" if you're referencing page 2 of the first document.
-    Nothing else should prefixxed or suffixed to the citation or document name. Consecutive citations should be separated by a comma.
+    Nothing else should prefixxed or suffixed to the citation or document name. Consecutive citations should be separated by a comma like [1], [2], [3].
     
     Suppose a document name is shared with you along with the index and pageNumber below like "27: www.pdf, page: 2", "28: www.osd", "29: pdf.www, page 11\n15" where 27, 28, 29 are indices, www.pdf, www.osd, pdf.www are document_name, and 2, 11 are the pageNumbers and 15 is the content of the document, then inline citations and final list of cited documents should ALWAYS be in the following format:
     """
@@ -50,9 +45,8 @@ export async function getSystemPrompt(course_name: string) {
     prePrompt = lawPreprompt + prePrompt
   }
 
-  return (
-    systemPrompt + prePrompt + '\n\nNow please respond to my conversation: '
-  )
+  return systemPrompt + '\n\n' + prePrompt + '\n\nNow please respond to my conversation: '
+
 }
 
 export async function getStuffedPrompt(
