@@ -9,7 +9,7 @@ import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
-import { Button, Card, Flex, Group, Input, MantineTheme, Select, Text, Textarea, Title, useMantineTheme } from '@mantine/core'
+import { Button, Card, Checkbox, CheckboxProps, Flex, Group, Input, MantineTheme, Select, Text, Textarea, Title, useMantineTheme } from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { DEFAULT_SYSTEM_PROMPT } from '~/utils/app/const'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -32,6 +32,8 @@ const montserrat_light = Montserrat({
 })
 
 const CourseMain: NextPage = () => {
+  const [checked1, setChecked1] = useState(false);
+  const [checked2, setChecked2] = useState(false);
   const theme = useMantineTheme()
   const router = useRouter()
 
@@ -167,6 +169,7 @@ const CourseMain: NextPage = () => {
       />
     )
   }
+
 
   return (
     <>
@@ -339,7 +342,66 @@ const CourseMain: NextPage = () => {
                           setSystemPrompt(e.target.value)
                         }}
                       />
+                      <Checkbox
+                        label={`Include equation in my content`}
+                        // wrapperProps={{}}
+                        // description="Course is private by default."
+                        aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
+                        className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                        // style={{ marginTop: '4rem' }}
+                        size="md"
+                        // bg='#020307'
+                        color="grape"
+                        // icon={CheckboxIcon}
+                        checked={checked1}
+                        onChange={(event) => setChecked1(event.currentTarget.checked)}
+                      // defaultChecked={isPrivate}
+                      // onChange={handleCheckboxChange}
+                      />
+                      <Checkbox
+                        label={`Focus exclusively on document-based references—avoid incorporating knowledge from outside sources. Essential for legal and similar fields to maintain response quality.`}
+                        // wrapperProps={{}}
+                        // description="Course is private by default."
+                        aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
+                        className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                        // style={{ marginTop: '4rem' }}
+                        size="md"
+                        // bg='#020307'
+                        color="grape"
+                        // icon={CheckboxIcon}
+                        checked={checked2}
+                        onChange={(event) => setChecked2(event.currentTarget.checked)}
+                      // defaultChecked={isPrivate}
+                      // onChange={handleCheckboxChange}
+                      />
+                      <Textarea
+                        label={<strong>Things to do</strong>}
+                        autosize
+                        minRows={3}
+                        maxRows={20}
+                        style={{ width: '100%' }}
+                        placeholder="Enter a system prompt"
+                        className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                        value={systemPrompt}
+                        onChange={(e) => {
+                          setSystemPrompt(e.target.value)
+                        }}
+                      />
+                      <Textarea
+                        label={<strong>Things NOT to do</strong>}
+                        autosize
+                        minRows={3}
+                        maxRows={20}
+                        style={{ width: '100%' }}
+                        placeholder="Enter a system prompt"
+                        className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                        value={systemPrompt}
+                        onChange={(e) => {
+                          setSystemPrompt(e.target.value)
+                        }}
+                      />
                       <div style={{ paddingTop: '10px', width: '100%' }}>
+
                         <div
                           style={{
                             paddingTop: '10px',
@@ -348,6 +410,7 @@ const CourseMain: NextPage = () => {
                             justifyContent: 'space-between',
                           }}
                         >
+
                           <Button
                             className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
                             type="submit"
@@ -368,7 +431,9 @@ const CourseMain: NextPage = () => {
                           </Button>
                         </div>
                       </div>
+
                     </Group>
+
 
                   </div>
                 </div>
