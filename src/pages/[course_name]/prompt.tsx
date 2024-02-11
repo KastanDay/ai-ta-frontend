@@ -325,7 +325,6 @@ const CourseMain: NextPage = () => {
                         variant="gradient"
                         gradient={{ from: 'gold', to: 'white', deg: 170 }}
                         order={2}
-                        style={{ marginBottom: '1rem' }}
                       >
                         {course_name}
                       </Title>
@@ -343,7 +342,7 @@ const CourseMain: NextPage = () => {
                         }}
                       />
                       <Checkbox
-                        label={`Include equation in my content`}
+                        label={`Content includes equations; LaTeX notation preferred.`}
                         // wrapperProps={{}}
                         // description="Course is private by default."
                         aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
