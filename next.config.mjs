@@ -8,6 +8,7 @@ import nextI18NextConfig from './next-i18next.config.mjs'
 import path from 'path'
 import withBundleAnalyzer from '@next/bundle-analyzer'
 import { withAxiom } from 'next-axiom'
+import withTM from 'next-transpile-modules'
 
 const bundleAnalyzerConfig = {
   enabled: process.env.ANALYZE === 'true',
@@ -64,8 +65,9 @@ const config = {
 const withAxiomConfig = withAxiom(config)
 const withBundleAnalyzerConfig =
   withBundleAnalyzer(bundleAnalyzerConfig)(config)
+const withTMConfig = withTM(['rowstack'])(withBundleAnalyzerConfig)
 
 export default {
   ...withAxiomConfig,
-  ...withBundleAnalyzerConfig,
+  ...withTMConfig,
 }

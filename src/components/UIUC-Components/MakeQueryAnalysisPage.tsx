@@ -262,6 +262,10 @@ const MakeQueryAnalysisPage = ({
               </Flex>
             </div>
             <div className="pt-5"></div>
+
+            {/*  */}
+            <RowStack />
+            {/* course_name={course_name} */}
             {/* NOMIC VISUALIZATION  */}
             {/* {false ? ( */}
             {/* {true ? ( */}
@@ -355,6 +359,7 @@ import { extractEmailsFromClerk } from './clerkHelpers'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
 import Navbar from './navbars/Navbar'
+import RowStack from './RowStack'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
