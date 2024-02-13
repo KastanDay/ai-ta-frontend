@@ -33,10 +33,7 @@ import { Button, Text } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
-import {
-  saveConversation,
-  saveConversations,
-} from '@/utils/app/conversation'
+import { saveConversation, saveConversations } from '@/utils/app/conversation'
 import { throttle } from '@/utils/data/throttle'
 
 import {
@@ -57,7 +54,6 @@ import { MemoizedChatMessage } from './MemoizedChatMessage'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
 
 import { type CourseMetadata } from '~/types/courseMetadata'
-import { replaceCitationLinks } from '~/utils/citations'
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>
@@ -97,7 +93,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const [inputContent, setInputContent] = useState<string>('')
 
   useEffect(() => {
-    if (courseMetadata?.banner_image_s3 && courseMetadata.banner_image_s3 !== '') {
+    if (
+      courseMetadata?.banner_image_s3 &&
+      courseMetadata.banner_image_s3 !== ''
+    ) {
       fetchPresignedUrl(courseMetadata.banner_image_s3).then((url) => {
         setBannerUrl(url)
       })
@@ -117,7 +116,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       loading,
       prompts,
       showModelSettings,
-      isImg2TextLoading
+      isImg2TextLoading,
     },
     handleUpdateConversation,
     dispatch: homeDispatch,
@@ -177,42 +176,81 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
   }
 
-  const handleImageContent = async (message: Message, endpoint: string, updatedConversation: Conversation, searchQuery: string, controller: AbortController) => {
-    const imageContent = (message.content as Content[]).filter(content => content.type === 'image_url');
+  const handleImageContent = async (
+    message: Message,
+    endpoint: string,
+    updatedConversation: Conversation,
+    searchQuery: string,
+    controller: AbortController,
+  ) => {
+    const imageContent = (message.content as Content[]).filter(
+      (content) => content.type === 'image_url',
+    )
     if (imageContent.length > 0) {
       homeDispatch({ field: 'isImg2TextLoading', value: true })
 
-      const key = courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != '' ? courseMetadata.openai_api_key : apiKey;
+      const key =
+        courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != ''
+          ? courseMetadata.openai_api_key
+          : apiKey
 
       try {
-        const imgDesc = await fetchImageDescription(message, getCurrentPageName(), endpoint, updatedConversation, key, controller);
+        const imgDesc = await fetchImageDescription(
+          message,
+          getCurrentPageName(),
+          endpoint,
+          updatedConversation,
+          key,
+          controller,
+        )
 
-        searchQuery += ` Image description: ${imgDesc}`;
+        searchQuery += ` Image description: ${imgDesc}`
 
-        const imgDescIndex = (message.content as Content[]).findIndex(content => content.type === 'text' && (content.text as string).startsWith('Image description: '));
+        const imgDescIndex = (message.content as Content[]).findIndex(
+          (content) =>
+            content.type === 'text' &&
+            (content.text as string).startsWith('Image description: '),
+        )
 
         if (imgDescIndex !== -1) {
-          (message.content as Content[])[imgDescIndex] = { type: 'text', text: `Image description: ${imgDesc}` };
+          ;(message.content as Content[])[imgDescIndex] = {
+            type: 'text',
+            text: `Image description: ${imgDesc}`,
+          }
         } else {
-          (message.content as Content[]).push({ type: 'text', text: `Image description: ${imgDesc}` });
+          ;(message.content as Content[]).push({
+            type: 'text',
+            text: `Image description: ${imgDesc}`,
+          })
         }
       } catch (error) {
-        console.error('Error in chat.tsx running handleImageContent():', error);
-        controller.abort();
+        console.error('Error in chat.tsx running handleImageContent():', error)
+        controller.abort()
       } finally {
         homeDispatch({ field: 'isImg2TextLoading', value: false })
-      };
+      }
     }
-    return searchQuery;
+    return searchQuery
   }
 
-  const handleContextSearch = async (message: Message, selectedConversation: Conversation, searchQuery: string) => {
+  const handleContextSearch = async (
+    message: Message,
+    selectedConversation: Conversation,
+    searchQuery: string,
+  ) => {
     if (getCurrentPageName() != 'gpt4') {
       // Extract text from all user messages in the conversation
-      const token_limit = OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
-      const useMQRetrieval = localStorage.getItem('UseMQRetrieval') === 'true';
-      const fetchContextsFunc = useMQRetrieval ? fetchMQRContexts : fetchContexts;
-      await fetchContextsFunc(getCurrentPageName(), searchQuery, token_limit).then((curr_contexts) => {
+      const token_limit =
+        OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
+      const useMQRetrieval = localStorage.getItem('UseMQRetrieval') === 'true'
+      const fetchContextsFunc = useMQRetrieval
+        ? fetchMQRContexts
+        : fetchContexts
+      await fetchContextsFunc(
+        getCurrentPageName(),
+        searchQuery,
+        token_limit,
+      ).then((curr_contexts) => {
         message.contexts = curr_contexts as ContextWithMetadata[]
         console.log('message.contexts: ', message.contexts)
       })
@@ -222,7 +260,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   // THIS IS WHERE MESSAGES ARE SENT.
   const handleSend = useCallback(
     async (message: Message, deleteCount = 0, plugin: Plugin | null = null) => {
-
       setCurrentMessage(message)
       // New way with React Context API
       // TODO: MOVE THIS INTO ChatMessage
@@ -230,7 +267,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       // setSearchQuery(message.content)
       let searchQuery = Array.isArray(message.content)
         ? message.content.map((content) => content.text).join(' ')
-        : message.content;
+        : message.content
 
       // console.log("QUERY: ", searchQuery)
 
@@ -258,31 +295,39 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         homeDispatch({ field: 'loading', value: true })
         homeDispatch({ field: 'messageIsStreaming', value: true })
 
-        const endpoint = getEndpoint(plugin);
+        const endpoint = getEndpoint(plugin)
 
         const controller = new AbortController()
 
         // Run image to text conversion, attach to Message object.
         if (Array.isArray(message.content)) {
-          searchQuery = await handleImageContent(message, endpoint, updatedConversation, searchQuery, controller);
+          searchQuery = await handleImageContent(
+            message,
+            endpoint,
+            updatedConversation,
+            searchQuery,
+            controller,
+          )
         }
 
         // Run context search, attach to Message object.
-        await handleContextSearch(message, selectedConversation, searchQuery);
+        await handleContextSearch(message, selectedConversation, searchQuery)
 
         const chatBody: ChatBody = {
           model: updatedConversation.model,
           messages: updatedConversation.messages,
           key:
             courseMetadata?.openai_api_key &&
-              courseMetadata?.openai_api_key != ''
+            courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
-          prompt: updatedConversation.prompt,
+          // prompt property is intentionally left undefined to avoid TypeScript errors
+          // and to meet the requirement of not passing any prompt.
+          prompt: '',
           temperature: updatedConversation.temperature,
           course_name: getCurrentPageName(),
           stream: true,
-          isImage: false
+          isImage: false,
         }
 
         let body
@@ -353,17 +398,19 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }
         if (!plugin) {
           if (updatedConversation.messages.length === 1) {
-            const { content } = message;
+            const { content } = message
             // Use only texts instead of content itself
             const contentText = Array.isArray(content)
               ? content.map((content) => content.text).join(' ')
-              : content;
+              : content
             const customName =
-              contentText.length > 30 ? contentText.substring(0, 30) + '...' : contentText;
+              contentText.length > 30
+                ? contentText.substring(0, 30) + '...'
+                : contentText
             updatedConversation = {
               ...updatedConversation,
               name: customName,
-            };
+            }
           }
           homeDispatch({ field: 'loading', value: false })
           const reader = data.getReader()
@@ -372,8 +419,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           let isFirst = true
           let text = ''
           let finalAssistantRespose = ''
-          const citationLinkCache = new Map<number, string>();
-          const stateMachineContext = { state: State.Normal, buffer: '' };
+          const citationLinkCache = new Map<number, string>()
+          const stateMachineContext = { state: State.Normal, buffer: '' }
           try {
             while (!done) {
               if (stopConversationRef.current === true) {
@@ -394,7 +441,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   {
                     role: 'assistant',
                     content: chunkValue,
-                    contexts: message.contexts,
                   },
                 ]
                 finalAssistantRespose += chunkValue
@@ -407,81 +453,98 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   value: updatedConversation,
                 })
               } else {
-
                 if (updatedConversation.messages.length > 0) {
-                  const lastMessageIndex = updatedConversation.messages.length - 1;
-                  const lastMessage = updatedConversation.messages[lastMessageIndex];
+                  const lastMessageIndex =
+                    updatedConversation.messages.length - 1
+                  const lastMessage =
+                    updatedConversation.messages[lastMessageIndex]
+                  const lastUserMessage =
+                    updatedConversation.messages[lastMessageIndex - 1]
 
-                  if (lastMessage && lastMessage.contexts) {
+                  if (
+                    lastMessage &&
+                    lastUserMessage &&
+                    lastUserMessage.contexts
+                  ) {
                     // Call the replaceCitationLinks method and await its result
                     // const updatedContent = await replaceCitationLinks(text, lastMessage, citationLinkCache);
-                    const updatedContent = await processChunkWithStateMachine(chunkValue, lastMessage, stateMachineContext, citationLinkCache);
+                    const updatedContent = await processChunkWithStateMachine(
+                      chunkValue,
+                      lastUserMessage,
+                      stateMachineContext,
+                      citationLinkCache,
+                    )
 
-                    finalAssistantRespose += updatedContent;
+                    finalAssistantRespose += updatedContent
 
                     // Update the last message with the new content
-                    const updatedMessages = updatedConversation.messages.map((msg, index) =>
-                      index === lastMessageIndex ? { ...msg, content: finalAssistantRespose } : msg
-                    );
+                    const updatedMessages = updatedConversation.messages.map(
+                      (msg, index) =>
+                        index === lastMessageIndex
+                          ? { ...msg, content: finalAssistantRespose }
+                          : msg,
+                    )
 
                     // Update the conversation with the new messages
                     updatedConversation = {
                       ...updatedConversation,
                       messages: updatedMessages,
-                    };
+                    }
 
                     // Dispatch the updated conversation
                     homeDispatch({
                       field: 'selectedConversation',
                       value: updatedConversation,
-                    });
+                    })
                   }
                 }
               }
-
             }
           } catch (error) {
-            console.error('Error reading from stream:', error);
-            homeDispatch({ field: 'loading', value: false });
-            homeDispatch({ field: 'messageIsStreaming', value: false });
-            return;
+            console.error('Error reading from stream:', error)
+            homeDispatch({ field: 'loading', value: false })
+            homeDispatch({ field: 'messageIsStreaming', value: false })
+            return
           }
 
           if (!done) {
-            throw new Error('Stream ended prematurely');
+            throw new Error('Stream ended prematurely')
           }
 
           try {
-            saveConversation(updatedConversation);
+            saveConversation(updatedConversation)
             // todo: add clerk user info to onMessagereceived for logging.
             if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
-              console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn');
-              const emails = extractEmailsFromClerk(clerk_obj.user);
-              updatedConversation.user_email = emails[0];
-              onMessageReceived(updatedConversation); // kastan here, trying to save message AFTER done streaming. This only saves the user message...
+              console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
+              const emails = extractEmailsFromClerk(clerk_obj.user)
+              updatedConversation.user_email = emails[0]
+              onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
             } else {
-              console.log('NOT LOADED OR SIGNED IN');
-              onMessageReceived(updatedConversation);
+              console.log('NOT LOADED OR SIGNED IN')
+              onMessageReceived(updatedConversation)
             }
 
             const updatedConversations: Conversation[] = conversations.map(
               (conversation) => {
                 if (conversation.id === selectedConversation.id) {
-                  return updatedConversation;
+                  return updatedConversation
                 }
-                return conversation;
+                return conversation
               },
-            );
+            )
             if (updatedConversations.length === 0) {
-              updatedConversations.push(updatedConversation);
+              updatedConversations.push(updatedConversation)
             }
-            homeDispatch({ field: 'conversations', value: updatedConversations });
-            console.log('updatedConversations: ', updatedConversations);
-            saveConversations(updatedConversations);
-            homeDispatch({ field: 'messageIsStreaming', value: false });
+            homeDispatch({
+              field: 'conversations',
+              value: updatedConversations,
+            })
+            console.log('updatedConversations: ', updatedConversations)
+            saveConversations(updatedConversations)
+            homeDispatch({ field: 'messageIsStreaming', value: false })
           } catch (error) {
-            console.error('An error occurred: ', error);
-            controller.abort();
+            console.error('An error occurred: ', error)
+            controller.abort()
           }
         } else {
           const { answer } = await response.json()
@@ -528,16 +591,20 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const handleRegenerate = useCallback(() => {
     if (currentMessage && Array.isArray(currentMessage.content)) {
       // Find the index of the existing image description
-      const imgDescIndex = (currentMessage.content as Content[]).findIndex(content => content.type === 'text' && (content.text as string).startsWith('Image description: '));
+      const imgDescIndex = (currentMessage.content as Content[]).findIndex(
+        (content) =>
+          content.type === 'text' &&
+          (content.text as string).startsWith('Image description: '),
+      )
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        (currentMessage.content as Content[]).splice(imgDescIndex, 1);
+        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
-      handleSend(currentMessage, 2, null);
+      handleSend(currentMessage, 2, null)
     }
-  }, [currentMessage, handleSend]);
+  }, [currentMessage, handleSend])
 
   const scrollToBottom = useCallback(() => {
     if (autoScrollEnabled) {
@@ -625,14 +692,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-      courseMetadata.example_questions.length > 0
+    courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-        'Make a bullet point list of key takeaways of the course.',
-        'What is [your favorite topic] and why is it worth learning about?',
-        'How can I effectively prepare for the upcoming exam?',
-        'How many assignments in the course?',
-      ]
+          'Make a bullet point list of key takeaways of the course.',
+          'What is [your favorite topic] and why is it worth learning about?',
+          'How can I effectively prepare for the upcoming exam?',
+          'How many assignments in the course?',
+        ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
@@ -687,57 +754,67 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         <>
           {message.content.map((content, index) => {
             if (content.type === 'image' && content.image_url) {
-              return <img key={index} src={content.image_url.url} alt="Uploaded content" />;
+              return (
+                <img
+                  key={index}
+                  src={content.image_url.url}
+                  alt="Uploaded content"
+                />
+              )
             }
-            return <span key={index}>{content.text}</span>;
+            return <span key={index}>{content.text}</span>
           })}
         </>
-      );
+      )
     }
-    return <span>{message.content}</span>;
-  };
+    return <span>{message.content}</span>
+  }
 
   const updateMessages = (updatedMessage: Message, messageIndex: number) => {
     return selectedConversation?.messages.map((message, index) => {
-      return index === messageIndex ? updatedMessage : message;
-    });
-  };
+      return index === messageIndex ? updatedMessage : message
+    })
+  }
 
   const updateConversations = (updatedConversation: Conversation) => {
     return conversations.map((conversation) =>
-      conversation.id === selectedConversation?.id ? updatedConversation : conversation
-    );
-  };
+      conversation.id === selectedConversation?.id
+        ? updatedConversation
+        : conversation,
+    )
+  }
 
-  const onImageUrlsUpdate = useCallback((updatedMessage: Message, messageIndex: number) => {
-    if (!selectedConversation) {
-      throw new Error("No selected conversation found");
-    }
+  const onImageUrlsUpdate = useCallback(
+    (updatedMessage: Message, messageIndex: number) => {
+      if (!selectedConversation) {
+        throw new Error('No selected conversation found')
+      }
 
-    const updatedMessages = updateMessages(updatedMessage, messageIndex);
-    if (!updatedMessages) {
-      throw new Error("Failed to update messages");
-    }
+      const updatedMessages = updateMessages(updatedMessage, messageIndex)
+      if (!updatedMessages) {
+        throw new Error('Failed to update messages')
+      }
 
-    const updatedConversation = {
-      ...selectedConversation,
-      messages: updatedMessages,
-    };
+      const updatedConversation = {
+        ...selectedConversation,
+        messages: updatedMessages,
+      }
 
-    homeDispatch({
-      field: 'selectedConversation',
-      value: updatedConversation,
-    });
+      homeDispatch({
+        field: 'selectedConversation',
+        value: updatedConversation,
+      })
 
-    const updatedConversations = updateConversations(updatedConversation);
-    if (!updatedConversations) {
-      throw new Error("Failed to update conversations");
-    }
+      const updatedConversations = updateConversations(updatedConversation)
+      if (!updatedConversations) {
+        throw new Error('Failed to update conversations')
+      }
 
-    homeDispatch({ field: 'conversations', value: updatedConversations });
-    saveConversations(updatedConversations);
-  }, [selectedConversation, conversations]);
-
+      homeDispatch({ field: 'conversations', value: updatedConversations })
+      saveConversations(updatedConversations)
+    },
+    [selectedConversation, conversations],
+  )
 
   return (
     <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">

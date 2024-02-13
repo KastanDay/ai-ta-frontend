@@ -1,13 +1,18 @@
 // src/pages/api/chat.ts
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const'
 import { OpenAIError, OpenAIStream } from '@/utils/server'
-import { ChatBody, Content, ContextWithMetadata, OpenAIChatMessage } from '@/types/chat'
+import {
+  ChatBody,
+  Content,
+  ContextWithMetadata,
+  OpenAIChatMessage,
+} from '@/types/chat'
 // @ts-expect-error - no types
 import wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module'
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 import { getExtremePrompt } from './getExtremePrompt'
-import { getStuffedPrompt } from './contextStuffingHelper'
+import { getStuffedPrompt, getSystemPrompt } from './contextStuffingHelper'
 import { OpenAIModelID, OpenAIModels } from '~/types/openai'
 import { NextResponse } from 'next/server'
 
@@ -17,10 +22,28 @@ export const config = {
 
 const handler = async (req: Request): Promise<NextResponse> => {
   try {
-    console.log("Top of /api/chat.ts. req: ", req)
-    const { model, messages, key, prompt, temperature, course_name, stream, isImage } =
-      (await req.json()) as ChatBody
-    console.log("After message parsing: ", model, messages, key, prompt, temperature, course_name, stream, isImage)
+    console.log('Top of /api/chat.ts. req: ', req)
+    const {
+      model,
+      messages,
+      key,
+      prompt,
+      temperature,
+      course_name,
+      stream,
+      isImage,
+    } = (await req.json()) as ChatBody
+    console.log(
+      'After message parsing: ',
+      model,
+      messages,
+      key,
+      prompt,
+      temperature,
+      course_name,
+      stream,
+      isImage,
+    )
 
     await init((imports) => WebAssembly.instantiate(wasm, imports))
     const encoding = new Tiktoken(
@@ -29,20 +52,19 @@ const handler = async (req: Request): Promise<NextResponse> => {
       tiktokenModel.pat_str,
     )
 
-    let modelObj;
+    let modelObj
     if (typeof model === 'string') {
-      modelObj = OpenAIModels[model as OpenAIModelID];
+      modelObj = OpenAIModels[model as OpenAIModelID]
     } else {
-      modelObj = model;
+      modelObj = model
     }
-
 
     const token_limit = OpenAIModels[modelObj.id as OpenAIModelID].tokenLimit
     console.log("Model's token limit", token_limit)
 
     let promptToSend = prompt
     if (!promptToSend) {
-      promptToSend = DEFAULT_SYSTEM_PROMPT
+      promptToSend = await getSystemPrompt(course_name)
     }
 
     let temperatureToUse = temperature
@@ -51,11 +73,13 @@ const handler = async (req: Request): Promise<NextResponse> => {
     }
 
     // ! PROMPT STUFFING
-    let search_query: string;
+    let search_query: string
     if (typeof messages[messages.length - 1]?.content === 'string') {
-      search_query = messages[messages.length - 1]?.content as string;
+      search_query = messages[messages.length - 1]?.content as string
     } else {
-      search_query = (messages[messages.length - 1]?.content as Content[]).map(c => c.text || '').join(' ');
+      search_query = (messages[messages.length - 1]?.content as Content[])
+        .map((c) => c.text || '')
+        .join(' ')
     }
     // most recent message
     const contexts_arr = messages[messages.length - 1]
@@ -79,7 +103,6 @@ const handler = async (req: Request): Promise<NextResponse> => {
     // else if (course_name == 'global' || course_name == 'search-all') {
     // todo
     // }
-
     else if (!isImage) {
       // regular context stuffing
       const stuffedPrompt = (await getStuffedPrompt(
@@ -87,21 +110,30 @@ const handler = async (req: Request): Promise<NextResponse> => {
         search_query,
         contexts_arr,
         token_limit,
+        promptToSend,
       )) as string
       if (typeof messages[messages.length - 1]?.content === 'string') {
-        messages[messages.length - 1]!.content = stuffedPrompt;
-      } else if (Array.isArray(messages[messages.length - 1]?.content) &&
-        (messages[messages.length - 1]!.content as Content[]).every(item => 'type' in item)) {
-
-        const contentArray = messages[messages.length - 1]!.content as Content[];
-        const textContentIndex = contentArray.findIndex(item => item.type === 'text') || 0;
+        messages[messages.length - 1]!.content = stuffedPrompt
+      } else if (
+        Array.isArray(messages[messages.length - 1]?.content) &&
+        (messages[messages.length - 1]!.content as Content[]).every(
+          (item) => 'type' in item,
+        )
+      ) {
+        const contentArray = messages[messages.length - 1]!.content as Content[]
+        const textContentIndex =
+          contentArray.findIndex((item) => item.type === 'text') || 0
 
         if (textContentIndex !== -1 && contentArray[textContentIndex]) {
           // Replace existing text content with the new stuffed prompt
-          contentArray[textContentIndex] = { ...contentArray[textContentIndex], text: stuffedPrompt, type: 'text' };
+          contentArray[textContentIndex] = {
+            ...contentArray[textContentIndex],
+            text: stuffedPrompt,
+            type: 'text',
+          }
         } else {
           // Add new stuffed prompt if no text content exists
-          contentArray.push({ type: 'text', text: stuffedPrompt });
+          contentArray.push({ type: 'text', text: stuffedPrompt })
         }
       }
     }
@@ -115,11 +147,11 @@ const handler = async (req: Request): Promise<NextResponse> => {
     for (let i = messages.length - 1; i >= 0; i--) {
       const message = messages[i]
       if (message) {
-        let content: string;
+        let content: string
         if (typeof message.content === 'string') {
-          content = message.content;
+          content = message.content
         } else {
-          content = message.content.map(c => c.text || '').join(' ');
+          content = message.content.map((c) => c.text || '').join(' ')
         }
         const tokens = encoding.encode(content)
 
@@ -148,14 +180,13 @@ const handler = async (req: Request): Promise<NextResponse> => {
       temperatureToUse,
       key,
       messagesToSend,
-      stream
+      stream,
     )
     if (stream) {
       return new NextResponse(apiStream)
     } else {
       return new NextResponse(JSON.stringify(apiStream))
     }
-
   } catch (error) {
     if (error instanceof OpenAIError) {
       const { name, message } = error

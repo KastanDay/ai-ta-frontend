@@ -41,8 +41,7 @@ export const OpenAIStream = async (
   messages: OpenAIChatMessage[],
   stream: boolean,
 ) => {
-
-  console.debug("In OpenAIStream, model: ", model)
+  console.debug('In OpenAIStream, model: ', model)
   messages.forEach((message, index) => {
     console.log(`Message ${index}:`, message.role, message.content)
   })
@@ -69,7 +68,7 @@ export const OpenAIStream = async (
 
   let url = `${endpoint}/v1/chat/completions`
   if (apiType === 'azure') {
-    const deploymentName = process.env.AZURE_OPENAI_ENGINE
+    const deploymentName = model.id || process.env.AZURE_OPENAI_ENGINE
     url = `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${OPENAI_API_VERSION}`
   }
 
@@ -116,8 +115,8 @@ export const OpenAIStream = async (
       }),
       ...(apiType === 'openai' &&
         OPENAI_ORGANIZATION && {
-        'OpenAI-Organization': OPENAI_ORGANIZATION,
-      }),
+          'OpenAI-Organization': OPENAI_ORGANIZATION,
+        }),
     },
     method: 'POST',
     body: body,
@@ -137,15 +136,16 @@ export const OpenAIStream = async (
       )
     } else {
       throw new Error(
-        `OpenAI API returned an error: ${decoder.decode(result?.value) || result.statusText
+        `OpenAI API returned an error: ${
+          decoder.decode(result?.value) || result.statusText
         }`,
       )
     }
   }
 
   if (stream) {
-    console.log("Streaming response ")
-    let isStreamClosed = false; // Flag to track the state of the stream
+    console.log('Streaming response ')
+    let isStreamClosed = false // Flag to track the state of the stream
     const apiStream = new ReadableStream({
       async start(controller) {
         const onParse = (event: ParsedEvent | ReconnectInterval) => {
@@ -154,12 +154,12 @@ export const OpenAIStream = async (
 
             try {
               // console.log('data: ', data) // ! DEBUGGING
-              if (data.trim() !== "[DONE]") {
+              if (data.trim() !== '[DONE]') {
                 const json = JSON.parse(data)
                 if (json.choices[0].finish_reason != null) {
                   if (!isStreamClosed) {
                     controller.close()
-                    isStreamClosed = true; // Update the flag after closing the stream
+                    isStreamClosed = true // Update the flag after closing the stream
                   }
                   return
                 }
@@ -169,14 +169,14 @@ export const OpenAIStream = async (
               } else {
                 if (!isStreamClosed) {
                   controller.close()
-                  isStreamClosed = true; // Update the flag after closing the stream
+                  isStreamClosed = true // Update the flag after closing the stream
                 }
-                return;
+                return
               }
             } catch (e) {
               if (!isStreamClosed) {
                 controller.error(e)
-                isStreamClosed = true; // Update the flag if an error occurs
+                isStreamClosed = true // Update the flag if an error occurs
               }
             }
           }
@@ -186,14 +186,15 @@ export const OpenAIStream = async (
 
         try {
           for await (const chunk of res.body as any) {
-            if (!isStreamClosed) { // Only feed the parser if the stream is not closed
+            if (!isStreamClosed) {
+              // Only feed the parser if the stream is not closed
               parser.feed(decoder.decode(chunk))
             }
           }
         } catch (e) {
           if (!isStreamClosed) {
             controller.error(e)
-            isStreamClosed = true;
+            isStreamClosed = true
           }
         }
       },
@@ -201,10 +202,9 @@ export const OpenAIStream = async (
 
     return apiStream
   } else {
-    console.log("Non Streaming response ")
+    console.log('Non Streaming response ')
     const json = await res.json()
     console.log('Final OpenAI response: ', json)
     return json
   }
-
 }

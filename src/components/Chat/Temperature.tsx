@@ -5,6 +5,8 @@ import { useTranslation } from 'next-i18next'
 import { DEFAULT_TEMPERATURE } from '@/utils/app/const'
 
 import HomeContext from '~/pages/api/home/home.context'
+import { Title } from '@mantine/core'
+import { montserrat_heading } from 'fonts'
 
 interface Props {
   label: string
@@ -31,9 +33,12 @@ export const TemperatureSlider: FC<Props> = ({
 
   return (
     <div className="flex flex-col">
-      <label className="mb-2 text-left text-neutral-700 dark:text-neutral-400">
+      <Title
+        className={`pb-0 pt-4 ${montserrat_heading.variable} font-montserratHeading`}
+        order={4}
+      >
         {label}
-      </label>
+      </Title>
       <span className="text-[12px] text-sm text-black/50 dark:text-white/50">
         {t(
           'Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.',

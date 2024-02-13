@@ -4,7 +4,7 @@ import { useTranslation } from 'next-i18next'
 import { OpenAIModels, type OpenAIModel, OpenAIModelID } from '@/types/openai'
 import HomeContext from '~/pages/api/home/home.context'
 import { ModelParams } from './ModelParams'
-import { montserrat_heading } from 'fonts'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Input, NativeSelect, Switch, Title, Tooltip } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
@@ -30,7 +30,11 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       console.debug('handleModelClick avail models: ', models)
 
       // First try to use selectedconversation model, if not available, use default model
-      const defaultModel = models.find(model => (model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4')) || models[0]
+      const defaultModel =
+        models.find(
+          (model) =>
+            model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4',
+        ) || models[0]
       const model = models.find((model) => model.id === modelId) || defaultModel
 
       console.debug('handleModelClick SETTING IT TO: ', model)
@@ -43,11 +47,13 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
     }
 
     // Toggle to enable Fancy retrieval method: Multi-Query Retrieval
-    const [useMQRetrieval, setUseMQRetrieval] = useState(localStorage.getItem('UseMQRetrieval') === 'true');
+    const [useMQRetrieval, setUseMQRetrieval] = useState(
+      localStorage.getItem('UseMQRetrieval') === 'true',
+    )
     // Update localStorage whenever useMQRetrieval changes
     useEffect(() => {
-      localStorage.setItem('UseMQRetrieval', useMQRetrieval ? 'true' : 'false');
-    }, [useMQRetrieval]);
+      localStorage.setItem('UseMQRetrieval', useMQRetrieval ? 'true' : 'false')
+    }, [useMQRetrieval])
 
     return (
       <div
@@ -80,10 +86,11 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                   />
                 </Link>
               </Input.Description>
+
               <div tabIndex={0} className="relative w-full">
                 <NativeSelect
                   className="menu absolute z-[1]"
-                  value={selectedConversation?.model.id || defaultModelId} // selectedConversation?.model.id || 
+                  value={selectedConversation?.model.id || defaultModelId} // selectedConversation?.model.id ||
                   onChange={(e) => handleModelClick(e.target.value)}
                   // onClick={(e) => handleModelClick((e.target as HTMLSelectElement).value)}
                   data={models.map((model) => ({
@@ -101,12 +108,18 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 Fancy Retrieval
               </Title>
               <Switch
-                className='pl-2 pt-2'
-                label={t('Multi Query Retrieval (slow 30 second response time)')}
+                className="pl-2 pt-2"
+                label={t(
+                  'Multi Query Retrieval (slow 30 second response time)',
+                )}
                 checked={useMQRetrieval}
-                onChange={(event) => setUseMQRetrieval(event.currentTarget.checked)}
-                description={t('A LLM generates multiple queries based on your original for improved semantic search. Then every retrieved context is filtered by a smaller LLM (Mistral 7b) so that only high quality and relevant documents are included in the final GPT-4 call.')}
-                color='violet.7'
+                onChange={(event) =>
+                  setUseMQRetrieval(event.currentTarget.checked)
+                }
+                description={t(
+                  'A LLM generates multiple queries based on your original for improved semantic search. Then every retrieved context is filtered by a smaller LLM (Mistral 7b) so that only high quality and relevant documents are included in the final GPT-4 call.',
+                )}
+                color="violet.7"
               />
               <ModelParams
                 selectedConversation={selectedConversation}
@@ -114,6 +127,24 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 handleUpdateConversation={handleUpdateConversation}
                 t={t}
               />
+            </div>
+            <div className="flex h-full flex-col space-y-4 rounded-lg p-2">
+              <Input.Description
+                className={`text-left text-sm ${montserrat_paragraph.variable} font-montserratParagraph`}
+              >
+                <Link
+                  href="https://platform.openai.com/account/usage"
+                  target="_blank"
+                  className="hover:underline"
+                >
+                  View account usage on OpenAI{' '}
+                  <IconExternalLink
+                    size={15}
+                    style={{ position: 'relative', top: '2px' }}
+                    className={'mb-2 inline'}
+                  />
+                </Link>
+              </Input.Description>
             </div>
           </div>
         </div>

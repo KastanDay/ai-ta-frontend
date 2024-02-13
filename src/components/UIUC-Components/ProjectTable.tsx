@@ -53,7 +53,7 @@ const ListProjectTable: React.FC = () => {
               if (courseMetadata) {
                 // Don't show that Kastan is an admin on ALL courses. It's confusing, unnecessary.
                 const filteredAdmins = courseMetadata.course_admins.filter(
-                  (admin) => admin !== 'kvday2@illinois.edu'
+                  (admin) => admin !== 'kvday2@illinois.edu',
                 )
                 return (
                   <StyledRow
