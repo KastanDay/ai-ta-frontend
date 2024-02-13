@@ -31,9 +31,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         },
       },
     )
-    // const data = await
-    console.log('response.data', response.data)
-    return res.status(200).json(response.data)
+    // This parses and simplifies the nested structure of the data...
+    const simplifiedData = response.data.map((workflow: any) => {
+      return workflow
+    })
+    const final_data = simplifiedData[0]
+    return res.status(200).json(final_data)
     // console.log('Getting to our /ingest endpoint', data);
     // return data;
   } catch (error) {

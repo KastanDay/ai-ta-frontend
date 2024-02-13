@@ -34,7 +34,8 @@ import { DataTable } from 'mantine-datatable'
 const PAGE_SIZE = 15
 
 interface WorkflowRecord {
-  id: string
+  key: string
+  // id: string
   name: string
   active: boolean
   tags: string
@@ -46,7 +47,7 @@ export const N8nWorkflowsTable = () => {
   const [page, setPage] = useState(1)
   const [records, setRecords] = useState<WorkflowRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [n8nApiKey, setN8nApiKey] = useState('tbd') // !WARNING PUT IN YOUR API KEY HERE
+  const [n8nApiKey, setN8nApiKey] = useState('') // !WARNING PUT IN YOUR API KEY HERE
   const [limit, setLimit] = useState(10)
   const [pagination, setPagination] = useState(true)
 
@@ -82,9 +83,10 @@ export const N8nWorkflowsTable = () => {
     <DataTable
       height={300}
       withBorder
+      // keyField="id"
       records={records}
-      // getRowProps={(record) => ({ key: record.id })}
       columns={[
+        { accessor: 'id', width: 100 },
         { accessor: 'name', width: 100 },
         { accessor: 'active', width: 100 },
         { accessor: 'tags', width: '100%' },
