@@ -16,6 +16,9 @@ import {
   createStyles,
   // Divider,
   MantineTheme,
+  List,
+  Text,
+  TextInput,
   // TextInput,
   // Tooltip,
 } from '@mantine/core'
@@ -236,7 +239,7 @@ const MakeN8NPage = ({
                     }}
                   >
                     {' '}
-                    Adjust Model Flow
+                    Create custom functions for your project
                   </Title>
                 </div>
                 <div className="me-6 flex flex-row items-center justify-end">
@@ -248,6 +251,53 @@ const MakeN8NPage = ({
                 </div>
               </Flex>
             </div>
+
+            <div className="pt-5"></div>
+
+            <Title order={4} w={'80%'}>
+              Use{' '}
+              <a href="https://n8n.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`text-purple-500 hover:underline ${montserrat_heading.variable} font-montserratHeading`}
+              >
+                n8n.io&apos;{' '}
+                <IconExternalLink
+                  className="mr-2 inline-block"
+                  style={{ position: 'relative', top: '-3px' }}
+                />
+              </a>
+              beautiful visual workflow editor to create custom functions for your project.
+            </Title>
+
+            <Title order={4} w={'80%'} size={'xl'} className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}>To setup: </Title>
+
+
+            <List w={'80%'} type="ordered" withPadding className={`${montserrat_paragraph.variable} font-montserratParagraph`}>
+              <List.Item>Create an account and store your password safely.</List.Item>
+              <List.Item>Inside n8n, create an n8n API key and input it in the textbox below.</List.Item>
+              <List.Item>Any workflow you create will be enabled by default in this project.<br />Check out your workflows below.</List.Item>
+            </List>
+
+            <div style={{ width: '40%' }}>
+              <TextInput
+                label="n8n API Key"
+                description="We use this to run your workflows. You can find your n8n API Key in your n8n account settings."
+                placeholder="Enter your n8n API Key here"
+                className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+              />
+              <div className="pt-2" />
+              <Button
+                // onClick={() => upsertApiKey()} // TODO
+                className="bg-purple-800 hover:border-indigo-600 hover:bg-indigo-600"
+                type="submit"
+              >
+                Save
+              </Button>
+            </div>
+
+
+
             <div className="pt-5"></div>
             {/* NOMIC VISUALIZATION  */}
             {/* {false ? ( */}
@@ -256,7 +306,7 @@ const MakeN8NPage = ({
               <>
                 <span className="nomic-iframe skeleton-box pl-7 pr-7 pt-4"></span>
               </>
-            ): (
+            ) : (
               <>
                 <iframe
                   className="nomic-iframe pl-7 pr-7 pt-4 pt-4"
@@ -285,13 +335,13 @@ const MakeN8NPage = ({
             )}
           </Flex>
         </div>
-        <GlobalFooter /> 
+        <GlobalFooter />
       </main>
     </>
   )
 }
 
-import { IconAlertCircle, IconCheck, IconCloudDownload, IconDownload } from '@tabler/icons-react'
+import { IconAlertCircle, IconCheck, IconCloudDownload, IconDownload, IconExternalLink } from '@tabler/icons-react'
 
 import { CannotEditCourse } from './CannotEditCourse'
 import { type CourseMetadata } from '~/types/courseMetadata'
