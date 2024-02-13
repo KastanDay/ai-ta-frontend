@@ -11,7 +11,7 @@ import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackgro
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { Title } from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
-import MakeN8NPage from '~/components/UIUC-Components/N8NPage'
+import MakeN8NPage from '~/components/UIUC-Components/N8nPage'
 
 const montserrat = Montserrat({
   weight: '700',
