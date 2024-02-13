@@ -9,12 +9,12 @@ export interface Message {
 }
 
 export interface Content {
-  type: string;
-  text?: string;
+  type: string
+  text?: string
   image_url?: {
-    url: string;
-  };
-};
+    url: string
+  }
+}
 
 export interface OpenAIChatMessage {
   role: Role
@@ -60,11 +60,11 @@ export interface Conversation {
 }
 
 export interface ChatApiBody {
-  model: string;
-  messages: Message[];
-  openai_key?: string;
-  temperature?: number;
-  course_name: string;
-  stream?: boolean;
-  api_key: string;
+  model: string
+  messages: Message[]
+  openai_key?: string
+  temperature?: number
+  course_name: string
+  stream?: boolean
+  api_key: string
 }

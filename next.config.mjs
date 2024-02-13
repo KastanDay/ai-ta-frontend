@@ -52,7 +52,8 @@ const config = {
           },
           {
             key: 'Access-Control-Allow-Headers',
-            value: 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept',
+            value:
+              'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept',
           },
         ],
       },

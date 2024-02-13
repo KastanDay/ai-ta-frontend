@@ -1,8 +1,7 @@
 import { IconFolderPlus, IconMistOff, IconPlus } from '@tabler/icons-react'
 import { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Switch } from '@mantine/core';
-
+import { Switch } from '@mantine/core'
 
 import {
   CloseSidebarButton,
@@ -19,8 +18,8 @@ interface Props<T> {
   itemComponent: ReactNode
   folderComponent: ReactNode
   footerComponent?: ReactNode
-  showCurrentCourseOnly: boolean;
-  onToggleCurrentCourseOnly: (checked: boolean) => void;
+  showCurrentCourseOnly: boolean
+  onToggleCurrentCourseOnly: (checked: boolean) => void
   searchTerm: string
   handleSearchTerm: (searchTerm: string) => void
   toggleOpen: () => void
@@ -28,7 +27,6 @@ interface Props<T> {
   handleCreateFolder: () => void
   handleDrop: (e: any) => void
 }
-
 
 const Sidebar = <T,>({
   isOpen,
@@ -95,8 +93,10 @@ const Sidebar = <T,>({
           <Switch
             label={t('Only show conversations from current project')}
             checked={showCurrentCourseOnly}
-            onChange={(event) => onToggleCurrentCourseOnly(event.currentTarget.checked)}
-            color='violet.7'
+            onChange={(event) =>
+              onToggleCurrentCourseOnly(event.currentTarget.checked)
+            }
+            color="violet.7"
           />
         )}
 

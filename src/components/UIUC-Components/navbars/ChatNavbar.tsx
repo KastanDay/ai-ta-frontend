@@ -1,9 +1,4 @@
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from '@clerk/nextjs'
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { magicBellTheme } from '~/components/UIUC-Components/navbars/GlobalHeader'
 import { } from '@mantine/core'
@@ -26,8 +21,9 @@ import {
   MessageChatbot,
   Folder,
   ReportAnalytics,
-  Settings,
   ChartDots3,
+  // Settings,
+  MessageCode,
 } from 'tabler-icons-react'
 import {
   // IconExternalLink,
@@ -43,7 +39,9 @@ import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelper
 import { type CourseMetadata } from '~/types/courseMetadata'
 import HomeContext from '~/pages/api/home/home.context'
 import { ModelSelect } from '../../Chat/ModelSelect'
-import MagicBell, { FloatingNotificationInbox } from '@magicbell/magicbell-react'
+import MagicBell, {
+  FloatingNotificationInbox,
+} from '@magicbell/magicbell-react'
 import { usePostHog } from 'posthog-js/react'
 
 const styles: Record<string, React.CSSProperties> = {
@@ -230,28 +228,54 @@ const ChatNavbar = ({
     toggle()
   }
 
-  const items = isAdminOrOwner ? [
-    {
-      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Chat</span>,
-      icon: <MessageChatIcon />,
-      link: `/${getCurrentCourseName()}/chat`
-    },
-    {
-      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Materials</span>,
-      icon: <FolderIcon />,
-      link: `/${getCurrentCourseName()}/materials`
-    },
-    {
-      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Analysis</span>,
-      icon: <ReportIcon />,
-      link: `/${getCurrentCourseName()}/query-analysis`
-    },
-    {
-      name: <span className={`${montserrat_heading.variable} font-montserratHeading`}>Flow</span>,
-      icon: <ChartDots3Icon />,
-      link: `/${getCurrentCourseName()}/flow`
-    },
-  ] : [];
+  const items = isAdminOrOwner
+    ? [
+      {
+        name: (
+          <span
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            Chat
+          </span>
+        ),
+        icon: <MessageChatIcon />,
+        link: `/${getCurrentCourseName()}/chat`,
+      },
+      {
+        name: (
+          <span
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            Materials
+          </span>
+        ),
+        icon: <FolderIcon />,
+        link: `/${getCurrentCourseName()}/materials`,
+      },
+      {
+        name: (
+          <span
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            Analysis
+          </span>
+        ),
+        icon: <ReportIcon />,
+        link: `/${getCurrentCourseName()}/query-analysis`,
+      },
+      {
+        name: (
+          <span
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            Prompting
+          </span>
+        ),
+        icon: <SettingIcon />,
+        link: `/${getCurrentCourseName()}/prompt`,
+      },
+    ]
+    : []
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -327,7 +351,7 @@ const ChatNavbar = ({
                     height={2000}
                     alt="The course creator uploaded a logo for this chatbot."
                     aria-label="The course creator uploaded a logo for this chatbot."
-                    onError={(e) => e.currentTarget.style.display = 'none'} // display nothing if image fails
+                    onError={(e) => (e.currentTarget.style.display = 'none')} // display nothing if image fails
                   />
                 </div>
               )}
@@ -486,16 +510,28 @@ const ChatNavbar = ({
                 <Group grow spacing={'xs'}>
                   {/* <div /> */}
                   {/* <div style={{ paddingLeft: '10px', paddingRight: '8px' }} /> */}
-                  <MagicBell
-                    apiKey={process.env.NEXT_PUBLIC_MAGIC_BELL_API as string}
-                    userEmail={userEmail}
-                    theme={magicBellTheme}
-                    locale="en"
-                    images={{ emptyInboxUrl: 'https://assets.kastan.ai/minified_empty_chat_art.png' }}
 
-                  >
-                    {(props) => <FloatingNotificationInbox width={400} height={500} {...props} />}
-                  </MagicBell>
+                  {/* render the MagicBell untill userEmail is valid otherwise there is a warning message of userEmail */}
+                  {userEmail !== 'no_email' && (
+                    <MagicBell
+                      apiKey={process.env.NEXT_PUBLIC_MAGIC_BELL_API as string}
+                      userEmail={userEmail}
+                      theme={magicBellTheme}
+                      locale="en"
+                      images={{
+                        emptyInboxUrl:
+                          'https://assets.kastan.ai/minified_empty_chat_art.png',
+                      }}
+                    >
+                      {(props) => (
+                        <FloatingNotificationInbox
+                          width={400}
+                          height={500}
+                          {...props}
+                        />
+                      )}
+                    </MagicBell>
+                  )}
                   <UserButton afterSignOutUrl="/" />
                 </Group>
               </SignedIn>
@@ -518,8 +554,8 @@ const ChatNavbar = ({
           </div>
         </Flex>
         {/* </div> */}
-      </div >
-    </div >
+      </div>
+    </div>
   )
 }
 export default ChatNavbar
@@ -559,7 +595,7 @@ export function ReportIcon() {
 
 export function SettingIcon() {
   return (
-    <Settings
+    <MessageCode
       size={20}
       strokeWidth={2}
       // color={'white'}

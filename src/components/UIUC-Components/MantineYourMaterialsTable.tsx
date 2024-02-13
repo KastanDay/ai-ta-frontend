@@ -1,19 +1,43 @@
-'use client';
+'use client'
 
-import { ActionIcon, Box, Button, Modal, Group, MultiSelect, Stack, TextInput, Text, MantineProvider, createStyles, Paper, Center } from '@mantine/core';
-import { useDebouncedValue } from '@mantine/hooks';
-import { IconEdit, IconEye, IconSearch, IconTrash, IconX } from '@tabler/icons-react';
-import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/router';
-import { modals, openConfirmModal, useModals, ModalsProvider } from '@mantine/modals';
-import { showToastOnFileDeleted } from './MakeOldCoursePage';
-import axios from 'axios';
-import { showNotification } from '@mantine/notifications';
-import { createGlobalStyle } from 'styled-components';
-import { Badge } from '@mantine/core';
-import { useColorScheme } from '@mantine/hooks';
-
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Modal,
+  Group,
+  MultiSelect,
+  Stack,
+  TextInput,
+  Text,
+  MantineProvider,
+  createStyles,
+  Paper,
+  Center,
+} from '@mantine/core'
+import { useDebouncedValue } from '@mantine/hooks'
+import {
+  IconEdit,
+  IconEye,
+  IconSearch,
+  IconTrash,
+  IconX,
+} from '@tabler/icons-react'
+import { DataTable, type DataTableSortStatus } from 'mantine-datatable'
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/router'
+import {
+  modals,
+  openConfirmModal,
+  useModals,
+  ModalsProvider,
+} from '@mantine/modals'
+import { showToastOnFileDeleted } from './MakeOldCoursePage'
+import axios from 'axios'
+import { showNotification } from '@mantine/notifications'
+import { createGlobalStyle } from 'styled-components'
+import { Badge } from '@mantine/core'
+import { useColorScheme } from '@mantine/hooks'
 
 const GlobalStyle = createGlobalStyle`
 // these mantine class names may change in future versions
@@ -31,10 +55,10 @@ const GlobalStyle = createGlobalStyle`
     background-color: hsl(280,100%,70%, 0);
   }
 
-`;
+`
 
 const useStyles = createStyles((theme) => ({
-  // How to change header color 
+  // How to change header color
   // root: {
   //   '& tr': {
   //     backgroundColor: theme.colorScheme === 'dark' ? '#15162a' : '#fff',
@@ -49,42 +73,43 @@ const useStyles = createStyles((theme) => ({
   // hovered: {
   //   backgroundColor: theme.colorScheme === 'dark' ? '#5a30b5' : '#d6b5f6', // purple color for hovered row
   // },
-}));
+}))
 
 interface CourseDocuments {
-  course_name: string;
-  readable_filename: string;
-  url: string;
-  s3_path: string;
-  created_at: string;
-  base_url: string;
+  course_name: string
+  readable_filename: string
+  url: string
+  s3_path: string
+  created_at: string
+  base_url: string
 }
-
 
 interface CourseFilesListProps {
   course_materials: CourseDocuments[]
 }
 
-
 export async function getPresignedUrl(s3_path: string) {
-  const response = await fetch(`/api/UIUC-api/getPresignedUrl?s3_path=${s3_path}`);
-  const data = await response.json();
-  return data.presignedUrl;
+  const response = await fetch(
+    `/api/UIUC-api/getPresignedUrl?s3_path=${s3_path}`,
+  )
+  const data = await response.json()
+  return data.presignedUrl
 }
 
-export function MantineYourMaterialsTable({ course_materials }: CourseFilesListProps) {
-  const { classes, theme } = useStyles();
-  const colorScheme = useColorScheme();
+export function MantineYourMaterialsTable({
+  course_materials,
+}: CourseFilesListProps) {
+  const { classes, theme } = useStyles()
+  const colorScheme = useColorScheme()
 
-  const router = useRouter();
+  const router = useRouter()
   const getCurrentPageName = (): string => {
-    const path = router.asPath;
-    const courseName = path.slice(1).split('/')[0] || '';
-    return courseName;
+    const path = router.asPath
+    const courseName = path.slice(1).split('/')[0] || ''
+    return courseName
   }
-  const [materials, setMaterials] = useState(course_materials);
-  const [selectedRecords, setSelectedRecords] = useState<CourseDocuments[]>([]);
-
+  const [materials, setMaterials] = useState(course_materials)
+  const [selectedRecords, setSelectedRecords] = useState<CourseDocuments[]>([])
 
   useEffect(() => {
     const fetchCourseDocuments = async () => {
@@ -96,75 +121,80 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
         body: JSON.stringify({
           course_name: getCurrentPageName(),
         }),
-      });
-      const documents = await response.json();
+      })
+      const documents = await response.json()
       if (documents) {
-        setMaterials(documents);
+        setMaterials(documents)
       }
-    };
+    }
 
-    fetchCourseDocuments();
-  }, []);
-
+    fetchCourseDocuments()
+  }, [])
 
   // const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
   //   columnAccessor: 'File Name',
   //   direction: 'asc',
   // });
 
-  const [query, setQuery] = useState('');
-  const [debouncedQuery] = useDebouncedValue(query, 200);
-  const [modalOpened, setModalOpened] = useState(false);
-  const [recordsToDelete, setRecordsToDelete] = useState<CourseDocuments[]>([]);
-
+  const [query, setQuery] = useState('')
+  const [debouncedQuery] = useDebouncedValue(query, 200)
+  const [modalOpened, setModalOpened] = useState(false)
+  const [recordsToDelete, setRecordsToDelete] = useState<CourseDocuments[]>([])
 
   useEffect(() => {
     if (debouncedQuery !== '') {
-      const lowerCaseDebouncedQuery = debouncedQuery.trim().toLowerCase();
+      const lowerCaseDebouncedQuery = debouncedQuery.trim().toLowerCase()
       setMaterials(
         course_materials.filter(({ readable_filename, url, base_url }) => {
-          return `${readable_filename}`.toLowerCase().includes(lowerCaseDebouncedQuery) ||
+          return (
+            `${readable_filename}`
+              .toLowerCase()
+              .includes(lowerCaseDebouncedQuery) ||
             `${url}`.toLowerCase().includes(lowerCaseDebouncedQuery) ||
-            `${base_url}`.toLowerCase().includes(lowerCaseDebouncedQuery);
-        })
-      );
+            `${base_url}`.toLowerCase().includes(lowerCaseDebouncedQuery)
+          )
+        }),
+      )
     } else {
-      setMaterials(course_materials);
+      setMaterials(course_materials)
     }
-  }, [debouncedQuery, course_materials]);
+  }, [debouncedQuery, course_materials])
 
   // useEffect(() => {
   //   // Clear the selected records when the component mounts
   //   setSelectedRecords([]);
   // }, []);
 
-
   const handleDelete = async (recordsToDelete: CourseDocuments[]) => {
     try {
       const API_URL = 'https://flask-production-751b.up.railway.app'
-      const deletePromises = recordsToDelete.map(record =>
+      const deletePromises = recordsToDelete.map((record) =>
         axios.delete(`${API_URL}/delete`, {
-          params: { course_name: record.course_name, s3_path: record.s3_path, url: record.url },
-        })
-      );
+          params: {
+            course_name: record.course_name,
+            s3_path: record.s3_path,
+            url: record.url,
+          },
+        }),
+      )
       Promise.all(deletePromises)
         .then(() => {
           // Handle successful deletion, show a success message
-          showToastOnFileDeleted(theme);
+          showToastOnFileDeleted(theme)
           // Start the timer to refresh the page only after all deletions are successful
           setTimeout(async () => {
-            await router.reload();
-          }, 3000);
+            await router.reload()
+          }, 3000)
         })
         .catch((error) => {
-          console.error(error);
+          console.error(error)
           // Show error message
-          showToastOnFileDeleted(theme, true);
-        });
+          showToastOnFileDeleted(theme, true)
+        })
     } catch (error) {
-      console.error(error);
+      console.error(error)
       // Show error message
-      showToastOnFileDeleted(theme, true);
+      showToastOnFileDeleted(theme, true)
     }
   }
 
@@ -175,9 +205,9 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
       <DataTable
         rowStyle={(row) => {
           if (selectedRecords.includes(row)) {
-            return { backgroundColor: 'hsla(280, 100%, 70%, 0.5)' };
+            return { backgroundColor: 'hsla(280, 100%, 70%, 0.5)' }
           }
-          return {};
+          return {}
         }}
         borderRadius="lg"
         withColumnBorders
@@ -189,140 +219,161 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
         }}
         height="80vh"
         records={materials}
-        columns={
-          [
-            {
-              accessor: 'Name',
-              render: ({ readable_filename }) => readable_filename ? `${readable_filename}` : '',
-              filter: (
-                <TextInput
-                  label="File Name"
-                  description="Show uploaded files that include the specified text"
-                  placeholder="Search files..."
-                  rightSection={
-                    <ActionIcon
-                      size="sm"
-                      variant="transparent"
-                      c="dimmed"
-                      onClick={() => setQuery('')}
-                    >
-                      <IconX size={14} />
-                    </ActionIcon>
-                  }
-                  value={query}
-                  onChange={(e) => setQuery(e.currentTarget.value)}
-                />
-              ),
-              filtering: query !== '',
-            },
-            {
-              accessor: 'URL',
-              render: ({ url }) => url ? `${url}` : '',
-              filter: (
-                <TextInput
-                  label="URL"
-                  description="Show all urls that include the specified text"
-                  placeholder="Search urls..."
-                  rightSection={
-                    <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
-                      <IconX size={14} />
-                    </ActionIcon>
-                  }
-                  value={query}
-                  onChange={(e) => setQuery(e.currentTarget.value)}
-                />
-              ),
-              filtering: query !== '',
-            },
-            {
-              accessor: 'The Starting URL of Web Scraping',
-              render: ({ base_url }) => base_url ? `${base_url}` : '',
-              filter: (
-                <TextInput
-                  label="The Starting URL of Web Scraping"
-                  description="Show all urls that include the specified text"
-                  placeholder="Search urls..."
-                  rightSection={
-                    <ActionIcon size="sm" variant="transparent" c="dimmed" onClick={() => setQuery('')}>
-                      <IconX size={14} />
-                    </ActionIcon>
-                  }
-                  value={query}
-                  onChange={(e) => setQuery(e.currentTarget.value)}
-                />
-              ),
-              filtering: query !== '',
-            },
-            {
-              accessor: 'actions',
-              title: <Box mr={6}>Actions</Box>,
-              width: 81,
-              render: (materials: any, index: number) => {
-                const openModal = async (action: string) => {
-                  let urlToOpen = materials.url;
-                  if (!materials.url && materials.s3_path) {
-                    const presignedUrl = await getPresignedUrl(materials.s3_path);
-                    urlToOpen = presignedUrl;
-                  }
-                  if (action === 'view' && urlToOpen) {
-                    window.open(urlToOpen, '_blank');
-                  }
-                  else if (action === 'delete') {
-                    setRecordsToDelete([materials]);
-                    setModalOpened(true);
-                  }
-                };
+        columns={[
+          {
+            accessor: 'Name',
+            render: ({ readable_filename }) =>
+              readable_filename ? `${readable_filename}` : '',
+            filter: (
+              <TextInput
+                label="File Name"
+                description="Show uploaded files that include the specified text"
+                placeholder="Search files..."
+                rightSection={
+                  <ActionIcon
+                    size="sm"
+                    variant="transparent"
+                    c="dimmed"
+                    onClick={() => setQuery('')}
+                  >
+                    <IconX size={14} />
+                  </ActionIcon>
+                }
+                value={query}
+                onChange={(e) => setQuery(e.currentTarget.value)}
+              />
+            ),
+            filtering: query !== '',
+          },
+          {
+            accessor: 'URL',
+            render: ({ url }) => (url ? `${url}` : ''),
+            filter: (
+              <TextInput
+                label="URL"
+                description="Show all urls that include the specified text"
+                placeholder="Search urls..."
+                rightSection={
+                  <ActionIcon
+                    size="sm"
+                    variant="transparent"
+                    c="dimmed"
+                    onClick={() => setQuery('')}
+                  >
+                    <IconX size={14} />
+                  </ActionIcon>
+                }
+                value={query}
+                onChange={(e) => setQuery(e.currentTarget.value)}
+              />
+            ),
+            filtering: query !== '',
+          },
+          {
+            accessor: 'The Starting URL of Web Scraping',
+            render: ({ base_url }) => (base_url ? `${base_url}` : ''),
+            filter: (
+              <TextInput
+                label="The Starting URL of Web Scraping"
+                description="Show all urls that include the specified text"
+                placeholder="Search urls..."
+                rightSection={
+                  <ActionIcon
+                    size="sm"
+                    variant="transparent"
+                    c="dimmed"
+                    onClick={() => setQuery('')}
+                  >
+                    <IconX size={14} />
+                  </ActionIcon>
+                }
+                value={query}
+                onChange={(e) => setQuery(e.currentTarget.value)}
+              />
+            ),
+            filtering: query !== '',
+          },
+          {
+            accessor: 'actions',
+            title: <Box mr={6}>Actions</Box>,
+            width: 81,
+            render: (materials: any, index: number) => {
+              const openModal = async (action: string) => {
+                let urlToOpen = materials.url
+                if (!materials.url && materials.s3_path) {
+                  const presignedUrl = await getPresignedUrl(materials.s3_path)
+                  urlToOpen = presignedUrl
+                }
+                if (action === 'view' && urlToOpen) {
+                  window.open(urlToOpen, '_blank')
+                } else if (action === 'delete') {
+                  setRecordsToDelete([materials])
+                  setModalOpened(true)
+                }
+              }
 
-                return (
-                  <Group>
-                    <ActionIcon
-                      size="sm"
-                      variant="subtle"
-                      color="green"
-                      onClick={() => openModal('view')}
-                    >
-                      <IconEye size={16} />
-                    </ActionIcon>
-                    <ActionIcon
-                      size="sm"
-                      variant="subtle"
-                      color="red"
-                      onClick={() => openModal('delete')}
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
-                  </Group>
-
-                );
-              },
+              return (
+                <Group>
+                  <ActionIcon
+                    size="sm"
+                    variant="subtle"
+                    color="green"
+                    onClick={() => openModal('view')}
+                  >
+                    <IconEye size={16} />
+                  </ActionIcon>
+                  <ActionIcon
+                    size="sm"
+                    variant="subtle"
+                    color="red"
+                    onClick={() => openModal('delete')}
+                  >
+                    <IconTrash size={16} />
+                  </ActionIcon>
+                </Group>
+              )
             },
-          ]}
+          },
+        ]}
         selectedRecords={selectedRecords}
         onSelectedRecordsChange={(newSelectedRecords) => {
           if (newSelectedRecords.length > 0) {
-            setSelectedRecords(newSelectedRecords);
-            console.log('New selection:', newSelectedRecords);
+            setSelectedRecords(newSelectedRecords)
+            console.log('New selection:', newSelectedRecords)
           } else {
-            setSelectedRecords([]);
+            setSelectedRecords([])
           }
         }}
-        idAccessor={(row: any) => row.url ? row.url : row.s3_path}
+        idAccessor={(row: any) => (row.url ? row.url : row.s3_path)}
       />
-      <Paper my="sm" py="sm" withBorder={false} radius={0} style={{ backgroundColor: 'transparent' }}>
+      <Paper
+        my="sm"
+        py="sm"
+        withBorder={false}
+        radius={0}
+        style={{ backgroundColor: 'transparent' }}
+      >
         <Center>
           <Button
             uppercase
             leftIcon={<IconTrash size={16} />}
             disabled={!selectedRecords.length}
             onClick={() => {
-              setRecordsToDelete(selectedRecords);
-              setModalOpened(true);
+              setRecordsToDelete(selectedRecords)
+              setModalOpened(true)
             }}
-            style={{ backgroundColor: selectedRecords.length ? '#8B0000' : 'transparent' }}
+            style={{
+              backgroundColor: selectedRecords.length
+                ? '#8B0000'
+                : 'transparent',
+            }}
           >
             {selectedRecords.length
-              ? `Delete ${selectedRecords.length === 1 ? '1 selected record' : `${selectedRecords.length} selected records`
-              }`
+              ? `Delete ${
+                  selectedRecords.length === 1
+                    ? '1 selected record'
+                    : `${selectedRecords.length} selected records`
+                }`
               : 'Select records to delete'}
           </Button>
         </Center>
@@ -335,11 +386,17 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
         <Text size="sm" style={{ color: 'white' }}>
           {`Are you sure you want to delete the selected records?`}
         </Text>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginTop: '20px',
+          }}
+        >
           <Button
             className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
             onClick={() => {
-              setModalOpened(false);
+              setModalOpened(false)
             }}
             style={{
               backgroundColor: 'transparent',
@@ -351,10 +408,10 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
           <Button
             className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
             onClick={async () => {
-              setModalOpened(false);
-              console.log('Deleting records:', recordsToDelete);
-              await handleDelete(recordsToDelete);
-              setRecordsToDelete([]);
+              setModalOpened(false)
+              console.log('Deleting records:', recordsToDelete)
+              await handleDelete(recordsToDelete)
+              setRecordsToDelete([])
             }}
           >
             Delete
@@ -362,7 +419,7 @@ export function MantineYourMaterialsTable({ course_materials }: CourseFilesListP
         </div>
       </Modal>
     </>
-  );
+  )
 }
 
 async function fetchCourseMetadata(course_name: string) {
@@ -389,7 +446,8 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${response.statusText || response.status
+        `Error fetching course metadata: ${
+          response.statusText || response.status
         }`,
       )
     }

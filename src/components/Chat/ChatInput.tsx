@@ -7,9 +7,9 @@ import {
   IconSend,
   IconPhoto,
   IconAlertCircle,
-  IconX
+  IconX,
 } from '@tabler/icons-react'
-import { Switch } from '@mantine/core';
+import { Switch } from '@mantine/core'
 import {
   KeyboardEvent,
   MutableRefObject,
@@ -31,17 +31,17 @@ import { PluginSelect } from './PluginSelect'
 import { PromptList } from './PromptList'
 import { VariableModal } from './VariableModal'
 
-import { notifications } from '@mantine/notifications';
-import { useMantineTheme, Modal, Tooltip } from '@mantine/core';
+import { notifications } from '@mantine/notifications'
+import { useMantineTheme, Modal, Tooltip } from '@mantine/core'
 import { Montserrat } from 'next/font/google'
 
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid'
 
 import React from 'react'
 
-import { CSSProperties } from 'react';
+import { CSSProperties } from 'react'
 
-import { fetchPresignedUrl, uploadToS3 } from 'src/utils/apiUtils';
+import { fetchPresignedUrl, uploadToS3 } from 'src/utils/apiUtils'
 import { ImagePreview } from './ImagePreview'
 import { OpenAIModelID } from '~/types/openai'
 
@@ -49,7 +49,6 @@ const montserrat_med = Montserrat({
   weight: '500',
   subsets: ['latin'],
 })
-
 
 interface Props {
   onSend: (message: Message, plugin: Plugin | null) => void
@@ -64,8 +63,8 @@ interface Props {
 }
 
 interface ProcessedImage {
-  resizedFile: File;
-  dataUrl: string;
+  resizedFile: File
+  dataUrl: string
 }
 
 export const ChatInput = ({
@@ -87,7 +86,7 @@ export const ChatInput = ({
     dispatch: homeDispatch,
   } = useContext(HomeContext)
 
-  const [content, setContent] = useState<string>(() => inputContent);
+  const [content, setContent] = useState<string>(() => inputContent)
   const [isTyping, setIsTyping] = useState<boolean>(false)
   const [showPromptList, setShowPromptList] = useState(false)
   const [activePromptIndex, setActivePromptIndex] = useState(0)
@@ -96,20 +95,19 @@ export const ChatInput = ({
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [showPluginSelect, setShowPluginSelect] = useState(false)
   const [plugin, setPlugin] = useState<Plugin | null>(null)
-  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
-  const [imageError, setImageError] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-  const imageUploadRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false)
+  const [imageError, setImageError] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState<boolean>(false)
+  const imageUploadRef = useRef<HTMLInputElement | null>(null)
   const promptListRef = useRef<HTMLUListElement | null>(null)
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-  const chatInputContainerRef = useRef<HTMLDivElement>(null);
-  const [isFocused, setIsFocused] = useState(false);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
-
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
+  const chatInputContainerRef = useRef<HTMLDivElement>(null)
+  const [isFocused, setIsFocused] = useState(false)
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [imageUrls, setImageUrls] = useState<string[]>([])
 
   const removeButtonStyle: CSSProperties = {
     position: 'absolute',
@@ -126,11 +124,11 @@ export const ChatInput = ({
     border: '2px solid white', // White border
     cursor: 'pointer',
     zIndex: 2,
-  };
+  }
 
   const removeButtonHoverStyle: CSSProperties = {
     backgroundColor: '#505050', // Even darker gray for hover state
-  };
+  }
 
   // Dynamically set the padding based on image previews presence
   const chatInputContainerStyle: CSSProperties = {
@@ -139,7 +137,7 @@ export const ChatInput = ({
     paddingBottom: '0',
     paddingLeft: '10px',
     borderRadius: '4px', // This will round the edges slightly
-  };
+  }
 
   const filteredPrompts = prompts.filter((prompt) =>
     prompt.name.toLowerCase().includes(promptInputValue.toLowerCase()),
@@ -164,70 +162,75 @@ export const ChatInput = ({
   }
   // Assuming Message, Role, and Plugin types are already defined in your codebase
 
-  type Role = 'user' | 'system'; // Add other roles as needed
-
+  type Role = 'user' | 'system' // Add other roles as needed
 
   const handleSend = async () => {
     if (messageIsStreaming) {
-      return;
+      return
     }
 
-    const textContent = content;
-    let imageContent: Content[] = []; // Explicitly declare the type for imageContent
+    const textContent = content
+    let imageContent: Content[] = [] // Explicitly declare the type for imageContent
 
     if (imageFiles.length > 0 && !uploadingImage) {
-      setUploadingImage(true);
+      setUploadingImage(true)
       try {
         // If imageUrls is empty, upload all images and get their URLs
-        const imageUrlsToUse = imageUrls.length > 0 ? imageUrls :
-          await Promise.all(imageFiles.map(file => uploadImageAndGetUrl(file, courseName)));
+        const imageUrlsToUse =
+          imageUrls.length > 0
+            ? imageUrls
+            : await Promise.all(
+                imageFiles.map((file) =>
+                  uploadImageAndGetUrl(file, courseName),
+                ),
+              )
 
         // Construct image content for the message
         imageContent = imageUrlsToUse
           .filter((url): url is string => url !== '') // Type-guard to filter out empty strings
-          .map(url => ({
-            type: "image_url",
-            image_url: { url }
-          }));
+          .map((url) => ({
+            type: 'image_url',
+            image_url: { url },
+          }))
 
         // console.log("Final imageUrls: ", imageContent)
 
         // Clear the files after uploading
-        setImageFiles([]);
-        setImagePreviewUrls([]);
+        setImageFiles([])
+        setImagePreviewUrls([])
       } catch (error) {
-        console.error('Error uploading files:', error);
-        setImageError('Error uploading files');
+        console.error('Error uploading files:', error)
+        setImageError('Error uploading files')
       } finally {
-        setUploadingImage(false);
+        setUploadingImage(false)
       }
     }
 
     if (!textContent && imageContent.length === 0) {
-      alert(t('Please enter a message or upload an image'));
-      return;
+      alert(t('Please enter a message or upload an image'))
+      return
     }
 
     // Construct the content array
     const contentArray: Content[] = [
-      ...(textContent ? [{ type: "text", text: textContent }] : []),
-      ...imageContent
-    ];
+      ...(textContent ? [{ type: 'text', text: textContent }] : []),
+      ...imageContent,
+    ]
 
     // Create a structured message for GPT-4 Vision
     const messageForGPT4Vision: Message = {
       role: 'user',
-      content: contentArray
-    };
+      content: contentArray,
+    }
 
     // Use the onSend prop to send the structured message
-    onSend(messageForGPT4Vision, plugin); // Cast to unknown then to Message if needed
+    onSend(messageForGPT4Vision, plugin) // Cast to unknown then to Message if needed
 
     // Reset states
-    setContent('');
-    setPlugin(null);
-    setImagePreviews([]);
-  };
+    setContent('')
+    setPlugin(null)
+    setImagePreviews([])
+  }
 
   const handleStopConversation = () => {
     stopConversationRef.current = true
@@ -318,43 +321,49 @@ export const ChatInput = ({
     }
   }, [])
 
-  const handlePromptSelect = useCallback((prompt: Prompt) => {
-    const parsedVariables = parseVariables(prompt.content)
-    const filteredVariables = parsedVariables.filter(
-      (variable) => variable !== undefined,
-    ) as string[]
-    setVariables(filteredVariables)
+  const handlePromptSelect = useCallback(
+    (prompt: Prompt) => {
+      const parsedVariables = parseVariables(prompt.content)
+      const filteredVariables = parsedVariables.filter(
+        (variable) => variable !== undefined,
+      ) as string[]
+      setVariables(filteredVariables)
 
-    if (filteredVariables.length > 0) {
-      setIsModalVisible(true)
-    } else {
-      setContent((prevContent) => {
-        const updatedContent = prevContent?.replace(/\/\w*$/, prompt.content)
-        return updatedContent
+      if (filteredVariables.length > 0) {
+        setIsModalVisible(true)
+      } else {
+        setContent((prevContent) => {
+          const updatedContent = prevContent?.replace(/\/\w*$/, prompt.content)
+          return updatedContent
+        })
+        updatePromptListVisibility(prompt.content)
+      }
+    },
+    [parseVariables, setContent, updatePromptListVisibility],
+  )
+
+  const handleSubmit = useCallback(
+    (updatedVariables: string[]) => {
+      const newContent = content?.replace(/{{(.*?)}}/g, (match, variable) => {
+        const index = variables.indexOf(variable)
+        return updatedVariables[index] || ''
       })
-      updatePromptListVisibility(prompt.content)
-    }
-  }, [parseVariables, setContent, updatePromptListVisibility]);
 
-  const handleSubmit = useCallback((updatedVariables: string[]) => {
-    const newContent = content?.replace(/{{(.*?)}}/g, (match, variable) => {
-      const index = variables.indexOf(variable)
-      return updatedVariables[index] || ''
-    })
+      setContent(newContent)
 
-    setContent(newContent)
-
-    if (textareaRef && textareaRef.current) {
-      textareaRef.current.focus()
-    }
-  }, [variables, setContent, textareaRef]); // Add dependencies used in the function
+      if (textareaRef && textareaRef.current) {
+        textareaRef.current.focus()
+      }
+    },
+    [variables, setContent, textareaRef],
+  ) // Add dependencies used in the function
 
   // https://platform.openai.com/docs/guides/vision/what-type-of-files-can-i-upload
-  const validImageTypes = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+  const validImageTypes = ['.jpg', '.jpeg', '.png', '.webp', '.gif']
 
   const isImageValid = (fileName: string): boolean => {
-    const ext = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase();
-    return validImageTypes.includes(`.${ext}`);
+    const ext = fileName.slice(fileName.lastIndexOf('.') + 1).toLowerCase()
+    return validImageTypes.includes(`.${ext}`)
   }
 
   const showToastOnInvalidImage = useCallback(() => {
@@ -373,152 +382,184 @@ export const ChatInput = ({
       style: { backgroundColor: '#15162c' },
       withBorder: true,
       loading: false,
-    });
-  }, []);
+    })
+  }, [])
 
-  const handleImageUpload = useCallback(async (files: File[]) => {
-    const validFiles = files.filter(file => isImageValid(file.name));
-    const invalidFilesCount = files.length - validFiles.length;
+  const handleImageUpload = useCallback(
+    async (files: File[]) => {
+      const validFiles = files.filter((file) => isImageValid(file.name))
+      const invalidFilesCount = files.length - validFiles.length
 
-    if (invalidFilesCount > 0) {
-      setImageError(`${invalidFilesCount} invalid file type(s). Please upload .jpg or .png images.`);
-      showToastOnInvalidImage();
-    }
+      if (invalidFilesCount > 0) {
+        setImageError(
+          `${invalidFilesCount} invalid file type(s). Please upload .jpg or .png images.`,
+        )
+        showToastOnInvalidImage()
+      }
 
-    const imageProcessingPromises = validFiles.map(file => {
-      return new Promise<ProcessedImage>((resolve, reject) => {
-        const reader = new FileReader();
+      const imageProcessingPromises = validFiles.map((file) => {
+        return new Promise<ProcessedImage>((resolve, reject) => {
+          const reader = new FileReader()
 
-        reader.onloadend = () => {
-          const result = reader.result;
-          if (typeof result === 'string') {
-            const img = new Image();
-            img.src = result;
+          reader.onloadend = () => {
+            const result = reader.result
+            if (typeof result === 'string') {
+              const img = new Image()
+              img.src = result
 
-            img.onload = () => {
-              let newWidth, newHeight;
-              const MAX_WIDTH = 2048;
-              const MAX_HEIGHT = 2048;
-              const MIN_SIDE = 768;
+              img.onload = () => {
+                let newWidth, newHeight
+                const MAX_WIDTH = 2048
+                const MAX_HEIGHT = 2048
+                const MIN_SIDE = 768
 
-              if (img.width > img.height) {
-                newHeight = MIN_SIDE;
-                newWidth = (img.width / img.height) * newHeight;
-                if (newWidth > MAX_WIDTH) {
-                  newWidth = MAX_WIDTH;
-                  newHeight = (img.height / img.width) * newWidth;
-                }
-              } else {
-                newWidth = MIN_SIDE;
-                newHeight = (img.height / img.width) * newWidth;
-                if (newHeight > MAX_HEIGHT) {
-                  newHeight = MAX_HEIGHT;
-                  newWidth = (img.width / img.height) * newHeight;
-                }
-              }
-
-              const canvas = document.createElement('canvas');
-              const ctx = canvas.getContext('2d');
-              if (ctx) {
-                canvas.width = newWidth;
-                canvas.height = newHeight;
-                ctx.drawImage(img, 0, 0, newWidth, newHeight);
-
-                canvas.toBlob((blob) => {
-                  if (blob) {
-                    const resizedFile = new File([blob], file.name, {
-                      type: 'image/jpeg',
-                      lastModified: Date.now(),
-                    });
-
-                    resolve({ resizedFile, dataUrl: canvas.toDataURL('image/jpeg') });
-                  } else {
-                    reject(new Error('Canvas toBlob failed'));
+                if (img.width > img.height) {
+                  newHeight = MIN_SIDE
+                  newWidth = (img.width / img.height) * newHeight
+                  if (newWidth > MAX_WIDTH) {
+                    newWidth = MAX_WIDTH
+                    newHeight = (img.height / img.width) * newWidth
                   }
-                }, 'image/jpeg', 0.9);
-              } else {
-                reject(new Error('Canvas Context is null'));
+                } else {
+                  newWidth = MIN_SIDE
+                  newHeight = (img.height / img.width) * newWidth
+                  if (newHeight > MAX_HEIGHT) {
+                    newHeight = MAX_HEIGHT
+                    newWidth = (img.width / img.height) * newHeight
+                  }
+                }
+
+                const canvas = document.createElement('canvas')
+                const ctx = canvas.getContext('2d')
+                if (ctx) {
+                  canvas.width = newWidth
+                  canvas.height = newHeight
+                  ctx.drawImage(img, 0, 0, newWidth, newHeight)
+
+                  canvas.toBlob(
+                    (blob) => {
+                      if (blob) {
+                        const resizedFile = new File([blob], file.name, {
+                          type: 'image/jpeg',
+                          lastModified: Date.now(),
+                        })
+
+                        resolve({
+                          resizedFile,
+                          dataUrl: canvas.toDataURL('image/jpeg'),
+                        })
+                      } else {
+                        reject(new Error('Canvas toBlob failed'))
+                      }
+                    },
+                    'image/jpeg',
+                    0.9,
+                  )
+                } else {
+                  reject(new Error('Canvas Context is null'))
+                }
               }
-            };
-          } else {
-            reject(new Error('FileReader did not return a string result'));
+            } else {
+              reject(new Error('FileReader did not return a string result'))
+            }
           }
-        };
 
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    });
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        })
+      })
 
-    try {
-      const processedImages = await Promise.all(imageProcessingPromises);
-      setImageFiles(prev => [...prev, ...processedImages.map(img => img.resizedFile)]);
-      setImagePreviewUrls(prev => [...prev, ...processedImages.map(img => img.dataUrl)]);
+      try {
+        const processedImages = await Promise.all(imageProcessingPromises)
+        setImageFiles((prev) => [
+          ...prev,
+          ...processedImages.map((img) => img.resizedFile),
+        ])
+        setImagePreviewUrls((prev) => [
+          ...prev,
+          ...processedImages.map((img) => img.dataUrl),
+        ])
 
-      // Store the URLs of the uploaded images
-      const uploadedImageUrls = (await Promise.all(processedImages.map(img => uploadImageAndGetUrl(img.resizedFile, courseName)))).filter(Boolean);
-      setImageUrls(uploadedImageUrls as string[]);
-    } catch (error) {
-      console.error('Error processing files:', error);
-    }
-  }, [setImageError, setImageFiles, setImagePreviewUrls, showToastOnInvalidImage, courseName]);
+        // Store the URLs of the uploaded images
+        const uploadedImageUrls = (
+          await Promise.all(
+            processedImages.map((img) =>
+              uploadImageAndGetUrl(img.resizedFile, courseName),
+            ),
+          )
+        ).filter(Boolean)
+        setImageUrls(uploadedImageUrls as string[])
+      } catch (error) {
+        console.error('Error processing files:', error)
+      }
+    },
+    [
+      setImageError,
+      setImageFiles,
+      setImagePreviewUrls,
+      showToastOnInvalidImage,
+      courseName,
+    ],
+  )
 
   // Function to open the modal with the selected image
   const openModal = (imageSrc: string) => {
-    setSelectedImage(imageSrc);
-    setIsModalOpen(true);
-  };
+    setSelectedImage(imageSrc)
+    setIsModalOpen(true)
+  }
 
-  const theme = useMantineTheme();
+  const theme = useMantineTheme()
 
   useEffect(() => {
     if (selectedConversation?.model.id !== OpenAIModelID.GPT_4_VISION) {
-      return; // Exit early if the model is not GPT-4 Vision
+      return // Exit early if the model is not GPT-4 Vision
     }
 
     const handleDocumentDragOver = (e: DragEvent) => {
-      e.preventDefault();
-      setIsDragging(true);
-    };
+      e.preventDefault()
+      setIsDragging(true)
+    }
 
     const handleDocumentDrop = (e: DragEvent) => {
-      e.preventDefault();
-      setIsDragging(false);
-      if (e.dataTransfer && e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      e.preventDefault()
+      setIsDragging(false)
+      if (
+        e.dataTransfer &&
+        e.dataTransfer.items &&
+        e.dataTransfer.items.length > 0
+      ) {
         const files = Array.from(e.dataTransfer.items)
-          .filter(item => item.kind === 'file')
-          .map(item => item.getAsFile())
-          .filter(file => file !== null) as File[];
+          .filter((item) => item.kind === 'file')
+          .map((item) => item.getAsFile())
+          .filter((file) => file !== null) as File[]
         if (files.length > 0) {
-          handleImageUpload(files);
+          handleImageUpload(files)
         }
       }
-    };
-
+    }
 
     const handleDocumentDragLeave = (e: DragEvent) => {
-      setIsDragging(false);
-    };
+      setIsDragging(false)
+    }
 
-    document.addEventListener('dragover', handleDocumentDragOver);
-    document.addEventListener('drop', handleDocumentDrop);
-    document.addEventListener('dragleave', handleDocumentDragLeave);
+    document.addEventListener('dragover', handleDocumentDragOver)
+    document.addEventListener('drop', handleDocumentDrop)
+    document.addEventListener('dragleave', handleDocumentDragLeave)
 
     return () => {
       // Clean up the event listeners when the component is unmounted
-      document.removeEventListener('dragover', handleDocumentDragOver);
-      document.removeEventListener('drop', handleDocumentDrop);
-      document.removeEventListener('dragleave', handleDocumentDragLeave);
-    };
-  }, [handleImageUpload, selectedConversation?.model.id]);
+      document.removeEventListener('dragover', handleDocumentDragOver)
+      document.removeEventListener('drop', handleDocumentDrop)
+      document.removeEventListener('dragleave', handleDocumentDragLeave)
+    }
+  }, [handleImageUpload, selectedConversation?.model.id])
 
   useEffect(() => {
     if (imageError) {
-      showToastOnInvalidImage();
-      setImageError(null);
+      showToastOnInvalidImage()
+      setImageError(null)
     }
-  }, [imageError, showToastOnInvalidImage]);
-
+  }, [imageError, showToastOnInvalidImage])
 
   useEffect(() => {
     if (promptListRef.current) {
@@ -530,8 +571,9 @@ export const ChatInput = ({
     if (textareaRef && textareaRef.current) {
       textareaRef.current.style.height = 'inherit'
       textareaRef.current.style.height = `${textareaRef.current?.scrollHeight}px`
-      textareaRef.current.style.overflow = `${textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
-        }`
+      textareaRef.current.style.overflow = `${
+        textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
+      }`
     }
   }, [content])
 
@@ -555,9 +597,9 @@ export const ChatInput = ({
   useEffect(() => {
     // This will focus the div as soon as the component mounts
     if (chatInputContainerRef.current) {
-      chatInputContainerRef.current.focus();
+      chatInputContainerRef.current.focus()
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
     setContent(inputContent)
@@ -567,15 +609,18 @@ export const ChatInput = ({
   }, [inputContent, textareaRef])
 
   // This is where we upload images and generate their presigned url
-  async function uploadImageAndGetUrl(file: File, courseName: string): Promise<string> {
+  async function uploadImageAndGetUrl(
+    file: File,
+    courseName: string,
+  ): Promise<string> {
     try {
-      const uploadedImageUrl = await uploadToS3(file, courseName);
-      const presignedUrl = await fetchPresignedUrl(uploadedImageUrl as string);
-      return presignedUrl as string;
+      const uploadedImageUrl = await uploadToS3(file, courseName)
+      const presignedUrl = await fetchPresignedUrl(uploadedImageUrl as string)
+      return presignedUrl as string
     } catch (error) {
-      console.error('Upload failed for file', file.name, error);
-      setImageError(`Upload failed for file: ${file.name}`);
-      return '';
+      console.error('Upload failed for file', file.name, error)
+      setImageError(`Upload failed for file: ${file.name}`)
+      return ''
     }
   }
 
@@ -586,9 +631,10 @@ export const ChatInput = ({
   //   localStorage.setItem('UseMQRetrieval', useMQRetrieval ? 'true' : 'false');
   // }, [useMQRetrieval]);
 
-
   return (
-    <div className={`absolute bottom-0 left-0 w-full border-transparent bg-transparent pt-6 dark:border-white/20 md:pt-2`}>
+    <div
+      className={`absolute bottom-0 left-0 w-full border-transparent bg-transparent pt-6 dark:border-white/20 md:pt-2`}
+    >
       <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
         {messageIsStreaming && (
           <button
@@ -610,8 +656,7 @@ export const ChatInput = ({
             </button>
           )}
 
-        <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#15162c] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4 pl-8">
-
+        <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white pl-8 shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#15162c] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4">
           {/* BUTTON 1: Plugins Button -- DEPRECATED */}
           {/* <button
             className="absolute left-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
@@ -642,7 +687,7 @@ export const ChatInput = ({
           {/* BUTTON 2: Image Icon and Input */}
           {selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
             <button
-              className="absolute left-10 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+              className="absolute bottom-1.5 left-10 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
               onClick={() => document.getElementById('imageUpload')?.click()}
             >
               <IconPhoto size={22} />
@@ -655,9 +700,9 @@ export const ChatInput = ({
             ref={imageUploadRef}
             style={{ display: 'none' }}
             onChange={(e) => {
-              const files = e.target.files;
+              const files = e.target.files
               if (files) {
-                handleImageUpload(Array.from(files));
+                handleImageUpload(Array.from(files))
               }
             }}
           />
@@ -694,14 +739,21 @@ export const ChatInput = ({
             onClick={() => textareaRef.current?.focus()} // Add this line
             style={{
               outline: isFocused ? '2px solid #9acafa' : 'none', // Adjust the outline as needed
-              ...chatInputContainerStyle // Apply the dynamic padding here
+              ...chatInputContainerStyle, // Apply the dynamic padding here
             }}
           >
             {/* Image preview section */}
-            <div className="flex space-x-3" style={{ display: imagePreviewUrls.length > 0 ? 'flex' : 'none' }}>
+            <div
+              className="flex space-x-3"
+              style={{ display: imagePreviewUrls.length > 0 ? 'flex' : 'none' }}
+            >
               {imagePreviewUrls.map((src, index) => (
-                <div key={src} className="relative w-12 h-12">
-                  <ImagePreview src={src} alt={`Preview ${index}`} className="object-cover w-full h-full rounded-lg" />
+                <div key={src} className="relative h-12 w-12">
+                  <ImagePreview
+                    src={src}
+                    alt={`Preview ${index}`}
+                    className="h-full w-full rounded-lg object-cover"
+                  />
                   <Tooltip
                     label="Remove File"
                     position="top"
@@ -715,19 +767,25 @@ export const ChatInput = ({
                       className="remove-button"
                       onClick={() => {
                         // Filter out the image from both imageFiles and imagePreviewUrls
-                        setImageFiles(prev => prev.filter((_, i) => i !== index));
-                        setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+                        setImageFiles((prev) =>
+                          prev.filter((_, i) => i !== index),
+                        )
+                        setImagePreviewUrls((prev) =>
+                          prev.filter((_, i) => i !== index),
+                        )
                       }}
                       style={removeButtonStyle}
-                      onMouseEnter={e => {
-                        const current = e.currentTarget;
-                        current.style.backgroundColor = removeButtonHoverStyle.backgroundColor!;
-                        current.style.color = removeButtonHoverStyle.color!;
+                      onMouseEnter={(e) => {
+                        const current = e.currentTarget
+                        current.style.backgroundColor =
+                          removeButtonHoverStyle.backgroundColor!
+                        current.style.color = removeButtonHoverStyle.color!
                       }}
-                      onMouseLeave={e => {
-                        const current = e.currentTarget;
-                        current.style.backgroundColor = removeButtonStyle.backgroundColor!;
-                        current.style.color = removeButtonStyle.color!;
+                      onMouseLeave={(e) => {
+                        const current = e.currentTarget
+                        current.style.backgroundColor =
+                          removeButtonStyle.backgroundColor!
+                        current.style.color = removeButtonStyle.color!
                       }}
                     >
                       <IconX size={16} />
@@ -738,11 +796,19 @@ export const ChatInput = ({
             </div>
 
             {/* Button 3: main input text area  */}
-            <div className={selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION ? "pl-8" : "pl-1"}>
+            <div
+              className={
+                selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION
+                  ? 'pl-8'
+                  : 'pl-1'
+              }
+            >
               <textarea
                 ref={textareaRef}
-                className="flex-grow m-0 w-full resize-none bg-[#070712] p-0 py-2 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-2"
-                placeholder={t('Type a message or type "/" to select a prompt...') || ''}
+                className="m-0 w-full flex-grow resize-none bg-[#070712] p-0 py-2 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-2"
+                placeholder={
+                  t('Type a message or type "/" to select a prompt...') || ''
+                }
                 value={content}
                 rows={1}
                 onCompositionStart={() => setIsTyping(true)}
@@ -754,13 +820,13 @@ export const ChatInput = ({
                   maxHeight: '400px',
                   overflow: 'hidden',
                   outline: 'none', // Add this line to remove the outline from the textarea
-                  paddingTop: '14px'
+                  paddingTop: '14px',
                 }}
               />
             </div>
 
             <button
-              className="absolute right-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+              className="absolute bottom-1.5 right-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
               onClick={handleSend}
             >
               {messageIsStreaming ? (
@@ -769,7 +835,6 @@ export const ChatInput = ({
                 <IconSend size={18} />
               )}
             </button>
-
 
             {showScrollDownButton && (
               <div className="absolute bottom-12 right-0 lg:-right-10 lg:bottom-0">

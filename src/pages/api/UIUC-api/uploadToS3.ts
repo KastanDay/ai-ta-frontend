@@ -8,7 +8,7 @@ export const aws_config = {
   region: 'us-east-1',
   accessKeyId: process.env.AWS_KEY,
   secretAccessKey: process.env.AWS_SECRET,
-};
+}
 
 console.log('bucket name ---------------', process.env.S3_BUCKET_NAME)
 console.log('aws ---------------', process.env.AWS_KEY)
