@@ -23,7 +23,7 @@ import {
   IconLock,
   IconTrash,
 } from '@tabler/icons-react'
-
+import { OpenAIModel } from '@/types/openai';
 import {
   CourseMetadataOptionalForUpsert,
   type CourseMetadata,
@@ -194,7 +194,7 @@ const EditCourseCard = ({
     }
 
     if (inputValue === '' && courseMetadata?.openai_api_key !== '') {
-      ;(courseMetadata as CourseMetadata).openai_api_key = inputValue
+      ; (courseMetadata as CourseMetadata).openai_api_key = inputValue
       console.log('Removing api key')
       setApiKey(inputValue)
       await callSetCourseMetadata(course_name, courseMetadata as CourseMetadata)
@@ -312,13 +312,11 @@ const EditCourseCard = ({
                   autoFocus
                   disabled={!is_new_course}
                   className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${
-                                  isCourseAvailable && courseName != ''
-                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                                    : 'border-red-800 text-red-600 focus:border-red-800'
-                                } ${
-                                  montserrat_paragraph.variable
-                                } font-montserratParagraph`}
+                                ${isCourseAvailable && courseName != ''
+                      ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                      : 'border-red-800 text-red-600 focus:border-red-800'
+                    } ${montserrat_paragraph.variable
+                    } font-montserratParagraph`}
                 />
                 <Title
                   order={4}
@@ -540,6 +538,7 @@ const EditCourseCard = ({
                 <PrivateOrPublicCourse
                   course_name={course_name}
                   courseMetadata={courseMetadata as CourseMetadata}
+                  apiKey={apiKey || ''}
                 />
 
                 <Title
@@ -682,9 +681,11 @@ const EditCourseCard = ({
 const PrivateOrPublicCourse = ({
   course_name,
   courseMetadata,
+  apiKey,
 }: {
   course_name: string
   courseMetadata: CourseMetadata
+  apiKey: string
 }) => {
   const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
   const { classes } = useStyles() // for Accordion
@@ -747,9 +748,111 @@ const PrivateOrPublicCourse = ({
     }
   }
 
+  const [selectedModels, setSelectedModels] = useState<OpenAIModel[]>([])
+  const [models, setModels] = useState<OpenAIModel[]>([])
+  useEffect(() => {
+    const fetchModels = async () => {
+      const res = await fetch('/api/models', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ key: apiKey }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setModels(data)
+      } else {
+        console.error(`Error fetching models: ${res.status}`)
+      }
+    }
+
+    if (apiKey) {
+      fetchModels()
+    }
+  }, [apiKey])
+
+  const handleModelCheckboxChange = (modelId: string, isChecked: boolean) => {
+    if (isChecked) {
+      const model = models.find(model => model.id === modelId);
+      if (model) {
+        setSelectedModels(prevModels => [...prevModels, model]);
+      }
+    } else {
+      setSelectedModels(prevModels => prevModels.filter(model => model.id !== modelId));
+    }
+  }
+
   return (
     <>
       <Divider />
+      <Title
+        className={`${montserrat_heading.variable} font-montserratHeading`}
+        variant="gradient"
+        gradient={{ from: 'gold', to: 'white', deg: 170 }}
+        order={3}
+        // p="md"
+        pl={'md'}
+        pr={'md'}
+        pt={'sm'}
+        pb={0}
+        style={{ alignSelf: 'left', marginLeft: '-11px' }}
+      >
+        Model Access Control{' '}
+      </Title>
+      <Accordion
+        pl={27}
+        pr={27}
+        pt={40}
+        pb={40}
+        m={-40}
+        // style={{ borderRadius: 'theme.radius.xl', width: '112%', maxWidth: 'min(50rem, )', marginLeft: 'max(-1rem, -10%)' }}
+        style={{ borderRadius: 'theme.radius.xl' }}
+        classNames={classes}
+        className={classes.root}
+      >
+        {/* ... Accordion items */}
+        <Accordion.Item value="openai-key-details">
+          <Accordion.Control>
+            <Text
+              className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+              size={'md'}
+            >
+              Only the selected models will be shown in the chat's model selection.
+              {/* <span className={'text-purple-600'}>Read more</span>{' '}
+              👇 */}
+            </Text>
+          </Accordion.Control>
+          <Accordion.Panel>
+            {models.map((model: OpenAIModel) => (
+              <Checkbox
+                key={model.id}
+                checked={selectedModels.includes(model.id)}
+                label={model.name}
+                onChange={event => handleModelCheckboxChange(model.id, event.target.checked)}
+              />
+            ))}
+            {/* <Text
+              className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+              size={'sm'}
+            >
+              Read our{' '}
+              <a
+                className={'text-purple-600'}
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+              // style={{ textDecoration: 'underline' }}
+              >
+                strict security policy
+              </a>{' '}
+              on protecting your data.
+            </Text> */}
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
+      <Divider />
+
       <Title
         className={`${montserrat_heading.variable} font-montserratHeading`}
         variant="gradient"
@@ -798,7 +901,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                // style={{ textDecoration: 'underline' }}
+              // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
@@ -810,9 +913,8 @@ const PrivateOrPublicCourse = ({
 
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${
-            isPrivate ? 'private' : 'public'
-          }. Click to change.`}
+          label={`Course is ${isPrivate ? 'private' : 'public'
+            }. Click to change.`}
           wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
@@ -885,7 +987,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                // style={{ textDecoration: 'underline' }}
+              // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
