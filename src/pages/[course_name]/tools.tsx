@@ -11,14 +11,14 @@ import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackgro
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { Title } from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
-import MakeN8NPage from '~/components/UIUC-Components/N8nPage'
+import MakeToolsPage from '~/components/UIUC-Components/N8NPage'
 
 const montserrat = Montserrat({
   weight: '700',
   subsets: ['latin'],
 })
 
-const CourseMain: NextPage = () => {
+const ToolsPage: NextPage = () => {
   const router = useRouter()
 
   const GetCurrentPageName = () => {
@@ -122,11 +122,11 @@ const CourseMain: NextPage = () => {
 
   return (
     <>
-      <MakeN8NPage
+      <MakeToolsPage
         course_name={course_name as string}
         course_data={courseData}
       />
     </>
   )
 }
-export default CourseMain
+export default ToolsPage

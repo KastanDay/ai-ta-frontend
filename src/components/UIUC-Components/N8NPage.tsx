@@ -71,7 +71,7 @@ export const GetCurrentPageName = () => {
   return useRouter().asPath.slice(1).split('/')[0] as string
 }
 
-const MakeN8NPage = ({
+const MakeToolsPage = ({
   course_name,
   course_data,
 }: {
@@ -79,7 +79,7 @@ const MakeN8NPage = ({
   course_data: any
 }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  const { classes, } = useStyles()
+  const { classes } = useStyles()
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
   // const { isSignedIn, user } = useUser()
   const clerk_user = useUser()
@@ -92,7 +92,7 @@ const MakeN8NPage = ({
 
   const currentPageName = GetCurrentPageName()
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
 
   // TODO: remove this hook... we should already have this from the /materials props???
   useEffect(() => {
@@ -166,36 +166,40 @@ const MakeN8NPage = ({
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-      // current_email={currentEmail as string}
+        // current_email={currentEmail as string}
       />
     )
   }
 
   const downloadConversationHistory = async (courseName: string) => {
     try {
-      setIsLoading(true);
-      const response = await axios.get(`https://flask-production-751b.up.railway.app/export-convo-history-csv?course_name=${courseName}`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', courseName + '_conversation_history.csv');
-      document.body.appendChild(link);
-      link.click();
+      setIsLoading(true)
+      const response = await axios.get(
+        `https://flask-production-751b.up.railway.app/export-convo-history-csv?course_name=${courseName}`,
+        { responseType: 'blob' },
+      )
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', courseName + '_conversation_history.csv')
+      document.body.appendChild(link)
+      link.click()
     } catch (error) {
-      console.error('Error fetching conversation history:', error);
+      console.error('Error fetching conversation history:', error)
       notifications.show({
         id: 'error-notification',
         title: 'Error',
-        message: 'Failed to fetch conversation history. Please try again later.',
+        message:
+          'Failed to fetch conversation history. Please try again later.',
         color: 'red',
         radius: 'lg',
         icon: <IconAlertCircle />,
         className: 'my-notification-class',
         style: { backgroundColor: '#15162c' },
         loading: false,
-      });
+      })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
@@ -256,7 +260,8 @@ const MakeN8NPage = ({
 
             <Title order={4} w={'80%'}>
               Use{' '}
-              <a href="https://n8n.io"
+              <a
+                href="https://n8n.io"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`text-purple-500 hover:underline ${montserrat_heading.variable} font-montserratHeading`}
@@ -267,17 +272,41 @@ const MakeN8NPage = ({
                   style={{ position: 'relative', top: '-3px' }}
                 />
               </a>
-              beautiful visual workflow editor to create custom functions for your project.
+              beautiful visual workflow editor to create custom functions for
+              your project.
             </Title>
 
-            <Title order={4} w={'80%'} size={'xl'} className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}>To setup: </Title>
+            <Title
+              order={4}
+              w={'80%'}
+              size={'xl'}
+              className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+            >
+              To setup:{' '}
+            </Title>
 
-
-            <List w={'80%'} type="ordered" withPadding className={`${montserrat_paragraph.variable} font-montserratParagraph`}>
-              <List.Item>Create an account and store your password safely.</List.Item>
-              <List.Item>Inside n8n, create an n8n API key and input it in the textbox below.</List.Item>
-              <List.Item>Any workflow you create will be enabled by default in this project.<br />Check out your workflows below.</List.Item>
+            <List
+              w={'80%'}
+              type="ordered"
+              withPadding
+              className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+            >
+              <List.Item>
+                Create an account and store your password safely.
+              </List.Item>
+              <List.Item>
+                Inside n8n, create an n8n API key and input it in the textbox
+                below.
+              </List.Item>
+              <List.Item>
+                Any workflow you create will be enabled by default in this
+                project.
+                <br />
+                Check out your workflows below.
+              </List.Item>
             </List>
+
+            <N8nWorkflowsTable />
 
             <div style={{ width: '40%' }}>
               <TextInput
@@ -295,8 +324,6 @@ const MakeN8NPage = ({
                 Save
               </Button>
             </div>
-
-
 
             <div className="pt-5"></div>
             {/* NOMIC VISUALIZATION  */}
@@ -318,7 +345,8 @@ const MakeN8NPage = ({
                   order={6}
                   className={`w-full text-center ${montserrat_heading.variable} mt-2 font-montserratHeading`}
                 >
-                  A conceptual flow chart of the pre and post processing of context for the LLM.
+                  A conceptual flow chart of the pre and post processing of
+                  context for the LLM.
                   <br></br>
                   Read more about{' '}
                   <a
@@ -341,7 +369,13 @@ const MakeN8NPage = ({
   )
 }
 
-import { IconAlertCircle, IconCheck, IconCloudDownload, IconDownload, IconExternalLink } from '@tabler/icons-react'
+import {
+  IconAlertCircle,
+  IconCheck,
+  IconCloudDownload,
+  IconDownload,
+  IconExternalLink,
+} from '@tabler/icons-react'
 
 import { CannotEditCourse } from './CannotEditCourse'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -366,6 +400,7 @@ import { extractEmailsFromClerk } from './clerkHelpers'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
 import Navbar from './navbars/Navbar'
+import { N8nWorkflowsTable } from './N8nWorkflowsTable'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
@@ -461,15 +496,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.gray[2]
-                        : theme.colors.gray[1]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colorScheme === 'dark'
+                      ? theme.colors.gray[2]
+                      : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colors.gray[8]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colors.gray[8]
                 }}
               >
                 <IconDownload className="h-5 w-5 text-gray-800" />
@@ -486,15 +521,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.gray[2]
-                        : theme.colors.gray[1]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colorScheme === 'dark'
+                      ? theme.colors.gray[2]
+                      : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colors.red[6]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colors.red[6]
                 }}
               >
                 <IconTrash className="h-5 w-5 text-red-600" />
@@ -531,7 +566,8 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${response.statusText || response.status
+        `Error fetching course metadata: ${
+          response.statusText || response.status
         }`,
       )
     }
@@ -585,4 +621,4 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
   )
 }
 
-export default MakeN8NPage
+export default MakeToolsPage
