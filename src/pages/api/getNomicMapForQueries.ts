@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { getBackendUrl } from '~/utils/api'
 
 export const runtime = 'edge'
 
@@ -8,7 +9,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     const course_name = req.nextUrl.searchParams.get('course_name')
 
     const response = await fetch(
-      `${process.env.RAILWAY_URL}/getNomicMap?course_name=${course_name}`,
+      `${getBackendUrl()}/getNomicMap?course_name=${course_name}`,
     )
     const data = await response.json()
 

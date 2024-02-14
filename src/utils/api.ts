@@ -17,6 +17,11 @@ export const getBaseUrl = () => {
   return `http://localhost:${process.env.PORT ?? 3000}` // dev SSR should use localhost
 }
 
+export const getBackendUrl = () => {
+  if (process.env.RAILWAY_URL) return process.env.RAILWAY_URL
+  return "https://flask-production-751b.up.railway.app/"
+}
+
 /** A set of type-safe react-query hooks for your tRPC API. */
 export const api = createTRPCNext<AppRouter>({
   config() {

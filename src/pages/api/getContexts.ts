@@ -1,4 +1,5 @@
 import { ContextWithMetadata } from '~/types/chat'
+import { getBackendUrl } from '~/utils/api'
 
 export const config = {
   runtime: 'edge',
@@ -16,7 +17,7 @@ export const fetchContexts = async (
     token_limit: token_limit.toString(),
   }).toString()
 
-  const url = `${process.env.RAILWAY_URL}/getTopContexts?${queryParams}`
+  const url = `${getBackendUrl()}/getTopContexts?${queryParams}`
 
   try {
     const response = await fetch(url)
