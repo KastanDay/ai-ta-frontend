@@ -76,12 +76,14 @@ const useStyles = createStyles((theme) => ({
 }))
 
 interface CourseDocuments {
+  id: string; // Add this line
   course_name: string
   readable_filename: string
   url: string
   s3_path: string
   created_at: string
   base_url: string
+  tags: string[]
 }
 
 interface CourseFilesListProps {
@@ -95,6 +97,8 @@ export async function getPresignedUrl(s3_path: string) {
   const data = await response.json()
   return data.presignedUrl
 }
+
+type TagOption = { value: string; label: string };
 
 export function MantineYourMaterialsTable({
   course_materials,
@@ -110,6 +114,27 @@ export function MantineYourMaterialsTable({
   }
   const [materials, setMaterials] = useState(course_materials)
   const [selectedRecords, setSelectedRecords] = useState<CourseDocuments[]>([])
+
+  // Add state hooks for tags and a method to fetch them
+  const [tags, setTags] = useState<TagOption[]>([]);
+  const [loadingTags, setLoadingTags] = useState(false);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      setLoadingTags(true);
+      try {
+        const response = await axios.get('/api/path-to-get-tags');
+        // Assuming response.data is an array of strings ['tag1', 'tag2', ...]
+        setTags(response.data.map((tag: string) => ({ value: tag, label: tag })));
+      } catch (error) {
+        console.error('Failed to fetch tags', error);
+      } finally {
+        setLoadingTags(false);
+      }
+    };
+  
+    fetchTags();
+  }, []);  
 
   useEffect(() => {
     const fetchCourseDocuments = async () => {
@@ -197,6 +222,54 @@ export function MantineYourMaterialsTable({
       showToastOnFileDeleted(theme, true)
     }
   }
+
+  // Handle tag changes for a document (assuming record has a unique identifier such as 'id')
+  const handleTagsChange = async (record: CourseDocuments, selectedTags: string[]) => {
+    try {
+      // Assuming an endpoint that updates the tags for a document
+      // and that the document's identifier is `record.id`
+      await axios.post('/api/path-to-update-document-tags', {
+        documentId: record.id,
+        tags: selectedTags,
+      });
+
+      // Update the local state to reflect the change
+      const updatedMaterials = materials.map((material) => {
+        if (material.id === record.id) {
+          return { ...material, tags: selectedTags };
+        }
+        return material;
+      });
+      setMaterials(updatedMaterials);
+
+      showNotification({
+        title: 'Success',
+        message: 'Tags updated successfully',
+      });
+    } catch (error) {
+      console.error('Failed to update tags', error);
+      showNotification({
+        title: 'Error',
+        message: 'Failed to update tags',
+      });
+    }
+  };
+
+  const handleCreateTag = (tagName: string) => {
+    const newTag: TagOption = { value: tagName, label: tagName };
+    setTags(currentTags => [...currentTags, newTag]);
+  
+    // Directly return the new tag in a format compatible with the MultiSelect options
+    // This assumes your MultiSelect component is configured to work with objects
+    // having 'value' and 'label' properties, similar to your TagOption type.
+    return tagName; // or return newTag if your setup can work directly with objects
+  };
+  
+  
+
+// No longer returning a specific type since the function is intended for side effects (state update)
+
+
 
   return (
     <>
@@ -292,6 +365,23 @@ export function MantineYourMaterialsTable({
               />
             ),
             filtering: query !== '',
+          },
+          {
+            accessor: 'tags',
+            title: 'Tags',
+            render: (record) => (
+              <MultiSelect
+                data={tags.map(tag => ({ value: tag.value, label: tag.label }))}
+                value={record.tags}
+                onChange={(selectedValue) => handleTagsChange(record, selectedValue)}
+                placeholder="Select tags"
+                searchable
+                nothingFound="No options"
+                creatable
+                getCreateLabel={(query) => `+ Create ${query}`}
+                onCreate={handleCreateTag}
+                />
+            ),
           },
           {
             accessor: 'actions',
