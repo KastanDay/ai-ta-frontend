@@ -1,4 +1,4 @@
-// src/utils/api/handleImageContent.ts
+// src/pages/api/UIUC-api/fetchImageDescription.ts
 
 import { ChatBody, Content, Conversation, Message } from '@/types/chat'
 
@@ -47,7 +47,15 @@ export const fetchImageDescription = async (
           ...imageContent,
           {
             type: 'text',
-            text: `Provide a detailed description of the image(s), focusing exclusively on the elements and details that are visibly present...`,
+            text: `"Analyze and describe the given image, focusing solely on visible elements. Detail the image by:
+            - Identifying text (OCR information), objects, spatial relationships, colors, actions, annotations, and labels.
+            - Utilizing specific terminology relevant to the image's domain (e.g., medical, agricultural, technological).
+            - Categorizing the image and listing associated key terms.
+            - Summarizing with keywords or phrases reflecting the main themes based on the user query.
+            
+            Emphasize primary features before detailing secondary elements. For abstract or emotional content, infer the central message. Provide synonyms for technical terms where applicable. Ensure the description remains precise and relevant for semantic retrieval, avoiding mention of non-present features."
+            
+            **Goal:** Create an accurate, focused description that enhances semantic document retrieval, using ONLY observable details in the form of keywords`,
           },
         ],
       },

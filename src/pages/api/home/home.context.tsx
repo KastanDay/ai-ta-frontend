@@ -21,6 +21,9 @@ export interface HomeContextProps {
     data: KeyValuePair,
   ) => void
   setIsImg2TextLoading: (isImg2TextLoading: boolean) => void
+  setIsRouting: (isRouting: boolean) => void
+  setIsPestDetectionLoading: (isPestDetectionLoading: boolean) => void
+  setIsRetrievalLoading: (isRetrievalLoading: boolean) => void
 }
 
 const HomeContext = createContext<HomeContextProps>(undefined!)

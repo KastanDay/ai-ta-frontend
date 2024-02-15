@@ -75,6 +75,8 @@ import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
 import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
+import { fetchRoutingResponse } from '~/pages/api/UIUC-api/fetchRoutingResponse'
+import { fetchPestDetectionResponse } from '~/pages/api/UIUC-api/fetchPestDetectionResponse'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -117,6 +119,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       prompts,
       showModelSettings,
       isImg2TextLoading,
+      isRouting,
+      isPestDetectionLoading,
+      isRetrievalLoading
     },
     handleUpdateConversation,
     dispatch: homeDispatch,
@@ -176,6 +181,79 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
   }
 
+  const handlePestDetection = async (
+    message: Message,
+    imageContent: Content[],
+    updatedConversation: Conversation,
+  ) => {
+    homeDispatch({ field: 'isPestDetectionLoading', value: true })
+    // Call pest detection API to get the s3 paths of the annotated images
+    const pestDetectionResponse = await fetchPestDetectionResponse(imageContent.map((content) => content.image_url?.url as string))
+    console.log('Pest detection response: ', pestDetectionResponse)
+    // Update the message content and append the annotated images to the message
+    for (const url of pestDetectionResponse) {
+      const presignedUrl = await fetchPresignedUrl(url);
+      if (presignedUrl) {
+        (message.content as Content[]).push({
+          type: 'image',
+          image_url: {
+            url: presignedUrl,
+          },
+        });
+      }
+    }
+    // Assuming onImageUrlsUpdate is designed to handle the update
+    // onImageUrlsUpdate({
+      // ...message,
+      // content: message.content,
+    // }, updateConversations.length - 1);
+
+    console.log('Updated message content after pest detection and fetching presigned urls: ', message.content)
+    homeDispatch({ field: 'isPestDetectionLoading', value: false })
+  }
+
+  const handleRoutingForImageContent = async (
+    message: Message,
+    endpoint: string,
+    updatedConversation: Conversation,
+    searchQuery: string,
+    controller: AbortController,
+  ) => {
+    const imageContent = (message.content as Content[]).filter(
+      (content) => content.type === 'image_url',
+    )
+    if (imageContent.length > 0) {
+      console.log('Running routing for image content because imageContent exists', imageContent)
+      homeDispatch({ field: 'isRouting', value: true })
+
+      const key =
+        courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != ''
+          ? courseMetadata.openai_api_key
+          : apiKey
+
+      try {
+        const response = await fetchRoutingResponse(message, getCurrentPageName(), endpoint, updatedConversation, key, controller)
+        console.log('Routing response: ', response)
+        homeDispatch({ field: 'isRouting', value: false })
+        // For future use, if we want to handle different types of routing responses for image content then we can add more cases here
+        if ('Pests' === response) {
+          await handlePestDetection(message, imageContent, updatedConversation)
+        }
+        searchQuery = await handleImageContent(
+          message,
+          endpoint,
+          updatedConversation,
+          searchQuery,
+          controller,
+        )
+      } catch (error) {
+        console.error('Error in chat.tsx running handleImageContent():', error)
+        controller.abort()
+      }
+    }
+    return searchQuery
+  }
+
   const handleImageContent = async (
     message: Message,
     endpoint: string,
@@ -203,8 +281,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           key,
           controller,
         )
-
-        searchQuery += ` Image description: ${imgDesc}`
 
         const imgDescIndex = (message.content as Content[]).findIndex(
           (content) =>
@@ -239,6 +315,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     searchQuery: string,
   ) => {
     if (getCurrentPageName() != 'gpt4') {
+      homeDispatch({ field: 'isRetrievalLoading', value: true })
       // Extract text from all user messages in the conversation
       const token_limit =
         OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
@@ -252,8 +329,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         token_limit,
       ).then((curr_contexts) => {
         message.contexts = curr_contexts as ContextWithMetadata[]
-        console.log('message.contexts: ', message.contexts)
+        // console.log('message.contexts: ', message.contexts)
       })
+      homeDispatch({ field: 'isRetrievalLoading', value: false })
     }
   }
 
@@ -269,7 +347,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ? message.content.map((content) => content.text).join(' ')
         : message.content
 
-      // console.log("QUERY: ", searchQuery)
+      console.log("QUERY: ", searchQuery)
 
       if (selectedConversation) {
         let updatedConversation: Conversation
@@ -301,7 +379,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
         // Run image to text conversion, attach to Message object.
         if (Array.isArray(message.content)) {
-          searchQuery = await handleImageContent(
+          // Fetch current message index from updatedConversation
+          console.log('Running routing for image content', message.content)
+          // Run routing for image content, attach to Message object.
+          searchQuery = await handleRoutingForImageContent(
             message,
             endpoint,
             updatedConversation,
@@ -359,6 +440,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           const final_response = await response.json()
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
+          homeDispatch({field: 'isRouting', value: undefined})
+          homeDispatch({field: 'isPestDetectionLoading', value: undefined})
+          homeDispatch({field: 'isImg2TextLoading', value: undefined})
+          homeDispatch({field: 'isRetrievalLoading', value: undefined})
           notifications.show({
             id: 'error-notification',
             withCloseButton: true,
@@ -394,6 +479,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         if (!data) {
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
+          homeDispatch({field: 'isRouting', value: undefined})
+          homeDispatch({field: 'isPestDetectionLoading', value: undefined})
+          homeDispatch({field: 'isImg2TextLoading', value: undefined})
+          homeDispatch({field: 'isRetrievalLoading', value: undefined})
           return
         }
         if (!plugin) {
@@ -413,6 +502,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             }
           }
           homeDispatch({ field: 'loading', value: false })
+          homeDispatch({field: 'isRouting', value: undefined})
+          homeDispatch({field: 'isPestDetectionLoading', value: undefined})
+          homeDispatch({field: 'isImg2TextLoading', value: undefined})
+          homeDispatch({field: 'isRetrievalLoading', value: undefined})
           const reader = data.getReader()
           const decoder = new TextDecoder()
           let done = false
