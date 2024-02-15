@@ -121,7 +121,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                   <Switch data-testid='multi-query-switch'
                     disabled={false}
                     // checked={useMQRetrieval}
-                    checked={false}
+                    checked={false} // Updated as per request
                     className="pl-2 pt-2"
                     label={t(
                       'Multi Query Retrieval (slow 30 second response time)',
