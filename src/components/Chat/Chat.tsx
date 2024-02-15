@@ -242,7 +242,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       // Extract text from all user messages in the conversation
       const token_limit =
         OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
-      const useMQRetrieval = localStorage.getItem('UseMQRetrieval') === 'true'
+
+      // ! DISABLE MQR FOR NOW -- too unreliable
+      // const useMQRetrieval = localStorage.getItem('UseMQRetrieval') === 'true'
+      const useMQRetrieval = false
+
       const fetchContextsFunc = useMQRetrieval
         ? fetchMQRContexts
         : fetchContexts

@@ -101,26 +101,41 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               </div>
             </div>
             <div style={{ paddingTop: '47px' }}>
-              <Title
-                className={`pb-0 pl-2 pt-4 ${montserrat_heading.variable} font-montserratHeading`}
-                order={4}
+              <Tooltip
+                multiline
+                // color="#15162b"
+                color="#CC65FF"
+                arrowPosition="side"
+                position="top-start"
+                arrowSize={8}
+                withArrow
+                label="Multi-Query Retrieval is disabled for performance reasons, I'm working to bring it back ASAP."
               >
-                Fancy Retrieval
-              </Title>
-              <Switch
-                className="pl-2 pt-2"
-                label={t(
-                  'Multi Query Retrieval (slow 30 second response time)',
-                )}
-                checked={useMQRetrieval}
-                onChange={(event) =>
-                  setUseMQRetrieval(event.currentTarget.checked)
-                }
-                description={t(
-                  'A LLM generates multiple queries based on your original for improved semantic search. Then every retrieved context is filtered by a smaller LLM (Mistral 7b) so that only high quality and relevant documents are included in the final GPT-4 call.',
-                )}
-                color="violet.7"
-              />
+                <div>
+                  <Title
+                    className={`pb-0 pl-2 pt-4 ${montserrat_heading.variable} font-montserratHeading`}
+                    order={4}
+                  >
+                    Fancy Retrieval
+                  </Title>
+                  <Switch
+                    disabled={true}
+                    // checked={useMQRetrieval}
+                    checked={false}
+                    className="pl-2 pt-2"
+                    label={t(
+                      'Multi Query Retrieval (slow 30 second response time)',
+                    )}
+                    onChange={(event) =>
+                      setUseMQRetrieval(event.currentTarget.checked)
+                    }
+                    description={t(
+                      'A LLM generates multiple queries based on your original for improved semantic search. Then every retrieved context is filtered by a smaller LLM (Mistral 7b) so that only high quality and relevant documents are included in the final GPT-4 call.',
+                    )}
+                    color="violet.7"
+                  />
+                </div>
+              </Tooltip>
               <ModelParams
                 selectedConversation={selectedConversation}
                 prompts={prompts}
