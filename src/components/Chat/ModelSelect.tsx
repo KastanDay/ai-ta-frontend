@@ -129,9 +129,6 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                     onChange={(event) =>
                       setUseMQRetrieval(event.currentTarget.checked)
                     }
-                    description={t(
-                      'A LLM generates multiple queries based on your original for improved semantic search. Then every retrieved context is filtered by a smaller LLM (Mistral 7b) so that only high quality and relevant documents are included in the final GPT-4 call.',
-                    )}
                     color="violet.7"
                   />
                 </div>
