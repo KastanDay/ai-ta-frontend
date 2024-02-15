@@ -118,7 +118,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                   >
                     Fancy Retrieval
                   </Title>
-                  <Switch data-testid='multi-query-switch'
+                  <Switch data-testid='multi-query-switch' data-testid='multi-query-switch'
                     disabled={true}
                     // checked={useMQRetrieval}
                     checked={false} // Updated as per request
