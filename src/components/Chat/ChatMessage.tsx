@@ -114,7 +114,7 @@ export const ChatMessage: FC<Props> = memo(
     const [isTyping, setIsTyping] = useState<boolean>(false)
     const [messageContent, setMessageContent] = useState<string>('')
 
-    const [imageUrls, setImageUrls] = useState<string[]>([])
+    const [imageUrls, setImageUrls] = useState<Set<string>>(new Set())
 
     const [messagedCopied, setMessageCopied] = useState(false)
 
@@ -201,16 +201,19 @@ export const ChatMessage: FC<Props> = memo(
                 isValid = await checkIfUrlIsValid(content.image_url.url)
                 if (isValid) {
                   console.log('Image url is valid: ', content.image_url.url)
-                  setImageUrls((prevUrls) => [
-                    ...prevUrls,
-                    content.image_url?.url as string,
-                  ])
+                  setImageUrls((prevUrls) => new Set([...prevUrls, content.image_url?.url as string]));
+                  // setImageUrls((prevUrls) => [
+                  //   ...new Set([...prevUrls],
+                  //   content.image_url?.url as string,
+                  // ])
+                  console.log('Set the image urls: ', imageUrls)
                   return content
                 } else {
                   const path = extractPathFromUrl(content.image_url.url)
                   console.log('Image url was invalid, fetching presigned url for: ', path)
                   const presignedUrl = await getPresignedUrl(path)
-                  setImageUrls((prevUrls) => [...prevUrls, presignedUrl])
+                  setImageUrls((prevUrls) => new Set([...prevUrls, presignedUrl]))
+                  console.log('Set the image urls: ', imageUrls)
                   return { ...content, image_url: { url: presignedUrl } }
                 }
               }
@@ -328,7 +331,8 @@ export const ChatMessage: FC<Props> = memo(
     }, [message.content])
 
     useEffect(() => {
-      setImageUrls([])
+      setImageUrls(new Set())
+      console.log('Set the image urls: ', imageUrls)
     }, [message])
 
     useEffect(() => {
@@ -520,7 +524,7 @@ export const ChatMessage: FC<Props> = memo(
                               >
                                 <div className="overflow-hidden rounded-lg shadow-lg">
                                   <ImagePreview
-                                    src={imageUrls[index] as string}
+                                    src={Array.from(imageUrls)[index] as string}
                                     alt="Chat message"
                                     className={classes.imageStyle}
                                   />
