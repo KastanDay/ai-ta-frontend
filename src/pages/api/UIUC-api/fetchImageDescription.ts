@@ -53,7 +53,8 @@ export const fetchImageDescription = async (
             - Categorizing the image and listing associated key terms.
             - Summarizing with keywords or phrases reflecting the main themes based on the user query.
             
-            Emphasize primary features before detailing secondary elements. For abstract or emotional content, infer the central message. Provide synonyms for technical terms where applicable. Ensure the description remains precise and relevant for semantic retrieval, avoiding mention of non-present features."
+            Emphasize primary features before detailing secondary elements. For abstract or emotional content, infer the central message. Provide synonyms for technical terms where applicable. 
+            Ensure the description remains concise, precise and relevant for semantic retrieval, avoiding mention of non-present features. Don't be redundant or overly verbose as that may hurt the semantic retrieval."
             
             **Goal:** Create an accurate, focused description that enhances semantic document retrieval, using ONLY observable details in the form of keywords`,
           },
