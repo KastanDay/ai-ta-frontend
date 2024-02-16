@@ -105,7 +105,7 @@ export const ChatMessage: FC<Props> = memo(
         isImg2TextLoading,
         isRouting,
         isPestDetectionLoading,
-        isRetrievalLoading
+        isRetrievalLoading,
       },
       dispatch: homeDispatch,
     } = useContext(HomeContext)
@@ -201,7 +201,10 @@ export const ChatMessage: FC<Props> = memo(
                 isValid = await checkIfUrlIsValid(content.image_url.url)
                 if (isValid) {
                   console.log('Image url is valid: ', content.image_url.url)
-                  setImageUrls((prevUrls) => new Set([...prevUrls, content.image_url?.url as string]));
+                  setImageUrls(
+                    (prevUrls) =>
+                      new Set([...prevUrls, content.image_url?.url as string]),
+                  )
                   // setImageUrls((prevUrls) => [
                   //   ...new Set([...prevUrls],
                   //   content.image_url?.url as string,
@@ -210,9 +213,14 @@ export const ChatMessage: FC<Props> = memo(
                   return content
                 } else {
                   const path = extractPathFromUrl(content.image_url.url)
-                  console.log('Image url was invalid, fetching presigned url for: ', path)
+                  console.log(
+                    'Image url was invalid, fetching presigned url for: ',
+                    path,
+                  )
                   const presignedUrl = await getPresignedUrl(path)
-                  setImageUrls((prevUrls) => new Set([...prevUrls, presignedUrl]))
+                  setImageUrls(
+                    (prevUrls) => new Set([...prevUrls, presignedUrl]),
+                  )
                   console.log('Set the image urls: ', imageUrls)
                   return { ...content, image_url: { url: presignedUrl } }
                 }
@@ -468,97 +476,105 @@ export const ChatMessage: FC<Props> = memo(
                   <div className="dark:prose-invert prose flex-1 whitespace-pre-wrap">
                     {Array.isArray(message.content) ? (
                       <>
-                      <div className="flex flex-col items-start space-y-2">
-                        {message.content.map((content, index) => {
-                          if (content.type === 'text') {
-                            if (
-                              (content.text as string)
-                                .trim()
-                                .startsWith('Image description:')
-                            ) {
-                              // console.log(
+                        <div className="flex flex-col items-start space-y-2">
+                          {message.content.map((content, index) => {
+                            if (content.type === 'text') {
+                              if (
+                                (content.text as string)
+                                  .trim()
+                                  .startsWith('Image description:')
+                              ) {
+                                // console.log(
                                 // 'Image description found: ',
                                 // content.text,
-                              // )
-                              return (
-                                <Accordion
-                                  variant="filled"
-                                  key={index}
-                                  className=" rounded-lg bg-[#2e026d] shadow-lg"
-                                >
-                                  <Accordion.Item value="imageDescription rounded-lg">
-                                    <Accordion.Control
-                                      className={`rounded-lg text-gray-200 hover:bg-purple-900 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                    >
-                                      This image description is used to find
-                                      relevant documents and provide intelligent
-                                      context for GPT-4 Vision.
-                                    </Accordion.Control>
-                                    <Accordion.Panel
-                                      className={`rounded-lg bg-[#1d1f32] p-4 text-gray-200 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                    >
-                                      {content.text}
-                                    </Accordion.Panel>
-                                  </Accordion.Item>
-                                </Accordion>
-                              )
-                            } else {
-                              return (
-                                <p
-                                  key={index}
-                                  className="self-start text-base font-medium"
-                                >
-                                  {content.text}
-                                </p>
-                              )
+                                // )
+                                return (
+                                  <Accordion
+                                    variant="filled"
+                                    key={index}
+                                    className=" rounded-lg bg-[#2e026d] shadow-lg"
+                                  >
+                                    <Accordion.Item value="imageDescription rounded-lg">
+                                      <Accordion.Control
+                                        className={`rounded-lg text-gray-200 hover:bg-purple-900 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                      >
+                                        This image description is used to find
+                                        relevant documents and provide
+                                        intelligent context for GPT-4 Vision.
+                                      </Accordion.Control>
+                                      <Accordion.Panel
+                                        className={`rounded-lg bg-[#1d1f32] p-4 text-gray-200 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                      >
+                                        {content.text}
+                                      </Accordion.Panel>
+                                    </Accordion.Item>
+                                  </Accordion>
+                                )
+                              } else {
+                                return (
+                                  <p
+                                    key={index}
+                                    className="self-start text-base font-medium"
+                                  >
+                                    {content.text}
+                                  </p>
+                                )
+                              }
                             }
-                          }
-                        })}          
-                        <div className="-m-1 flex w-full flex-wrap justify-start">
-                          {message.content
-                            .filter((item) => item.type === 'image_url')
-                            .map((content, index) => (
-                              <div
-                                key={index}
-                                className={classes.imageContainerStyle}
-                              >
-                                <div className="overflow-hidden rounded-lg shadow-lg">
-                                  <ImagePreview
-                                    src={Array.from(imageUrls)[index] as string}
-                                    alt="Chat message"
-                                    className={classes.imageStyle}
-                                  />
+                          })}
+                          <div className="-m-1 flex w-full flex-wrap justify-start">
+                            {message.content
+                              .filter((item) => item.type === 'image_url')
+                              .map((content, index) => (
+                                <div
+                                  key={index}
+                                  className={classes.imageContainerStyle}
+                                >
+                                  <div className="overflow-hidden rounded-lg shadow-lg">
+                                    <ImagePreview
+                                      src={
+                                        Array.from(imageUrls)[index] as string
+                                      }
+                                      alt="Chat message"
+                                      className={classes.imageStyle}
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
-                        </div>
-                        {isRouting &&
-                          messageIndex ==
-                            (selectedConversation?.messages.length ?? 0) -
-                              1 && (
-                            <div
-                              style={{ display: 'flex', alignItems: 'center' }}
-                            >
-                              <p
+                              ))}
+                          </div>
+                          {isRouting &&
+                            messageIndex ==
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 && (
+                              <div
                                 style={{
-                                  marginRight: '10px',
-                                  fontWeight: 'bold',
-                                  textShadow: '0 0 10px',
+                                  display: 'flex',
+                                  alignItems: 'center',
                                 }}
-                                className=" pulsate"
                               >
-                                Routing the request to relevant tools:
-                              </p>
-                              <LoadingSpinner size="xs" />
-                            </div>
-                          )}
+                                <p
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                  }}
+                                  className=" pulsate"
+                                >
+                                  Routing the request to relevant tools:
+                                </p>
+                                <LoadingSpinner size="xs" />
+                              </div>
+                            )}
 
                           {isRouting === false &&
                             messageIndex ==
-                            (selectedConversation?.messages.length ?? 0) -
-                            1 && (
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 && (
                               <div
-                                style={{ display: 'flex', alignItems: 'center' }}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
                               >
                                 <p
                                   style={{
@@ -573,97 +589,112 @@ export const ChatMessage: FC<Props> = memo(
                                 <IconCheck size={25} />
                               </div>
                             )}
-                          
+
                           {isPestDetectionLoading &&
-                          messageIndex ==
-                            (selectedConversation?.messages.length ?? 0) -
-                              1 && (
-                            <div
-                              style={{ display: 'flex', alignItems: 'center' }}
-                            >
-                              <p
+                            messageIndex ==
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 && (
+                              <div
                                 style={{
-                                  marginRight: '10px',
-                                  fontWeight: 'bold',
-                                  textShadow: '0 0 10px',
+                                  display: 'flex',
+                                  alignItems: 'center',
                                 }}
-                                className=" pulsate"
                               >
-                                Generating Pest Detection Report:
-                              </p>
-                              <LoadingSpinner size="xs" />
-                            </div>
-                          )}
-                          
+                                <p
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                  }}
+                                  className=" pulsate"
+                                >
+                                  Generating Pest Detection Report:
+                                </p>
+                                <LoadingSpinner size="xs" />
+                              </div>
+                            )}
+
                           {isPestDetectionLoading === false &&
-                          messageIndex ==
-                            (selectedConversation?.messages.length ?? 0) -
-                              1 && (
-                            <div
-                              style={{ display: 'flex', alignItems: 'center' }}
-                            >
-                              <p
+                            messageIndex ==
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 && (
+                              <div
                                 style={{
-                                  marginRight: '10px',
-                                  fontWeight: 'bold',
-                                  textShadow: '0 0 10px',
-                                  color: '#9d4edd',
+                                  display: 'flex',
+                                  alignItems: 'center',
                                 }}
                               >
-                                Generating Pest Detection Report:
-                              </p>
-                              <IconCheck size={25} />
-                            </div>
-                          )}
+                                <p
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                    color: '#9d4edd',
+                                  }}
+                                >
+                                  Generating Pest Detection Report:
+                                </p>
+                                <IconCheck size={25} />
+                              </div>
+                            )}
 
                           {isImg2TextLoading &&
-                          messageIndex ==
-                            (selectedConversation?.messages.length ?? 0) -
-                              1 && (
-                            <div
-                              style={{ display: 'flex', alignItems: 'center' }}
-                            >
-                              <p
+                            messageIndex ==
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 && (
+                              <div
                                 style={{
-                                  marginRight: '10px',
-                                  fontWeight: 'bold',
-                                  textShadow: '0 0 10px',
+                                  display: 'flex',
+                                  alignItems: 'center',
                                 }}
-                                className=" pulsate"
                               >
-                                Generating Image Description:
-                              </p>
-                              <LoadingSpinner size="xs" />
-                            </div>
-                          )}
-                          
+                                <p
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                  }}
+                                  className=" pulsate"
+                                >
+                                  Generating Image Description:
+                                </p>
+                                <LoadingSpinner size="xs" />
+                              </div>
+                            )}
+
                           {isImg2TextLoading === false &&
-                          messageIndex ==
-                            (selectedConversation?.messages.length ?? 0) -
-                              1 && (
-                            <div
-                              style={{ display: 'flex', alignItems: 'center' }}
-                            >
-                              <p
+                            messageIndex ==
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 && (
+                              <div
                                 style={{
-                                  marginRight: '10px',
-                                  fontWeight: 'bold',
-                                  textShadow: '0 0 10px',
-                                  color: '#9d4edd',
+                                  display: 'flex',
+                                  alignItems: 'center',
                                 }}
                               >
-                                Generating Image Description:
-                              </p>
-                              <IconCheck size={25} />
-                            </div>
-                          )}
+                                <p
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                    color: '#9d4edd',
+                                  }}
+                                >
+                                  Generating Image Description:
+                                </p>
+                                <IconCheck size={25} />
+                              </div>
+                            )}
 
                           {isRetrievalLoading &&
                             messageIndex ==
-                            (selectedConversation?.messages.length ?? 0) -
-                            1 && (
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 && (
                               <div
-                                style={{ display: 'flex', alignItems: 'center' }}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
                               >
                                 <p
                                   style={{
@@ -678,13 +709,16 @@ export const ChatMessage: FC<Props> = memo(
                                 <LoadingSpinner size="xs" />
                               </div>
                             )}
-                            
-                            {isRetrievalLoading === false &&
+
+                          {isRetrievalLoading === false &&
                             messageIndex ==
-                            (selectedConversation?.messages.length ?? 0) -
-                            1 && (
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 && (
                               <div
-                                style={{ display: 'flex', alignItems: 'center' }}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
                               >
                                 <p
                                   style={{
@@ -699,15 +733,15 @@ export const ChatMessage: FC<Props> = memo(
                                 <IconCheck size={25} />
                               </div>
                             )}
-                      </div>
+                        </div>
                       </>
                     ) : (
                       <>
-                      message.content
-                      {isRetrievalLoading &&
+                        message.content
+                        {isRetrievalLoading &&
                           messageIndex ==
-                          (selectedConversation?.messages.length ?? 0) -
-                          1 && (
+                            (selectedConversation?.messages.length ?? 0) -
+                              1 && (
                             <div
                               style={{ display: 'flex', alignItems: 'center' }}
                             >
@@ -724,11 +758,10 @@ export const ChatMessage: FC<Props> = memo(
                               <LoadingSpinner size="xs" />
                             </div>
                           )}
-                          
-                          {isRetrievalLoading === false &&
+                        {isRetrievalLoading === false &&
                           messageIndex ==
-                          (selectedConversation?.messages.length ?? 0) -
-                          1 && (
+                            (selectedConversation?.messages.length ?? 0) -
+                              1 && (
                             <div
                               style={{ display: 'flex', alignItems: 'center' }}
                             >

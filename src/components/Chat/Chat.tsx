@@ -121,7 +121,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       isImg2TextLoading,
       isRouting,
       isPestDetectionLoading,
-      isRetrievalLoading
+      isRetrievalLoading,
     },
     handleUpdateConversation,
     dispatch: homeDispatch,
@@ -185,46 +185,51 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     message: Message,
     imageContent: Content[],
     updatedConversation: Conversation,
-    currentMessageIndex: number
+    currentMessageIndex: number,
   ) => {
     homeDispatch({ field: 'isPestDetectionLoading', value: true })
     // Call pest detection API to get the s3 paths of the annotated images
-    const pestDetectionResponse = await fetchPestDetectionResponse(imageContent.map((content) => content.image_url?.url as string))
+    const pestDetectionResponse = await fetchPestDetectionResponse(
+      imageContent.map((content) => content.image_url?.url as string),
+    )
     console.log('Pest detection response: ', pestDetectionResponse)
     // Update the message content and append the annotated images to the message
     for (const url of pestDetectionResponse) {
-      const presignedUrl = await fetchPresignedUrl(url);
+      const presignedUrl = await fetchPresignedUrl(url)
       if (presignedUrl) {
-        (message.content as Content[]).push({
+        ;(message.content as Content[]).push({
           type: 'image_url',
           image_url: {
             url: presignedUrl,
           },
-        });
+        })
       }
     }
 
-      updatedConversation.messages[currentMessageIndex] = message
+    updatedConversation.messages[currentMessageIndex] = message
 
-      homeDispatch({
-        field: 'selectedConversation',
-        value: updatedConversation,
-      })
+    homeDispatch({
+      field: 'selectedConversation',
+      value: updatedConversation,
+    })
 
-      const updatedConversations = updateConversations(updatedConversation)
-      if (!updatedConversations) {
-        throw new Error('Failed to update conversations')
-      }
+    const updatedConversations = updateConversations(updatedConversation)
+    if (!updatedConversations) {
+      throw new Error('Failed to update conversations')
+    }
 
-      homeDispatch({ field: 'conversations', value: updatedConversations })
-      saveConversations(updatedConversations)
+    homeDispatch({ field: 'conversations', value: updatedConversations })
+    saveConversations(updatedConversations)
     // Assuming onImageUrlsUpdate is designed to handle the update
     // onImageUrlsUpdate({
-      // ...message,
-      // content: message.content,
+    // ...message,
+    // content: message.content,
     // }, updateConversations.length - 1);
 
-    console.log('Updated message content after pest detection and fetching presigned urls: ', message.content)
+    console.log(
+      'Updated message content after pest detection and fetching presigned urls: ',
+      message.content,
+    )
     homeDispatch({ field: 'isPestDetectionLoading', value: false })
   }
 
@@ -234,13 +239,16 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     updatedConversation: Conversation,
     searchQuery: string,
     controller: AbortController,
-    currentMessageIndex: number
+    currentMessageIndex: number,
   ) => {
     const imageContent = (message.content as Content[]).filter(
       (content) => content.type === 'image_url',
     )
     if (imageContent.length > 0) {
-      console.log('Running routing for image content because imageContent exists', imageContent)
+      console.log(
+        'Running routing for image content because imageContent exists',
+        imageContent,
+      )
       homeDispatch({ field: 'isRouting', value: true })
 
       const key =
@@ -249,12 +257,24 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           : apiKey
 
       try {
-        const response = await fetchRoutingResponse(message, getCurrentPageName(), endpoint, updatedConversation, key, controller)
+        const response = await fetchRoutingResponse(
+          message,
+          getCurrentPageName(),
+          endpoint,
+          updatedConversation,
+          key,
+          controller,
+        )
         console.log('Routing response: ', response)
         homeDispatch({ field: 'isRouting', value: false })
         // For future use, if we want to handle different types of routing responses for image content then we can add more cases here
         if ('Pests' === response) {
-          await handlePestDetection(message, imageContent, updatedConversation, currentMessageIndex)
+          await handlePestDetection(
+            message,
+            imageContent,
+            updatedConversation,
+            currentMessageIndex,
+          )
         }
         searchQuery = await handleImageContent(
           message,
@@ -364,7 +384,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ? message.content.map((content) => content.text).join(' ')
         : message.content
 
-      console.log("QUERY: ", searchQuery)
+      console.log('QUERY: ', searchQuery)
 
       if (selectedConversation) {
         let updatedConversation: Conversation
@@ -409,7 +429,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             updatedConversation,
             searchQuery,
             controller,
-            currentMessageIndex
+            currentMessageIndex,
           )
         }
 
@@ -462,10 +482,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           const final_response = await response.json()
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
-          homeDispatch({field: 'isRouting', value: undefined})
-          homeDispatch({field: 'isPestDetectionLoading', value: undefined})
-          homeDispatch({field: 'isImg2TextLoading', value: undefined})
-          homeDispatch({field: 'isRetrievalLoading', value: undefined})
+          homeDispatch({ field: 'isRouting', value: undefined })
+          homeDispatch({ field: 'isPestDetectionLoading', value: undefined })
+          homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+          homeDispatch({ field: 'isRetrievalLoading', value: undefined })
           notifications.show({
             id: 'error-notification',
             withCloseButton: true,
@@ -501,10 +521,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         if (!data) {
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
-          homeDispatch({field: 'isRouting', value: undefined})
-          homeDispatch({field: 'isPestDetectionLoading', value: undefined})
-          homeDispatch({field: 'isImg2TextLoading', value: undefined})
-          homeDispatch({field: 'isRetrievalLoading', value: undefined})
+          homeDispatch({ field: 'isRouting', value: undefined })
+          homeDispatch({ field: 'isPestDetectionLoading', value: undefined })
+          homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+          homeDispatch({ field: 'isRetrievalLoading', value: undefined })
           return
         }
         if (!plugin) {
@@ -524,10 +544,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             }
           }
           homeDispatch({ field: 'loading', value: false })
-          homeDispatch({field: 'isRouting', value: undefined})
-          homeDispatch({field: 'isPestDetectionLoading', value: undefined})
-          homeDispatch({field: 'isImg2TextLoading', value: undefined})
-          homeDispatch({field: 'isRetrievalLoading', value: undefined})
+          homeDispatch({ field: 'isRouting', value: undefined })
+          homeDispatch({ field: 'isPestDetectionLoading', value: undefined })
+          homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+          homeDispatch({ field: 'isRetrievalLoading', value: undefined })
           const reader = data.getReader()
           const decoder = new TextDecoder()
           let done = false

@@ -603,7 +603,7 @@ const Home = () => {
           setIsImg2TextLoading,
           setIsRouting,
           setIsPestDetectionLoading,
-          setIsRetrievalLoading
+          setIsRetrievalLoading,
         }}
       >
         <Head>
