@@ -194,13 +194,13 @@ export const ChatMessage: FC<Props> = memo(
           const updatedContent = await Promise.all(
             message.content.map(async (content) => {
               if (content.type === 'image_url' && content.image_url) {
-                console.log(
-                  'Checking if image url is valid: ',
-                  content.image_url.url,
-                )
+                // console.log(
+                // 'Checking if image url is valid: ',
+                // content.image_url.url,
+                // )
                 isValid = await checkIfUrlIsValid(content.image_url.url)
                 if (isValid) {
-                  console.log('Image url is valid: ', content.image_url.url)
+                  // console.log('Image url is valid: ', content.image_url.url)
                   setImageUrls(
                     (prevUrls) =>
                       new Set([...prevUrls, content.image_url?.url as string]),
@@ -209,7 +209,7 @@ export const ChatMessage: FC<Props> = memo(
                   //   ...new Set([...prevUrls],
                   //   content.image_url?.url as string,
                   // ])
-                  console.log('Set the image urls: ', imageUrls)
+                  // console.log('Set the image urls: ', imageUrls)
                   return content
                 } else {
                   const path = extractPathFromUrl(content.image_url.url)
@@ -221,7 +221,7 @@ export const ChatMessage: FC<Props> = memo(
                   setImageUrls(
                     (prevUrls) => new Set([...prevUrls, presignedUrl]),
                   )
-                  console.log('Set the image urls: ', imageUrls)
+                  // console.log('Set the image urls: ', imageUrls)
                   return { ...content, image_url: { url: presignedUrl } }
                 }
               }
@@ -340,7 +340,7 @@ export const ChatMessage: FC<Props> = memo(
 
     useEffect(() => {
       setImageUrls(new Set())
-      console.log('Set the image urls: ', imageUrls)
+      // console.log('Set the image urls: ', imageUrls)
     }, [message])
 
     useEffect(() => {
