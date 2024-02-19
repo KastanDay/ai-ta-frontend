@@ -763,6 +763,7 @@ const PrivateOrPublicCourse = ({
       if (res.ok) {
         const data = await res.json()
         setModels(data)
+        setSelectedModels(data)
       } else {
         console.error(`Error fetching models: ${res.status}`)
       }
@@ -774,13 +775,13 @@ const PrivateOrPublicCourse = ({
   }, [apiKey])
 
   const handleModelCheckboxChange = (modelId: string, isChecked: boolean) => {
-    if (isChecked) {
+    if (!isChecked) {
+      setSelectedModels(prevModels => prevModels.filter(model => model.id !== modelId));
+    } else {
       const model = models.find(model => model.id === modelId);
       if (model) {
         setSelectedModels(prevModels => [...prevModels, model]);
       }
-    } else {
-      setSelectedModels(prevModels => prevModels.filter(model => model.id !== modelId));
     }
   }
 
@@ -833,8 +834,8 @@ const PrivateOrPublicCourse = ({
                     size="sm"
                     onLabel="ON"
                     offLabel="OFF"
-                    checked={selectedModels.includes(model.id)}
-                    onChange={() => handleModelCheckboxChange(model.id, !selectedModels.includes(model.id))}
+                    checked={selectedModels.some(selectedModel => selectedModel.id === model.id)}
+                    onChange={(e) => handleModelCheckboxChange(model.id, e.target.checked)}
                   />
                 </Group>
               ))
