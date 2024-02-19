@@ -13,6 +13,7 @@ import {
   Divider,
   Accordion,
   createStyles,
+  Switch,
 } from '@mantine/core'
 import {
   IconAlertCircle,
@@ -824,14 +825,20 @@ const PrivateOrPublicCourse = ({
             </Text>
           </Accordion.Control>
           <Accordion.Panel>
-            {models.map((model: OpenAIModel) => (
-              <Checkbox
-                key={model.id}
-                checked={selectedModels.includes(model.id)}
-                label={model.name}
-                onChange={event => handleModelCheckboxChange(model.id, event.target.checked)}
-              />
-            ))}
+            {
+              models.sort((a, b) => b.name.localeCompare(a.name)).map((model: OpenAIModel) => (
+                <Group key={model.id} className="flex justify-between">
+                  <label>{model.name}</label>
+                  <Switch
+                    size="sm"
+                    onLabel="ON"
+                    offLabel="OFF"
+                    checked={selectedModels.includes(model.id)}
+                    onChange={() => handleModelCheckboxChange(model.id, !selectedModels.includes(model.id))}
+                  />
+                </Group>
+              ))
+            }
             {/* <Text
               className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
               size={'sm'}
