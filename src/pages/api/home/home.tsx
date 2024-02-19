@@ -386,6 +386,11 @@ const Home = () => {
     dispatch({ field: 'isRouting', value: isRouting })
   }
 
+  // Routing Response
+  const setRoutingResponse = (routingResponse: string) => {
+    dispatch({ field: 'routingResponse', value: routingResponse })
+  }
+
   // Pest Detection
   const setIsPestDetectionLoading = (isPestDetectionLoading: boolean) => {
     dispatch({ field: 'isPestDetectionLoading', value: isPestDetectionLoading })
@@ -602,6 +607,7 @@ const Home = () => {
           handleUpdateConversation,
           setIsImg2TextLoading,
           setIsRouting,
+          setRoutingResponse,
           setIsPestDetectionLoading,
           setIsRetrievalLoading,
         }}

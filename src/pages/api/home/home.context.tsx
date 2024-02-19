@@ -22,6 +22,7 @@ export interface HomeContextProps {
   ) => void
   setIsImg2TextLoading: (isImg2TextLoading: boolean) => void
   setIsRouting: (isRouting: boolean) => void
+  setRoutingResponse: (routingResponse: string) => void
   setIsPestDetectionLoading: (isPestDetectionLoading: boolean) => void
   setIsRetrievalLoading: (isRetrievalLoading: boolean) => void
 }

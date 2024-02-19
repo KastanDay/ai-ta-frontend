@@ -31,6 +31,7 @@ export interface HomeInitialState {
   showModelSettings: boolean
   isImg2TextLoading: boolean | undefined
   isRouting: boolean | undefined
+  routingResponse: string | undefined
   isPestDetectionLoading: boolean | undefined
   isRetrievalLoading: boolean | undefined
 }
@@ -61,6 +62,7 @@ export const initialState: HomeInitialState = {
   showModelSettings: false,
   isImg2TextLoading: undefined,
   isRouting: undefined,
+  routingResponse: undefined,
   isPestDetectionLoading: undefined,
   isRetrievalLoading: undefined,
 }

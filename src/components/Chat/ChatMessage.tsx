@@ -7,9 +7,12 @@ import {
   Paper,
   Collapse,
   Accordion,
+  Popover,
+  Button,
 } from '@mantine/core'
 import {
   IconCheck,
+  IconChevronDown,
   IconCopy,
   IconEdit,
   IconRobot,
@@ -104,6 +107,7 @@ export const ChatMessage: FC<Props> = memo(
         messageIsStreaming,
         isImg2TextLoading,
         isRouting,
+        routingResponse,
         isPestDetectionLoading,
         isRetrievalLoading,
       },
@@ -339,6 +343,7 @@ export const ChatMessage: FC<Props> = memo(
     }, [message.content])
 
     useEffect(() => {
+      // console.log('Resetting image urls because message: ', message, 'selectedConversation: ', selectedConversation)
       setImageUrls(new Set())
       // console.log('Set the image urls: ', imageUrls)
     }, [message])
@@ -543,9 +548,12 @@ export const ChatMessage: FC<Props> = memo(
                               ))}
                           </div>
                           {isRouting &&
-                            messageIndex ==
+                            (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                                1 && (
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -567,9 +575,13 @@ export const ChatMessage: FC<Props> = memo(
                             )}
 
                           {isRouting === false &&
-                            messageIndex ==
+                            routingResponse &&
+                            (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                                1 && (
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -586,14 +598,33 @@ export const ChatMessage: FC<Props> = memo(
                                 >
                                   Routing the request to relevant tools:
                                 </p>
-                                <IconCheck size={25} />
+                                <Popover
+                                  width={200}
+                                  position="bottom"
+                                  withArrow
+                                  shadow="md"
+                                >
+                                  <Popover.Target>
+                                    <Button>
+                                      <IconChevronDown size={25} />
+                                    </Button>
+                                  </Popover.Target>
+                                  <Popover.Dropdown>
+                                    <Text size="xs">
+                                      Routing to: {routingResponse}
+                                    </Text>
+                                  </Popover.Dropdown>
+                                </Popover>
                               </div>
                             )}
 
                           {isPestDetectionLoading &&
-                            messageIndex ==
+                            (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                                1 && (
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -615,9 +646,12 @@ export const ChatMessage: FC<Props> = memo(
                             )}
 
                           {isPestDetectionLoading === false &&
-                            messageIndex ==
+                            (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                                1 && (
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -639,9 +673,12 @@ export const ChatMessage: FC<Props> = memo(
                             )}
 
                           {isImg2TextLoading &&
-                            messageIndex ==
+                            (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                                1 && (
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -663,9 +700,12 @@ export const ChatMessage: FC<Props> = memo(
                             )}
 
                           {isImg2TextLoading === false &&
-                            messageIndex ==
+                            (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                                1 && (
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -687,9 +727,12 @@ export const ChatMessage: FC<Props> = memo(
                             )}
 
                           {isRetrievalLoading &&
-                            messageIndex ==
+                            (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                                1 && (
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -711,9 +754,12 @@ export const ChatMessage: FC<Props> = memo(
                             )}
 
                           {isRetrievalLoading === false &&
-                            messageIndex ==
+                            (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                                1 && (
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -739,9 +785,11 @@ export const ChatMessage: FC<Props> = memo(
                       <>
                         message.content
                         {isRetrievalLoading &&
-                          messageIndex ==
-                            (selectedConversation?.messages.length ?? 0) -
-                              1 && (
+                          (messageIndex ===
+                            (selectedConversation?.messages.length ?? 0) - 1 ||
+                            messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
                             <div
                               style={{ display: 'flex', alignItems: 'center' }}
                             >
@@ -759,9 +807,11 @@ export const ChatMessage: FC<Props> = memo(
                             </div>
                           )}
                         {isRetrievalLoading === false &&
-                          messageIndex ==
-                            (selectedConversation?.messages.length ?? 0) -
-                              1 && (
+                          (messageIndex ===
+                            (selectedConversation?.messages.length ?? 0) - 1 ||
+                            messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
                             <div
                               style={{ display: 'flex', alignItems: 'center' }}
                             >
