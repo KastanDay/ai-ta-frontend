@@ -100,29 +100,11 @@ const CourseMain: NextPage = () => {
       newSystemPrompt += "\nThings NOT to do: " + thingsNotToDo;
     }
 
-    // newSystemPrompt += "\nThings to do: " + thingsToDo;
-    // newSystemPrompt += "\nThings NOT to do: " + thingsNotToDo;
-
     setSystemPrompt(newSystemPrompt);
   }, [checked1, checked2, thingsToDo, thingsNotToDo]);
 
   const handleSystemPromptSubmit = async () => {
     if (courseMetadata && course_name && systemPrompt) {
-      // let newSystemPrompt = systemPrompt;
-
-      // if (checked1) {
-      //   newSystemPrompt += "\nContent includes equations; LaTeX notation preferred.";
-      // }
-
-      // if (checked2) {
-      //   newSystemPrompt += "\nFocus exclusively on document-based references—avoid incorporating knowledge from outside sources. Essential for legal and similar fields to maintain response quality.";
-      // }
-      // if (thingsToDo) {
-      //   newSystemPrompt += "\nThings to do: " + thingsToDo;
-      // }
-      // if (thingsNotToDo) {
-      //   newSystemPrompt += "\nThings NOT to do: " + thingsNotToDo;
-      // }
 
       courseMetadata.system_prompt = systemPrompt;
       const success = await callSetCourseMetadata(course_name, courseMetadata);
