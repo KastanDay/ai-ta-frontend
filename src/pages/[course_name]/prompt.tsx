@@ -55,6 +55,10 @@ const CourseMain: NextPage = () => {
   const clerk_user = useUser()
   const emails = extractEmailsFromClerk(clerk_user.user)
   const currUserEmail = emails[0]
+  const [baseSystemPrompt, setBaseSystemPrompt] = useState('');
+  const [thingsToDo, setThingsToDo] = useState('');
+  const [thingsNotToDo, setThingsNotToDo] = useState('');
+  const [originalSystemPrompt, setOriginalSystemPrompt] = useState('');
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -72,16 +76,57 @@ const CourseMain: NextPage = () => {
       const courseMetadata = (await response_metadata.json()).course_metadata
       setCourseMetadata(courseMetadata)
       setSystemPrompt(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
-
+      setBaseSystemPrompt(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
       setIsLoading(false)
     }
     fetchCourseData()
   }, [router.isReady])
 
+  useEffect(() => {
+    let newSystemPrompt = baseSystemPrompt;
+
+    if (checked1) {
+      newSystemPrompt += "\nContent includes equations; LaTeX notation preferred.";
+    }
+
+    if (checked2) {
+      newSystemPrompt += "\nFocus exclusively on document-based references—avoid incorporating knowledge from outside sources. Essential for legal and similar fields to maintain response quality.";
+    }
+
+    if (thingsToDo) {
+      newSystemPrompt += "\nThings to do: " + thingsToDo;
+    }
+    if (thingsNotToDo) {
+      newSystemPrompt += "\nThings NOT to do: " + thingsNotToDo;
+    }
+
+    // newSystemPrompt += "\nThings to do: " + thingsToDo;
+    // newSystemPrompt += "\nThings NOT to do: " + thingsNotToDo;
+
+    setSystemPrompt(newSystemPrompt);
+  }, [checked1, checked2, thingsToDo, thingsNotToDo]);
+
   const handleSystemPromptSubmit = async () => {
     if (courseMetadata && course_name && systemPrompt) {
-      courseMetadata.system_prompt = systemPrompt
-      const success = await callSetCourseMetadata(course_name, courseMetadata)
+      // let newSystemPrompt = systemPrompt;
+
+      // if (checked1) {
+      //   newSystemPrompt += "\nContent includes equations; LaTeX notation preferred.";
+      // }
+
+      // if (checked2) {
+      //   newSystemPrompt += "\nFocus exclusively on document-based references—avoid incorporating knowledge from outside sources. Essential for legal and similar fields to maintain response quality.";
+      // }
+      // if (thingsToDo) {
+      //   newSystemPrompt += "\nThings to do: " + thingsToDo;
+      // }
+      // if (thingsNotToDo) {
+      //   newSystemPrompt += "\nThings NOT to do: " + thingsNotToDo;
+      // }
+
+      courseMetadata.system_prompt = systemPrompt;
+      const success = await callSetCourseMetadata(course_name, courseMetadata);
+
       if (!success) {
         console.log('Error updating course metadata')
         showToastOnPromptUpdate(theme, true)
@@ -338,6 +383,7 @@ const CourseMain: NextPage = () => {
                         className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
                         value={systemPrompt}
                         onChange={(e) => {
+                          setBaseSystemPrompt(e.target.value);
                           setSystemPrompt(e.target.value)
                         }}
                       />
@@ -379,11 +425,11 @@ const CourseMain: NextPage = () => {
                         minRows={3}
                         maxRows={20}
                         style={{ width: '100%' }}
-                        placeholder="Enter a system prompt"
+                        placeholder="Enter things to do..."
                         className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                        value={systemPrompt}
+                        value={thingsToDo}
                         onChange={(e) => {
-                          setSystemPrompt(e.target.value)
+                          setThingsToDo(e.target.value)
                         }}
                       />
                       <Textarea
@@ -392,11 +438,11 @@ const CourseMain: NextPage = () => {
                         minRows={3}
                         maxRows={20}
                         style={{ width: '100%' }}
-                        placeholder="Enter a system prompt"
+                        placeholder="Enter things not to do"
                         className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                        value={systemPrompt}
+                        value={thingsNotToDo}
                         onChange={(e) => {
-                          setSystemPrompt(e.target.value)
+                          setThingsNotToDo(e.target.value)
                         }}
                       />
                       <div style={{ paddingTop: '10px', width: '100%' }}>
