@@ -1,49 +1,59 @@
 import { kv } from '@vercel/kv'
-import type { NextApiRequest, NextApiResponse } from 'next'
 import { CourseMetadata } from '~/types/courseMetadata'
-import { OpenAIModel } from '~/types/openai'
+import { NextRequest, NextResponse } from 'next/server'
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
-type ResponseData = {
-  message: string
-}
+// GREAT EXAMPLE OF A POST REQUEST ON EDGE
+// const { course_name, disabled_models } = await req.json()
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<ResponseData>,
-) {
-  console.log('in top of setDisabledModels')
+export default async function handler(req: NextRequest) {
   if (req.method !== 'POST') {
-    return res.status(405)
+    return NextResponse.json(
+      { message: 'Must be a post request.' },
+      { status: 405 },
+    )
   }
 
-  const { course_name, disabled_models } = req.body
+  // Parse body
+  const { course_name, disabled_models } = await req.json()
 
   if (!course_name || !disabled_models) {
-    return res.status(400).json({ message: 'Invalid request' })
+    return NextResponse.json(
+      {
+        message:
+          'Invalid request, missing one of course_name or disabled_models.',
+      },
+      { status: 400 },
+    )
   }
 
   try {
+    // FYI Redis itself doesn't provide direct commands to manipulate JSON data within a hash field, so this workaround is necessary.
     let course_metadata = (await kv.hget(
       'course_metadatas',
       course_name,
     )) as CourseMetadata
 
     if (!course_metadata) {
-      return res.status(500).json({ message: 'Course not found' })
+      return NextResponse.json(
+        { message: 'Existing course not found.' },
+        { status: 500 },
+      )
     }
 
     // Set disabled models
     course_metadata.disabled_models = disabled_models
-    console.log('course_metadata before hset', course_metadata)
 
     await kv.hset('course_metadatas', {
       [course_name]: course_metadata,
     })
-    return res.json({ message: 'success' })
+    return NextResponse.json({ message: 'Success' }, { status: 200 })
   } catch (error) {
     console.error('Failure in setDisabledModels:', error)
-    return res.status(500).json({ message: 'Server encountered an error' })
+    return NextResponse.json(
+      { message: 'Internal server error' },
+      { status: 500 },
+    )
   }
 }
