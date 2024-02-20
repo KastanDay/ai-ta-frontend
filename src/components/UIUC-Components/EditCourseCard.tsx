@@ -901,8 +901,8 @@ const PrivateOrPublicCourse = ({
                 ))
             ) : (
               <Text>
-                Please input a "Project-wide OpenAI key" (above) to access this
-                feature
+                Please input a &quot;Project-wide OpenAI key&quot; (above) to
+                access this feature
               </Text>
             )}
             {/* <Text
