@@ -24,7 +24,7 @@ import {
   IconLock,
   IconTrash,
 } from '@tabler/icons-react'
-import { OpenAIModel } from '@/types/openai';
+import { OpenAIModel } from '@/types/openai'
 import {
   CourseMetadataOptionalForUpsert,
   type CourseMetadata,
@@ -195,7 +195,7 @@ const EditCourseCard = ({
     }
 
     if (inputValue === '' && courseMetadata?.openai_api_key !== '') {
-      ; (courseMetadata as CourseMetadata).openai_api_key = inputValue
+      ;(courseMetadata as CourseMetadata).openai_api_key = inputValue
       console.log('Removing api key')
       setApiKey(inputValue)
       await callSetCourseMetadata(course_name, courseMetadata as CourseMetadata)
@@ -313,11 +313,13 @@ const EditCourseCard = ({
                   autoFocus
                   disabled={!is_new_course}
                   className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${isCourseAvailable && courseName != ''
-                      ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                      : 'border-red-800 text-red-600 focus:border-red-800'
-                    } ${montserrat_paragraph.variable
-                    } font-montserratParagraph`}
+                                ${
+                                  isCourseAvailable && courseName != ''
+                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                                    : 'border-red-800 text-red-600 focus:border-red-800'
+                                } ${
+                                  montserrat_paragraph.variable
+                                } font-montserratParagraph`}
                 />
                 <Title
                   order={4}
@@ -774,13 +776,43 @@ const PrivateOrPublicCourse = ({
     }
   }, [apiKey])
 
+  useEffect(() => {
+    console.log('Selected models:', selectedModels)
+    const unselectedModels = models.filter(
+      (model) => !selectedModels.includes(model),
+    )
+    console.log('Unselected models:', unselectedModels)
+
+    const setDisabledModels = async () => {
+      const unselectedModelIds = unselectedModels.map((model) => model.id)
+      const res = await fetch('/api/UIUC-api/setDisabledModels', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          course_name: course_name,
+          disabled_models: unselectedModelIds,
+        }),
+      })
+      if (res.ok) {
+        console.log('Successfully set disabled models')
+      } else {
+        console.error(`Error setting disabled models on backend: ${res.status}`)
+      }
+    }
+    setDisabledModels()
+  }, [selectedModels])
+
   const handleModelCheckboxChange = (modelId: string, isChecked: boolean) => {
     if (!isChecked) {
-      setSelectedModels(prevModels => prevModels.filter(model => model.id !== modelId));
+      setSelectedModels((prevModels) =>
+        prevModels.filter((model) => model.id !== modelId),
+      )
     } else {
-      const model = models.find(model => model.id === modelId);
+      const model = models.find((model) => model.id === modelId)
       if (model) {
-        setSelectedModels(prevModels => [...prevModels, model]);
+        setSelectedModels((prevModels) => [...prevModels, model])
       }
     }
   }
@@ -820,26 +852,31 @@ const PrivateOrPublicCourse = ({
               className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
               size={'md'}
             >
-              Only the selected models will be shown in the chat's model selection.
+              Only the selected models will be shown in the chat's model
+              selection.
               {/* <span className={'text-purple-600'}>Read more</span>{' '}
               👇 */}
             </Text>
           </Accordion.Control>
           <Accordion.Panel>
-            {
-              models.sort((a, b) => b.name.localeCompare(a.name)).map((model: OpenAIModel) => (
+            {models
+              .sort((a, b) => b.name.localeCompare(a.name))
+              .map((model: OpenAIModel) => (
                 <Group key={model.id} className="flex justify-between">
                   <label>{model.name}</label>
                   <Switch
                     size="sm"
                     onLabel="ON"
                     offLabel="OFF"
-                    checked={selectedModels.some(selectedModel => selectedModel.id === model.id)}
-                    onChange={(e) => handleModelCheckboxChange(model.id, e.target.checked)}
+                    checked={selectedModels.some(
+                      (selectedModel) => selectedModel.id === model.id,
+                    )}
+                    onChange={(e) =>
+                      handleModelCheckboxChange(model.id, e.target.checked)
+                    }
                   />
                 </Group>
-              ))
-            }
+              ))}
             {/* <Text
               className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
               size={'sm'}
@@ -909,7 +946,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-              // style={{ textDecoration: 'underline' }}
+                // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
@@ -921,8 +958,9 @@ const PrivateOrPublicCourse = ({
 
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${isPrivate ? 'private' : 'public'
-            }. Click to change.`}
+          label={`Course is ${
+            isPrivate ? 'private' : 'public'
+          }. Click to change.`}
           wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
@@ -995,7 +1033,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-              // style={{ textDecoration: 'underline' }}
+                // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
