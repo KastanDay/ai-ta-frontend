@@ -11,6 +11,7 @@ export interface CourseMetadata {
   course_intro_message: string | undefined
   openai_api_key: string | undefined
   system_prompt: string | undefined
+  disabled_models: string[] | undefined
 }
 
 export interface CourseMetadataOptionalForUpsert {
@@ -23,4 +24,5 @@ export interface CourseMetadataOptionalForUpsert {
   course_intro_message: string | undefined
   openai_api_key: string | undefined
   system_prompt: string | undefined
+  disabled_models: string[] | undefined
 }

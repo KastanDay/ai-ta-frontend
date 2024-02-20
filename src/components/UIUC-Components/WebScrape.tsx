@@ -168,6 +168,7 @@ export const WebScrape = ({
             openai_api_key: undefined,
             example_questions: undefined,
             system_prompt: undefined,
+            disabled_models: undefined,
           })
 
           if (!response) {
@@ -243,6 +244,7 @@ export const WebScrape = ({
             openai_api_key: undefined,
             example_questions: undefined,
             system_prompt: undefined,
+            disabled_models: undefined,
           })
           if (!response) {
             throw new Error('Error while setting course metadata')
