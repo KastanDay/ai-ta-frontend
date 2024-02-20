@@ -56,6 +56,18 @@ const useStyles = createStyles((theme) => ({
     borderRadius: theme.radius.xl,
     outline: 'none',
   },
+  switch: {
+    color: (theme.colors as any).aiPurple[0],
+    backgroundColor: (theme.colors as any).aiPurple[0],
+    input: {
+      color: (theme.colors as any).aiPurple[0],
+      backgroundColor: (theme.colors as any).aiPurple[0],
+    },
+    root: {
+      color: (theme.colors as any).aiPurple[0],
+      backgroundColor: (theme.colors as any).aiPurple[0],
+    },
+  },
   item: {
     backgroundColor: 'bg-transparent',
     // border: `${rem(1)} solid transparent`,
@@ -890,6 +902,20 @@ const PrivateOrPublicCourse = ({
                       size="sm"
                       onLabel="ON"
                       offLabel="OFF"
+                      styles={{
+                        track: {
+                          backgroundColor: selectedModels.some(
+                            (selectedModel) => selectedModel.id === model.id,
+                          )
+                            ? '#6a29a4 !important'
+                            : '#25262b',
+                          borderColor: selectedModels.some(
+                            (selectedModel) => selectedModel.id === model.id,
+                          )
+                            ? '#6a29a4 !important'
+                            : '#25262b',
+                        },
+                      }}
                       checked={selectedModels.some(
                         (selectedModel) => selectedModel.id === model.id,
                       )}
