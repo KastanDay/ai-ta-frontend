@@ -199,6 +199,7 @@ const EditCourseCard = ({
       console.log('Removing api key')
       setApiKey(inputValue)
       await callSetCourseMetadata(course_name, courseMetadata as CourseMetadata)
+      setIsKeyUpdating(false)
       notifications.show({
         id: 'success-notification',
         title: 'Update Successful',
@@ -392,7 +393,7 @@ const EditCourseCard = ({
                     gradient={{ from: 'gold', to: 'white', deg: 170 }}
                     order={3}
                   >
-                    Course-wide OpenAI key{' '}
+                    Project-wide OpenAI key{' '}
                   </Title>
 
                   <Accordion
@@ -778,6 +779,9 @@ const PrivateOrPublicCourse = ({
 
     if (apiKey) {
       fetchModels()
+    } else {
+      setModels([])
+      // console.error('No API key provided')
     }
   }, [apiKey])
 
@@ -876,24 +880,31 @@ const PrivateOrPublicCourse = ({
             </Text>
           </Accordion.Control>
           <Accordion.Panel>
-            {models
-              .sort((a, b) => b.name.localeCompare(a.name))
-              .map((model: OpenAIModel) => (
-                <Group key={model.id} className="flex justify-between">
-                  <label>{model.name}</label>
-                  <Switch
-                    size="sm"
-                    onLabel="ON"
-                    offLabel="OFF"
-                    checked={selectedModels.some(
-                      (selectedModel) => selectedModel.id === model.id,
-                    )}
-                    onChange={(e) =>
-                      handleModelCheckboxChange(model.id, e.target.checked)
-                    }
-                  />
-                </Group>
-              ))}
+            {models.length > 0 ? (
+              models
+                .sort((a, b) => b.name.localeCompare(a.name))
+                .map((model: OpenAIModel) => (
+                  <Group key={model.id} className="flex justify-between">
+                    <label>{model.name}</label>
+                    <Switch
+                      size="sm"
+                      onLabel="ON"
+                      offLabel="OFF"
+                      checked={selectedModels.some(
+                        (selectedModel) => selectedModel.id === model.id,
+                      )}
+                      onChange={(e) =>
+                        handleModelCheckboxChange(model.id, e.target.checked)
+                      }
+                    />
+                  </Group>
+                ))
+            ) : (
+              <Text>
+                Please input a "Project-wide OpenAI key" (above) to access this
+                feature
+              </Text>
+            )}
             {/* <Text
               className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
               size={'sm'}
