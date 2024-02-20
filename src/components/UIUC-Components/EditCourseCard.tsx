@@ -763,9 +763,14 @@ const PrivateOrPublicCourse = ({
         body: JSON.stringify({ key: apiKey }),
       })
       if (res.ok) {
-        const data = await res.json()
-        setModels(data)
-        setSelectedModels(data)
+        const allAvailableModels = (await res.json()) as OpenAIModel[]
+        setModels(allAvailableModels)
+
+        setSelectedModels(
+          allAvailableModels.filter(
+            (model) => !courseMetadata.disabled_models?.includes(model.id),
+          ),
+        )
       } else {
         console.error(`Error fetching models: ${res.status}`)
       }
@@ -776,44 +781,57 @@ const PrivateOrPublicCourse = ({
     }
   }, [apiKey])
 
-  useEffect(() => {
-    console.log('Selected models:', selectedModels)
-    const unselectedModels = models.filter(
-      (model) => !selectedModels.includes(model),
-    )
-    console.log('Unselected models:', unselectedModels)
-
-    const setDisabledModels = async () => {
-      const unselectedModelIds = unselectedModels.map((model) => model.id)
-      const res = await fetch('/api/UIUC-api/setDisabledModels', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          course_name: course_name,
-          disabled_models: unselectedModelIds,
-        }),
-      })
-      if (res.ok) {
-        console.log('Successfully set disabled models')
-      } else {
-        console.error(`Error setting disabled models on backend: ${res.status}`)
-      }
-    }
-    setDisabledModels()
-  }, [selectedModels])
-
   const handleModelCheckboxChange = (modelId: string, isChecked: boolean) => {
     if (!isChecked) {
+      console.log('Model being unchecked')
+
+      const mySelectedModels = selectedModels.filter(
+        (model) => model.id !== modelId,
+      )
+
+      // start with models and filter out all of mySelectedModels from it
+      const myDisabledModels = models.filter(
+        (model) => !mySelectedModels.includes(model),
+      )
+
+      // console.log('being removed -- mySelectedModels', mySelectedModels)
+      // console.log('being removed -- myDisabledModels', myDisabledModels)
       setSelectedModels((prevModels) =>
         prevModels.filter((model) => model.id !== modelId),
       )
+      setDisabledModels(myDisabledModels)
     } else {
       const model = models.find((model) => model.id === modelId)
+      const mySelectedModels = [...selectedModels, model]
+      const myDisabledModels = models.filter(
+        (model) => !mySelectedModels.includes(model),
+      )
+
+      // console.log('being checked -- mySelectedModels', mySelectedModels)
+      // console.log('being checked -- myDisabledModels', myDisabledModels)
       if (model) {
         setSelectedModels((prevModels) => [...prevModels, model])
       }
+      setDisabledModels(myDisabledModels)
+    }
+  }
+
+  const setDisabledModels = async (disabledModels: OpenAIModel[]) => {
+    const disabledModelIds = disabledModels.map((model) => model.id)
+    const res = await fetch('/api/UIUC-api/setDisabledModels', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        course_name: course_name,
+        disabled_models: disabledModelIds,
+      }),
+    })
+    if (res.ok) {
+      console.log('Successfully set disabled models')
+    } else {
+      console.error(`Error setting disabled models on backend: ${res.status}`)
     }
   }
 
