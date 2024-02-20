@@ -25,7 +25,7 @@ export default async function handler(req: NextRequest) {
 
     try {
       // FYI Redis itself doesn't provide direct commands to manipulate JSON data within a hash field, so this workaround is necessary.
-      let course_metadata = (await kv.hget(
+      const course_metadata = (await kv.hget(
         'course_metadatas',
         course_name,
       )) as CourseMetadata

@@ -870,8 +870,7 @@ const PrivateOrPublicCourse = ({
               className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
               size={'md'}
             >
-              Only the selected models will be shown in the chat's model
-              selection.
+              Limit what models your users can chat with (mostly to save cost)
               {/* <span className={'text-purple-600'}>Read more</span>{' '}
               👇 */}
             </Text>
