@@ -34,6 +34,8 @@ const montserrat_light = Montserrat({
 const CourseMain: NextPage = () => {
   const [checked1, setChecked1] = useState(false);
   const [checked2, setChecked2] = useState(false);
+  const [checked3, setChecked3] = useState(false);
+
   const theme = useMantineTheme()
   const router = useRouter()
 
@@ -93,6 +95,12 @@ const CourseMain: NextPage = () => {
       newSystemPrompt += "\nFocus exclusively on document-based references—avoid incorporating knowledge from outside sources. Essential for legal and similar fields to maintain response quality.";
     }
 
+    if (checked3 && courseMetadata?.course_intro_message) {
+      newSystemPrompt += `\n${courseMetadata.course_intro_message} If the user asks an introductory question or greeting along the lines of 'hello' or 'what can you do?' or 'What's in here ?' or 'what is ${course_name}?' or similar, then please respond with a warm welcome to ${course_name}, the AI ${course_name} assistant chatbot. Tell them that you can answer questions using the entire knowledge base of Extension. Feel free to ask!`;
+    } else if (checked3) {
+      newSystemPrompt += `\nIf the user asks an introductory question or greeting along the lines of 'hello' or 'what can you do?' or 'What's in here ?' or 'what is ${course_name}?' or similar, then please respond with a warm welcome to ${course_name}, the AI ${course_name} assistant chatbot. Tell them that you can answer questions using the entire knowledge base of Extension. Feel free to ask!`;
+    }
+
     if (thingsToDo) {
       newSystemPrompt += "\nThings to do: " + thingsToDo;
     }
@@ -101,7 +109,7 @@ const CourseMain: NextPage = () => {
     }
 
     setSystemPrompt(newSystemPrompt);
-  }, [checked1, checked2, thingsToDo, thingsNotToDo]);
+  }, [checked1, checked2, checked3, thingsToDo, thingsNotToDo, courseMetadata]);
 
   const handleSystemPromptSubmit = async () => {
     if (courseMetadata && course_name && systemPrompt) {
@@ -371,10 +379,24 @@ const CourseMain: NextPage = () => {
                         }}
                       />
                       <Checkbox
+                        label={`Add greetings that edited when create the course`}
+                        // wrapperProps={{}}
+                        // description="Course is private by default."
+                        className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                        // style={{ marginTop: '4rem' }}
+                        size="md"
+                        // bg='#020307'
+                        color="grape"
+                        // icon={CheckboxIcon}
+                        checked={checked3}
+                        onChange={(event) => setChecked3(event.currentTarget.checked)}
+                      // defaultChecked={isPrivate}
+                      // onChange={handleCheckboxChange}
+                      />
+                      <Checkbox
                         label={`Content includes equations; LaTeX notation preferred.`}
                         // wrapperProps={{}}
                         // description="Course is private by default."
-                        aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
                         className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                         // style={{ marginTop: '4rem' }}
                         size="md"
@@ -390,7 +412,6 @@ const CourseMain: NextPage = () => {
                         label={`Focus exclusively on document-based references—avoid incorporating knowledge from outside sources. Essential for legal and similar fields to maintain response quality.`}
                         // wrapperProps={{}}
                         // description="Course is private by default."
-                        aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
                         className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                         // style={{ marginTop: '4rem' }}
                         size="md"
