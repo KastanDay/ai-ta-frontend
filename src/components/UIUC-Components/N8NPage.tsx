@@ -27,6 +27,8 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import { LoadingSpinner } from './LoadingSpinner'
+import { supabase } from '@/utils/supabaseClient'
+import { Accordion } from '@mantine/core'
 
 const useStyles = createStyles((theme: MantineTheme) => ({
   downloadButton: {
@@ -87,6 +89,8 @@ const MakeToolsPage = ({
     null,
   )
   const [currentEmail, setCurrentEmail] = useState('')
+
+  const [n8nApiKey, setN8nApiKey] = useState('')
 
   const router = useRouter()
 
@@ -258,7 +262,11 @@ const MakeToolsPage = ({
 
             <div className="pt-5"></div>
 
-            <Title order={4} w={'80%'}>
+            <Title
+              order={4}
+              w={'80%'}
+              style={{ margin: '0 auto', textAlign: 'center' }}
+            >
               Use{' '}
               <a
                 href="https://n8n.io"
@@ -276,43 +284,65 @@ const MakeToolsPage = ({
               your project.
             </Title>
 
-            <Title
-              order={4}
-              w={'80%'}
-              size={'xl'}
-              className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
-            >
-              To setup:{' '}
-            </Title>
-
-            <List
-              w={'80%'}
-              type="ordered"
-              withPadding
-              className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-            >
-              <List.Item>
-                Create an account and store your password safely.
-              </List.Item>
-              <List.Item>
-                Inside n8n, create an n8n API key and input it in the textbox
-                below.
-              </List.Item>
-              <List.Item>
-                Any workflow you create will be enabled by default in this
-                project.
-                <br />
-                Check out your workflows below.
-              </List.Item>
-            </List>
-
-            <N8nWorkflowsTable />
+            <div style={{ width: '60%', margin: '0 auto' }}>
+              <Accordion>
+                <Accordion.Item value="setup">
+                  <Accordion.Control>
+                    <Title
+                      style={{ margin: '0 auto', textAlign: 'center' }}
+                      order={4}
+                      w={'80%'}
+                      size={'xl'}
+                      className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                    >
+                      Setup Instructions 🤠
+                    </Title>
+                  </Accordion.Control>
+                  <Accordion.Panel>
+                    <List
+                      w={'80%'}
+                      type="ordered"
+                      withPadding
+                      className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                    >
+                      <List.Item>
+                        Create an account and store your password safely through{' '}
+                        <a
+                          href="https://primary-production-60d0.up.railway.app/setup"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: '#8B5CF6',
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          this link
+                        </a>
+                      </List.Item>
+                      <List.Item>
+                        Inside n8n, create an n8n API key and input it in the
+                        textbox below.
+                      </List.Item>
+                      <List.Item>
+                        Any workflow you create will be enabled by default in
+                        this project.
+                        <br />
+                      </List.Item>
+                      <List.Item>Check out your workflows below!</List.Item>
+                    </List>
+                  </Accordion.Panel>
+                </Accordion.Item>
+              </Accordion>
+            </div>
+            <N8nWorkflowsTable n8nApiKey={n8nApiKey} />
 
             <div style={{ width: '40%' }}>
               <TextInput
                 label="n8n API Key"
                 description="We use this to run your workflows. You can find your n8n API Key in your n8n account settings."
                 placeholder="Enter your n8n API Key here"
+                value={n8nApiKey}
+                onChange={(event) => setN8nApiKey(event.currentTarget.value)}
                 className={`${montserrat_paragraph.variable} font-montserratParagraph`}
               />
               <div className="pt-2" />
@@ -329,7 +359,7 @@ const MakeToolsPage = ({
             {/* NOMIC VISUALIZATION  */}
             {/* {false ? ( */}
             {/* {true ? ( */}
-            {nomicIsLoading ? (
+            {/* {nomicIsLoading ? (
               <>
                 <span className="nomic-iframe skeleton-box pl-7 pr-7 pt-4"></span>
               </>
@@ -360,7 +390,7 @@ const MakeToolsPage = ({
                   </a>
                 </Title>
               </>
-            )}
+            )} */}
           </Flex>
         </div>
         <GlobalFooter />

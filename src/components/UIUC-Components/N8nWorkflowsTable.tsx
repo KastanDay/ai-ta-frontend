@@ -43,11 +43,17 @@ interface WorkflowRecord {
   updatedAt: Date
 }
 
-export const N8nWorkflowsTable = () => {
+interface N8nWorkflowsTableProps {
+  n8nApiKey: string
+}
+
+export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
   const [page, setPage] = useState(1)
   const [records, setRecords] = useState<WorkflowRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [n8nApiKey, setN8nApiKey] = useState('') // !WARNING PUT IN YOUR API KEY HERE
+  // const [n8nApiKey, setN8nApiKey] = useState(
+  //   '',
+  // ) // !WARNING PUT IN YOUR API KEY HERE
   const [limit, setLimit] = useState(10)
   const [pagination, setPagination] = useState(true)
 
@@ -56,7 +62,7 @@ export const N8nWorkflowsTable = () => {
     // const to = from + PAGE_SIZE;
     // setRecords(employees.slice(from, to));
     const fetchWorkflows = async () => {
-      console.log('before fethc:')
+      console.log('before fetch:')
       const response = await fetch(
         `/api/UIUC-api/tools/getN8nWorkflows?api_key=${n8nApiKey}&limit=${limit}&pagination=${pagination}`,
       )
@@ -67,7 +73,7 @@ export const N8nWorkflowsTable = () => {
       setIsLoading(false)
     }
     fetchWorkflows()
-  }, [page, n8nApiKey, limit, pagination])
+  }, [n8nApiKey, page, limit, pagination])
 
   if (isLoading) {
     return <div>Loading...</div>
