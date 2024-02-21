@@ -88,13 +88,13 @@ export const fetchRoutingResponse = async (
       throw new Error(errorResponse.message)
     }
 
-    // Parse the JSON response and return the image description
+    // Parse the JSON response and return the routing response
     const data = await response.json()
     return data.choices[0].message.content || ''
   } catch (error) {
     // Log the error to the console and abort the fetch request
-    console.error('Error fetching image description:', error)
-    controller.abort()
+    console.error('Error fetching routing response:', error)
+    controller.abort('Error fetching routing response')
 
     // Re-throw the error to be handled by the caller
     throw error

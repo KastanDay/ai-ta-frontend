@@ -21,7 +21,7 @@ import {
 } from 'react'
 
 import { useTranslation } from 'next-i18next'
-import { Content, Message } from '@/types/chat'
+import { Content, Message, MessageType } from '@/types/chat'
 import { Plugin } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
 
@@ -198,6 +198,7 @@ export const ChatInput = ({
         // Clear the files after uploading
         setImageFiles([])
         setImagePreviewUrls([])
+        setImageUrls([])
       } catch (error) {
         console.error('Error uploading files:', error)
         setImageError('Error uploading files')
@@ -213,7 +214,9 @@ export const ChatInput = ({
 
     // Construct the content array
     const contentArray: Content[] = [
-      ...(textContent ? [{ type: 'text', text: textContent }] : []),
+      ...(textContent
+        ? [{ type: 'text' as MessageType, text: textContent }]
+        : []),
       ...imageContent,
     ]
 

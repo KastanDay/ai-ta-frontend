@@ -29,7 +29,8 @@ export const fetchImageDescription = async (
 ): Promise<string> => {
   // Filter out the image content from the message
   const imageContent = (message.content as Content[]).filter(
-    (content) => content.type === 'image_url',
+    (content) =>
+      content.type === 'image_url' || content.type === 'tool_image_url',
   )
 
   // If there are no images, return an empty string

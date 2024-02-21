@@ -197,7 +197,10 @@ export const ChatMessage: FC<Props> = memo(
         if (Array.isArray(message.content)) {
           const updatedContent = await Promise.all(
             message.content.map(async (content) => {
-              if (content.type === 'image_url' && content.image_url) {
+              if (
+                (content.type === 'image_url' && content.image_url) ||
+                (content.type === 'tool_image_url' && content.image_url)
+              ) {
                 // console.log(
                 // 'Checking if image url is valid: ',
                 // content.image_url.url,
@@ -529,7 +532,11 @@ export const ChatMessage: FC<Props> = memo(
                           })}
                           <div className="-m-1 flex w-full flex-wrap justify-start">
                             {message.content
-                              .filter((item) => item.type === 'image_url')
+                              .filter(
+                                (item) =>
+                                  item.type === 'image_url' ||
+                                  item.type === 'tool_image_url',
+                              )
                               .map((content, index) => (
                                 <div
                                   key={index}
@@ -566,7 +573,7 @@ export const ChatMessage: FC<Props> = memo(
                                     fontWeight: 'bold',
                                     textShadow: '0 0 10px',
                                   }}
-                                  className=" pulsate"
+                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
                                   Routing the request to relevant tools:
                                 </p>
@@ -588,33 +595,29 @@ export const ChatMessage: FC<Props> = memo(
                                   alignItems: 'center',
                                 }}
                               >
-                                <p
-                                  style={{
-                                    marginRight: '10px',
-                                    fontWeight: 'bold',
-                                    textShadow: '0 0 10px',
-                                    color: '#9d4edd',
-                                  }}
-                                >
-                                  Routing the request to relevant tools:
-                                </p>
-                                <Popover
-                                  width={200}
-                                  position="bottom"
-                                  withArrow
-                                  shadow="md"
-                                >
-                                  <Popover.Target>
-                                    <Button>
-                                      <IconChevronDown size={25} />
-                                    </Button>
-                                  </Popover.Target>
-                                  <Popover.Dropdown>
-                                    <Text size="xs">
+                                <Accordion order={2}>
+                                  <Accordion.Item
+                                    value={'Routing'}
+                                    style={{ border: 0 }}
+                                  >
+                                    <Accordion.Control
+                                      className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                      style={{
+                                        marginRight: '10px',
+                                        fontWeight: 'bold',
+                                        textShadow: '0 0 10px',
+                                        color: '#9d4edd',
+                                      }}
+                                    >
+                                      Routing the request to relevant tools:
+                                    </Accordion.Control>
+                                    <Accordion.Panel
+                                      className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
+                                    >
                                       Routing to: {routingResponse}
-                                    </Text>
-                                  </Popover.Dropdown>
-                                </Popover>
+                                    </Accordion.Panel>
+                                  </Accordion.Item>
+                                </Accordion>
                               </div>
                             )}
 
@@ -637,7 +640,7 @@ export const ChatMessage: FC<Props> = memo(
                                     fontWeight: 'bold',
                                     textShadow: '0 0 10px',
                                   }}
-                                  className=" pulsate"
+                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
                                   Generating Pest Detection Report:
                                 </p>
@@ -665,6 +668,7 @@ export const ChatMessage: FC<Props> = memo(
                                     textShadow: '0 0 10px',
                                     color: '#9d4edd',
                                   }}
+                                  className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
                                   Generating Pest Detection Report:
                                 </p>
@@ -691,7 +695,7 @@ export const ChatMessage: FC<Props> = memo(
                                     fontWeight: 'bold',
                                     textShadow: '0 0 10px',
                                   }}
-                                  className=" pulsate"
+                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
                                   Generating Image Description:
                                 </p>
@@ -719,6 +723,7 @@ export const ChatMessage: FC<Props> = memo(
                                     textShadow: '0 0 10px',
                                     color: '#9d4edd',
                                   }}
+                                  className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
                                   Generating Image Description:
                                 </p>
@@ -745,7 +750,7 @@ export const ChatMessage: FC<Props> = memo(
                                     fontWeight: 'bold',
                                     textShadow: '0 0 10px',
                                   }}
-                                  className=" pulsate"
+                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
                                   Retrieving relevant documents:
                                 </p>
@@ -773,6 +778,7 @@ export const ChatMessage: FC<Props> = memo(
                                     textShadow: '0 0 10px',
                                     color: '#9d4edd',
                                   }}
+                                  className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
                                   Retrieving relevant documents:
                                 </p>
@@ -799,7 +805,7 @@ export const ChatMessage: FC<Props> = memo(
                                   fontWeight: 'bold',
                                   textShadow: '0 0 10px',
                                 }}
-                                className=" pulsate"
+                                className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
                               >
                                 Retrieving relevant documents:
                               </p>
@@ -821,7 +827,7 @@ export const ChatMessage: FC<Props> = memo(
                                   fontWeight: 'bold',
                                   textShadow: '0 0 10px',
                                 }}
-                                className=" pulsate"
+                                className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                               >
                                 Retrieving relevant documents:
                               </p>
