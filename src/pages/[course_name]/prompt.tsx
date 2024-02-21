@@ -351,12 +351,13 @@ const CourseMain: NextPage = () => {
                         className={`label ${montserrat_heading.variable} font-montserratHeading`}
                         variant="gradient"
                         gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                        order={2}
+                        order={3}
+                        style={{ paddingTop: '18px' }}
                       >
-                        {course_name}
+                        System Prompt
                       </Title>
                       <Textarea
-                        label={<strong>System Prompt</strong>}
+                        // label={<strong>System Prompt</strong>}
                         autosize
                         minRows={3}
                         maxRows={20}
@@ -401,26 +402,42 @@ const CourseMain: NextPage = () => {
                       // defaultChecked={isPrivate}
                       // onChange={handleCheckboxChange}
                       />
+                      <Title
+                        className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                        variant="gradient"
+                        gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                        order={4}
+                      >
+                        Things to do
+                      </Title>
                       <Textarea
-                        label={<strong>Things to do</strong>}
+                        // label={<strong>Things to do</strong>}
                         autosize
                         minRows={3}
                         maxRows={20}
-                        style={{ width: '100%' }}
-                        placeholder="Enter things to do..."
+                        style={{ width: '100%', paddingTop: '0px' }}
+                        placeholder="Edit the tasks to be included in the system prompt..."
                         className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
                         value={thingsToDo}
                         onChange={(e) => {
                           setThingsToDo(e.target.value)
                         }}
                       />
+                      <Title
+                        className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                        variant="gradient"
+                        gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                        order={4}
+                      >
+                        Things NOT to do
+                      </Title>
                       <Textarea
-                        label={<strong>Things NOT to do</strong>}
+                        // label={<strong>Things NOT to do</strong>}
                         autosize
                         minRows={3}
                         maxRows={20}
-                        style={{ width: '100%' }}
-                        placeholder="Enter things not to do"
+                        style={{ width: '100%', paddingTop: '0px' }}
+                        placeholder="Edit the tasks that should not be included in the system prompt..."
                         className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
                         value={thingsNotToDo}
                         onChange={(e) => {
