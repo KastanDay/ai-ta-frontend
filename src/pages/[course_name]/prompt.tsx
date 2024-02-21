@@ -416,7 +416,7 @@ const CourseMain: NextPage = () => {
                         minRows={3}
                         maxRows={20}
                         style={{ width: '100%', paddingTop: '0px' }}
-                        placeholder="Edit the tasks to be included in the system prompt..."
+                        placeholder="Enter guidelines that the chat response should adhere to..."
                         className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
                         value={thingsToDo}
                         onChange={(e) => {
@@ -437,7 +437,7 @@ const CourseMain: NextPage = () => {
                         minRows={3}
                         maxRows={20}
                         style={{ width: '100%', paddingTop: '0px' }}
-                        placeholder="Edit the tasks that should not be included in the system prompt..."
+                        placeholder="Edit the guidelines that the chat response should not adhere to..."
                         className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
                         value={thingsNotToDo}
                         onChange={(e) => {
