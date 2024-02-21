@@ -69,7 +69,7 @@ export const GetCurrentPageName = () => {
   return useRouter().asPath.slice(1).split('/')[0] as string
 }
 
-const MakeQueryAnalysisPage = ({
+const MakeDocumentAnalysisPage = ({
   course_name,
   // course_data,
 }: {
@@ -674,4 +674,4 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
   )
 }
 
-export default MakeQueryAnalysisPage
+export default MakeDocumentAnalysisPage
