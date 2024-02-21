@@ -134,6 +134,7 @@ const MakeOldCoursePage = ({
             />
 
             {/* Course files header/background */}
+            <MakeDocumentAnalysisPage course_name={course_name} />
             <div
               className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
@@ -172,7 +173,10 @@ const MakeOldCoursePage = ({
               {/* NOMIC not bad, not great */}
               {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
             </div>
-            <div className="flex w-[85%] flex-col items-center justify-center pb-2 pt-8">
+            {/* <div className='w-[`98`%]'> */}
+
+            {/* </div> */}
+            <div className="flex w-[90%] flex-col items-center justify-center pb-2 pt-8">
               {course_data && (
                 <MantineYourMaterialsTable course_materials={course_data} />
               )}
@@ -224,6 +228,7 @@ import GlobalFooter from './GlobalFooter'
 import { montserrat_heading } from 'fonts'
 import MyTableView from './YourMaterialsTable'
 import { MantineYourMaterialsTable } from './MantineYourMaterialsTable'
+import MakeDocumentAnalysisPage from './MakeDocumentAnalysisPage'
 
 // const CourseFilesList = ({ files }: CourseFilesListProps) => {
 //   const router = useRouter()
