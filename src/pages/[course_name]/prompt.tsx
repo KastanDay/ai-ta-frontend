@@ -379,7 +379,7 @@ const CourseMain: NextPage = () => {
                         }}
                       />
                       <Checkbox
-                        label={`Add greetings that edited when create the course`}
+                        label={`Add greetings at the beginning of the conversation.`}
                         // wrapperProps={{}}
                         // description="Course is private by default."
                         className={`${montserrat_paragraph.variable} font-montserratParagraph`}
