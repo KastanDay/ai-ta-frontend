@@ -401,7 +401,7 @@ export function MantineYourMaterialsTable({
 
       <ScrollArea style={{ width: '100%', margin: 'auto', borderRadius: '10px', overflow: 'hidden', marginBottom: '20px' }}>
         <TextInput
-          placeholder="Search by document_group"
+          placeholder="Search by Document Group"
           mb="md"
           icon={<IconSearch />}
           value={documentGroupSearch}
@@ -561,7 +561,6 @@ export function MantineYourMaterialsTable({
                   getCreateLabel={(query) => `+ Create ${query}`}
                   onCreate={handleCreateDocumentGroup}
                   sx={{ flex: 1, width: '100%' }} // Add width: '100%'
-                  clearable
                 />
               </Group>
             ),
