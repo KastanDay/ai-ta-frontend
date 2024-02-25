@@ -80,7 +80,7 @@ const useStyles = createStyles((theme) => ({
   // },
 }))
 
-interface CourseDocuments {
+interface CourseDocument {
   id: string; // Add this line
   course_name: string
   readable_filename: string
@@ -92,7 +92,7 @@ interface CourseDocuments {
 }
 
 interface CourseFilesListProps {
-  course_materials: CourseDocuments[]
+  course_materials: CourseDocument[]
 }
 
 export async function getPresignedUrl(s3_path: string) {
@@ -121,7 +121,7 @@ export function MantineYourMaterialsTable({
     return courseName
   }
   const [materials, setMaterials] = useState(course_materials)
-  const [selectedRecords, setSelectedRecords] = useState<CourseDocuments[]>([])
+  const [selectedRecords, setSelectedRecords] = useState<CourseDocument[]>([])
 
   // Add state hooks for document_groups and a method to fetch them
   const [document_groups, setDocumentGroups] = useState<DocumentGroupOption[]>([]);
@@ -260,7 +260,7 @@ export function MantineYourMaterialsTable({
   const [query, setQuery] = useState('')
   const [debouncedQuery] = useDebouncedValue(query, 200)
   const [modalOpened, setModalOpened] = useState(false)
-  const [recordsToDelete, setRecordsToDelete] = useState<CourseDocuments[]>([])
+  const [recordsToDelete, setRecordsToDelete] = useState<CourseDocument[]>([])
 
   useEffect(() => {
     if (debouncedQuery !== '') {
@@ -286,7 +286,7 @@ export function MantineYourMaterialsTable({
   //   setSelectedRecords([]);
   // }, []);
 
-  const handleDelete = async (recordsToDelete: CourseDocuments[]) => {
+  const handleDelete = async (recordsToDelete: CourseDocument[]) => {
     try {
       const API_URL = 'https://flask-production-751b.up.railway.app'
       const deletePromises = recordsToDelete.map((record) =>
@@ -320,7 +320,7 @@ export function MantineYourMaterialsTable({
   }
 
   // Handle document_group changes for a document (assuming record has a unique identifier such as 'id')
-  const handleDocumentGroupsChange = async (record: CourseDocuments, selectedDocumentGroups: string[]) => {
+  const handleDocumentGroupsChange = async (record: CourseDocument, selectedDocumentGroups: string[]) => {
     try {
       const response = await fetch(
         `https://flask-doc-groups.up.railway.app/addDocumentToGroup`,
