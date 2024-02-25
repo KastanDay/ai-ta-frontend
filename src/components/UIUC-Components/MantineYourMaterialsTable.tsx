@@ -14,6 +14,11 @@ import {
   createStyles,
   Paper,
   Center,
+  Select,
+  ScrollArea,
+  Table,
+  Switch,
+  Checkbox,
 } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
 import {
@@ -83,7 +88,7 @@ interface CourseDocuments {
   s3_path: string
   created_at: string
   base_url: string
-  tags: string[]
+  document_groups: string[]
 }
 
 interface CourseFilesListProps {
@@ -98,7 +103,10 @@ export async function getPresignedUrl(s3_path: string) {
   return data.presignedUrl
 }
 
-type TagOption = { value: string; label: string };
+type DocumentGroupOption = { value: string; label: string; description?: string; numDocs?: number };// Define the type for the enabledDocs state
+type EnabledDocsState = {
+  [docId: string]: boolean;
+};
 
 export function MantineYourMaterialsTable({
   course_materials,
@@ -115,25 +123,113 @@ export function MantineYourMaterialsTable({
   const [materials, setMaterials] = useState(course_materials)
   const [selectedRecords, setSelectedRecords] = useState<CourseDocuments[]>([])
 
-  // Add state hooks for tags and a method to fetch them
-  const [tags, setTags] = useState<TagOption[]>([]);
-  const [loadingTags, setLoadingTags] = useState(false);
+  // Add state hooks for document_groups and a method to fetch them
+  const [document_groups, setDocumentGroups] = useState<DocumentGroupOption[]>([]);
+  const [loadingDocumentGroups, setLoadingDocumentGroups] = useState(false);
+
+  // Example state for document toggle, replace with actual logic
+  // Example state for document toggle, replace with actual logic
+  const [enabledDocs, setEnabledDocs] = useState<EnabledDocsState>(course_materials.reduce((acc, doc) => ({
+    ...acc,
+    [doc.id]: true, // Set to true to enable all document groups by default
+  }), {}));
+
+  const [documentGroupSearch, setDocumentGroupSearch] = useState('');
+
+  // Logic to filter document_groups based on the search query
+  const filteredDocumentGroups = useMemo(() => {
+    return document_groups.filter(document_groupObj =>
+      document_groupObj.value.toLowerCase().includes(documentGroupSearch.toLowerCase())
+    );
+  }, [document_groups, documentGroupSearch]);
+
+  // Handle document_group search change
+  const handleDocumentGroupSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDocumentGroupSearch(event.target.value);
+  };
+
+  const handleToggleChange = (docId: string) => {
+    setEnabledDocs(prevState => ({
+      ...prevState,
+      [docId]: !prevState[docId],
+    }));
+  };
+
+  // This useEffect hook processes course_materials to create a unique list of document_groups
+  useEffect(() => {
+    const document_groupSet = new Set<string>(); // Explicitly state that document_groupSet is a Set of strings
+    const defaultGroup = 'Default Group'; // Define the default group
+    course_materials.forEach(doc => {
+      if (doc.document_groups && doc.document_groups.length > 0) { // Check if document_groups is defined and not empty
+        doc.document_groups.forEach(document_group => {
+          document_groupSet.add(document_group); // Add each document_group to the Set
+        });
+      } else {
+        // If no document_groups, add to default group
+        document_groupSet.add(defaultGroup);
+        doc.document_groups = [defaultGroup]; // Add default group to document's document_groups
+      }
+    });
+    const document_groupsArray = Array.from(document_groupSet).map((document_group: string) => ({ value: document_group, label: document_group }));
+    setDocumentGroups(document_groupsArray);
+  
+    // Initialize enabledDocs state with document_group values
+    const initialEnabledDocsState = Array.from(document_groupSet).reduce((acc, document_group) => ({
+      ...acc,
+      [document_group]: true, // Set to true to enable all document groups by default
+    }), {});
+    setEnabledDocs(initialEnabledDocsState);
+  }, [course_materials]);
+
+  // Define the state variable for default group count
+  const [defaultGroupCount, setDefaultGroupCount] = useState(0);
+
+  // This useEffect hook processes course_materials to create a unique list of document_groups
+  // This useEffect hook processes course_materials to create a unique list of document_groups
+  useEffect(() => {
+    const document_groupSet = new Set<string>(); // Explicitly state that document_groupSet is a Set of strings
+    let defaultGroupCount = 0; // Initialize a local variable to count the documents in the default group
+
+    course_materials.forEach(doc => {
+      if (doc.document_groups && doc.document_groups.length > 0) { // Check if document_groups is defined and not empty
+        doc.document_groups.forEach(document_group => {
+          document_groupSet.add(document_group); // Add each document_group to the Set
+        });
+      } else {
+        // If no document_groups, increment the count for the default group
+        defaultGroupCount++; 
+      }
+    });
+
+    const document_groupsArray = Array.from(document_groupSet).map((document_group: string) => ({ value: document_group, label: document_group }));
+    setDocumentGroups(document_groupsArray);
+
+    // Initialize enabledDocs state with document_group values
+    const initialEnabledDocsState = Array.from(document_groupSet).reduce((acc, document_group) => ({
+      ...acc,
+      [document_group]: true, // Set to true to enable all document groups by default
+    }), {});
+    setEnabledDocs(initialEnabledDocsState);
+
+    // Update the state variable for default group count
+    setDefaultGroupCount(defaultGroupCount);
+  }, [course_materials]); // Add course_materials as a dependency
 
   useEffect(() => {
-    const fetchTags = async () => {
-      setLoadingTags(true);
+    const fetchDocumentGroups = async () => {
+      setLoadingDocumentGroups(true);
       try {
-        const response = await axios.get('/api/path-to-get-tags');
-        // Assuming response.data is an array of strings ['tag1', 'tag2', ...]
-        setTags(response.data.map((tag: string) => ({ value: tag, label: tag })));
+        const response = await axios.get('/api/path-to-get-document_groups');
+        // Assuming response.data is an array of strings ['document_group1', 'document_group2', ...]
+        setDocumentGroups(response.data.map((document_groups: string[]) => ({ value: document_groups, label: document_groups })));
       } catch (error) {
-        console.error('Failed to fetch tags', error);
+        console.error('Failed to fetch document_groups', error);
       } finally {
-        setLoadingTags(false);
+        setLoadingDocumentGroups(false);
       }
     };
   
-    fetchTags();
+    fetchDocumentGroups();
   }, []);  
 
   useEffect(() => {
@@ -223,47 +319,75 @@ export function MantineYourMaterialsTable({
     }
   }
 
-  // Handle tag changes for a document (assuming record has a unique identifier such as 'id')
-  const handleTagsChange = async (record: CourseDocuments, selectedTags: string[]) => {
+  // Handle document_group changes for a document (assuming record has a unique identifier such as 'id')
+  const handleDocumentGroupsChange = async (record: CourseDocuments, selectedDocumentGroups: string[]) => {
     try {
-      // Assuming an endpoint that updates the tags for a document
-      // and that the document's identifier is `record.id`
-      await axios.post('/api/path-to-update-document-tags', {
-        documentId: record.id,
-        tags: selectedTags,
-      });
-
-      // Update the local state to reflect the change
+      const response = await fetch(
+        `https://flask-doc-groups.up.railway.app/addDocumentToGroup`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            course_name: getCurrentPageName(),
+            document: record,
+            doc_group: record.document_groups,
+          }),
+        },
+      )
+  
+      // Check if the response from the backend is successful.
+      if (!response.ok) {
+        throw new Error('Failed to update the document_group on the backend.');
+      }
+  
+      // Assuming the backend has successfully updated the document_group, update the local state.
+      // This step ensures the UI reflects the new document_group without needing to reload the data from the backend.
       const updatedMaterials = materials.map((material) => {
         if (material.id === record.id) {
-          return { ...material, tags: selectedTags };
+          return { ...material, document_groups: selectedDocumentGroups };
         }
         return material;
       });
+  
+      // Update the state with the new materials array.
       setMaterials(updatedMaterials);
-
+  
+      // Show a success notification to the user.
       showNotification({
         title: 'Success',
-        message: 'Tags updated successfully',
+        message: 'DocumentGroup updated successfully',
       });
     } catch (error) {
-      console.error('Failed to update tags', error);
-      showNotification({
-        title: 'Error',
-        message: 'Failed to update tags',
-      });
+      // Narrow down the error type to an instance of Error
+      if (error instanceof Error) {
+        console.error('Failed to update document_group:', error.message);
+        showNotification({
+          title: 'Error',
+          message: `Failed to update document_group: ${error.message}`,
+        });
+      } else {
+        // Handle cases where the error might not be an instance of Error
+        console.error('Failed to update document_group, an unknown error occurred');
+        showNotification({
+          title: 'Error',
+          message: 'Failed to update document_group: An unknown error occurred',
+        });
+      }
     }
   };
 
-  const handleCreateTag = (tagName: string) => {
-    const newTag: TagOption = { value: tagName, label: tagName };
-    setTags(currentTags => [...currentTags, newTag]);
-  
-    // Directly return the new tag in a format compatible with the MultiSelect options
-    // This assumes your MultiSelect component is configured to work with objects
-    // having 'value' and 'label' properties, similar to your TagOption type.
-    return tagName; // or return newTag if your setup can work directly with objects
+  const handleCreateDocumentGroup = (document_groupName: string): DocumentGroupOption => {
+    const newDocumentGroup: DocumentGroupOption = { value: document_groupName, label: document_groupName };
+    // Check if the document_group already exists by its value to prevent duplicates
+    if (!document_groups.some(document_group => document_group.value === document_groupName)) {
+      setDocumentGroups([...document_groups, newDocumentGroup]);
+      // Optionally persist this new document_group to your backend here
+    }
+    return newDocumentGroup;
   };
+  
   
   
 
@@ -274,6 +398,60 @@ export function MantineYourMaterialsTable({
   return (
     <>
       <GlobalStyle />
+
+      <ScrollArea style={{ width: '100%', margin: 'auto', borderRadius: '10px', overflow: 'hidden', marginBottom: '20px' }}>
+        <TextInput
+          placeholder="Search by document_group"
+          mb="md"
+          icon={<IconSearch />}
+          value={documentGroupSearch}
+          onChange={handleDocumentGroupSearchChange}
+        />
+        <Table style={{ width: '100%', tableLayout: 'fixed' }}>
+          <thead>
+            <tr>
+              <th style={{ width: '30%', wordWrap: 'break-word' }}>Document Group</th>
+              <th style={{ width: '40%', wordWrap: 'break-word' }}>Description</th>
+              <th style={{ width: '15%', wordWrap: 'break-word' }}>Number of Docs</th>
+              <th style={{ width: '15%', wordWrap: 'break-word' }}>Enabled</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredDocumentGroups.map((document_groupObj, index) => (
+              <tr key={index}>
+                <td style={{ wordWrap: 'break-word' }}>
+                  <Text>{document_groupObj.value}</Text>
+                </td>
+                <td style={{ wordWrap: 'break-word' }}>
+                  <Text>{document_groupObj.description}</Text>
+                </td>
+                <td style={{ wordWrap: 'break-word' }}>
+                  <Text>
+                    {document_groupObj.value === 'Default Group' ? defaultGroupCount : document_groupObj.numDocs}
+                  </Text>
+                </td>
+                <td style={{ wordWrap: 'break-word' }}>
+                  <Switch
+                    checked={enabledDocs[document_groupObj.value]}
+                    onChange={() => handleToggleChange(document_groupObj.value)}
+                    color="blue"
+                    size="lg"
+                    onLabel="Enabled"
+                    offLabel="Disabled"
+                  />
+                </td>
+              </tr>
+            ))}
+            {filteredDocumentGroups.length === 0 && (
+              <tr>
+                <td colSpan={4}>
+                  <Text align="center">No document groups found</Text>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </ScrollArea>
 
       <DataTable
         rowStyle={(row) => {
@@ -367,20 +545,25 @@ export function MantineYourMaterialsTable({
             filtering: query !== '',
           },
           {
-            accessor: 'tags',
-            title: 'Tags',
+            accessor: 'document_group',
+            title: 'Document Groups',
+            width: 200, // Increase this value to make the column wider
             render: (record) => (
-              <MultiSelect
-                data={tags.map(tag => ({ value: tag.value, label: tag.label }))}
-                value={record.tags}
-                onChange={(selectedValue) => handleTagsChange(record, selectedValue)}
-                placeholder="Select tags"
-                searchable
-                nothingFound="No options"
-                creatable
-                getCreateLabel={(query) => `+ Create ${query}`}
-                onCreate={handleCreateTag}
+              <Group position="apart" spacing="xs">
+                <MultiSelect
+                  data={document_groups.map(document_group => ({ value: document_group.value, label: document_group.label }))}
+                  value={record.document_groups ? record.document_groups : []} // Ensure value is always an array
+                  onChange={(selectedDocumentGroups) => handleDocumentGroupsChange(record, selectedDocumentGroups)}
+                  placeholder="Select Group"
+                  searchable
+                  nothingFound="No options"
+                  creatable
+                  getCreateLabel={(query) => `+ Create ${query}`}
+                  onCreate={handleCreateDocumentGroup}
+                  sx={{ flex: 1, width: '100%' }} // Add width: '100%'
+                  clearable
                 />
+              </Group>
             ),
           },
           {
