@@ -136,6 +136,9 @@ export function MantineYourMaterialsTable({
 
   const [documentGroupSearch, setDocumentGroupSearch] = useState('');
 
+  const [defaultGroupCount, setDefaultGroupCount] = useState(0);
+
+
   // Logic to filter doc_groups based on the search query
   const filteredDocumentGroups = useMemo(() => {
     return documentGroups.filter(doc_group_obj =>
@@ -155,41 +158,10 @@ export function MantineYourMaterialsTable({
     }));
   };
 
-  // This useEffect hook processes course_materials to create a unique list of doc_groups
-  useEffect(() => {
-    const doc_group_set = new Set<string>(); // Explicitly state that doc_group_set is a Set of strings
-    const defaultGroup = 'Default Group'; // Define the default group
-    course_materials.forEach(doc => {
-      if (doc.doc_groups && doc.doc_groups.length > 0) { // Check if doc_groups is defined and not empty
-        doc.doc_groups.forEach(doc_group => {
-          doc_group_set.add(doc_group); // Add each doc_group to the Set
-        });
-      } else {
-        // If no doc_groups, add to default group
-        doc_group_set.add(defaultGroup);
-        doc.doc_groups = [defaultGroup]; // Add default group to document's doc_groups
-      }
-    });
-    const doc_groups_array = Array.from(doc_group_set).map((doc_group: string) => ({ value: doc_group, label: doc_group }));
-    setDocumentGroups(doc_groups_array);
-  
-    // Initialize enabledDocs state with doc_group values
-    const initialEnabledDocsState = Array.from(doc_group_set).reduce((acc, doc_group) => ({
-      ...acc,
-      [doc_group]: true, // Set to true to enable all document groups by default
-    }), {});
-    setEnabledDocs(initialEnabledDocsState);
-  }, [course_materials]);
-
-  // Define the state variable for default group count
-  const [defaultGroupCount, setDefaultGroupCount] = useState(0);
-
-  // This useEffect hook processes course_materials to create a unique list of doc_groups
-  // This useEffect hook processes course_materials to create a unique list of doc_groups
   useEffect(() => {
     const doc_group_set = new Set<string>(); // Explicitly state that doc_group_set is a Set of strings
     let defaultGroupCount = 0; // Initialize a local variable to count the documents in the default group
-
+  
     course_materials.forEach(doc => {
       if (doc.doc_groups && doc.doc_groups.length > 0) { // Check if doc_groups is defined and not empty
         doc.doc_groups.forEach(doc_group => {
@@ -200,20 +172,54 @@ export function MantineYourMaterialsTable({
         defaultGroupCount++; 
       }
     });
-
+  
     const doc_groups_array = Array.from(doc_group_set).map((doc_group: string) => ({ value: doc_group, label: doc_group }));
     setDocumentGroups(doc_groups_array);
-
+  
     // Initialize enabledDocs state with doc_group values
     const initialEnabledDocsState = Array.from(doc_group_set).reduce((acc, doc_group) => ({
       ...acc,
       [doc_group]: true, // Set to true to enable all document groups by default
     }), {});
     setEnabledDocs(initialEnabledDocsState);
-
+  
     // Update the state variable for default group count
     setDefaultGroupCount(defaultGroupCount);
   }, [course_materials]); // Add course_materials as a dependency
+
+  // // Define the state variable for default group count
+  // const [defaultGroupCount, setDefaultGroupCount] = useState(0);
+
+  // // This useEffect hook processes course_materials to create a unique list of doc_groups
+  // // This useEffect hook processes course_materials to create a unique list of doc_groups
+  // useEffect(() => {
+  //   const doc_group_set = new Set<string>(); // Explicitly state that doc_group_set is a Set of strings
+  //   let defaultGroupCount = 0; // Initialize a local variable to count the documents in the default group
+
+  //   course_materials.forEach(doc => {
+  //     if (doc.doc_groups && doc.doc_groups.length > 0) { // Check if doc_groups is defined and not empty
+  //       doc.doc_groups.forEach(doc_group => {
+  //         doc_group_set.add(doc_group); // Add each doc_group to the Set
+  //       });
+  //     } else {
+  //       // If no doc_groups, increment the count for the default group
+  //       defaultGroupCount++; 
+  //     }
+  //   });
+
+  //   const doc_groups_array = Array.from(doc_group_set).map((doc_group: string) => ({ value: doc_group, label: doc_group }));
+  //   setDocumentGroups(doc_groups_array);
+
+  //   // Initialize enabledDocs state with doc_group values
+  //   const initialEnabledDocsState = Array.from(doc_group_set).reduce((acc, doc_group) => ({
+  //     ...acc,
+  //     [doc_group]: true, // Set to true to enable all document groups by default
+  //   }), {});
+  //   setEnabledDocs(initialEnabledDocsState);
+
+  //   // Update the state variable for default group count
+  //   setDefaultGroupCount(defaultGroupCount);
+  // }, [course_materials]); // Add course_materials as a dependency
 
   // useEffect(() => {
   //   const fetchDocumentGroups = async () => {
@@ -387,8 +393,118 @@ export function MantineYourMaterialsTable({
     }
     return newDocumentGroup;
   };
+
+  const handleRemoveDocumentGroup = async (record: CourseDocument, removedGroup: string) => {
+    try {
+      const response = await fetch(
+        `https://flask-doc-groups.up.railway.app/removeDocumentFromGroup`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            course_name: getCurrentPageName(),
+            document: record,
+            doc_group: removedGroup,
+          }),
+        },
+      );
   
+      if (!response.ok) {
+        throw new Error('Failed to remove the document group on the backend.');
+      }
   
+      const updatedMaterials = materials.map((material) => {
+        if (material.id === record.id) {
+          // Ensure doc_groups is an array before trying to filter it
+          const doc_groups = Array.isArray(material.doc_groups) ? material.doc_groups : [];
+          return { ...material, doc_groups: doc_groups.filter(group => group !== removedGroup) };
+        }
+        return material;
+      });
+    
+      setMaterials(updatedMaterials);
+  
+      // Show a success notification to the user.
+      showNotification({
+        title: 'Success',
+        message: 'Document group removed successfully',
+      });
+    } catch (error) {
+      // Handle error
+      if (error instanceof Error) {
+        showNotification({
+          title: 'Error',
+          message: `Failed to remove document group: ${error.message}`,
+        });
+      } else {
+        // Handle cases where the error might not be an instance of Error
+        console.error('Failed to remove document group, an unknown error occurred');
+        showNotification({
+          title: 'Error',
+          message: 'Failed to remove document group: An unknown error occurred',
+        });
+      }
+    }
+  };
+  
+  const handleAppendDocumentGroup = async (record: CourseDocument, appendedGroup: string) => {
+    try {
+      const response = await fetch(
+        `https://flask-doc-groups.up.railway.app/appendDocumentToGroup`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            course_name: getCurrentPageName(),
+            document: record,
+            doc_group: appendedGroup,
+          }),
+        },
+      );
+  
+      if (!response.ok) {
+        throw new Error('Failed to append the document group on the backend.');
+      }
+  
+      // Update the local state
+      const updatedMaterials = materials.map((material) => {
+        if (material.id === record.id) {
+          // Ensure doc_groups is an array before trying to spread it
+          const doc_groups = Array.isArray(material.doc_groups) ? material.doc_groups : [];
+          return { ...material, doc_groups: [...doc_groups, appendedGroup] };
+        }
+        return material;
+      });
+
+      // Set the updated materials array
+      setMaterials(updatedMaterials);
+    
+      // Show a success notification to the user.
+      showNotification({
+        title: 'Success',
+        message: 'Document group appended successfully',
+      });
+    } catch (error) {
+      // Handle error
+      if (error instanceof Error) {
+        showNotification({
+          title: 'Error',
+          message: `Failed to append document group: ${error.message}`,
+        });
+      } else {
+        // Handle cases where the error might not be an instance of Error
+        console.error('Failed to append document group, an unknown error occurred');
+        showNotification({
+          title: 'Error',
+          message: 'Failed to append document group: An unknown error occurred',
+        });
+      }
+    }
+  };
   
 
 // No longer returning a specific type since the function is intended for side effects (state update)
@@ -560,9 +676,24 @@ export function MantineYourMaterialsTable({
                   getCreateLabel={(query) => `+ Create ${query}`}
                   onCreate={(doc_group_name) => {
                     const newDocumentGroup = handleCreateDocumentGroup(doc_group_name);
-                    handleDocumentGroupsChange(record, [...record.doc_groups, newDocumentGroup.value]);
                     return newDocumentGroup;
-                  }}            
+                  }}
+                  onChange={async (newSelectedGroups) => {
+                    const removedGroups = record.doc_groups.filter(group => !newSelectedGroups.includes(group));
+                    if (removedGroups.length > 0) {
+                      // Handle deletion of removedGroups here
+                      for (const removedGroup of removedGroups) {
+                        await handleRemoveDocumentGroup(record, removedGroup);
+                      }
+                    }
+                    const appendedGroups = newSelectedGroups.filter(group => !record.doc_groups.includes(group));
+                    if (appendedGroups.length > 0) {
+                      // Handle addition of appendedGroups here
+                      for (const appendedGroup of appendedGroups) {
+                        await handleAppendDocumentGroup(record, appendedGroup);
+                      }
+                    }
+                  }}       
                   sx={{ flex: 1, width: '100%' }} // Add width: '100%'
                 />
               </Group>
