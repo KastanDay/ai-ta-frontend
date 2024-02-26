@@ -124,7 +124,7 @@ export function MantineYourMaterialsTable({
   const [selectedRecords, setSelectedRecords] = useState<CourseDocument[]>([])
 
   // Add state hooks for doc_groups and a method to fetch them
-  const [doc_groups, setDocumentGroups] = useState<DocumentGroupOption[]>([]);
+  const [documentGroups, setDocumentGroups] = useState<DocumentGroupOption[]>([]);
   const [loadingDocumentGroups, setLoadingDocumentGroups] = useState(false);
 
   // Example state for document toggle, replace with actual logic
@@ -138,10 +138,10 @@ export function MantineYourMaterialsTable({
 
   // Logic to filter doc_groups based on the search query
   const filteredDocumentGroups = useMemo(() => {
-    return doc_groups.filter(doc_group_obj =>
+    return documentGroups.filter(doc_group_obj =>
       doc_group_obj.value.toLowerCase().includes(documentGroupSearch.toLowerCase())
     );
-  }, [doc_groups, documentGroupSearch]);
+  }, [documentGroups, documentGroupSearch]);
 
   // Handle doc_group search change
   const handleDocumentGroupSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -381,8 +381,8 @@ export function MantineYourMaterialsTable({
   const handleCreateDocumentGroup = (doc_group_name: string): DocumentGroupOption => {
     const newDocumentGroup: DocumentGroupOption = { value: doc_group_name, label: doc_group_name };
     // Check if the doc_group already exists by its value to prevent duplicates
-    if (!doc_groups.some(doc_group => doc_group.value === doc_group_name)) {
-      setDocumentGroups([...doc_groups, newDocumentGroup]);
+    if (!documentGroups.some(doc_group => doc_group.value === doc_group_name)) {
+      setDocumentGroups([...documentGroups, newDocumentGroup]);
       // Optionally persist this new doc_group to your backend here
     }
     return newDocumentGroup;
@@ -551,7 +551,7 @@ export function MantineYourMaterialsTable({
             render: (record) => (
               <Group position="apart" spacing="xs">
                 <MultiSelect
-                  data={doc_groups.map(doc_group => ({ value: doc_group.value, label: doc_group.label }))}
+                  data={documentGroups.map(doc_group => ({ value: doc_group.value, label: doc_group.label }))}
                   value={record.doc_groups ? record.doc_groups : []} // Ensure value is always an array
                   placeholder="Select Group"
                   searchable
