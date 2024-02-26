@@ -526,10 +526,10 @@ export function MantineYourMaterialsTable({
         <Table style={{ width: '100%', tableLayout: 'fixed' }}>
           <thead>
             <tr>
-              <th style={{ width: '30%', wordWrap: 'break-word' }}>Document Group</th>
-              <th style={{ width: '40%', wordWrap: 'break-word' }}>Description</th>
-              <th style={{ width: '15%', wordWrap: 'break-word' }}>Number of Docs</th>
-              <th style={{ width: '15%', wordWrap: 'break-word' }}>Enabled</th>
+              <th style={{ width: '50%', wordWrap: 'break-word' }}>Document Group</th>
+              {/* <th style={{ width: '40%', wordWrap: 'break-word' }}>Description</th> */}
+              <th style={{ width: '25%', wordWrap: 'break-word' }}>Number of Docs</th>
+              <th style={{ width: '25%', wordWrap: 'break-word' }}>Enabled</th>
             </tr>
           </thead>
           <tbody>
@@ -538,9 +538,9 @@ export function MantineYourMaterialsTable({
                 <td style={{ wordWrap: 'break-word' }}>
                   <Text>{doc_group_obj.value}</Text>
                 </td>
-                <td style={{ wordWrap: 'break-word' }}>
+                {/* <td style={{ wordWrap: 'break-word' }}>
                   <Text>{doc_group_obj.description}</Text>
-                </td>
+                </td> */}
                 <td style={{ wordWrap: 'break-word' }}>
                   <Text>
                     {doc_group_obj.value === 'Default Group' ? defaultGroupCount : doc_group_obj.numDocs}
