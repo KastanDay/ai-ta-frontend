@@ -234,7 +234,7 @@ import { MantineYourMaterialsTable } from './MantineYourMaterialsTable'
 //     url: string,
 //   ) => {
 //     try {
-//       const API_URL = 'https://flask-production-751b.up.railway.app'
+//       const API_URL = 'https://flask-doc-groups.up.railway.app'
 //       const response = await axios.delete(`${API_URL}/delete`, {
 //         params: { course_name, s3_path, url },
 //       })

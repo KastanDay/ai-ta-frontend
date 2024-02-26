@@ -232,25 +232,25 @@ export function MantineYourMaterialsTable({
     fetchDocumentGroups();
   }, []);  
 
-  useEffect(() => {
-    const fetchCourseDocuments = async () => {
-      const response = await fetch(`/api/UIUC-api/getCourseDocuments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          course_name: getCurrentPageName(),
-        }),
-      })
-      const documents = await response.json()
-      if (documents) {
-        setMaterials(documents)
-      }
-    }
+  // useEffect(() => {
+  //   const fetchCourseDocuments = async () => {
+  //     const response = await fetch(`/api/UIUC-api/getCourseDocuments`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         course_name: getCurrentPageName(),
+  //       }),
+  //     })
+  //     const documents = await response.json()
+  //     if (documents) {
+  //       setMaterials(documents)
+  //     }
+  //   }
 
-    fetchCourseDocuments()
-  }, [])
+  //   fetchCourseDocuments()
+  // }, [])
 
   // const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
   //   columnAccessor: 'File Name',
@@ -288,7 +288,7 @@ export function MantineYourMaterialsTable({
 
   const handleDelete = async (recordsToDelete: CourseDocument[]) => {
     try {
-      const API_URL = 'https://flask-production-751b.up.railway.app'
+      const API_URL = 'https://flask-doc-groups.up.railway.app'
       const deletePromises = recordsToDelete.map((record) =>
         axios.delete(`${API_URL}/delete`, {
           params: {

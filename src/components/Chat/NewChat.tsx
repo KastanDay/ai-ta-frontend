@@ -260,7 +260,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     try {
       // Log conversation to our Flask Backend (especially Nomic)
       const response = await fetch(
-        `https://flask-production-751b.up.railway.app/onResponseCompletion`,
+        `https://flask-doc-groups.up.railway.app/onResponseCompletion`,
         {
           method: 'POST',
           headers: {

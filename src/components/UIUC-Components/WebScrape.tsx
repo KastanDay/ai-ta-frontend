@@ -181,7 +181,7 @@ export const WebScrape = ({
 
         try {
           const response = await axios.get(
-            'https://flask-production-751b.up.railway.app/ingestCanvas',
+            'https://flask-doc-groups.up.railway.app/ingestCanvas',
             {
               params: {
                 course_id: canvasCourseId,
@@ -377,7 +377,7 @@ export const WebScrape = ({
       if (!url || !courseName || !localDir) return null
       console.log('calling downloadMITCourse')
       const response = await axios.get(
-        `https://flask-production-751b.up.railway.app/mit-download`,
+        `https://flask-doc-groups.up.railway.app/mit-download`,
         {
           params: {
             url: url,

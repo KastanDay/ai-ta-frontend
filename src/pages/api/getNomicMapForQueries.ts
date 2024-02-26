@@ -8,7 +8,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     const course_name = req.nextUrl.searchParams.get('course_name')
 
     const response = await fetch(
-      `https://flask-production-751b.up.railway.app/getNomicMap?course_name=${course_name}`,
+      `https://flask-doc-groups.up.railway.app/getNomicMap?course_name=${course_name}`,
     )
     const data = await response.json()
 

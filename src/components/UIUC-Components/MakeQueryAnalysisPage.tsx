@@ -172,7 +172,7 @@ const MakeQueryAnalysisPage = ({
     try {
       setIsLoading(true)
       const response = await axios.get(
-        `https://flask-production-751b.up.railway.app/export-convo-history-csv?course_name=${courseName}`,
+        `https://flask-doc-groups.up.railway.app/export-convo-history-csv?course_name=${courseName}`,
         { responseType: 'blob' },
       )
       const url = window.URL.createObjectURL(new Blob([response.data]))
@@ -362,7 +362,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const handleDelete = async (s3_path: string, course_name: string) => {
     try {
       const response = await axios.delete(
-        `https://flask-production-751b.up.railway.app/delete`,
+        `https://flask-doc-groups.up.railway.app/delete`,
         {
           params: { s3_path, course_name },
         },
