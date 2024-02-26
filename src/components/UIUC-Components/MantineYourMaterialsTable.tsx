@@ -157,24 +157,24 @@ export function MantineYourMaterialsTable({
 
   // This useEffect hook processes course_materials to create a unique list of document_groups
   useEffect(() => {
-    const document_groupSet = new Set<string>(); // Explicitly state that document_groupSet is a Set of strings
+    const document_group_set = new Set<string>(); // Explicitly state that document_group_set is a Set of strings
     const defaultGroup = 'Default Group'; // Define the default group
     course_materials.forEach(doc => {
       if (doc.document_groups && doc.document_groups.length > 0) { // Check if document_groups is defined and not empty
         doc.document_groups.forEach(document_group => {
-          document_groupSet.add(document_group); // Add each document_group to the Set
+          document_group_set.add(document_group); // Add each document_group to the Set
         });
       } else {
         // If no document_groups, add to default group
-        document_groupSet.add(defaultGroup);
+        document_group_set.add(defaultGroup);
         doc.document_groups = [defaultGroup]; // Add default group to document's document_groups
       }
     });
-    const document_groupsArray = Array.from(document_groupSet).map((document_group: string) => ({ value: document_group, label: document_group }));
+    const document_groupsArray = Array.from(document_group_set).map((document_group: string) => ({ value: document_group, label: document_group }));
     setDocumentGroups(document_groupsArray);
   
     // Initialize enabledDocs state with document_group values
-    const initialEnabledDocsState = Array.from(document_groupSet).reduce((acc, document_group) => ({
+    const initialEnabledDocsState = Array.from(document_group_set).reduce((acc, document_group) => ({
       ...acc,
       [document_group]: true, // Set to true to enable all document groups by default
     }), {});
@@ -187,13 +187,13 @@ export function MantineYourMaterialsTable({
   // This useEffect hook processes course_materials to create a unique list of document_groups
   // This useEffect hook processes course_materials to create a unique list of document_groups
   useEffect(() => {
-    const document_groupSet = new Set<string>(); // Explicitly state that document_groupSet is a Set of strings
+    const document_group_set = new Set<string>(); // Explicitly state that document_group_set is a Set of strings
     let defaultGroupCount = 0; // Initialize a local variable to count the documents in the default group
 
     course_materials.forEach(doc => {
       if (doc.document_groups && doc.document_groups.length > 0) { // Check if document_groups is defined and not empty
         doc.document_groups.forEach(document_group => {
-          document_groupSet.add(document_group); // Add each document_group to the Set
+          document_group_set.add(document_group); // Add each document_group to the Set
         });
       } else {
         // If no document_groups, increment the count for the default group
@@ -201,11 +201,11 @@ export function MantineYourMaterialsTable({
       }
     });
 
-    const document_groupsArray = Array.from(document_groupSet).map((document_group: string) => ({ value: document_group, label: document_group }));
+    const document_groupsArray = Array.from(document_group_set).map((document_group: string) => ({ value: document_group, label: document_group }));
     setDocumentGroups(document_groupsArray);
 
     // Initialize enabledDocs state with document_group values
-    const initialEnabledDocsState = Array.from(document_groupSet).reduce((acc, document_group) => ({
+    const initialEnabledDocsState = Array.from(document_group_set).reduce((acc, document_group) => ({
       ...acc,
       [document_group]: true, // Set to true to enable all document groups by default
     }), {});
