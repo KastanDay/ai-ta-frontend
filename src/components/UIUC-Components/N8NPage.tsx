@@ -91,7 +91,12 @@ const MakeToolsPage = ({
   const [currentEmail, setCurrentEmail] = useState('')
 
   const [n8nApiKey, setN8nApiKey] = useState('')
-
+  const [tempApiKey, setTempApiKey] = useState('') // Temporary state for input
+  const handleSaveApiKey = () => {
+    setN8nApiKey(tempApiKey) // Update n8nApiKey with the temporary value
+    logApiToSupabase()
+    setTempApiKey('')
+  }
   const router = useRouter()
 
   const currentPageName = GetCurrentPageName()
@@ -174,6 +179,29 @@ const MakeToolsPage = ({
       />
     )
   }
+
+  // Log api to Supabase
+  const logApiToSupabase = async () => {
+    try {
+      const response = await fetch(`/api/UIUC-api/logN8NapiToSupabase`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          course_name: currentPageName,
+          n8n_api_key: n8nApiKey,
+        }),
+      })
+      const data = await response.json()
+      // return data.success
+    } catch (error) {
+      console.error('Error setting course data:', error)
+      // return false
+    }
+  }
+
+  // Remember to call logApiToSupabase() where it's needed in your component
 
   const downloadConversationHistory = async (courseName: string) => {
     try {
@@ -285,54 +313,46 @@ const MakeToolsPage = ({
             </Title>
 
             <div style={{ width: '60%', margin: '0 auto' }}>
-              <Accordion>
-                <Accordion.Item value="setup">
-                  <Accordion.Control>
-                    <Title
-                      style={{ margin: '0 auto', textAlign: 'center' }}
-                      order={4}
-                      w={'80%'}
-                      size={'xl'}
-                      className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                    >
-                      Setup Instructions 🤠
-                    </Title>
-                  </Accordion.Control>
-                  <Accordion.Panel>
-                    <List
-                      w={'80%'}
-                      type="ordered"
-                      withPadding
-                      className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-                    >
-                      <List.Item>
-                        Create an account and store your password safely through{' '}
-                        <a
-                          href="https://primary-production-60d0.up.railway.app/setup"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            color: '#8B5CF6',
-                            textDecoration: 'underline',
-                          }}
-                        >
-                          this link
-                        </a>
-                      </List.Item>
-                      <List.Item>
-                        Inside n8n, create an n8n API key and input it in the
-                        textbox below.
-                      </List.Item>
-                      <List.Item>
-                        Any workflow you create will be enabled by default in
-                        this project.
-                        <br />
-                      </List.Item>
-                      <List.Item>Check out your workflows below!</List.Item>
-                    </List>
-                  </Accordion.Panel>
-                </Accordion.Item>
-              </Accordion>
+              <Title
+                style={{ margin: '0 auto', textAlign: 'center' }}
+                order={4}
+                w={'80%'}
+                size={'xl'}
+                className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+              >
+                Setup Instructions 🤠
+              </Title>
+              <List
+                w={'80%'}
+                type="ordered"
+                withPadding
+                className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+              >
+                <List.Item>
+                  Create an account and store your password safely through{' '}
+                  <a
+                    href="https://primary-production-60d0.up.railway.app/setup"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: '#8B5CF6',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    this link
+                  </a>
+                </List.Item>
+                <List.Item>
+                  Inside n8n, create an n8n API key and input it in the textbox
+                  below.
+                </List.Item>
+                <List.Item>
+                  Any workflow you create will be enabled by default in this
+                  project.
+                  <br />
+                </List.Item>
+                <List.Item>Check out your workflows below!</List.Item>
+              </List>
             </div>
             <N8nWorkflowsTable n8nApiKey={n8nApiKey} />
 
@@ -341,12 +361,13 @@ const MakeToolsPage = ({
                 label="n8n API Key"
                 description="We use this to run your workflows. You can find your n8n API Key in your n8n account settings."
                 placeholder="Enter your n8n API Key here"
-                value={n8nApiKey}
-                onChange={(event) => setN8nApiKey(event.currentTarget.value)}
+                value={tempApiKey}
+                onChange={(event) => setTempApiKey(event.currentTarget.value)}
                 className={`${montserrat_paragraph.variable} font-montserratParagraph`}
               />
               <div className="pt-2" />
               <Button
+                onClick={(event) => handleSaveApiKey()} // TODO
                 // onClick={() => upsertApiKey()} // TODO
                 className="bg-purple-800 hover:border-indigo-600 hover:bg-indigo-600"
                 type="submit"

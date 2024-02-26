@@ -37,7 +37,7 @@ interface WorkflowRecord {
   key: string
   // id: string
   name: string
-  active: boolean
+  active: string
   tags: string
   createdAt: Date
   updatedAt: Date
@@ -92,10 +92,10 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
       // keyField="id"
       records={records}
       columns={[
-        { accessor: 'id', width: 100 },
+        { accessor: 'id', width: 175 },
         { accessor: 'name', width: 100 },
         { accessor: 'active', width: 100 },
-        { accessor: 'tags', width: '100%' },
+        { accessor: 'tags.name', width: '100%' },
         {
           accessor: 'createdAt',
           // textAlign: 'left',
