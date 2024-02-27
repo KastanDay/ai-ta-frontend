@@ -81,7 +81,6 @@ const useStyles = createStyles((theme) => ({
 }))
 
 interface CourseDocument {
-  id: string; // Add this line
   course_name: string
   readable_filename: string
   url: string
@@ -127,17 +126,22 @@ export function MantineYourMaterialsTable({
   const [documentGroups, setDocumentGroups] = useState<DocumentGroupOption[]>([]);
   const [loadingDocumentGroups, setLoadingDocumentGroups] = useState(false);
 
+  const getDocumentId = (document: CourseDocument): string => {
+    const s3_path = document.s3_path || 'null';
+    const url = document.url || 'null';
+    return `${s3_path}-${url}`;
+  }
+
   // Example state for document toggle, replace with actual logic
   // Example state for document toggle, replace with actual logic
   const [enabledDocs, setEnabledDocs] = useState<EnabledDocsState>(course_materials.reduce((acc, doc) => ({
     ...acc,
-    [doc.id]: true, // Set to true to enable all document groups by default
+    [getDocumentId(doc)]: true, // Set to true to enable all document groups by default
   }), {}));
 
   const [documentGroupSearch, setDocumentGroupSearch] = useState('');
 
   const [defaultGroupCount, setDefaultGroupCount] = useState(0);
-
 
   // Logic to filter doc_groups based on the search query
   const filteredDocumentGroups = useMemo(() => {
@@ -151,7 +155,8 @@ export function MantineYourMaterialsTable({
     setDocumentGroupSearch(event.target.value);
   };
 
-  const handleToggleChange = (docId: string) => {
+  const handleToggleChange = (document: CourseDocument) => {
+    const docId = getDocumentId(document);
     setEnabledDocs(prevState => ({
       ...prevState,
       [docId]: !prevState[docId],
@@ -351,7 +356,7 @@ export function MantineYourMaterialsTable({
       // Assuming the backend has successfully updated the doc_group, update the local state.
       // This step ensures the UI reflects the new doc_group without needing to reload the data from the backend.
       const updatedMaterials = materials.map((material) => {
-        if (material.id === record.id) {
+        if (getDocumentId(material) === getDocumentId(record)) {
           return { ...material, doc_groups: selectedDocumentGroups };
         }
         return material;
@@ -416,7 +421,7 @@ export function MantineYourMaterialsTable({
       }
   
       const updatedMaterials = materials.map((material) => {
-        if (material.id === record.id) {
+        if (getDocumentId(material) === getDocumentId(record)) {
           // Ensure doc_groups is an array before trying to filter it
           const doc_groups = Array.isArray(material.doc_groups) ? material.doc_groups : [];
           return { ...material, doc_groups: doc_groups.filter(group => group !== removedGroup) };
@@ -472,7 +477,7 @@ export function MantineYourMaterialsTable({
   
       // Update the local state
       const updatedMaterials = materials.map((material) => {
-        if (material.id === record.id) {
+        if (getDocumentId(material) === getDocumentId(record)) {
           // Ensure doc_groups is an array before trying to spread it
           const doc_groups = Array.isArray(material.doc_groups) ? material.doc_groups : [];
           return { ...material, doc_groups: [...doc_groups, appendedGroup] };
@@ -549,8 +554,12 @@ export function MantineYourMaterialsTable({
                 <td style={{ wordWrap: 'break-word' }}>
                   <Switch
                     checked={enabledDocs[doc_group_obj.value]}
-                    onChange={() => handleToggleChange(doc_group_obj.value)}
-                    color="blue"
+                    onChange={() => {
+                      const documentToToggle = materials.find(doc => doc.doc_groups.includes(doc_group_obj.value));
+                      if (documentToToggle) {
+                        handleToggleChange(documentToToggle);
+                      }
+                    }}                    color="blue"
                     size="lg"
                     onLabel="Enabled"
                     offLabel="Disabled"
@@ -676,24 +685,35 @@ export function MantineYourMaterialsTable({
                   getCreateLabel={(query) => `+ Create ${query}`}
                   onCreate={(doc_group_name) => {
                     const newDocumentGroup = handleCreateDocumentGroup(doc_group_name);
+                    // Update the specific document's doc_groups in the materials state
+                    const updatedMaterials = materials.map((material) => {
+                      if (getDocumentId(material) === getDocumentId(record)) {
+                        const doc_groups = Array.isArray(material.doc_groups) ? material.doc_groups : [];
+                        return { ...material, doc_groups: [...doc_groups, newDocumentGroup.value] };
+                      }
+                      return material;
+                    });
+                    setMaterials(updatedMaterials);
                     return newDocumentGroup;
                   }}
                   onChange={async (newSelectedGroups) => {
-                    const removedGroups = record.doc_groups.filter(group => !newSelectedGroups.includes(group));
+                    // Ensure doc_groups is an array before trying to filter it
+                    const doc_groups = Array.isArray(record.doc_groups) ? record.doc_groups : [];
+                    const removedGroups = doc_groups.filter(group => !newSelectedGroups.includes(group));
                     if (removedGroups.length > 0) {
                       // Handle deletion of removedGroups here
                       for (const removedGroup of removedGroups) {
                         await handleRemoveDocumentGroup(record, removedGroup);
                       }
                     }
-                    const appendedGroups = newSelectedGroups.filter(group => !record.doc_groups.includes(group));
+                    const appendedGroups = newSelectedGroups.filter(group => !doc_groups.includes(group));
                     if (appendedGroups.length > 0) {
                       // Handle addition of appendedGroups here
                       for (const appendedGroup of appendedGroups) {
                         await handleAppendDocumentGroup(record, appendedGroup);
                       }
                     }
-                  }}       
+                  }}
                   sx={{ flex: 1, width: '100%' }} // Add width: '100%'
                 />
               </Group>
