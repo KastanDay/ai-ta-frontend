@@ -102,7 +102,8 @@ export async function getPresignedUrl(s3_path: string) {
   return data.presignedUrl
 }
 
-type DocumentGroupOption = { value: string; label: string; description?: string; numDocs?: number };// Define the type for the enabledDocs state
+type DocumentGroupOption = { value: string; label: string; numDocs?: number };
+
 type EnabledDocsState = {
   [docId: string]: boolean;
 };
@@ -178,7 +179,13 @@ export function MantineYourMaterialsTable({
       }
     });
   
-    const doc_groups_array = Array.from(doc_group_set).map((doc_group: string) => ({ value: doc_group, label: doc_group }));
+    let doc_groups_array: DocumentGroupOption[] = Array.from(doc_group_set).map((doc_group: string) => ({ value: doc_group, label: doc_group }));
+  
+    // Add a default group to the array if defaultGroupCount is greater than 0
+    if (defaultGroupCount > 0) {
+      doc_groups_array = [...doc_groups_array, { value: 'Default Group', label: 'Default Group', numDocs: defaultGroupCount }];
+    }
+  
     setDocumentGroups(doc_groups_array);
   
     // Initialize enabledDocs state with doc_group values
