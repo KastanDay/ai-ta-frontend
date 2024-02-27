@@ -29,7 +29,7 @@ import {
   IconX,
 } from '@tabler/icons-react'
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/router'
 import {
   modals,
@@ -102,7 +102,7 @@ export async function getPresignedUrl(s3_path: string) {
   return data.presignedUrl
 }
 
-type DocumentGroupOption = { value: string; label: string; numDocs?: number };
+type DocumentGroupOption = { value: string; label: string; numDocs?: number; enabled?: boolean };
 
 type EnabledDocsState = {
   [docId: string]: boolean;
@@ -133,12 +133,50 @@ export function MantineYourMaterialsTable({
     return `${s3_path}-${url}`;
   }
 
-  // Example state for document toggle, replace with actual logic
-  // Example state for document toggle, replace with actual logic
-  const [enabledDocs, setEnabledDocs] = useState<EnabledDocsState>(course_materials.reduce((acc, doc) => ({
-    ...acc,
-    [getDocumentId(doc)]: true, // Set to true to enable all document groups by default
-  }), {}));
+  const getEnabledDocGroups = async (course_name: string) => {
+    try {
+      const response = await fetch(
+        `https://flask-doc-groups.up.railway.app/getEnabledDocGroups?course_name=${course_name}`,
+      );
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch the enabled document groups from the backend.');
+      }
+  
+      const data = await response.json();
+      return data.enabled_doc_groups || []; // Return an empty array if enabled_doc_groups is null
+    } catch (error) {
+      // Handle error
+      if (error instanceof Error) {
+        console.error('Failed to fetch enabled document groups:', error.message);
+      } else {
+        // Handle cases where the error might not be an instance of Error
+        console.error('Failed to fetch enabled document groups, an unknown error occurred');
+      }
+    }
+  };
+
+  const [enabledDocs, setEnabledDocs] = useState<EnabledDocsState>({});
+
+  const hasFetchedEnabledDocGroups = useRef(false);
+
+  useEffect(() => {
+    const fetchEnabledDocGroups = async () => {
+      const enabledDocGroups = await getEnabledDocGroups(getCurrentPageName());
+      if (enabledDocGroups) {
+        const updatedDocumentGroups = documentGroups.map(doc_group => ({
+          ...doc_group,
+          enabled: enabledDocGroups.includes(doc_group.value),
+        }));
+        setDocumentGroups(updatedDocumentGroups);
+      }
+    };
+  
+    if (documentGroups.length > 0 && !hasFetchedEnabledDocGroups.current) {
+      fetchEnabledDocGroups();
+      hasFetchedEnabledDocGroups.current = true;
+    }
+  }, [documentGroups]);
 
   const [documentGroupSearch, setDocumentGroupSearch] = useState('');
 
@@ -592,13 +630,11 @@ export function MantineYourMaterialsTable({
                 </td>
                 <td style={{ wordWrap: 'break-word' }}>
                   <Switch
-                    checked={enabledDocs[doc_group_obj.value]}
+                    checked={doc_group_obj.enabled}
                     onChange={() => {
-                      const documentToToggle = materials.find(doc => doc.doc_groups.includes(doc_group_obj.value));
-                      if (documentToToggle) {
-                        handleToggleChange(documentToToggle);
-                      }
-                    }}                    color="blue"
+                      setDocumentGroups(prevState => prevState.map(group => group.value === doc_group_obj.value ? { ...group, enabled: !group.enabled } : group));
+                    }}
+                    color="blue"
                     size="lg"
                     onLabel="Enabled"
                     offLabel="Disabled"
