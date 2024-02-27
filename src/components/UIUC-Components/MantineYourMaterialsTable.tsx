@@ -165,13 +165,15 @@ export function MantineYourMaterialsTable({
   };
 
   useEffect(() => {
-    const doc_group_set = new Set<string>(); // Explicitly state that doc_group_set is a Set of strings
-    let defaultGroupCount = 0; // Initialize a local variable to count the documents in the default group
+    const doc_group_map = new Map<string, number>(); // Use a Map to store the count of each doc_group
   
+    let defaultGroupCount = 0; // Initialize a local variable to count the documents in the default group
+
     course_materials.forEach(doc => {
       if (doc.doc_groups && doc.doc_groups.length > 0) { // Check if doc_groups is defined and not empty
         doc.doc_groups.forEach(doc_group => {
-          doc_group_set.add(doc_group); // Add each doc_group to the Set
+          const count = doc_group_map.get(doc_group) || 0; // Get the current count, default to 0 if not found
+          doc_group_map.set(doc_group, count + 1); // Increment the count
         });
       } else {
         // If no doc_groups, increment the count for the default group
@@ -179,7 +181,7 @@ export function MantineYourMaterialsTable({
       }
     });
   
-    let doc_groups_array: DocumentGroupOption[] = Array.from(doc_group_set).map((doc_group: string) => ({ value: doc_group, label: doc_group }));
+    let doc_groups_array: DocumentGroupOption[] = Array.from(doc_group_map).map(([doc_group, count]) => ({ value: doc_group, label: doc_group, numDocs: count }));
   
     // Add a default group to the array if defaultGroupCount is greater than 0
     if (defaultGroupCount > 0) {
@@ -189,7 +191,7 @@ export function MantineYourMaterialsTable({
     setDocumentGroups(doc_groups_array);
   
     // Initialize enabledDocs state with doc_group values
-    const initialEnabledDocsState = Array.from(doc_group_set).reduce((acc, doc_group) => ({
+    const initialEnabledDocsState = Array.from(doc_group_map.keys()).reduce((acc, doc_group) => ({
       ...acc,
       [doc_group]: true, // Set to true to enable all document groups by default
     }), {});
@@ -429,11 +431,11 @@ export function MantineYourMaterialsTable({
             }),
           },
         );
-    
+  
         if (!response.ok) {
           throw new Error('Failed to append the document group on the backend.');
         }
-    
+  
         // Update the local state
         stateUpdateQueue = stateUpdateQueue.then(() => {
           setMaterials(prevMaterials => {
@@ -447,6 +449,18 @@ export function MantineYourMaterialsTable({
             });
   
             return updatedMaterials;
+          });
+  
+          // Update documentGroups state
+          setDocumentGroups(prevDocumentGroups => {
+            const existingGroup = prevDocumentGroups.find(group => group.value === appendedGroup);
+            if (existingGroup) {
+              // If the group already exists, increment its numDocs property
+              return prevDocumentGroups.map(group => group.value === appendedGroup ? { ...group, numDocs: (group.numDocs || 0) + 1 } : group);
+            } else {
+              // If the group doesn't exist, add it to the array
+              return [...prevDocumentGroups, { value: appendedGroup, label: appendedGroup, numDocs: 1 }];
+            }
           });
         });
       } catch (error) {
@@ -485,11 +499,11 @@ export function MantineYourMaterialsTable({
             }),
           },
         );
-    
+  
         if (!response.ok) {
           throw new Error('Failed to remove the document group on the backend.');
         }
-    
+  
         // Update the local state
         stateUpdateQueue = stateUpdateQueue.then(() => {
           setMaterials(prevMaterials => {
@@ -501,8 +515,20 @@ export function MantineYourMaterialsTable({
               }
               return material;
             });
-          
+  
             return updatedMaterials;
+          });
+  
+          // Update documentGroups state
+          setDocumentGroups(prevDocumentGroups => {
+            const existingGroup = prevDocumentGroups.find(group => group.value === removedGroup);
+            if (existingGroup && existingGroup.numDocs && existingGroup.numDocs > 1) {
+              // If the group exists and has more than one document, decrement its numDocs property
+              return prevDocumentGroups.map(group => group.value === removedGroup ? { ...group, numDocs: (group.numDocs || 0) - 1 } : group);
+            } else {
+              // If the group only has one document, remove it from the array
+              return prevDocumentGroups.filter(group => group.value !== removedGroup);
+            }
           });
         });
       } catch (error) {
