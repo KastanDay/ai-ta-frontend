@@ -19,6 +19,7 @@ import { useDebouncedValue } from '@mantine/hooks'
 import {
   IconEdit,
   IconEye,
+  IconFileExport,
   IconSearch,
   IconTrash,
   IconX,
@@ -139,7 +140,9 @@ export function MantineYourMaterialsTable({
   const [query, setQuery] = useState('')
   const [debouncedQuery] = useDebouncedValue(query, 200)
   const [modalOpened, setModalOpened] = useState(false)
+  const [exportModalOpened, setExportModalOpened] = useState(false)
   const [recordsToDelete, setRecordsToDelete] = useState<CourseDocuments[]>([])
+  const [recordsToExport, setRecordsToExport] = useState<CourseDocuments[]>([])
 
   useEffect(() => {
     if (debouncedQuery !== '') {
@@ -197,6 +200,22 @@ export function MantineYourMaterialsTable({
       showToastOnFileDeleted(theme, true)
     }
   }
+
+  const handleExport = async (recordsToExport: CourseDocuments[]) => {
+    try {
+      const API_URL = '/api/UIUC-api/exportMaterials'
+      const exportPromises = recordsToExport.map((record) =>
+        fetch(`${API_URL}?course_name=${record.course_name}&from_date=&to_date=`)
+      )
+      const responses = await Promise.all(exportPromises)
+      const data = await Promise.all(responses.map(response => response.json()))
+      console.log(data) // Log the response data
+    } catch (error) {
+      console.error(error)
+      console.log('Failed to connect to server')
+    }
+  }
+
 
   return (
     <>
@@ -369,12 +388,34 @@ export function MantineYourMaterialsTable({
             }}
           >
             {selectedRecords.length
-              ? `Delete ${
-                  selectedRecords.length === 1
-                    ? '1 selected record'
-                    : `${selectedRecords.length} selected records`
-                }`
+              ? `Delete ${selectedRecords.length === 1
+                ? '1 selected record'
+                : `${selectedRecords.length} selected records`
+              }`
               : 'Select records to delete'}
+          </Button>
+        </Center>
+        <Center>
+          <Button  // button to export materials
+            uppercase
+            leftIcon={<IconFileExport size={16} />}
+            disabled={!selectedRecords.length}
+            onClick={() => {
+              setRecordsToExport(selectedRecords)
+              setExportModalOpened(true)
+            }}
+            style={{
+              backgroundColor: selectedRecords.length
+                ? 'purple'
+                : 'transparent',
+            }}
+          >
+            {selectedRecords.length
+              ? `Export ${selectedRecords.length === 1
+                ? '1 selected record'
+                : `${selectedRecords.length} selected records`
+              }`
+              : 'Select records to export'}
           </Button>
         </Center>
       </Paper>
@@ -418,6 +459,46 @@ export function MantineYourMaterialsTable({
           </Button>
         </div>
       </Modal>
+      <Modal
+        opened={exportModalOpened} // Use a separate state variable for the export modal
+        onClose={() => setExportModalOpened(false)} // Update the state variable when the modal is closed
+        title="Please confirm your action"
+      >
+        <Text size="sm" style={{ color: 'white' }}>
+          {`Are you sure you want to export the selected records?`}
+        </Text>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginTop: '20px',
+          }}
+        >
+          <Button
+            className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
+            onClick={() => {
+              setExportModalOpened(false)
+            }}
+            style={{
+              backgroundColor: 'transparent',
+              marginRight: '7px',
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
+            onClick={async () => {
+              setExportModalOpened(false)
+              console.log('Exporting records:', recordsToExport)
+              await handleExport(recordsToExport)
+              setRecordsToExport([])
+            }}
+          >
+            Export
+          </Button>
+        </div>
+      </Modal>
     </>
   )
 }
@@ -446,8 +527,7 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${
-          response.statusText || response.status
+        `Error fetching course metadata: ${response.statusText || response.status
         }`,
       )
     }
