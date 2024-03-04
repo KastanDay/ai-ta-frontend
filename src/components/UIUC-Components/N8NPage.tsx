@@ -96,6 +96,7 @@ const MakeToolsPage = ({
     setN8nApiKey(tempApiKey) // Update n8nApiKey with the temporary value
     logApiToSupabase()
     setTempApiKey('')
+    setIsLoading(false)
   }
   const router = useRouter()
 
@@ -329,9 +330,13 @@ const MakeToolsPage = ({
                 className={`${montserrat_paragraph.variable} font-montserratParagraph`}
               >
                 <List.Item>
+                  First email us to get access to n8n. We will send you an
+                  invite.
+                </List.Item>
+                <List.Item>
                   Create an account and store your password safely through{' '}
                   <a
-                    href="https://primary-production-60d0.up.railway.app/setup"
+                    href="https://primary-production-1817.up.railway.app/setup"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -354,7 +359,7 @@ const MakeToolsPage = ({
                 <List.Item>Check out your workflows below!</List.Item>
               </List>
             </div>
-            <N8nWorkflowsTable n8nApiKey={n8nApiKey} />
+            <N8nWorkflowsTable n8nApiKey={n8nApiKey} isLoading={isLoading} />
 
             <div style={{ width: '40%' }}>
               <TextInput
@@ -371,8 +376,9 @@ const MakeToolsPage = ({
                 // onClick={() => upsertApiKey()} // TODO
                 className="bg-purple-800 hover:border-indigo-600 hover:bg-indigo-600"
                 type="submit"
+                disabled={isLoading}
               >
-                Save
+                {isLoading ? 'Saving...' : 'Save'}
               </Button>
             </div>
 
@@ -543,7 +549,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                     }
                   })
                 }
-                className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
+                className="btn btn-circle cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
@@ -568,7 +574,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                     file.course_name as string,
                   )
                 }
-                className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
+                className="btn btn-circle cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]

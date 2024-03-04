@@ -8,7 +8,7 @@ const logApiToSupabase = async (req: any, res: any) => {
     [
       {
         course_name: course_name,
-        n8n_api_key: n8n_api_key,
+        n8n_api_key: '{' + n8n_api_key + '}',
         // doc_map_id: null,
         // convo_map_id: null,
         // enabled_doc_groups: null,
@@ -16,7 +16,7 @@ const logApiToSupabase = async (req: any, res: any) => {
       },
     ],
     {
-      onConflict: 'n8n_api_key',
+      onConflict: 'course_name',
     },
   )
   if (error) {

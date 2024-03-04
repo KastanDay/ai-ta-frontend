@@ -16,11 +16,13 @@ import {
   Table,
   useReactTable,
 } from '@tanstack/react-table'
-import { createStyles, Group, TextInput, Title } from '@mantine/core'
+import { notifications } from '@mantine/notifications'
+import { createStyles, Group, TextInput, Title, Text } from '@mantine/core'
 import axios from 'axios'
 import { showToastOnFileDeleted } from './MakeOldCoursePage'
 import { useRouter } from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { Montserrat } from 'next/font/google'
 const useStyles = createStyles((theme) => ({}))
 
 import {
@@ -28,10 +30,11 @@ import {
   IconCaretDown,
   IconCaretUp,
   IconSquareArrowUp,
+  IconAlertCircle,
 } from '@tabler/icons-react'
 import { DataTable } from 'mantine-datatable'
 
-const PAGE_SIZE = 15
+const PAGE_SIZE = 5
 
 interface WorkflowRecord {
   key: string
@@ -45,7 +48,13 @@ interface WorkflowRecord {
 
 interface N8nWorkflowsTableProps {
   n8nApiKey: string
+  isLoading: boolean
 }
+
+const montserrat_med = Montserrat({
+  weight: '500',
+  subsets: ['latin'],
+})
 
 export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
   const [page, setPage] = useState(1)
@@ -58,9 +67,6 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
   const [pagination, setPagination] = useState(true)
 
   useEffect(() => {
-    // const from = (page - 1) * PAGE_SIZE;
-    // const to = from + PAGE_SIZE;
-    // setRecords(employees.slice(from, to));
     const fetchWorkflows = async () => {
       console.log('before fetch:')
       const response = await fetch(
@@ -80,17 +86,48 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
   }
 
   if (!records) {
-    alert('No records found')
-    return null
+    notifications.show({
+      id: 'error-notification',
+      withCloseButton: true,
+      closeButtonProps: { color: 'red' },
+      onClose: () => console.log('error unmounted'),
+      onOpen: () => console.log('error mounted'),
+      autoClose: 12000,
+      title: (
+        <Text size={'lg'} className={`${montserrat_med.className}`}>
+          Error fetching workflows
+        </Text>
+      ),
+      message: (
+        <Text className={`${montserrat_med.className} text-neutral-200`}>
+          No records found. Please check your API key and try again.
+        </Text>
+      ),
+      color: 'red',
+      radius: 'lg',
+      icon: <IconAlertCircle />,
+      className: 'my-notification-class',
+      style: {
+        backgroundColor: 'rgba(42,42,64,0.3)',
+        backdropFilter: 'blur(10px)',
+        borderLeft: '5px solid red',
+      },
+      withBorder: true,
+      loading: false,
+    })
+    return
   }
 
   console.log('records before datatable:', records)
+  const startIndex = (page - 1) * PAGE_SIZE
+  const endIndex = startIndex + PAGE_SIZE
+  const currentRecords = records.slice(startIndex, endIndex)
   return (
     <DataTable
       height={300}
       withBorder
       // keyField="id"
-      records={records}
+      records={currentRecords}
       columns={[
         { accessor: 'id', width: 175 },
         { accessor: 'name', width: 100 },
@@ -115,6 +152,7 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
           },
         },
       ]}
+      // totalRecords={records.length}
       totalRecords={records.length}
       recordsPerPage={PAGE_SIZE}
       page={page}
