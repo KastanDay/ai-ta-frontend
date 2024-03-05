@@ -65,6 +65,16 @@ const shouldShowFields = (inputUrl: string) => {
   )
 }
 
+/**
+ * Validates the URL based on specific regex patterns.
+ * @param {string} url - The URL to be validated.
+ * @returns {boolean} - True if the URL matches the regex patterns, false otherwise.
+ */
+/**
+ * Validates the format of the input URL.
+ * @param {string} url - The URL to be validated.
+ * @returns {boolean} - True if the URL is valid, false otherwise.
+ */
 const validateUrl = (url: string) => {
   const courseraRegex = /^https?:\/\/(www\.)?coursera\.org\/learn\/.+/
   const mitRegex = /^https?:\/\/ocw\.mit\.edu\/.+/
