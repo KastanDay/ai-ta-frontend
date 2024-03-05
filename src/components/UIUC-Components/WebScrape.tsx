@@ -91,6 +91,11 @@ const validateUrl = (url: string) => {
   )
 }
 
+/**
+ * Formats the input URL by adding 'http://' if necessary.
+ * @param {string} url - The URL to be formatted.
+ * @returns {string} - The formatted URL.
+ */
 const formatUrl = (url: string) => {
   if (!/^https?:\/\//i.test(url)) {
     url = 'http://' + url
