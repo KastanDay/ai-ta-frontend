@@ -196,7 +196,11 @@ const handleInputChange = (
     }
   }
 
-  const handleSubmit = async () => {
+  /**
+ * Handles the form submission.
+ * @returns {Promise<void>} - A promise that resolves when the submission is handled.
+ */
+const handleSubmit = async () => {
     if (validateUrl(url)) {
       setLoadingSpinner(true)
       let data = null
