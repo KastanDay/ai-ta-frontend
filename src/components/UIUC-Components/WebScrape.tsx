@@ -22,6 +22,14 @@ import {
   IconWorld,
   IconWorldDownload,
 } from '@tabler/icons-react'
+import {
+  shouldShowFields,
+  validateUrl,
+  formatUrl,
+  formatUrlAndMatchRegex,
+  scrapeWeb,
+  downloadMITCourse
+} from './WebScrapeUtils'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
