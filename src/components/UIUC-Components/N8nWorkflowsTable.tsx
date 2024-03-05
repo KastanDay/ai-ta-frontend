@@ -33,18 +33,9 @@ import {
   IconAlertCircle,
 } from '@tabler/icons-react'
 import { DataTable } from 'mantine-datatable'
+import { WorkflowRecord } from '~/types/tools'
 
 const PAGE_SIZE = 5
-
-interface WorkflowRecord {
-  key: string
-  // id: string
-  name: string
-  active: string
-  tags: string
-  createdAt: Date
-  updatedAt: Date
-}
 
 interface N8nWorkflowsTableProps {
   n8nApiKey: string
@@ -59,7 +50,7 @@ const montserrat_med = Montserrat({
 export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
   const [page, setPage] = useState(1)
   const [records, setRecords] = useState<WorkflowRecord[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   // const [n8nApiKey, setN8nApiKey] = useState(
   //   '',
   // ) // !WARNING PUT IN YOUR API KEY HERE
@@ -72,9 +63,41 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
       const response = await fetch(
         `/api/UIUC-api/tools/getN8nWorkflows?api_key=${n8nApiKey}&limit=${limit}&pagination=${pagination}`,
       )
+      if (!response.ok) {
+        notifications.show({
+          id: 'error-notification',
+          withCloseButton: true,
+          closeButtonProps: { color: 'red' },
+          onClose: () => console.log('error unmounted'),
+          onOpen: () => console.log('error mounted'),
+          autoClose: 12000,
+          title: (
+            <Text size={'lg'} className={`${montserrat_med.className}`}>
+              Error fetching workflows
+            </Text>
+          ),
+          message: (
+            <Text className={`${montserrat_med.className} text-neutral-200`}>
+              No records found. Please check your API key and try again.
+            </Text>
+          ),
+          color: 'red',
+          radius: 'lg',
+          icon: <IconAlertCircle />,
+          className: 'my-notification-class',
+          style: {
+            backgroundColor: 'rgba(42,42,64,0.3)',
+            backdropFilter: 'blur(10px)',
+            borderLeft: '5px solid red',
+          },
+          withBorder: true,
+          loading: false,
+        })
+        return
+      }
       const data = await response.json()
+      console.log(response)
 
-      console.log('getn8nworkflows data:', data)
       setRecords(data)
       setIsLoading(false)
     }
@@ -85,43 +108,48 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
     return <div>Loading...</div>
   }
 
-  if (!records) {
-    notifications.show({
-      id: 'error-notification',
-      withCloseButton: true,
-      closeButtonProps: { color: 'red' },
-      onClose: () => console.log('error unmounted'),
-      onOpen: () => console.log('error mounted'),
-      autoClose: 12000,
-      title: (
-        <Text size={'lg'} className={`${montserrat_med.className}`}>
-          Error fetching workflows
-        </Text>
-      ),
-      message: (
-        <Text className={`${montserrat_med.className} text-neutral-200`}>
-          No records found. Please check your API key and try again.
-        </Text>
-      ),
-      color: 'red',
-      radius: 'lg',
-      icon: <IconAlertCircle />,
-      className: 'my-notification-class',
-      style: {
-        backgroundColor: 'rgba(42,42,64,0.3)',
-        backdropFilter: 'blur(10px)',
-        borderLeft: '5px solid red',
-      },
-      withBorder: true,
-      loading: false,
-    })
-    return
-  }
+  // if (!records) {
+  //   notifications.show({
+  //     id: 'error-notification',
+  //     withCloseButton: true,
+  //     closeButtonProps: { color: 'red' },
+  //     onClose: () => console.log('error unmounted'),
+  //     onOpen: () => console.log('error mounted'),
+  //     autoClose: 12000,
+  //     title: (
+  //       <Text size={'lg'} className={`${montserrat_med.className}`}>
+  //         Error fetching workflows
+  //       </Text>
+  //     ),
+  //     message: (
+  //       <Text className={`${montserrat_med.className} text-neutral-200`}>
+  //         No records found. Please check your API key and try again.
+  //       </Text>
+  //     ),
+  //     color: 'red',
+  //     radius: 'lg',
+  //     icon: <IconAlertCircle />,
+  //     className: 'my-notification-class',
+  //     style: {
+  //       backgroundColor: 'rgba(42,42,64,0.3)',
+  //       backdropFilter: 'blur(10px)',
+  //       borderLeft: '5px solid red',
+  //     },
+  //     withBorder: true,
+  //     loading: false,
+  //   })
+  //   return
+  // }
 
   console.log('records before datatable:', records)
   const startIndex = (page - 1) * PAGE_SIZE
   const endIndex = startIndex + PAGE_SIZE
-  const currentRecords = records.slice(startIndex, endIndex)
+  let currentRecords
+  if (records && records.length !== 0) {
+    console.log('before the current', records)
+    currentRecords = (records as WorkflowRecord[]).slice(startIndex, endIndex)
+  }
+  console.log('currentRecords b4 data:', currentRecords)
   return (
     <DataTable
       height={300}
@@ -131,8 +159,18 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
       columns={[
         { accessor: 'id', width: 175 },
         { accessor: 'name', width: 100 },
-        { accessor: 'active', width: 100 },
-        { accessor: 'tags.name', width: '100%' },
+        {
+          accessor: 'active',
+          width: 100,
+          render: (record) => (record.active ? 'True' : 'False'),
+        },
+        {
+          accessor: 'tags',
+          width: 100,
+          render: (record, index) => {
+            return record.tags.map((tag) => tag.name).join(', ')
+          },
+        },
         {
           accessor: 'createdAt',
           // textAlign: 'left',
