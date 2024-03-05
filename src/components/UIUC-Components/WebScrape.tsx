@@ -51,6 +51,11 @@ interface WebScrapeProps {
   current_user_email: string
 }
 
+/**
+ * Determines whether to show fields based on the input URL.
+ * @param {string} inputUrl - The input URL.
+ * @returns {boolean} - True if the fields should be shown, false otherwise.
+ */
 const shouldShowFields = (inputUrl: string) => {
   return !(
     inputUrl.includes('coursera.org') ||
