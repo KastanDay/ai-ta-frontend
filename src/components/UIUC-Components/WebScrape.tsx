@@ -329,7 +329,11 @@ const handleSubmit = async () => {
     maxDepth: { error: false, message: '' },
   })
 
-  const validateInputs = () => {
+  /**
+ * Validates the input values.
+ * @returns {boolean} - True if all input values are valid, false otherwise.
+ */
+const validateInputs = () => {
     const errors = {
       maxUrls: { error: false, message: '' },
       maxDepth: { error: false, message: '' },
