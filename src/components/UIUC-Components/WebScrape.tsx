@@ -1,3 +1,10 @@
+/*
+  File: WebScrape.tsx
+  Description: This file contains the components and functions related to web scraping.
+  Author: [Author Name]
+  Created: [Creation Date]
+  Last modified: [Last Modification Date]
+*/
 // Web Scrape
 import { notifications } from '@mantine/notifications'
 import {
