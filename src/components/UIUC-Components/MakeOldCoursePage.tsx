@@ -435,7 +435,7 @@ export const showToastOnFileDeleted = (
       title: was_error ? 'Error deleting file' : 'Deleting file...',
       message: was_error
         ? "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug."
-        : 'The file will be deleted in the background. After about 10 seconds, it will be 100% purged from our servers and, of course, will no longer be used by the chatbot.',
+        : 'The file is being deleted in the background. Refresh the page to see the changes.',
       icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
       styles: {
         root: {
