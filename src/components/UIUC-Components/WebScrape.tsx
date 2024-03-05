@@ -166,7 +166,11 @@ export const WebScrape = ({
     'discussions',
   ])
 
-  const handleCanvasOptionChange = (value: string) => {
+  /**
+ * Handles the change of canvas option.
+ * @param {string} value - The option value to be handled.
+ */
+const handleCanvasOptionChange = (value: string) => {
     if (selectedCanvasOptions.includes(value)) {
       setSelectedCanvasOptions((prev) => prev.filter((item) => item !== value))
     } else {
