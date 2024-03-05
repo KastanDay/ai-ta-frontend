@@ -130,6 +130,14 @@ const formatUrlAndMatchRegex = (url: string) => {
   }
 }
 
+/**
+ * Renders the WebScrape component.
+ * @param {object} props - The component props.
+ * @param {boolean} props.is_new_course - Indicates whether the course is new.
+ * @param {string} props.courseName - The name of the course.
+ * @param {boolean} props.isDisabled - Indicates whether the component is disabled.
+ * @param {string} props.current_user_email - The email of the current user.
+ */
 export const WebScrape = ({
   is_new_course,
   courseName,
