@@ -103,6 +103,11 @@ const formatUrl = (url: string) => {
   return url
 }
 
+/**
+ * Formats the input URL, adds 'http://' if necessary, and constructs a match statement based on the url.
+ * @param {string} url - The input URL.
+ * @returns {object} - An object containing the formatted URL and the match statement.
+ */
 const formatUrlAndMatchRegex = (url: string) => {
   // fullUrl always starts with http://. Is the starting place of the scrape.
   // baseUrl is used to construct the match statement.
