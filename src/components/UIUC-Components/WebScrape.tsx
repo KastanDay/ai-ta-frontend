@@ -178,7 +178,12 @@ const handleCanvasOptionChange = (value: string) => {
     }
   }
 
-  const handleInputChange = (
+  /**
+ * Handles the change of input.
+ * @param {React.ChangeEvent<HTMLInputElement>} e - The change event.
+ * @param {string} variable - The variable to be handled.
+ */
+const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     variable: string,
   ) => {
