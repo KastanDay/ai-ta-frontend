@@ -24,7 +24,7 @@ const handler = async (req: NextRequest, res: NextResponse) => {
       console.error('Missing query parameters')
       // return res.status(400).json({ error: 'Missing query parameters' })
       return new Response(
-        JSON.stringify({ error: 'Missing query parameters' }),
+        JSON.stringify({ error: '❌❌ Missing query parameters' }),
         { status: 400 },
       )
     }
@@ -47,15 +47,17 @@ const handler = async (req: NextRequest, res: NextResponse) => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(`In success case -- Data ingested for URL: ${s3_filepath}`)
+        console.log(
+          `✅ In success case -- Data ingested for URL: ${s3_filepath}`,
+        )
         // res.status(200).json(data)
-        return new Response(JSON.stringify({ data }), { status: 200 })
+        return new Response(JSON.stringify(data), { status: 200 })
       })
       .catch((err) => {
         console.error(err)
         // res.status(500).json({ error: 'Internal Server Error' })
         return new Response(
-          JSON.stringify({ error: `Internal Server Error: ${err}` }),
+          JSON.stringify({ error: `❌❌ Internal Server Error: ${err}` }),
           { status: 500 },
         )
       })
