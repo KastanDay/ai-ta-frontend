@@ -142,7 +142,7 @@ export function MantineYourMaterialsTable({
   const [modalOpened, setModalOpened] = useState(false)
   const [exportModalOpened, setExportModalOpened] = useState(false)
   const [recordsToDelete, setRecordsToDelete] = useState<CourseDocuments[]>([])
-  const [recordsToExport, setRecordsToExport] = useState<CourseDocuments[]>([])
+  // const [recordsToExport, setRecordsToExport] = useState<CourseDocuments[]>([])
 
   useEffect(() => {
     if (debouncedQuery !== '') {
@@ -201,21 +201,32 @@ export function MantineYourMaterialsTable({
     }
   }
 
-  const handleExport = async (recordsToExport: CourseDocuments[]) => {
+  const handleExport = async (course_name: string) => {
     try {
-      const API_URL = '/api/UIUC-api/exportMaterials'
-      const exportPromises = recordsToExport.map((record) =>
-        fetch(`${API_URL}?course_name=${record.course_name}&from_date=&to_date=`)
-      )
-      const responses = await Promise.all(exportPromises)
-      const data = await Promise.all(responses.map(response => response.json()))
-      console.log(data) // Log the response data
+      const API_URL = 'https://flask-production-751b.up.railway.app/exportDocuments'
+      const response = await axios.get(`${API_URL}?course_name=${course_name}`, {
+        responseType: 'blob',
+      })
+
+      if (response.headers['content-type'] === 'application/json') {
+        const reader = new FileReader();
+        reader.onload = function () {
+          const jsonData = JSON.parse(reader.result as string);
+          console.log(jsonData);
+        }
+        reader.readAsText(new Blob([response.data]));
+      } else if (response.headers['content-type'] === 'application/zip') {
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', course_name + '_materials.zip')
+        document.body.appendChild(link)
+        link.click()
+      }
     } catch (error) {
-      console.error(error)
-      console.log('Failed to connect to server')
+      console.error('Error exporting materials:', error)
     }
   }
-
 
   return (
     <>
@@ -399,23 +410,25 @@ export function MantineYourMaterialsTable({
           <Button  // button to export materials
             uppercase
             leftIcon={<IconFileExport size={16} />}
-            disabled={!selectedRecords.length}
+            // disabled={!selectedRecords.length}
             onClick={() => {
-              setRecordsToExport(selectedRecords)
+              // setRecordsToExport(selectedRecords)
               setExportModalOpened(true)
             }}
             style={{
-              backgroundColor: selectedRecords.length
-                ? 'purple'
-                : 'transparent',
+              // backgroundColor: selectedRecords.length
+              //   ? 'purple'
+              //   : 'transparent',
+              backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
             }}
           >
-            {selectedRecords.length
+            {/* {selectedRecords.length
               ? `Export ${selectedRecords.length === 1
                 ? '1 selected record'
                 : `${selectedRecords.length} selected records`
               }`
-              : 'Select records to export'}
+              : 'Select records to export'} */}
+            Export all records
           </Button>
         </Center>
       </Paper>
@@ -490,9 +503,9 @@ export function MantineYourMaterialsTable({
             className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
             onClick={async () => {
               setExportModalOpened(false)
-              console.log('Exporting records:', recordsToExport)
-              await handleExport(recordsToExport)
-              setRecordsToExport([])
+              // console.log('Exporting records:', recordsToExport)
+              await handleExport(getCurrentPageName())
+              // setRecordsToExport([])
             }}
           >
             Export
