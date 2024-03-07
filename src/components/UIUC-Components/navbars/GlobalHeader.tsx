@@ -44,7 +44,7 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
       }
       setIsLoaded(true)
     } else {
-      console.debug('NOT LOADED OR SIGNED IN')
+      // console.debug('NOT LOADED OR SIGNED IN')
     }
   }, [clerk_obj.isLoaded])
 
@@ -158,7 +158,7 @@ export function LandingPageHeader({
       }
       setIsLoaded(true)
     } else {
-      console.debug('NOT LOADED OR SIGNED IN')
+      // console.debug('NOT LOADED OR SIGNED IN')
     }
   }, [clerk_obj.isLoaded])
 
