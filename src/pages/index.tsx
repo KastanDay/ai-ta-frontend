@@ -39,9 +39,6 @@ const Home: NextPage = () => {
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
           </h1>
-          <div>
-            <EventDisplay />
-          </div>
           <Container
             size="lg"
             py="l"
@@ -127,7 +124,6 @@ export default Home
 import { createStyles, SimpleGrid, Container } from '@mantine/core'
 import { IconGauge, IconUser, IconCookie } from '@tabler/icons-react'
 import ListProjectTable from '~/components/UIUC-Components/ProjectTable'
-import EventDisplay from '~/components/UIUC-Components/TestEventSourceComponent'
 
 const mockdata = [
   {

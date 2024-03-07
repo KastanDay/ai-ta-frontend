@@ -1,16 +1,17 @@
 // components/EventDisplay.js
 import React, { useState, useEffect } from 'react'
 
-interface Event {
-  myTask: string
-}
+// interface Event {
+//   myTask: string
+// }
 
 const EventDisplay = () => {
   // Explicitly type the state with the Event interface
-  const [events, setEvents] = useState<Event[]>([])
+  // const [events, setEvents] = useState<Event[]>([])
+  const [events, setEvents] = useState<any[]>([])
 
   useEffect(() => {
-    const eventSource = new EventSource('/api/UIUC-api/eventSourceUpdates')
+    const eventSource = new EventSource('/api/UIUC-api/ingestCallback')
 
     eventSource.onopen = function (event) {
       console.log('Connection to event source opened.', event)
@@ -24,7 +25,8 @@ const EventDisplay = () => {
     eventSource.onmessage = function (event) {
       console.log('event.data:', event.data)
       try {
-        const newEvent: Event = JSON.parse(event.data)
+        // const newEvent: Event = JSON.parse(event.data)
+        const newEvent: any = JSON.parse(event.data)
         setEvents((prevEvents) => [...prevEvents, newEvent])
       } catch (error) {
         console.error('Error parsing event data:', error)
