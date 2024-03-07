@@ -55,6 +55,8 @@ export const config = {
     externalResolver: true,
   },
 }; // this is important to avoid the 'API resolved without sending a response for /api/test_sse, this may result in stalled requests.' warning
+export const dynamic = 'force-dynamic';
+
 
 export default async function handler(
   req: NextApiRequest,

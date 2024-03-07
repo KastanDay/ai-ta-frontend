@@ -1,31 +1,58 @@
 import { NextPage } from 'next'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const Page: NextPage = () => {
   const [myEventNameData, setMyEventNameData] = useState<Array<string>>([])
 
-  const callSSE = () => {
-    console.log('In callSSE')
-    const eventSource = new EventSource(`/api/UIUC-api/ingestCallbackvtwo`)
-    eventSource.addEventListener('myEventName', (e) => {
-      console.log('in myEventName event listener', e.data)
-      // the event name here must be the same as in the API
+  // pages/index.js
+
+  useEffect(() => {
+    // const eventSource = new EventSource(`/api/sse`, {
+    //   withCredentials: true,
+    // });
+    const eventSource = new EventSource(`/api/UIUC-api/ingestCallbackvthree`, {
+      withCredentials: true,
+    })
+    eventSource.onopen = () => {
+      console.log('open');
+    };
+    eventSource.onmessage = (e) => {
+      console.log(e.data);
       const parsedData = JSON.parse(e.data)
-      console.log(parsedData)
       setMyEventNameData((prevData) => [...prevData, parsedData])
-    })
-    eventSource.addEventListener('open', (e) => {
-      console.log('open', e)
-    })
-    eventSource.addEventListener('error', (e) => {
-      console.log('error', e)
-      eventSource.close()
-    })
-  }
+    };
+    eventSource.onerror = (e) => {
+      console.log(e);
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
+
+  // const callSSE = () => {
+  //   console.log('In callSSE')
+  //   const eventSource = new EventSource(`/api/UIUC-api/ingestCallbackvthree`)
+  //   eventSource.addEventListener('myEventName', (e) => {
+  //     console.log('in myEventName event listener', e.data)
+  //     // the event name here must be the same as in the API
+  //     const parsedData = JSON.parse(e.data)
+  //     console.log(parsedData)
+  //     setMyEventNameData((prevData) => [...prevData, parsedData])
+  //   })
+  //   eventSource.addEventListener('open', (e) => {
+  //     console.log('open', e)
+  //   })
+  //   eventSource.addEventListener('error', (e) => {
+  //     console.log('error', e)
+  //     eventSource.close()
+  //   })
+  // }
 
   return (
     <div>
-      <button onClick={callSSE}>GET SSE</button>
+      {/* <button onClick={callSSE}>GET SSE</button> */}
+      <h2>Events:</h2>
       <ol>
         {myEventNameData.map((data, index) => (
           <li key={index}>{JSON.stringify(data)}</li>

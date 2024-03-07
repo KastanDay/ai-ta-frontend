@@ -4,13 +4,16 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const clients = new Set<ServerResponse>()
 
-export const runtime = 'edge'
+// export const runtime = 'edge'
+
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   console.log('XXX Received request:', req.url, req.body)
+
+  // Just post to Supabase. No need to send data to clients. Do client-side polling on that table update.
 
   if (req.method === 'GET') {
     // Setup for SSE
