@@ -13,6 +13,8 @@ import {
   IconCheck,
   IconCloudUpload,
   IconDownload,
+  IconFileUpload,
+  IconProgress,
   IconX,
 } from '@tabler/icons-react'
 import { Dropzone } from '@mantine/dropzone'
@@ -212,21 +214,24 @@ export function LargeDropzone({
 
     setUploadInProgress(false)
 
+    // showSuccessToast(resultSummary.success_ingest.length)
+    showIngestInProgressToast(resultSummary.success_ingest.length)
+
     // TODO: better to refresh just the table, not the entire page... makes it hard to persist toast... need full UI element for failures.
     // NOTE: Were just getting "SUBMISSION to task queue" status, not the success of the ingest job itself!!
-    if (resultSummary.failure_ingest.length > 0) {
-      // some failures
-      showFailedIngestToast(
-        resultSummary.failure_ingest.map(
-          (ingestResult) => ingestResult.s3_path,
-        ),
-      )
-      showSuccessToast(resultSummary.success_ingest.length)
-    } else {
-      // 100% success
-      await refreshOrRedirect(redirect_to_gpt_4)
-      // showSuccessToast(resultSummary.failure_ingest.map((ingestResult) => ingestResult.s3_path));
-    }
+    // if (resultSummary.failure_ingest.length > 0) {
+    //   // some failures
+    //   showFailedIngestToast(
+    //     resultSummary.failure_ingest.map(
+    //       (ingestResult) => ingestResult.s3_path,
+    //     ),
+    //   )
+    //   showSuccessToast(resultSummary.success_ingest.length)
+    // } else {
+    //   // 100% success
+    //   await refreshOrRedirect(redirect_to_gpt_4)
+    //   // showSuccessToast(resultSummary.failure_ingest.map((ingestResult) => ingestResult.s3_path));
+    // }
   }
 
   return (
@@ -417,6 +422,26 @@ const showSuccessToast = (num_success_files: number) => {
     color: 'green',
     radius: 'lg',
     icon: <IconCheck />,
+    className: 'my-notification-class',
+    style: { backgroundColor: '#15162c' },
+    loading: false,
+    // })
+  })
+}
+
+const showIngestInProgressToast = (num_success_files: number) => {
+  // success_files.forEach((file, index) => {
+  notifications.show({
+    id: `ingest-in-progress-toast-${num_success_files}`,
+    withCloseButton: true,
+    // onClose: () => console.log('unmounted'),
+    // onOpen: () => console.log('mounted'),
+    autoClose: 30000,
+    title: `Ingest in progress for ${num_success_files} file${num_success_files > 1 ? 's' : ''}.`,
+    message: `This is a background task. Refresh the page to see your files as they're processed. (A better upload experience is in the works for April 2024 🚀)`,
+    color: 'green',
+    radius: 'lg',
+    icon: <IconFileUpload />,
     className: 'my-notification-class',
     style: { backgroundColor: '#15162c' },
     loading: false,
