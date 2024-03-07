@@ -1,14 +1,13 @@
 // components/EventDisplay.js
 import React, { useState, useEffect } from 'react'
 
-// Define the event type
-// interface Event {
-//   time: string
-// }
+interface Event {
+  myTask: string
+}
 
 const EventDisplay = () => {
-  // Explicitly type the state
-  const [events, setEvents] = useState([])
+  // Explicitly type the state with the Event interface
+  const [events, setEvents] = useState<Event[]>([])
 
   useEffect(() => {
     const eventSource = new EventSource('/api/UIUC-api/eventSourceUpdates')
@@ -17,8 +16,6 @@ const EventDisplay = () => {
       console.log('Connection to event source opened.', event)
     }
 
-    // In case of any error, close the event source
-    // So that it attempts to connect again
     eventSource.onerror = function (error) {
       console.error('Event source error:', error)
       eventSource.close()
@@ -41,14 +38,10 @@ const EventDisplay = () => {
 
   return (
     <div>
-      <h1>Server-Sent Events {events[0]}</h1>
-
+      <h1>Server-Sent Events</h1>
       <ul>
-        {/* {events.map((event, index) => (
-          <li key={index}>Time from server: {event.time}</li>
-        ))} */}
         {events.map((event, index) => (
-          <li key={index}>Time from server: {event}</li>
+          <li key={index}>Time from server: {JSON.stringify(event)}</li>
         ))}
       </ul>
     </div>

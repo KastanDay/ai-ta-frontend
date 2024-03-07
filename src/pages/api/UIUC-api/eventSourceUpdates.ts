@@ -1,26 +1,43 @@
-// pages/api/UIUC-api/eventSourceUpdates.ts
+import { ServerResponse } from 'http'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  res.setHeader('Content-Type', 'text/event-stream')
-  res.setHeader('Cache-Control', 'no-cache')
-  res.setHeader('Connection', 'keep-alive')
-  res.setHeader('Content-Encoding', 'none')
-  res.flushHeaders()
+const clients = new Set<ServerResponse>()
 
-  console.log('Event source connected')
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
+  console.log('XXX Received request:', req.url, req.body)
 
-  // Send an event every 2 seconds
-  const intervalId = setInterval(() => {
-    const data = 'hi'
-    console.log('Sending data', data)
-    res.write(': keep-alive\n\n')
-    res.write(`data: ${JSON.stringify(data)}\n\n`)
-  }, 2000)
+  if (req.method === 'GET') {
+    // Setup for SSE
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.setHeader('Content-Encoding', 'none')
+    res.flushHeaders()
 
-  // Clear interval on client disconnect
-  req.on('close', () => {
-    clearInterval(intervalId)
-    res.end()
-  })
+    console.log('Event source connected')
+    clients.add(res)
+
+    req.on('close', () => {
+      clients.delete(res)
+      res.end()
+    })
+  } else if (req.method === 'POST') {
+    // console.log("Clients:", clients)
+    clients.forEach((client) => {
+      console.log('Forwarding data to client:', req.body)
+      client.write(`data: ${JSON.stringify(req.body)}\n\n`)
+    })
+
+    req.on('close', () => {
+      res.end()
+    })
+
+    res.status(200).end('Data forwarded to all connected clients')
+  } else {
+    res.setHeader('Allow', ['GET', 'POST'])
+    res.status(405).end(`Method ${req.method} Not Allowed`)
+  }
 }
