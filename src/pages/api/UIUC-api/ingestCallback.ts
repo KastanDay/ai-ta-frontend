@@ -1,7 +1,10 @@
 import { ServerResponse } from 'http'
+// import { type NextRequest, NextResponse } from 'next/server'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const clients = new Set<ServerResponse>()
+
+export const runtime = 'edge'
 
 export default async function handler(
   req: NextApiRequest,
