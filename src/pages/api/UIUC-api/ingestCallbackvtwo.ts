@@ -21,7 +21,7 @@ export default async function handler(
     res.write(`event: ${event}\ndata: ${JSON.stringify({ counter: data })}\n\n`) // <- the format here is important!
   })
 
-  for (let i = 0; i < 10; ++i) {
+  for (let i = 0; i < 120; ++i) {
     stream.emit('channel', 'myEventName', counter) // the event name here must be the same as in the EventSource in frontend
     console.log('update counter', counter)
     counter++
