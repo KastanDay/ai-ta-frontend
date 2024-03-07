@@ -47,9 +47,7 @@ const handler = async (req: NextRequest, res: NextResponse) => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(
-          `✅ In success case -- Data ingested for URL: ${s3_filepath}`,
-        )
+        console.log(`Submitted to ingest queue: ${s3_filepath}`)
         // res.status(200).json(data)
         return new Response(JSON.stringify(data), { status: 200 })
       })
@@ -57,7 +55,9 @@ const handler = async (req: NextRequest, res: NextResponse) => {
         console.error(err)
         // res.status(500).json({ error: 'Internal Server Error' })
         return new Response(
-          JSON.stringify({ error: `❌❌ Internal Server Error: ${err}` }),
+          JSON.stringify({
+            error: `❌❌ Internal Server Error during ingest submission to Beam: ${err}`,
+          }),
           { status: 500 },
         )
       })
