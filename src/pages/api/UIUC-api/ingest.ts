@@ -1,4 +1,3 @@
-// import { NextApiRequest, NextApiResponse } from 'next'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const config = {
@@ -31,6 +30,8 @@ const handler = async (req: NextRequest, res: NextResponse) => {
 
     const s3_filepath = `courses/${courseName}/${uniqueFileName}`
 
+    console.log('Submitting to ingest queue:', s3_filepath)
+
     fetch('https://41kgx.apps.beam.cloud', {
       method: 'POST',
       headers: {
@@ -47,13 +48,14 @@ const handler = async (req: NextRequest, res: NextResponse) => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(`Submitted to ingest queue: ${s3_filepath}`)
+        console.log(`⬆️ Submitted to ingest queue: ${s3_filepath}`)
         // res.status(200).json(data)
         return new Response(JSON.stringify(data), { status: 200 })
       })
       .catch((err) => {
-        console.error(err)
-        // res.status(500).json({ error: 'Internal Server Error' })
+        console.error(
+          `❌❌ Internal Server Error during ingest submission to Beam: ${err}`,
+        )
         return new Response(
           JSON.stringify({
             error: `❌❌ Internal Server Error during ingest submission to Beam: ${err}`,
@@ -61,8 +63,6 @@ const handler = async (req: NextRequest, res: NextResponse) => {
           { status: 500 },
         )
       })
-    // console.log('Getting to our /ingest endpoint', data);
-    // return data;
   } catch (error) {
     console.error(error)
     return []
