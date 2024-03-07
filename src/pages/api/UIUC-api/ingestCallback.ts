@@ -1,14 +1,14 @@
 import { ServerResponse } from 'http'
-import { type NextRequest, NextResponse } from 'next/server'
-// import { NextApiRequest, NextApiResponse } from 'next'
+// import { type NextRequest, NextResponse } from 'next/server'
+import { NextApiRequest, NextApiResponse } from 'next'
 
 const clients = new Set<ServerResponse>()
 
 export const runtime = 'edge'
 
 export default async function handler(
-  req: NextRequest,
-  // res: NextResponse,
+  req: NextApiRequest,
+  res: NextApiResponse,
 ) {
   console.log('XXX Received request:', req.url, req.body)
 
