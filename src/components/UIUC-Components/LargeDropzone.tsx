@@ -157,16 +157,6 @@ export function LargeDropzone({
       )
     }
 
-    interface IngestResult {
-      ok: boolean
-      s3_path: string // Assuming url is optional since it might not be present in error cases
-    }
-
-    interface ResultSummary {
-      success_ingest: IngestResult[]
-      failure_ingest: IngestResult[]
-    }
-
     // this does parallel (use for loop for sequential)
     const allSuccessOrFail = await Promise.all(
       files.map(async (file, index) => {
@@ -186,7 +176,9 @@ export function LargeDropzone({
               },
             },
           )
-          return { ok: true, s3_path: file.name }
+          const res = { ok: true, s3_path: file.name }
+          console.debug('res:', res)
+          return res
         } catch (error) {
           console.error('Error during file upload or ingest:', error)
           return { ok: false, s3_path: file.name }
@@ -194,16 +186,22 @@ export function LargeDropzone({
       }),
     )
 
-    console.log('allSuccessOrFail:', allSuccessOrFail)
+    interface IngestResult {
+      ok: boolean
+      s3_path: string
+    }
+
+    interface ResultSummary {
+      success_ingest: IngestResult[]
+      failure_ingest: IngestResult[]
+    }
 
     const resultSummary = allSuccessOrFail.reduce(
       (acc: ResultSummary, curr: IngestResult) => {
-        // Now curr is guaranteed to have an 'ok' property
         if (curr.ok) {
-          acc.success_ingest.push(curr) // Ensure curr.url exists or handle accordingly
+          acc.success_ingest.push(curr)
         } else {
-          // Handle failure case
-          acc.failure_ingest.push(curr) // Ensure curr.url exists or handle accordingly
+          acc.failure_ingest.push(curr)
         }
         return acc
       },
@@ -215,6 +213,7 @@ export function LargeDropzone({
     setUploadInProgress(false)
 
     // TODO: better to refresh just the table, not the entire page... makes it hard to persist toast... need full UI element for failures.
+    // NOTE: Were just getting "SUBMISSION to task queue" status, not the success of the ingest job itself!!
     if (resultSummary.failure_ingest.length > 0) {
       // some failures
       showFailedIngestToast(

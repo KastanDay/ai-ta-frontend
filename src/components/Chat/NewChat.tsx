@@ -485,7 +485,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           saveConversation(updatedConversation)
           // todo: add clerk user info to onMessagereceived for logging.
           if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
-            console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
             const emails = extractEmailsFromClerk(clerk_obj.user)
             updatedConversation.user_email = emails[0]
             onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...

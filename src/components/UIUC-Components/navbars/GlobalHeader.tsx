@@ -34,7 +34,6 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
   useEffect(() => {
     if (clerk_obj.isLoaded) {
       if (clerk_obj.isSignedIn) {
-        console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
         const emails = extractEmailsFromClerk(clerk_obj.user)
         setUserEmail(emails[0] || 'no_email')
 
@@ -149,7 +148,6 @@ export function LandingPageHeader({
   useEffect(() => {
     if (clerk_obj.isLoaded) {
       if (clerk_obj.isSignedIn) {
-        console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
         const emails = extractEmailsFromClerk(clerk_obj.user)
         setUserEmail(emails[0] || 'no_email')
 
