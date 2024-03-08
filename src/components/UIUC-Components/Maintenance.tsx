@@ -25,9 +25,9 @@ const Maintenance = ({}: {
           </Title>
           <Text size="lg">
             Due to a surge in new documents, our vector database is nearing
-            capacity. We're expanding the database now (a simple EC2 instance on
-            AWS) and we'll be back shortly. No data was lost, and the upgrade
-            will be seamless for everyone.
+            capacity. We&apos;re expanding the database now (a simple EC2
+            instance on AWS) and we&apos;ll be back shortly. No data was lost,
+            and the upgrade will be seamless for everyone.
           </Text>
           {/* <Text size="lg">
             Motivation: Things to explosive product growth, accompanied by the
