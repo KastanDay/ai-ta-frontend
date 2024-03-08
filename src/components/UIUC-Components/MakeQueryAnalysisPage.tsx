@@ -172,7 +172,7 @@ const MakeQueryAnalysisPage = ({
     try {
       setIsLoading(true)
       const response = await axios.get(
-        `https://flask-production-751b.up.railway.app/export-convo-history-csv?course_name=${courseName}`,
+        `https://flask-pr-228.up.railway.app/export-convo-history-csv?course_name=${courseName}`,
         { responseType: 'blob' },
       )
       const url = window.URL.createObjectURL(new Blob([response.data]))
@@ -362,7 +362,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const handleDelete = async (s3_path: string, course_name: string) => {
     try {
       const response = await axios.delete(
-        `https://flask-production-751b.up.railway.app/delete`,
+        `https://flask-pr-228.up.railway.app/delete`,
         {
           params: { s3_path, course_name },
         },
@@ -444,7 +444,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                     window.open(url as string, '_blank')
                   })
                 }
-                className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
+                className="btn btn-circle cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
@@ -469,7 +469,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                     file.course_name as string,
                   )
                 }
-                className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
+                className="btn btn-circle cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
