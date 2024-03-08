@@ -79,7 +79,6 @@
     "rehype-mathjax": "^4.0.2",
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
-    "sanitize-filename": "^1.6.3",
     "styled-components": "^6.1.0",
     "superjson": "1.12.2",
     "tabler-icons-react": "^1.56.0",
