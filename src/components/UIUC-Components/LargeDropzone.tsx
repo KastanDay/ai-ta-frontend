@@ -1,5 +1,6 @@
 // LargeDropzone.tsx
 import React, { useRef, useState } from 'react'
+import sanitize from 'sanitize-filename'
 import {
   createStyles,
   Group,
@@ -163,7 +164,7 @@ export function LargeDropzone({
     const allSuccessOrFail = await Promise.all(
       files.map(async (file, index) => {
         console.log('Index: ' + index)
-        const filename = file.name.replace(/[^a-zA-Z0-9]/g, '-') // only letters and numbers
+        const filename = sanitize(file.name)
         const uniqueFileName = (uuidv4() as string) + '-' + filename
 
         // return { ok: Math.random() < 0.5, s3_path: filename }; // For testing
