@@ -1,5 +1,6 @@
 // LargeDropzone.tsx
 import React, { useRef, useState } from 'react'
+import sanitize from 'sanitize-filename'
 import {
   createStyles,
   Group,
@@ -163,14 +164,15 @@ export function LargeDropzone({
     const allSuccessOrFail = await Promise.all(
       files.map(async (file, index) => {
         console.log('Index: ' + index)
-        const uniqueFileName = (uuidv4() as string) + '-' + file.name
+        const filename = sanitize(file.name)
+        const uniqueFileName = (uuidv4() as string) + '-' + filename
 
-        // return { ok: Math.random() < 0.5, s3_path: file.name }; // For testing
+        // return { ok: Math.random() < 0.5, s3_path: filename }; // For testing
         try {
           await uploadToS3(file, uniqueFileName)
 
           await fetch(
-            `/api/UIUC-api/ingest?uniqueFileName=${uniqueFileName}&courseName=${courseName}&readableFilename=${file.name}`,
+            `/api/UIUC-api/ingest?uniqueFileName=${uniqueFileName}&courseName=${courseName}&readableFilename=${filename}`,
             {
               method: 'GET',
               headers: {
@@ -178,12 +180,12 @@ export function LargeDropzone({
               },
             },
           )
-          const res = { ok: true, s3_path: file.name }
+          const res = { ok: true, s3_path: filename }
           console.debug('res:', res)
           return res
         } catch (error) {
           console.error('Error during file upload or ingest:', error)
-          return { ok: false, s3_path: file.name }
+          return { ok: false, s3_path: filename }
         }
       }),
     )
