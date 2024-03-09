@@ -369,11 +369,10 @@ export function MantineYourMaterialsTable({
             }}
           >
             {selectedRecords.length
-              ? `Delete ${
-                  selectedRecords.length === 1
-                    ? '1 selected record'
-                    : `${selectedRecords.length} selected records`
-                }`
+              ? `Delete ${selectedRecords.length === 1
+                ? '1 selected record'
+                : `${selectedRecords.length} selected records`
+              }`
               : 'Select records to delete'}
           </Button>
         </Center>
@@ -446,8 +445,7 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${
-          response.statusText || response.status
+        `Error fetching course metadata: ${response.statusText || response.status
         }`,
       )
     }
