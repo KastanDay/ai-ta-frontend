@@ -240,82 +240,6 @@ export function MantineYourMaterialsTable({
     setDefaultGroupCount(defaultGroupCount);
   }, [course_materials]); // Add course_materials as a dependency
 
-  // // Define the state variable for default group count
-  // const [defaultGroupCount, setDefaultGroupCount] = useState(0);
-
-  // // This useEffect hook processes course_materials to create a unique list of doc_groups
-  // // This useEffect hook processes course_materials to create a unique list of doc_groups
-  // useEffect(() => {
-  //   const doc_group_set = new Set<string>(); // Explicitly state that doc_group_set is a Set of strings
-  //   let defaultGroupCount = 0; // Initialize a local variable to count the documents in the default group
-
-  //   course_materials.forEach(doc => {
-  //     if (doc.doc_groups && doc.doc_groups.length > 0) { // Check if doc_groups is defined and not empty
-  //       doc.doc_groups.forEach(doc_group => {
-  //         doc_group_set.add(doc_group); // Add each doc_group to the Set
-  //       });
-  //     } else {
-  //       // If no doc_groups, increment the count for the default group
-  //       defaultGroupCount++; 
-  //     }
-  //   });
-
-  //   const doc_groups_array = Array.from(doc_group_set).map((doc_group: string) => ({ value: doc_group, label: doc_group }));
-  //   setDocumentGroups(doc_groups_array);
-
-  //   // Initialize enabledDocs state with doc_group values
-  //   const initialEnabledDocsState = Array.from(doc_group_set).reduce((acc, doc_group) => ({
-  //     ...acc,
-  //     [doc_group]: true, // Set to true to enable all document groups by default
-  //   }), {});
-  //   setEnabledDocs(initialEnabledDocsState);
-
-  //   // Update the state variable for default group count
-  //   setDefaultGroupCount(defaultGroupCount);
-  // }, [course_materials]); // Add course_materials as a dependency
-
-  // useEffect(() => {
-  //   const fetchDocumentGroups = async () => {
-  //     setLoadingDocumentGroups(true);
-  //     try {
-  //       const response = await axios.get('/api/path-to-get-doc_groups');
-  //       // Assuming response.data is an array of strings ['doc_group1', 'doc_group2', ...]
-  //       setDocumentGroups(response.data.map((doc_groups: string[]) => ({ value: doc_groups, label: doc_groups })));
-  //     } catch (error) {
-  //       console.error('Failed to fetch doc_groups', error);
-  //     } finally {
-  //       setLoadingDocumentGroups(false);
-  //     }
-  //   };
-  
-  //   fetchDocumentGroups();
-  // }, []);  
-
-  // useEffect(() => {
-  //   const fetchCourseDocuments = async () => {
-  //     const response = await fetch(`/api/UIUC-api/getCourseDocuments`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({
-  //         course_name: getCurrentPageName(),
-  //       }),
-  //     })
-  //     const documents = await response.json()
-  //     if (documents) {
-  //       setMaterials(documents)
-  //     }
-  //   }
-
-  //   fetchCourseDocuments()
-  // }, [])
-
-  // const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
-  //   columnAccessor: 'File Name',
-  //   direction: 'asc',
-  // });
-
   const [query, setQuery] = useState('')
   const [debouncedQuery] = useDebouncedValue(query, 200)
   const [modalOpened, setModalOpened] = useState(false)
@@ -582,12 +506,6 @@ export function MantineYourMaterialsTable({
       });
     }
   };
-  
-
-
-// No longer returning a specific type since the function is intended for side effects (state update)
-
-
 
   return (
     <>
