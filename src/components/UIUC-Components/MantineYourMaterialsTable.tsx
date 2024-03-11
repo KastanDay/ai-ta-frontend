@@ -43,6 +43,7 @@ import { showNotification } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
 import { Badge } from '@mantine/core'
 import { useColorScheme } from '@mantine/hooks'
+import { MaterialDocument } from '../../pages/api/documentGroups';
 
 const GlobalStyle = createGlobalStyle`
 // these mantine class names may change in future versions
@@ -377,31 +378,34 @@ export function MantineYourMaterialsTable({
     }
   }
 
-  // Handle doc_group changes for a document (assuming record has a unique identifier such as 'id')
   const handleDocumentGroupsChange = async (record: CourseDocument, selectedDocumentGroups: string[]) => {
     try {
-      const response = await fetch(
-        `https://flask-doc-groups.up.railway.app/addDocumentToGroup`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            course_name: getCurrentPageName(),
-            document: record,
-            doc_groups: record.doc_groups,
-          }),
-        },
-      )
+      const materialDocument: MaterialDocument = {
+        course_name: record.course_name,
+        readable_filename: record.readable_filename,
+        s3_path: record.s3_path,
+        base_url: record.base_url,
+        url: record.url,
+        doc_groups: selectedDocumentGroups,
+      };
   
-      // Check if the response from the backend is successful.
+      const response = await fetch('/api/documentGroups', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'addDocumentsToDocGroup',
+          courseName: getCurrentPageName(),
+          docs: materialDocument,
+        }),
+      });
+  
       if (!response.ok) {
-        throw new Error('Failed to update the doc_group on the backend.');
+        throw new Error('Failed to update document groups');
       }
   
-      // Assuming the backend has successfully updated the doc_group, update the local state.
-      // This step ensures the UI reflects the new doc_group without needing to reload the data from the backend.
+      // Update the local state
       const updatedMaterials = materials.map((material) => {
         if (getDocumentId(material) === getDocumentId(record)) {
           return { ...material, doc_groups: selectedDocumentGroups };
@@ -409,33 +413,21 @@ export function MantineYourMaterialsTable({
         return material;
       });
   
-      // Update the state with the new materials array.
       setMaterials(updatedMaterials);
   
-      // Show a success notification to the user.
       showNotification({
         title: 'Success',
         message: 'DocumentGroup updated successfully',
       });
     } catch (error) {
-      // Narrow down the error type to an instance of Error
-      if (error instanceof Error) {
-        console.error('Failed to update doc_group:', error.message);
-        showNotification({
-          title: 'Error',
-          message: `Failed to update doc_group: ${error.message}`,
-        });
-      } else {
-        // Handle cases where the error might not be an instance of Error
-        console.error('Failed to update doc_group, an unknown error occurred');
-        showNotification({
-          title: 'Error',
-          message: 'Failed to update doc_group: An unknown error occurred',
-        });
-      }
+      console.error('Failed to update doc_group:', error);
+      showNotification({
+        title: 'Error',
+        message: 'Failed to update doc_group',
+      });
     }
   };
-
+  
   const handleCreateDocumentGroup = (doc_group_name: string): DocumentGroupOption => {
     const newDocumentGroup: DocumentGroupOption = { value: doc_group_name, label: doc_group_name };
     // Check if the doc_group already exists by its value to prevent duplicates
@@ -451,142 +443,146 @@ export function MantineYourMaterialsTable({
 
   // Create a queue to store the state update functions
   let stateUpdateQueue = Promise.resolve();
-
   const handleAppendDocumentGroup = async (record: CourseDocument, appendedGroup: string) => {
-    fetchQueue = fetchQueue.then(async () => {
-      try {
-        const response = await fetch(
-          `https://flask-doc-groups.up.railway.app/appendDocumentToGroup`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              course_name: getCurrentPageName(),
-              document: record,
-              doc_group: appendedGroup,
-            }),
-          },
-        );
+    try {
+      const materialDocument: MaterialDocument = {
+        course_name: record.course_name,
+        readable_filename: record.readable_filename,
+        s3_path: record.s3_path,
+        base_url: record.base_url,
+        url: record.url,
+        doc_groups: [...(record.doc_groups || []), appendedGroup],
+      };
   
-        if (!response.ok) {
-          throw new Error('Failed to append the document group on the backend.');
-        }
+      const response = await fetch('/api/documentGroups', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'appendDocGroup',
+          courseName: getCurrentPageName(),
+          docs: materialDocument,
+          docGroup: appendedGroup,
+        }),
+      });
   
-        // Update the local state
-        stateUpdateQueue = stateUpdateQueue.then(() => {
-          setMaterials(prevMaterials => {
-            const updatedMaterials = prevMaterials.map((material) => {
-              if (getDocumentId(material) === getDocumentId(record)) {
-                // Ensure doc_groups is an array before trying to spread it
-                const doc_groups = Array.isArray(material.doc_groups) ? material.doc_groups : [];
-                return { ...material, doc_groups: [...doc_groups, appendedGroup] };
-              }
-              return material;
-            });
-  
-            return updatedMaterials;
-          });
-  
-          // Update documentGroups state
-          setDocumentGroups(prevDocumentGroups => {
-            const existingGroup = prevDocumentGroups.find(group => group.value === appendedGroup);
-            if (existingGroup) {
-              // If the group already exists, increment its numDocs property
-              return prevDocumentGroups.map(group => group.value === appendedGroup ? { ...group, numDocs: (group.numDocs || 0) + 1 } : group);
-            } else {
-              // If the group doesn't exist, add it to the array
-              return [...prevDocumentGroups, { value: appendedGroup, label: appendedGroup, numDocs: 1 }];
-            }
-          });
-        });
-      } catch (error) {
-        // Handle error
-        if (error instanceof Error) {
-          showNotification({
-            title: 'Error',
-            message: `Failed to append document group: ${error.message}`,
-          });
-        } else {
-          // Handle cases where the error might not be an instance of Error
-          console.error('Failed to append document group, an unknown error occurred');
-          showNotification({
-            title: 'Error',
-            message: 'Failed to append document group: An unknown error occurred',
-          });
-        }
+      if (!response.ok) {
+        throw new Error('Failed to append document group');
       }
-    });
+  
+      // Update the local state
+      setMaterials((prevMaterials) => {
+        const updatedMaterials = prevMaterials.map((material) => {
+          if (getDocumentId(material) === getDocumentId(record)) {
+            const doc_groups = Array.isArray(material.doc_groups)
+              ? material.doc_groups
+              : [];
+            return { ...material, doc_groups: [...doc_groups, appendedGroup] };
+          }
+          return material;
+        });
+  
+        return updatedMaterials;
+      });
+  
+      // Update documentGroups state
+      setDocumentGroups((prevDocumentGroups) => {
+        const existingGroup = prevDocumentGroups.find(
+          (group) => group.value === appendedGroup
+        );
+        if (existingGroup) {
+          return prevDocumentGroups.map((group) =>
+            group.value === appendedGroup
+              ? { ...group, numDocs: (group.numDocs || 0) + 1 }
+              : group
+          );
+        } else {
+          return [
+            ...prevDocumentGroups,
+            { value: appendedGroup, label: appendedGroup, numDocs: 1 },
+          ];
+        }
+      });
+    } catch (error) {
+      console.error('Failed to append document group:', error);
+      showNotification({
+        title: 'Error',
+        message: 'Failed to append document group',
+      });
+    }
   };
   
   const handleRemoveDocumentGroup = async (record: CourseDocument, removedGroup: string) => {
-    fetchQueue = fetchQueue.then(async () => {
-      try {
-        const response = await fetch(
-          `https://flask-doc-groups.up.railway.app/removeDocumentFromGroup`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              course_name: getCurrentPageName(),
-              document: record,
-              doc_group: removedGroup,
-            }),
-          },
-        );
+    try {
+      const materialDocument: MaterialDocument = {
+        course_name: record.course_name,
+        readable_filename: record.readable_filename,
+        s3_path: record.s3_path,
+        base_url: record.base_url,
+        url: record.url,
+        doc_groups: (record.doc_groups || []).filter((group) => group !== removedGroup),
+      };
   
-        if (!response.ok) {
-          throw new Error('Failed to remove the document group on the backend.');
-        }
+      const response = await fetch('/api/documentGroups', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'removeDocGroup',
+          courseName: getCurrentPageName(),
+          docs: materialDocument,
+          docGroup: removedGroup,
+        }),
+      });
   
-        // Update the local state
-        stateUpdateQueue = stateUpdateQueue.then(() => {
-          setMaterials(prevMaterials => {
-            const updatedMaterials = prevMaterials.map((material) => {
-              if (getDocumentId(material) === getDocumentId(record)) {
-                // Ensure doc_groups is an array before trying to filter it
-                const doc_groups = Array.isArray(material.doc_groups) ? material.doc_groups : [];
-                return { ...material, doc_groups: doc_groups.filter(group => group !== removedGroup) };
-              }
-              return material;
-            });
-  
-            return updatedMaterials;
-          });
-  
-          // Update documentGroups state
-          setDocumentGroups(prevDocumentGroups => {
-            const existingGroup = prevDocumentGroups.find(group => group.value === removedGroup);
-            if (existingGroup && existingGroup.numDocs && existingGroup.numDocs > 1) {
-              // If the group exists and has more than one document, decrement its numDocs property
-              return prevDocumentGroups.map(group => group.value === removedGroup ? { ...group, numDocs: (group.numDocs || 0) - 1 } : group);
-            } else {
-              // If the group only has one document, remove it from the array
-              return prevDocumentGroups.filter(group => group.value !== removedGroup);
-            }
-          });
-        });
-      } catch (error) {
-        // Handle error
-        if (error instanceof Error) {
-          showNotification({
-            title: 'Error',
-            message: `Failed to remove document group: ${error.message}`,
-          });
-        } else {
-          // Handle cases where the error might not be an instance of Error
-          console.error('Failed to remove document group, an unknown error occurred');
-          showNotification({
-            title: 'Error',
-            message: 'Failed to remove document group: An unknown error occurred',
-          });
-        }
+      if (!response.ok) {
+        throw new Error('Failed to remove document group');
       }
-    });
+  
+      // Update the local state
+      setMaterials((prevMaterials) => {
+        const updatedMaterials = prevMaterials.map((material) => {
+          if (getDocumentId(material) === getDocumentId(record)) {
+            const doc_groups = Array.isArray(material.doc_groups)
+              ? material.doc_groups
+              : [];
+            return {
+              ...material,
+              doc_groups: doc_groups.filter((group) => group !== removedGroup),
+            };
+          }
+          return material;
+        });
+  
+        return updatedMaterials;
+      });
+  
+      // Update documentGroups state
+      setDocumentGroups((prevDocumentGroups) => {
+        const existingGroup = prevDocumentGroups.find(
+          (group) => group.value === removedGroup
+        );
+        if (existingGroup && existingGroup.numDocs && existingGroup.numDocs > 1) {
+          return prevDocumentGroups.map((group) =>
+            group.value === removedGroup
+              ? { ...group, numDocs: (group.numDocs || 0) - 1 }
+              : group
+          );
+        } else {
+          return prevDocumentGroups.filter((group) => group.value !== removedGroup);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to remove document group:', error);
+      showNotification({
+        title: 'Error',
+        message: 'Failed to remove document group',
+      });
+    }
   };
+  
 
 
 // No longer returning a specific type since the function is intended for side effects (state update)
