@@ -167,7 +167,7 @@ export function MantineYourMaterialsTable({
 
   const handleDelete = async (recordsToDelete: CourseDocuments[]) => {
     try {
-      const API_URL = 'https://flask-pr-228.up.railway.app'
+      const API_URL = 'https://flask-production-751b.up.railway.app'
       const deletePromises = recordsToDelete.map((record) =>
         axios.delete(`${API_URL}/delete`, {
           params: {

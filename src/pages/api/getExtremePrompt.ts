@@ -10,7 +10,7 @@ export async function getExtremePrompt(
 ) {
   console.log('getExtremePrompt called')
   const res = await fetch(
-    `https://flask-pr-228.up.railway.app/getContextStuffedPrompt?course_name=${course_name}&search_query=${search_query}&top_n=${top_n}&top_k_to_search=${top_k_to_search}`,
+    `https://flask-production-751b.up.railway.app/getContextStuffedPrompt?course_name=${course_name}&search_query=${search_query}&top_n=${top_n}&top_k_to_search=${top_k_to_search}`,
     {
       method: 'GET',
     },
