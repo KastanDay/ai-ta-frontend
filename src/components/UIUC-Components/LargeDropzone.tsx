@@ -175,7 +175,7 @@ export function LargeDropzone({
           await uploadToS3(file, uniqueFileName)
 
           await fetch(
-            `/api/UIUC-api/ingest?uniqueFileName=${uniqueFileName}&courseName=${courseName}&readableFilename=${filename}`,
+            `/api/UIUC-api/ingest?uniqueFileName=${uniqueFileName}&courseName=${courseName}&readableFilename=${file.name}`,
             {
               method: 'GET',
               headers: {
@@ -183,12 +183,12 @@ export function LargeDropzone({
               },
             },
           )
-          const res = { ok: true, s3_path: filename }
+          const res = { ok: true, s3_path: file.name }
           console.debug('res:', res)
           return res
         } catch (error) {
           console.error('Error during file upload or ingest:', error)
-          return { ok: false, s3_path: filename }
+          return { ok: false, s3_path: file.name }
         }
       }),
     )
