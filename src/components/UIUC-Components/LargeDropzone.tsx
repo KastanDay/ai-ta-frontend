@@ -169,13 +169,14 @@ export function LargeDropzone({
           .slice(0, file.name.lastIndexOf('.'))
           .replace(/[^a-zA-Z0-9]/g, '-')
         const uniqueFileName = `${uuidv4()}-${nameWithoutExtension}${extension}`
+        const uniqueReadableFileName = `${nameWithoutExtension}${extension}`
 
         // return { ok: Math.random() < 0.5, s3_path: filename }; // For testing
         try {
           await uploadToS3(file, uniqueFileName)
 
           await fetch(
-            `/api/UIUC-api/ingest?uniqueFileName=${uniqueFileName}&courseName=${courseName}&readableFilename=${file.name}`,
+            `/api/UIUC-api/ingest?uniqueFileName=${uniqueFileName}&courseName=${courseName}&readableFilename=${uniqueReadableFileName}`,
             {
               method: 'GET',
               headers: {
