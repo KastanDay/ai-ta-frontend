@@ -1,7 +1,7 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { magicBellTheme } from '~/components/UIUC-Components/navbars/GlobalHeader'
-import {} from '@mantine/core'
+import { } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import Image from 'next/image'
 import { useEffect, useState, useContext, useRef } from 'react'
@@ -229,51 +229,51 @@ const ChatNavbar = ({
 
   const items = isAdminOrOwner
     ? [
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Chat
-            </span>
-          ),
-          icon: <MessageChatIcon />,
-          link: `/${getCurrentCourseName()}/chat`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Materials
-            </span>
-          ),
-          icon: <FolderIcon />,
-          link: `/${getCurrentCourseName()}/materials`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Analysis
-            </span>
-          ),
-          icon: <ReportIcon />,
-          link: `/${getCurrentCourseName()}/query-analysis`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Prompting
-            </span>
-          ),
-          icon: <SettingIcon />,
-          link: `/${getCurrentCourseName()}/prompt`,
-        },
-      ]
+      {
+        name: (
+          <span
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            Chat
+          </span>
+        ),
+        icon: <MessageChatIcon />,
+        link: `/${getCurrentCourseName()}/chat`,
+      },
+      {
+        name: (
+          <span
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            Materials
+          </span>
+        ),
+        icon: <FolderIcon />,
+        link: `/${getCurrentCourseName()}/materials`,
+      },
+      {
+        name: (
+          <span
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            Analysis
+          </span>
+        ),
+        icon: <ReportIcon />,
+        link: `/${getCurrentCourseName()}/query-analysis`,
+      },
+      {
+        name: (
+          <span
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            Prompting
+          </span>
+        ),
+        icon: <SettingIcon />,
+        link: `/${getCurrentCourseName()}/prompt`,
+      },
+    ]
     : []
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -311,8 +311,8 @@ const ChatNavbar = ({
       style={{ display: show ? 'block' : 'none', height: '40%' }}
     >
       <div
-        className="mt-4 w-full max-w-[95%]"
-        style={{ height: '50px', paddingTop: 'Opx' }}
+        className="mt-4"
+        style={{ height: '50px', paddingTop: 'Opx', width: '95vw' }}
       >
         {/* <div > */}
         {/* <Flex style={{ flexDirection: 'row' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"> */}
@@ -334,7 +334,7 @@ const ChatNavbar = ({
               }}
             >
               <Link href="/">
-                <h2 className="ms-8 cursor-pointer text-3xl font-extrabold tracking-tight text-white sm:text-[2rem] ">
+                <h2 className="ms-3 cursor-pointer sm:text-[2rem] md:text-3xl font-extrabold tracking-tight text-white sm:text-[2rem]">
                   UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
                 </h2>
               </Link>
@@ -461,7 +461,7 @@ const ChatNavbar = ({
                         className={`${montserrat_heading.variable} font-montserratHeading`}
                       >
                         {/* Model: {modelName} */}
-                        Model: {selectedConversation?.model.name}
+                        {selectedConversation?.model.name}
                       </span>
                     </span>
                   </div>
