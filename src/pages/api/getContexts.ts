@@ -16,7 +16,7 @@ export const fetchContexts = async (
     token_limit: token_limit.toString(),
   }).toString()
 
-  const url = `https://flask-doc-groups.up.railway.app/getTopContexts?${queryParams}`
+  const url = `https://flask-production-751b.up.railway.app/getTopContexts?${queryParams}`
 
   try {
     const response = await fetch(url)
