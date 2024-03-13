@@ -382,7 +382,7 @@ export function MantineYourMaterialsTable({
         url: record.url,
         doc_groups: selectedDocumentGroups,
       };
-  
+
       const response = await fetch('/api/documentGroups', {
         method: 'POST',
         headers: {
@@ -394,11 +394,11 @@ export function MantineYourMaterialsTable({
           docs: materialDocument,
         }),
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to update document groups');
       }
-  
+
       const updatedMaterials = materials.map((material) => {
         if (getDocumentId(material) === getDocumentId(record)) {
           // Convert the array of strings to an array of objects with a `name` property
@@ -407,18 +407,18 @@ export function MantineYourMaterialsTable({
         }
         return material;
       });
-      
+
       setMaterials(updatedMaterials);
-  
+
       showNotification({
         title: 'Success',
-        message: 'DocumentGroup updated successfully',
+        message: 'Document groups updated successfully',
       });
     } catch (error) {
-      console.error('Failed to update doc_group:', error);
+      console.error('Failed to update document groups:', error);
       showNotification({
         title: 'Error',
-        message: 'Failed to update doc_group',
+        message: 'Failed to update document groups',
       });
     }
   };
@@ -723,7 +723,7 @@ export function MantineYourMaterialsTable({
             render: (record) => (
               <Group position="apart" spacing="xs">
                 <MultiSelect
-                  data={documentGroups.map(doc_group => ({
+                  data={documentGroups.map(doc_group => ({ 
                     value: doc_group.value || '',
                     label: doc_group.label || '',
                   }))}
@@ -733,25 +733,12 @@ export function MantineYourMaterialsTable({
                   nothingFound="No options"
                   creatable
                   getCreateLabel={(query) => `+ Create ${query}`}
-                  onCreate={(doc_group_name) => {
-                    const newDocumentGroup = handleCreateDocumentGroup(doc_group_name);
-                    return newDocumentGroup;
+                  onCreate={(value) => {
+                    const newDocumentGroup = { value, label: value };
+                    setDocumentGroups((current) => [...current, newDocumentGroup]);
+                    return value;
                   }}
-                  onChange={async (newSelectedGroups) => {
-                    const doc_groups = record.doc_groups ? record.doc_groups.map(group => group.name) : [];
-                    const removedGroups = doc_groups.filter(group => !newSelectedGroups.includes(group));
-                    if (removedGroups.length > 0) {
-                      for (const removedGroup of removedGroups) {
-                        await handleRemoveDocumentGroup(record, removedGroup);
-                      }
-                    }
-                    const appendedGroups = newSelectedGroups.filter(group => !doc_groups.includes(group));
-                    if (appendedGroups.length > 0) {
-                      for (const appendedGroup of appendedGroups) {
-                        await handleAppendDocumentGroup(record, appendedGroup);
-                      }
-                    }
-                  }}
+                  onChange={(newSelectedGroups) => handleDocumentGroupsChange(record, newSelectedGroups)}
                   sx={{ flex: 1, width: '100%' }}
                 />
               </Group>

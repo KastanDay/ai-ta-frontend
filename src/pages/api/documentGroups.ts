@@ -147,6 +147,17 @@ async function addDocumentsToDocGroup(courseName: string, docs: MaterialDocument
       }
 
       if (documentId && doc.doc_groups) {
+        // Remove existing document-doc_group associations for the document
+        const { error: deleteError } = await supabase
+          .from('documents_doc_groups')
+          .delete()
+          .eq('document_id', documentId);
+
+        if (deleteError) {
+          console.error('Error in deleting existing document-doc_group associations:', deleteError);
+          throw deleteError;
+        }
+
         for (const docGroupName of doc.doc_groups) {
           let docGroupId: number | null = null;
           let retryCount = 0;
@@ -193,7 +204,7 @@ async function addDocumentsToDocGroup(courseName: string, docs: MaterialDocument
               .insert({ document_id: documentId, doc_group_id: docGroupId });
 
             if (insertError) {
-              console.error('Error in inserting document-doc_group association into Supabase:', insertError);
+              console.error('Error in inserting document-doc_group association:', insertError);
               throw insertError;
             }
           } else {
@@ -203,7 +214,7 @@ async function addDocumentsToDocGroup(courseName: string, docs: MaterialDocument
         }
       }
     } catch (error) {
-      console.error('Error in adding documents to doc_group in Supabase:', error);
+      console.error('Error in adding documents to doc_group:', error);
       throw error;
     }
   }
