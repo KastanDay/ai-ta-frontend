@@ -222,8 +222,50 @@ async function appendDocGroup(courseName: string, doc: MaterialDocument, docGrou
 }
 
 async function removeDocGroup(courseName: string, doc: MaterialDocument, docGroup: string) {
-  if (doc.doc_groups) {
-    doc.doc_groups = doc.doc_groups.filter((group) => group !== docGroup);
+  try {
+    const { data: documents, error: selectError } = await supabase
+      .from('documents')
+      .select('id')
+      .eq('course_name', courseName)
+      .eq('s3_path', doc.s3_path)
+      .or(`url.eq.${doc.url}`);
+
+    if (selectError) {
+      console.error('Error in selecting document from Supabase:', selectError);
+      throw selectError;
+    }
+
+    if (documents && documents.length > 0) {
+      const documentId = documents[0]?.id ?? null;
+
+      const { data: docGroups, error: docGroupsError } = await supabase
+        .from('doc_groups')
+        .select('id')
+        .eq('name', docGroup)
+        .eq('course_name', courseName);
+
+      if (docGroupsError) {
+        console.error('Error in selecting doc_group from Supabase:', docGroupsError);
+        throw docGroupsError;
+      }
+
+      if (docGroups && docGroups.length > 0) {
+        const docGroupId = docGroups[0]?.id ?? null;
+
+        const { error: deleteError } = await supabase
+          .from('documents_doc_groups')
+          .delete()
+          .eq('document_id', documentId)
+          .eq('doc_group_id', docGroupId);
+
+        if (deleteError) {
+          console.error('Error in deleting document-doc_group association from Supabase:', deleteError);
+          throw deleteError;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error in removing document groups in Supabase:', error);
+    throw error;
   }
-  await addDocumentsToDocGroup(courseName, doc);
 }
