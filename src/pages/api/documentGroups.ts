@@ -101,7 +101,7 @@ async function addDocumentsToDocGroup(courseName: string, docs: MaterialDocument
           // Insert the document into the documents table
           const { data: insertedDocument, error: insertError } = await supabase
             .from('documents')
-            .insert({ course_name: courseName, s3_path: doc.s3_path })
+            .insert({ course_name: courseName, s3_path: doc.s3_path, readable_filename: doc.readable_filename, url: doc.url })
             .single();
 
           if (insertError) {
@@ -132,7 +132,7 @@ async function addDocumentsToDocGroup(courseName: string, docs: MaterialDocument
           // Insert the document into the documents table
           const { data: insertedDocument, error: insertError } = await supabase
             .from('documents')
-            .insert({ course_name: courseName, url: doc.url })
+            .insert({ course_name: courseName, url: doc.url, readable_filename: doc.readable_filename, s3_path: doc.s3_path })
             .single();
 
           if (insertError) {
@@ -147,50 +147,58 @@ async function addDocumentsToDocGroup(courseName: string, docs: MaterialDocument
       }
 
       if (documentId && doc.doc_groups) {
-        for (const docGroup of doc.doc_groups) {
-          // Check if the doc_group exists in the doc_groups table
-          const { data: existingDocGroups, error: selectError } = await supabase
-            .from('doc_groups')
-            .select('id')
-            .eq('name', docGroup)
-            .eq('course_name', courseName);
+        for (const docGroupName of doc.doc_groups) {
+          let docGroupId: number | null = null;
+          let retryCount = 0;
+          const maxRetries = 3;
 
-          if (selectError) {
-            console.error('Error in selecting doc_group from Supabase:', selectError);
-            throw selectError;
+          while (retryCount < maxRetries) {
+            // Check if the doc_group exists in the doc_groups table
+            const { data: existingDocGroups, error: selectError } = await supabase
+              .from('doc_groups')
+              .select('id')
+              .eq('name', docGroupName)
+              .eq('course_name', courseName);
+
+            if (selectError) {
+              console.error('Error in selecting doc_group from Supabase:', selectError);
+              throw selectError;
+            }
+
+            if (existingDocGroups && existingDocGroups.length > 0) {
+              docGroupId = (existingDocGroups[0] as DocGroup).id;
+              break;
+            } else {
+              // Insert the doc_group into the doc_groups table
+              const { data: insertedDocGroup, error: insertError } = await supabase
+                .from('doc_groups')
+                .insert({ name: docGroupName, course_name: courseName })
+                .single();
+
+              if (insertError) {
+                console.error('Error in inserting doc_group into Supabase:', insertError);
+                retryCount++;
+                await new Promise((resolve) => setTimeout(resolve, 500)); // Delay for 500ms before retrying
+              } else if (insertedDocGroup) {
+                docGroupId = (insertedDocGroup as DocGroup).id;
+                break;
+              }
+            }
           }
 
-          let docGroupId: number;
-
-          if (existingDocGroups && existingDocGroups.length > 0) {
-            docGroupId = (existingDocGroups[0] as DocGroup).id;
-          } else {
-            // Insert the doc_group into the doc_groups table
-            const { data: insertedDocGroup, error: insertError } = await supabase
-              .from('doc_groups')
-              .insert({ name: docGroup, course_name: courseName })
-              .single();
+          if (docGroupId !== null) {
+            // Insert the document-doc_group association into the documents_doc_groups table
+            const { error: insertError } = await supabase
+              .from('documents_doc_groups')
+              .insert({ document_id: documentId, doc_group_id: docGroupId });
 
             if (insertError) {
-              console.error('Error in inserting doc_group into Supabase:', insertError);
+              console.error('Error in inserting document-doc_group association into Supabase:', insertError);
               throw insertError;
             }
-
-            if (insertedDocGroup) {
-              docGroupId = (insertedDocGroup as DocGroup).id;
-            } else {
-              throw new Error('Failed to insert doc_group into Supabase');
-            }
-          }
-
-          // Insert the document-doc_group association into the documents_doc_groups table
-          const { error: insertError } = await supabase
-            .from('documents_doc_groups')
-            .insert({ document_id: documentId, doc_group_id: docGroupId });
-
-          if (insertError) {
-            console.error('Error in inserting document-doc_group association into Supabase:', insertError);
-            throw insertError;
+          } else {
+            console.error('Failed to insert doc_group after multiple retries');
+            throw new Error('Failed to insert doc_group after multiple retries');
           }
         }
       }
@@ -200,6 +208,8 @@ async function addDocumentsToDocGroup(courseName: string, docs: MaterialDocument
     }
   }
 }
+
+
 
 async function appendDocGroup(courseName: string, doc: MaterialDocument, docGroup: string) {
   if (!doc.doc_groups) {
