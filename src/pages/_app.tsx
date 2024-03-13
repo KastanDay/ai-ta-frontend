@@ -27,6 +27,7 @@ if (typeof window !== 'undefined') {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY as string, {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
     opt_in_site_apps: true,
+    autocapture: false,
     // Enable debug mode in development
     loaded: (posthog) => {
       if (process.env.NODE_ENV === 'development') posthog.debug()

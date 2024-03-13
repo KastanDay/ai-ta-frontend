@@ -204,6 +204,7 @@ const EmailChipsComponent = ({
       openai_api_key: openai_api_key,
       example_questions: undefined,
       system_prompt: undefined,
+      disabled_models: undefined,
     }
     onEmailAddressesChange &&
       onEmailAddressesChange(updatedMetadata, course_name)

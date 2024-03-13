@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
+// import { DropzoneS3Upload } from '~/components/UIUC-Components/Upload_S3'
 import {
   // Card,
   // Image,
@@ -161,13 +161,14 @@ const MakeOldCoursePage = ({
                   </Title>
                 </div>
 
-                <div className="me-6 mt-4 flex flex-row items-end justify-end">
+                {/* Deprecated the upload button -- too much to maintain two buttons. */}
+                {/* <div className="me-6 mt-4 flex flex-row items-end justify-end">
                   <DropzoneS3Upload
                     course_name={course_name}
                     redirect_to_gpt_4={false}
                     courseMetadata={courseMetadata}
                   />
-                </div>
+                </div> */}
               </Flex>
               {/* NOMIC not bad, not great */}
               {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
@@ -435,7 +436,7 @@ export const showToastOnFileDeleted = (
       title: was_error ? 'Error deleting file' : 'Deleting file...',
       message: was_error
         ? "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug."
-        : 'The file will be deleted in the background. After about 10 seconds, it will be 100% purged from our servers and, of course, will no longer be used by the chatbot.',
+        : 'The file is being deleted in the background. Refresh the page to see the changes.',
       icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
       styles: {
         root: {

@@ -31,6 +31,9 @@ const setCourseMetadata = async (req: any, res: any) => {
   const system_prompt = JSON.parse(
     req.nextUrl.searchParams.get('system_prompt') || '[]',
   )
+  const disabled_models = JSON.parse(
+    req.nextUrl.searchParams.get('disabled_models') || '[]',
+  )
   try {
     const course_metadata: CourseMetadata = {
       is_private: is_private,
@@ -42,6 +45,7 @@ const setCourseMetadata = async (req: any, res: any) => {
       openai_api_key: openai_api_key,
       example_questions: example_questions,
       system_prompt: system_prompt,
+      disabled_models: disabled_models,
     }
     console.log('Right before setting course_metadata with: ', course_metadata)
     await kv.hset('course_metadatas', { [course_name]: course_metadata })

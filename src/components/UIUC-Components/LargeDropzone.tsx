@@ -6,12 +6,15 @@ import {
   rem,
   Text,
   Title,
-  useMantineTheme,
+  // useMantineTheme,
 } from '@mantine/core'
 import {
   IconAlertCircle,
+  IconCheck,
   IconCloudUpload,
   IconDownload,
+  IconFileUpload,
+  IconProgress,
   IconX,
 } from '@tabler/icons-react'
 import { Dropzone } from '@mantine/dropzone'
@@ -68,28 +71,23 @@ export function LargeDropzone({
   const [uploadInProgress, setUploadInProgress] = useState(false)
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
-  // const theme = useMantineTheme()
-  // Set owner email
-  // const { isSignedIn, user } = useUser()
-  // const current_user_email = user?.primaryEmailAddress?.emailAddress as string
-
-  // console.log("in LargeDropzone.tsx primaryEmailAddress: ", user?.primaryEmailAddress?.emailAddress as string)
-  // console.log("in LargeDropzone.tsx ALL emailAddresses: ", user?.emailAddresses )
+  const { classes, theme } = useStyles()
+  const openRef = useRef<() => void>(null)
 
   const refreshOrRedirect = async (redirect_to_gpt_4: boolean) => {
     if (is_new_course) {
       // refresh current page
       await new Promise((resolve) => setTimeout(resolve, 200))
-      router.push(`/${courseName}/materials`)
+      await router.push(`/${courseName}/materials`)
       return
     }
 
     if (redirect_to_gpt_4) {
-      router.push(`/${courseName}/chat`)
+      await router.push(`/${courseName}/chat`)
     }
     // refresh current page
     await new Promise((resolve) => setTimeout(resolve, 200))
-    router.reload()
+    await router.reload()
   }
   const uploadToS3 = async (file: File | null, uniqueFileName: string) => {
     if (!file) return
@@ -141,56 +139,113 @@ export function LargeDropzone({
     }
   }
 
-  const ingestFile = async (
-    file: File | null,
-    uniqueFileName: string,
-    readableFilename: string,
-  ) => {
-    if (!file) return
-    const requestObject = {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+  const ingestFiles = async (files: File[] | null, is_new_course: boolean) => {
+    if (!files) return
+    files = files.filter((file) => file !== null)
+
+    setUploadInProgress(true)
+
+    if (is_new_course) {
+      await callSetCourseMetadata(
+        courseName,
+        courseMetadata || {
+          course_owner: current_user_email,
+          course_admins: undefined,
+          approved_emails_list: undefined,
+          is_private: undefined,
+          banner_image_s3: undefined,
+          course_intro_message: undefined,
+        },
+      )
     }
 
-    // Actually we CAN await here, just don't await this function.
-    console.log('right before call /ingest...')
-    const response = await fetch(
-      `/api/UIUC-api/ingest?uniqueFileName=${uniqueFileName}&courseName=${courseName}&readableFilename=${readableFilename}`,
-      requestObject,
+    // this does parallel (use for loop for sequential)
+    const allSuccessOrFail = await Promise.all(
+      files.map(async (file, index) => {
+        console.log('Index: ' + index)
+        // Sanitize the filename and retain the extension
+        const extension = file.name.slice(file.name.lastIndexOf('.'))
+        const nameWithoutExtension = file.name
+          .slice(0, file.name.lastIndexOf('.'))
+          .replace(/[^a-zA-Z0-9]/g, '-')
+        const uniqueFileName = `${uuidv4()}-${nameWithoutExtension}${extension}`
+        const uniqueReadableFileName = `${nameWithoutExtension}${extension}`
+
+        // return { ok: Math.random() < 0.5, s3_path: filename }; // For testing
+        try {
+          await uploadToS3(file, uniqueFileName)
+
+          console.log(
+            'Uploaded to s3. Now sending to ingest. Course name:',
+            courseName,
+            'Filename: ',
+            uniqueFileName,
+          )
+
+          await fetch(
+            `/api/UIUC-api/ingest?uniqueFileName=${uniqueFileName}&courseName=${courseName}&readableFilename=${uniqueReadableFileName}`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            },
+          )
+          const res = { ok: true, s3_path: file.name }
+          console.debug('Ingest submittedgst...', res)
+          return res
+        } catch (error) {
+          console.error('Error during file upload or ingest:', error)
+          return { ok: false, s3_path: file.name }
+        }
+      }),
     )
 
-    // check if the response was ok
-    if (response.ok) {
-      const data = await response.json()
-      // console.log(uniqueFileName as string + ' ingested successfully!!')
-      console.log('Success or Failure:', data)
-      // TODO: move these toasts to AFTER the refreshOrRedirect
-      // showToast(data.failure_ingest)
-      // showToast(data.success_ingest)
-      // failure_ingest.length is not a function. idk why...
-      if (data.failure_ingest.length > 0) {
-        data.failure_ingest.map((s3path: string) => {
-          console.log('Logging each failure path:', s3path)
-        })
-      }
-      if (data.success_ingest.length > 0) {
-        data.success_ingest.map((s3path: string) => {
-          console.log('Logging each success path:', s3path)
-        })
-      }
-
-      return data
-    } else {
-      console.log('Error during ingest:', response.statusText)
-      console.log('Full Response message:', response)
-      return response
+    interface IngestResult {
+      ok: boolean
+      s3_path: string
     }
-  }
 
-  const { classes, theme } = useStyles()
-  const openRef = useRef<() => void>(null)
+    interface ResultSummary {
+      success_ingest: IngestResult[]
+      failure_ingest: IngestResult[]
+    }
+
+    const resultSummary = allSuccessOrFail.reduce(
+      (acc: ResultSummary, curr: IngestResult) => {
+        if (curr.ok) {
+          acc.success_ingest.push(curr)
+        } else {
+          acc.failure_ingest.push(curr)
+        }
+        return acc
+      },
+      { success_ingest: [], failure_ingest: [] },
+    )
+
+    console.log('Ingestion Summary:', resultSummary)
+
+    setUploadInProgress(false)
+
+    // showSuccessToast(resultSummary.success_ingest.length)
+    showIngestInProgressToast(resultSummary.success_ingest.length)
+
+    // TODO: better to refresh just the table, not the entire page... makes it hard to persist toast... need full UI element for failures.
+    // NOTE: Were just getting "SUBMISSION to task queue" status, not the success of the ingest job itself!!
+    // if (resultSummary.failure_ingest.length > 0) {
+    //   // some failures
+    //   showFailedIngestToast(
+    //     resultSummary.failure_ingest.map(
+    //       (ingestResult) => ingestResult.s3_path,
+    //     ),
+    //   )
+    //   showSuccessToast(resultSummary.success_ingest.length)
+    // } else {
+    //   // 100% success
+    //   await refreshOrRedirect(redirect_to_gpt_4)
+    //   // showSuccessToast(resultSummary.failure_ingest.map((ingestResult) => ingestResult.s3_path));
+    // }
+  }
 
   return (
     <>
@@ -226,55 +281,9 @@ export function LargeDropzone({
             }}
             loading={uploadInProgress}
             onDrop={async (files) => {
-              setUploadInProgress(true)
-              console.log(
-                'Calling upsert metadata api with courseName & courseMetadata',
-                courseName,
-                courseMetadata,
-              )
-              // set course exists
-              const upsertCourseMetadataResponse = await callSetCourseMetadata(
-                courseName,
-                courseMetadata || {
-                  course_owner: current_user_email,
-                  course_admins: undefined,
-                  approved_emails_list: undefined,
-                  is_private: undefined,
-                  banner_image_s3: undefined,
-                  course_intro_message: undefined,
-                },
-              )
-              if (upsertCourseMetadataResponse) {
-                // this does sequential uploads.
-                for (const [index, file] of files.entries()) {
-                  console.log('Index: ' + index)
-                  const uniqueFileName = (uuidv4() as string) + '-' + file.name
-
-                  try {
-                    await uploadToS3(file, uniqueFileName).catch((error) => {
-                      console.error('Error during file upload:', error)
-                    })
-                    // Ingest into backend (time consuming)
-                    await ingestFile(file, uniqueFileName, file.name).catch(
-                      (error) => {
-                        console.error('Error during file upload:', error)
-                      },
-                    )
-                    console.log('Ingested a file.')
-                  } catch (error) {
-                    console.error('Error during file processing:', error)
-                  }
-                }
-                console.log(
-                  'Done ingesting everything! Now refreshing the page...',
-                )
-                setUploadInProgress(false)
-                refreshOrRedirect(redirect_to_gpt_4)
-                // TODO: here we should raise toast for failed ingest files. AND successful ingest files.
-              } else {
-                console.error('Upsert metadata failed')
-                setUploadInProgress(false)
-              }
+              ingestFiles(files, is_new_course).catch((error) => {
+                console.error('Error during file upload:', error)
+              })
             }}
             className={classes.dropzone}
             radius="md"
@@ -391,21 +400,18 @@ export function LargeDropzone({
 
 export default LargeDropzone
 
-const showToast = (error_files: string[]) => {
-  return (
-    // docs: https://mantine.dev/others/notifications/
+const showFailedIngestToast = (error_files: string[]) => {
+  // docs: https://mantine.dev/others/notifications/
 
+  error_files.forEach((file, index) => {
     notifications.show({
-      id: 'failed-ingest-toast',
+      id: `failed-ingest-toast-${index}`,
       withCloseButton: true,
-      onClose: () => console.log('unmounted'),
-      onOpen: () => console.log('mounted'),
-      autoClose: 15000,
-      // position="top-center",
-      title: 'Failed to ingest files',
-      message: `Failed to ingest the following files: ${error_files.join(
-        ', ',
-      )}. Please shoot me an email: kvday2@illinois.edu.`,
+      // onClose: () => console.log('unmounted'),
+      // onOpen: () => console.log('mounted'),
+      autoClose: 30000,
+      title: `Failed to ingest file ${file}`,
+      message: `Please shoot me an email: kvday2@illinois.edu.`,
       color: 'red',
       radius: 'lg',
       icon: <IconAlertCircle />,
@@ -413,5 +419,45 @@ const showToast = (error_files: string[]) => {
       style: { backgroundColor: '#15162c' },
       loading: false,
     })
-  )
+  })
+}
+
+const showSuccessToast = (num_success_files: number) => {
+  // success_files.forEach((file, index) => {
+  notifications.show({
+    id: `success-ingest-toast-${num_success_files}`,
+    withCloseButton: true,
+    // onClose: () => console.log('unmounted'),
+    // onOpen: () => console.log('mounted'),
+    autoClose: 30000,
+    title: `Successfully ingested ${num_success_files} files.`,
+    message: `Refresh page to see changes.`,
+    color: 'green',
+    radius: 'lg',
+    icon: <IconCheck />,
+    className: 'my-notification-class',
+    style: { backgroundColor: '#15162c' },
+    loading: false,
+    // })
+  })
+}
+
+const showIngestInProgressToast = (num_success_files: number) => {
+  // success_files.forEach((file, index) => {
+  notifications.show({
+    id: `ingest-in-progress-toast-${num_success_files}`,
+    withCloseButton: true,
+    // onClose: () => console.log('unmounted'),
+    // onOpen: () => console.log('mounted'),
+    autoClose: 30000,
+    title: `Ingest in progress for ${num_success_files} file${num_success_files > 1 ? 's' : ''}.`,
+    message: `This is a background task. Refresh the page to see your files as they're processed. (A better upload experience is in the works for April 2024 🚀)`,
+    color: 'green',
+    radius: 'lg',
+    icon: <IconFileUpload />,
+    className: 'my-notification-class',
+    style: { backgroundColor: '#15162c' },
+    loading: false,
+    // })
+  })
 }

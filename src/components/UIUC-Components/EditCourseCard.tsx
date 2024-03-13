@@ -13,6 +13,7 @@ import {
   Divider,
   Accordion,
   createStyles,
+  Switch,
 } from '@mantine/core'
 import {
   IconAlertCircle,
@@ -23,7 +24,7 @@ import {
   IconLock,
   IconTrash,
 } from '@tabler/icons-react'
-
+import { OpenAIModel } from '@/types/openai'
 import {
   CourseMetadataOptionalForUpsert,
   type CourseMetadata,
@@ -54,6 +55,18 @@ const useStyles = createStyles((theme) => ({
     padding: 0,
     borderRadius: theme.radius.xl,
     outline: 'none',
+  },
+  switch: {
+    color: (theme.colors as any).aiPurple[0],
+    backgroundColor: (theme.colors as any).aiPurple[0],
+    input: {
+      color: (theme.colors as any).aiPurple[0],
+      backgroundColor: (theme.colors as any).aiPurple[0],
+    },
+    root: {
+      color: (theme.colors as any).aiPurple[0],
+      backgroundColor: (theme.colors as any).aiPurple[0],
+    },
   },
   item: {
     backgroundColor: 'bg-transparent',
@@ -198,6 +211,7 @@ const EditCourseCard = ({
       console.log('Removing api key')
       setApiKey(inputValue)
       await callSetCourseMetadata(course_name, courseMetadata as CourseMetadata)
+      setIsKeyUpdating(false)
       notifications.show({
         id: 'success-notification',
         title: 'Update Successful',
@@ -391,7 +405,7 @@ const EditCourseCard = ({
                     gradient={{ from: 'gold', to: 'white', deg: 170 }}
                     order={3}
                   >
-                    Course-wide OpenAI key{' '}
+                    Project-wide OpenAI key{' '}
                   </Title>
 
                   <Accordion
@@ -540,6 +554,7 @@ const EditCourseCard = ({
                 <PrivateOrPublicCourse
                   course_name={course_name}
                   courseMetadata={courseMetadata as CourseMetadata}
+                  apiKey={apiKey || ''}
                 />
 
                 <Title
@@ -682,9 +697,11 @@ const EditCourseCard = ({
 const PrivateOrPublicCourse = ({
   course_name,
   courseMetadata,
+  apiKey,
 }: {
   course_name: string
   courseMetadata: CourseMetadata
+  apiKey: string
 }) => {
   const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
   const { classes } = useStyles() // for Accordion
@@ -747,9 +764,194 @@ const PrivateOrPublicCourse = ({
     }
   }
 
+  const [selectedModels, setSelectedModels] = useState<OpenAIModel[]>([])
+  const [models, setModels] = useState<OpenAIModel[]>([])
+  useEffect(() => {
+    const fetchModels = async () => {
+      const res = await fetch('/api/models', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ key: apiKey }),
+      })
+      if (res.ok) {
+        const allAvailableModels = (await res.json()) as OpenAIModel[]
+        setModels(allAvailableModels)
+
+        setSelectedModels(
+          allAvailableModels.filter(
+            (model) => !courseMetadata.disabled_models?.includes(model.id),
+          ),
+        )
+      } else {
+        console.error(`Error fetching models: ${res.status}`)
+      }
+    }
+
+    if (apiKey) {
+      fetchModels()
+    } else {
+      setModels([])
+      // console.error('No API key provided')
+    }
+  }, [apiKey])
+
+  const handleModelCheckboxChange = (modelId: string, isChecked: boolean) => {
+    if (!isChecked) {
+      console.log('Model being unchecked')
+
+      const mySelectedModels = selectedModels.filter(
+        (model) => model.id !== modelId,
+      )
+
+      // start with models and filter out all of mySelectedModels from it
+      const myDisabledModels = models.filter(
+        (model) => !mySelectedModels.includes(model),
+      )
+
+      // console.log('being removed -- mySelectedModels', mySelectedModels)
+      // console.log('being removed -- myDisabledModels', myDisabledModels)
+      setSelectedModels((prevModels) =>
+        prevModels.filter((model) => model.id !== modelId),
+      )
+      setDisabledModels(myDisabledModels)
+    } else {
+      const model = models.find((model) => model.id === modelId)
+      const mySelectedModels = [...selectedModels, model]
+      const myDisabledModels = models.filter(
+        (model) => !mySelectedModels.includes(model),
+      )
+
+      // console.log('being checked -- mySelectedModels', mySelectedModels)
+      // console.log('being checked -- myDisabledModels', myDisabledModels)
+      if (model) {
+        setSelectedModels((prevModels) => [...prevModels, model])
+      }
+      setDisabledModels(myDisabledModels)
+    }
+  }
+
+  const setDisabledModels = async (disabledModels: OpenAIModel[]) => {
+    const disabledModelIds = disabledModels.map((model) => model.id)
+    const res = await fetch('/api/UIUC-api/setDisabledModels', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        course_name: course_name,
+        disabled_models: disabledModelIds,
+      }),
+    })
+    if (res.ok) {
+      console.log('Successfully set disabled models')
+    } else {
+      console.error(`Error setting disabled models on backend: ${res.status}`)
+    }
+  }
+
   return (
     <>
       <Divider />
+      <Title
+        className={`${montserrat_heading.variable} font-montserratHeading`}
+        variant="gradient"
+        gradient={{ from: 'gold', to: 'white', deg: 170 }}
+        order={3}
+        // p="md"
+        pl={'md'}
+        pr={'md'}
+        pt={'sm'}
+        pb={0}
+        style={{ alignSelf: 'left', marginLeft: '-11px' }}
+      >
+        Model Access Control{' '}
+      </Title>
+      <Accordion
+        pl={27}
+        pr={27}
+        pt={40}
+        pb={40}
+        m={-40}
+        // style={{ borderRadius: 'theme.radius.xl', width: '112%', maxWidth: 'min(50rem, )', marginLeft: 'max(-1rem, -10%)' }}
+        style={{ borderRadius: 'theme.radius.xl' }}
+        classNames={classes}
+        className={classes.root}
+      >
+        {/* ... Accordion items */}
+        <Accordion.Item value="openai-key-details">
+          <Accordion.Control>
+            <Text
+              className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+              size={'md'}
+            >
+              Limit what models your users can chat with (mostly to save cost)
+              {/* <span className={'text-purple-600'}>Read more</span>{' '}
+              👇 */}
+            </Text>
+          </Accordion.Control>
+          <Accordion.Panel>
+            {models.length > 0 ? (
+              models
+                .sort((a, b) => b.name.localeCompare(a.name))
+                .map((model: OpenAIModel) => (
+                  <Group key={model.id} className="flex justify-between">
+                    <label>{model.name}</label>
+                    <Switch
+                      size="sm"
+                      onLabel="ON"
+                      offLabel="OFF"
+                      styles={{
+                        track: {
+                          backgroundColor: selectedModels.some(
+                            (selectedModel) => selectedModel.id === model.id,
+                          )
+                            ? '#6a29a4 !important'
+                            : '#25262b',
+                          borderColor: selectedModels.some(
+                            (selectedModel) => selectedModel.id === model.id,
+                          )
+                            ? '#6a29a4 !important'
+                            : '#25262b',
+                        },
+                      }}
+                      checked={selectedModels.some(
+                        (selectedModel) => selectedModel.id === model.id,
+                      )}
+                      onChange={(e) =>
+                        handleModelCheckboxChange(model.id, e.target.checked)
+                      }
+                    />
+                  </Group>
+                ))
+            ) : (
+              <Text>
+                Please input a &quot;Project-wide OpenAI key&quot; (above) to
+                access this feature
+              </Text>
+            )}
+            {/* <Text
+              className={`label ${montserrat_light.className} inline-block p-0 text-neutral-200`}
+              size={'sm'}
+            >
+              Read our{' '}
+              <a
+                className={'text-purple-600'}
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+              // style={{ textDecoration: 'underline' }}
+              >
+                strict security policy
+              </a>{' '}
+              on protecting your data.
+            </Text> */}
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
+      <Divider />
+
       <Title
         className={`${montserrat_heading.variable} font-montserratHeading`}
         variant="gradient"
