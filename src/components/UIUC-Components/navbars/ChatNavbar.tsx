@@ -51,11 +51,12 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'relative',
     // height: '40%',
     height: '52px',
-    // maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
-    maxWidth: '100%',
-    // paddingRight: '4px',
-    // typeof window !== 'undefined' && window.innerWidth > 900 ? '4px' : '25px',
-    minWidth: '100px',
+    maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
+    // maxWidth: '100%',
+    paddingRight:
+      typeof window !== 'undefined' && window.innerWidth > 600 ? '10px' : '2px',
+    paddingLeft:
+      typeof window !== 'undefined' && window.innerWidth > 600 ? '25px' : '5px'
   },
   thumbnailImage: {
     objectFit: 'cover',
@@ -76,10 +77,11 @@ const useStyles = createStyles((theme) => ({
     justifyContent: 'space-between',
   },
   links: {
-    padding: 'theme.spacing.sm, 5px, 5px',
+    // padding: 'theme.spacing.sm, 5px, 5px',
+    padding: 'theme.spacing.lg, 1em, 1em',
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     [theme.fn.smallerThan(1118)]: {
       display: 'none',
     },
@@ -109,7 +111,7 @@ const useStyles = createStyles((theme) => ({
     },
     [theme.fn.smallerThan(1118)]: {
       display: 'list-item',
-      textAlign: 'right',
+      textAlign: 'center',
       borderRadius: 0,
       padding: theme.spacing.sm,
     },
@@ -118,16 +120,17 @@ const useStyles = createStyles((theme) => ({
     [theme.fn.largerThan(1118)]: {
       display: 'none',
     },
-    marginRight: '14px',
+    marginRight: '8px',
   },
   dropdown: {
     position: 'absolute',
     top: HEADER_HEIGHT,
-    left: '71%',
-    right: '10%',
+    // left: '71%',
+    right: '20px',
     zIndex: 10,
     borderRadius: '10px',
     overflow: 'hidden',
+    width: '200px',
     [theme.fn.largerThan(1118)]: {
       display: 'none',
     },
@@ -334,14 +337,14 @@ const ChatNavbar = ({
               }}
             >
               <Link href="/">
-                <h2 className="ms-3 cursor-pointer sm:text-[2rem] md:text-3xl font-extrabold tracking-tight text-white sm:text-[2rem]">
+                <h2 className="sm:ms-3 cursor-pointer sm:text-[2rem] md:text-3xl font-extrabold tracking-tight text-white sm:text-[2rem]">
                   UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
                 </h2>
               </Link>
 
               {bannerUrl && (
                 <div
-                  style={{ ...styles.logoContainerBox, paddingLeft: '25px' }}
+                  style={{ ...styles.logoContainerBox }}
                 >
                   <Image
                     src={bannerUrl}
@@ -381,8 +384,9 @@ const ChatNavbar = ({
                       <span
                         style={{
                           display: 'flex',
-                          alignItems: 'left',
-                          justifyContent: 'flex-start',
+                          alignItems: 'center'
+                          // alignItems: 'left',
+                          // justifyContent: 'flex-start',
                         }}
                       >
                         {item.icon}
@@ -425,7 +429,7 @@ const ChatNavbar = ({
               <div style={{ display: 'block' }}>
                 <button
                   className={`${classes.link}`}
-                  style={{ padding: '3px 12px', minWidth: '120px' }}
+                  style={{ padding: '0px 10px', minWidth: '120px' }}
                   onClick={() => {
                     homeDispatch({
                       field: 'showModelSettings',
@@ -443,7 +447,7 @@ const ChatNavbar = ({
                   >
                     <IconRobot
                       size={24}
-                      style={{ position: 'relative', top: '-2px' }}
+                      style={{ position: 'relative', top: '-2px', paddingLeft: '-3px' }}
                     />
                     <span
                       className="home-header_text-underline"
