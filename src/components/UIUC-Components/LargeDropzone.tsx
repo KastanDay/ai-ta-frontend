@@ -99,7 +99,13 @@ export function LargeDropzone({
     await new Promise((resolve) => setTimeout(resolve, 200))
     await router.reload()
   }
-  const uploadToS3 = async (file: File | null, uniqueFileName: string) => {
+  /**
+ * Uploads a file to Amazon S3 storage. Takes a file object and a unique file name. Sends a POST request to the server to get a presigned URL for uploading the file. Uses the presigned URL to upload the file to S3.
+ *
+ * @param {File | null} file - The file object to be uploaded
+ * @param {string} uniqueFileName - The unique file name
+ */
+const uploadToS3 = async (file: File | null, uniqueFileName: string) => {
     if (!file) return
 
     const requestObject = {
@@ -149,7 +155,13 @@ export function LargeDropzone({
     }
   }
 
-  const ingestFiles = async (files: File[] | null, is_new_course: boolean) => {
+  /**
+ * Handles the ingestion of files. Takes an array of files and a flag indicating if it's a new course. Filters out null files. Calls the necessary functions for uploading files to S3 and ingesting them. Displays toast notifications for success and failure.
+ *
+ * @param {File[] | null} files - Array of files to ingest
+ * @param {boolean} is_new_course - Flag indicating if it's a new course
+ */
+const ingestFiles = async (files: File[] | null, is_new_course: boolean) => {
     if (!files) return
     files = files.filter((file) => file !== null)
 
