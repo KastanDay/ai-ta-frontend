@@ -52,6 +52,16 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
+/**
+ * Renders a large dropzone component for uploading files. Handles file uploads and ingestion. Displays a spinner during upload. Supports disabling the dropzone and redirecting to GPT-4 chat. Provides functionality for refreshing the page or redirecting after upload completion.
+ *
+ * @param {string} courseName - The name of the course
+ * @param {string} current_user_email - The email of the current user
+ * @param {boolean} redirect_to_gpt_4 - Flag to redirect to GPT-4 chat
+ * @param {boolean} isDisabled - Flag to disable the dropzone
+ * @param {Object} courseMetadata - Metadata for the course
+ * @param {boolean} is_new_course - Flag to indicate if it's a new course
+ */
 export function LargeDropzone({
   courseName,
   current_user_email,
