@@ -1,3 +1,9 @@
+/*
+ * This file contains the LargeDropzone component, which provides a user interface for uploading files. It includes functions for handling file uploads, ingesting files, and displaying notifications.
+ */
+/*
+ * This file contains the LargeDropzone component, which provides a user interface for uploading files. It includes functions for handling file uploads, ingesting files, and displaying notifications.
+ */
 // LargeDropzone.tsx
 import React, { useRef, useState } from 'react'
 import {
