@@ -438,64 +438,60 @@ export function MantineYourMaterialsTable({
 
   // Create a queue to store the state update functions
   let stateUpdateQueue = Promise.resolve();
+
   const handleAppendDocumentGroup = async (record: CourseDocument, appendedGroup: string) => {
     try {
-      const materialDocument: MaterialDocument = {
-        course_name: record.course_name,
-        readable_filename: record.readable_filename,
-        s3_path: record.s3_path,
-        base_url: record.base_url,
-        url: record.url,
-        doc_groups: [...(record.doc_groups || []).map(group => group.name), appendedGroup],
-      };
-  
-      const response = await fetch('/api/documentGroups', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'appendDocGroup',
-          courseName: getCurrentPageName(),
-          docs: materialDocument,
-          docGroup: appendedGroup,
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to append document group');
-      }
-  
       // Update the local state
-      setMaterials((prevMaterials) => {
-        const updatedMaterials = prevMaterials.map((material) => {
-          if (getDocumentId(material) === getDocumentId(record)) {
-            // Ensure doc_groups is an array of objects with a `name` property
-            const updatedDocGroups = record.doc_groups.map(group => typeof group === 'string' ? { name: group } : group);
-            return { ...material, doc_groups: updatedDocGroups };
-          }
-          return material;
+      stateUpdateQueue = stateUpdateQueue.then(() => {
+        setMaterials((prevMaterials) => {
+          const updatedMaterials = prevMaterials.map((material) => {
+            if (getDocumentId(material) === getDocumentId(record)) {
+              // Ensure doc_groups is an array of objects with a `name` property
+              const updatedDocGroups = [{ name: appendedGroup }];
+              return { ...material, doc_groups: updatedDocGroups };
+            }
+            return material;
+          });
+          return updatedMaterials;
         });
 
-        return updatedMaterials;
+        // Update documentGroups state
+        setDocumentGroups((prevDocumentGroups) => {
+          const existingGroup = prevDocumentGroups.find(
+            (group) => group.value === appendedGroup
+          );
+          if (existingGroup) {
+            return prevDocumentGroups.map((group) =>
+              group.value === appendedGroup
+                ? { ...group, numDocs: (group.numDocs || 0) + 1 }
+                : group
+            );
+          } else {
+            return [
+              ...prevDocumentGroups,
+              { value: appendedGroup, label: appendedGroup, numDocs: 1 },
+            ];
+          }
+        });
       });
   
-      // Update documentGroups state
-      setDocumentGroups((prevDocumentGroups) => {
-        const existingGroup = prevDocumentGroups.find(
-          (group) => group.value === appendedGroup
-        );
-        if (existingGroup) {
-          return prevDocumentGroups.map((group) =>
-            group.value === appendedGroup
-              ? { ...group, numDocs: (group.numDocs || 0) + 1 }
-              : group
-          );
-        } else {
-          return [
-            ...prevDocumentGroups,
-            { value: appendedGroup, label: appendedGroup, numDocs: 1 },
-          ];
+      // Queue the API request to update the backend
+      fetchQueue = fetchQueue.then(async () => {
+        const response = await fetch('/api/documentGroups', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'appendDocGroup',
+            courseName: getCurrentPageName(),
+            docs: record,
+            docGroup: appendedGroup,
+          }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Failed to append document group');
         }
       });
     } catch (error) {
@@ -509,63 +505,55 @@ export function MantineYourMaterialsTable({
   
   const handleRemoveDocumentGroup = async (record: CourseDocument, removedGroup: string) => {
     try {
-      const materialDocument: MaterialDocument = {
-        course_name: record.course_name,
-        readable_filename: record.readable_filename,
-        s3_path: record.s3_path,
-        base_url: record.base_url,
-        url: record.url,
-        doc_groups: (record.doc_groups || []).map(group => group.name).filter(name => name !== removedGroup),
-      };
-  
-      const response = await fetch('/api/documentGroups', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'removeDocGroup',
-          courseName: getCurrentPageName(),
-          docs: materialDocument,
-          docGroup: removedGroup,
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to remove document group');
-      }
-  
       // Update the local state
-      setMaterials((prevMaterials) => {
-        const updatedMaterials = prevMaterials.map((material) => {
-          if (getDocumentId(material) === getDocumentId(record)) {
-            const doc_groups = Array.isArray(material.doc_groups)
-              ? material.doc_groups
-              : [];
-            return {
-              ...material,
-              doc_groups: doc_groups.filter((group) => group.name !== removedGroup),
-            };
-          }
-          return material;
+      stateUpdateQueue = stateUpdateQueue.then(() => {
+        setMaterials((prevMaterials) => {
+          const updatedMaterials = prevMaterials.map((material) => {
+            if (getDocumentId(material) === getDocumentId(record)) {
+              const doc_groups = Array.isArray(material.doc_groups) ? material.doc_groups : [];
+              return {
+                ...material,
+                doc_groups: doc_groups.filter((group) => group.name !== removedGroup),              };
+            }
+            return material;
+          });
+          return updatedMaterials;
         });
   
-        return updatedMaterials;
+        // Update documentGroups state
+        setDocumentGroups((prevDocumentGroups) => {
+          const existingGroup = prevDocumentGroups.find(
+            (group) => group.value === removedGroup
+          );
+          if (existingGroup && existingGroup.numDocs && existingGroup.numDocs > 1) {
+            return prevDocumentGroups.map((group) =>
+              group.value === removedGroup
+                ? { ...group, numDocs: (group.numDocs || 0) - 1 }
+                : group
+            );
+          } else {
+            return prevDocumentGroups.filter((group) => group.value !== removedGroup);
+          }
+        });
       });
   
-      // Update documentGroups state
-      setDocumentGroups((prevDocumentGroups) => {
-        const existingGroup = prevDocumentGroups.find(
-          (group) => group.value === removedGroup
-        );
-        if (existingGroup && existingGroup.numDocs && existingGroup.numDocs > 1) {
-          return prevDocumentGroups.map((group) =>
-            group.value === removedGroup
-              ? { ...group, numDocs: (group.numDocs || 0) - 1 }
-              : group
-          );
-        } else {
-          return prevDocumentGroups.filter((group) => group.value !== removedGroup);
+      // Queue the API request to update the backend
+      fetchQueue = fetchQueue.then(async () => {
+        const response = await fetch('/api/documentGroups', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'removeDocGroup',
+            courseName: getCurrentPageName(),
+            docs: record,
+            docGroup: removedGroup,
+          }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Failed to remove document group');
         }
       });
     } catch (error) {
