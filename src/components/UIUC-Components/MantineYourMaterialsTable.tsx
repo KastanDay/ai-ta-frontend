@@ -7,22 +7,17 @@ import {
   Modal,
   Group,
   MultiSelect,
-  Stack,
   TextInput,
   Text,
-  MantineProvider,
   createStyles,
   Paper,
   Center,
-  Select,
   ScrollArea,
   Table,
   Switch,
-  Checkbox,
 } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
 import {
-  IconEdit,
   IconEye,
   IconSearch,
   IconTrash,
@@ -31,19 +26,11 @@ import {
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable'
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/router'
-import {
-  modals,
-  openConfirmModal,
-  useModals,
-  ModalsProvider,
-} from '@mantine/modals'
 import { showToastOnFileDeleted } from './MakeOldCoursePage'
 import axios from 'axios'
 import { showNotification } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
-import { Badge } from '@mantine/core'
 import { useColorScheme } from '@mantine/hooks'
-import { MaterialDocument } from '../../pages/api/documentGroups'
 
 import { CourseDocument } from 'src/types/courseMaterials'
 
@@ -66,21 +53,6 @@ const GlobalStyle = createGlobalStyle`
 `
 
 const useStyles = createStyles((theme) => ({
-  // How to change header color
-  // root: {
-  //   '& tr': {
-  //     backgroundColor: theme.colorScheme === 'dark' ? '#15162a' : '#fff',
-  //   },
-  //   '& tr:nth-child(odd)': {
-  //     backgroundColor: theme.colorScheme === 'dark' ? '#15162a' : '#fff',
-  //   },
-  // },
-  // selected: {
-  //   backgroundColor: theme.colorScheme === 'dark' ? '#5a30b5' : '#d6b5f6', // purple color for selected row
-  // },
-  // hovered: {
-  //   backgroundColor: theme.colorScheme === 'dark' ? '#5a30b5' : '#d6b5f6', // purple color for hovered row
-  // },
 }))
 
 interface CourseFilesListProps {
@@ -127,7 +99,6 @@ export function MantineYourMaterialsTable({
   const [documentGroups, setDocumentGroups] = useState<DocumentGroupOption[]>(
     [],
   )
-  const [loadingDocumentGroups, setLoadingDocumentGroups] = useState(false)
 
   // const [records, setRecords] = useState([]);
   const [page, setPage] = useState(1)
@@ -213,50 +184,6 @@ export function MantineYourMaterialsTable({
   ) => {
     setDocumentGroupSearch(event.target.value)
   }
-
-  const handleToggleChange = (document: CourseDocument) => {
-    const docId = getDocumentId(document)
-    setEnabledDocs((prevState) => ({
-      ...prevState,
-      [docId]: !prevState[docId],
-    }))
-  }
-
-  // useEffect(() => {
-  //   const doc_group_map = new Map<string, number>(); // Use a Map to store the count of each doc_group
-
-  //   let defaultGroupCount = 0; // Initialize a local variable to count the documents in the default group
-
-  //   course_materials.forEach(doc => {
-  //     if (doc.doc_groups && doc.doc_groups.length > 0) { // Check if doc_groups is defined and not empty
-  //       doc.doc_groups.forEach(doc_group => {
-  //         const count = doc_group_map.get(doc_group) || 0; // Get the current count, default to 0 if not found
-  //         doc_group_map.set(doc_group, count + 1); // Increment the count
-  //       });
-  //     } else {
-  //       defaultGroupCount++;
-  //     }
-  //   });
-
-  //   let doc_groups_array: DocumentGroupOption[] = Array.from(doc_group_map).map(([doc_group, count]) => ({ value: doc_group, label: doc_group, numDocs: count }));
-
-  //   // Add a default group to the array if defaultGroupCount is greater than 0
-  //   if (defaultGroupCount > 0) {
-  //     doc_groups_array = [...doc_groups_array, { value: 'Default Group', label: 'Default Group', numDocs: defaultGroupCount }];
-  //   }
-
-  //   setDocumentGroups(doc_groups_array);
-
-  //   // Initialize enabledDocs state with doc_group values
-  //   const initialEnabledDocsState = Array.from(doc_group_map.keys()).reduce((acc, doc_group) => ({
-  //     ...acc,
-  //     [doc_group]: true, // Set to true to enable all document groups by default
-  //   }), {});
-  //   setEnabledDocs(initialEnabledDocsState);
-
-  //   // Update the state variable for default group count
-  //   setDefaultGroupCount(defaultGroupCount);
-  // }, [course_materials]); // Add course_materials as a dependency
 
   useEffect(() => {
     const fetchDocumentGroups = async () => {
@@ -364,11 +291,6 @@ export function MantineYourMaterialsTable({
     }
   }, [debouncedQuery, course_materials])
 
-  // useEffect(() => {
-  //   // Clear the selected records when the component mounts
-  //   setSelectedRecords([]);
-  // }, []);
-
   const handleDelete = async (recordsToDelete: CourseDocument[]) => {
     try {
       const API_URL = 'https://flask-production-751b.up.railway.app'
@@ -399,62 +321,6 @@ export function MantineYourMaterialsTable({
       console.error(error)
       // Show error message
       showToastOnFileDeleted(theme, true)
-    }
-  }
-
-  const handleDocumentGroupsChange = async (
-    record: CourseDocument,
-    selectedDocumentGroups: string[],
-  ) => {
-    try {
-      const materialDocument: MaterialDocument = {
-        course_name: record.course_name,
-        readable_filename: record.readable_filename,
-        s3_path: record.s3_path,
-        base_url: record.base_url,
-        url: record.url,
-        doc_groups: selectedDocumentGroups,
-      }
-
-      const response = await fetch('/api/documentGroups', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'addDocumentsToDocGroup',
-          courseName: getCurrentPageName(),
-          docs: materialDocument,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to update document groups')
-      }
-
-      const updatedMaterials = materials.map((material) => {
-        if (getDocumentId(material) === getDocumentId(record)) {
-          // Convert the array of strings to an array of objects with a `name` property
-          const updatedDocGroups = selectedDocumentGroups.map((groupName) => ({
-            name: groupName,
-          }))
-          return { ...material, doc_groups: updatedDocGroups }
-        }
-        return material
-      })
-
-      setMaterials(updatedMaterials)
-
-      showNotification({
-        title: 'Success',
-        message: 'DocumentGroup updated successfully',
-      })
-    } catch (error) {
-      console.error('Failed to update doc_group:', error)
-      showNotification({
-        title: 'Error',
-        message: 'Failed to update doc_group',
-      })
     }
   }
 
@@ -491,15 +357,17 @@ export function MantineYourMaterialsTable({
         setMaterials((prevMaterials) => {
           const updatedMaterials = prevMaterials.map((material) => {
             if (getDocumentId(material) === getDocumentId(record)) {
-              // Ensure doc_groups is an array of objects with a `name` property
-              const updatedDocGroups = [{ name: appendedGroup }]
+              const doc_groups = Array.isArray(material.doc_groups)
+                ? material.doc_groups
+                : []
+              const updatedDocGroups = [...doc_groups, { name: appendedGroup }]
               return { ...material, doc_groups: updatedDocGroups }
             }
             return material
           })
           return updatedMaterials
         })
-
+  
         // Update documentGroups state
         setDocumentGroups((prevDocumentGroups) => {
           const existingGroup = prevDocumentGroups.find(
@@ -519,7 +387,7 @@ export function MantineYourMaterialsTable({
           }
         })
       })
-
+  
       // Queue the API request to update the backend
       fetchQueue = fetchQueue.then(async () => {
         const response = await fetch('/api/documentGroups', {
@@ -534,7 +402,7 @@ export function MantineYourMaterialsTable({
             docGroup: appendedGroup,
           }),
         })
-
+  
         if (!response.ok) {
           throw new Error('Failed to append document group')
         }
@@ -547,7 +415,7 @@ export function MantineYourMaterialsTable({
       })
     }
   }
-
+  
   const handleRemoveDocumentGroup = async (
     record: CourseDocument,
     removedGroup: string,
@@ -561,18 +429,16 @@ export function MantineYourMaterialsTable({
               const doc_groups = Array.isArray(material.doc_groups)
                 ? material.doc_groups
                 : []
-              return {
-                ...material,
-                doc_groups: doc_groups.filter(
-                  (group) => group.name !== removedGroup,
-                ),
-              }
+              const updatedDocGroups = doc_groups.filter(
+                (group) => group.name !== removedGroup,
+              )
+              return { ...material, doc_groups: updatedDocGroups }
             }
             return material
           })
           return updatedMaterials
         })
-
+  
         // Update documentGroups state
         setDocumentGroups((prevDocumentGroups) => {
           const existingGroup = prevDocumentGroups.find(
@@ -595,7 +461,7 @@ export function MantineYourMaterialsTable({
           }
         })
       })
-
+  
       // Queue the API request to update the backend
       fetchQueue = fetchQueue.then(async () => {
         const response = await fetch('/api/documentGroups', {
@@ -610,7 +476,7 @@ export function MantineYourMaterialsTable({
             docGroup: removedGroup,
           }),
         })
-
+  
         if (!response.ok) {
           throw new Error('Failed to remove document group')
         }
@@ -826,17 +692,19 @@ export function MantineYourMaterialsTable({
                     const doc_groups = record.doc_groups
                       ? record.doc_groups.map((group) => group.name)
                       : []
+                  
                     const removedGroups = doc_groups.filter(
                       (group) => !newSelectedGroups.includes(group),
                     )
+                    const appendedGroups = newSelectedGroups.filter(
+                      (group) => !doc_groups.includes(group),
+                    )
+                  
                     if (removedGroups.length > 0) {
                       for (const removedGroup of removedGroups) {
                         await handleRemoveDocumentGroup(record, removedGroup)
                       }
                     }
-                    const appendedGroups = newSelectedGroups.filter(
-                      (group) => !doc_groups.includes(group),
-                    )
                     if (appendedGroups.length > 0) {
                       for (const appendedGroup of appendedGroups) {
                         await handleAppendDocumentGroup(record, appendedGroup)
