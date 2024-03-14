@@ -43,7 +43,9 @@ import { showNotification } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
 import { Badge } from '@mantine/core'
 import { useColorScheme } from '@mantine/hooks'
-import { MaterialDocument } from '../../pages/api/documentGroups';
+import { MaterialDocument } from '../../pages/api/documentGroups'
+
+import { CourseDocument } from 'src/types/courseMaterials'
 
 const GlobalStyle = createGlobalStyle`
 // these mantine class names may change in future versions
@@ -81,16 +83,6 @@ const useStyles = createStyles((theme) => ({
   // },
 }))
 
-interface CourseDocument {
-  course_name: string
-  readable_filename: string
-  url: string
-  s3_path: string
-  created_at: string
-  base_url: string
-  doc_groups: { name: string }[];
-}
-
 interface CourseFilesListProps {
   course_materials: CourseDocument[]
 }
@@ -103,11 +95,18 @@ export async function getPresignedUrl(s3_path: string) {
   return data.presignedUrl
 }
 
-type DocumentGroupOption = { value: string; label: string; numDocs?: number; enabled?: boolean };
+type DocumentGroupOption = {
+  value: string
+  label: string
+  numDocs?: number
+  enabled?: boolean
+}
 
 type EnabledDocsState = {
-  [docId: string]: boolean;
-};
+  [docId: string]: boolean
+}
+
+const PAGE_SIZE = 30
 
 export function MantineYourMaterialsTable({
   course_materials,
@@ -121,91 +120,111 @@ export function MantineYourMaterialsTable({
     const courseName = path.slice(1).split('/')[0] || ''
     return courseName
   }
-  const [materials, setMaterials] = useState<CourseDocument[]>([]);
+  const [materials, setMaterials] = useState<CourseDocument[]>([])
   const [selectedRecords, setSelectedRecords] = useState<CourseDocument[]>([])
 
   // Add state hooks for doc_groups and a method to fetch them
-  const [documentGroups, setDocumentGroups] = useState<DocumentGroupOption[]>([]);
-  const [loadingDocumentGroups, setLoadingDocumentGroups] = useState(false);
+  const [documentGroups, setDocumentGroups] = useState<DocumentGroupOption[]>(
+    [],
+  )
+  const [loadingDocumentGroups, setLoadingDocumentGroups] = useState(false)
+
+  // const [records, setRecords] = useState([]);
+  const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    const from = (page - 1) * PAGE_SIZE
+    const to = from + PAGE_SIZE
+    // get paginated records from the list
+    // setRecords(employees.slice(from, to));
+  }, [page])
 
   const getDocumentId = (document: CourseDocument): string => {
-    const s3_path = document.s3_path || 'null';
-    const url = document.url || 'null';
-    return `${s3_path}-${url}`;
+    const s3_path = document.s3_path || 'null'
+    const url = document.url || 'null'
+    return `${s3_path}-${url}`
   }
 
   const getEnabledDocGroups = async (course_name: string) => {
     try {
       const response = await fetch(
         `https://flask-production-751b.up.railway.app/getEnabledDocGroups?course_name=${course_name}`,
-      );
-  
+      )
+
       if (!response.ok) {
-        throw new Error('Failed to fetch the enabled document groups from the backend.');
+        throw new Error(
+          'Failed to fetch the enabled document groups from the backend.',
+        )
       }
-  
-      const data = await response.json();
-      return data.enabled_doc_groups || []; // Return an empty array if enabled_doc_groups is null
+
+      const data = await response.json()
+      return data.enabled_doc_groups || [] // Return an empty array if enabled_doc_groups is null
     } catch (error) {
       // Handle error
       if (error instanceof Error) {
-        console.error('Failed to fetch enabled document groups:', error.message);
+        console.error('Failed to fetch enabled document groups:', error.message)
       } else {
         // Handle cases where the error might not be an instance of Error
-        console.error('Failed to fetch enabled document groups, an unknown error occurred');
+        console.error(
+          'Failed to fetch enabled document groups, an unknown error occurred',
+        )
       }
     }
-  };
+  }
 
-  const [enabledDocs, setEnabledDocs] = useState<EnabledDocsState>({});
+  const [enabledDocs, setEnabledDocs] = useState<EnabledDocsState>({})
 
-  const hasFetchedEnabledDocGroups = useRef(false);
+  const hasFetchedEnabledDocGroups = useRef(false)
 
   useEffect(() => {
     const fetchEnabledDocGroups = async () => {
-      const enabledDocGroups = await getEnabledDocGroups(getCurrentPageName());
+      const enabledDocGroups = await getEnabledDocGroups(getCurrentPageName())
       if (enabledDocGroups) {
-        const updatedDocumentGroups = documentGroups.map(doc_group => ({
+        const updatedDocumentGroups = documentGroups.map((doc_group) => ({
           ...doc_group,
           enabled: enabledDocGroups.includes(doc_group.value),
-        }));
-        setDocumentGroups(updatedDocumentGroups);
+        }))
+        setDocumentGroups(updatedDocumentGroups)
       }
-    };
-  
-    if (documentGroups.length > 0 && !hasFetchedEnabledDocGroups.current) {
-      fetchEnabledDocGroups();
-      hasFetchedEnabledDocGroups.current = true;
     }
-  }, [documentGroups]);
 
-  const [documentGroupSearch, setDocumentGroupSearch] = useState('');
+    if (documentGroups.length > 0 && !hasFetchedEnabledDocGroups.current) {
+      fetchEnabledDocGroups()
+      hasFetchedEnabledDocGroups.current = true
+    }
+  }, [documentGroups])
 
-  const [defaultGroupCount, setDefaultGroupCount] = useState(0);
+  const [documentGroupSearch, setDocumentGroupSearch] = useState('')
+
+  const [defaultGroupCount, setDefaultGroupCount] = useState(0)
 
   // Logic to filter doc_groups based on the search query
   const filteredDocumentGroups = useMemo(() => {
-    return documentGroups.filter(doc_group_obj =>
-      doc_group_obj.value?.toLowerCase().includes(documentGroupSearch?.toLowerCase())
-    );
-  }, [documentGroups, documentGroupSearch]);
+    return documentGroups.filter((doc_group_obj) =>
+      doc_group_obj.value
+        ?.toLowerCase()
+        .includes(documentGroupSearch?.toLowerCase()),
+    )
+  }, [documentGroups, documentGroupSearch])
 
   // Handle doc_group search change
-  const handleDocumentGroupSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDocumentGroupSearch(event.target.value);
-  };
+  const handleDocumentGroupSearchChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setDocumentGroupSearch(event.target.value)
+  }
 
   const handleToggleChange = (document: CourseDocument) => {
-    const docId = getDocumentId(document);
-    setEnabledDocs(prevState => ({
+    const docId = getDocumentId(document)
+    setEnabledDocs((prevState) => ({
       ...prevState,
       [docId]: !prevState[docId],
-    }));
-  };
+    }))
+  }
 
   // useEffect(() => {
   //   const doc_group_map = new Map<string, number>(); // Use a Map to store the count of each doc_group
-  
+
   //   let defaultGroupCount = 0; // Initialize a local variable to count the documents in the default group
 
   //   course_materials.forEach(doc => {
@@ -215,26 +234,26 @@ export function MantineYourMaterialsTable({
   //         doc_group_map.set(doc_group, count + 1); // Increment the count
   //       });
   //     } else {
-  //       defaultGroupCount++; 
+  //       defaultGroupCount++;
   //     }
   //   });
-  
+
   //   let doc_groups_array: DocumentGroupOption[] = Array.from(doc_group_map).map(([doc_group, count]) => ({ value: doc_group, label: doc_group, numDocs: count }));
-  
+
   //   // Add a default group to the array if defaultGroupCount is greater than 0
   //   if (defaultGroupCount > 0) {
   //     doc_groups_array = [...doc_groups_array, { value: 'Default Group', label: 'Default Group', numDocs: defaultGroupCount }];
   //   }
-  
+
   //   setDocumentGroups(doc_groups_array);
-  
+
   //   // Initialize enabledDocs state with doc_group values
   //   const initialEnabledDocsState = Array.from(doc_group_map.keys()).reduce((acc, doc_group) => ({
   //     ...acc,
   //     [doc_group]: true, // Set to true to enable all document groups by default
   //   }), {});
   //   setEnabledDocs(initialEnabledDocsState);
-  
+
   //   // Update the state variable for default group count
   //   setDefaultGroupCount(defaultGroupCount);
   // }, [course_materials]); // Add course_materials as a dependency
@@ -251,64 +270,75 @@ export function MantineYourMaterialsTable({
             action: 'getDocumentGroups',
             courseName: getCurrentPageName(),
           }),
-        });
-  
+        })
+
         if (!response.ok) {
-          throw new Error('Failed to fetch document groups');
+          throw new Error('Failed to fetch document groups')
         }
-  
-        const data = await response.json();
-        const documents = data.documents;
-  
-        const doc_group_map = new Map<string, number>();
-        let defaultGroupCount = 0;
-  
+
+        const data = await response.json()
+        const documents = data.documents
+
+        const doc_group_map = new Map<string, number>()
+        let defaultGroupCount = 0
+
         documents.forEach((doc: any) => {
           if (doc.doc_groups && doc.doc_groups.length > 0) {
             doc.doc_groups.forEach((doc_group: any) => {
-              const count = doc_group_map.get(doc_group.name) || 0;
-              doc_group_map.set(doc_group.name, count + 1);
-            });
+              const count = doc_group_map.get(doc_group.name) || 0
+              doc_group_map.set(doc_group.name, count + 1)
+            })
           } else {
-            defaultGroupCount++;
+            defaultGroupCount++
           }
-        });
-  
-        let doc_groups_array: DocumentGroupOption[] = Array.from(doc_group_map).map(
-          ([doc_group, count]) => ({ value: doc_group, label: doc_group, numDocs: count })
-        );
-  
+        })
+
+        let doc_groups_array: DocumentGroupOption[] = Array.from(
+          doc_group_map,
+        ).map(([doc_group, count]) => ({
+          value: doc_group,
+          label: doc_group,
+          numDocs: count,
+        }))
+
         if (defaultGroupCount > 0) {
           doc_groups_array = [
             ...doc_groups_array,
-            { value: 'Default Group', label: 'Default Group', numDocs: defaultGroupCount },
-          ];
+            {
+              value: 'Default Group',
+              label: 'Default Group',
+              numDocs: defaultGroupCount,
+            },
+          ]
         }
-  
-        setDocumentGroups(doc_groups_array);
-  
-        const initialEnabledDocsState = documents.reduce((acc: EnabledDocsState, doc: CourseDocument) => {
-          const docId = getDocumentId(doc);
-          acc[docId] = true;
-          return acc;
-        }, {});
-  
-        setEnabledDocs(initialEnabledDocsState);
-        setDefaultGroupCount(defaultGroupCount);
-  
-        console.log('documents:', documents);
-        console.log('doc_groups_array:', doc_groups_array);
-        return documents;
+
+        setDocumentGroups(doc_groups_array)
+
+        const initialEnabledDocsState = documents.reduce(
+          (acc: EnabledDocsState, doc: CourseDocument) => {
+            const docId = getDocumentId(doc)
+            acc[docId] = true
+            return acc
+          },
+          {},
+        )
+
+        setEnabledDocs(initialEnabledDocsState)
+        setDefaultGroupCount(defaultGroupCount)
+
+        console.log('documents:', documents)
+        console.log('doc_groups_array:', doc_groups_array)
+        return documents
       } catch (error) {
-        console.error('Error fetching document groups:', error);
-        return [];
+        console.error('Error fetching document groups:', error)
+        return []
       }
-    };
-  
+    }
+
     fetchDocumentGroups().then((fetchedDocuments) => {
-      setMaterials(fetchedDocuments);
-    });
-  }, []);
+      setMaterials(fetchedDocuments)
+    })
+  }, [])
 
   const [query, setQuery] = useState('')
   const [debouncedQuery] = useDebouncedValue(query, 200)
@@ -372,7 +402,10 @@ export function MantineYourMaterialsTable({
     }
   }
 
-  const handleDocumentGroupsChange = async (record: CourseDocument, selectedDocumentGroups: string[]) => {
+  const handleDocumentGroupsChange = async (
+    record: CourseDocument,
+    selectedDocumentGroups: string[],
+  ) => {
     try {
       const materialDocument: MaterialDocument = {
         course_name: record.course_name,
@@ -381,7 +414,7 @@ export function MantineYourMaterialsTable({
         base_url: record.base_url,
         url: record.url,
         doc_groups: selectedDocumentGroups,
-      };
+      }
 
       const response = await fetch('/api/documentGroups', {
         method: 'POST',
@@ -393,53 +426,65 @@ export function MantineYourMaterialsTable({
           courseName: getCurrentPageName(),
           docs: materialDocument,
         }),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error('Failed to update document groups');
+        throw new Error('Failed to update document groups')
       }
 
       const updatedMaterials = materials.map((material) => {
         if (getDocumentId(material) === getDocumentId(record)) {
           // Convert the array of strings to an array of objects with a `name` property
-          const updatedDocGroups = selectedDocumentGroups.map(groupName => ({ name: groupName }));
-          return { ...material, doc_groups: updatedDocGroups };
+          const updatedDocGroups = selectedDocumentGroups.map((groupName) => ({
+            name: groupName,
+          }))
+          return { ...material, doc_groups: updatedDocGroups }
         }
-        return material;
-      });
+        return material
+      })
 
-      setMaterials(updatedMaterials);
+      setMaterials(updatedMaterials)
 
       showNotification({
         title: 'Success',
-        message: 'Document groups updated successfully',
-      });
+        message: 'DocumentGroup updated successfully',
+      })
     } catch (error) {
-      console.error('Failed to update document groups:', error);
+      console.error('Failed to update doc_group:', error)
       showNotification({
         title: 'Error',
-        message: 'Failed to update document groups',
-      });
+        message: 'Failed to update doc_group',
+      })
     }
-  };
-  
-  const handleCreateDocumentGroup = (doc_group_name: string): DocumentGroupOption => {
-    const newDocumentGroup: DocumentGroupOption = { value: doc_group_name, label: doc_group_name };
+  }
+
+  const handleCreateDocumentGroup = (
+    doc_group_name: string,
+  ): DocumentGroupOption => {
+    const newDocumentGroup: DocumentGroupOption = {
+      value: doc_group_name,
+      label: doc_group_name,
+    }
     // Check if the doc_group already exists by its value to prevent duplicates
-    if (!documentGroups.some(doc_group => doc_group.value === doc_group_name)) {
-      setDocumentGroups([...documentGroups, newDocumentGroup]);
+    if (
+      !documentGroups.some((doc_group) => doc_group.value === doc_group_name)
+    ) {
+      setDocumentGroups([...documentGroups, newDocumentGroup])
       // Optionally persist this new doc_group to your backend here
     }
-    return newDocumentGroup;
-  };
+    return newDocumentGroup
+  }
 
   // Create a queue to store the fetch promises
-  let fetchQueue = Promise.resolve();
+  let fetchQueue = Promise.resolve()
 
   // Create a queue to store the state update functions
-  let stateUpdateQueue = Promise.resolve();
+  let stateUpdateQueue = Promise.resolve()
 
-  const handleAppendDocumentGroup = async (record: CourseDocument, appendedGroup: string) => {
+  const handleAppendDocumentGroup = async (
+    record: CourseDocument,
+    appendedGroup: string,
+  ) => {
     try {
       // Update the local state
       stateUpdateQueue = stateUpdateQueue.then(() => {
@@ -447,34 +492,34 @@ export function MantineYourMaterialsTable({
           const updatedMaterials = prevMaterials.map((material) => {
             if (getDocumentId(material) === getDocumentId(record)) {
               // Ensure doc_groups is an array of objects with a `name` property
-              const updatedDocGroups = [{ name: appendedGroup }];
-              return { ...material, doc_groups: updatedDocGroups };
+              const updatedDocGroups = [{ name: appendedGroup }]
+              return { ...material, doc_groups: updatedDocGroups }
             }
-            return material;
-          });
-          return updatedMaterials;
-        });
+            return material
+          })
+          return updatedMaterials
+        })
 
         // Update documentGroups state
         setDocumentGroups((prevDocumentGroups) => {
           const existingGroup = prevDocumentGroups.find(
-            (group) => group.value === appendedGroup
-          );
+            (group) => group.value === appendedGroup,
+          )
           if (existingGroup) {
             return prevDocumentGroups.map((group) =>
               group.value === appendedGroup
                 ? { ...group, numDocs: (group.numDocs || 0) + 1 }
-                : group
-            );
+                : group,
+            )
           } else {
             return [
               ...prevDocumentGroups,
               { value: appendedGroup, label: appendedGroup, numDocs: 1 },
-            ];
+            ]
           }
-        });
-      });
-  
+        })
+      })
+
       // Queue the API request to update the backend
       fetchQueue = fetchQueue.then(async () => {
         const response = await fetch('/api/documentGroups', {
@@ -488,55 +533,69 @@ export function MantineYourMaterialsTable({
             docs: record,
             docGroup: appendedGroup,
           }),
-        });
-  
+        })
+
         if (!response.ok) {
-          throw new Error('Failed to append document group');
+          throw new Error('Failed to append document group')
         }
-      });
+      })
     } catch (error) {
-      console.error('Failed to append document group:', error);
+      console.error('Failed to append document group:', error)
       showNotification({
         title: 'Error',
         message: 'Failed to append document group',
-      });
+      })
     }
-  };
-  
-  const handleRemoveDocumentGroup = async (record: CourseDocument, removedGroup: string) => {
+  }
+
+  const handleRemoveDocumentGroup = async (
+    record: CourseDocument,
+    removedGroup: string,
+  ) => {
     try {
       // Update the local state
       stateUpdateQueue = stateUpdateQueue.then(() => {
         setMaterials((prevMaterials) => {
           const updatedMaterials = prevMaterials.map((material) => {
             if (getDocumentId(material) === getDocumentId(record)) {
-              const doc_groups = Array.isArray(material.doc_groups) ? material.doc_groups : [];
+              const doc_groups = Array.isArray(material.doc_groups)
+                ? material.doc_groups
+                : []
               return {
                 ...material,
-                doc_groups: doc_groups.filter((group) => group.name !== removedGroup),              };
+                doc_groups: doc_groups.filter(
+                  (group) => group.name !== removedGroup,
+                ),
+              }
             }
-            return material;
-          });
-          return updatedMaterials;
-        });
-  
+            return material
+          })
+          return updatedMaterials
+        })
+
         // Update documentGroups state
         setDocumentGroups((prevDocumentGroups) => {
           const existingGroup = prevDocumentGroups.find(
-            (group) => group.value === removedGroup
-          );
-          if (existingGroup && existingGroup.numDocs && existingGroup.numDocs > 1) {
+            (group) => group.value === removedGroup,
+          )
+          if (
+            existingGroup &&
+            existingGroup.numDocs &&
+            existingGroup.numDocs > 1
+          ) {
             return prevDocumentGroups.map((group) =>
               group.value === removedGroup
                 ? { ...group, numDocs: (group.numDocs || 0) - 1 }
-                : group
-            );
+                : group,
+            )
           } else {
-            return prevDocumentGroups.filter((group) => group.value !== removedGroup);
+            return prevDocumentGroups.filter(
+              (group) => group.value !== removedGroup,
+            )
           }
-        });
-      });
-  
+        })
+      })
+
       // Queue the API request to update the backend
       fetchQueue = fetchQueue.then(async () => {
         const response = await fetch('/api/documentGroups', {
@@ -550,26 +609,34 @@ export function MantineYourMaterialsTable({
             docs: record,
             docGroup: removedGroup,
           }),
-        });
-  
+        })
+
         if (!response.ok) {
-          throw new Error('Failed to remove document group');
+          throw new Error('Failed to remove document group')
         }
-      });
+      })
     } catch (error) {
-      console.error('Failed to remove document group:', error);
+      console.error('Failed to remove document group:', error)
       showNotification({
         title: 'Error',
         message: 'Failed to remove document group',
-      });
+      })
     }
-  };
+  }
 
   return (
     <>
       <GlobalStyle />
 
-      <ScrollArea style={{ width: '100%', margin: 'auto', borderRadius: '10px', overflow: 'hidden', marginBottom: '20px' }}>
+      <ScrollArea
+        style={{
+          width: '100%',
+          margin: 'auto',
+          borderRadius: '10px',
+          overflow: 'hidden',
+          marginBottom: '20px',
+        }}
+      >
         <TextInput
           placeholder="Search by Document Group"
           mb="md"
@@ -580,9 +647,13 @@ export function MantineYourMaterialsTable({
         <Table style={{ width: '100%', tableLayout: 'fixed' }}>
           <thead>
             <tr>
-              <th style={{ width: '50%', wordWrap: 'break-word' }}>Document Group</th>
+              <th style={{ width: '50%', wordWrap: 'break-word' }}>
+                Document Group
+              </th>
               {/* <th style={{ width: '40%', wordWrap: 'break-word' }}>Description</th> */}
-              <th style={{ width: '25%', wordWrap: 'break-word' }}>Number of Docs</th>
+              <th style={{ width: '25%', wordWrap: 'break-word' }}>
+                Number of Docs
+              </th>
               <th style={{ width: '25%', wordWrap: 'break-word' }}>Enabled</th>
             </tr>
           </thead>
@@ -597,14 +668,22 @@ export function MantineYourMaterialsTable({
                 </td> */}
                 <td style={{ wordWrap: 'break-word' }}>
                   <Text>
-                    {doc_group_obj.value === 'Default Group' ? defaultGroupCount : doc_group_obj.numDocs}
+                    {doc_group_obj.value === 'Default Group'
+                      ? defaultGroupCount
+                      : doc_group_obj.numDocs}
                   </Text>
                 </td>
                 <td style={{ wordWrap: 'break-word' }}>
                   <Switch
                     checked={doc_group_obj.enabled}
                     onChange={() => {
-                      setDocumentGroups(prevState => prevState.map(group => group.value === doc_group_obj.value ? { ...group, enabled: !group.enabled } : group));
+                      setDocumentGroups((prevState) =>
+                        prevState.map((group) =>
+                          group.value === doc_group_obj.value
+                            ? { ...group, enabled: !group.enabled }
+                            : group,
+                        ),
+                      )
                     }}
                     color="blue"
                     size="lg"
@@ -640,6 +719,7 @@ export function MantineYourMaterialsTable({
         style={{
           width: '100%',
         }}
+        // page={page} // TODO - Add pagination
         height="80vh"
         records={materials}
         columns={[
@@ -723,22 +803,47 @@ export function MantineYourMaterialsTable({
             render: (record) => (
               <Group position="apart" spacing="xs">
                 <MultiSelect
-                  data={documentGroups.map(doc_group => ({ 
+                  data={documentGroups.map((doc_group) => ({
                     value: doc_group.value || '',
                     label: doc_group.label || '',
                   }))}
-                  value={record.doc_groups ? record.doc_groups.map(group => group.name) : []}
+                  value={
+                    record.doc_groups
+                      ? record.doc_groups.map((group) => group.name)
+                      : []
+                  }
                   placeholder="Select Group"
                   searchable
                   nothingFound="No options"
                   creatable
                   getCreateLabel={(query) => `+ Create ${query}`}
-                  onCreate={(value) => {
-                    const newDocumentGroup = { value, label: value };
-                    setDocumentGroups((current) => [...current, newDocumentGroup]);
-                    return value;
+                  onCreate={(doc_group_name) => {
+                    const newDocumentGroup =
+                      handleCreateDocumentGroup(doc_group_name)
+                    return newDocumentGroup
                   }}
-                  onChange={(newSelectedGroups) => handleDocumentGroupsChange(record, newSelectedGroups)}
+                  onChange={async (newSelectedGroups) => {
+                    const doc_groups = record.doc_groups
+                      ? record.doc_groups.map((group) => group.name)
+                      : []
+                    const removedGroups = doc_groups.filter(
+                      (group) => !newSelectedGroups.includes(group),
+                    )
+                    if (removedGroups.length > 0) {
+                      for (const removedGroup of removedGroups) {
+                        await handleRemoveDocumentGroup(record, removedGroup)
+                      }
+                    }
+                    const appendedGroups = newSelectedGroups.filter(
+                      (group) => !doc_groups.includes(group),
+                    )
+                    if (appendedGroups.length > 0) {
+                      for (const appendedGroup of appendedGroups) {
+                        await handleAppendDocumentGroup(record, appendedGroup)
+                      }
+                    }
+                  }}
+                  // onChange={(newSelectedGroups) => handleDocumentGroupsChange(record, newSelectedGroups)}
                   sx={{ flex: 1, width: '100%' }}
                 />
               </Group>
@@ -820,11 +925,10 @@ export function MantineYourMaterialsTable({
             }}
           >
             {selectedRecords.length
-              ? `Delete ${
-                  selectedRecords.length === 1
-                    ? '1 selected record'
-                    : `${selectedRecords.length} selected records`
-                }`
+              ? `Delete ${selectedRecords.length === 1
+                ? '1 selected record'
+                : `${selectedRecords.length} selected records`
+              }`
               : 'Select records to delete'}
           </Button>
         </Center>
@@ -897,8 +1001,7 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${
-          response.statusText || response.status
+        `Error fetching course metadata: ${response.statusText || response.status
         }`,
       )
     }
