@@ -45,16 +45,16 @@ import { usePostHog } from 'posthog-js/react'
 
 const styles: Record<string, React.CSSProperties> = {
   logoContainerBox: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    position: 'relative',
+    // justifyContent: 'center',
+    // alignItems: 'center',
+    // overflow: 'hidden',
+    // position: 'relative',
     // height: '40%',
     height: '52px',
     maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
     // maxWidth: '100%',
-    paddingRight:
-      typeof window !== 'undefined' && window.innerWidth > 600 ? '10px' : '2px',
+    // paddingRight:
+    //   typeof window !== 'undefined' && window.innerWidth > 600 ? '10px' : '2px',
     paddingLeft:
       typeof window !== 'undefined' && window.innerWidth > 600 ? '25px' : '5px'
   },
@@ -119,8 +119,10 @@ const useStyles = createStyles((theme) => ({
   burger: {
     [theme.fn.largerThan(1118)]: {
       display: 'none',
+      marginRight: '8px',
     },
-    marginRight: '8px',
+    marginRight: '3px',
+    marginLeft: '0px'
   },
   dropdown: {
     position: 'absolute',
@@ -312,6 +314,8 @@ const ChatNavbar = ({
     <div
       className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'} -mr-5 pb-16 pl-5`}
       style={{ display: show ? 'block' : 'none', height: '40%' }}
+    // style={{ display: show ? 'flex' : 'none', flexDirection: 'row', height: '40%', alignItems: 'center' }}
+
     >
       <div
         className="mt-4"
@@ -319,48 +323,51 @@ const ChatNavbar = ({
       >
         {/* <div > */}
         {/* <Flex style={{ flexDirection: 'row' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"> */}
+
         <Flex
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            height: '30px',
-          }}
+          justify='flex-start'
+          direction='row'
+          styles={{ height: '30px', flex: 1 }}
+
           className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"
         >
-          <div style={{ justifyContent: 'flex-start' }}>
+          {/* <div> */}
+          {/* <div
+            style={{
+              ...styles.logoContainerBox,
+              // display: 'flex',
+              // alignItems: 'center',
+              // justifyContent: 'flex-start',
+            }}
+          > */}
+          <Link href="/">
+            <h2 className="sm:ms-3 cursor-pointer sm:text-[2rem] md:text-3xl font-extrabold tracking-tight text-white sm:text-[2rem]">
+              UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
+            </h2>
+          </Link>
+
+          {bannerUrl && (
             <div
-              style={{
-                ...styles.logoContainerBox,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-              }}
+              style={{ ...styles.logoContainerBox }}
             >
-              <Link href="/">
-                <h2 className="sm:ms-3 cursor-pointer sm:text-[2rem] md:text-3xl font-extrabold tracking-tight text-white sm:text-[2rem]">
-                  UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
-                </h2>
-              </Link>
-
-              {bannerUrl && (
-                <div
-                  style={{ ...styles.logoContainerBox }}
-                >
-                  <Image
-                    src={bannerUrl}
-                    style={{ ...styles.thumbnailImage }}
-                    width={2000}
-                    height={2000}
-                    alt="The course creator uploaded a logo for this chatbot."
-                    aria-label="The course creator uploaded a logo for this chatbot."
-                    onError={(e) => (e.currentTarget.style.display = 'none')} // display nothing if image fails
-                  />
-                </div>
-              )}
+              <Image
+                src={bannerUrl}
+                style={{ ...styles.thumbnailImage }}
+                width={2000}
+                height={2000}
+                alt="The course creator uploaded a logo for this chatbot."
+                aria-label="The course creator uploaded a logo for this chatbot."
+                onError={(e) => (e.currentTarget.style.display = 'none')} // display nothing if image fails
+              />
             </div>
-          </div>
+          )}
+          {/* </Flex> */}
+          {/* </div> */}
+          {/* </div> */}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          {/* <div style={{ display: 'flex', justifyContent: 'flex-end' }}> */}
+          {/* <Flex direction='row' justify='flex-end' styles={{ flex: 1 }}> */}
+          <Group position='right' styles={{ marginLeft: 'auto' }}>
             {/* This is the hamburger menu / dropdown */}
             <Transition
               transition="pop-top-right"
@@ -554,11 +561,13 @@ const ChatNavbar = ({
                 </SignInButton>
               </SignedOut>
             </div>
-          </div>
+            {/* </div> */}
+            {/* </Flex> */}
+          </Group>
         </Flex>
         {/* </div> */}
-      </div>
-    </div>
+      </div >
+    </div >
   )
 }
 export default ChatNavbar
