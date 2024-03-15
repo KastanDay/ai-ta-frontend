@@ -30,7 +30,7 @@ const handler = async (req: NextRequest, res: NextResponse) => {
 
     const s3_filepath = `courses/${courseName}/${uniqueFileName}`
 
-    console.log('Submitting to ingest queue:', s3_filepath)
+    console.log('... Submitting to ingest queue:', s3_filepath)
 
     fetch('https://41kgx.apps.beam.cloud', {
       method: 'POST',
@@ -48,7 +48,10 @@ const handler = async (req: NextRequest, res: NextResponse) => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(`⬆️ Submitted to ingest queue: ${s3_filepath}`)
+        console.log(
+          `⬆️ Submitted to ingest queue: ${s3_filepath}. Response (task ID):`,
+          data,
+        )
         // res.status(200).json(data)
         return new Response(JSON.stringify(data), { status: 200 })
       })
@@ -65,8 +68,12 @@ const handler = async (req: NextRequest, res: NextResponse) => {
       })
   } catch (error) {
     console.error(error)
-    return []
+    return new Response(
+      JSON.stringify({
+        error: `❌❌ -- Bottom of /ingest -- Internal Server Error during ingest submission to Beam: ${error}`,
+      }),
+      { status: 500 },
+    )
   }
 }
-
 export default handler
