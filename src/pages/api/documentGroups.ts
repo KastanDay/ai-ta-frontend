@@ -18,15 +18,16 @@ interface DocGroup {
 }
 
 interface RequestBody {
-  action: 'addDocumentsToDocGroup' | 'appendDocGroup' | 'removeDocGroup' | 'getDocumentGroups';
+  action: 'addDocumentsToDocGroup' | 'appendDocGroup' | 'removeDocGroup' | 'getDocumentGroups' | 'updateDocGroupStatus';
   courseName: string;
   doc?: CourseDocument;
   docGroup?: string;
+  enabled?: boolean;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    const { action, courseName, doc, docGroup } = req.body as RequestBody;
+    const { action, courseName, doc, docGroup, enabled } = req.body as RequestBody;
 
     try {
       if (action === 'addDocumentsToDocGroup' && doc) {
@@ -41,6 +42,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } else if (action === 'getDocumentGroups') {
         const documents = await fetchDocumentGroups(courseName);
         res.status(200).json({ success: true, documents });
+      } else if (action === 'updateDocGroupStatus' && docGroup && enabled !== undefined) {
+        await updateDocGroupStatus(courseName, docGroup, enabled);
+        res.status(200).json({ success: true });
       } else {
         res.status(400).json({ success: false, error: 'Invalid action' });
       }
@@ -57,7 +61,7 @@ async function fetchDocumentGroups(courseName: string) {
   try {
     const { data: documents, error } = await supabase
       .from('documents')
-      .select('*, doc_groups(*)')
+      .select('*, doc_groups(id, name, course_name, enabled)')
       .eq('course_name', courseName)
       .order('created_at', { ascending: true });
 
@@ -272,6 +276,28 @@ async function removeDocGroup(courseName: string, doc: CourseDocument, docGroup:
     }
   } catch (error) {
     console.error('Error in removing document groups in Supabase:', error);
+    throw error;
+  }
+}
+
+async function updateDocGroupStatus(
+  courseName: string,
+  docGroup: string,
+  enabled: boolean
+) {
+  try {
+    const { error } = await supabase
+      .from('doc_groups')
+      .update({ enabled })
+      .eq('name', docGroup)
+      .eq('course_name', courseName);
+
+    if (error) {
+      console.error('Error in updating document group status in Supabase:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error in updating document group status in Supabase:', error);
     throw error;
   }
 }

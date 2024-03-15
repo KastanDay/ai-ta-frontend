@@ -116,54 +116,9 @@ export function MantineYourMaterialsTable({
     return `${s3_path}-${url}`
   }
 
-  const getEnabledDocGroups = async (course_name: string) => {
-    try {
-      const response = await fetch(
-        `https://flask-production-751b.up.railway.app/getEnabledDocGroups?course_name=${course_name}`,
-      )
-
-      if (!response.ok) {
-        throw new Error(
-          'Failed to fetch the enabled document groups from the backend.',
-        )
-      }
-
-      const data = await response.json()
-      return data.enabled_doc_groups || [] // Return an empty array if enabled_doc_groups is null
-    } catch (error) {
-      // Handle error
-      if (error instanceof Error) {
-        console.error('Failed to fetch enabled document groups:', error.message)
-      } else {
-        // Handle cases where the error might not be an instance of Error
-        console.error(
-          'Failed to fetch enabled document groups, an unknown error occurred',
-        )
-      }
-    }
-  }
-
   const [enabledDocs, setEnabledDocs] = useState<EnabledDocsState>({})
 
   const hasFetchedEnabledDocGroups = useRef(false)
-
-  useEffect(() => {
-    const fetchEnabledDocGroups = async () => {
-      const enabledDocGroups = await getEnabledDocGroups(getCurrentPageName())
-      if (enabledDocGroups) {
-        const updatedDocumentGroups = documentGroups.map((doc_group) => ({
-          ...doc_group,
-          enabled: enabledDocGroups.includes(doc_group.value),
-        }))
-        setDocumentGroups(updatedDocumentGroups)
-      }
-    }
-
-    if (documentGroups.length > 0 && !hasFetchedEnabledDocGroups.current) {
-      fetchEnabledDocGroups()
-      hasFetchedEnabledDocGroups.current = true
-    }
-  }, [documentGroups])
 
   const [documentGroupSearch, setDocumentGroupSearch] = useState('')
 
@@ -185,86 +140,89 @@ export function MantineYourMaterialsTable({
     setDocumentGroupSearch(event.target.value)
   }
 
-  useEffect(() => {
-    const fetchDocumentGroups = async () => {
-      try {
-        const response = await fetch('/api/documentGroups', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            action: 'getDocumentGroups',
-            courseName: getCurrentPageName(),
-          }),
-        });
+  const fetchDocumentGroups = async () => {
+    try {
+      const response = await fetch('/api/documentGroups', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'getDocumentGroups',
+          courseName: getCurrentPageName(),
+        }),
+      });
   
-        if (!response.ok) {
-          throw new Error('Failed to fetch document groups');
-        }
-  
-        const data = await response.json();
-        const documents = data.documents;
-  
-        const doc_group_map = new Map<string, number>();
-        let defaultGroupCount = 0;
-  
-        documents.forEach((doc: any) => {
-          if (doc.doc_groups && doc.doc_groups.length > 0) {
-            doc.doc_groups.forEach((doc_group: any) => {
-              const count = doc_group_map.get(doc_group.name) || 0;
-              doc_group_map.set(doc_group.name, count + 1);
-            });
-          } else {
-            defaultGroupCount++;
-          }
-        });
-  
-        let doc_groups_array: DocumentGroupOption[] = Array.from(doc_group_map).map(
-          ([doc_group, count]) => ({
-            value: doc_group,
-            label: doc_group,
-            numDocs: count,
-          })
-        );
-  
-        if (defaultGroupCount > 0) {
-          doc_groups_array = [
-            ...doc_groups_array,
-            {
-              value: 'Default Group',
-              label: 'Default Group',
-              numDocs: defaultGroupCount,
-            },
-          ];
-        }
-  
-        setDocumentGroups(doc_groups_array);
-  
-        const initialEnabledDocsState = documents.reduce(
-          (acc: EnabledDocsState, doc: CourseDocument) => {
-            const docId = getDocumentId(doc);
-            acc[docId] = true;
-            return acc;
-          },
-          {}
-        );
-  
-        setEnabledDocs(initialEnabledDocsState);
-        setDefaultGroupCount(defaultGroupCount);
-  
-        // Update materials state with doc_groups included
-        const updatedMaterials = documents.map((doc: any) => ({
-          ...doc,
-          doc_groups: doc.doc_groups ? doc.doc_groups.map((group: any) => group.name) : [],
-        }));
-  
-        setMaterials(updatedMaterials);
-      } catch (error) {
-        console.error('Error fetching document groups:', error);
+      if (!response.ok) {
+        throw new Error('Failed to fetch document groups');
       }
-    };
   
+      const data = await response.json();
+      const documents = data.documents;
+  
+      const doc_group_map = new Map<string, { numDocs: number; enabled: boolean }>();
+      let defaultGroupCount = 0;
+      let defaultGroupEnabled = false;
+  
+      documents.forEach((doc: any) => {
+        if (doc.doc_groups && doc.doc_groups.length > 0) {
+          doc.doc_groups.forEach((doc_group: any) => {
+            const existingEntry = doc_group_map.get(doc_group.name);
+            if (existingEntry) {
+              doc_group_map.set(doc_group.name, {
+                numDocs: existingEntry.numDocs + 1,
+                enabled: doc_group.enabled,
+              });
+            } else {
+              doc_group_map.set(doc_group.name, {
+                numDocs: 1,
+                enabled: doc_group.enabled,
+              });
+            }
+          });
+        } else {
+          defaultGroupCount++;
+          defaultGroupEnabled = doc.enabled || defaultGroupEnabled;
+        }
+      });
+  
+      let doc_groups_array: DocumentGroupOption[] = Array.from(doc_group_map).map(
+        ([doc_group, { numDocs, enabled }]) => ({
+          value: doc_group,
+          label: doc_group,
+          numDocs,
+          enabled,
+        })
+      );
+  
+      if (defaultGroupCount > 0) {
+        doc_groups_array = [
+          ...doc_groups_array,
+          {
+            value: 'Default Group',
+            label: 'Default Group',
+            numDocs: defaultGroupCount,
+            enabled: defaultGroupEnabled,
+          },
+        ];
+      }
+  
+      setDocumentGroups(doc_groups_array);
+      setDefaultGroupCount(defaultGroupCount);
+  
+      // Update materials state with doc_groups included
+      const updatedMaterials = documents.map((doc: any) => ({
+        ...doc,
+        doc_groups: doc.doc_groups ? doc.doc_groups.map((group: any) => group.name) : [],
+      }));
+  
+      setMaterials(updatedMaterials);
+    } catch (error) {
+      console.error('Error fetching document groups:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchDocumentGroups();
   }, []);
 
@@ -487,6 +445,39 @@ export function MantineYourMaterialsTable({
     }
   };
 
+  const handleDocumentGroupsChange = async (
+    doc_group_obj: DocumentGroupOption,
+    enabled: boolean
+  ) => {
+    try {
+      const response = await fetch('/api/documentGroups', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'updateDocGroupStatus',
+          courseName: getCurrentPageName(),
+          docGroup: doc_group_obj.value,
+          enabled: enabled,
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to update document group status');
+      }
+  
+      // Refetch the document groups data after a successful update
+      await fetchDocumentGroups();
+    } catch (error) {
+      console.error('Failed to update document group status:', error);
+      showNotification({
+        title: 'Error',
+        message: 'Failed to update document group status',
+      });
+    }
+  };
+
   return (
     <>
       <GlobalStyle />
@@ -537,22 +528,16 @@ export function MantineYourMaterialsTable({
                   </Text>
                 </td>
                 <td style={{ wordWrap: 'break-word' }}>
-                  <Switch
-                    checked={doc_group_obj.enabled}
-                    onChange={() => {
-                      setDocumentGroups((prevState) =>
-                        prevState.map((group) =>
-                          group.value === doc_group_obj.value
-                            ? { ...group, enabled: !group.enabled }
-                            : group,
-                        ),
-                      )
-                    }}
-                    color="blue"
-                    size="lg"
-                    onLabel="Enabled"
-                    offLabel="Disabled"
-                  />
+                <Switch
+                  checked={doc_group_obj.enabled}
+                  onChange={(event) =>
+                    handleDocumentGroupsChange(doc_group_obj, event.currentTarget.checked)
+                  }
+                  color="blue"
+                  size="lg"
+                  onLabel="Enabled"
+                  offLabel="Disabled"
+                />
                 </td>
               </tr>
             ))}
