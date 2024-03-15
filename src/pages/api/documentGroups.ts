@@ -2,14 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../utils/supabaseClient';
 
-export interface MaterialDocument {
-  course_name: string;
-  readable_filename: string;
-  s3_path: string;
-  base_url?: string;
-  url?: string;
-  doc_groups?: string[];
-}
+import { CourseDocument } from 'src/types/courseMaterials'
 
 interface Document {
   id: number;
@@ -24,19 +17,26 @@ interface DocGroup {
   course_name: string;
 }
 
+interface RequestBody {
+  action: 'addDocumentsToDocGroup' | 'appendDocGroup' | 'removeDocGroup' | 'getDocumentGroups';
+  courseName: string;
+  doc?: CourseDocument;
+  docGroup?: string;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    const { action, courseName, docs, docGroup } = req.body;
+    const { action, courseName, doc, docGroup } = req.body as RequestBody;
 
     try {
-      if (action === 'addDocumentsToDocGroup') {
-        await addDocumentsToDocGroup(courseName, docs);
+      if (action === 'addDocumentsToDocGroup' && doc) {
+        await addDocumentsToDocGroup(courseName, doc);
         res.status(200).json({ success: true });
-      } else if (action === 'appendDocGroup') {
-        await appendDocGroup(courseName, docs, docGroup);
+      } else if (action === 'appendDocGroup' && doc && docGroup) {
+        await appendDocGroup(courseName, doc, docGroup);
         res.status(200).json({ success: true });
-      } else if (action === 'removeDocGroup') {
-        await removeDocGroup(courseName, docs, docGroup);
+      } else if (action === 'removeDocGroup' && doc && docGroup) {
+        await removeDocGroup(courseName, doc, docGroup);
         res.status(200).json({ success: true });
       } else if (action === 'getDocumentGroups') {
         const documents = await fetchDocumentGroups(courseName);
@@ -73,12 +73,8 @@ async function fetchDocumentGroups(courseName: string) {
   }
 }
 
-async function addDocumentsToDocGroup(courseName: string, docs: MaterialDocument | MaterialDocument[]) {
-  if (!Array.isArray(docs)) {
-    docs = [docs];
-  }
-
-  for (const doc of docs) {
+async function addDocumentsToDocGroup(courseName: string, doc: CourseDocument) {
+ 
     try {
       let documentId: number | null = null;
 
@@ -218,11 +214,10 @@ async function addDocumentsToDocGroup(courseName: string, docs: MaterialDocument
       throw error;
     }
   }
-}
 
 
 
-async function appendDocGroup(courseName: string, doc: MaterialDocument, docGroup: string) {
+async function appendDocGroup(courseName: string, doc: CourseDocument, docGroup: string) {
   if (!doc.doc_groups) {
     doc.doc_groups = [];
   }
@@ -232,7 +227,7 @@ async function appendDocGroup(courseName: string, doc: MaterialDocument, docGrou
   await addDocumentsToDocGroup(courseName, doc);
 }
 
-async function removeDocGroup(courseName: string, doc: MaterialDocument, docGroup: string) {
+async function removeDocGroup(courseName: string, doc: CourseDocument, docGroup: string) {
   try {
     const { data: documents, error: selectError } = await supabase
       .from('documents')

@@ -197,37 +197,37 @@ export function MantineYourMaterialsTable({
             action: 'getDocumentGroups',
             courseName: getCurrentPageName(),
           }),
-        })
-
+        });
+  
         if (!response.ok) {
-          throw new Error('Failed to fetch document groups')
+          throw new Error('Failed to fetch document groups');
         }
-
-        const data = await response.json()
-        const documents = data.documents
-
-        const doc_group_map = new Map<string, number>()
-        let defaultGroupCount = 0
-
+  
+        const data = await response.json();
+        const documents = data.documents;
+  
+        const doc_group_map = new Map<string, number>();
+        let defaultGroupCount = 0;
+  
         documents.forEach((doc: any) => {
           if (doc.doc_groups && doc.doc_groups.length > 0) {
             doc.doc_groups.forEach((doc_group: any) => {
-              const count = doc_group_map.get(doc_group.name) || 0
-              doc_group_map.set(doc_group.name, count + 1)
-            })
+              const count = doc_group_map.get(doc_group.name) || 0;
+              doc_group_map.set(doc_group.name, count + 1);
+            });
           } else {
-            defaultGroupCount++
+            defaultGroupCount++;
           }
-        })
-
-        let doc_groups_array: DocumentGroupOption[] = Array.from(
-          doc_group_map,
-        ).map(([doc_group, count]) => ({
-          value: doc_group,
-          label: doc_group,
-          numDocs: count,
-        }))
-
+        });
+  
+        let doc_groups_array: DocumentGroupOption[] = Array.from(doc_group_map).map(
+          ([doc_group, count]) => ({
+            value: doc_group,
+            label: doc_group,
+            numDocs: count,
+          })
+        );
+  
         if (defaultGroupCount > 0) {
           doc_groups_array = [
             ...doc_groups_array,
@@ -236,36 +236,37 @@ export function MantineYourMaterialsTable({
               label: 'Default Group',
               numDocs: defaultGroupCount,
             },
-          ]
+          ];
         }
-
-        setDocumentGroups(doc_groups_array)
-
+  
+        setDocumentGroups(doc_groups_array);
+  
         const initialEnabledDocsState = documents.reduce(
           (acc: EnabledDocsState, doc: CourseDocument) => {
-            const docId = getDocumentId(doc)
-            acc[docId] = true
-            return acc
+            const docId = getDocumentId(doc);
+            acc[docId] = true;
+            return acc;
           },
-          {},
-        )
-
-        setEnabledDocs(initialEnabledDocsState)
-        setDefaultGroupCount(defaultGroupCount)
-
-        console.log('documents:', documents)
-        console.log('doc_groups_array:', doc_groups_array)
-        return documents
+          {}
+        );
+  
+        setEnabledDocs(initialEnabledDocsState);
+        setDefaultGroupCount(defaultGroupCount);
+  
+        // Update materials state with doc_groups included
+        const updatedMaterials = documents.map((doc: any) => ({
+          ...doc,
+          doc_groups: doc.doc_groups ? doc.doc_groups.map((group: any) => group.name) : [],
+        }));
+  
+        setMaterials(updatedMaterials);
       } catch (error) {
-        console.error('Error fetching document groups:', error)
-        return []
+        console.error('Error fetching document groups:', error);
       }
-    }
-
-    fetchDocumentGroups().then((fetchedDocuments) => {
-      setMaterials(fetchedDocuments)
-    })
-  }, [])
+    };
+  
+    fetchDocumentGroups();
+  }, []);
 
   const [query, setQuery] = useState('')
   const [debouncedQuery] = useDebouncedValue(query, 200)
@@ -358,35 +359,34 @@ export function MantineYourMaterialsTable({
           const updatedMaterials = prevMaterials.map((material) => {
             if (getDocumentId(material) === getDocumentId(record)) {
               const doc_groups = Array.isArray(material.doc_groups)
-                ? material.doc_groups
-                : []
-              const updatedDocGroups = [...doc_groups, { name: appendedGroup }]
-              return { ...material, doc_groups: updatedDocGroups }
+                ? [...material.doc_groups, appendedGroup]
+                : [appendedGroup];
+              return { ...material, doc_groups };
             }
-            return material
-          })
-          return updatedMaterials
-        })
+            return material;
+          });
+          return updatedMaterials;
+        });
   
         // Update documentGroups state
         setDocumentGroups((prevDocumentGroups) => {
           const existingGroup = prevDocumentGroups.find(
             (group) => group.value === appendedGroup,
-          )
+          );
           if (existingGroup) {
             return prevDocumentGroups.map((group) =>
               group.value === appendedGroup
                 ? { ...group, numDocs: (group.numDocs || 0) + 1 }
                 : group,
-            )
+            );
           } else {
             return [
               ...prevDocumentGroups,
               { value: appendedGroup, label: appendedGroup, numDocs: 1 },
-            ]
+            ];
           }
-        })
-      })
+        });
+      });
   
       // Queue the API request to update the backend
       fetchQueue = fetchQueue.then(async () => {
@@ -398,23 +398,23 @@ export function MantineYourMaterialsTable({
           body: JSON.stringify({
             action: 'appendDocGroup',
             courseName: getCurrentPageName(),
-            docs: record,
+            doc: record,
             docGroup: appendedGroup,
           }),
-        })
+        });
   
         if (!response.ok) {
-          throw new Error('Failed to append document group')
+          throw new Error('Failed to append document group');
         }
-      })
+      });
     } catch (error) {
-      console.error('Failed to append document group:', error)
+      console.error('Failed to append document group:', error);
       showNotification({
         title: 'Error',
         message: 'Failed to append document group',
-      })
+      });
     }
-  }
+  };
   
   const handleRemoveDocumentGroup = async (
     record: CourseDocument,
@@ -427,23 +427,20 @@ export function MantineYourMaterialsTable({
           const updatedMaterials = prevMaterials.map((material) => {
             if (getDocumentId(material) === getDocumentId(record)) {
               const doc_groups = Array.isArray(material.doc_groups)
-                ? material.doc_groups
-                : []
-              const updatedDocGroups = doc_groups.filter(
-                (group) => group.name !== removedGroup,
-              )
-              return { ...material, doc_groups: updatedDocGroups }
+                ? material.doc_groups.filter((group) => group !== removedGroup)
+                : [];
+              return { ...material, doc_groups };
             }
-            return material
-          })
-          return updatedMaterials
-        })
+            return material;
+          });
+          return updatedMaterials;
+        });
   
         // Update documentGroups state
         setDocumentGroups((prevDocumentGroups) => {
           const existingGroup = prevDocumentGroups.find(
             (group) => group.value === removedGroup,
-          )
+          );
           if (
             existingGroup &&
             existingGroup.numDocs &&
@@ -453,14 +450,14 @@ export function MantineYourMaterialsTable({
               group.value === removedGroup
                 ? { ...group, numDocs: (group.numDocs || 0) - 1 }
                 : group,
-            )
+            );
           } else {
             return prevDocumentGroups.filter(
               (group) => group.value !== removedGroup,
-            )
+            );
           }
-        })
-      })
+        });
+      });
   
       // Queue the API request to update the backend
       fetchQueue = fetchQueue.then(async () => {
@@ -472,23 +469,23 @@ export function MantineYourMaterialsTable({
           body: JSON.stringify({
             action: 'removeDocGroup',
             courseName: getCurrentPageName(),
-            docs: record,
+            doc: record,
             docGroup: removedGroup,
           }),
-        })
+        });
   
         if (!response.ok) {
-          throw new Error('Failed to remove document group')
+          throw new Error('Failed to remove document group');
         }
-      })
+      });
     } catch (error) {
-      console.error('Failed to remove document group:', error)
+      console.error('Failed to remove document group:', error);
       showNotification({
         title: 'Error',
         message: 'Failed to remove document group',
-      })
+      });
     }
-  }
+  };
 
   return (
     <>
@@ -675,7 +672,7 @@ export function MantineYourMaterialsTable({
                   }))}
                   value={
                     record.doc_groups
-                      ? record.doc_groups.map((group) => group.name)
+                      ? record.doc_groups
                       : []
                   }
                   placeholder="Select Group"
@@ -690,7 +687,7 @@ export function MantineYourMaterialsTable({
                   }}
                   onChange={async (newSelectedGroups) => {
                     const doc_groups = record.doc_groups
-                      ? record.doc_groups.map((group) => group.name)
+                      ? record.doc_groups
                       : []
                   
                     const removedGroups = doc_groups.filter(
