@@ -161,8 +161,8 @@ export function MantineYourMaterialsTable({
       const documents = data.documents;
   
       const doc_group_map = new Map<string, { numDocs: number; enabled: boolean }>();
-      let defaultGroupCount = 0;
-      let defaultGroupEnabled = false;
+      // let defaultGroupCount = 0;
+      // let defaultGroupEnabled = false;
   
       documents.forEach((doc: any) => {
         if (doc.doc_groups && doc.doc_groups.length > 0) {
@@ -181,8 +181,8 @@ export function MantineYourMaterialsTable({
             }
           });
         } else {
-          defaultGroupCount++;
-          defaultGroupEnabled = doc.enabled || defaultGroupEnabled;
+          // defaultGroupCount++;
+          // defaultGroupEnabled = doc.enabled || defaultGroupEnabled;
         }
       });
   
@@ -195,20 +195,20 @@ export function MantineYourMaterialsTable({
         })
       );
   
-      if (defaultGroupCount > 0) {
-        doc_groups_array = [
-          ...doc_groups_array,
-          {
-            value: 'Default Group',
-            label: 'Default Group',
-            numDocs: defaultGroupCount,
-            enabled: defaultGroupEnabled,
-          },
-        ];
-      }
+      // if (defaultGroupCount > 0) {
+      //   doc_groups_array = [
+      //     ...doc_groups_array,
+      //     {
+      //       value: 'Default Group',
+      //       label: 'Default Group',
+      //       numDocs: defaultGroupCount,
+      //       enabled: defaultGroupEnabled,
+      //     },
+      //   ];
+      // }
   
       setDocumentGroups(doc_groups_array);
-      setDefaultGroupCount(defaultGroupCount);
+      // setDefaultGroupCount(defaultGroupCount);
   
       // Update materials state with doc_groups included
       const updatedMaterials = documents.map((doc: any) => ({
