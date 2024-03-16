@@ -186,7 +186,7 @@ export function MantineYourMaterialsTable({
         }
       });
   
-      let doc_groups_array: DocumentGroupOption[] = Array.from(doc_group_map).map(
+      const doc_groups_array: DocumentGroupOption[] = Array.from(doc_group_map).map(
         ([doc_group, { numDocs, enabled }]) => ({
           value: doc_group,
           label: doc_group,
