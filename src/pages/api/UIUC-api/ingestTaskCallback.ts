@@ -24,6 +24,30 @@ const handler = async (req: NextApiRequest) => {
     // First, we convert the stream into a Response object, then use .json() to parse it.
     const data = await new Response(req.body).json()
     console.log('Data: ', data)
+    // data: {"success_ingest": ["courses/t/9df59cf1-e931-4957-9e59-f07c6196ade6-7.json"], "failure_ingest": []}
+
+    // Remove from in progress
+    data.success_ingest.forEach(async (s3_path: string) => {
+      const { error } = await supabase
+        .from('documents_in_progress')
+        .delete()
+        .eq('s3_path', s3_path)
+
+      console.log('Deleted from documents_in_progress: ', s3_path)
+      if (error) {
+        console.error(
+          '❌❌ Supabase failed to delete from `documents_in_progress`:',
+          error,
+        )
+        posthog.capture('supabase_failure_delete_documents_in_progress', {
+          s3_path: s3_path,
+          error: error.message,
+        })
+      }
+    })
+
+    // The beam function handles sending to Success and Failure cases. We just handle removing from in-progress.
+
     return NextResponse.json({ message: 'Success' }, { status: 200 })
 
     // const { uniqueFileName, courseName, readableFilename } = data
