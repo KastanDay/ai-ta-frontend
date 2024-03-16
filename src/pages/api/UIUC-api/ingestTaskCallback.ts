@@ -27,15 +27,18 @@ const handler = async (req: NextApiRequest) => {
     console.log('Data: ', data)
     // data: {"success_ingest": "courses/t/9df59cf1-e931-4957-9e59-f07c6196ade6-7.json", "failure_ingest": {'s3_path': 'courses/t/j.json', 'error': 'my error message'}}
 
-    let combinedIngests: string[] = []
+    // const combinedIngests: string[] = []
+    let s3_path_completed = ''
     if (data.success_ingest) {
-      combinedIngests.push(data.success_ingest)
+      // combinedIngests.push(data.success_ingest)
+      s3_path_completed = data.success_ingest
     }
     if (data.failure_ingest) {
-      combinedIngests.push(data.failure_ingest.s3_path)
+      // combinedIngests.push(data.failure_ingest.s3_path)
+      s3_path_completed = data.failure_ingest.s3_path
     }
-    const s3_path_completed = combinedIngests[0]
-    console.log('Combined ingests:', combinedIngests)
+    // const s3_path_completed = combinedIngests[0]
+    // console.log('Combined ingests:', combinedIngests)
     console.log('s3_path_completed:', s3_path_completed)
 
     // Remove from in progress
