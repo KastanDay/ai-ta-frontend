@@ -25,11 +25,14 @@ const handler = async (req: NextApiRequest) => {
     // First, we convert the stream into a Response object, then use .json() to parse it.
     const data = await new Response(req.body).json()
     console.log('Data: ', data)
-    // data: {"success_ingest": "courses/t/9df59cf1-e931-4957-9e59-f07c6196ade6-7.json", "failure_ingest": {'s3_path': 'courses/t/j.json', 'error': 'my error message'}}
+    // Data: {"success_ingest": "courses/t/7918ea72-32b6-45b1-aec7-0da1c68b3555-1.txt", "failure_ingest": []}
+    console.log('Success ingest:', data.success_ingest)
+    console.log('Failure ingest:', data.failure_ingest)
 
     // const combinedIngests: string[] = []
     let s3_path_completed = ''
     if (data.success_ingest) {
+      console.log('IN SUCCESS INGEST ___:', data.success_ingest)
       // combinedIngests.push(data.success_ingest)
       s3_path_completed = data.success_ingest
     }
