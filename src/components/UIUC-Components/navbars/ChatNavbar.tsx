@@ -327,7 +327,7 @@ const ChatNavbar = ({
         <Flex
           justify='flex-start'
           direction='row'
-          styles={{ height: '30px', flex: 1 }}
+          styles={{ height: '30px' }}
 
           className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"
         >
@@ -340,7 +340,7 @@ const ChatNavbar = ({
               // justifyContent: 'flex-start',
             }}
           > */}
-          <Link href="/">
+          <Link href="/" style={{ flex: 'none' }}>
             <h2 className="sm:ms-3 cursor-pointer sm:text-[2rem] md:text-3xl font-extrabold tracking-tight text-white sm:text-[2rem]">
               UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
             </h2>
@@ -348,7 +348,7 @@ const ChatNavbar = ({
 
           {bannerUrl && (
             <div
-              style={{ ...styles.logoContainerBox }}
+              style={{ ...styles.logoContainerBox, flex: '1' }}
             >
               <Image
                 src={bannerUrl}
