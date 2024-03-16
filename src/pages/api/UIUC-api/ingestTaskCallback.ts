@@ -7,6 +7,7 @@ export const config = {
   runtime: 'edge',
 }
 
+// The beam function handles sending to Success and Failure cases. We just handle removing from in-progress.
 const handler = async (req: NextApiRequest) => {
   try {
     console.log('ingestTaskCallback.ts: handler: req.method:', req.method)
@@ -24,97 +25,42 @@ const handler = async (req: NextApiRequest) => {
     // First, we convert the stream into a Response object, then use .json() to parse it.
     const data = await new Response(req.body).json()
     console.log('Data: ', data)
-    // data: {"success_ingest": ["courses/t/9df59cf1-e931-4957-9e59-f07c6196ade6-7.json"], "failure_ingest": []}
+    // data: {"success_ingest": "courses/t/9df59cf1-e931-4957-9e59-f07c6196ade6-7.json", "failure_ingest": {'s3_path': 'courses/t/j.json', 'error': 'my error message'}}
+
+    let combinedIngests: string[] = []
+    if (data.success_ingest) {
+      combinedIngests.push(data.success_ingest)
+    }
+    if (data.failure_ingest) {
+      combinedIngests.push(data.failure_ingest.s3_path)
+    }
+    const s3_path_completed = combinedIngests[0]
+    console.log('Combined ingests:', combinedIngests)
+    console.log('s3_path_completed:', s3_path_completed)
 
     // Remove from in progress
-    data.success_ingest.forEach(async (s3_path: string) => {
+    if (s3_path_completed) {
       const { error } = await supabase
         .from('documents_in_progress')
         .delete()
-        .eq('s3_path', s3_path)
+        .eq('s3_path', s3_path_completed)
 
-      console.log('Deleted from documents_in_progress: ', s3_path)
+      console.log('Deleted from documents_in_progress: ', data.success_ingest)
       if (error) {
         console.error(
           '❌❌ Supabase failed to delete from `documents_in_progress`:',
           error,
         )
         posthog.capture('supabase_failure_delete_documents_in_progress', {
-          s3_path: s3_path,
+          s3_path: s3_path_completed,
           error: error.message,
         })
       }
-    })
-
-    // The beam function handles sending to Success and Failure cases. We just handle removing from in-progress.
+    } else {
+      console.log(`No success ingest in Beam data: ${data}}`)
+    }
 
     return NextResponse.json({ message: 'Success' }, { status: 200 })
-
-    // const { uniqueFileName, courseName, readableFilename } = data
-
-    // console.log(
-    //   '👉 Submitting to ingest queue:',
-    //   uniqueFileName,
-    //   courseName,
-    //   readableFilename,
-    // )
-
-    // if (!uniqueFileName || !courseName || !readableFilename) {
-    //   console.error('Missing body parameters')
-    //   return NextResponse.json(
-    //     { error: '❌❌ Missing body parameters' },
-    //     { status: 400 },
-    //   )
-    // }
-    // // Continue with your logic as before...
-    // const s3_filepath = `courses/${courseName}/${uniqueFileName}`
-
-    // // console.log('👉 Submitting to ingest queue/:', s3_filepath)
-
-    // const response = await fetch('https://41kgx.apps.beam.cloud', {
-    //   method: 'POST',
-    //   headers: {
-    //     Accept: '*/*',
-    //     'Accept-Encoding': 'gzip, deflate',
-    //     Authorization: `Basic ${process.env.BEAM_API_KEY}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     course_name: courseName,
-    //     readable_filename: readableFilename,
-    //     s3_paths: s3_filepath,
-    //   }),
-    // })
-
-    // const responseBody = await response.json()
-    // console.log(
-    //   `📤 Submitted to ingest queue: ${s3_filepath}. Response status: ${response.status}`,
-    //   responseBody,
-    // )
-
-    // // Send to ingest-in-progress table
-    // const { error } = await supabase.from('documents_in_progress').insert({
-    //   s3_path: s3_filepath,
-    //   course_name: courseName,
-    //   readable_filename: readableFilename,
-    //   beam_task_id: responseBody.task_id,
-    // })
-
-    // if (error) {
-    //   console.error(
-    //     '❌❌ Supabase failed to insert into `documents_in_progress`:',
-    //     error,
-    //   )
-    //   posthog.capture('supabase_failure_insert_documents_in_progress', {
-    //     s3_path: s3_filepath,
-    //     course_name: courseName,
-    //     readable_filename: readableFilename,
-    //     error: error.message,
-    //     beam_task_id: responseBody.task_id,
-    //   })
-    // }
-
-    // return NextResponse.json(responseBody, { status: 200 })
   } catch (error) {
     const err = `❌❌ -- Bottom of /ingestTaskCallback -- Internal Server Error during callback from Beam task completion: ${error}`
     console.error(err)
