@@ -23,12 +23,13 @@ const handler = async (req: NextApiRequest) => {
 
     // Assuming the body is a ReadableStream, we need to read it correctly.
     // First, we convert the stream into a Response object, then use .json() to parse it.
-    const data = await new Response(req.body).json()
+    const datastr = await new Response(req.body).json()
+    const data = JSON.parse(datastr)
     console.log('Data: ', data)
     console.log('Type of data:', typeof data)
     // Data: {"success_ingest": "courses/t/7918ea72-32b6-45b1-aec7-0da1c68b3555-1.txt", "failure_ingest": []}
-    console.log('Success ingest:', data['success_ingest'])
-    console.log('Failure ingest:', data['failure_ingest'])
+    console.log('Success ingest:', data.success_ingest)
+    console.log('Failure ingest:', data.failure_ingest)
     // const combinedIngests: string[] = []
     let s3_path_completed = ''
     if (data.success_ingest) {
