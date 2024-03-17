@@ -78,7 +78,7 @@ type EnabledDocsState = {
   [docId: string]: boolean
 }
 
-const PAGE_SIZE = 30
+const PAGE_SIZE = 100
 
 export function MantineYourMaterialsTable({
   course_materials,
@@ -100,8 +100,8 @@ export function MantineYourMaterialsTable({
     [],
   )
 
-  // const [records, setRecords] = useState([]);
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState(1);
+  const [totalDocuments, setTotalDocuments] = useState(0);
 
   useEffect(() => {
     const from = (page - 1) * PAGE_SIZE
@@ -140,9 +140,29 @@ export function MantineYourMaterialsTable({
     setDocumentGroupSearch(event.target.value)
   }
 
-  const fetchDocumentGroups = async () => {
+  const fetchDocumentGroups = async (page: number) => {
     try {
-      const response = await fetch('/api/documentGroups', {
+      const from = (page - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      const response = await fetch(
+        `/api/materialsTable/fetchProjectMaterials?from=${from}&to=${to}&course_name=${getCurrentPageName()}`
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch document groups');
+      }
+
+      const data = await response.json();
+      console.log("response_data: " + data)
+      console.log(data)
+      const documents = data.final_docs;
+      const totalCount = data.total_count;
+
+      setTotalDocuments(totalCount);
+      setMaterials(documents);
+  
+      const document_groups_response = await fetch('/api/documentGroups', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -153,78 +173,47 @@ export function MantineYourMaterialsTable({
         }),
       });
   
-      if (!response.ok) {
+      if (!document_groups_response.ok) {
         throw new Error('Failed to fetch document groups');
       }
   
-      const data = await response.json();
-      const documents = data.documents;
+      const document_groups_data = await document_groups_response.json();
+      const documentGroups = document_groups_data.documents;
   
-      const doc_group_map = new Map<string, { numDocs: number; enabled: boolean }>();
-      // let defaultGroupCount = 0;
-      // let defaultGroupEnabled = false;
-  
-      documents.forEach((doc: any) => {
-        if (doc.doc_groups && doc.doc_groups.length > 0) {
-          doc.doc_groups.forEach((doc_group: any) => {
-            const existingEntry = doc_group_map.get(doc_group.name);
-            if (existingEntry) {
-              doc_group_map.set(doc_group.name, {
-                numDocs: existingEntry.numDocs + 1,
-                enabled: doc_group.enabled,
-              });
-            } else {
-              doc_group_map.set(doc_group.name, {
-                numDocs: 1,
-                enabled: doc_group.enabled,
-              });
-            }
-          });
-        } else {
-          // defaultGroupCount++;
-          // defaultGroupEnabled = doc.enabled || defaultGroupEnabled;
-        }
-      });
-  
-      const doc_groups_array: DocumentGroupOption[] = Array.from(doc_group_map).map(
-        ([doc_group, { numDocs, enabled }]) => ({
-          value: doc_group,
-          label: doc_group,
-          numDocs,
-          enabled,
-        })
-      );
-  
-      // if (defaultGroupCount > 0) {
-      //   doc_groups_array = [
-      //     ...doc_groups_array,
-      //     {
-      //       value: 'Default Group',
-      //       label: 'Default Group',
-      //       numDocs: defaultGroupCount,
-      //       enabled: defaultGroupEnabled,
-      //     },
-      //   ];
-      // }
+      const doc_groups_array: DocumentGroupOption[] = documentGroups
+        .filter((doc_group: any) => doc_group.doc_count >= 1)
+        .map((doc_group: any) => ({
+          value: doc_group.name,
+          label: doc_group.name,
+          numDocs: doc_group.doc_count,
+          enabled: doc_group.enabled,
+        }));
   
       setDocumentGroups(doc_groups_array);
-      // setDefaultGroupCount(defaultGroupCount);
+      // const updatedMaterials = documents.map((doc: any) => ({
+      //   ...doc,
+      //   doc_groups: doc.doc_groups ? doc.doc_groups.map((group: any) => group.name) : [],
+      // }));
   
-      // Update materials state with doc_groups included
-      const updatedMaterials = documents.map((doc: any) => ({
-        ...doc,
-        doc_groups: doc.doc_groups ? doc.doc_groups.map((group: any) => group.name) : [],
-      }));
-  
-      setMaterials(updatedMaterials);
+      // setMaterials(updatedMaterials);
     } catch (error) {
       console.error('Error fetching document groups:', error);
     }
   };
 
   useEffect(() => {
-    fetchDocumentGroups();
-  }, []);
+    fetchDocumentGroups(page);
+  }, [page]);
+
+  // useEffect(() => {
+  //   console.log("materials: " + materials);
+  //   console.log(materials);
+  // }, [materials]);
+
+  // useEffect(() => {
+  //   console.log("documentGroups: " + documentGroups);
+  //   console.log(documentGroups);
+  // }, [documentGroups]);
 
   const [query, setQuery] = useState('')
   const [debouncedQuery] = useDebouncedValue(query, 200)
@@ -468,7 +457,7 @@ export function MantineYourMaterialsTable({
       }
   
       // Refetch the document groups data after a successful update
-      await fetchDocumentGroups();
+      await fetchDocumentGroups(page);
     } catch (error) {
       console.error('Failed to update document group status:', error);
       showNotification({
@@ -559,6 +548,10 @@ export function MantineYourMaterialsTable({
           }
           return {}
         }}
+        page={page}
+        onPageChange={setPage}
+        totalRecords={totalDocuments} // Add this line
+        recordsPerPage={PAGE_SIZE} // Add this line
         borderRadius="lg"
         withColumnBorders
         withBorder={true}
@@ -651,10 +644,9 @@ export function MantineYourMaterialsTable({
             render: (record) => (
               <Group position="apart" spacing="xs">
                 <MultiSelect
-                  data={documentGroups.map((doc_group) => ({
-                    value: doc_group.value || '',
-                    label: doc_group.label || '',
-                  }))}
+                  data={record.doc_groups
+                    ? record.doc_groups
+                    : []}
                   value={
                     record.doc_groups
                       ? record.doc_groups

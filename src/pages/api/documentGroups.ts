@@ -59,20 +59,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 async function fetchDocumentGroups(courseName: string) {
   try {
-    const { data: documents, error } = await supabase
-      .from('documents')
-      .select('*, doc_groups(id, name, course_name, enabled)')
+    const { data: documentGroups, error } = await supabase
+      .from('doc_groups')
+      .select('name, enabled, doc_count')
       .eq('course_name', courseName)
-      .order('created_at', { ascending: true });
+      .order('name', { ascending: true });
 
     if (error) {
-      console.error('Error in fetching documents from Supabase:', error);
-      throw new Error('Failed to fetch documents');
+      console.error('Error in fetching document groups from Supabase:', error);
+      throw new Error('Failed to fetch document groups');
     }
 
-    return documents;
+    return documentGroups;
   } catch (error) {
-    console.error('Error in fetching documents from Supabase:', error);
+    console.error('Error in fetching document groups from Supabase:', error);
     throw error;
   }
 }

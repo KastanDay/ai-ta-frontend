@@ -28,46 +28,72 @@ export const config = {
  * @param {NextApiResponse} res - The outgoing HTTP response.
  * @returns A JSON response indicating the result of the delete operation.
  */
-export default async function deleteKey(req: NextRequest, res: NextResponse) {
-  // Check for the DELETE request method.
+
+export default async function fetchDocuments(req: NextRequest, res: NextResponse) {
   if (req.method !== 'GET') {
-    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
   }
 
-  // Parse the URL to get query parameters for pagination
-  const url = new URL(req.url)
-  const fromStr = url.searchParams.get('from')
-  const toStr = url.searchParams.get('to')
-  const course_name = url.searchParams.get('course_name')
+  const url = new URL(req.url);
+  const fromStr = url.searchParams.get('from');
+  const toStr = url.searchParams.get('to');
+  const course_name = url.searchParams.get('course_name');
 
   if (fromStr === null || toStr === null) {
-    throw new Error('Missing required query parameters: from and to')
+    throw new Error('Missing required query parameters: from and to');
   }
-  const from = parseInt(fromStr)
-  const to = parseInt(toStr)
 
-  // Get docs, paginated
-  const { data: documents, error } = await supabase
-    .from('documents')
-    .select('readable_filename, s3_path, url, base_url, doc_groups, created_at')
-    .match({ course_name: course_name })
-    .order('created_at', { ascending: false })
-    .range(from, to)
+  const from = parseInt(fromStr);
+  const to = parseInt(toStr);
 
-  if (error) {
-    console.error('Failed to delete API key:', error)
+  try {
+    // Fetch the paginated documents
+    const { data: documents, error } = await supabase
+      .from('documents')
+      .select(`
+        course_name,
+        readable_filename,
+        s3_path,
+        url,
+        base_url,
+        created_at,
+        doc_groups (
+          name
+        )
+      `)
+      .match({ course_name: course_name })
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
+    if (error) {
+      throw error;
+    }
+
+    // Fetch the total count of documents for the selected course
+    const { count, error: countError } = await supabase
+      .from('documents')
+      .select('*', { count: 'exact', head: true })
+      .match({ course_name: course_name });
+
+    if (countError) {
+      throw countError;
+    }
+
+    const final_docs = documents.map(doc => ({
+      ...doc,
+      doc_groups: doc.doc_groups.map(group => group.name),
+    })) as CourseDocument[];
+
+    return NextResponse.json({ final_docs, total_count: count }, { status: 200 });
+  } catch (error) {
+    console.error('Failed to fetch documents:', error);
     posthog.capture('fetch_materials_failed', {
-      // userId: currUserId,
       error: (error as PostgrestError).message,
       course_name: course_name,
-    })
-
+    });
     return NextResponse.json(
       { error: (error as PostgrestError).message },
       { status: 500 },
-    )
+    );
   }
-  const final_docs = documents as CourseDocument[]
-  return NextResponse.json({ final_docs }, { status: 200 })
 }
