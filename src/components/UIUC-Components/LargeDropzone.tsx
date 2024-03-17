@@ -182,18 +182,20 @@ export function LargeDropzone({
             uniqueFileName,
           )
 
-          await fetch(
-            `/api/UIUC-api/ingest?uniqueFileName=${uniqueFileName}&courseName=${courseName}&readableFilename=${uniqueReadableFileName}`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
+          const response = await fetch(`/api/UIUC-api/ingest`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
             },
-          )
-          const res = { ok: true, s3_path: file.name }
-          console.debug('Ingest submittedgst...', res)
-          return res
+            body: JSON.stringify({
+              uniqueFileName: uniqueFileName,
+              courseName: courseName,
+              readableFilename: uniqueReadableFileName,
+            }),
+          })
+          const res = await response.json()
+          console.debug('Ingest submitted...', res)
+          return { ok: true, s3_path: file.name }
         } catch (error) {
           console.error('Error during file upload or ingest:', error)
           return { ok: false, s3_path: file.name }
@@ -228,23 +230,26 @@ export function LargeDropzone({
     setUploadInProgress(false)
 
     // showSuccessToast(resultSummary.success_ingest.length)
-    showIngestInProgressToast(resultSummary.success_ingest.length)
+    if (resultSummary.success_ingest.length > 0) {
+      showIngestInProgressToast(resultSummary.success_ingest.length)
+    }
 
     // TODO: better to refresh just the table, not the entire page... makes it hard to persist toast... need full UI element for failures.
     // NOTE: Were just getting "SUBMISSION to task queue" status, not the success of the ingest job itself!!
-    // if (resultSummary.failure_ingest.length > 0) {
-    //   // some failures
-    //   showFailedIngestToast(
-    //     resultSummary.failure_ingest.map(
-    //       (ingestResult) => ingestResult.s3_path,
-    //     ),
-    //   )
-    //   showSuccessToast(resultSummary.success_ingest.length)
-    // } else {
-    //   // 100% success
-    //   await refreshOrRedirect(redirect_to_gpt_4)
-    //   // showSuccessToast(resultSummary.failure_ingest.map((ingestResult) => ingestResult.s3_path));
-    // }
+    if (resultSummary.failure_ingest.length > 0) {
+      // some failures
+      showFailedIngestToast(
+        resultSummary.failure_ingest.map(
+          (ingestResult: IngestResult) => ingestResult.s3_path,
+        ),
+      )
+      showSuccessToast(resultSummary.success_ingest.length)
+    } else {
+      // 100% success
+      // TODO: Re-enable this great feature. But use ReactQuery to update the table, not full page refresh.
+      // await refreshOrRedirect(redirect_to_gpt_4)
+      // showSuccessToast(resultSummary.failure_ingest.map((ingestResult) => ingestResult.s3_path));
+    }
   }
 
   return (

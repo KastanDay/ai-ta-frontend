@@ -1,38 +1,47 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextApiRequest } from 'next'
+import { NextResponse } from 'next/server'
 
 export const config = {
   runtime: 'edge',
 }
 
-const handler = async (req: NextRequest, res: NextResponse) => {
+const handler = async (req: NextApiRequest) => {
   try {
-    // const { uniqueFileName, courseName, readableFilename } = req.query as {
-    //   uniqueFileName: string
-    //   courseName: string
-    //   readableFilename: string
-    // }
-
-    // Parse the URL to get query parameters
-    const url = new URL(req.url)
-    const uniqueFileName = url.searchParams.get('uniqueFileName')
-    const courseName = url.searchParams.get('courseName')
-    const readableFilename = url.searchParams.get('readableFilename')
-
-    if (!uniqueFileName || !courseName || !readableFilename) {
-      // Handle the case where any of the parameters are missing
-      console.error('Missing query parameters')
-      // return res.status(400).json({ error: 'Missing query parameters' })
-      return new Response(
-        JSON.stringify({ error: '❌❌ Missing query parameters' }),
-        { status: 400 },
+    if (req.method !== 'POST') {
+      console.error('Request method not allowed')
+      return NextResponse.json(
+        { error: '❌❌ Request method not allowed' },
+        { status: 405 },
       )
     }
 
+    // Assuming the body is a ReadableStream, we need to read it correctly.
+    // First, we convert the stream into a Response object, then use .json() to parse it.
+    const data = await new Response(req.body).json()
+    console.log('body:', data)
+
+    const { uniqueFileName, courseName, readableFilename } = data
+
+    console.log(
+      '👉 Submitting to ingest queue:',
+      uniqueFileName,
+      courseName,
+      readableFilename,
+    )
+
+    if (!uniqueFileName || !courseName || !readableFilename) {
+      console.error('Missing body parameters')
+      return NextResponse.json(
+        { error: '❌❌ Missing body parameters' },
+        { status: 400 },
+      )
+    }
+    // Continue with your logic as before...
     const s3_filepath = `courses/${courseName}/${uniqueFileName}`
 
-    console.log('Submitting to ingest queue:', s3_filepath)
+    // console.log('👉 Submitting to ingest queue/:', s3_filepath)
 
-    fetch('https://41kgx.apps.beam.cloud', {
+    const response = await fetch('https://41kgx.apps.beam.cloud', {
       method: 'POST',
       headers: {
         Accept: '*/*',
@@ -46,27 +55,21 @@ const handler = async (req: NextRequest, res: NextResponse) => {
         s3_paths: s3_filepath,
       }),
     })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(`⬆️ Submitted to ingest queue: ${s3_filepath}`)
-        // res.status(200).json(data)
-        return new Response(JSON.stringify(data), { status: 200 })
-      })
-      .catch((err) => {
-        console.error(
-          `❌❌ Internal Server Error during ingest submission to Beam: ${err}`,
-        )
-        return new Response(
-          JSON.stringify({
-            error: `❌❌ Internal Server Error during ingest submission to Beam: ${err}`,
-          }),
-          { status: 500 },
-        )
-      })
+
+    const responseBody = await response.json()
+    console.log(
+      `📤 Submitted to ingest queue: ${s3_filepath}. Response status: ${response.status}`,
+      responseBody,
+    )
+    return NextResponse.json(responseBody, { status: 200 })
   } catch (error) {
     console.error(error)
-    return []
+    return NextResponse.json(
+      {
+        error: `❌❌ -- Bottom of /ingest -- Internal Server Error during ingest submission to Beam: ${error}`,
+      },
+      { status: 500 },
+    )
   }
 }
-
 export default handler
