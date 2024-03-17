@@ -475,7 +475,6 @@ export function MantineYourMaterialsTable({
         style={{
           width: '100%',
           margin: 'auto',
-          borderRadius: '10px',
           overflow: 'hidden',
           marginBottom: '20px',
         }}
