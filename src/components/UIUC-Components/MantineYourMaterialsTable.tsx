@@ -494,7 +494,7 @@ export function MantineYourMaterialsTable({
               </th>
               {/* <th style={{ width: '40%', wordWrap: 'break-word' }}>Description</th> */}
               <th style={{ width: '25%', wordWrap: 'break-word' }}>
-                Number of Docs
+                Number of Documents
               </th>
               <th style={{ width: '25%', wordWrap: 'break-word' }}>Enabled</th>
             </tr>
