@@ -7,3 +7,10 @@ export interface CourseDocument {
   base_url: string
   doc_groups: string[]
 }
+
+export interface DocumentGroup {
+  name: string
+  enabled: boolean
+  course_name: string
+  doc_count: number
+}
