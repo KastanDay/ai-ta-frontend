@@ -42,6 +42,7 @@ import MagicBell, {
   FloatingNotificationInbox,
 } from '@magicbell/magicbell-react'
 import { usePostHog } from 'posthog-js/react'
+import { wrap } from 'module'
 
 const styles: Record<string, React.CSSProperties> = {
   logoContainerBox: {
@@ -315,11 +316,10 @@ const ChatNavbar = ({
       className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'} -mr-5 pb-16 pl-5`}
       style={{ display: show ? 'block' : 'none', height: '40%' }}
     // style={{ display: show ? 'flex' : 'none', flexDirection: 'row', height: '40%', alignItems: 'center' }}
-
     >
       <div
         className="mt-4"
-        style={{ height: '50px', paddingTop: 'Opx', width: '95vw' }}
+        style={{ paddingTop: 'Opx', width: '95vw' }}
       >
         {/* <div > */}
         {/* <Flex style={{ flexDirection: 'row' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"> */}
@@ -327,9 +327,8 @@ const ChatNavbar = ({
         <Flex
           justify='flex-start'
           direction='row'
-          styles={{ height: '30px' }}
-
-          className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"
+          styles={{ height: '20px', flexWrap: 'nowrap', gap: '0rem' }}
+          className="navbar rounded-badge bg-[#15162c] shadow-lg shadow-purple-800"
         >
           {/* <div> */}
           {/* <div
@@ -340,7 +339,7 @@ const ChatNavbar = ({
               // justifyContent: 'flex-start',
             }}
           > */}
-          <Link href="/" style={{ flex: 'none' }}>
+          <Link href="/" style={{ flex: 'none', flexWrap: 'nowrap' }}>
             <h2 className="sm:ms-3 cursor-pointer sm:text-[2rem] md:text-3xl font-extrabold tracking-tight text-white sm:text-[2rem]">
               UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
             </h2>
@@ -367,7 +366,8 @@ const ChatNavbar = ({
 
           {/* <div style={{ display: 'flex', justifyContent: 'flex-end' }}> */}
           {/* <Flex direction='row' justify='flex-end' styles={{ flex: 1 }}> */}
-          <Group position='right' styles={{ marginLeft: 'auto' }}>
+          <Group position='right' styles={{ marginLeft: 'auto', flexWrap: 'nowrap' }} spacing='0px' noWrap>
+            {/* TODO: .mantine-kivjf7 {gap: 0rem} */}
             {/* This is the hamburger menu / dropdown */}
             <Transition
               transition="pop-top-right"
