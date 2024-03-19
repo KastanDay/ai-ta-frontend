@@ -314,12 +314,12 @@ const ChatNavbar = ({
   return (
     <div
       className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'} -mr-5 pb-16 pl-5`}
-      style={{ display: show ? 'block' : 'none', height: '40%' }}
+      style={{ display: show ? 'block' : 'none' }}
     // style={{ display: show ? 'flex' : 'none', flexDirection: 'row', height: '40%', alignItems: 'center' }}
     >
       <div
         className="mt-4"
-        style={{ paddingTop: 'Opx', width: '95vw' }}
+        style={{ paddingTop: 'Opx', maxWidth: '95vw', marginRight: '25px' }}
       >
         {/* <div > */}
         {/* <Flex style={{ flexDirection: 'row' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"> */}
@@ -327,7 +327,7 @@ const ChatNavbar = ({
         <Flex
           justify='flex-start'
           direction='row'
-          styles={{ height: '20px', flexWrap: 'nowrap', gap: '0rem' }}
+          styles={{ height: '10px', flexWrap: 'nowrap', gap: '0rem' }}
           className="navbar rounded-badge bg-[#15162c] shadow-lg shadow-purple-800"
         >
           {/* <div> */}

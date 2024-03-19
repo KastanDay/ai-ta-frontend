@@ -213,12 +213,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ;(message.content as Content[])[imgDescIndex] = {
+          ; (message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ;(message.content as Content[]).push({
+          ; (message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -322,7 +322,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           messages: updatedConversation.messages,
           key:
             courseMetadata?.openai_api_key &&
-            courseMetadata?.openai_api_key != ''
+              courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
           // prompt property is intentionally left undefined to avoid TypeScript errors
@@ -603,7 +603,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
       handleSend(currentMessage, 2, null)
@@ -696,14 +696,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-    courseMetadata.example_questions.length > 0
+      courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-          'Make a bullet point list of key takeaways of the course.',
-          'What is [your favorite topic] and why is it worth learning about?',
-          'How can I effectively prepare for the upcoming exam?',
-          'How many assignments in the course?',
-        ]
+        'Make a bullet point list of key takeaways of the course.',
+        'What is [your favorite topic] and why is it worth learning about?',
+        'How can I effectively prepare for the upcoming exam?',
+        'How many assignments in the course?',
+      ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
@@ -822,7 +822,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   return (
     <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
-      <div className="justify-center" style={{ height: '46px' }}>
+      <div className="justify-center" style={{ height: '40px' }}>
         <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
       </div>
       <div className="mt-10 flex-grow overflow-auto">
