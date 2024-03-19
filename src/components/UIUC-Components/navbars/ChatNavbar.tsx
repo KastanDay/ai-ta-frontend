@@ -318,7 +318,7 @@ const ChatNavbar = ({
     // style={{ display: show ? 'flex' : 'none', flexDirection: 'row', height: '40%', alignItems: 'center' }}
     >
       <div
-        className="mt-4"
+        // className="mt-4"
         style={{ paddingTop: 'Opx', maxWidth: '95vw', marginRight: '25px' }}
       >
         {/* <div > */}
