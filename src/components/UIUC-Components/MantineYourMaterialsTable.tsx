@@ -160,6 +160,7 @@ export function MantineYourMaterialsTable({
       const totalCount = data.total_count;
 
       setTotalDocuments(totalCount);
+      setMaterials([]); // Clear the documents when the page changes
       setMaterials(documents);
   
       const document_groups_response = await fetch('/api/documentGroups', {
@@ -202,7 +203,6 @@ export function MantineYourMaterialsTable({
   };
 
   useEffect(() => {
-    setMaterials([]); // Clear the documents when the page changes
     fetchDocumentGroups(page); // Fetch the new documents for the current page
   }, [page]);
 
