@@ -202,7 +202,8 @@ export function MantineYourMaterialsTable({
   };
 
   useEffect(() => {
-    fetchDocumentGroups(page);
+    setMaterials([]); // Clear the documents when the page changes
+    fetchDocumentGroups(page); // Fetch the new documents for the current page
   }, [page]);
 
   // useEffect(() => {
