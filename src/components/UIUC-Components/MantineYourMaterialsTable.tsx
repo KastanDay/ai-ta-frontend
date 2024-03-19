@@ -549,24 +549,26 @@ export function MantineYourMaterialsTable({
         }}
         page={page}
         onPageChange={setPage}
-        totalRecords={totalDocuments} // Add this line
-        recordsPerPage={PAGE_SIZE} // Add this line
+        totalRecords={totalDocuments}
+        recordsPerPage={PAGE_SIZE}
         borderRadius="lg"
         withColumnBorders
         withBorder={true}
         striped
         highlightOnHover
-        style={{
-          width: '100%',
-        }}
-        // page={page} // TODO - Add pagination
+        style={{ width: '100%' }}
         height="80vh"
         records={materials}
         columns={[
           {
             accessor: 'Name',
+            width: 200,
             render: ({ readable_filename }) =>
-              readable_filename ? `${readable_filename}` : '',
+              readable_filename ? (
+                <div style={{ wordWrap: 'break-word' }}>{readable_filename}</div>
+              ) : (
+                ''
+              ),
             filter: (
               <TextInput
                 label="File Name"
@@ -590,7 +592,10 @@ export function MantineYourMaterialsTable({
           },
           {
             accessor: 'URL',
-            render: ({ url }) => (url ? `${url}` : ''),
+            width: 200,
+            render: ({ url }) => (
+              <div style={{ wordWrap: 'break-word' }}>{url ? url : ''}</div>
+            ),
             filter: (
               <TextInput
                 label="URL"
@@ -614,7 +619,10 @@ export function MantineYourMaterialsTable({
           },
           {
             accessor: 'The Starting URL of Web Scraping',
-            render: ({ base_url }) => (base_url ? `${base_url}` : ''),
+            width: 200,
+            render: ({ base_url }) => (
+              <div style={{ wordWrap: 'break-word' }}>{base_url ? base_url : ''}</div>
+            ),
             filter: (
               <TextInput
                 label="The Starting URL of Web Scraping"
@@ -639,40 +647,31 @@ export function MantineYourMaterialsTable({
           {
             accessor: 'doc_group',
             title: 'Document Groups',
-            width: 200, // Increase this value to make the column wider
+            width: 300,
             render: (record) => (
               <Group position="apart" spacing="xs">
                 <MultiSelect
-                  data={record.doc_groups
-                    ? record.doc_groups
-                    : []}
-                  value={
-                    record.doc_groups
-                      ? record.doc_groups
-                      : []
-                  }
+                  data={record.doc_groups ? record.doc_groups : []}
+                  value={record.doc_groups ? record.doc_groups : []}
                   placeholder="Select Group"
                   searchable
                   nothingFound="No options"
                   creatable
                   getCreateLabel={(query) => `+ Create ${query}`}
                   onCreate={(doc_group_name) => {
-                    const newDocumentGroup =
-                      handleCreateDocumentGroup(doc_group_name)
+                    const newDocumentGroup = handleCreateDocumentGroup(doc_group_name)
                     return newDocumentGroup
                   }}
                   onChange={async (newSelectedGroups) => {
-                    const doc_groups = record.doc_groups
-                      ? record.doc_groups
-                      : []
-                  
+                    const doc_groups = record.doc_groups ? record.doc_groups : []
+
                     const removedGroups = doc_groups.filter(
                       (group) => !newSelectedGroups.includes(group),
                     )
                     const appendedGroups = newSelectedGroups.filter(
                       (group) => !doc_groups.includes(group),
                     )
-                  
+
                     if (removedGroups.length > 0) {
                       for (const removedGroup of removedGroups) {
                         await handleRemoveDocumentGroup(record, removedGroup)
@@ -684,7 +683,6 @@ export function MantineYourMaterialsTable({
                       }
                     }
                   }}
-                  // onChange={(newSelectedGroups) => handleDocumentGroupsChange(record, newSelectedGroups)}
                   sx={{ flex: 1, width: '100%' }}
                 />
               </Group>
@@ -693,7 +691,7 @@ export function MantineYourMaterialsTable({
           {
             accessor: 'actions',
             title: <Box mr={6}>Actions</Box>,
-            width: 81,
+            width: 68,
             render: (materials: any, index: number) => {
               const openModal = async (action: string) => {
                 let urlToOpen = materials.url
