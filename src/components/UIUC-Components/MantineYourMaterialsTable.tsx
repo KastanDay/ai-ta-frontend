@@ -632,7 +632,7 @@ export function MantineYourMaterialsTable({
             render: (record) => (
               <Group position="apart" spacing="xs">
                 <MultiSelect
-                  data={record.doc_groups ? record.doc_groups : []}
+                  data={documentGroups.map((group) => group.value)}
                   value={record.doc_groups ? record.doc_groups : []}
                   placeholder="Select Group"
                   searchable
