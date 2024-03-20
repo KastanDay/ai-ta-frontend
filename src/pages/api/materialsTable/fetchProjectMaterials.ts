@@ -60,7 +60,7 @@ export default async function fetchDocuments(req: NextRequest, res: NextResponse
     // Fetch the total count of documents for the selected course
     const { count, error: countError } = await supabase
       .from('documents')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .match({ course_name: course_name });
 
     if (countError) {
