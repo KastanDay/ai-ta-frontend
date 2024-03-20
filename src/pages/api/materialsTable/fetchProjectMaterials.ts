@@ -5,21 +5,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PostgrestError } from '@supabase/supabase-js'
 import { CourseDocument } from '~/types/courseMaterials'
 
-// import { CourseDocument } from 'components/UIUC-Components/MantineYourMaterialsTable.tsx'
-
 export const config = {
   runtime: 'edge',
 }
-
-// interface CourseDocument {
-//     course_name: string
-//     readable_filename: string
-//     url: string
-//     s3_path: string
-//     created_at: string
-//     base_url: string
-//     doc_groups: { name: string }[];
-// }
 
 /**
  * API handler to delete an API key for a user.
