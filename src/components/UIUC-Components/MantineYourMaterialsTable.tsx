@@ -160,7 +160,6 @@ export function MantineYourMaterialsTable({
       const totalCount = data.total_count;
 
       setTotalDocuments(totalCount);
-      setMaterials([]); // Clear the documents when the page changes
       setMaterials(documents);
   
       const document_groups_response = await fetch('/api/documentGroups', {
@@ -220,25 +219,6 @@ export function MantineYourMaterialsTable({
   const [debouncedQuery] = useDebouncedValue(query, 200)
   const [modalOpened, setModalOpened] = useState(false)
   const [recordsToDelete, setRecordsToDelete] = useState<CourseDocument[]>([])
-
-  useEffect(() => {
-    if (debouncedQuery !== '') {
-      const lowerCaseDebouncedQuery = debouncedQuery.trim().toLowerCase()
-      setMaterials(
-        course_materials.filter(({ readable_filename, url, base_url }) => {
-          return (
-            `${readable_filename}`
-              .toLowerCase()
-              .includes(lowerCaseDebouncedQuery) ||
-            `${url}`.toLowerCase().includes(lowerCaseDebouncedQuery) ||
-            `${base_url}`.toLowerCase().includes(lowerCaseDebouncedQuery)
-          )
-        }),
-      )
-    } else {
-      setMaterials(course_materials)
-    }
-  }, [debouncedQuery, course_materials])
 
   const handleDelete = async (recordsToDelete: CourseDocument[]) => {
     try {
