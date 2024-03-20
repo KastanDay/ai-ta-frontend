@@ -104,7 +104,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
   })
 
   const { data: documents, refetch: refetchDocuments } = useQuery(
-    [page],
+    ['documents', page],
     async () => {
       try {
         console.log('Fetching documents for page: ', page)
