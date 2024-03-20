@@ -23,7 +23,6 @@ import {
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
-const useStyles = createStyles((theme) => ({}))
 
 import { useAuth, useUser } from '@clerk/nextjs'
 
@@ -34,21 +33,18 @@ export const GetCurrentPageName = () => {
 
 const MakeOldCoursePage = ({
   course_name,
-  course_data,
+  metadata,
+  current_email,
 }: {
   course_name: string
-  course_data: Array<any>
+  metadata: CourseMetadata
+  current_email: string
 }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   // const { classes, } = useStyles()
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
   // const { isSignedIn, user } = useUser()
-  const clerk_user = useUser()
-  const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
-    null,
-  )
   const [bannerUrl, setBannerUrl] = useState<string>('')
-  const [currentEmail, setCurrentEmail] = useState('')
 
   const router = useRouter()
 
@@ -57,32 +53,22 @@ const MakeOldCoursePage = ({
   // TODO: remove this hook... we should already have this from the /materials props???
   useEffect(() => {
     const fetchData = async () => {
-      const userEmail = extractEmailsFromClerk(clerk_user.user)
-      setCurrentEmail(userEmail[0] as string)
-
       try {
-        const metadata: CourseMetadata = (await fetchCourseMetadata(
-          currentPageName,
-        )) as CourseMetadata
-
-        if (metadata && metadata.is_private) {
-          metadata.is_private = JSON.parse(
-            metadata.is_private as unknown as string,
-          )
+        if (metadata == null) {
+          console.error('No metadata found for course')
+          return
         }
-
         // fetch banner image url
         if (metadata?.banner_image_s3 && metadata.banner_image_s3 !== '') {
           console.log('Getting banner image: ', metadata.banner_image_s3)
           try {
             const url = await fetchPresignedUrl(metadata.banner_image_s3)
-            setBannerUrl(url)
+            setBannerUrl(url as string)
             console.log('Got banner image: ', url)
           } catch (error) {
             console.error('Error fetching banner image: ', error)
           }
         }
-        setCourseMetadata(metadata)
       } catch (error) {
         console.error(error)
         // alert('An error occurred while fetching course metadata. Please try again later.')
@@ -90,21 +76,13 @@ const MakeOldCoursePage = ({
     }
 
     fetchData()
-  }, [currentPageName, clerk_user.isLoaded])
-
-  if (!isLoaded || !courseMetadata) {
-    return (
-      <MainPageBackground>
-        <LoadingSpinner />
-      </MainPageBackground>
-    )
-  }
+  }, [metadata])
 
   // TODO: update this check to consider Admins & participants.
   if (
-    courseMetadata &&
-    currentEmail !== (courseMetadata.course_owner as string) &&
-    courseMetadata.course_admins.indexOf(currentEmail) === -1
+    metadata &&
+    current_email !== (metadata.course_owner as string) &&
+    metadata.course_admins.indexOf(current_email) === -1
   ) {
     router.replace(`/${course_name}/not_authorized`)
 
@@ -129,8 +107,8 @@ const MakeOldCoursePage = ({
           <Flex direction="column" align="center" w="100%">
             <EditCourseCard
               course_name={course_name}
-              current_user_email={currentEmail}
-              courseMetadata={courseMetadata}
+              current_user_email={current_email}
+              courseMetadata={metadata}
             />
 
             {/* Course files header/background */}
@@ -174,9 +152,7 @@ const MakeOldCoursePage = ({
               {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
             </div>
             <div className="flex w-[85%] flex-col items-center justify-center pb-2 pt-8">
-              {course_data && (
-                <MantineYourMaterialsTable course_materials={course_data} />
-              )}
+              {metadata && <MantineYourMaterialsTable course_name={course_name} />}
               {/* This is the old table view */}
               {/* <MyTableView course_materials={course_data} /> */}
 
@@ -211,9 +187,6 @@ interface CourseFile {
   base_url: string
 }
 
-interface CourseFilesListProps {
-  files: CourseFile[]
-}
 import { IconTrash } from '@tabler/icons-react'
 import { MainPageBackground } from './MainPageBackground'
 import { LoadingSpinner } from './LoadingSpinner'
@@ -225,6 +198,7 @@ import GlobalFooter from './GlobalFooter'
 import { montserrat_heading } from 'fonts'
 import MyTableView from './YourMaterialsTable'
 import { MantineYourMaterialsTable } from './MantineYourMaterialsTable'
+import { fetchPresignedUrl } from '~/utils/apiUtils'
 
 // const CourseFilesList = ({ files }: CourseFilesListProps) => {
 //   const router = useRouter()
@@ -369,57 +343,6 @@ import { MantineYourMaterialsTable } from './MantineYourMaterialsTable'
 // )
 // }
 
-async function fetchCourseMetadata(course_name: string) {
-  try {
-    const response = await fetch(
-      `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
-    )
-    console.log('REsponse received while fetching metadata:', response)
-    if (response.ok) {
-      const data = await response.json()
-      if (data.success === false) {
-        throw new Error(
-          data.message || 'An error occurred while fetching course metadata',
-        )
-      }
-      // Parse is_private field from string to boolean
-      if (
-        data.course_metadata &&
-        typeof data.course_metadata.is_private === 'string'
-      ) {
-        data.course_metadata.is_private =
-          data.course_metadata.is_private.toLowerCase() === 'true'
-      }
-      return data.course_metadata
-    } else {
-      throw new Error(
-        `Error fetching course metadata: ${
-          response.statusText || response.status
-        }`,
-      )
-    }
-  } catch (error) {
-    console.error('Error fetching course metadata:', error)
-    throw error
-  }
-}
-async function fetchPresignedUrl(
-  filePath: string,
-  // ResponseContentType: string,
-) {
-  try {
-    console.log('filePath', filePath)
-    // if filepath ends with .pdf, then ResponseContentType = 'application/pdf'
-    const response = await axios.post('/api/download', {
-      filePath,
-      // ResponseContentType,
-    })
-    return response.data.url
-  } catch (error) {
-    console.error('Error fetching presigned URL:', error)
-    return null
-  }
-}
 export const showToastOnFileDeleted = (
   theme: MantineTheme,
   was_error = false,

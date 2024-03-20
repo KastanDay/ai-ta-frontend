@@ -56,7 +56,7 @@ const useStyles = createStyles((theme) => ({
 }))
 
 interface CourseFilesListProps {
-  course_materials: CourseDocument[]
+  course_name: string
 }
 
 export async function getPresignedUrl(s3_path: string) {
@@ -81,7 +81,7 @@ type EnabledDocsState = {
 const PAGE_SIZE = 100
 
 export function MantineYourMaterialsTable({
-  course_materials,
+  course_name,
 }: CourseFilesListProps) {
   const { classes, theme } = useStyles()
   const colorScheme = useColorScheme()
@@ -145,6 +145,8 @@ export function MantineYourMaterialsTable({
       const from = (page - 1) * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
 
+      console.log("notuseeffectpage" + page)
+
       const response = await fetch(
         `/api/materialsTable/fetchProjectMaterials?from=${from}&to=${to}&course_name=${getCurrentPageName()}`
       );
@@ -202,6 +204,7 @@ export function MantineYourMaterialsTable({
   };
 
   useEffect(() => {
+    console.log("useeffectpage: " + page)
     fetchDocumentGroups(page); // Fetch the new documents for the current page
   }, [page]);
 
