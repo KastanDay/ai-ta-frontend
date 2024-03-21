@@ -152,7 +152,8 @@ const MakeOldCoursePage = ({
               {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
             </div>
             <div className="flex w-[85%] flex-col items-center justify-center pb-2 pt-8">
-              {metadata && <MantineYourMaterialsTable course_name={course_name} />}
+              {/* {metadata && <MantineYourMaterialsTable course_name={course_name} />} */}
+              {metadata && <KastanProjectFilesOnly course_name={course_name} />}
               {/* This is the old table view */}
               {/* <MyTableView course_materials={course_data} /> */}
 
@@ -197,9 +198,11 @@ import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
 import { montserrat_heading } from 'fonts'
 import MyTableView from './YourMaterialsTable'
-import { MantineYourMaterialsTable } from './MantineYourMaterialsTable'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
 import { ProjectFilesTable } from './ProjectFilesTable'
+import { KastanProjectFilesOnly } from './KastanProjectFilesOnly'
+
+// import { MantineYourMaterialsTable } from './MantineYourMaterialsTable'
 
 // const CourseFilesList = ({ files }: CourseFilesListProps) => {
 //   const router = useRouter()

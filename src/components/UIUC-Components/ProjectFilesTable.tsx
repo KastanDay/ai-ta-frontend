@@ -53,63 +53,81 @@ const PAGE_SIZE = 100
 export function ProjectFilesTable({ course_name }: { course_name: string }) {
   const { classes, theme } = useStyles()
   const queryClient = useQueryClient()
-  const [docGroups, setDocGroups] = useState<Set<DocumentGroup>>(new Set())
   const [documentGroupSearch, setDocumentGroupSearch] = useState('')
   const [selectedRecords, setSelectedRecords] = useState<CourseDocument[]>([])
   const [query, setQuery] = useState('')
   const [debouncedQuery] = useDebouncedValue(query, 200)
   const [modalOpened, setModalOpened] = useState(false)
   const [recordsToDelete, setRecordsToDelete] = useState<CourseDocument[]>([])
-  const [materials, setMaterials] = useState<CourseDocument[]>([])
   const [page, setPage] = useState(1)
-  const [totalDocuments, setTotalDocuments] = useState(0)
+  // const [materials, setMaterials] = useState<CourseDocument[]>([])
+  // const [totalDocuments, setTotalDocuments] = useState(0)
+  // const [docGroups, setDocGroups] = useState<Set<DocumentGroup>>(new Set())
 
   // ------------- Queries -------------
 
   const {
     data: documentGroups,
     refetch: refetchDocumentGroups,
-    isLoading: isLoadingDocuments,
-    isError: isErrorDocuments,
-  } = useQuery<CourseDocument[]>(['documentGroups', course_name], async () => {
-    try {
-      const response = await fetch('/api/documentGroups', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'getDocumentGroups',
-          courseName: course_name,
-        }),
-      })
-      console.log('response: ', response)
-      if (!response.ok) {
-        throw new Error('Network response was not ok')
-      }
-      const data = await response.json()
-      const docGroups = data.documents
+    isLoading: isLoadingDocumentGroups,
+    isError: isErrorDocumentGroups,
+  } = useQuery<CourseDocument[]>({
+    queryKey: ['documentGroups', course_name],
+    queryFn: async () => {
+      try {
+        const response = await fetch('/api/documentGroups', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'getDocumentGroups',
+            courseName: course_name,
+          }),
+        })
+        console.log('response: ', response)
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+        const data = await response.json()
+        const docGroups = data.documents
 
-      setDocGroups(docGroups)
-      return docGroups
-    } catch (error) {
-      console.error('Failed to fetch document groups:', error)
-      showNotification({
-        title: 'Error',
-        message: 'Failed to fetch document groups',
-        color: 'red',
-        icon: <IconTrash size={24} />,
-      })
-    }
+        // setDocGroups(docGroups)
+        return docGroups
+      } catch (error) {
+        console.error('Failed to fetch document groups:', error)
+        showNotification({
+          title: 'Error',
+          message: 'Failed to fetch document groups',
+          color: 'red',
+          icon: <IconTrash size={24} />,
+        })
+      }
+    },
   })
 
-  const { data: documents, refetch: refetchDocuments } = useQuery(
-    ['documents', page],
-    async () => {
+  const {
+    data: documents,
+    refetch: refetchDocuments,
+    isLoading: isLoadingDocuments,
+    isError: isErrorDocuments,
+  } = useQuery({
+    queryKey: ['documents', page],
+    keepPreviousData: true,
+    queryFn: async () => {
       try {
         console.log('Fetching documents for page: ', page)
         const from = (page - 1) * PAGE_SIZE
         const to = from + PAGE_SIZE - 1
+
+        console.log(
+          'Fetching documents for page: ',
+          page,
+          ' from:',
+          from,
+          ' to:',
+          to,
+        )
 
         const response = await fetch(
           `/api/materialsTable/fetchProjectMaterials?from=${from}&to=${to}&course_name=${course_name}`,
@@ -120,15 +138,14 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
         }
 
         const data = await response.json()
-        console.log('response_data: ' + data)
-        console.log(data)
-        const documents = data.final_docs
-        const totalCount = data.total_count
+        console.log('documents response_data: ', data)
+        // const documents = data.final_docs
+        // const totalCount = data.total_count
 
-        setTotalDocuments(totalCount)
-        setMaterials(documents)
-        console.log('documentGroups:', docGroups)
-        return documents
+        // setTotalDocuments(totalCount)
+        // setMaterials(documents)
+        // console.log('documentGroups:', docGroups)
+        return data
       } catch (error) {
         console.error('Failed to fetch documents:', error)
         showNotification({
@@ -139,7 +156,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
         })
       }
     },
-  )
+  })
 
   // ------------- Mutations -------------
 
@@ -512,53 +529,51 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
   //     }
   // }, [documents, docGroups, totalDocuments, course_name]);
 
-  useEffect(() => {
-    if (debouncedQuery !== '') {
-      const lowerCaseDebouncedQuery = debouncedQuery.trim().toLowerCase()
-      setMaterials(
-        (documents as CourseDocument[]).filter(
-          ({ readable_filename, url, base_url }) => {
-            return (
-              `${readable_filename}`
-                .toLowerCase()
-                .includes(lowerCaseDebouncedQuery) ||
-              `${url}`.toLowerCase().includes(lowerCaseDebouncedQuery) ||
-              `${base_url}`.toLowerCase().includes(lowerCaseDebouncedQuery)
-            )
-          },
-        ),
-      )
-    } else {
-      setMaterials(documents as CourseDocument[])
-    }
-  }, [debouncedQuery, documents])
+  // useEffect(() => {
+  //   // TODO: Refactor this
+  //   if (debouncedQuery !== '') {
+  //     const lowerCaseDebouncedQuery = debouncedQuery.trim().toLowerCase()
+  //     // setMaterials(
+  //     documents.final_docs = (documents as CourseDocument[]).filter(
+  //       ({ readable_filename, url, base_url }) => {
+  //         return (
+  //           `${readable_filename}`
+  //             .toLowerCase()
+  //             .includes(lowerCaseDebouncedQuery) ||
+  //           `${url}`.toLowerCase().includes(lowerCaseDebouncedQuery) ||
+  //           `${base_url}`.toLowerCase().includes(lowerCaseDebouncedQuery)
+  //         )
+  //       },
+  //     ),
+  //   }
+  // }, [debouncedQuery, documents])
 
-  useEffect(() => {
-    console.log(
-      'Invalidating documents query for page: ',
-      page,
-      ' docGroups:',
-      docGroups,
-    )
-    queryClient.invalidateQueries(['documents', course_name])
-    console.log(
-      'After invalidating documents query for page: ',
-      page,
-      ' docGroups:',
-      docGroups,
-    )
-  }, [page])
+  // useEffect(() => {
+  //   console.log(
+  //     'Invalidating documents query for page: ',
+  //     page,
+  //     ' docGroups:',
+  //     docGroups,
+  //   )
+  //   queryClient.invalidateQueries(['documents', course_name])
+  //   console.log(
+  //     'After invalidating documents query for page: ',
+  //     page,
+  //     ' docGroups:',
+  //     docGroups,
+  //   )
+  // }, [page])
 
   // ------------- Functions -------------
 
   // Logic to filter doc_groups based on the search query
   const filteredDocumentGroups = useMemo(() => {
-    return [...docGroups].filter((doc_group_obj) =>
+    return [...documentGroups].filter((doc_group_obj) =>
       doc_group_obj.name
         ?.toLowerCase()
         .includes(documentGroupSearch?.toLowerCase()),
     )
-  }, [docGroups, documentGroupSearch])
+  }, [documentGroups, documentGroupSearch])
 
   // Handle doc_group search change
   const handleDocumentGroupSearchChange = (
@@ -643,30 +658,32 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
       </ScrollArea>
 
       <DataTable
+        records={documents?.final_docs || null}
+        totalRecords={documents?.total_count || null}
+        page={page}
+        onPageChange={setPage}
+        fetching={isLoadingDocuments}
+        recordsPerPage={PAGE_SIZE}
+        loaderVariant="oval"
+        loaderColor="grape"
+        borderRadius="lg"
+        withColumnBorders
+        withBorder={true}
+        striped
+        highlightOnHover
+        height="80vh"
         rowStyle={(row) => {
           if (selectedRecords.includes(row)) {
             return { backgroundColor: 'hsla(280, 100%, 70%, 0.5)' }
           }
           return {}
         }}
-        page={page}
-        onPageChange={(p) => setPage(p)}
-        totalRecords={totalDocuments}
-        recordsPerPage={PAGE_SIZE}
-        borderRadius="lg"
-        withColumnBorders
-        withBorder={true}
-        striped
-        highlightOnHover
         style={{
           width: '100%',
         }}
-        // page={page} // TODO - Add pagination
-        height="80vh"
-        records={materials}
         columns={[
           {
-            accessor: 'Name',
+            accessor: 'NEW TABLE (Name)',
             render: ({ readable_filename }) =>
               readable_filename ? `${readable_filename}` : '',
             filter: (
@@ -745,7 +762,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
             render: (record) => (
               <Group position="apart" spacing="xs">
                 <MultiSelect
-                  data={[...docGroups].map((doc_group) => ({
+                  data={[...documentGroups].map((doc_group) => ({
                     value: doc_group.name || '',
                     label: doc_group.name || '',
                   }))}

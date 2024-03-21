@@ -1,4 +1,5 @@
 export interface CourseDocument {
+  id: string | undefined
   course_name: string
   readable_filename: string
   url: string
