@@ -124,7 +124,6 @@ const ToolsPage: NextPage = () => {
     <>
       <MakeToolsPage
         course_name={course_name as string}
-        course_data={courseData}
       />
     </>
   )

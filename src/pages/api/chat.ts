@@ -11,7 +11,6 @@ import {
 import wasm from '../../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module'
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
-import { getExtremePrompt } from './getExtremePrompt'
 import { getStuffedPrompt, getSystemPrompt } from './contextStuffingHelper'
 import { OpenAIModelID, OpenAIModels } from '~/types/openai'
 import { NextResponse } from 'next/server'
