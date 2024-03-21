@@ -73,15 +73,8 @@ export const GetCurrentPageName = () => {
   return useRouter().asPath.slice(1).split('/')[0] as string
 }
 
-const MakeToolsPage = ({
-  course_name,
-  course_data,
-}: {
-  course_name: string
-  course_data: any
-}) => {
+const MakeToolsPage = ({ course_name }: { course_name: string }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  const { classes } = useStyles()
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
   // const { isSignedIn, user } = useUser()
   const clerk_user = useUser()
@@ -89,13 +82,47 @@ const MakeToolsPage = ({
     null,
   )
   const [currentEmail, setCurrentEmail] = useState('')
-
   const [n8nApiKey, setN8nApiKey] = useState('')
-  const [tempApiKey, setTempApiKey] = useState('') // Temporary state for input
-  const handleSaveApiKey = () => {
-    setN8nApiKey(tempApiKey) // Update n8nApiKey with the temporary value
-    logApiToSupabase()
-    setTempApiKey('')
+
+  const handleSaveApiKey = async () => {
+    console.log('Saving n8n API Key:', n8nApiKey)
+    const response = await fetch(`/api/UIUC-api/upsertN8nAPIKey`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        course_name: currentPageName,
+        n8n_api_key: n8nApiKey,
+      }),
+    })
+    if (response.ok) {
+      notifications.show({
+        id: 'n8n-api-key-saved',
+        title: 'Success',
+        message: 'n8n API Key saved successfully!',
+        autoClose: 10000,
+        color: 'green',
+        radius: 'lg',
+        icon: <IconCheck />,
+        className: 'my-notification-class',
+        style: { backgroundColor: '#15162c' },
+        loading: false,
+      })
+    } else {
+      notifications.show({
+        id: 'error-notification',
+        title: 'Error',
+        message: 'Failed to save n8n API Key. Please try again later.',
+        autoClose: 10000,
+        color: 'red',
+        radius: 'lg',
+        icon: <IconAlertCircle />,
+        className: 'my-notification-class',
+        style: { backgroundColor: '#15162c' },
+        loading: false,
+      })
+    }
     setIsLoading(false)
   }
   const router = useRouter()
@@ -181,26 +208,9 @@ const MakeToolsPage = ({
     )
   }
 
-  // Log api to Supabase
-  const logApiToSupabase = async () => {
-    try {
-      const response = await fetch(`/api/UIUC-api/logN8NapiToSupabase`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          course_name: currentPageName,
-          n8n_api_key: n8nApiKey,
-        }),
-      })
-      const data = await response.json()
-      // return data.success
-    } catch (error) {
-      console.error('Error setting course data:', error)
-      // return false
-    }
-  }
+  // const upsertN8nApiKey = async (newN8nApiKey: string) => {
+
+  // }
 
   // Remember to call logApiToSupabase() where it's needed in your component
 
@@ -366,14 +376,13 @@ const MakeToolsPage = ({
                 label="n8n API Key"
                 description="We use this to run your workflows. You can find your n8n API Key in your n8n account settings."
                 placeholder="Enter your n8n API Key here"
-                value={tempApiKey}
-                onChange={(event) => setTempApiKey(event.currentTarget.value)}
+                value={n8nApiKey}
+                onChange={(event) => setN8nApiKey(event.currentTarget.value)}
                 className={`${montserrat_paragraph.variable} font-montserratParagraph`}
               />
               <div className="pt-2" />
               <Button
-                onClick={(event) => handleSaveApiKey()} // TODO
-                // onClick={() => upsertApiKey()} // TODO
+                onClick={(event) => handleSaveApiKey()}
                 className="bg-purple-800 hover:border-indigo-600 hover:bg-indigo-600"
                 type="submit"
                 disabled={isLoading}
@@ -549,7 +558,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                     }
                   })
                 }
-                className="btn btn-circle cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
+                className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
@@ -574,7 +583,7 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                     file.course_name as string,
                   )
                 }
-                className="btn btn-circle cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
+                className="btn-circle btn cursor-pointer items-center justify-center border-0 bg-transparent transition duration-200 ease-in-out"
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]

@@ -5,11 +5,11 @@ export const config = {
   runtime: 'edge',
 }
 
-export default async function upsertN8nAPIKey(
-  req: NextRequest,
-  res: NextResponse,
-) {
-  const { course_name, n8n_api_key } = await req.json()
+export default async function handler(req: NextRequest, res: NextResponse) {
+  console.log('in upsertN8nAPIKey')
+  const requestBody = await req.json()
+  console.log('upsertN8nAPIKey course_name and n8n_api_key:', requestBody)
+  const { course_name, n8n_api_key } = requestBody
   if (!course_name || !n8n_api_key) {
     return new NextResponse(
       JSON.stringify({
@@ -21,9 +21,13 @@ export default async function upsertN8nAPIKey(
   }
   const { data, error } = await supabase
     .from('projects')
-    .update({ n8n_api_key: n8n_api_key })
+    .upsert({
+      n8n_api_key: n8n_api_key,
+      course_name: course_name,
+    })
     .eq('course_name', course_name)
     .select()
+  console.log('upsertN8nAPIKey data:', data)
 
   if (error) {
     console.error('Error upserting N8n key to Supabase:', error)
