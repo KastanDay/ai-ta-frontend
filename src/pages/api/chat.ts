@@ -77,6 +77,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
     if (typeof messages[messages.length - 1]?.content === 'string') {
       search_query = messages[messages.length - 1]?.content as string
     } else {
+      // Extract image description...
       search_query = (messages[messages.length - 1]?.content as Content[])
         .map((c) => c.text || '')
         .join(' ')
@@ -85,25 +86,13 @@ const handler = async (req: Request): Promise<NextResponse> => {
     const contexts_arr = messages[messages.length - 1]
       ?.contexts as ContextWithMetadata[]
 
-    if (course_name == 'extreme' || course_name == 'zotero-extreme') {
-      console.log('CONTEXT STUFFING FOR /extreme and /zotero-extreme slugs')
-      promptToSend = await getExtremePrompt(course_name, search_query).catch(
-        (err) => {
-          console.log(
-            'ERROR IN FETCH CONTEXT CALL for EXTREME prompt stuffing, defaulting to NO PROMPT STUFFING :( SAD!',
-            err,
-          )
-          return search_query
-        },
-      )
-      console.log('EXTREME STUFFED PROMPT\n:', promptToSend)
-    } else if (course_name == 'gpt4') {
-      console.log('NO CONTEXT STUFFING FOR /chat slug')
-    }
     // else if (course_name == 'global' || course_name == 'search-all') {
     // todo
     // }
-    else if (!isImage) {
+
+    if (course_name == 'gpt4') {
+      console.log('NO CONTEXT STUFFING FOR /chat slug')
+    } else if (!isImage) {
       // regular context stuffing
       const stuffedPrompt = (await getStuffedPrompt(
         course_name,
