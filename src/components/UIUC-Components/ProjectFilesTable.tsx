@@ -9,15 +9,11 @@ import {
   MultiSelect,
   TextInput,
   Text,
-  createStyles,
   Paper,
   Center,
-  Table,
-  Switch,
   Stack,
   Image,
 } from '@mantine/core'
-import { useDebouncedValue } from '@mantine/hooks'
 import { IconEye, IconTrash, IconX } from '@tabler/icons-react'
 import { DataTable } from 'mantine-datatable'
 import { useState } from 'react'
@@ -25,9 +21,16 @@ import axios from 'axios'
 import { showNotification } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
 
-import { CourseDocument, DocumentGroup } from 'src/types/courseMaterials'
+import { CourseDocument } from 'src/types/courseMaterials'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
+import {
+  useAppendToDocGroup,
+  useCreateDocumentGroup,
+  useGetDocumentGroups,
+  useRemoveFromDocGroup,
+  useUpdateDocGroup,
+} from '~/hooks/docGroupsQueries'
 
 const GlobalStyle = createGlobalStyle`
 // these mantine class names may change in future versions
@@ -56,11 +59,20 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
   const [recordsToDelete, setRecordsToDelete] = useState<CourseDocument[]>([])
   const [page, setPage] = useState(1)
 
+  // TODO: I think this is only available in V5>??? Not sure. Why are we on the old V4!!!!
+  // const { mutate: appendToDocGroup, isLoading, isError, error } = useAppendToDocGroup(course_name);
+  const getDocumentGroups = useGetDocumentGroups(course_name)
+  const createDocumentGroup = useCreateDocumentGroup(course_name)
+  const appendToDocGroup = useAppendToDocGroup(course_name)
+  const removeFromDocGroup = useRemoveFromDocGroup(course_name)
+  const updateDocGroup = useUpdateDocGroup(course_name)
+
   // ------------- Queries -------------
   const {
     data: documents,
     isLoading: isLoadingDocuments,
     isError: isErrorDocuments,
+    error: documentsError,
     refetch: refetchDocuments,
   } = useQuery({
     queryKey: ['documents', page],
@@ -93,7 +105,45 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     },
   })
 
+  const {
+    data: documentGroups,
+    isLoading: isLoadingDocumentGroups,
+    isError: isErrorDocumentGroups,
+    refetch: refetchDocumentGroups,
+  } = useGetDocumentGroups(course_name)
+
   // ------------- Mutations -------------
+
+  function handleDocumentGroupsChange(
+    record: any,
+    newSelectedGroups: string[],
+  ) {
+    const doc_groups = record.doc_groups ? record.doc_groups : []
+
+    const removedGroups = doc_groups.filter(
+      (group: any) => !newSelectedGroups.includes(group),
+    )
+    const appendedGroups = newSelectedGroups.filter(
+      (group) => !doc_groups.includes(group),
+    )
+
+    if (removedGroups.length > 0) {
+      for (const removedGroup of removedGroups) {
+        removeFromDocGroup.mutate({
+          record,
+          removedGroup,
+        })
+      }
+    }
+    if (appendedGroups.length > 0) {
+      for (const appendedGroup of appendedGroups) {
+        appendToDocGroup.mutate({
+          record,
+          appendedGroup,
+        })
+      }
+    }
+  }
 
   const deleteDocumentMutation = useMutation(
     async (recordsToDelete: CourseDocument[]) => {
@@ -148,27 +198,6 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     },
   )
 
-  // ------------- UseEffects -------------
-
-  // useEffect(() => {
-  //   // TODO: What is this for???
-  //   if (debouncedQuery !== '') {
-  //     const lowerCaseDebouncedQuery = debouncedQuery.trim().toLowerCase()
-  //     // setMaterials(
-  //     documents.final_docs = (documents as CourseDocument[]).filter(
-  //       ({ readable_filename, url, base_url }) => {
-  //         return (
-  //           `${readable_filename}`
-  //             .toLowerCase()
-  //             .includes(lowerCaseDebouncedQuery) ||
-  //           `${url}`.toLowerCase().includes(lowerCaseDebouncedQuery) ||
-  //           `${base_url}`.toLowerCase().includes(lowerCaseDebouncedQuery)
-  //         )
-  //       },
-  //     ),
-  //   }
-  // }, [debouncedQuery, documents])
-
   if (isErrorDocuments) {
     showNotification({
       title: 'Error',
@@ -189,7 +218,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
         totalRecords={documents?.total_count}
         page={page}
         onPageChange={setPage}
-        fetching={isLoadingDocuments}
+        fetching={isLoadingDocuments || isLoadingDocumentGroups}
         recordsPerPage={PAGE_SIZE}
         loaderVariant="oval"
         loaderColor="grape"
@@ -208,12 +237,10 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
               be on fire 🔥
             </Text>
             <Image
-              // width={"20vw"}
               style={{ minWidth: 300, maxWidth: '30vw' }}
               radius="md"
               src="https://assets.kastan.ai/this-is-fine.jpg"
               alt="No data found"
-              // style={{ filter: 'grayscale(1)' }}
             />
             <Text c="dimmed" size="md">
               So.. please try again later.
@@ -308,56 +335,71 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
             title: 'Document Groups',
             width: 200, // Increase this value to make the column wider
             render: (record) => (
-              <Text>Hi there</Text>
-              // <Group position="apart" spacing="xs">
-              //   <MultiSelect
-              //     data={[...documentGroups].map((doc_group) => ({
-              //       value: doc_group.name || '',
-              //       label: doc_group.name || '',
-              //     }))}
-              //     value={record.doc_groups ? record.doc_groups : []}
-              //     placeholder="Select Group"
-              //     searchable
-              //     nothingFound="No options"
-              //     creatable
-              //     getCreateLabel={(query) => `+ Create ${query}`}
-              //     onCreate={(doc_group_name) => {
-              //       createDocumentGroupMutation.mutate({ doc_group_name })
-              //       return { value: doc_group_name, label: doc_group_name }
-              //     }}
-              //     onChange={async (newSelectedGroups) => {
-              //       const doc_groups = record.doc_groups
-              //         ? record.doc_groups
-              //         : []
+              <Group position="apart" spacing="xs">
+                <MultiSelect
+                  data={
+                    documentGroups && documentGroups.length > 0
+                      ? [...documentGroups].map((doc_group) => ({
+                          value: doc_group.name || '',
+                          label: doc_group.name || '',
+                        }))
+                      : [
+                          {
+                            value: 'loading',
+                            label: 'Loading groups...',
+                            disabled: true,
+                          },
+                        ]
+                  }
+                  value={record.doc_groups ? record.doc_groups : []}
+                  placeholder={
+                    documentGroups && documentGroups.length > 0
+                      ? 'Select Group'
+                      : 'Loading...'
+                  }
+                  searchable={documentGroups && documentGroups.length > 0}
+                  nothingFound="No options"
+                  creatable={documentGroups && documentGroups.length > 0}
+                  getCreateLabel={(query) => `+ Create ${query}`}
+                  onCreate={(doc_group_name) => {
+                    createDocumentGroup.mutate({ doc_group_name })
+                    return { value: doc_group_name, label: doc_group_name }
+                  }}
+                  onChange={(newSelectedGroups) =>
+                    handleDocumentGroupsChange(record, newSelectedGroups)
+                  }
+                  // MOVED onChange into function, just for cleanliness.
+                  // onChange={async (newSelectedGroups) => {
+                  //   const doc_groups = record.doc_groups ? record.doc_groups : []
 
-              //       const removedGroups = doc_groups.filter(
-              //         (group) => !newSelectedGroups.includes(group),
-              //       )
-              //       const appendedGroups = newSelectedGroups.filter(
-              //         (group) => !doc_groups.includes(group),
-              //       )
+                  //   const removedGroups = doc_groups.filter(
+                  //     (group) => !newSelectedGroups.includes(group),
+                  //   )
+                  //   const appendedGroups = newSelectedGroups.filter(
+                  //     (group) => !doc_groups.includes(group),
+                  //   )
 
-              //       if (removedGroups.length > 0) {
-              //         for (const removedGroup of removedGroups) {
-              //           removeDocumentGroupMutation.mutate({
-              //             record,
-              //             removedGroup,
-              //           })
-              //         }
-              //       }
-              //       if (appendedGroups.length > 0) {
-              //         for (const appendedGroup of appendedGroups) {
-              //           appendDocumentGroupMutation.mutate({
-              //             record,
-              //             appendedGroup,
-              //           })
-              //         }
-              //       }
-              //     }}
-              //     // onChange={(newSelectedGroups) => handleDocumentGroupsChange(record, newSelectedGroups)}
-              //     sx={{ flex: 1, width: '100%' }}
-              //   />
-              // </Group>
+                  //   if (removedGroups.length > 0) {
+                  //     for (const removedGroup of removedGroups) {
+                  //       removeFromDocGroup(course_name).mutate({
+                  //         record,
+                  //         removedGroup,
+                  //       })
+                  //     }
+                  //   }
+                  //   if (appendedGroups.length > 0) {
+                  //     for (const appendedGroup of appendedGroups) {
+                  //       useAppendToDocGroup(course_name).mutate({
+                  //         record,
+                  //         appendedGroup,
+                  //       })
+                  //     }
+                  //   }
+                  // }}
+                  disabled={!documentGroups || documentGroups.length === 0}
+                  sx={{ flex: 1, width: '100%' }}
+                />
+              </Group>
             ),
           },
           {
