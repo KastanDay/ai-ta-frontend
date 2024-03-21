@@ -1,10 +1,7 @@
 import { QueryClient, useMutation, useQuery } from '@tanstack/react-query'
 import { CourseDocument, DocumentGroup } from '~/types/courseMaterials'
 
-export function useGetDocumentGroups(
-  course_name: string,
-  queryClient: QueryClient,
-) {
+export function useGetDocumentGroups(course_name: string) {
   // USAGE:
   // const {
   //   data: documentGroups,
@@ -34,16 +31,7 @@ export function useGetDocumentGroups(
       const data = await response.json()
       const docGroups = data.documents
 
-      // setDocGroups(docGroups)
       return docGroups as DocumentGroup[]
-      //     } catch (error) {
-      //         console.error('Failed to fetch document groups:', error)
-      //         showNotification({
-      //             title: 'Error',
-      //             message: 'Failed to fetch document groups',
-      //             color: 'red',
-      //             icon: <IconTrash size={ 24} />,
-      //   })
     },
   })
 }
@@ -76,6 +64,7 @@ export function useCreateDocumentGroup(
       // Optimistically update the cache
       onMutate: async ({ doc_group_name }) => {
         await queryClient.cancelQueries(['documentGroups', course_name])
+        await queryClient.cancelQueries(['documents', course_name])
         const previousDocumentGroups = queryClient.getQueryData([
           'documentGroups',
           course_name,
@@ -113,13 +102,17 @@ export function useCreateDocumentGroup(
           },
         )
 
-        return { previousDocumentGroups }
+        return { previousDocumentGroups, previousDocuments }
       },
       onError: (err, variables, context) => {
         // Rollback on error
         queryClient.setQueryData(
           ['documentGroups', course_name],
           context?.previousDocumentGroups,
+        )
+        queryClient.setQueryData(
+          ['documents', course_name],
+          context?.previousDocuments,
         )
       },
       onSettled: () => {
@@ -163,6 +156,7 @@ export function useAppendToDocGroup(
     // Optimistically update the cache
     onMutate: async ({ record, appendedGroup }) => {
       await queryClient.cancelQueries(['documentGroups', course_name])
+      await queryClient.cancelQueries(['documents', course_name])
       const previousDocumentGroups = queryClient.getQueryData([
         'documentGroups',
         course_name,
@@ -260,6 +254,7 @@ export function useRemoveFromDocGroup(
       // Optimistically update the cache
       onMutate: async ({ record, removedGroup }) => {
         await queryClient.cancelQueries(['documentGroups', course_name])
+        await queryClient.cancelQueries(['documents', course_name])
         const previousDocumentGroups = queryClient.getQueryData([
           'documentGroups',
           course_name,
@@ -298,13 +293,17 @@ export function useRemoveFromDocGroup(
             })
           },
         )
-        return { previousDocumentGroups }
+        return { previousDocumentGroups, previousDocuments }
       },
       onError: (err, variables, context) => {
         // Rollback on error
         queryClient.setQueryData(
           ['documentGroups', course_name],
           context?.previousDocumentGroups,
+        )
+        queryClient.setQueryData(
+          ['documents', course_name],
+          context?.previousDocuments,
         )
       },
       onSettled: () => {
