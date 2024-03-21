@@ -116,6 +116,10 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
 
   useEffect(() => {
     const fetchWorkflows = async () => {
+      if (!n8nApiKey) {
+        console.log('n8nApiKey is not set. Skipping API call.')
+        return
+      }
       console.log('before fetch:')
       const response = await fetch(
         `/api/UIUC-api/tools/getN8nWorkflows?api_key=${n8nApiKey}&limit=${limit}&pagination=${pagination}`,
@@ -158,7 +162,7 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
       setIsLoading(false)
     }
     fetchWorkflows()
-  }, [n8nApiKey, page, limit, pagination])
+  }, [n8nApiKey, limit, pagination])
 
   if (isLoading) {
     return <div>Loading...</div>

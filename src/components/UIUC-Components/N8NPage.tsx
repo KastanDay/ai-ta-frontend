@@ -62,6 +62,7 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
         n8n_api_key: n8nApiKey,
       }),
     })
+
     if (response.ok) {
       notifications.show({
         id: 'n8n-api-key-saved',
@@ -91,6 +92,30 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
     }
     setIsLoading(false)
   }
+
+  useEffect(() => {
+    const getApiFromSupabase = async () => {
+      try {
+        const response = await fetch(`/api/UIUC-api/getN8NapiFromSupabase`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            course_name: currentPageName,
+          }),
+        })
+        const data = await response.json()
+        console.log('data!!!', data)
+        setN8nApiKey(data.api_key[0].n8n_api_key)
+        // return data.success
+      } catch (error) {
+        console.error('Error getting course data:', error)
+        // return false
+      }
+    }
+    getApiFromSupabase()
+  }, [])
 
   // TODO: use react query hook?
   useEffect(() => {
