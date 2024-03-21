@@ -12,22 +12,15 @@ import {
   createStyles,
   Paper,
   Center,
-  ScrollArea,
   Table,
   Switch,
   Stack,
   Image,
 } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
-import {
-  IconEye,
-  IconMoodSad,
-  IconSearch,
-  IconTrash,
-  IconX,
-} from '@tabler/icons-react'
+import { IconEye, IconTrash, IconX } from '@tabler/icons-react'
 import { DataTable } from 'mantine-datatable'
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 import axios from 'axios'
 import { showNotification } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
@@ -61,7 +54,6 @@ export function KastanProjectFilesOnly({
   course_name: string
 }) {
   const queryClient = useQueryClient()
-  const [documentGroupSearch, setDocumentGroupSearch] = useState('')
   const [selectedRecords, setSelectedRecords] = useState<CourseDocument[]>([])
   const [query, setQuery] = useState('')
   const [modalOpened, setModalOpened] = useState(false)
@@ -71,53 +63,37 @@ export function KastanProjectFilesOnly({
   // ------------- Queries -------------
   const {
     data: documents,
-    refetch: refetchDocuments,
     isLoading: isLoadingDocuments,
     isError: isErrorDocuments,
+    refetch: refetchDocuments,
   } = useQuery({
     queryKey: ['documents', page],
     keepPreviousData: true,
     queryFn: async () => {
-      try {
-        console.log('Fetching documents for page: ', page)
-        const from = (page - 1) * PAGE_SIZE
-        const to = from + PAGE_SIZE - 1
+      console.log('Fetching documents for page: ', page)
+      const from = (page - 1) * PAGE_SIZE
+      const to = from + PAGE_SIZE - 1
 
-        console.log(
-          'Fetching documents for page: ',
-          page,
-          ' from:',
-          from,
-          ' to:',
-          to,
-        )
+      console.log(
+        'Fetching documents for page: ',
+        page,
+        ' from:',
+        from,
+        ' to:',
+        to,
+      )
 
-        const response = await fetch(
-          `/api/materialsTable/fetchProjectMaterials?from=${from}&to=${to}&course_name=${course_name}`,
-        )
+      const response = await fetch(
+        `/api/materialsTable/fetchProjectMaterials?from=${from}&to=${to}&course_name=${course_name}`,
+      )
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch document groups')
-        }
-
-        const data = await response.json()
-        console.log('documents response_data: ', data)
-        // const documents = data.final_docs
-        // const totalCount = data.total_count
-
-        // setTotalDocuments(totalCount)
-        // setMaterials(documents)
-        // console.log('documentGroups:', docGroups)
-        return data
-      } catch (error) {
-        console.error('Failed to fetch documents:', error)
-        showNotification({
-          title: 'Error',
-          message: 'Failed to fetch documents',
-          color: 'red',
-          icon: <IconTrash size={24} />,
-        })
+      if (!response.ok) {
+        throw new Error('Failed to fetch document groups')
       }
+
+      const data = await response.json()
+      console.log('Fetched documents:', data)
+      return data
     },
   })
 
@@ -179,7 +155,7 @@ export function KastanProjectFilesOnly({
   // ------------- UseEffects -------------
 
   // useEffect(() => {
-  //   // TODO: Refactor this
+  //   // TODO: What is this for???
   //   if (debouncedQuery !== '') {
   //     const lowerCaseDebouncedQuery = debouncedQuery.trim().toLowerCase()
   //     // setMaterials(
@@ -211,7 +187,6 @@ export function KastanProjectFilesOnly({
   return (
     <>
       <GlobalStyle />
-
       <DataTable
         records={documents?.final_docs}
         // records={[]}
@@ -442,8 +417,10 @@ export function KastanProjectFilesOnly({
             setSelectedRecords([])
           }
         }}
+        // Accessor not necessary when documents have an `id` property
         // idAccessor={(row: any) => (row.url ? row.url : row.s3_path)}
-      />
+      />{' '}
+      {/* End DataTable */}
       <Paper
         my="sm"
         py="sm"
@@ -525,22 +502,12 @@ function errorStateForProjectFilesTable() {
   return (
     <DataTable
       records={[]}
-      // records={documents?.final_docs}
-      // totalRecords={documents?.total_count}
-      // page={page}
-      // onPageChange={setPage}
-      // fetching={isLoadingDocuments}
-      // recordsPerPage={PAGE_SIZE}
-
-      loaderVariant="oval"
-      loaderColor="grape"
       borderRadius="lg"
       withColumnBorders
       withBorder={true}
       striped
       highlightOnHover
       height="80vh"
-      // emptyState={
       // Error state:
       noRecordsIcon={
         <Stack align="center" p={30}>
@@ -566,7 +533,7 @@ function errorStateForProjectFilesTable() {
       }}
       columns={[
         {
-          accessor: 'NEW TABLE (Name)',
+          accessor: 'Name',
         },
         {
           accessor: 'URL',
