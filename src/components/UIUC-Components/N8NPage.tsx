@@ -1,4 +1,12 @@
-import { Button, Title, Flex, List, Text, TextInput } from '@mantine/core'
+import {
+  Button,
+  Title,
+  Flex,
+  List,
+  Text,
+  TextInput,
+  Stack,
+} from '@mantine/core'
 
 import {
   IconAlertCircle,
@@ -266,8 +274,7 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
                       alignItems: 'center',
                     }}
                   >
-                    {' '}
-                    Create custom functions for your project
+                    LLM Tool Use &amp; Function Calling
                   </Title>
                 </div>
                 <div className="me-6 flex flex-row items-center justify-end">
@@ -281,100 +288,100 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
             </div>
 
             <div className="pt-5"></div>
-
-            <Title
-              order={4}
-              w={'80%'}
-              style={{ margin: '0 auto', textAlign: 'center' }}
-            >
-              Use{' '}
-              <a
-                href="https://n8n.io"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`text-purple-500 hover:underline ${montserrat_heading.variable} font-montserratHeading`}
-              >
-                n8n.io&apos;{' '}
-                <IconExternalLink
-                  className="mr-2 inline-block"
-                  style={{ position: 'relative', top: '-3px' }}
-                />
-              </a>
-              beautiful visual workflow editor to create custom functions for
-              your project.
-            </Title>
-
-            <div style={{ width: '60%', margin: '0 auto' }}>
+            <Stack>
               <Title
-                style={{ margin: '0 auto', textAlign: 'center' }}
                 order={4}
-                w={'80%'}
-                size={'xl'}
-                className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                w={'70%'}
+                style={{ margin: '0 auto', textAlign: 'center' }}
               >
-                Setup Instructions 🤠
+                Use{' '}
+                <a
+                  href="https://n8n.io"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`text-purple-500 hover:underline ${montserrat_heading.variable} font-montserratHeading`}
+                >
+                  n8n.io&apos;s{' '}
+                  <IconExternalLink
+                    className="mr-2 inline-block"
+                    style={{ position: 'relative', top: '-3px' }}
+                  />
+                </a>
+                beautiful visual workflow editor to create custom functions for
+                your project.
               </Title>
-              <List
-                w={'80%'}
-                type="ordered"
-                withPadding
-                className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-              >
-                <List.Item>
-                  First email us to get access to n8n. We will send you an
-                  invite.
-                </List.Item>
-                <List.Item>
-                  Create an account and store your password safely through{' '}
-                  <a
-                    href="https://primary-production-1817.up.railway.app/setup"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      color: '#8B5CF6',
-                      textDecoration: 'underline',
-                    }}
+
+              <div style={{ width: '60%', margin: '0 auto' }}>
+                <Title
+                  style={{ margin: '0 auto', textAlign: 'left' }}
+                  order={4}
+                  // w={'80%'}
+                  size={'xl'}
+                  className={`pb-3 pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                >
+                  Setup Instructions 🤠
+                </Title>
+                <List
+                  w={'80%'}
+                  type="ordered"
+                  withPadding
+                  className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                >
+                  <List.Item>
+                    Tool use via LLMs is invite-only to prevent abuse. Please
+                    shoot me an email for access: kvday2@illinois.edu
+                  </List.Item>
+                  <List.Item>
+                    Once you have access, please{' '}
+                    <b>
+                      <a
+                        href="https://primary-production-1817.up.railway.app/setup"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: '#8B5CF6',
+                          textDecoration: 'underline',
+                        }}
+                      >
+                        login with this link
+                      </a>
+                      .
+                    </b>
+                  </List.Item>
+                  <List.Item>
+                    Inside n8n, <b>create an n8n API key and save it below</b>.
+                  </List.Item>
+                </List>
+                <div className="pb-4">
+                  <TextInput
+                    label="n8n API Key"
+                    description="We use this to run your workflows. You can find your n8n API Key in your n8n account settings."
+                    placeholder="Enter your n8n API Key here"
+                    value={n8nApiKey}
+                    onChange={(event) =>
+                      setN8nApiKey(event.currentTarget.value)
+                    }
+                    className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                  />
+                  <div className="pt-2" />
+                  <Button
+                    onClick={(event) => handleSaveApiKey()}
+                    className="bg-purple-800 hover:border-indigo-600 hover:bg-indigo-600"
+                    type="submit"
+                    disabled={isLoading}
                   >
-                    this link
-                  </a>
-                </List.Item>
-                <List.Item>
-                  Inside n8n, create an n8n API key and input it in the textbox
-                  below.
-                </List.Item>
-                <List.Item>
-                  Any workflow you create will be enabled by default in this
-                  project.
-                  <br />
-                </List.Item>
-                <List.Item>Check out your workflows below!</List.Item>
-              </List>
-            </div>
+                    {isLoading ? 'Saving...' : 'Save'}
+                  </Button>
+                </div>
+              </div>
+            </Stack>
+
             <N8nWorkflowsTable
               n8nApiKey={n8nApiKey}
               isLoading={isLoading}
+              course_name={course_name}
               fetchWorkflows={fetchWorkflows}
             />
-
-            <div style={{ width: '40%' }}>
-              <TextInput
-                label="n8n API Key"
-                description="We use this to run your workflows. You can find your n8n API Key in your n8n account settings."
-                placeholder="Enter your n8n API Key here"
-                value={n8nApiKey}
-                onChange={(event) => setN8nApiKey(event.currentTarget.value)}
-                className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-              />
-              <div className="pt-2" />
-              <Button
-                onClick={(event) => handleSaveApiKey()}
-                className="bg-purple-800 hover:border-indigo-600 hover:bg-indigo-600"
-                type="submit"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Saving...' : 'Save'}
-              </Button>
-            </div>
           </Flex>
         </div>
         <GlobalFooter />
