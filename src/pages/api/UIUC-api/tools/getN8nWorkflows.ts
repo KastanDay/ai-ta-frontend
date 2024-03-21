@@ -1,20 +1,33 @@
 // ingest.ts
 import { NextApiRequest, NextApiResponse } from 'next'
 import { WorkflowRecord } from '~/types/tools'
+import { supabase } from '~/utils/supabaseClient'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    let { api_key, limit, pagination } = req.query as {
+    let { course_name, api_key, limit, pagination } = req.query as {
+      course_name?: string
       api_key?: string
       limit?: string
       pagination?: string
     }
+    if (!course_name && !api_key) {
+      return res.status(400).json({
+        error: 'One of course_name OR api_key is required',
+      })
+    }
 
     if (!api_key) {
-      // Placeholder fetch request to getApiFromCourse if api_key is not provided
+      // getApiFromCourse if api_key is not provided
       const apiResponse = await fetch('http://localhost:8000/getApiFromCourse')
+
+      let { data: n8n_api_key, error } = await supabase
+        .from('projects')
+        .select('n8n_api_key')
+        .eq('course_name', course_name)
+
       const apiData = await apiResponse.json()
-      api_key = apiData.api_key // Assuming the response contains an api_key field
+      api_key = apiData.n8n_api_key
     }
 
     if (!limit) {
