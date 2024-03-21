@@ -31,6 +31,7 @@ import {
   useRemoveFromDocGroup,
   useUpdateDocGroup,
 } from '~/hooks/docGroupsQueries'
+import { LoadingSpinner } from './LoadingSpinner'
 
 const GlobalStyle = createGlobalStyle`
 // these mantine class names may change in future versions
@@ -61,11 +62,11 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
 
   // TODO: I think this is only available in V5>??? Not sure. Why are we on the old V4!!!!
   // const { mutate: appendToDocGroup, isLoading, isError, error } = useAppendToDocGroup(course_name);
-  const getDocumentGroups = useGetDocumentGroups(course_name)
-  const createDocumentGroup = useCreateDocumentGroup(course_name)
-  const appendToDocGroup = useAppendToDocGroup(course_name)
-  const removeFromDocGroup = useRemoveFromDocGroup(course_name)
-  const updateDocGroup = useUpdateDocGroup(course_name)
+  const getDocumentGroups = useGetDocumentGroups(course_name, queryClient)
+  const createDocumentGroup = useCreateDocumentGroup(course_name, queryClient)
+  const appendToDocGroup = useAppendToDocGroup(course_name, queryClient)
+  const removeFromDocGroup = useRemoveFromDocGroup(course_name, queryClient)
+  const updateDocGroup = useUpdateDocGroup(course_name, queryClient)
 
   // ------------- Queries -------------
   const {
@@ -75,7 +76,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     error: documentsError,
     refetch: refetchDocuments,
   } = useQuery({
-    queryKey: ['documents', page],
+    queryKey: ['documents', course_name, page],
     keepPreviousData: true,
     queryFn: async () => {
       console.log('Fetching documents for page: ', page)
@@ -110,7 +111,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     isLoading: isLoadingDocumentGroups,
     isError: isErrorDocumentGroups,
     refetch: refetchDocumentGroups,
-  } = useGetDocumentGroups(course_name)
+  } = useGetDocumentGroups(course_name, queryClient)
 
   // ------------- Mutations -------------
 
@@ -220,8 +221,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
         onPageChange={setPage}
         fetching={isLoadingDocuments || isLoadingDocumentGroups}
         recordsPerPage={PAGE_SIZE}
-        loaderVariant="oval"
-        loaderColor="grape"
+        customLoader={<LoadingSpinner />}
         borderRadius="lg"
         withColumnBorders
         withBorder={true}

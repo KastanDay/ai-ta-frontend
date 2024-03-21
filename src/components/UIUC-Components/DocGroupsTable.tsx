@@ -10,6 +10,7 @@ import {
   useGetDocumentGroups,
   useUpdateDocGroup,
 } from '~/hooks/docGroupsQueries'
+import { useQueryClient } from '@tanstack/react-query'
 
 const GlobalStyle = createGlobalStyle`
 // these mantine class names may change in future versions
@@ -29,16 +30,17 @@ const GlobalStyle = createGlobalStyle`
 `
 
 export function DocGroupsTable({ course_name }: { course_name: string }) {
+  const queryClient = useQueryClient()
   const [documentGroupSearch, setDocumentGroupSearch] = useState('')
 
-  const updateDocGroup = useUpdateDocGroup(course_name)
+  const updateDocGroup = useUpdateDocGroup(course_name, queryClient)
 
   const {
     data: documentGroups,
     isLoading: isLoadingDocumentGroups,
     isError: isErrorDocumentGroups,
     refetch: refetchDocumentGroups,
-  } = useGetDocumentGroups(course_name)
+  } = useGetDocumentGroups(course_name, queryClient)
 
   // Logic to filter doc_groups based on the search query
   const filteredDocumentGroups = useMemo(() => {
@@ -116,10 +118,8 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
                         })
                       // handleDocumentGroupsChange(doc_group_obj, event.currentTarget.checked)
                     }
-                    color="blue"
+                    color="grape"
                     size="lg"
-                    onLabel="Enabled"
-                    offLabel="Disabled"
                   />
                 </td>
               </tr>

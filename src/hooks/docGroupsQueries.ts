@@ -1,9 +1,10 @@
 import { QueryClient, useMutation, useQuery } from '@tanstack/react-query'
 import { CourseDocument, DocumentGroup } from '~/types/courseMaterials'
 
-const queryClient = new QueryClient()
-
-export function useGetDocumentGroups(course_name: string) {
+export function useGetDocumentGroups(
+  course_name: string,
+  queryClient: QueryClient,
+) {
   // USAGE:
   // const {
   //   data: documentGroups,
@@ -49,7 +50,10 @@ export function useGetDocumentGroups(course_name: string) {
 
 // ------------- Mutations -------------
 
-export function useCreateDocumentGroup(course_name: string) {
+export function useCreateDocumentGroup(
+  course_name: string,
+  queryClient: QueryClient,
+) {
   return useMutation(
     async ({ doc_group_name }: { doc_group_name: string }) => {
       const response = await fetch('/api/documentGroups', {
@@ -127,7 +131,10 @@ export function useCreateDocumentGroup(course_name: string) {
   )
 }
 
-export function useAppendToDocGroup(course_name: string) {
+export function useAppendToDocGroup(
+  course_name: string,
+  queryClient: QueryClient,
+) {
   return useMutation({
     mutationFn: async ({
       record,
@@ -192,13 +199,18 @@ export function useAppendToDocGroup(course_name: string) {
           })
         },
       )
-      return { previousDocumentGroups }
+      return { previousDocumentGroups, previousDocuments }
     },
     onError: (err, variables, context) => {
       // Rollback on error
       queryClient.setQueryData(
         ['documentGroups', course_name],
         context?.previousDocumentGroups,
+      )
+
+      queryClient.setQueryData(
+        ['documents', course_name],
+        context?.previousDocuments,
       )
     },
     onSettled: () => {
@@ -209,7 +221,10 @@ export function useAppendToDocGroup(course_name: string) {
   })
 }
 
-export function useRemoveFromDocGroup(course_name: string) {
+export function useRemoveFromDocGroup(
+  course_name: string,
+  queryClient: QueryClient,
+) {
   // USAGE:
   // removeFromDocGroup(course_name).mutate({
   //   record,
@@ -301,7 +316,10 @@ export function useRemoveFromDocGroup(course_name: string) {
   )
 }
 
-export function useUpdateDocGroup(course_name: string) {
+export function useUpdateDocGroup(
+  course_name: string,
+  queryClient: QueryClient,
+) {
   return useMutation(
     async ({
       doc_group_obj,
