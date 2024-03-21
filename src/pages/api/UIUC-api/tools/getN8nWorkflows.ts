@@ -19,15 +19,22 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (!api_key) {
       // getApiFromCourse if api_key is not provided
-      const apiResponse = await fetch('http://localhost:8000/getApiFromCourse')
 
-      let { data: n8n_api_key, error } = await supabase
+      let { data: data, error } = await supabase
         .from('projects')
         .select('n8n_api_key')
         .eq('course_name', course_name)
+        .single()
 
-      const apiData = await apiResponse.json()
-      api_key = apiData.n8n_api_key
+      if (error) {
+        return res.status(500).json({ error: error.message })
+      }
+      if (!data) {
+        return res
+          .status(404)
+          .json({ error: 'No project found for course_name' })
+      }
+      api_key = data.n8n_api_key
     }
 
     if (!limit) {
