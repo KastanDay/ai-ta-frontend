@@ -1,6 +1,5 @@
 // ingest.ts
 import { NextApiRequest, NextApiResponse } from 'next'
-import axios, { AxiosResponse } from 'axios'
 import { WorkflowRecord } from '~/types/tools'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -14,23 +13,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const parsedLimit = parseInt(limit)
     const parsedPagination = pagination.toLowerCase() === 'true'
 
-    console.log('api_key', api_key)
-    console.log('limit', limit)
-    console.log('pagination', pagination)
+    console.log('get n8nworkflows api_key', api_key)
+    console.log('get n8nworkflows limit', limit)
+    console.log('get n8nworkflows pagination', pagination)
 
-    // localhost: 8000 / getworkflows ? api_key = n8n_api_304b9f5f0836aba9a8aa1c20fafbebfff49b2e1f2c2191c764aad26b614a19c320b0ffa041c0785f & limit=10 & pagination=True
-    // const response: AxiosResponse = await axios.get(
-    //   // `https://flask-production-751b.up.railway.app/getworkflows`,
-    //   // ?api_key=n8n_api_304b9f5f0836aba9a8aa1c20fafbebfff49b2e1f2c2191c764aad26b614a19c320b0ffa041c0785f&limit=10&pagination=True
-    //   `http://localhost:8000/getworkflows`,
-    //   {
-    //     params: {
-    //       api_key: api_key,
-    //       limit: parsedLimit,
-    //       pagination: parsedPagination,
-    //     },
-    //   },
-    // )
     const response = await fetch(
       `http://localhost:8000/getworkflows?api_key=${api_key}&limit=${parsedLimit}&pagination=${parsedPagination}`,
     )
@@ -47,11 +33,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     console.log('simplifiedData', simplifiedData)
     const final_data = simplifiedData[0]
     return res.status(200).json(final_data)
-    // console.log('Getting to our /ingest endpoint', data);
-    // return data;
   } catch (error) {
     console.error(error)
-    return []
+    return res.status(500).json({
+      error: (error as Error).message || 'An unexpected error occurred',
+    })
   }
 }
 

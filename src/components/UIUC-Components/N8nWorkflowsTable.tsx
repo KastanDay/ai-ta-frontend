@@ -47,6 +47,7 @@ const PAGE_SIZE = 5
 interface N8nWorkflowsTableProps {
   n8nApiKey: string
   isLoading: boolean
+  course_name: string
 }
 
 const montserrat_med = Montserrat({
@@ -54,7 +55,10 @@ const montserrat_med = Montserrat({
   subsets: ['latin'],
 })
 
-export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
+export const N8nWorkflowsTable = ({
+  n8nApiKey,
+  course_name,
+}: N8nWorkflowsTableProps) => {
   const [page, setPage] = useState(1)
   const [records, setRecords] = useState<WorkflowRecord[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -211,77 +215,103 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
   }
   console.log('currentRecords b4 data:', currentRecords)
   return (
-    <DataTable
-      height={300}
-      withBorder
-      // keyField="id"
-      records={currentRecords}
-      columns={[
-        { accessor: 'id', width: 175 },
-        { accessor: 'name', width: 100 },
-        {
-          accessor: 'active',
-          width: 100,
-          render: (record, index) => (
-            <Switch
-              checked={record.active}
-              onChange={(event) => {
-                setRecords((prevRecords) =>
-                  prevRecords.map((record, idx) =>
-                    idx === index
-                      ? { ...record, active: event.target.checked }
-                      : record,
-                  ),
-                )
-                console.log('record:', record.id)
-                console.log('event:', event.target.checked)
-                handleActiveChange(record.id, event.target.checked)
-              }}
-            />
-          ),
-        },
-        {
-          accessor: 'tags',
-          width: 100,
-          render: (record, index) => {
-            return record.tags.map((tag) => tag.name).join(', ')
+    <>
+      <Title
+        order={3}
+        // w={'80%'}
+        // size={'xl'}
+        className={`pb-3 pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+      >
+        Your n8n tools
+      </Title>
+      <Text className="pb-2">
+        These tools can be automatically invoked by the LLM to fetch additional
+        data to answer user questions on the{' '}
+        <a
+          href={`/${course_name}/chat`}
+          // target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: '#8B5CF6',
+            textDecoration: 'underline',
+          }}
+        >
+          chat page
+        </a>
+        .
+      </Text>
+      <DataTable
+        height={300}
+        withBorder
+        // keyField="id"
+        records={currentRecords}
+        columns={[
+          { accessor: 'id', width: 175 },
+          { accessor: 'name', width: 100 },
+          {
+            accessor: 'active',
+            width: 100,
+            render: (record, index) => (
+              <Switch
+                checked={record.active}
+                onChange={(event) => {
+                  setRecords((prevRecords) =>
+                    prevRecords.map((record, idx) =>
+                      idx === index
+                        ? { ...record, active: event.target.checked }
+                        : record,
+                    ),
+                  )
+                  console.log('record:', record.id)
+                  console.log('event:', event.target.checked)
+                  handleActiveChange(record.id, event.target.checked)
+                }}
+              />
+            ),
           },
-        },
-        {
-          accessor: 'createdAt',
-          // textAlign: 'left',
-          width: 120,
-          render: (record, index) => {
-            const { createdAt } = record as { createdAt: Date }
-            return dayjs(createdAt).format('MMM D YYYY, h:mm A')
+          {
+            accessor: 'tags',
+            width: 100,
+            render: (record, index) => {
+              return record.tags.map((tag) => tag.name).join(', ')
+            },
           },
-        },
-        {
-          accessor: 'updatedAt',
-          // textAlign: 'left',
-          width: 120,
-          render: (record, index) => {
-            const { updatedAt } = record as { updatedAt: Date }
-            return dayjs(updatedAt).format('MMM D YYYY, h:mm A')
+          {
+            accessor: 'createdAt',
+            // textAlign: 'left',
+            width: 120,
+            render: (record, index) => {
+              const { createdAt } = record as { createdAt: Date }
+              return dayjs(createdAt).format('MMM D YYYY, h:mm A')
+            },
           },
-        },
-      ]}
-      // totalRecords={records.length}
-      totalRecords={records.length}
-      recordsPerPage={PAGE_SIZE}
-      page={page}
-      onPageChange={(p) => setPage(p)}
-      // 👇 uncomment the next line to use a custom pagination size
-      // paginationSize="md"
-      // 👇 uncomment the next line to use a custom loading text
-      loadingText="Loading..."
-      // 👇 uncomment the next line to display a custom text when no records were found
-      noRecordsText="No records found"
-      // 👇 uncomment the next line to use a custom pagination text
-      // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
-      // 👇 uncomment the next lines to use custom pagination colors
-      // paginationActiveBackgroundColor="green"
-      // paginationActiveTextColor="#e6e348"
-    />
+          {
+            accessor: 'updatedAt',
+            // textAlign: 'left',
+            width: 120,
+            render: (record, index) => {
+              const { updatedAt } = record as { updatedAt: Date }
+              return dayjs(updatedAt).format('MMM D YYYY, h:mm A')
+            },
+          },
+        ]}
+        // totalRecords={records.length}
+        totalRecords={records.length}
+        recordsPerPage={PAGE_SIZE}
+        page={page}
+        onPageChange={(p) => setPage(p)}
+        // 👇 uncomment the next line to use a custom pagination size
+        // paginationSize="md"
+        // 👇 uncomment the next line to use a custom loading text
+        loadingText="Loading..."
+        // 👇 uncomment the next line to display a custom text when no records were found
+        noRecordsText="No records found"
+        // 👇 uncomment the next line to use a custom pagination text
+        // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
+        // 👇 uncomment the next lines to use custom pagination colors
+        // paginationActiveBackgroundColor="green"
+        // paginationActiveTextColor="#e6e348"
+      />
+    </>
   )
 }

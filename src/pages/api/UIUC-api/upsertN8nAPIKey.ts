@@ -6,7 +6,6 @@ export const config = {
 }
 
 export default async function handler(req: NextRequest, res: NextResponse) {
-  console.log('in upsertN8nAPIKey')
   const requestBody = await req.json()
   console.log('upsertN8nAPIKey course_name and n8n_api_key:', requestBody)
   const { course_name, n8n_api_key } = requestBody
