@@ -153,7 +153,14 @@ const MakeOldCoursePage = ({
             </div>
             <div className="flex w-[85%] flex-col items-center justify-center pb-2 pt-8">
               {/* {metadata && <MantineYourMaterialsTable course_name={course_name} />} */}
-              {metadata && <KastanProjectFilesOnly course_name={course_name} />}
+              {metadata && (
+                <>
+                  <DocGroupsTable course_name={course_name} />
+                  <ProjectFilesTable course_name={course_name} />
+                </>
+              )}
+
+              {/* {metadata && } */}
               {/* This is the old table view */}
               {/* <MyTableView course_materials={course_data} /> */}
 
@@ -199,8 +206,8 @@ import GlobalFooter from './GlobalFooter'
 import { montserrat_heading } from 'fonts'
 import MyTableView from './YourMaterialsTable'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
+import { DocGroupsTable } from './DocGroupsTable'
 import { ProjectFilesTable } from './ProjectFilesTable'
-import { KastanProjectFilesOnly } from './KastanProjectFilesOnly'
 
 // import { MantineYourMaterialsTable } from './MantineYourMaterialsTable'
 
