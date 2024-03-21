@@ -17,7 +17,14 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { notifications } from '@mantine/notifications'
-import { createStyles, Group, TextInput, Title, Text } from '@mantine/core'
+import {
+  createStyles,
+  Group,
+  TextInput,
+  Title,
+  Text,
+  Switch,
+} from '@mantine/core'
 import axios from 'axios'
 import { showToastOnFileDeleted } from './MakeOldCoursePage'
 import { useRouter } from 'next/router'
@@ -56,6 +63,56 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
   // ) // !WARNING PUT IN YOUR API KEY HERE
   const [limit, setLimit] = useState(10)
   const [pagination, setPagination] = useState(true)
+
+  const handleActiveChange = async (id: string, checked: boolean) => {
+    // Make API call
+    console.log('id:', id)
+    console.log('checked:', checked)
+
+    const response = await fetch(
+      `/api/UIUC-api/tools/activateWorkflow?api_key=${n8nApiKey}&id=${id}&activate=${checked}`,
+    )
+
+    console.log('response:', response)
+    // Handle response
+    if (!response.ok) {
+      setRecords((prevRecords) =>
+        prevRecords.map((record) =>
+          record.id === id ? { ...record, active: !checked } : record,
+        ),
+      )
+      notifications.show({
+        id: 'error-notification',
+        withCloseButton: true,
+        closeButtonProps: { color: 'red' },
+        onClose: () => console.log('error unmounted'),
+        onOpen: () => console.log('error mounted'),
+        autoClose: 12000,
+        title: (
+          <Text size={'lg'} className={`${montserrat_med.className}`}>
+            Error with activation
+          </Text>
+        ),
+        message: (
+          <Text className={`${montserrat_med.className} text-neutral-200`}>
+            Unable to activate workflow. Please try again or refresh the page
+            and try again.
+          </Text>
+        ),
+        color: 'red',
+        radius: 'lg',
+        icon: <IconAlertCircle />,
+        className: 'my-notification-class',
+        style: {
+          backgroundColor: 'rgba(42,42,64,0.3)',
+          backdropFilter: 'blur(10px)',
+          borderLeft: '5px solid red',
+        },
+        withBorder: true,
+        loading: false,
+      })
+    }
+  }
 
   useEffect(() => {
     const fetchWorkflows = async () => {
@@ -96,7 +153,6 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
         return
       }
       const data = await response.json()
-      console.log(response)
 
       setRecords(data)
       setIsLoading(false)
@@ -162,7 +218,23 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
         {
           accessor: 'active',
           width: 100,
-          render: (record) => (record.active ? 'True' : 'False'),
+          render: (record, index) => (
+            <Switch
+              checked={record.active}
+              onChange={(event) => {
+                setRecords((prevRecords) =>
+                  prevRecords.map((record, idx) =>
+                    idx === index
+                      ? { ...record, active: event.target.checked }
+                      : record,
+                  ),
+                )
+                console.log('record:', record.id)
+                console.log('event:', event.target.checked)
+                handleActiveChange(record.id, event.target.checked)
+              }}
+            />
+          ),
         },
         {
           accessor: 'tags',
