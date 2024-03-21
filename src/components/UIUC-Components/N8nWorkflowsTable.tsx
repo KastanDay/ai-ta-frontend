@@ -47,6 +47,10 @@ const PAGE_SIZE = 5
 interface N8nWorkflowsTableProps {
   n8nApiKey: string
   isLoading: boolean
+  fetchWorkflows: (
+    limit: number,
+    pagination: boolean,
+  ) => Promise<WorkflowRecord[]>
 }
 
 const montserrat_med = Montserrat({
@@ -54,7 +58,10 @@ const montserrat_med = Montserrat({
   subsets: ['latin'],
 })
 
-export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
+export const N8nWorkflowsTable = ({
+  n8nApiKey,
+  fetchWorkflows,
+}: N8nWorkflowsTableProps) => {
   const [page, setPage] = useState(1)
   const [records, setRecords] = useState<WorkflowRecord[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -76,6 +83,8 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
     console.log('response:', response)
     // Handle response
     if (!response.ok) {
+      const errorData = await response.json()
+      console.log('errorData:', errorData)
       setRecords((prevRecords) =>
         prevRecords.map((record) =>
           record.id === id ? { ...record, active: !checked } : record,
@@ -95,8 +104,7 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
         ),
         message: (
           <Text className={`${montserrat_med.className} text-neutral-200`}>
-            Unable to activate workflow. Please try again or refresh the page
-            and try again.
+            {errorData.error}
           </Text>
         ),
         color: 'red',
@@ -115,54 +123,17 @@ export const N8nWorkflowsTable = ({ n8nApiKey }: N8nWorkflowsTableProps) => {
   }
 
   useEffect(() => {
-    const fetchWorkflows = async () => {
-      if (!n8nApiKey) {
-        console.log('n8nApiKey is not set. Skipping API call.')
-        return
+    const fetchData = async () => {
+      const data = await fetchWorkflows(limit, pagination)
+      console.log('data before setting the records:', data)
+      if (data) {
+        setRecords(data)
       }
-      console.log('before fetch:')
-      const response = await fetch(
-        `/api/UIUC-api/tools/getN8nWorkflows?api_key=${n8nApiKey}&limit=${limit}&pagination=${pagination}`,
-      )
-      if (!response.ok) {
-        notifications.show({
-          id: 'error-notification',
-          withCloseButton: true,
-          closeButtonProps: { color: 'red' },
-          onClose: () => console.log('error unmounted'),
-          onOpen: () => console.log('error mounted'),
-          autoClose: 12000,
-          title: (
-            <Text size={'lg'} className={`${montserrat_med.className}`}>
-              Error fetching workflows
-            </Text>
-          ),
-          message: (
-            <Text className={`${montserrat_med.className} text-neutral-200`}>
-              No records found. Please check your API key and try again.
-            </Text>
-          ),
-          color: 'red',
-          radius: 'lg',
-          icon: <IconAlertCircle />,
-          className: 'my-notification-class',
-          style: {
-            backgroundColor: 'rgba(42,42,64,0.3)',
-            backdropFilter: 'blur(10px)',
-            borderLeft: '5px solid red',
-          },
-          withBorder: true,
-          loading: false,
-        })
-        return
-      }
-      const data = await response.json()
-
-      setRecords(data)
       setIsLoading(false)
     }
-    fetchWorkflows()
-  }, [n8nApiKey, limit, pagination])
+
+    fetchData()
+  }, [n8nApiKey, limit, pagination, fetchWorkflows])
 
   if (isLoading) {
     return <div>Loading...</div>

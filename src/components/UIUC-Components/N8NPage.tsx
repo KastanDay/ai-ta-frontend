@@ -1,11 +1,4 @@
-import {
-  Button,
-  Title,
-  Flex,
-  List,
-  // Text,
-  TextInput,
-} from '@mantine/core'
+import { Button, Title, Flex, List, Text, TextInput } from '@mantine/core'
 
 import {
   IconAlertCircle,
@@ -30,11 +23,17 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { LoadingSpinner } from './LoadingSpinner'
 import { useAuth, useUser } from '@clerk/nextjs'
+import { Montserrat } from 'next/font/google'
 
 export const GetCurrentPageName = () => {
   // /CS-125/materials --> CS-125
   return useRouter().asPath.slice(1).split('/')[0] as string
 }
+
+const montserrat_med = Montserrat({
+  weight: '500',
+  subsets: ['latin'],
+})
 
 const MakeToolsPage = ({ course_name }: { course_name: string }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
@@ -51,6 +50,22 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSaveApiKey = async () => {
+    const flows_table = await fetchWorkflows(10, true)
+    if (!flows_table) {
+      notifications.show({
+        id: 'error-notification',
+        title: 'Error',
+        message: 'Failed to fetch workflows. Please try again later.',
+        autoClose: 10000,
+        color: 'red',
+        radius: 'lg',
+        icon: <IconAlertCircle />,
+        className: 'my-notification-class',
+        style: { backgroundColor: '#15162c' },
+        loading: false,
+      })
+      return
+    }
     console.log('Saving n8n API Key:', n8nApiKey)
     const response = await fetch(`/api/UIUC-api/upsertN8nAPIKey`, {
       method: 'POST',
@@ -142,6 +157,51 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
 
     fetchData()
   }, [currentPageName, clerk_user.isLoaded])
+
+  const fetchWorkflows = async (limit: number, pagination: boolean) => {
+    if (!n8nApiKey) {
+      console.log('n8nApiKey is not set. Skipping API call.')
+      return
+    }
+    console.log('before fetch:')
+    const response = await fetch(
+      `/api/UIUC-api/tools/getN8nWorkflows?api_key=${n8nApiKey}&limit=${limit}&pagination=${pagination}`,
+    )
+    if (!response.ok) {
+      notifications.show({
+        id: 'error-notification',
+        withCloseButton: true,
+        closeButtonProps: { color: 'red' },
+        onClose: () => console.log('error unmounted'),
+        onOpen: () => console.log('error mounted'),
+        autoClose: 12000,
+        title: (
+          <Text size={'lg'} className={`${montserrat_med.className}`}>
+            Error fetching workflows
+          </Text>
+        ),
+        message: (
+          <Text className={`${montserrat_med.className} text-neutral-200`}>
+            No records found. Please check your API key and try again.
+          </Text>
+        ),
+        color: 'red',
+        radius: 'lg',
+        icon: <IconAlertCircle />,
+        className: 'my-notification-class',
+        style: {
+          backgroundColor: 'rgba(42,42,64,0.3)',
+          backdropFilter: 'blur(10px)',
+          borderLeft: '5px solid red',
+        },
+        withBorder: true,
+        loading: false,
+      })
+      return
+    }
+    const data = await response.json()
+    return data
+  }
 
   if (!isLoaded || !courseMetadata) {
     return (
@@ -290,7 +350,11 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
                 <List.Item>Check out your workflows below!</List.Item>
               </List>
             </div>
-            <N8nWorkflowsTable n8nApiKey={n8nApiKey} isLoading={isLoading} />
+            <N8nWorkflowsTable
+              n8nApiKey={n8nApiKey}
+              isLoading={isLoading}
+              fetchWorkflows={fetchWorkflows}
+            />
 
             <div style={{ width: '40%' }}>
               <TextInput
