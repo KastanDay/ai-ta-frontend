@@ -4,10 +4,24 @@ import { WorkflowRecord } from '~/types/tools'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const { api_key, limit, pagination } = req.query as {
-      api_key: string
-      limit: string
-      pagination: string
+    let { api_key, limit, pagination } = req.query as {
+      api_key?: string
+      limit?: string
+      pagination?: string
+    }
+
+    if (!api_key) {
+      // Placeholder fetch request to getApiFromCourse if api_key is not provided
+      const apiResponse = await fetch('http://localhost:8000/getApiFromCourse')
+      const apiData = await apiResponse.json()
+      api_key = apiData.api_key // Assuming the response contains an api_key field
+    }
+
+    if (!limit) {
+      limit = '10'
+    }
+    if (!pagination) {
+      pagination = 'true'
     }
 
     const parsedLimit = parseInt(limit)

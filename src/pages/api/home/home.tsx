@@ -87,6 +87,23 @@ const Home = () => {
   )
 
   useEffect(() => {
+    // TODO: Get tools given course_name.
+    const getTools = async () => {
+      const response = await fetch(
+        `src/pages/api/UIUC-api/tools/getN8nWorkflows?course_name=${course_name}`,
+      )
+
+      const tools = await response.json()
+      console.log(`home.tsx: Tools for ${course_name}: ${tools}`)
+    }
+    // dispatch({
+    //   field: 'defaultModelId',
+    //   value: model.id,
+    // })
+    getTools()
+  }, [course_name])
+
+  useEffect(() => {
     // Set model after we fetch available models
     const model = selectBestModel()
 
