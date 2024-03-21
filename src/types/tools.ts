@@ -1,6 +1,5 @@
 export interface WorkflowRecord {
-  key: string
-  // id: string
+  id: string
   name: string
   active: boolean
   tags: toolRecord[]
