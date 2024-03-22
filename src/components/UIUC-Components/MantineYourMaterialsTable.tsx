@@ -14,6 +14,7 @@ import {
   createStyles,
   Paper,
   Center,
+  Tooltip,
 } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
 import {
@@ -39,6 +40,8 @@ import { showNotification } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
 import { Badge } from '@mantine/core'
 import { useColorScheme } from '@mantine/hooks'
+import { IconInfoCircleFilled } from '@tabler/icons-react'
+
 
 const GlobalStyle = createGlobalStyle`
 // these mantine class names may change in future versions
@@ -420,6 +423,8 @@ export function MantineYourMaterialsTable({
               //   ? 'purple'
               //   : 'transparent',
               backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
+              marginTop: '20px',
+              marginRight: '5px',
             }}
           >
             {/* {selectedRecords.length
@@ -428,8 +433,17 @@ export function MantineYourMaterialsTable({
                 : `${selectedRecords.length} selected records`
               }`
               : 'Select records to export'} */}
-            Export all records
+            Export Documents & Embeddings
           </Button>
+          <Tooltip
+            multiline
+            width={280}
+            withArrow
+            transitionProps={{ duration: 200 }}
+            label="Download the post-processed text and vector embeddings (OpenAI Ada-002) used by the LLM. The export format is JSON Lines (.JSONL). To minimize data transfer costs, exporting original files (PDFs, etc.) is only available for individual documents."
+          >
+            <IconInfoCircleFilled size={23} />
+          </Tooltip>
         </Center>
       </Paper>
       <Modal
