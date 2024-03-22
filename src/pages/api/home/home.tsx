@@ -47,6 +47,10 @@ import { type CourseMetadata } from '~/types/courseMetadata'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
+import {
+  EssentialToolDetails,
+  extractMinimalToolInfo,
+} from '../UIUC-api/tools/getN8nWorkflows'
 
 const Home = () => {
   const { t } = useTranslation('chat')
@@ -87,19 +91,28 @@ const Home = () => {
   )
 
   useEffect(() => {
-    // TODO: Get tools given course_name.
+    // Get tools given course_name.
     const getTools = async () => {
       const response = await fetch(
         `src/pages/api/UIUC-api/tools/getN8nWorkflows?course_name=${course_name}`,
       )
 
       const tools = await response.json()
-      console.log(`home.tsx: Tools for ${course_name}: ${tools}`)
+      console.log(`home.tsx: RAWWWW TOOLS for ${course_name}: ${tools}`)
+      if (tools.length == 0) {
+        console.error(`home.tsx: No tools found for ${course_name}`)
+        return
+      }
+      const essentialToolInfo = extractMinimalToolInfo(
+        tools,
+      ) as EssentialToolDetails[]
+      console.log(`home.tsx: Tools for ${course_name}: ${essentialToolInfo}`)
+
+      dispatch({
+        field: 'availableTools',
+        value: essentialToolInfo,
+      })
     }
-    // dispatch({
-    //   field: 'defaultModelId',
-    //   value: model.id,
-    // })
     getTools()
   }, [course_name])
 

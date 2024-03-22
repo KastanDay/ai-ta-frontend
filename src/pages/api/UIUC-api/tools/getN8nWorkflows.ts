@@ -3,14 +3,21 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { WorkflowRecord } from '~/types/tools'
 import { supabase } from '~/utils/supabaseClient'
 
+export interface EssentialToolDetails {
+  id: string
+  name: string
+}
+
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  // Only one of course_name OR api_key is required
   try {
-    let { course_name, api_key, limit, pagination } = req.query as {
-      course_name?: string
+    const { course_name } = req.query as { course_name?: string }
+    let { api_key, limit, pagination } = req.query as {
       api_key?: string
       limit?: string
       pagination?: string
     }
+
     if (!course_name && !api_key) {
       return res.status(400).json({
         error: 'One of course_name OR api_key is required',
@@ -19,8 +26,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (!api_key) {
       // getApiFromCourse if api_key is not provided
-
-      let { data: data, error } = await supabase
+      const { data, error } = await supabase
         .from('projects')
         .select('n8n_api_key')
         .eq('course_name', course_name)
@@ -76,3 +82,24 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 }
 
 export default handler
+
+export const extractMinimalToolInfo = (allWorkflowsJson: any) => {
+  // Function to parse the JSON and extract the desired fields, only including active tools
+  function parseJson(jsonString: string): EssentialToolDetails[] {
+    const data = JSON.parse(jsonString)
+
+    const flattenedData = data.flat()
+
+    // Filter for active tools, then map over the filtered array to extract the fields of interest
+    return flattenedData
+      .filter((item: any) => item.active)
+      .map((item: any) => ({
+        Name: item.name,
+        ID: item.id,
+      }))
+  }
+
+  const validTools = parseJson(allWorkflowsJson)
+  console.log('getN8nWorkflows -- Valid tools:', validTools)
+  return validTools
+}

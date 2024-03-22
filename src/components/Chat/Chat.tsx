@@ -117,6 +117,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       prompts,
       showModelSettings,
       isImg2TextLoading,
+      availableTools,
     },
     handleUpdateConversation,
     dispatch: homeDispatch,
@@ -312,6 +313,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
         // Run context search, attach to Message object.
         await handleContextSearch(message, selectedConversation, searchQuery)
+
+        // If tools are available, try using tools:
+        // await handleTools(message, selectedConversation, searchQuery, availableTools)
 
         const chatBody: ChatBody = {
           model: updatedConversation.model,
