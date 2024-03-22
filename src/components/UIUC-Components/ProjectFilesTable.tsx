@@ -86,18 +86,18 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     queryKey: ['documents', course_name, page],
     keepPreviousData: true,
     queryFn: async () => {
-      console.log('Fetching documents for page: ', page)
+      // console.log('Fetching documents for page: ', page)
       const from = (page - 1) * PAGE_SIZE
       const to = from + PAGE_SIZE - 1
 
-      console.log(
-        'Fetching documents for page: ',
-        page,
-        ' from:',
-        from,
-        ' to:',
-        to,
-      )
+      // console.log(
+      //   'Fetching documents for page: ',
+      //   page,
+      //   ' from:',
+      //   from,
+      //   ' to:',
+      //   to,
+      // )
 
       const response = await fetch(
         `/api/materialsTable/fetchProjectMaterials?from=${from}&to=${to}&course_name=${course_name}`,
@@ -108,7 +108,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
       }
 
       const data = await response.json()
-      console.log('Fetched documents:', data)
+      // console.log('Fetched documents:', data)
       return data
     },
   })
@@ -231,8 +231,12 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
 
         showToastOnFileDeleted(theme, true)
       },
-      onSettled: () => {
+      onSettled: async () => {
         showToastOnFileDeleted(theme)
+        const sleep = (ms: number) =>
+          new Promise((resolve) => setTimeout(resolve, ms))
+        console.log('sleeping for 500ms')
+        await sleep(500)
         console.log('Invalidating queries')
         queryClient.invalidateQueries(['documents', course_name])
         queryClient.invalidateQueries(['documentGroups', course_name])
@@ -372,6 +376,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
           {
             accessor: 'URL',
             render: ({ url }) => (url ? `${url}` : ''),
+            width: '25%',
             filter: (
               <TextInput
                 label="URL"

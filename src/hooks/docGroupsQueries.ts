@@ -24,7 +24,7 @@ export function useGetDocumentGroups(course_name: string) {
           courseName: course_name,
         }),
       })
-      console.log('response: ', response)
+      // console.log('response: ', response)
       if (!response.ok) {
         throw new Error('Network response was not ok')
       }

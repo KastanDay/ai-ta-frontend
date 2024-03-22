@@ -146,28 +146,26 @@ const MakeOldCoursePage = ({
                       className={`label ${montserrat_paragraph.className} inline-block p-0 text-neutral-200`}
                       size={'md'}
                     >
-                      To enhance organization and efficiency for both
-                      administrators and users, we&apos;ve introduced Document
-                      Groups. This feature allows admins and project owners to
-                      categorize a large list of documents into smaller, more
-                      manageable groups. Not only does this offer more control
-                      over document management for admins, but it also
-                      simplifies the process for users to find the answers from
-                      specific documents they need quickly and efficiently.
+                      To enhance organization and efficiency, we've introduced
+                      Document Groups. This feature allows admins and project
+                      owners to categorize a large list of documents into
+                      smaller, manageable groups. It offers more control over
+                      document management for admins while simplifying the
+                      process for users to find relevant information quickly.
+                      Document Groups can be used as a filtering criterion
+                      during retrieval, aiding navigation through large volumes
+                      of documents.
                     </Text>
                     <Text
                       className={`label ${montserrat_paragraph.className} inline-block p-0 text-neutral-200`}
                       size={'md'}
                     >
-                      Document Groups can be used as a filtering criterion
-                      during the retrieval of relevant documents, making it
-                      easier for users to navigate through large volumes of
-                      information. Admins and owners have the flexibility to
-                      enable or disable these groups, tailoring the feature to
-                      their specific needs and preferences. This means that
-                      users can benefit from a more organized and streamlined
-                      document retrieval process, directly impacting their
-                      ability to access and utilize information effectively.
+                      Admins and owners have the flexibility to enable or
+                      disable these groups, tailoring the feature to their
+                      specific needs, ensuring users benefit from an organized
+                      and streamlined document retrieval process that improves
+                      their ability to access and utilize information
+                      effectively.
                     </Text>
                   </Blockquote>
                   <DocGroupsTable course_name={course_name} />
