@@ -345,10 +345,8 @@ const ChatNavbar = ({
             </h2>
           </Link>
 
-          {bannerUrl && (
-            <div
-              style={{ ...styles.logoContainerBox, flex: '1' }}
-            >
+          {bannerUrl ? (
+            <div style={{ ...styles.logoContainerBox, flex: '1' }}>
               <Image
                 src={bannerUrl}
                 style={{ ...styles.thumbnailImage }}
@@ -359,6 +357,9 @@ const ChatNavbar = ({
                 onError={(e) => (e.currentTarget.style.display = 'none')} // display nothing if image fails
               />
             </div>
+          ) : (
+            // Placeholder div
+            <div style={{ ...styles.logoContainerBox, flex: '1', visibility: 'hidden' }}></div>
           )}
           {/* </Flex> */}
           {/* </div> */}
