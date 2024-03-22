@@ -146,11 +146,11 @@ const MakeOldCoursePage = ({
                       className={`label ${montserrat_paragraph.className} inline-block p-0 text-neutral-200`}
                       size={'md'}
                     >
-                      To enhance organization and efficiency, we've introduced
-                      Document Groups. This feature allows admins and project
-                      owners to categorize a large list of documents into
-                      smaller, manageable groups. It offers more control over
-                      document management for admins while simplifying the
+                      To enhance organization and efficiency, we&apos;ve
+                      introduced Document Groups. This feature allows admins and
+                      project owners to categorize a large list of documents
+                      into smaller, manageable groups. It offers more control
+                      over document management for admins while simplifying the
                       process for users to find relevant information quickly.
                       Document Groups can be used as a filtering criterion
                       during retrieval, aiding navigation through large volumes
