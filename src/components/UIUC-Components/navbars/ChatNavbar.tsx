@@ -1,7 +1,7 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { magicBellTheme } from '~/components/UIUC-Components/navbars/GlobalHeader'
-import {} from '@mantine/core'
+import { } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import Image from 'next/image'
 import { useEffect, useState, useContext, useRef } from 'react'
@@ -21,6 +21,7 @@ import {
   MessageChatbot,
   Folder,
   ReportAnalytics,
+  ChartDots3,
   // Settings,
   MessageCode,
 } from 'tabler-icons-react'
@@ -229,51 +230,51 @@ const ChatNavbar = ({
 
   const items = isAdminOrOwner
     ? [
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Chat
-            </span>
-          ),
-          icon: <MessageChatIcon />,
-          link: `/${getCurrentCourseName()}/chat`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Materials
-            </span>
-          ),
-          icon: <FolderIcon />,
-          link: `/${getCurrentCourseName()}/materials`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Analysis
-            </span>
-          ),
-          icon: <ReportIcon />,
-          link: `/${getCurrentCourseName()}/query-analysis`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Prompting
-            </span>
-          ),
-          icon: <SettingIcon />,
-          link: `/${getCurrentCourseName()}/prompt`,
-        },
-      ]
+      {
+        name: (
+          <span
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            Chat
+          </span>
+        ),
+        icon: <MessageChatIcon />,
+        link: `/${getCurrentCourseName()}/chat`,
+      },
+      {
+        name: (
+          <span
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            Materials
+          </span>
+        ),
+        icon: <FolderIcon />,
+        link: `/${getCurrentCourseName()}/materials`,
+      },
+      {
+        name: (
+          <span
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            Analysis
+          </span>
+        ),
+        icon: <ReportIcon />,
+        link: `/${getCurrentCourseName()}/query-analysis`,
+      },
+      {
+        name: (
+          <span
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            Prompting
+          </span>
+        ),
+        icon: <SettingIcon />,
+        link: `/${getCurrentCourseName()}/prompt`,
+      },
+    ]
     : []
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -595,6 +596,17 @@ export function ReportIcon() {
 export function SettingIcon() {
   return (
     <MessageCode
+      size={20}
+      strokeWidth={2}
+      // color={'white'}
+      style={{ marginRight: '4px', marginLeft: '4px' }}
+    />
+  )
+}
+
+export function ChartDots3Icon() {
+  return (
+    <ChartDots3
       size={20}
       strokeWidth={2}
       // color={'white'}

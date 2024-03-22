@@ -4,6 +4,7 @@ import { FolderInterface } from '@/types/folder'
 import { OpenAIModel, OpenAIModelID } from '@/types/openai'
 import { PluginKey } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
+import { EssentialToolDetails } from '../UIUC-api/tools/getN8nWorkflows'
 
 export interface HomeInitialState {
   apiKey: string
@@ -31,6 +32,7 @@ export interface HomeInitialState {
   cooldown: number
   showModelSettings: boolean
   isImg2TextLoading: boolean
+  availableTools: EssentialToolDetails[]
 }
 
 export const initialState: HomeInitialState = {
@@ -59,4 +61,5 @@ export const initialState: HomeInitialState = {
   cooldown: 0,
   showModelSettings: false,
   isImg2TextLoading: false,
+  availableTools: [],
 }
