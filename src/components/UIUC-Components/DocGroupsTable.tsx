@@ -13,9 +13,8 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 
 const GlobalStyle = createGlobalStyle`
-// these mantine class names may change in future versions
 
-  .mantine-ja02in:checked {
+  .mantine-Checkbox-input:checked {
     background-color: purple;
     border-color: hsl(280,100%,80%);
   } 
@@ -24,8 +23,12 @@ const GlobalStyle = createGlobalStyle`
     background-color: #15162a; 
   }
 
-  .mantine-7q4wt4 {
-    background-color: hsl(280,100%,70%, 0);
+  .mantine-Table-root tbody tr {
+    background-color: #1A1B1E
+  }
+
+  .mantine-Table-root tbody tr:nth-of-type(odd) {
+      background-color: #25262b;
   }
 `
 
@@ -40,7 +43,7 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
     isLoading: isLoadingDocumentGroups,
     isError: isErrorDocumentGroups,
     refetch: refetchDocumentGroups,
-  } = useGetDocumentGroups(course_name, queryClient)
+  } = useGetDocumentGroups(course_name)
 
   // Logic to filter doc_groups based on the search query
   const filteredDocumentGroups = useMemo(() => {
@@ -77,22 +80,35 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
       >
         <TextInput
           placeholder="Search by Document Group"
-          mb="md"
+          mb="sm"
           icon={<IconSearch />}
           value={documentGroupSearch}
           onChange={handleDocumentGroupSearchChange}
         />
-        <Table style={{ width: '100%', tableLayout: 'fixed' }}>
+        <Table
+          style={{ width: '100%', tableLayout: 'fixed' }}
+          withBorder
+          withColumnBorders
+          highlightOnHover
+        >
           <thead>
             <tr>
-              <th style={{ width: '50%', wordWrap: 'break-word' }}>
+              <th style={{ width: '70%', wordWrap: 'break-word' }}>
                 Document Group
               </th>
               {/* <th style={{ width: '40%', wordWrap: 'break-word' }}>Description</th> */}
-              <th style={{ width: '25%', wordWrap: 'break-word' }}>
+              <th style={{ width: '15%', wordWrap: 'break-word' }}>
                 Number of Docs
               </th>
-              <th style={{ width: '25%', wordWrap: 'break-word' }}>Enabled</th>
+              <th
+                style={{
+                  width: '15%',
+                  wordWrap: 'break-word',
+                  textAlign: 'center',
+                }}
+              >
+                Enabled
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -107,16 +123,20 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
                 <td style={{ wordWrap: 'break-word' }}>
                   <Text>{doc_group_obj.doc_count}</Text>
                 </td>
-                <td style={{ wordWrap: 'break-word' }}>
+                <td
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    wordWrap: 'break-word',
+                  }}
+                >
                   <Switch
                     checked={doc_group_obj.enabled}
-                    onChange={
-                      (event) =>
-                        updateDocGroup.mutate({
-                          doc_group_obj,
-                          enabled: event.currentTarget.checked,
-                        })
-                      // handleDocumentGroupsChange(doc_group_obj, event.currentTarget.checked)
+                    onChange={(event) =>
+                      updateDocGroup.mutate({
+                        doc_group_obj,
+                        enabled: event.currentTarget.checked,
+                      })
                     }
                     color="grape"
                     size="lg"

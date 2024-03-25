@@ -13,15 +13,23 @@ import {
   Center,
   Stack,
   Image,
+  createStyles,
+  MantineTheme,
 } from '@mantine/core'
-import { IconEye, IconTrash, IconX } from '@tabler/icons-react'
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconEye,
+  IconTrash,
+  IconX,
+} from '@tabler/icons-react'
 import { DataTable } from 'mantine-datatable'
 import { useState } from 'react'
 import axios from 'axios'
-import { showNotification } from '@mantine/notifications'
+import { notifications, showNotification } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
 
-import { CourseDocument } from 'src/types/courseMaterials'
+import { CourseDocument, DocumentGroup } from 'src/types/courseMaterials'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
 import {
@@ -33,21 +41,19 @@ import {
 } from '~/hooks/docGroupsQueries'
 import { LoadingSpinner } from './LoadingSpinner'
 
+const useStyles = createStyles((theme) => ({}))
+
 const GlobalStyle = createGlobalStyle`
 // these mantine class names may change in future versions
-
-  .mantine-ja02in:checked {
-    background-color: purple;
-    border-color: hsl(280,100%,80%);
-  } 
 
   .mantine-Table-root thead tr {
     background-color: #15162a; 
   }
+.mantine-Pagination-control[data-active="true"] {
+  background-color: blueviolet;
+  color: white;
+}
 
-  .mantine-7q4wt4 {
-    background-color: hsl(280,100%,70%, 0);
-  }
 `
 
 const PAGE_SIZE = 100
@@ -62,11 +68,20 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
 
   // TODO: I think this is only available in V5>??? Not sure. Why are we on the old V4!!!!
   // const { mutate: appendToDocGroup, isLoading, isError, error } = useAppendToDocGroup(course_name);
-  const getDocumentGroups = useGetDocumentGroups(course_name, queryClient)
-  const createDocumentGroup = useCreateDocumentGroup(course_name, queryClient)
-  const appendToDocGroup = useAppendToDocGroup(course_name, queryClient)
-  const removeFromDocGroup = useRemoveFromDocGroup(course_name, queryClient)
+  const getDocumentGroups = useGetDocumentGroups(course_name)
+  const createDocumentGroup = useCreateDocumentGroup(
+    course_name,
+    queryClient,
+    page,
+  )
+  const appendToDocGroup = useAppendToDocGroup(course_name, queryClient, page)
+  const removeFromDocGroup = useRemoveFromDocGroup(
+    course_name,
+    queryClient,
+    page,
+  )
   const updateDocGroup = useUpdateDocGroup(course_name, queryClient)
+  const { classes, theme } = useStyles()
 
   // ------------- Queries -------------
   const {
@@ -79,18 +94,18 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     queryKey: ['documents', course_name, page],
     keepPreviousData: true,
     queryFn: async () => {
-      console.log('Fetching documents for page: ', page)
+      // console.log('Fetching documents for page: ', page)
       const from = (page - 1) * PAGE_SIZE
       const to = from + PAGE_SIZE - 1
 
-      console.log(
-        'Fetching documents for page: ',
-        page,
-        ' from:',
-        from,
-        ' to:',
-        to,
-      )
+      // console.log(
+      //   'Fetching documents for page: ',
+      //   page,
+      //   ' from:',
+      //   from,
+      //   ' to:',
+      //   to,
+      // )
 
       const response = await fetch(
         `/api/materialsTable/fetchProjectMaterials?from=${from}&to=${to}&course_name=${course_name}`,
@@ -101,7 +116,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
       }
 
       const data = await response.json()
-      console.log('Fetched documents:', data)
+      // console.log('Fetched documents:', data)
       return data
     },
   })
@@ -111,7 +126,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     isLoading: isLoadingDocumentGroups,
     isError: isErrorDocumentGroups,
     refetch: refetchDocumentGroups,
-  } = useGetDocumentGroups(course_name, queryClient)
+  } = useGetDocumentGroups(course_name)
 
   // ------------- Mutations -------------
 
@@ -148,6 +163,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
 
   const deleteDocumentMutation = useMutation(
     async (recordsToDelete: CourseDocument[]) => {
+      console.log('Deleting records:', recordsToDelete)
       const API_URL = 'https://flask-production-751b.up.railway.app'
       const deletePromises = recordsToDelete.map((record) =>
         axios.delete(`${API_URL}/delete`, {
@@ -159,13 +175,20 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
         }),
       )
       await Promise.all(deletePromises)
+      console.log('Deleted records')
     },
     {
       onMutate: async (recordsToDelete) => {
+        console.log('in onMutate')
         await queryClient.cancelQueries(['documents', course_name])
 
         const previousDocuments = queryClient.getQueryData<CourseDocument[]>([
           'documents',
+          course_name,
+        ])
+
+        const previousDocumentGroups = queryClient.getQueryData([
+          'documentGroups',
           course_name,
         ])
 
@@ -182,17 +205,47 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
           },
         )
 
-        return { previousDocuments }
+        queryClient.setQueryData<DocumentGroup[]>(
+          ['documentGroups', course_name],
+          (old = []) => {
+            return old.map((doc_group) => {
+              recordsToDelete.forEach((record) => {
+                if (doc_group.name in record.doc_groups) {
+                  doc_group.doc_count -= 1
+                }
+              })
+              return doc_group
+            })
+          },
+        )
+
+        return { previousDocuments, previousDocumentGroups }
       },
       onError: (err, variables, context) => {
+        console.log('Error deleting documents:', err)
         if (context?.previousDocuments) {
           queryClient.setQueryData(
             ['documents', course_name],
             context.previousDocuments,
           )
         }
+
+        if (context?.previousDocumentGroups) {
+          queryClient.setQueryData(
+            ['documentGroups', course_name],
+            context.previousDocumentGroups,
+          )
+        }
+
+        showToastOnFileDeleted(theme, true)
       },
-      onSettled: () => {
+      onSettled: async () => {
+        showToastOnFileDeleted(theme)
+        const sleep = (ms: number) =>
+          new Promise((resolve) => setTimeout(resolve, ms))
+        console.log('sleeping for 500ms')
+        await sleep(500)
+        console.log('Invalidating queries')
         queryClient.invalidateQueries(['documents', course_name])
         queryClient.invalidateQueries(['documentGroups', course_name])
       },
@@ -208,6 +261,52 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     })
 
     return errorStateForProjectFilesTable()
+  }
+
+  const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
+    return (
+      // docs: https://mantine.dev/others/notifications/
+      notifications.show({
+        id: 'file-deleted-from-materials',
+        withCloseButton: true,
+        onClose: () => console.log('unmounted'),
+        onOpen: () => console.log('mounted'),
+        autoClose: 12000,
+        // position="top-center",
+        title: was_error ? 'Error deleting file' : 'Deleting file...',
+        message: was_error
+          ? "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug."
+          : 'The file is being deleted in the background. Refresh the page to see the changes.',
+        icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
+        styles: {
+          root: {
+            backgroundColor: theme.colors.nearlyWhite,
+            borderColor: was_error
+              ? theme.colors.errorBorder
+              : theme.colors.aiPurple,
+          },
+          title: {
+            color: theme.colors.nearlyBlack,
+          },
+          description: {
+            color: theme.colors.nearlyBlack,
+          },
+          closeButton: {
+            color: theme.colors.nearlyBlack,
+            '&:hover': {
+              backgroundColor: theme.colors.dark[1],
+            },
+          },
+          icon: {
+            backgroundColor: was_error
+              ? theme.colors.errorBackground
+              : theme.colors.successBackground,
+            padding: '4px',
+          },
+        },
+        loading: false,
+      })
+    )
   }
 
   return (
@@ -258,7 +357,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
         }}
         columns={[
           {
-            accessor: 'NEW TABLE (Name)',
+            accessor: 'File Name',
             render: ({ readable_filename }) =>
               readable_filename ? `${readable_filename}` : '',
             filter: (
@@ -285,6 +384,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
           {
             accessor: 'URL',
             render: ({ url }) => (url ? `${url}` : ''),
+            width: '25%',
             filter: (
               <TextInput
                 label="URL"
@@ -398,6 +498,18 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
                   // }}
                   disabled={!documentGroups || documentGroups.length === 0}
                   sx={{ flex: 1, width: '100%' }}
+                  classNames={{
+                    value: 'tag-item self-center',
+                  }}
+                  styles={{
+                    input: {
+                      paddingTop: '12px',
+                      paddingBottom: '12px',
+                    },
+                    value: {
+                      marginTop: '2px',
+                    },
+                  }}
                 />
               </Group>
             ),
