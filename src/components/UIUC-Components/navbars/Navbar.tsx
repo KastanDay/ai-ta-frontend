@@ -49,7 +49,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
 }
 
-const HEADER_HEIGHT = rem(84)
+const HEADER_HEIGHT = rem(114)
 
 const useStyles = createStyles((theme) => ({
   burger: {
@@ -109,12 +109,13 @@ const useStyles = createStyles((theme) => ({
 
   dropdown: {
     position: 'absolute',
-    top: rem(140),
-    left: '50%',
-    right: '10%',
+    top: HEADER_HEIGHT,
+    // left: '50%',
+    right: '20px',
     zIndex: 2,
     borderRadius: '10px',
     overflow: 'hidden',
+    width: '200px',
     [theme.fn.largerThan('md')]: {
       display: 'none',
     },
