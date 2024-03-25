@@ -15,9 +15,12 @@ import {
   Paper,
   Center,
   Tooltip,
+  MantineTheme,
 } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
 import {
+  IconAlertTriangle,
+  IconCheck,
   IconEdit,
   IconEye,
   IconFileExport,
@@ -36,11 +39,12 @@ import {
 } from '@mantine/modals'
 import { showToastOnFileDeleted } from './MakeOldCoursePage'
 import axios from 'axios'
-import { showNotification } from '@mantine/notifications'
+import { notifications } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
 import { Badge } from '@mantine/core'
 import { useColorScheme } from '@mantine/hooks'
 import { IconInfoCircleFilled } from '@tabler/icons-react'
+import { handleExport } from '~/pages/api/UIUC-api/exportAllDocuments'
 
 
 const GlobalStyle = createGlobalStyle`
@@ -201,33 +205,6 @@ export function MantineYourMaterialsTable({
       console.error(error)
       // Show error message
       showToastOnFileDeleted(theme, true)
-    }
-  }
-
-  const handleExport = async (course_name: string) => {
-    try {
-      const API_URL = 'https://flask-production-751b.up.railway.app/exportDocuments'
-      const response = await axios.get(`${API_URL}?course_name=${course_name}`, {
-        responseType: 'blob',
-      })
-
-      if (response.headers['content-type'] === 'application/json') {
-        const reader = new FileReader();
-        reader.onload = function () {
-          const jsonData = JSON.parse(reader.result as string);
-          console.log(jsonData);
-        }
-        reader.readAsText(new Blob([response.data]));
-      } else if (response.headers['content-type'] === 'application/zip') {
-        const url = window.URL.createObjectURL(new Blob([response.data]))
-        const link = document.createElement('a')
-        link.href = url
-        link.setAttribute('download', course_name + '_materials.zip')
-        document.body.appendChild(link)
-        link.click()
-      }
-    } catch (error) {
-      console.error('Error exporting materials:', error)
     }
   }
 
@@ -517,9 +494,10 @@ export function MantineYourMaterialsTable({
             className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
             onClick={async () => {
               setExportModalOpened(false)
-              // console.log('Exporting records:', recordsToExport)
-              await handleExport(getCurrentPageName())
-              // setRecordsToExport([])
+              const result = await handleExport(getCurrentPageName())
+              if (result && result.message == "We have started gathering your documents, you will receive an email shortly") {
+                showToastOnUpdate(theme, false, false, result.message);
+              }
             }}
           >
             Export
@@ -562,4 +540,54 @@ async function fetchCourseMetadata(course_name: string) {
     console.error('Error fetching course metadata:', error)
     throw error
   }
+}
+
+export const showToastOnUpdate = (
+  theme: MantineTheme,
+  was_error = false,
+  isReset = false,
+  message: string,
+) => {
+  return (
+    notifications.show({
+      id: 'prompt-updated',
+      withCloseButton: true,
+      onClose: () => console.log('unmounted'),
+      onOpen: () => console.log('mounted'),
+      autoClose: 12000,
+      // title: was_error ? 'Error updating prompt' : (isReset ? 'Resetting prompt...' : 'Updating prompt...'),
+      // message: was_error
+      //   ? "An error occurred while updating the prompt. Please try again."
+      //   : (isReset ? 'The prompt has been reset to default.' : 'The prompt has been updated successfully.'),
+      message: message,
+      icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
+      styles: {
+        root: {
+          backgroundColor: theme.colors.nearlyWhite,
+          borderColor: was_error
+            ? theme.colors.errorBorder
+            : theme.colors.aiPurple,
+        },
+        title: {
+          color: theme.colors.nearlyBlack,
+        },
+        description: {
+          color: theme.colors.nearlyBlack,
+        },
+        closeButton: {
+          color: theme.colors.nearlyBlack,
+          '&:hover': {
+            backgroundColor: theme.colors.dark[1],
+          },
+        },
+        icon: {
+          backgroundColor: was_error
+            ? theme.colors.errorBackground
+            : theme.colors.successBackground,
+          padding: '4px',
+        },
+      },
+      loading: false,
+    })
+  )
 }
