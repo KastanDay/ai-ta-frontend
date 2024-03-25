@@ -13,6 +13,7 @@ import {
   IconBrain,
   IconCreditCard,
   IconAlertCircle,
+  IconSearch,
   // IconArrowUpRight,
   // IconFileTextAi,
   // IconX,
@@ -29,7 +30,15 @@ import {
   useRef,
   useState,
 } from 'react'
-import { Button, Text } from '@mantine/core'
+import {
+  Button,
+  Group,
+  Switch,
+  Text,
+  UnstyledButton,
+  createStyles,
+  rem,
+} from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -75,6 +84,12 @@ import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
 import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
+import {
+  SpotlightProvider,
+  spotlight,
+  SpotlightAction,
+  SpotlightActionProps,
+} from '@mantine/spotlight'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -131,6 +146,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [spotlightQuery, setSpotlightQuery] = useState('')
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase
@@ -818,141 +834,254 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     [selectedConversation, conversations],
   )
 
+  const docsAndToolsActions: SpotlightAction[] = [
+    {
+      id: 'doc1',
+      title: 'Document 1',
+      description: 'Description for Document 1',
+      group: 'Documents',
+      onTrigger: () => console.log('Document 1 triggered'),
+      // Add more properties as needed
+    },
+    {
+      id: 'doc2',
+      title: 'Document 2',
+      description: 'Description for Document 2',
+      group: 'Documents',
+      onTrigger: () => console.log('Document 2 triggered'),
+      // Add more properties as needed
+    },
+    {
+      id: 'tool1',
+      title: 'Tool 1',
+      group: 'Tools',
+      description: 'Description for Tool 1',
+      onTrigger: () => console.log('Tool 1 triggered'),
+      // Add more properties as needed
+    },
+    {
+      id: 'tool2',
+      title: 'Tool 2',
+      group: 'Tools',
+      description: 'Description for Tool 2',
+      onTrigger: () => console.log('Tool 2 triggered'),
+      // Add more properties as needed
+    },
+    // Add more actions for other documents and tools
+  ]
+
+  const useStyles = createStyles((theme) => ({
+    action: {
+      position: 'relative',
+      display: 'block',
+      width: '100%',
+      padding: `${rem(10)} ${rem(12)}`,
+      borderRadius: theme.radius.sm,
+      ...theme.fn.hover({
+        backgroundColor:
+          theme.colorScheme === 'dark'
+            ? theme.colors.dark[4]
+            : theme.colors.gray[1],
+      }),
+
+      '&[data-hovered]': {
+        backgroundColor:
+          theme.colorScheme === 'dark'
+            ? theme.colors.dark[4]
+            : theme.colors.gray[1],
+      },
+    },
+  }))
+
+  function SpotlightSwitch({
+    action,
+    styles,
+    classNames,
+    hovered,
+    onTrigger,
+    ...others
+  }: SpotlightActionProps) {
+    const [checked, setChecked] = useState(false)
+    const { classes } = useStyles()
+    return (
+      <UnstyledButton
+        className={classes.action}
+        data-hovered={hovered || undefined}
+        tabIndex={-1}
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={onTrigger}
+        {...others}
+      >
+        <Group noWrap>
+          <div style={{ flex: 1 }}>
+            <Text>{action.title}</Text>
+
+            {action.description && (
+              <Text color="dimmed" size="xs">
+                {action.description}
+              </Text>
+            )}
+          </div>
+          <Switch
+            checked={checked}
+            onChange={(event) => setChecked(event.currentTarget.checked)}
+          />
+        </Group>
+      </UnstyledButton>
+    )
+  }
+
   return (
-    <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
-      <div className="justify-center" style={{ height: '46px' }}>
-        <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
-      </div>
-      <div className="mt-10 flex-grow overflow-auto">
-        {!(apiKey || serverSideApiKeyIsSet) ? (
-          <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
-            <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
-              <div className="mb-2 flex flex-col items-center text-center">
-                <IconAlertTriangle
-                  size={'54'}
-                  className="mr-2 block text-orange-400 "
-                />
-                <div className="mt-4 text-left text-gray-100">
-                  {' '}
-                  {t(
-                    'Please set your OpenAI API key in the bottom left of the screen.',
-                  )}
-                  <div className="mt-2 font-normal">
-                    <Text size={'md'} className="text-gray-100">
-                      If you don&apos;t have a key yet, you can get one here:{' '}
-                      <a
-                        href="https://platform.openai.com/account/api-keys"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-purple-500 hover:underline"
-                      >
-                        OpenAI API key{' '}
-                        <IconExternalLink
-                          className="mr-2 inline-block"
-                          style={{ position: 'relative', top: '-3px' }}
-                        />
-                      </a>
-                    </Text>
-                    <Text size={'md'} className="pt-10 text-gray-400">
-                      <IconLock className="mr-2 inline-block" />
-                      This key will live securely encrypted in your
-                      browser&apos;s cache. It&apos;s all client-side so our
-                      servers never see it.
-                    </Text>
-                    <Text size={'md'} className="pt-10 text-gray-400">
-                      <IconBrain className="mr-2 inline-block" />
-                      GPT 3.5 is default. For GPT-4 access, either complete one
-                      billing cycle as an OpenAI API customer or pre-pay a
-                      minimum of $0.50. See
-                      <a
-                        className="text-purple-500 hover:underline"
-                        href="https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {' '}
-                        this documentation for details{' '}
-                        <IconExternalLink
-                          className="mr-2 inline-block"
-                          style={{ position: 'relative', top: '-3px' }}
-                        />
-                      </a>
-                    </Text>
-                    <Text size={'md'} className="pt-10 text-gray-400">
-                      <IconCreditCard className="mr-2 inline-block" />
-                      You only pay the standard OpenAI prices, per token read or
-                      generated by the model.
-                    </Text>
-                  </div>
-                </div>
-                <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
-                  <IconArrowLeft
-                    size={'36'}
-                    className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
+    <SpotlightProvider
+      actions={docsAndToolsActions}
+      query={spotlightQuery}
+      onQueryChange={setSpotlightQuery}
+      searchIcon={<IconSearch size="1.2rem" />}
+      searchPlaceholder="Search for your favourite tools or document groups..."
+      actionComponent={SpotlightSwitch}
+      closeOnActionTrigger={false}
+    >
+      <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
+        <div className="justify-center" style={{ height: '46px' }}>
+          <ChatNavbar
+            spotlight={spotlight}
+            bannerUrl={bannerUrl as string}
+            isgpt4={true}
+          />
+        </div>
+        <div className="mt-10 flex-grow overflow-auto">
+          {!(apiKey || serverSideApiKeyIsSet) ? (
+            <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
+              <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
+                <div className="mb-2 flex flex-col items-center text-center">
+                  <IconAlertTriangle
+                    size={'54'}
+                    className="mr-2 block text-orange-400 "
                   />
+                  <div className="mt-4 text-left text-gray-100">
+                    {' '}
+                    {t(
+                      'Please set your OpenAI API key in the bottom left of the screen.',
+                    )}
+                    <div className="mt-2 font-normal">
+                      <Text size={'md'} className="text-gray-100">
+                        If you don&apos;t have a key yet, you can get one here:{' '}
+                        <a
+                          href="https://platform.openai.com/account/api-keys"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-purple-500 hover:underline"
+                        >
+                          OpenAI API key{' '}
+                          <IconExternalLink
+                            className="mr-2 inline-block"
+                            style={{ position: 'relative', top: '-3px' }}
+                          />
+                        </a>
+                      </Text>
+                      <Text size={'md'} className="pt-10 text-gray-400">
+                        <IconLock className="mr-2 inline-block" />
+                        This key will live securely encrypted in your
+                        browser&apos;s cache. It&apos;s all client-side so our
+                        servers never see it.
+                      </Text>
+                      <Text size={'md'} className="pt-10 text-gray-400">
+                        <IconBrain className="mr-2 inline-block" />
+                        GPT 3.5 is default. For GPT-4 access, either complete
+                        one billing cycle as an OpenAI API customer or pre-pay a
+                        minimum of $0.50. See
+                        <a
+                          className="text-purple-500 hover:underline"
+                          href="https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {' '}
+                          this documentation for details{' '}
+                          <IconExternalLink
+                            className="mr-2 inline-block"
+                            style={{ position: 'relative', top: '-3px' }}
+                          />
+                        </a>
+                      </Text>
+                      <Text size={'md'} className="pt-10 text-gray-400">
+                        <IconCreditCard className="mr-2 inline-block" />
+                        You only pay the standard OpenAI prices, per token read
+                        or generated by the model.
+                      </Text>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
+                    <IconArrowLeft
+                      size={'36'}
+                      className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ) : modelError ? (
-          <ErrorMessageDiv error={modelError} />
-        ) : (
-          <>
-            <div
-              className="mt-4 max-h-full"
-              ref={chatContainerRef}
-              onScroll={handleScroll}
-            >
-              {selectedConversation?.messages.length === 0 ? (
-                <>
-                  <div className="mt-16">{renderIntroductoryStatements()}</div>
-                </>
-              ) : (
-                <>
-                  {selectedConversation?.messages.map((message, index) => (
-                    <MemoizedChatMessage
-                      key={index}
-                      message={message}
-                      contentRenderer={renderMessageContent}
-                      messageIndex={index}
-                      onEdit={(editedMessage) => {
-                        // setCurrentMessage(editedMessage)
-                        handleSend(
-                          editedMessage,
-                          selectedConversation?.messages.length - index,
-                        )
-                      }}
-                      onImageUrlsUpdate={onImageUrlsUpdate}
+          ) : modelError ? (
+            <ErrorMessageDiv error={modelError} />
+          ) : (
+            <>
+              <div
+                className="mt-4 max-h-full"
+                ref={chatContainerRef}
+                onScroll={handleScroll}
+              >
+                {selectedConversation?.messages.length === 0 ? (
+                  <>
+                    <div className="mt-16">
+                      {renderIntroductoryStatements()}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {selectedConversation?.messages.map((message, index) => (
+                      <MemoizedChatMessage
+                        key={index}
+                        message={message}
+                        contentRenderer={renderMessageContent}
+                        messageIndex={index}
+                        onEdit={(editedMessage) => {
+                          // setCurrentMessage(editedMessage)
+                          handleSend(
+                            editedMessage,
+                            selectedConversation?.messages.length - index,
+                          )
+                        }}
+                        onImageUrlsUpdate={onImageUrlsUpdate}
+                      />
+                    ))}
+                    {loading && <ChatLoader />}
+                    <div
+                      className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
+                      ref={messagesEndRef}
                     />
-                  ))}
-                  {loading && <ChatLoader />}
-                  <div
-                    className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
-                    ref={messagesEndRef}
-                  />
-                </>
-              )}
-            </div>
-            {/* <div className="w-full max-w-[calc(100% - var(--sidebar-width))] mx-auto flex justify-center"> */}
-            <ChatInput
-              stopConversationRef={stopConversationRef}
-              textareaRef={textareaRef}
-              onSend={(message, plugin) => {
-                // setCurrentMessage(message)
-                handleSend(message, 0, plugin)
-              }}
-              onScrollDownClick={handleScrollDown}
-              onRegenerate={handleRegenerate}
-              showScrollDownButton={showScrollDownButton}
-              inputContent={inputContent}
-              setInputContent={setInputContent}
-              courseName={getCurrentPageName()}
-            />
-            {/* </div> */}
-          </>
-        )}
+                  </>
+                )}
+              </div>
+              {/* <div className="w-full max-w-[calc(100% - var(--sidebar-width))] mx-auto flex justify-center"> */}
+              <ChatInput
+                stopConversationRef={stopConversationRef}
+                textareaRef={textareaRef}
+                onSend={(message, plugin) => {
+                  // setCurrentMessage(message)
+                  handleSend(message, 0, plugin)
+                }}
+                onScrollDownClick={handleScrollDown}
+                onRegenerate={handleRegenerate}
+                showScrollDownButton={showScrollDownButton}
+                inputContent={inputContent}
+                setInputContent={setInputContent}
+                courseName={getCurrentPageName()}
+              />
+              {/* </div> */}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </SpotlightProvider>
   )
   Chat.displayName = 'Chat'
 })
