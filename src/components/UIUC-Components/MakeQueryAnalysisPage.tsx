@@ -175,12 +175,14 @@ const MakeQueryAnalysisPage = ({
         `https://flask-production-751b.up.railway.app/export-convo-history-csv?course_name=${courseName}`,
         { responseType: 'blob' },
       )
-      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const url = window.URL.createObjectURL(response.data)
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', courseName + '_conversation_history.csv')
+      link.setAttribute('download', `${courseName}_conversation_history.zip`)
       document.body.appendChild(link)
       link.click()
+      document.body.removeChild(link) // Clean up by removing the link element
+      window.URL.revokeObjectURL(url) // Free up memory by releasing the object URL
     } catch (error) {
       console.error('Error fetching conversation history:', error)
       notifications.show({
