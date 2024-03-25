@@ -887,10 +887,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                     </Text>
                   </div>
                 </div>
-                <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
+                <div className="absolute bottom-4 left-0 animate-ping flex-col place-items-start text-left">
                   <IconArrowLeft
                     size={'36'}
-                    className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
+                    className="transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
                   />
                 </div>
               </div>

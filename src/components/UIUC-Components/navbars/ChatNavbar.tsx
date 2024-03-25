@@ -319,7 +319,7 @@ const ChatNavbar = ({
     >
       <div
         // className="mt-4"
-        style={{ paddingTop: 'Opx', maxWidth: '95vw', marginRight: '25px' }}
+        style={{ paddingTop: 'Opx', maxWidth: '95vw', marginRight: '45px' }}
       >
         {/* <div > */}
         {/* <Flex style={{ flexDirection: 'row' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"> */}
