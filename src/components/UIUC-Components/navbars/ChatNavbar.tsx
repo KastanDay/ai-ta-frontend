@@ -1,7 +1,6 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { magicBellTheme } from '~/components/UIUC-Components/navbars/GlobalHeader'
-import { Button } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import Image from 'next/image'
 import { useEffect, useState, useContext, useRef } from 'react'
@@ -151,7 +150,7 @@ const useStyles = createStyles((theme) => ({
 }))
 
 interface ChatNavbarProps {
-  spotlight: typeof spotlight
+  spotlight?: typeof spotlight
   course_name?: string
   bannerUrl?: string
   isgpt4?: boolean
@@ -235,82 +234,71 @@ const ChatNavbar = ({
     fetchCourses()
   }, [clerk_user.isLoaded, clerk_user.isSignedIn])
 
-  const handleLinkClick = (path: string) => {
-    setActiveLink(path)
-    toggle()
-  }
-
-  const items = isAdminOrOwner
-    ? [
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Groups/Tools
-            </span>
-          ),
-          icon: <SpotlightIcon />,
-          action: () => spotlight.open(), // This opens the Spotlight
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Chat
-            </span>
-          ),
-          icon: <MessageChatIcon />,
-          link: `/${getCurrentCourseName()}/chat`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Materials
-            </span>
-          ),
-          icon: <FolderIcon />,
-          link: `/${getCurrentCourseName()}/materials`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Analysis
-            </span>
-          ),
-          icon: <ReportIcon />,
-          link: `/${getCurrentCourseName()}/query-analysis`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Prompting
-            </span>
-          ),
-          icon: <SettingIcon />,
-          link: `/${getCurrentCourseName()}/prompt`,
-        },
-      ]
-    : [
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Groups/Tools
-            </span>
-          ),
-          icon: <SpotlightIcon />, // Replace with an appropriate icon
-          action: () => spotlight.open(), // This opens the Spotlight
-        },
-      ]
+  const items = [
+    ...(spotlight
+      ? [
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Groups/Tools
+              </span>
+            ),
+            icon: <SpotlightIcon />,
+            action: () => spotlight.open(), // This opens the Spotlight
+          },
+        ]
+      : []),
+    ...(isAdminOrOwner
+      ? [
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Chat
+              </span>
+            ),
+            icon: <MessageChatIcon />,
+            link: `/${getCurrentCourseName()}/chat`,
+          },
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Materials
+              </span>
+            ),
+            icon: <FolderIcon />,
+            link: `/${getCurrentCourseName()}/materials`,
+          },
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Analysis
+              </span>
+            ),
+            icon: <ReportIcon />,
+            link: `/${getCurrentCourseName()}/query-analysis`,
+          },
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Prompting
+              </span>
+            ),
+            icon: <SettingIcon />,
+            link: `/${getCurrentCourseName()}/prompt`,
+          },
+        ]
+      : []),
+  ]
 
   const handleClickOutside = (event: MouseEvent) => {
     if (

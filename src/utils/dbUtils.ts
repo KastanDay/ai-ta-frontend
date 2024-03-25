@@ -2,6 +2,27 @@
 import { CourseDocument } from '~/types/courseMaterials'
 import { supabase } from './supabaseClient'
 
+export async function fetchEnabledDocGroups(courseName: string) {
+  try {
+    const { data: documentGroups, error } = await supabase
+      .from('doc_groups')
+      .select('name')
+      .eq('course_name', courseName)
+      .eq('enabled', true)
+
+    if (error) {
+      console.error('Failed to fetch enabled document groups:', error.message)
+      throw new Error(
+        `Failed to fetch enabled document groups: ${error.message}`,
+      )
+    }
+    return documentGroups
+  } catch (error) {
+    console.error('Error in fetchEnabledDocGroups:', error)
+    throw error
+  }
+}
+
 export async function fetchDocumentGroups(courseName: string) {
   try {
     const { data: documentGroups, error } = await supabase

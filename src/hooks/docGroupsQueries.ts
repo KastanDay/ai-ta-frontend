@@ -36,6 +36,41 @@ export function useGetDocumentGroups(course_name: string) {
   })
 }
 
+export function useFetchEnabledDocGroups(course_name: string) {
+  // USAGE:
+  // const {
+  //   data: documentGroups,
+  //   isLoading: isLoadingDocumentGroups,
+  //   isError: isErrorDocumentGroups,
+  //   refetch: refetchDocumentGroups,
+  // } = useFetchEnabledDocGroups(course_name)
+
+  return useQuery({
+    queryKey: ['documentGroups', course_name],
+    queryFn: async () => {
+      // try {
+      const response = await fetch('/api/documentGroups', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'fetchEnabledDocGroups',
+          courseName: course_name,
+        }),
+      })
+      // console.log('response: ', response)
+      if (!response.ok) {
+        throw new Error('Network response was not ok')
+      }
+      const data = await response.json()
+      const docGroups = data.documents
+
+      return docGroups as DocumentGroup[]
+    },
+  })
+}
+
 // ------------- Mutations -------------
 
 export function useCreateDocumentGroup(

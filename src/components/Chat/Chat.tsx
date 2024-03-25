@@ -90,6 +90,8 @@ import {
   SpotlightAction,
   SpotlightActionProps,
 } from '@mantine/spotlight'
+import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
+import ChatSpotlight from '../UIUC-Components/ChatSpotlight'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -106,6 +108,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   const [inputContent, setInputContent] = useState<string>('')
+
+  const {
+    data: documentGroups,
+    isLoading,
+    isError,
+  } = useFetchEnabledDocGroups(getCurrentPageName())
+  const [actions, setActions] = useState<SpotlightAction[]>([])
 
   useEffect(() => {
     if (
@@ -834,113 +843,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     [selectedConversation, conversations],
   )
 
-  const docsAndToolsActions: SpotlightAction[] = [
-    {
-      id: 'doc1',
-      title: 'Document 1',
-      description: 'Description for Document 1',
-      group: 'Documents',
-      onTrigger: () => console.log('Document 1 triggered'),
-      // Add more properties as needed
-    },
-    {
-      id: 'doc2',
-      title: 'Document 2',
-      description: 'Description for Document 2',
-      group: 'Documents',
-      onTrigger: () => console.log('Document 2 triggered'),
-      // Add more properties as needed
-    },
-    {
-      id: 'tool1',
-      title: 'Tool 1',
-      group: 'Tools',
-      description: 'Description for Tool 1',
-      onTrigger: () => console.log('Tool 1 triggered'),
-      // Add more properties as needed
-    },
-    {
-      id: 'tool2',
-      title: 'Tool 2',
-      group: 'Tools',
-      description: 'Description for Tool 2',
-      onTrigger: () => console.log('Tool 2 triggered'),
-      // Add more properties as needed
-    },
-    // Add more actions for other documents and tools
-  ]
-
-  const useStyles = createStyles((theme) => ({
-    action: {
-      position: 'relative',
-      display: 'block',
-      width: '100%',
-      padding: `${rem(10)} ${rem(12)}`,
-      borderRadius: theme.radius.sm,
-      ...theme.fn.hover({
-        backgroundColor:
-          theme.colorScheme === 'dark'
-            ? theme.colors.dark[4]
-            : theme.colors.gray[1],
-      }),
-
-      '&[data-hovered]': {
-        backgroundColor:
-          theme.colorScheme === 'dark'
-            ? theme.colors.dark[4]
-            : theme.colors.gray[1],
-      },
-    },
-  }))
-
-  function SpotlightSwitch({
-    action,
-    styles,
-    classNames,
-    hovered,
-    onTrigger,
-    ...others
-  }: SpotlightActionProps) {
-    const [checked, setChecked] = useState(false)
-    const { classes } = useStyles()
-    return (
-      <UnstyledButton
-        className={classes.action}
-        data-hovered={hovered || undefined}
-        tabIndex={-1}
-        onMouseDown={(event) => event.preventDefault()}
-        onClick={onTrigger}
-        {...others}
-      >
-        <Group noWrap>
-          <div style={{ flex: 1 }}>
-            <Text>{action.title}</Text>
-
-            {action.description && (
-              <Text color="dimmed" size="xs">
-                {action.description}
-              </Text>
-            )}
-          </div>
-          <Switch
-            checked={checked}
-            onChange={(event) => setChecked(event.currentTarget.checked)}
-          />
-        </Group>
-      </UnstyledButton>
-    )
-  }
-
   return (
-    <SpotlightProvider
-      actions={docsAndToolsActions}
-      query={spotlightQuery}
-      onQueryChange={setSpotlightQuery}
-      searchIcon={<IconSearch size="1.2rem" />}
-      searchPlaceholder="Search for your favourite tools or document groups..."
-      actionComponent={SpotlightSwitch}
-      closeOnActionTrigger={false}
-    >
+    <>
+      <ChatSpotlight courseName={getCurrentPageName()} />
       <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
         <div className="justify-center" style={{ height: '46px' }}>
           <ChatNavbar
@@ -1081,7 +986,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           )}
         </div>
       </div>
-    </SpotlightProvider>
+    </>
   )
   Chat.displayName = 'Chat'
 })
