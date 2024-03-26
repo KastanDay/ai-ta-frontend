@@ -170,7 +170,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         throw new Error(data.message);
       }
 
-      console.log('new method worked frontend');
+      // console.log('new method worked frontend');
   
       // Handle the response data as needed
     } catch (error) {

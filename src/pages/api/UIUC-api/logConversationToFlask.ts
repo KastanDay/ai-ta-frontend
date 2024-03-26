@@ -1,25 +1,31 @@
-import { ChatBody, Conversation, Message } from '@/types/chat'
+import { NextApiRequest, NextApiResponse } from 'next';
+import { ChatBody, Conversation, Message } from '@/types/chat';
 
-export const onResponseCompletion = async (course_name: string, conversation: Conversation) => {
-  try {
-    const response = await fetch(`https://flask-production-751b.up.railway.app/onResponseCompletion`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        course_name,
-        conversation,
-      }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message);
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method === 'POST') {
+    try {
+      const { course_name, conversation } = req.body as { course_name: string; conversation: Conversation };
 
-    console.log('new method worked backend');
-    
-    return data.success;
-  } catch (error) {
-    console.error('Error in backend.ts running onResponseCompletion():', error);
-    return false;
+      const response = await fetch(`https://flask-production-751b.up.railway.app/onResponseCompletion`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          course_name: course_name,
+          conversation: conversation,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+      // console.log('new method worked backend');
+      res.status(200).json({ success: true });
+    } catch (error) {
+      console.error('Error in backend.ts running logConversationToFlask():', error);
+      res.status(500).json({ success: false, message: 'An error occurred' });
+    }
+  } else {
+    res.status(405).json({ success: false, message: 'Method not allowed' });
   }
-};
+}
