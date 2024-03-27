@@ -14,11 +14,16 @@ import {
   createStyles,
   Paper,
   Center,
+  Tooltip,
+  MantineTheme,
 } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
 import {
+  IconAlertTriangle,
+  IconCheck,
   IconEdit,
   IconEye,
+  IconFileExport,
   IconSearch,
   IconTrash,
   IconX,
@@ -34,10 +39,13 @@ import {
 } from '@mantine/modals'
 import { showToastOnFileDeleted } from './MakeOldCoursePage'
 import axios from 'axios'
-import { showNotification } from '@mantine/notifications'
+import { notifications } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
 import { Badge } from '@mantine/core'
 import { useColorScheme } from '@mantine/hooks'
+import { IconInfoCircleFilled } from '@tabler/icons-react'
+import { handleExport } from '~/pages/api/UIUC-api/exportAllDocuments'
+
 
 const GlobalStyle = createGlobalStyle`
 // these mantine class names may change in future versions
@@ -139,7 +147,9 @@ export function MantineYourMaterialsTable({
   const [query, setQuery] = useState('')
   const [debouncedQuery] = useDebouncedValue(query, 200)
   const [modalOpened, setModalOpened] = useState(false)
+  const [exportModalOpened, setExportModalOpened] = useState(false)
   const [recordsToDelete, setRecordsToDelete] = useState<CourseDocuments[]>([])
+  // const [recordsToExport, setRecordsToExport] = useState<CourseDocuments[]>([])
 
   useEffect(() => {
     if (debouncedQuery !== '') {
@@ -369,13 +379,48 @@ export function MantineYourMaterialsTable({
             }}
           >
             {selectedRecords.length
-              ? `Delete ${
-                  selectedRecords.length === 1
-                    ? '1 selected record'
-                    : `${selectedRecords.length} selected records`
-                }`
+              ? `Delete ${selectedRecords.length === 1
+                ? '1 selected record'
+                : `${selectedRecords.length} selected records`
+              }`
               : 'Select records to delete'}
           </Button>
+        </Center>
+        <Center>
+          <Button  // button to export materials
+            uppercase
+            leftIcon={<IconFileExport size={16} />}
+            // disabled={!selectedRecords.length}
+            onClick={() => {
+              // setRecordsToExport(selectedRecords)
+              setExportModalOpened(true)
+            }}
+            style={{
+              // backgroundColor: selectedRecords.length
+              //   ? 'purple'
+              //   : 'transparent',
+              backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
+              marginTop: '20px',
+              marginRight: '5px',
+            }}
+          >
+            {/* {selectedRecords.length
+              ? `Export ${selectedRecords.length === 1
+                ? '1 selected record'
+                : `${selectedRecords.length} selected records`
+              }`
+              : 'Select records to export'} */}
+            Export Documents & Embeddings
+          </Button>
+          <Tooltip
+            multiline
+            width={280}
+            withArrow
+            transitionProps={{ duration: 200 }}
+            label="Download the post-processed text and vector embeddings (OpenAI Ada-002) used by the LLM. The export format is JSON Lines (.JSONL). To minimize data transfer costs, exporting original files (PDFs, etc.) is only available for individual documents."
+          >
+            <IconInfoCircleFilled size={23} />
+          </Tooltip>
         </Center>
       </Paper>
       <Modal
@@ -418,6 +463,47 @@ export function MantineYourMaterialsTable({
           </Button>
         </div>
       </Modal>
+      <Modal
+        opened={exportModalOpened} // Use a separate state variable for the export modal
+        onClose={() => setExportModalOpened(false)} // Update the state variable when the modal is closed
+        title="Please confirm your action"
+      >
+        <Text size="sm" style={{ color: 'white' }}>
+          {`Are you sure you want to export all the documents and embeddings?`}
+        </Text>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginTop: '20px',
+          }}
+        >
+          <Button
+            className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
+            onClick={() => {
+              setExportModalOpened(false)
+            }}
+            style={{
+              backgroundColor: 'transparent',
+              marginRight: '7px',
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
+            onClick={async () => {
+              setExportModalOpened(false)
+              const result = await handleExport(getCurrentPageName())
+              if (result && result.message) {
+                showToastOnUpdate(theme, false, false, result.message);
+              }
+            }}
+          >
+            Export
+          </Button>
+        </div>
+      </Modal>
     </>
   )
 }
@@ -446,8 +532,7 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${
-          response.statusText || response.status
+        `Error fetching course metadata: ${response.statusText || response.status
         }`,
       )
     }
@@ -455,4 +540,54 @@ async function fetchCourseMetadata(course_name: string) {
     console.error('Error fetching course metadata:', error)
     throw error
   }
+}
+
+export const showToastOnUpdate = (
+  theme: MantineTheme,
+  was_error = false,
+  isReset = false,
+  message: string,
+) => {
+  return (
+    notifications.show({
+      id: 'prompt-updated',
+      withCloseButton: true,
+      onClose: () => console.log('unmounted'),
+      onOpen: () => console.log('mounted'),
+      autoClose: 12000,
+      // title: was_error ? 'Error updating prompt' : (isReset ? 'Resetting prompt...' : 'Updating prompt...'),
+      // message: was_error
+      //   ? "An error occurred while updating the prompt. Please try again."
+      //   : (isReset ? 'The prompt has been reset to default.' : 'The prompt has been updated successfully.'),
+      message: message,
+      icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
+      styles: {
+        root: {
+          backgroundColor: theme.colors.nearlyWhite,
+          borderColor: was_error
+            ? theme.colors.errorBorder
+            : theme.colors.aiPurple,
+        },
+        title: {
+          color: theme.colors.nearlyBlack,
+        },
+        description: {
+          color: theme.colors.nearlyBlack,
+        },
+        closeButton: {
+          color: theme.colors.nearlyBlack,
+          '&:hover': {
+            backgroundColor: theme.colors.dark[1],
+          },
+        },
+        icon: {
+          backgroundColor: was_error
+            ? theme.colors.errorBackground
+            : theme.colors.successBackground,
+          padding: '4px',
+        },
+      },
+      loading: false,
+    })
+  )
 }
