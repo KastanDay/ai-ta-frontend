@@ -24,6 +24,7 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import { LoadingSpinner } from './LoadingSpinner'
+import { downloadConversationHistory } from '../../pages/api/UIUC-api/downloadConvoHistory';
 
 const useStyles = createStyles((theme: MantineTheme) => ({
   downloadButton: {
@@ -76,7 +77,7 @@ const MakeQueryAnalysisPage = ({
   course_data: any
 }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  const { classes } = useStyles()
+  const { classes, theme } = useStyles()
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
   // const { isSignedIn, user } = useUser()
   const clerk_user = useUser()
@@ -163,42 +164,22 @@ const MakeQueryAnalysisPage = ({
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-        // current_email={currentEmail as string}
+      // current_email={currentEmail as string}
       />
     )
   }
 
-  const downloadConversationHistory = async (courseName: string) => {
+  const handleDownload = async (courseName: string) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true)
-      const response = await axios.get(
-        `https://flask-production-751b.up.railway.app/export-convo-history-csv?course_name=${courseName}`,
-        { responseType: 'blob' },
-      )
-      const url = window.URL.createObjectURL(new Blob([response.data]))
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', courseName + '_conversation_history.csv')
-      document.body.appendChild(link)
-      link.click()
-    } catch (error) {
-      console.error('Error fetching conversation history:', error)
-      notifications.show({
-        id: 'error-notification',
-        title: 'Error',
-        message:
-          'Failed to fetch conversation history. Please try again later.',
-        color: 'red',
-        radius: 'lg',
-        icon: <IconAlertCircle />,
-        className: 'my-notification-class',
-        style: { backgroundColor: '#15162c' },
-        loading: false,
-      })
-    } finally {
-      setIsLoading(false)
+      const result = await downloadConversationHistory(courseName);
+      showToastOnUpdate(theme, false, false, result.message);
+
     }
-  }
+    finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
@@ -254,7 +235,7 @@ const MakeQueryAnalysisPage = ({
                         <IconCloudDownload />
                       )
                     }
-                    onClick={() => downloadConversationHistory(course_name)}
+                    onClick={() => handleDownload(course_name)}
                   >
                     Download Conversation History
                   </Button>
@@ -327,6 +308,7 @@ const MakeQueryAnalysisPage = ({
 
 import {
   IconAlertCircle,
+  IconAlertTriangle,
   IconCheck,
   IconCloudDownload,
   IconDownload,
@@ -448,15 +430,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colorScheme === 'dark'
-                      ? theme.colors.gray[2]
-                      : theme.colors.gray[1]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colorScheme === 'dark'
+                        ? theme.colors.gray[2]
+                        : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colors.gray[8]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colors.gray[8]
                 }}
               >
                 <IconDownload className="h-5 w-5 text-gray-800" />
@@ -473,15 +455,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colorScheme === 'dark'
-                      ? theme.colors.gray[2]
-                      : theme.colors.gray[1]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colorScheme === 'dark'
+                        ? theme.colors.gray[2]
+                        : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
-                    theme.colors.red[6]
+                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
+                      theme.colors.red[6]
                 }}
               >
                 <IconTrash className="h-5 w-5 text-red-600" />
@@ -518,8 +500,7 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${
-          response.statusText || response.status
+        `Error fetching course metadata: ${response.statusText || response.status
         }`,
       )
     }
@@ -574,3 +555,53 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
 }
 
 export default MakeQueryAnalysisPage
+
+export const showToastOnUpdate = (
+  theme: MantineTheme,
+  was_error = false,
+  isReset = false,
+  message: string,
+) => {
+  return (
+    notifications.show({
+      id: 'prompt-updated',
+      withCloseButton: true,
+      onClose: () => console.log('unmounted'),
+      onOpen: () => console.log('mounted'),
+      autoClose: 12000,
+      // title: was_error ? 'Error updating prompt' : (isReset ? 'Resetting prompt...' : 'Updating prompt...'),
+      // message: was_error
+      //   ? "An error occurred while updating the prompt. Please try again."
+      //   : (isReset ? 'The prompt has been reset to default.' : 'The prompt has been updated successfully.'),
+      message: message,
+      icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
+      styles: {
+        root: {
+          backgroundColor: theme.colors.nearlyWhite,
+          borderColor: was_error
+            ? theme.colors.errorBorder
+            : theme.colors.aiPurple,
+        },
+        title: {
+          color: theme.colors.nearlyBlack,
+        },
+        description: {
+          color: theme.colors.nearlyBlack,
+        },
+        closeButton: {
+          color: theme.colors.nearlyBlack,
+          '&:hover': {
+            backgroundColor: theme.colors.dark[1],
+          },
+        },
+        icon: {
+          backgroundColor: was_error
+            ? theme.colors.errorBackground
+            : theme.colors.successBackground,
+          padding: '4px',
+        },
+      },
+      loading: false,
+    })
+  )
+}
