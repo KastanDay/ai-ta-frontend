@@ -21,6 +21,11 @@
       "~/*": ["./src/*"],
       "@/*": ["./src/*"],
     },
+    "plugins": [
+      {
+        "name": "next",
+      },
+    ],
   },
   "include": [
     ".eslintrc.cjs",
@@ -30,6 +35,8 @@
     "**/*.cjs",
     "**/*.mjs",
     "next-i18next.config.mjs",
+    "src/app/api/chat/route",
+    ".next/types/**/*.ts",
   ],
   "exclude": ["node_modules"],
 }
