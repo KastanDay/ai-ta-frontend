@@ -1,4 +1,4 @@
-// src/pages/api/UIUC-api/fetchImageDescription.ts
+// src/pages/api/UIUC-api/fetchRoutingResponse.ts
 
 import { ChatBody, Content, Conversation, Message } from '@/types/chat'
 
@@ -7,10 +7,7 @@ export const config = {
 }
 
 /**
- * Asynchronously fetches a description for images contained within a message.
- * It constructs a request body with the necessary details and sends a POST request
- * to the specified endpoint. It handles errors and logs them for easier debugging.
- *
+ * Asynchronously fetches routing response for images and user questions contained within a message.
  * @param {Message} message - The message object containing potential image content.
  * @param {string} course_name - The name of the course for context.
  * @param {string} endpoint - The API endpoint to which the POST request is sent.
@@ -19,7 +16,7 @@ export const config = {
  * @param {AbortController} controller - The controller to abort the fetch request if necessary.
  * @returns {Promise<string>} A promise that resolves to the image description.
  */
-export const fetchImageDescription = async (
+export const fetchRoutingResponse = async (
   message: Message,
   course_name: string,
   endpoint: string,
@@ -29,14 +26,20 @@ export const fetchImageDescription = async (
 ): Promise<string> => {
   // Filter out the image content from the message
   const imageContent = (message.content as Content[]).filter(
-    (content) =>
-      content.type === 'image_url' || content.type === 'tool_image_url',
+    (content) => content.type === 'image_url',
   )
+  // Filter out user question from the message
+  const question = (message.content as Content[])
+    .filter((content) => content.type === 'text')
+    .map((q) => q.text)
+    .join(' ')
 
   // If there are no images, return an empty string
   if (imageContent.length === 0) {
     return ''
   }
+
+  // For future use to add more tools/classes, we can make a DB call to get the allowed tools/classes for the course and use them in the prompt
 
   // Construct the body for the chat API request
   const chatBody: ChatBody = {
@@ -44,27 +47,25 @@ export const fetchImageDescription = async (
     messages: [
       {
         ...message,
+        role: 'user',
         content: [
           ...imageContent,
           {
             type: 'text',
-            text: `"Analyze and describe the given image, focusing solely on visible elements. Detail the image by:
-            - Identifying text (OCR information), objects, spatial relationships, colors, actions, annotations, and labels.
-            - Utilizing specific terminology relevant to the image's domain (e.g., medical, agricultural, technological).
-            - Categorizing the image and listing associated key terms.
-            - Summarizing with keywords or phrases reflecting the main themes based on the user query.
-            
-            Emphasize primary features before detailing secondary elements. For abstract or emotional content, infer the central message. Provide synonyms for technical terms where applicable. 
-            Ensure the description remains concise, precise and relevant for semantic retrieval, avoiding mention of non-present features. Don't be redundant or overly verbose as that may hurt the semantic retrieval."
-            
-            **Goal:** Create an accurate, focused description that enhances semantic document retrieval, using ONLY observable details in the form of keywords`,
+            text: `Given the user question and images, classify the request as either being about \`Pests\`, or \`Other\`.
+						Do not respond with more than one word.
+						These categories will be used to route the request to the appropriate tool. So, even if the user doesn't explicitly asks about a specific category but the intent is clear, please classify the request accordingly.
+						<question>
+						${question}
+						</question>
+						Classification:`,
           },
         ],
       },
     ],
     key: apiKey,
-    prompt: updatedConversation.prompt,
-    temperature: updatedConversation.temperature,
+    prompt: '',
+    temperature: 0.1,
     course_name: course_name,
     stream: false,
     isImage: true,
@@ -87,13 +88,13 @@ export const fetchImageDescription = async (
       throw new Error(errorResponse.message)
     }
 
-    // Parse the JSON response and return the image description
+    // Parse the JSON response and return the routing response
     const data = await response.json()
     return data.choices[0].message.content || ''
   } catch (error) {
     // Log the error to the console and abort the fetch request
-    console.error('Error fetching image description:', error)
-    controller.abort()
+    console.error('Error fetching routing response:', error)
+    controller.abort('Error fetching routing response')
 
     // Re-throw the error to be handled by the caller
     throw error

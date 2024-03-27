@@ -7,9 +7,12 @@ import {
   Paper,
   Collapse,
   Accordion,
+  Popover,
+  Button,
 } from '@mantine/core'
 import {
   IconCheck,
+  IconChevronDown,
   IconCopy,
   IconEdit,
   IconRobot,
@@ -103,6 +106,10 @@ export const ChatMessage: FC<Props> = memo(
         currentMessage,
         messageIsStreaming,
         isImg2TextLoading,
+        isRouting,
+        routingResponse,
+        isPestDetectionLoading,
+        isRetrievalLoading,
       },
       dispatch: homeDispatch,
     } = useContext(HomeContext)
@@ -111,7 +118,7 @@ export const ChatMessage: FC<Props> = memo(
     const [isTyping, setIsTyping] = useState<boolean>(false)
     const [messageContent, setMessageContent] = useState<string>('')
 
-    const [imageUrls, setImageUrls] = useState<string[]>([])
+    const [imageUrls, setImageUrls] = useState<Set<string>>(new Set())
 
     const [messagedCopied, setMessageCopied] = useState(false)
 
@@ -190,23 +197,38 @@ export const ChatMessage: FC<Props> = memo(
         if (Array.isArray(message.content)) {
           const updatedContent = await Promise.all(
             message.content.map(async (content) => {
-              if (content.type === 'image_url' && content.image_url) {
-                console.log(
-                  'Checking if image url is valid: ',
-                  content.image_url.url,
-                )
+              if (
+                (content.type === 'image_url' && content.image_url) ||
+                (content.type === 'tool_image_url' && content.image_url)
+              ) {
+                // console.log(
+                // 'Checking if image url is valid: ',
+                // content.image_url.url,
+                // )
                 isValid = await checkIfUrlIsValid(content.image_url.url)
                 if (isValid) {
-                  setImageUrls((prevUrls) => [
-                    ...prevUrls,
-                    content.image_url?.url as string,
-                  ])
+                  // console.log('Image url is valid: ', content.image_url.url)
+                  setImageUrls(
+                    (prevUrls) =>
+                      new Set([...prevUrls, content.image_url?.url as string]),
+                  )
+                  // setImageUrls((prevUrls) => [
+                  //   ...new Set([...prevUrls],
+                  //   content.image_url?.url as string,
+                  // ])
+                  // console.log('Set the image urls: ', imageUrls)
                   return content
                 } else {
                   const path = extractPathFromUrl(content.image_url.url)
-                  console.log('Fetching presigned url for: ', path)
+                  console.log(
+                    'Image url was invalid, fetching presigned url for: ',
+                    path,
+                  )
                   const presignedUrl = await getPresignedUrl(path)
-                  setImageUrls((prevUrls) => [...prevUrls, presignedUrl])
+                  setImageUrls(
+                    (prevUrls) => new Set([...prevUrls, presignedUrl]),
+                  )
+                  // console.log('Set the image urls: ', imageUrls)
                   return { ...content, image_url: { url: presignedUrl } }
                 }
               }
@@ -234,7 +256,7 @@ export const ChatMessage: FC<Props> = memo(
       if (message.role === 'user') {
         fetchUrl()
       }
-    }, [message.content, messageIndex])
+    }, [message.content, messageIndex, isPestDetectionLoading])
 
     const toggleEditing = () => {
       setIsEditing(!isEditing)
@@ -324,7 +346,9 @@ export const ChatMessage: FC<Props> = memo(
     }, [message.content])
 
     useEffect(() => {
-      setImageUrls([])
+      // console.log('Resetting image urls because message: ', message, 'selectedConversation: ', selectedConversation)
+      setImageUrls(new Set())
+      // console.log('Set the image urls: ', imageUrls)
     }, [message])
 
     useEffect(() => {
@@ -459,56 +483,319 @@ export const ChatMessage: FC<Props> = memo(
                 ) : (
                   <div className="dark:prose-invert prose flex-1 whitespace-pre-wrap">
                     {Array.isArray(message.content) ? (
-                      <div className="flex flex-col items-start space-y-2">
-                        {message.content.map((content, index) => {
-                          if (content.type === 'text') {
-                            if (
-                              (content.text as string)
-                                .trim()
-                                .startsWith('Image description:')
-                            ) {
-                              console.log(
-                                'Image description found: ',
-                                content.text,
+                      <>
+                        <div className="flex flex-col items-start space-y-2">
+                          {message.content.map((content, index) => {
+                            if (content.type === 'text') {
+                              if (
+                                (content.text as string)
+                                  .trim()
+                                  .startsWith('Image description:')
+                              ) {
+                                // console.log(
+                                // 'Image description found: ',
+                                // content.text,
+                                // )
+                                return (
+                                  <Accordion
+                                    variant="filled"
+                                    key={index}
+                                    className=" rounded-lg bg-[#2e026d] shadow-lg"
+                                  >
+                                    <Accordion.Item value="imageDescription rounded-lg">
+                                      <Accordion.Control
+                                        className={`rounded-lg text-gray-200 hover:bg-purple-900 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                      >
+                                        This image description is used to find
+                                        relevant documents and provide
+                                        intelligent context for GPT-4 Vision.
+                                      </Accordion.Control>
+                                      <Accordion.Panel
+                                        className={`rounded-lg bg-[#1d1f32] p-4 text-gray-200 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                      >
+                                        {content.text}
+                                      </Accordion.Panel>
+                                    </Accordion.Item>
+                                  </Accordion>
+                                )
+                              } else {
+                                return (
+                                  <p
+                                    key={index}
+                                    className="self-start text-base font-medium"
+                                  >
+                                    {content.text}
+                                  </p>
+                                )
+                              }
+                            }
+                          })}
+                          <div className="-m-1 flex w-full flex-wrap justify-start">
+                            {message.content
+                              .filter(
+                                (item) =>
+                                  item.type === 'image_url' ||
+                                  item.type === 'tool_image_url',
                               )
-                              return (
-                                <Accordion
-                                  variant="filled"
+                              .map((content, index) => (
+                                <div
                                   key={index}
-                                  className=" rounded-lg bg-[#2e026d] shadow-lg"
+                                  className={classes.imageContainerStyle}
                                 >
-                                  <Accordion.Item value="imageDescription rounded-lg">
+                                  <div className="overflow-hidden rounded-lg shadow-lg">
+                                    <ImagePreview
+                                      src={
+                                        Array.from(imageUrls)[index] as string
+                                      }
+                                      alt="Chat message"
+                                      className={classes.imageStyle}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                          {isRouting &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <p
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                  }}
+                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                >
+                                  Routing the request to relevant tools:
+                                </p>
+                                <LoadingSpinner size="xs" />
+                              </div>
+                            )}
+
+                          {isRouting === false &&
+                            routingResponse &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <Accordion order={2}>
+                                  <Accordion.Item
+                                    value={'Routing'}
+                                    style={{ border: 0 }}
+                                  >
                                     <Accordion.Control
-                                      className={`rounded-lg text-gray-200 hover:bg-purple-900 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                      className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                      style={{
+                                        marginRight: '10px',
+                                        fontWeight: 'bold',
+                                        textShadow: '0 0 10px',
+                                        color: '#9d4edd',
+                                      }}
                                     >
-                                      This image description is used to find
-                                      relevant documents and provide intelligent
-                                      context for GPT-4 Vision.
+                                      Routing the request to relevant tools:
                                     </Accordion.Control>
                                     <Accordion.Panel
-                                      className={`rounded-lg bg-[#1d1f32] p-4 text-gray-200 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                      className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
                                     >
-                                      {content.text}
+                                      Routing to: {routingResponse}
                                     </Accordion.Panel>
                                   </Accordion.Item>
                                 </Accordion>
-                              )
-                            } else {
-                              return (
+                              </div>
+                            )}
+
+                          {isPestDetectionLoading &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
                                 <p
-                                  key={index}
-                                  className="self-start text-base font-medium"
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                  }}
+                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
-                                  {content.text}
+                                  Generating Pest Detection Report:
                                 </p>
-                              )
-                            }
-                          }
-                        })}
-                        {isImg2TextLoading &&
-                          messageIndex ==
-                            (selectedConversation?.messages.length ?? 0) -
-                              1 && (
+                                <LoadingSpinner size="xs" />
+                              </div>
+                            )}
+
+                          {isPestDetectionLoading === false &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <p
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                    color: '#9d4edd',
+                                  }}
+                                  className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                                >
+                                  Generating Pest Detection Report:
+                                </p>
+                                <IconCheck size={25} />
+                              </div>
+                            )}
+
+                          {isImg2TextLoading &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <p
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                  }}
+                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                >
+                                  Generating Image Description:
+                                </p>
+                                <LoadingSpinner size="xs" />
+                              </div>
+                            )}
+
+                          {isImg2TextLoading === false &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <p
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                    color: '#9d4edd',
+                                  }}
+                                  className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                                >
+                                  Generating Image Description:
+                                </p>
+                                <IconCheck size={25} />
+                              </div>
+                            )}
+
+                          {isRetrievalLoading &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <p
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                  }}
+                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                >
+                                  Retrieving relevant documents:
+                                </p>
+                                <LoadingSpinner size="xs" />
+                              </div>
+                            )}
+
+                          {isRetrievalLoading === false &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <p
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                    color: '#9d4edd',
+                                  }}
+                                  className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                                >
+                                  Retrieving relevant documents:
+                                </p>
+                                <IconCheck size={25} />
+                              </div>
+                            )}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        message.content
+                        {isRetrievalLoading &&
+                          (messageIndex ===
+                            (selectedConversation?.messages.length ?? 0) - 1 ||
+                            messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
                             <div
                               style={{ display: 'flex', alignItems: 'center' }}
                             >
@@ -518,34 +805,36 @@ export const ChatMessage: FC<Props> = memo(
                                   fontWeight: 'bold',
                                   textShadow: '0 0 10px',
                                 }}
-                                className=" pulsate"
+                                className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
                               >
-                                Generating Image Description:
+                                Retrieving relevant documents:
                               </p>
                               <LoadingSpinner size="xs" />
                             </div>
                           )}
-                        <div className="-m-1 flex w-full flex-wrap justify-start">
-                          {message.content
-                            .filter((item) => item.type === 'image_url')
-                            .map((content, index) => (
-                              <div
-                                key={index}
-                                className={classes.imageContainerStyle}
+                        {isRetrievalLoading === false &&
+                          (messageIndex ===
+                            (selectedConversation?.messages.length ?? 0) - 1 ||
+                            messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
+                            <div
+                              style={{ display: 'flex', alignItems: 'center' }}
+                            >
+                              <p
+                                style={{
+                                  marginRight: '10px',
+                                  fontWeight: 'bold',
+                                  textShadow: '0 0 10px',
+                                }}
+                                className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                               >
-                                <div className="overflow-hidden rounded-lg shadow-lg">
-                                  <ImagePreview
-                                    src={imageUrls[index] as string}
-                                    alt="Chat message"
-                                    className={classes.imageStyle}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    ) : (
-                      message.content
+                                Retrieving relevant documents:
+                              </p>
+                              <IconCheck size={25} />
+                            </div>
+                          )}
+                      </>
                     )}
                   </div>
                 )}

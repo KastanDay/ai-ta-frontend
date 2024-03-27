@@ -411,6 +411,26 @@ const Home = () => {
     dispatch({ field: 'isImg2TextLoading', value: isImg2TextLoading })
   }
 
+  // Routing
+  const setIsRouting = (isRouting: boolean) => {
+    dispatch({ field: 'isRouting', value: isRouting })
+  }
+
+  // Routing Response
+  const setRoutingResponse = (routingResponse: string) => {
+    dispatch({ field: 'routingResponse', value: routingResponse })
+  }
+
+  // Pest Detection
+  const setIsPestDetectionLoading = (isPestDetectionLoading: boolean) => {
+    dispatch({ field: 'isPestDetectionLoading', value: isPestDetectionLoading })
+  }
+
+  // Retrieval
+  const setIsRetrievalLoading = (isRetrievalLoading: boolean) => {
+    dispatch({ field: 'isRetrievalLoading', value: isRetrievalLoading })
+  }
+
   const [isDragging, setIsDragging] = useState<boolean>(false)
   const [dragEnterCounter, setDragEnterCounter] = useState(0)
 
@@ -616,6 +636,10 @@ const Home = () => {
           handleSelectConversation,
           handleUpdateConversation,
           setIsImg2TextLoading,
+          setIsRouting,
+          setRoutingResponse,
+          setIsPestDetectionLoading,
+          setIsRetrievalLoading,
         }}
       >
         <Head>

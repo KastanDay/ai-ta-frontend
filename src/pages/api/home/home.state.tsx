@@ -30,8 +30,12 @@ export interface HomeInitialState {
   serverSidePluginKeysSet: boolean
   cooldown: number
   showModelSettings: boolean
-  isImg2TextLoading: boolean
   availableTools: EssentialToolDetails[]
+  isImg2TextLoading: boolean | undefined
+  isRouting: boolean | undefined
+  routingResponse: string | undefined
+  isPestDetectionLoading: boolean | undefined
+  isRetrievalLoading: boolean | undefined
 }
 
 export const initialState: HomeInitialState = {
@@ -58,6 +62,10 @@ export const initialState: HomeInitialState = {
   serverSidePluginKeysSet: false,
   cooldown: 0,
   showModelSettings: false,
-  isImg2TextLoading: false,
   availableTools: [],
+  isImg2TextLoading: undefined,
+  isRouting: undefined,
+  routingResponse: undefined,
+  isPestDetectionLoading: undefined,
+  isRetrievalLoading: undefined,
 }

@@ -77,6 +77,20 @@ const handler = async (req: Request): Promise<NextResponse> => {
       search_query = messages[messages.length - 1]?.content as string
     } else {
       // Extract image description...
+      // Change the content type for 'tool_image_url' to 'image_url'
+      // This is very important to differentiate the tool generated images from user uploaded images. Otherwise "regenerate" behavior will treat tool-result images as user images. 
+      ; (messages[messages.length - 1]?.content as Content[]).forEach(
+        (content) => {
+          if (content.type === 'tool_image_url') {
+            console.debug(
+              'Changing tool_image_url to image_url for message',
+              content,
+            )
+            content.type = 'image_url'
+          }
+        },
+      )
+      // Combine all text content into one string
       search_query = (messages[messages.length - 1]?.content as Content[])
         .map((c) => c.text || '')
         .join(' ')
