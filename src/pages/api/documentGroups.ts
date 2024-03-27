@@ -11,6 +11,12 @@ import {
   updateDocGroupStatus,
 } from '~/utils/dbUtils'
 
+import {
+  addDocumentsToDocGroupQdrant,
+  appendDocGroupQdrant,
+  removeDocGroupQdrant,
+} from '~/utils/qdrantUtils'
+
 interface RequestBody {
   action:
     | 'addDocumentsToDocGroup'
@@ -36,14 +42,17 @@ export default async function handler(
       if (action === 'addDocumentsToDocGroup' && doc) {
         console.log('Adding documents to doc group:', doc)
         await addDocumentsToDocGroup(courseName, doc)
+        await addDocumentsToDocGroupQdrant(courseName, doc)
         res.status(200).json({ success: true })
       } else if (action === 'appendDocGroup' && doc && docGroup) {
         console.log('Appending doc group:', docGroup, 'to doc:', doc)
         await appendDocGroup(courseName, doc, docGroup)
+        await appendDocGroupQdrant(courseName, doc, docGroup)
         res.status(200).json({ success: true })
       } else if (action === 'removeDocGroup' && doc && docGroup) {
         console.log('Removing doc group: ', docGroup, 'from doc: ', doc)
         await removeDocGroup(courseName, doc, docGroup)
+        await removeDocGroupQdrant(courseName, doc, docGroup)
         res.status(200).json({ success: true })
       } else if (action === 'getDocumentGroups') {
         const documents = await fetchDocumentGroups(courseName)
