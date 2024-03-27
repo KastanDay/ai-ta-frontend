@@ -469,7 +469,7 @@ export function MantineYourMaterialsTable({
         title="Please confirm your action"
       >
         <Text size="sm" style={{ color: 'white' }}>
-          {`Are you sure you want to export the selected records?`}
+          {`Are you sure you want to export all the documents and embeddings?`}
         </Text>
         <div
           style={{
@@ -495,7 +495,7 @@ export function MantineYourMaterialsTable({
             onClick={async () => {
               setExportModalOpened(false)
               const result = await handleExport(getCurrentPageName())
-              if (result && result.message == "We have started gathering your documents, you will receive an email shortly") {
+              if (result && result.message) {
                 showToastOnUpdate(theme, false, false, result.message);
               }
             }}
