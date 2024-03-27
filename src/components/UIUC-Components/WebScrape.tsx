@@ -480,7 +480,7 @@ export const WebScrape = ({
             icon={icon}
             // I can't figure out how to change the background colors.
             className={`mt-4 w-[80%] min-w-[20rem] disabled:bg-purple-200 lg:w-[75%]`}
-            wrapperProps={{ borderRadius: 'xl' }}
+            // wrapperProps={{ borderRadius: 'xl' }}
             // styles={{ input: { backgroundColor: '#1A1B1E' } }}
             styles={{
               input: {
@@ -592,7 +592,7 @@ export const WebScrape = ({
             icon={icon}
             // I can't figure out how to change the background colors.
             className={`mt-4 w-[80%] min-w-[20rem] disabled:bg-purple-200 lg:w-[75%]`}
-            wrapperProps={{ borderRadius: 'xl' }}
+            // wrapperProps={{ borderRadius: 'xl' }}
             // styles={{ input: { backgroundColor: '#1A1B1E' } }}
             styles={{
               input: {

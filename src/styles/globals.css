@@ -196,7 +196,7 @@ li {
   margin: 0 0.3rem 0.3rem 0;
 }
 
-.tag-item > .button {
+.tag-item button {
   background-color: blueviolet;
   width: 22px;
   height: 22px;
@@ -211,6 +211,7 @@ li {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
 }
 
 /* 👆 FOR EmailChips.tsx -- to make nice email input fields. 👆 */
