@@ -8,8 +8,10 @@ export interface Message {
   responseTimeSec?: number
 }
 
+export type MessageType = 'text' | 'image_url' | 'tool_image_url'
+
 export interface Content {
-  type: string
+  type: MessageType
   text?: string
   image_url?: {
     url: string
