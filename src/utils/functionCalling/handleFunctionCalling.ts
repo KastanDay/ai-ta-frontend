@@ -24,7 +24,7 @@ export default async function handleTools(
       let { value: chunk, done: readerDone } = await reader.read()
       chunk = chunk ? chunk : new Uint8Array()
 
-      let chunks = []
+      const chunks = []
       while (!readerDone) {
         const segment = new TextDecoder().decode(chunk, { stream: true })
         // console.log('Chunk from openaiFunctionCall: ', segment);
