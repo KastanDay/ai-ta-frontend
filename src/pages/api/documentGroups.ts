@@ -46,7 +46,7 @@ export default async function handler(
           distinct_id: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
           curr_user_id: await getAuth(req).userId,
           course_name: courseName,
-          doc_id: doc.readable_filename,
+          doc_readable_filename: doc.readable_filename,
           doc_groups: doc.doc_groups,
         });
 
@@ -60,7 +60,8 @@ export default async function handler(
           distinct_id: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
           curr_user_id: await getAuth(req).userId,
           course_name: courseName,
-          doc_id: doc.readable_filename,
+          doc_readable_filename: doc.readable_filename,
+          doc_groups: doc.doc_groups,
           doc_group: docGroup,
         });
 
@@ -74,7 +75,8 @@ export default async function handler(
           distinct_id: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
           curr_user_id: await getAuth(req).userId,
           course_name: courseName,
-          doc_id: doc.readable_filename,
+          doc_readable_filename: doc.readable_filename,
+          doc_groups: doc.doc_groups,
           doc_group: docGroup,
         });
 
