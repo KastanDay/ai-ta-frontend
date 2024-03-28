@@ -111,7 +111,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const {
     data: documentGroups,
-    isLoading,
+    isSuccess,
     isError,
   } = useFetchEnabledDocGroups(getCurrentPageName())
   const [actions, setActions] = useState<SpotlightAction[]>([])
@@ -156,6 +156,42 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [spotlightQuery, setSpotlightQuery] = useState('')
+
+  // useEffect(() => {
+  //   console.log('updated actions: ', actions);
+  // }, [actions]);
+
+  useEffect(() => {
+    // console.log('isSuccess: ', isSuccess)
+    if (isSuccess) {
+      const documentGroupActions =
+        documentGroups?.map((docGroup, index) => ({
+          id: `docGroup-${index}`,
+          title: docGroup.name,
+          description: `Description for ${docGroup.name}`,
+          group: 'Document Groups',
+          checked: true,
+          onTrigger: () => console.log(`${docGroup.name} triggered`),
+        })) || []
+
+      const toolsActions = ['Tool 1', 'Tool 2', 'Tool 3'].map(
+        (tool, index) => ({
+          // const toolsActions = tools.map((tool, index) => ({
+          id: `tool-${index}`,
+          title: tool,
+          description: `Description for ${tool}`,
+          group: 'Tools',
+          checked: true,
+          onTrigger: () => console.log(`${tool} triggered`),
+        }),
+      )
+
+      console.log('documentGroupActions: ', documentGroupActions)
+      console.log('actions: ', [...documentGroupActions, ...toolsActions])
+      setActions([...documentGroupActions, ...toolsActions])
+    }
+    // console.log('actions: ', actions)
+  }, [documentGroups, isSuccess])
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase
@@ -262,6 +298,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     message: Message,
     selectedConversation: Conversation,
     searchQuery: string,
+    actions: SpotlightAction[],
   ) => {
     if (getCurrentPageName() != 'gpt4') {
       // Extract text from all user messages in the conversation
@@ -279,6 +316,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         getCurrentPageName(),
         searchQuery,
         token_limit,
+        actions
+          .filter(
+            (action) => action.checked && action.id?.startsWith('docGroup-'),
+          )
+          .map((action) => action.title),
       ).then((curr_contexts) => {
         message.contexts = curr_contexts as ContextWithMetadata[]
         console.log('message.contexts: ', message.contexts)
@@ -288,7 +330,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   // THIS IS WHERE MESSAGES ARE SENT.
   const handleSend = useCallback(
-    async (message: Message, deleteCount = 0, plugin: Plugin | null = null) => {
+    async (
+      message: Message,
+      deleteCount = 0,
+      plugin: Plugin | null = null,
+      actions: SpotlightAction[],
+    ) => {
       setCurrentMessage(message)
       // New way with React Context API
       // TODO: MOVE THIS INTO ChatMessage
@@ -340,7 +387,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }
 
         // Run context search, attach to Message object.
-        await handleContextSearch(message, selectedConversation, searchQuery)
+        await handleContextSearch(
+          message,
+          selectedConversation,
+          searchQuery,
+          actions,
+        )
 
         const chatBody: ChatBody = {
           model: updatedConversation.model,
@@ -629,7 +681,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
-      handleSend(currentMessage, 2, null)
+      handleSend(currentMessage, 2, null, actions)
     }
   }, [currentMessage, handleSend])
 
@@ -845,7 +897,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   return (
     <>
-      <ChatSpotlight courseName={getCurrentPageName()} />
+      <ChatSpotlight
+        courseName={getCurrentPageName()}
+        actions={actions}
+        setActions={(actions) => {
+          setActions(actions)
+        }}
+      />
       <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
         <div className="justify-center" style={{ height: '46px' }}>
           <ChatNavbar
@@ -953,6 +1011,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                           handleSend(
                             editedMessage,
                             selectedConversation?.messages.length - index,
+                            null,
+                            actions,
                           )
                         }}
                         onImageUrlsUpdate={onImageUrlsUpdate}
@@ -972,7 +1032,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 textareaRef={textareaRef}
                 onSend={(message, plugin) => {
                   // setCurrentMessage(message)
-                  handleSend(message, 0, plugin)
+                  handleSend(message, 0, plugin, actions)
                 }}
                 onScrollDownClick={handleScrollDown}
                 onRegenerate={handleRegenerate}

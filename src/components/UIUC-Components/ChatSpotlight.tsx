@@ -18,6 +18,8 @@ import { montserrat_heading } from 'fonts'
 
 interface ChatSpotlightProps {
   courseName: string
+  actions: SpotlightAction[]
+  setActions: (actions: SpotlightAction[]) => void
 }
 
 const useStyles = createStyles((theme) => ({
@@ -44,44 +46,22 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-const ChatSpotlight: React.FC<ChatSpotlightProps> = ({ courseName }) => {
+const ChatSpotlight: React.FC<ChatSpotlightProps> = ({
+  courseName,
+  actions,
+  setActions,
+}) => {
   const [spotlightQuery, setSpotlightQuery] = useState('')
-  const [actions, setActions] = useState<SpotlightAction[]>([])
-  const { data: documentGroups } = useFetchEnabledDocGroups(courseName)
-  // const {data: tools} = useFetchEnabledTools(courseName);
   const { classes } = useStyles()
 
   const handleToggleChecked = (id: string) => {
-    setActions((prevActions) =>
-      prevActions.map((action) =>
+    setActions(
+      actions.map((action) =>
         action.id === id ? { ...action, checked: !action.checked } : action,
       ),
     )
+    // console.log('updated actions: ', actions)
   }
-
-  useEffect(() => {
-    const documentGroupActions =
-      documentGroups?.map((docGroup, index) => ({
-        id: `docGroup-${index}`,
-        title: docGroup.name,
-        description: `Description for ${docGroup.name}`,
-        group: 'Document Groups',
-        checked: true,
-        onTrigger: () => console.log(`${docGroup.name} triggered`),
-      })) || []
-
-    const toolsActions = ['Tool 1', 'Tool 2', 'Tool 3'].map((tool, index) => ({
-      // const toolsActions = tools.map((tool, index) => ({
-      id: `tool-${index}`,
-      title: tool,
-      description: `Description for ${tool}`,
-      group: 'Tools',
-      checked: true,
-      onTrigger: () => console.log(`${tool} triggered`),
-    }))
-
-    setActions([...documentGroupActions, ...toolsActions])
-  }, [documentGroups])
 
   const SpotlightSwitch = ({
     action,
@@ -146,7 +126,9 @@ const ChatSpotlight: React.FC<ChatSpotlightProps> = ({ courseName }) => {
         <SpotlightSwitch
           {...props}
           checked={props.action.checked || false}
-          onTrigger={() => handleToggleChecked(props.action.id as string)}
+          onTrigger={() => {
+            handleToggleChecked(props.action.id as string)
+          }}
         />
       )}
       closeOnActionTrigger={false}
