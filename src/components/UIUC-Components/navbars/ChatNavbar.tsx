@@ -398,44 +398,78 @@ const ChatNavbar = ({
                     minWidth: '120px',
                   }}
                 >
-                  {items.map((item, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        if (item.link) {
-                          router.push(item.link)
-                        } else if (item.action) {
-                          item.action()
-                        }
-                        // Toggle the burger menu
-                        toggle()
-                      }}
-                      data-active={activeLink === item.link}
-                      className={classes.link}
-                      style={{ width: '100%' }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                        }}
-                      >
-                        {item.icon}
-                        <span
+                  {items.map((item, index) => {
+                    if (item.link) {
+                      return (
+                        <Link
+                          key={index}
+                          href={item.link}
+                          onClick={() => {
+                            setActiveLink(router.asPath)
+                            toggle()
+                          }}
+                          data-active={activeLink === item.link}
+                          className={classes.link}
                           style={{
+                            width: '100%',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'flex-center',
-                            padding: '0px',
-                            whiteSpace: 'nowrap',
-                            width: '100%',
+                            justifyContent: 'center',
                           }}
                         >
-                          {item.name}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+                          {item.icon}
+                          <span
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-center',
+                              padding: '0px',
+                              whiteSpace: 'nowrap',
+                              width: '100%',
+                            }}
+                          >
+                            {item.name}
+                          </span>
+                        </Link>
+                      )
+                    } else {
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            if (item.action) {
+                              item.action()
+                            }
+                            toggle()
+                          }}
+                          data-active={activeLink === item.link}
+                          className={classes.link}
+                          style={{ width: '100%' }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                            }}
+                          >
+                            {item.icon}
+                            <span
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'flex-center',
+                                padding: '0px',
+                                whiteSpace: 'nowrap',
+                                width: '100%',
+                              }}
+                            >
+                              {item.name}
+                            </span>
+                          </div>
+                        </button>
+                      )
+                    }
+                  })}
                 </Paper>
               )}
             </Transition>
@@ -446,46 +480,82 @@ const ChatNavbar = ({
               style={{ padding: 0, margin: 0 }}
             >
               <div className={classes.links}>
-                {items.map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      if (item.link) {
-                        router.push(item.link)
-                      } else if (item.action) {
-                        item.action()
-                      }
-                      // Toggle the burger menu
-                      toggle()
-                    }}
-                    data-active={activeLink === item.link}
-                    className={classes.link}
-                    style={{ padding: '3px 12px' }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        width: '100%',
-                      }}
-                    >
-                      {item.icon}
-                      <span
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'flex-center',
-                          padding: '0px',
-                          height: '40px',
-                          whiteSpace: 'nowrap',
-                          marginLeft: '5px',
+                {items.map((item, index) => {
+                  if (item.link) {
+                    return (
+                      <Link
+                        key={index}
+                        href={item.link}
+                        onClick={() => {
+                          setActiveLink(router.asPath)
                         }}
+                        data-active={activeLink === item.link}
+                        className={classes.link}
+                        style={{ padding: '3px 12px' }}
                       >
-                        {item.name}
-                      </span>
-                    </div>
-                  </button>
-                ))}
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            width: '100%',
+                          }}
+                        >
+                          {item.icon}
+                          <span
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-center',
+                              padding: '0px',
+                              height: '40px',
+                              whiteSpace: 'nowrap',
+                              marginLeft: '5px',
+                            }}
+                          >
+                            {item.name}
+                          </span>
+                        </div>
+                      </Link>
+                    )
+                  } else {
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          if (item.action) {
+                            item.action()
+                          }
+                        }}
+                        data-active={activeLink === item.link}
+                        className={classes.link}
+                        style={{ padding: '3px 12px' }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            width: '100%',
+                          }}
+                        >
+                          {item.icon}
+                          <span
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-center',
+                              padding: '0px',
+                              height: '40px',
+                              whiteSpace: 'nowrap',
+                              marginLeft: '5px',
+                            }}
+                          >
+                            {item.name}
+                          </span>
+                        </div>
+                      </button>
+                    )
+                  }
+                })}
               </div>
               <div style={{ display: 'block' }}>
                 <button
