@@ -1,8 +1,8 @@
 // src/pages/api/documentGroups.ts
-import { NextApiRequest, NextApiResponse } from 'next'
-import { supabase } from '../../utils/supabaseClient'
-
-import { CourseDocument } from 'src/types/courseMaterials'
+import { NextApiRequest, NextApiResponse } from 'next';
+import posthog from 'posthog-js';
+import { CourseDocument } from 'src/types/courseMaterials';
+import { getAuth } from '@clerk/nextjs/server'
 import {
   addDocumentsToDocGroup,
   appendDocGroup,
@@ -41,16 +41,43 @@ export default async function handler(
     try {
       if (action === 'addDocumentsToDocGroup' && doc) {
         console.log('Adding documents to doc group:', doc)
+
+        posthog.capture('add_doc_group', {
+          distinct_id: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+          curr_user_id: await getAuth(req).userId,
+          course_name: courseName,
+          doc_id: doc.readable_filename,
+          doc_groups: doc.doc_groups,
+        });
+
         await addDocumentsToDocGroup(courseName, doc)
         await addDocumentsToDocGroupQdrant(courseName, doc)
         res.status(200).json({ success: true })
       } else if (action === 'appendDocGroup' && doc && docGroup) {
         console.log('Appending doc group:', docGroup, 'to doc:', doc)
+
+        posthog.capture('append_doc_group', {
+          distinct_id: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+          curr_user_id: await getAuth(req).userId,
+          course_name: courseName,
+          doc_id: doc.readable_filename,
+          doc_group: docGroup,
+        });
+
         await appendDocGroup(courseName, doc, docGroup)
         await appendDocGroupQdrant(courseName, doc, docGroup)
         res.status(200).json({ success: true })
       } else if (action === 'removeDocGroup' && doc && docGroup) {
         console.log('Removing doc group: ', docGroup, 'from doc: ', doc)
+
+        posthog.capture('remove_doc_group', {
+          distinct_id: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+          curr_user_id: await getAuth(req).userId,
+          course_name: courseName,
+          doc_id: doc.readable_filename,
+          doc_group: docGroup,
+        });
+
         await removeDocGroup(courseName, doc, docGroup)
         await removeDocGroupQdrant(courseName, doc, docGroup)
         res.status(200).json({ success: true })
