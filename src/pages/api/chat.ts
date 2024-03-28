@@ -21,7 +21,7 @@ export const config = {
 
 const handler = async (req: Request): Promise<NextResponse> => {
   try {
-    console.log('Top of /api/chat.ts. req: ', req)
+    // console.log('Top of /api/chat.ts. req: ', req)
     const {
       model,
       messages,
@@ -32,17 +32,18 @@ const handler = async (req: Request): Promise<NextResponse> => {
       stream,
       isImage,
     } = (await req.json()) as ChatBody
-    console.log(
-      'After message parsing: ',
-      model,
-      messages,
-      key,
-      prompt,
-      temperature,
-      course_name,
-      stream,
-      isImage,
-    )
+
+    // console.log(
+    //   'After message parsing: ',
+    //   model,
+    //   messages,
+    //   key,
+    //   prompt,
+    //   temperature,
+    //   course_name,
+    //   stream,
+    //   isImage,
+    // )
 
     await init((imports) => WebAssembly.instantiate(wasm, imports))
     const encoding = new Tiktoken(
@@ -78,8 +79,8 @@ const handler = async (req: Request): Promise<NextResponse> => {
     } else {
       // Extract image description...
       // Change the content type for 'tool_image_url' to 'image_url'
-      // This is very important to differentiate the tool generated images from user uploaded images. Otherwise "regenerate" behavior will treat tool-result images as user images. 
-      ; (messages[messages.length - 1]?.content as Content[]).forEach(
+      // This is very important to differentiate the tool generated images from user uploaded images. Otherwise "regenerate" behavior will treat tool-result images as user images.
+      ;(messages[messages.length - 1]?.content as Content[]).forEach(
         (content) => {
           if (content.type === 'tool_image_url') {
             console.debug(

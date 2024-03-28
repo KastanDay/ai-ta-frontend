@@ -35,7 +35,7 @@
     "**/*.cjs",
     "**/*.mjs",
     "next-i18next.config.mjs",
-    "src/app/api/chat/route",
+    "src/app/api/chat/openaiFunctionCall",
     ".next/types/**/*.ts",
   ],
   "exclude": ["node_modules"],

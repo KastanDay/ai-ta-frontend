@@ -77,6 +77,8 @@ import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescriptio
 import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
 import { fetchRoutingResponse } from '~/pages/api/UIUC-api/fetchRoutingResponse'
 import { fetchPestDetectionResponse } from '~/pages/api/UIUC-api/fetchPestDetectionResponse'
+import { EssentialToolDetails } from '~/pages/api/UIUC-api/tools/getN8nWorkflows'
+import handleTools from '~/utils/functionCalling/handleFunctionCalling'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -198,7 +200,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     for (const url of pestDetectionResponse) {
       const presignedUrl = await fetchPresignedUrl(url)
       if (presignedUrl) {
-        ; (message.content as Content[]).push({
+        ;(message.content as Content[]).push({
           type: 'tool_image_url',
           image_url: {
             url: presignedUrl,
@@ -330,12 +332,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ; (message.content as Content[])[imgDescIndex] = {
+          ;(message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ; (message.content as Content[]).push({
+          ;(message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -405,6 +407,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           message.content = (message.content as Content[]).filter(
             (content) => content.type !== 'tool_image_url',
           )
+          // TODO: check for function calling, remove that. So regenerate works.
 
           const updatedMessages = [...selectedConversation.messages]
           for (let i = 0; i < deleteCount; i++) {
@@ -452,14 +455,19 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         await handleContextSearch(message, selectedConversation, searchQuery)
 
         // If tools are available, try using tools:
-        // await handleTools(message, selectedConversation, searchQuery, availableTools)
+        console.log('Right before handleTools!')
+        console.log(
+          'updatedConversation: ',
+          JSON.stringify(updatedConversation),
+        )
+        await handleTools(message, availableTools, updatedConversation)
 
         const chatBody: ChatBody = {
           model: updatedConversation.model,
           messages: updatedConversation.messages,
           key:
             courseMetadata?.openai_api_key &&
-              courseMetadata?.openai_api_key != ''
+            courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
           // prompt property is intentionally left undefined to avoid TypeScript errors
@@ -668,12 +676,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             saveConversation(updatedConversation)
             // todo: add clerk user info to onMessagereceived for logging.
             if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
-              console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
+              // console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
               const emails = extractEmailsFromClerk(clerk_obj.user)
               updatedConversation.user_email = emails[0]
               onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
             } else {
-              console.log('NOT LOADED OR SIGNED IN')
+              // console.log('NOT LOADED OR SIGNED IN')
               onMessageReceived(updatedConversation)
             }
 
@@ -752,7 +760,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
       handleSend(currentMessage, 2, null)
@@ -845,14 +853,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-      courseMetadata.example_questions.length > 0
+    courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-        'Make a bullet point list of key takeaways of the course.',
-        'What is [your favorite topic] and why is it worth learning about?',
-        'How can I effectively prepare for the upcoming exam?',
-        'How many assignments in the course?',
-      ]
+          'Make a bullet point list of key takeaways of the course.',
+          'What is [your favorite topic] and why is it worth learning about?',
+          'How can I effectively prepare for the upcoming exam?',
+          'How many assignments in the course?',
+        ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
