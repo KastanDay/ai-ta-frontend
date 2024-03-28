@@ -7,12 +7,6 @@ import type {
 
 import { Conversation, Message } from '~/types/chat'
 
-// Create an OpenAI API client (that's edge friendly!)
-// TODO: Use course API key...
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-})
-
 export const runtime = 'edge'
 
 // Function definition:
@@ -85,11 +79,16 @@ export async function POST(req: Request) {
   const {
     conversation,
     tools,
+    openaiKey,
   }: {
     messages: Message
     tools: ChatCompletionCreateParams.Function[]
     conversation: Conversation
+    openaiKey: string
   } = await req.json()
+
+  // Create an OpenAI API client (that's edge friendly!)
+  const openai = new OpenAI({ apiKey: openaiKey })
 
   // format into OpenAI message format
   const message_to_send: ChatCompletionMessageParam[] =

@@ -4,7 +4,7 @@ import { FolderInterface } from '@/types/folder'
 import { OpenAIModel, OpenAIModelID } from '@/types/openai'
 import { PluginKey } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
-import { EssentialToolDetails } from '../UIUC-api/tools/getN8nWorkflows'
+import { EssentialToolDetails } from '~/utils/functionCalling/handleFunctionCalling'
 
 export interface HomeInitialState {
   apiKey: string

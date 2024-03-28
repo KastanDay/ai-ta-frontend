@@ -77,7 +77,6 @@ import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescriptio
 import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
 import { fetchRoutingResponse } from '~/pages/api/UIUC-api/fetchRoutingResponse'
 import { fetchPestDetectionResponse } from '~/pages/api/UIUC-api/fetchPestDetectionResponse'
-import { EssentialToolDetails } from '~/pages/api/UIUC-api/tools/getN8nWorkflows'
 import handleTools from '~/utils/functionCalling/handleFunctionCalling'
 
 const montserrat_med = Montserrat({
@@ -139,6 +138,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  const getOpenAIKey = (courseMetadata: CourseMetadata) => {
+    const key =
+      courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != ''
+        ? courseMetadata.openai_api_key
+        : apiKey
+    return key
+  }
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase
@@ -254,11 +261,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       )
       homeDispatch({ field: 'isRouting', value: true })
 
-      const key =
-        courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != ''
-          ? courseMetadata.openai_api_key
-          : apiKey
-
       //Todo: Add a check to get a list of allowed tools for routing from the DB and use them in the prompt
       try {
         const response = await fetchRoutingResponse(
@@ -266,7 +268,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           getCurrentPageName(),
           endpoint,
           updatedConversation,
-          key,
+          getOpenAIKey(courseMetadata),
           controller,
         )
         console.log('Routing response: ', response)
@@ -310,18 +312,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     if (imageContent.length > 0) {
       homeDispatch({ field: 'isImg2TextLoading', value: true })
 
-      const key =
-        courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != ''
-          ? courseMetadata.openai_api_key
-          : apiKey
-
       try {
         const imgDesc = await fetchImageDescription(
           message,
           getCurrentPageName(),
           endpoint,
           updatedConversation,
-          key,
+          getOpenAIKey(courseMetadata),
           controller,
         )
 
@@ -460,16 +457,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           'updatedConversation: ',
           JSON.stringify(updatedConversation),
         )
-        await handleTools(message, availableTools, updatedConversation)
+        await handleTools(
+          message,
+          availableTools,
+          updatedConversation,
+          getOpenAIKey(courseMetadata),
+        )
 
         const chatBody: ChatBody = {
           model: updatedConversation.model,
           messages: updatedConversation.messages,
-          key:
-            courseMetadata?.openai_api_key &&
-            courseMetadata?.openai_api_key != ''
-              ? courseMetadata.openai_api_key
-              : apiKey,
+          key: getOpenAIKey(courseMetadata),
           // prompt property is intentionally left undefined to avoid TypeScript errors
           // and to meet the requirement of not passing any prompt.
           prompt: '',

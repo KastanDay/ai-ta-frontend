@@ -3,11 +3,6 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { WorkflowRecord } from '~/types/tools'
 import { supabase } from '~/utils/supabaseClient'
 
-export interface EssentialToolDetails {
-  id: string
-  name: string
-}
-
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   // Only one of course_name OR api_key is required
   try {
@@ -82,24 +77,3 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 }
 
 export default handler
-
-export const extractMinimalToolInfo = (allWorkflowsJson: any) => {
-  // Function to parse the JSON and extract the desired fields, only including active tools
-  function parseJson(jsonString: string): EssentialToolDetails[] {
-    const data = JSON.parse(jsonString)
-
-    const flattenedData = data.flat()
-
-    // Filter for active tools, then map over the filtered array to extract the fields of interest
-    return flattenedData
-      .filter((item: any) => item.active)
-      .map((item: any) => ({
-        Name: item.name,
-        ID: item.id,
-      }))
-  }
-
-  const validTools = parseJson(allWorkflowsJson)
-  console.log('getN8nWorkflows -- Valid tools:', validTools)
-  return validTools
-}

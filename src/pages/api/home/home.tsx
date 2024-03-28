@@ -49,8 +49,12 @@ import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
 import {
   EssentialToolDetails,
-  extractMinimalToolInfo,
-} from '../UIUC-api/tools/getN8nWorkflows'
+  getOpenAIFunctionsFromN8n,
+} from '~/utils/functionCalling/handleFunctionCalling'
+// import {
+//   EssentialToolDetails,
+//   extractMinimalToolInfo,
+// } from '../UIUC-api/tools/getN8nWorkflows'
 
 const Home = () => {
   const { t } = useTranslation('chat')
@@ -103,7 +107,7 @@ const Home = () => {
         console.error(`home.tsx: No tools found for ${course_name}`)
         return
       }
-      const essentialToolInfo = extractMinimalToolInfo(
+      const essentialToolInfo = getOpenAIFunctionsFromN8n(
         tools,
       ) as EssentialToolDetails[]
       console.log(`home.tsx: Tools for ${course_name}: ${essentialToolInfo}`)
