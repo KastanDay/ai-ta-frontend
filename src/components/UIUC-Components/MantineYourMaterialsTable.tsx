@@ -41,11 +41,13 @@ import { showToastOnFileDeleted } from './MakeOldCoursePage'
 import axios from 'axios'
 import { notifications } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
-import { Badge } from '@mantine/core'
+// import { Badge } from '@mantine/core'
 import { useColorScheme } from '@mantine/hooks'
 import { IconInfoCircleFilled } from '@tabler/icons-react'
 import { handleExport } from '~/pages/api/UIUC-api/exportAllDocuments'
-
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import Link from 'next/link'
+import { showToastOnUpdate } from './MakeQueryAnalysisPage'
 
 const GlobalStyle = createGlobalStyle`
 // these mantine class names may change in future versions
@@ -379,15 +381,16 @@ export function MantineYourMaterialsTable({
             }}
           >
             {selectedRecords.length
-              ? `Delete ${selectedRecords.length === 1
-                ? '1 selected record'
-                : `${selectedRecords.length} selected records`
-              }`
+              ? `Delete ${
+                  selectedRecords.length === 1
+                    ? '1 selected record'
+                    : `${selectedRecords.length} selected records`
+                }`
               : 'Select records to delete'}
           </Button>
         </Center>
         <Center>
-          <Button  // button to export materials
+          <Button // button to export materials
             uppercase
             leftIcon={<IconFileExport size={16} />}
             // disabled={!selectedRecords.length}
@@ -496,7 +499,7 @@ export function MantineYourMaterialsTable({
               setExportModalOpened(false)
               const result = await handleExport(getCurrentPageName())
               if (result && result.message) {
-                showToastOnUpdate(theme, false, false, result.message);
+                showToastOnUpdate(theme, false, false, result.message)
               }
             }}
           >
@@ -532,7 +535,8 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${response.statusText || response.status
+        `Error fetching course metadata: ${
+          response.statusText || response.status
         }`,
       )
     }
@@ -540,54 +544,4 @@ async function fetchCourseMetadata(course_name: string) {
     console.error('Error fetching course metadata:', error)
     throw error
   }
-}
-
-export const showToastOnUpdate = (
-  theme: MantineTheme,
-  was_error = false,
-  isReset = false,
-  message: string,
-) => {
-  return (
-    notifications.show({
-      id: 'prompt-updated',
-      withCloseButton: true,
-      onClose: () => console.log('unmounted'),
-      onOpen: () => console.log('mounted'),
-      autoClose: 12000,
-      // title: was_error ? 'Error updating prompt' : (isReset ? 'Resetting prompt...' : 'Updating prompt...'),
-      // message: was_error
-      //   ? "An error occurred while updating the prompt. Please try again."
-      //   : (isReset ? 'The prompt has been reset to default.' : 'The prompt has been updated successfully.'),
-      message: message,
-      icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
-      styles: {
-        root: {
-          backgroundColor: theme.colors.nearlyWhite,
-          borderColor: was_error
-            ? theme.colors.errorBorder
-            : theme.colors.aiPurple,
-        },
-        title: {
-          color: theme.colors.nearlyBlack,
-        },
-        description: {
-          color: theme.colors.nearlyBlack,
-        },
-        closeButton: {
-          color: theme.colors.nearlyBlack,
-          '&:hover': {
-            backgroundColor: theme.colors.dark[1],
-          },
-        },
-        icon: {
-          backgroundColor: was_error
-            ? theme.colors.errorBackground
-            : theme.colors.successBackground,
-          padding: '4px',
-        },
-      },
-      loading: false,
-    })
-  )
 }

@@ -12,6 +12,7 @@ import {
   // FileInput,
   // rem,
   Title,
+  Text,
   Flex,
   createStyles,
   // Divider,
@@ -24,7 +25,7 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import { LoadingSpinner } from './LoadingSpinner'
-import { downloadConversationHistory } from '../../pages/api/UIUC-api/downloadConvoHistory';
+import { downloadConversationHistory } from '../../pages/api/UIUC-api/downloadConvoHistory'
 
 const useStyles = createStyles((theme: MantineTheme) => ({
   downloadButton: {
@@ -164,22 +165,20 @@ const MakeQueryAnalysisPage = ({
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-      // current_email={currentEmail as string}
+        // current_email={currentEmail as string}
       />
     )
   }
 
   const handleDownload = async (courseName: string) => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const result = await downloadConversationHistory(courseName);
-      showToastOnUpdate(theme, false, false, result.message);
-
+      const result = await downloadConversationHistory(courseName)
+      showToastOnUpdate(theme, false, false, result.message)
+    } finally {
+      setIsLoading(false)
     }
-    finally {
-      setIsLoading(false);
-    }
-  };
+  }
 
   return (
     <>
@@ -337,6 +336,7 @@ import { extractEmailsFromClerk } from './clerkHelpers'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
 import Navbar from './navbars/Navbar'
+import Link from 'next/link'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
@@ -430,15 +430,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: 'white' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.gray[2]
-                        : theme.colors.gray[1]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colorScheme === 'dark'
+                      ? theme.colors.gray[2]
+                      : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colors.gray[8]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colors.gray[8]
                 }}
               >
                 <IconDownload className="h-5 w-5 text-gray-800" />
@@ -455,15 +455,15 @@ const CourseFilesList = ({ files }: CourseFilesListProps) => {
                 // style={{ outline: 'solid 1px', outlineColor: theme.white }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = theme.colors.grape[8]
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colorScheme === 'dark'
-                        ? theme.colors.gray[2]
-                        : theme.colors.gray[1]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colorScheme === 'dark'
+                      ? theme.colors.gray[2]
+                      : theme.colors.gray[1]
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                    ; (e.currentTarget.children[0] as HTMLElement).style.color =
-                      theme.colors.red[6]
+                  ;(e.currentTarget.children[0] as HTMLElement).style.color =
+                    theme.colors.red[6]
                 }}
               >
                 <IconTrash className="h-5 w-5 text-red-600" />
@@ -500,7 +500,8 @@ async function fetchCourseMetadata(course_name: string) {
       return data.course_metadata
     } else {
       throw new Error(
-        `Error fetching course metadata: ${response.statusText || response.status
+        `Error fetching course metadata: ${
+          response.statusText || response.status
         }`,
       )
     }
@@ -562,46 +563,44 @@ export const showToastOnUpdate = (
   isReset = false,
   message: string,
 ) => {
-  return (
-    notifications.show({
-      id: 'prompt-updated',
-      withCloseButton: true,
-      onClose: () => console.log('unmounted'),
-      onOpen: () => console.log('mounted'),
-      autoClose: 12000,
-      // title: was_error ? 'Error updating prompt' : (isReset ? 'Resetting prompt...' : 'Updating prompt...'),
-      // message: was_error
-      //   ? "An error occurred while updating the prompt. Please try again."
-      //   : (isReset ? 'The prompt has been reset to default.' : 'The prompt has been updated successfully.'),
-      message: message,
-      icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
-      styles: {
-        root: {
-          backgroundColor: theme.colors.nearlyWhite,
-          borderColor: was_error
-            ? theme.colors.errorBorder
-            : theme.colors.aiPurple,
-        },
-        title: {
-          color: theme.colors.nearlyBlack,
-        },
-        description: {
-          color: theme.colors.nearlyBlack,
-        },
-        closeButton: {
-          color: theme.colors.nearlyBlack,
-          '&:hover': {
-            backgroundColor: theme.colors.dark[1],
-          },
-        },
-        icon: {
-          backgroundColor: was_error
-            ? theme.colors.errorBackground
-            : theme.colors.successBackground,
-          padding: '4px',
-        },
-      },
-      loading: false,
-    })
-  )
+  return notifications.show({
+    id: 'convo-or-documents-export',
+    withCloseButton: true,
+    closeButtonProps: { color: 'green' },
+    onClose: () => console.log('error unmounted'),
+    onOpen: () => console.log('error mounted'),
+    autoClose: 30000,
+    title: (
+      <Text size={'lg'} className={`${montserrat_heading.className}`}>
+        {message}
+      </Text>
+    ),
+    message: (
+      <Text className={`${montserrat_paragraph.className}`}>
+        Check{' '}
+        <Link
+          href={
+            'https://docs.uiuc.chat/features/bulk-export-documents-or-conversation-history'
+          }
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: 'underline', color: 'lightpurple' }}
+        >
+          our docs
+        </Link>{' '}
+        for example code to process this data.
+      </Text>
+    ),
+    color: 'green',
+    radius: 'lg',
+    icon: <IconCheck />,
+    className: 'my-notification-class',
+    style: {
+      backgroundColor: 'rgba(42,42,64,0.3)',
+      backdropFilter: 'blur(10px)',
+      borderLeft: '5px solid green',
+    },
+    withBorder: true,
+    loading: false,
+  })
 }
