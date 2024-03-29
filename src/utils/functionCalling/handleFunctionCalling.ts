@@ -6,7 +6,7 @@ export default async function handleTools(
   selectedConversation: Conversation,
   openaiKey: string,
 ) {
-  console.log('Available tools: ', availableTools)
+  console.log('Available tools in handleFunctionCalling: ', availableTools)
   try {
     const response = await fetch('/api/chat/openaiFunctionCall', {
       method: 'POST',
@@ -51,6 +51,7 @@ export default async function handleTools(
         console.log('Function call: ', function_call)
         callN8nFunction(function_call, selectedConversation)
       }
+      return function_call
     } else {
       console.log('No response body.')
     }
@@ -58,7 +59,7 @@ export default async function handleTools(
     console.error('Error calling openaiFunctionCall: ', error)
   }
   // TODO: return the updated message. This is a placeholder.
-  return message
+  // return message
 }
 
 // TODO: finalize this function calling
@@ -66,7 +67,7 @@ const callN8nFunction = async (
   function_call: any,
   selectedConversation: Conversation,
 ) => {
-  const response = await fetch('/api/UIUC-api/tools/callN8nFunction', {
+  const response = await fetch('http://localhost:8000/runWorkflow', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -118,7 +119,7 @@ interface ExtractedParameter {
   enum?: string[]
 }
 
-interface OpenAICompatibleTool {
+export interface OpenAICompatibleTool {
   name: string
   description: string
   parameters: {

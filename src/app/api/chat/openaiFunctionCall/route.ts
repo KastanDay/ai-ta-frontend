@@ -6,6 +6,7 @@ import type {
 } from 'openai/resources/chat'
 
 import { Conversation, Message } from '~/types/chat'
+import { decrypt, isEncrypted } from '~/utils/crypto'
 
 export const runtime = 'edge'
 
@@ -87,8 +88,21 @@ export async function POST(req: Request) {
     openaiKey: string
   } = await req.json()
 
+  console.log('OpenAI Key: ', openaiKey)
+
+  let decryptedKey = openaiKey
+  if (openaiKey && isEncrypted(openaiKey)) {
+    // Decrypt the key
+    const decryptedText = await decrypt(
+      openaiKey,
+      process.env.NEXT_PUBLIC_SIGNING_KEY as string,
+    )
+    decryptedKey = decryptedText as string
+    // console.log('models.ts Decrypted api key: ', apiKey)
+  }
+
   // Create an OpenAI API client (that's edge friendly!)
-  const openai = new OpenAI({ apiKey: openaiKey })
+  const openai = new OpenAI({ apiKey: decryptedKey })
 
   // format into OpenAI message format
   const message_to_send: ChatCompletionMessageParam[] =
