@@ -1,5 +1,4 @@
 import { type AppType } from 'next/app'
-import { type Session } from 'next-auth'
 import { MantineProvider } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
 import { Analytics } from '@vercel/analytics/react'
@@ -36,10 +35,7 @@ if (typeof window !== 'undefined') {
   })
 }
 
-const MyApp: AppType<{ session: Session | null }> = ({
-  Component,
-  pageProps: { session, ...pageProps },
-}) => {
+const MyApp: AppType = ({ Component, pageProps: { ...pageProps } }) => {
   useReportWebVitals(((metric: NextWebVitalsMetric) => {
     console.log(metric)
   }) as any)
