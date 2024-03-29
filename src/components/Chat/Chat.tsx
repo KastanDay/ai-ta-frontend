@@ -122,13 +122,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     // isError: isErrorDocumentGroups,
   } = useFetchEnabledDocGroups(getCurrentPageName())
 
-  // const {
-  //   data: availableTools,
-  //   isSuccess: isSuccessTools,
-  //   // isLoading: isLoadingTools,
-  //   // isError: isErrorTools,
-  //   // refetch: refetchTools,
-  // } = useFetchAllWorkflows(getCurrentPageName())
+  const {
+    data: availableTools,
+    isSuccess: isSuccessTools,
+    isLoading: isLoadingTools,
+    isError: isErrorTools,
+    error: toolLoadingError,
+    // refetch: refetchTools,
+  } = useFetchAllWorkflows(getCurrentPageName())
 
   const [actions, setActions] = useState<SpotlightAction[]>([]) // Doc groups & tools are "actions" of spotlight
 
@@ -202,7 +203,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   useEffect(() => {
     if (isSuccessTools) {
       const toolsActions =
-        availableTools?.map((tool, index) => ({
+        availableTools?.map((tool: OpenAICompatibleTool, index: number) => ({
           id: `tool-${index}`,
           title: tool.name,
           description: tool.description,
@@ -224,28 +225,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         : apiKey
     return key
   }
-
-  // useEffect(() => {
-  //   // Get tools given course_name.
-  //   const getTools = async () => {
-  //     console.log(`Chat.tsx: Getting tools...`)
-  //     const response = await fetch(
-  //       // `src/pages/api/UIUC-api/tools/getN8nWorkflows?course_name=${course_name}`,
-  //       `/api/UIUC-api/tools/getN8nWorkflows?api_key=n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6`,
-  //     )
-  //     const n8nTools = await response.json()
-  //     console.log(`Chat.tsx: RAWWWW TOOLS for: ${n8nTools}`)
-  //     if (n8nTools.length == 0) {
-  //       console.error(`Chat.tsx: No tools found...`)
-  //       return []
-  //     }
-
-  //     const openaiCompatibleTools = getOpenAIFunctionsFromN8n(n8nTools)
-  //     console.log('In Chat.tsx, openaiCompatibleTools: ', openaiCompatibleTools)
-  //     return openaiCompatibleTools
-  //   }
-  //   getTools()
-  // }, [])
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase

@@ -58,15 +58,18 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
   const [n8nApiKey, setN8nApiKey] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  const {
+    data: flows_table,
+    isSuccess: isSuccess,
+    // isLoading: isLoadingTools,
+    isError: isErrorTools,
+    refetch: refetchWorkflows,
+  } = useFetchAllWorkflows(GetCurrentPageName())
+
   const handleSaveApiKey = async () => {
     // const flows_table = await fetchWorkflows(10, true)
-    const {
-      data: flows_table,
-      isSuccess: isSuccess,
-      // isLoading: isLoadingTools,
-      isError: isErrorTools,
-      refetch: refetchWorkflows,
-    } = await useFetchAllWorkflows('', n8nApiKey)
+
+    refetchWorkflows()
 
     if (isErrorTools) {
       errorFetchingWorkflowsToast()
@@ -379,7 +382,6 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
 
             <N8nWorkflowsTable
               n8nApiKey={n8nApiKey}
-              isLoading={isLoading}
               course_name={course_name}
             />
           </Flex>

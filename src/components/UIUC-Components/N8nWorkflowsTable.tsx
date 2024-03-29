@@ -23,12 +23,11 @@ const PAGE_SIZE = 10
 
 interface N8nWorkflowsTableProps {
   n8nApiKey: string
-  isLoading: boolean
   course_name: string
-  fetchWorkflows: (
-    limit?: number,
-    pagination?: boolean,
-  ) => Promise<WorkflowRecord[]>
+  // fetchWorkflows: (
+  //   limit?: number,
+  //   pagination?: boolean,
+  // ) => Promise<WorkflowRecord[]>
 }
 
 const montserrat_med = Montserrat({
@@ -38,10 +37,8 @@ const montserrat_med = Montserrat({
 
 export const N8nWorkflowsTable = ({
   n8nApiKey,
-  // fetchWorkflows,
   course_name,
 }: N8nWorkflowsTableProps) => {
-  const pagination = true
   const [page, setPage] = useState(1)
 
   const {

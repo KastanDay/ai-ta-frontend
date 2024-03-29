@@ -183,9 +183,9 @@ export function getOpenAIFunctionsFromN8n(
 export const useFetchAllWorkflows = (
   course_name?: string,
   api_key?: string,
-  limit: number = 10,
-  pagination: string = 'true',
-  full_details: boolean = false,
+  limit = 10,
+  pagination = 'true',
+  full_details = false,
 ) => {
   if (!course_name && !api_key) {
     throw new Error('One of course_name OR api_key is required')
@@ -214,8 +214,10 @@ export const useFetchAllWorkflows = (
 
       const parsedPagination = pagination.toLowerCase() === 'true'
 
+      console.log('About to fetch workflows. Key:', api_key)
+
       const response = await fetch(
-        `http://localhost:8000/getworkflows?api_key=${api_key}&limit=${parsedLimit}&pagination=${parsedPagination}`,
+        `http://localhost:8000/getworkflows?api_key=${api_key}&limit=${limit}&pagination=${parsedPagination}`,
       )
       if (!response.ok) {
         // return res.status(response.status).json({ error: response.statusText })
