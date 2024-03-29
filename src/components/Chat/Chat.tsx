@@ -77,7 +77,10 @@ import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescriptio
 import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
 import { fetchRoutingResponse } from '~/pages/api/UIUC-api/fetchRoutingResponse'
 import { fetchPestDetectionResponse } from '~/pages/api/UIUC-api/fetchPestDetectionResponse'
-import handleTools from '~/utils/functionCalling/handleFunctionCalling'
+import handleTools, {
+  EssentialToolDetails,
+  getOpenAIFunctionsFromN8n,
+} from '~/utils/functionCalling/handleFunctionCalling'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -146,6 +149,32 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         : apiKey
     return key
   }
+
+  useEffect(() => {
+    // Get tools given course_name.
+    const getTools = async () => {
+      console.log(`Chat.tsx: Getting tools...`)
+      const response = await fetch(
+        // `src/pages/api/UIUC-api/tools/getN8nWorkflows?course_name=${course_name}`,
+        `/api/UIUC-api/tools/getN8nWorkflows?api_key=n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6`,
+      )
+      const n8nTools = await response.json()
+      console.log(`Chat.tsx: RAWWWW TOOLS for: ${n8nTools}`)
+      if (n8nTools.length == 0) {
+        console.error(`Chat.tsx: No tools found...`)
+        return
+      }
+
+      const openaiCompatibleTools = getOpenAIFunctionsFromN8n(n8nTools)
+      console.log('In Chat.tsx, openaiCompatibleTools: ', openaiCompatibleTools)
+
+      homeDispatch({
+        field: 'availableTools',
+        value: openaiCompatibleTools,
+      })
+    }
+    getTools()
+  }, [])
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase
@@ -261,8 +290,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       )
       homeDispatch({ field: 'isRouting', value: true })
 
-      //Todo: Add a check to get a list of allowed tools for routing from the DB and use them in the prompt
       try {
+        //Todo: Add a check to get a list of allowed tools for routing from the DB and use them in the prompt
+        // Replace routing with function calling w/ tools.
         const response = await fetchRoutingResponse(
           message,
           getCurrentPageName(),

@@ -1,9 +1,8 @@
-// import { EssentialToolDetails } from '~/pages/api/UIUC-api/tools/getN8nWorkflows'
 import { Conversation, Message } from '~/types/chat'
 
 export default async function handleTools(
   message: Message,
-  availableTools: EssentialToolDetails[],
+  availableTools: OpenAICompatibleTool[],
   selectedConversation: Conversation,
   openaiKey: string,
 ) {
@@ -84,48 +83,97 @@ const callN8nFunction = async (
   console.log('N8n function response: ', data)
 }
 
-// TODO: conform to the new function calling API
-export interface EssentialToolDetails {
+// conform to the OpenAI function calling API
+interface FormField {
+  fieldLabel: string
+  fieldType?: string
+  requiredField?: boolean
+}
+
+interface FormNodeParameter {
+  formFields: {
+    values: FormField[]
+  }
+  formDescription: string
+}
+
+interface Node {
   id: string
   name: string
+  parameters: FormNodeParameter
+  type: string
 }
 
-// TYPES for OpenAI function calling
-// interface FunctionParam {
-//   type: string;
-//   description?: string;
-//   enum?: string[];
-// }
+interface WorkflowNode {
+  id: string
+  name: string
+  type: string
+  active: boolean
+  nodes: Node[]
+}
 
-// interface FunctionParameter {
-//   type: string;
-//   properties: { [key: string]: FunctionParam };
-//   required: string[];
-// }
+interface ExtractedParameter {
+  type: 'string' | 'textarea' | 'number' | 'Date' | 'DropdownList'
+  description: string
+  enum?: string[]
+}
 
-// interface ChatCompletionCreateParamsFunction {
-//   name: string;
-//   description: string;
-//   parameters: FunctionParameter;
-// }
+interface OpenAICompatibleTool {
+  name: string
+  description: string
+  parameters: {
+    type: 'object'
+    properties: Record<string, ExtractedParameter>
+    required: string[]
+  }
+}
 
-export const getOpenAIFunctionsFromN8n = (allWorkflowsJson: any) => {
-  // Function to parse the JSON and extract the desired fields, only including active tools
-  function parseJson(jsonString: string): EssentialToolDetails[] {
-    const data = JSON.parse(jsonString)
+export function getOpenAIFunctionsFromN8n(
+  workflows: WorkflowNode[],
+): OpenAICompatibleTool[] {
+  const extractedObjects: OpenAICompatibleTool[] = []
 
-    const flattenedData = data.flat()
+  for (const workflow of workflows) {
+    console.log('workflowGroup: ', workflow)
 
-    // Filter for active tools, then map over the filtered array to extract the fields of interest
-    return flattenedData
-      .filter((item: any) => item.active)
-      .map((item: any) => ({
-        Name: item.name,
-        ID: item.id,
-      }))
+    // Only active workflows
+    if (!workflow.active) continue
+
+    // Must have a form trigger node!
+    const formTriggerNode = workflow.nodes.find(
+      (node) => node.type === 'n8n-nodes-base.formTrigger',
+    )
+    if (!formTriggerNode) continue
+
+    const properties: Record<string, ExtractedParameter> = {}
+    const required: string[] = []
+
+    formTriggerNode.parameters.formFields.values.forEach((field) => {
+      const key = field.fieldLabel.replace(/\s+/g, '_').toLowerCase() // Replace spaces with underscores and lowercase
+      properties[key] = {
+        type: field.fieldType === 'number' ? 'number' : 'string',
+        description: field.fieldLabel,
+      }
+
+      if (field.requiredField) {
+        required.push(key)
+      }
+    })
+
+    extractedObjects.push({
+      name: workflow.name.replace(/\s+/g, '_'),
+      description: formTriggerNode.parameters.formDescription,
+      parameters: {
+        type: 'object',
+        properties,
+        required,
+      },
+    })
   }
 
-  const validTools = parseJson(allWorkflowsJson)
-  console.log('getN8nWorkflows -- Valid tools:', validTools)
-  return validTools
+  return extractedObjects
 }
+
+// Usage example:
+// const extracted = extractParameters(giantJson);
+// console.log(extracted);

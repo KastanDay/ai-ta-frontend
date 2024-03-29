@@ -102,12 +102,14 @@ export async function POST(req: Request) {
 
   console.log('Message to send: ', message_to_send)
 
+  console.log('Tools to be used: ', tools)
+
   const response = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo-0613', // hard code function calling model.
     stream: true,
     messages: message_to_send,
-    // functions: tools, // TODO
-    functions,
+    functions: tools, // TODO
+    // functions,
   })
 
   const stream = OpenAIStream(response)

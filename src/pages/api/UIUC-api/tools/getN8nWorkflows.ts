@@ -48,9 +48,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const parsedLimit = parseInt(limit)
     const parsedPagination = pagination.toLowerCase() === 'true'
 
-    console.log('get n8nworkflows api_key', api_key)
-    console.log('get n8nworkflows limit', limit)
-    console.log('get n8nworkflows pagination', pagination)
+    // console.log('get n8nworkflows api_key', api_key)
+    // console.log('get n8nworkflows limit', limit)
+    // console.log('get n8nworkflows pagination', pagination)
 
     const response = await fetch(
       `http://localhost:8000/getworkflows?api_key=${api_key}&limit=${parsedLimit}&pagination=${parsedPagination}`,
@@ -60,12 +60,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
     // This parses and simplifies the nested structure of the data...
     const data = await response.json()
-    console.log('response', data)
+
+    // TODO: remove this? Seems useless
     const simplifiedData = data.map((workflow: WorkflowRecord) => {
-      // workflow.tags = workflow.tags.name
       return workflow
     })
-    console.log('simplifiedData', simplifiedData)
+
     const final_data = simplifiedData[0]
     return res.status(200).json(final_data)
   } catch (error) {
