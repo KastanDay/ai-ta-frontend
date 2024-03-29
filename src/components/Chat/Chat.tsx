@@ -89,6 +89,7 @@ import { fetchPestDetectionResponse } from '~/pages/api/UIUC-api/fetchPestDetect
 import handleTools, {
   OpenAICompatibleTool,
   getOpenAIFunctionsFromN8n,
+  useFetchAllWorkflows,
 } from '~/utils/functionCalling/handleFunctionCalling'
 import {
   SpotlightProvider,
@@ -117,9 +118,18 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const {
     data: documentGroups,
-    isSuccess,
-    isError,
+    isSuccess: isSuccessDocumentGroups,
+    // isError: isErrorDocumentGroups,
   } = useFetchEnabledDocGroups(getCurrentPageName())
+
+  // const {
+  //   data: availableTools,
+  //   isSuccess: isSuccessTools,
+  //   // isLoading: isLoadingTools,
+  //   // isError: isErrorTools,
+  //   // refetch: refetchTools,
+  // } = useFetchAllWorkflows(getCurrentPageName())
+
   const [actions, setActions] = useState<SpotlightAction[]>([]) // Doc groups & tools are "actions" of spotlight
 
   useEffect(() => {
@@ -166,13 +176,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [spotlightQuery, setSpotlightQuery] = useState('')
 
-  // useEffect(() => {
-  //   console.log('updated actions: ', actions);
-  // }, [actions]);
+  useEffect(() => {
+    console.log('updated actions: ', actions)
+  }, [actions])
 
   useEffect(() => {
-    // console.log('isSuccess: ', isSuccess)
-    if (isSuccess) {
+    if (isSuccessDocumentGroups) {
       const documentGroupActions =
         documentGroups?.map((docGroup, index) => ({
           id: `docGroup-${index}`,
@@ -183,25 +192,30 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           onTrigger: () => console.log(`${docGroup.name} triggered`),
         })) || []
 
-      // TODO use real tools
-      const toolsActions = ['Tool 1', 'Tool 2', 'Tool 3'].map(
-        (tool, index) => ({
-          // const toolsActions = tools.map((tool, index) => ({
-          id: `tool-${index}`,
-          title: tool,
-          description: `Description for ${tool}`,
-          group: 'Tools',
-          checked: true,
-          onTrigger: () => console.log(`${tool} triggered`),
-        }),
-      )
-
       console.log('documentGroupActions: ', documentGroupActions)
-      console.log('actions: ', [...documentGroupActions, ...toolsActions])
-      setActions([...documentGroupActions, ...toolsActions])
+      console.log('actions: ', [...documentGroupActions, ...actions])
+      setActions([...documentGroupActions, ...actions])
     }
     // console.log('actions: ', actions)
-  }, [documentGroups, isSuccess])
+  }, [documentGroups, isSuccessDocumentGroups])
+
+  useEffect(() => {
+    if (isSuccessTools) {
+      const toolsActions =
+        availableTools?.map((tool, index) => ({
+          id: `tool-${index}`,
+          title: tool.name,
+          description: tool.description,
+          group: 'Tools',
+          checked: true,
+          onTrigger: () => console.log(`${tool.name} triggered`),
+        })) || []
+
+      console.log('toolsActions: ', toolsActions)
+      console.log('actions: ', [...actions, ...toolsActions])
+      setActions([...actions, ...toolsActions])
+    }
+  }, [availableTools, isSuccessTools])
 
   const getOpenAIKey = (courseMetadata: CourseMetadata) => {
     const key =
@@ -211,27 +225,27 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     return key
   }
 
-  useEffect(() => {
-    // Get tools given course_name.
-    const getTools = async () => {
-      console.log(`Chat.tsx: Getting tools...`)
-      const response = await fetch(
-        // `src/pages/api/UIUC-api/tools/getN8nWorkflows?course_name=${course_name}`,
-        `/api/UIUC-api/tools/getN8nWorkflows?api_key=n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6`,
-      )
-      const n8nTools = await response.json()
-      console.log(`Chat.tsx: RAWWWW TOOLS for: ${n8nTools}`)
-      if (n8nTools.length == 0) {
-        console.error(`Chat.tsx: No tools found...`)
-        return []
-      }
+  // useEffect(() => {
+  //   // Get tools given course_name.
+  //   const getTools = async () => {
+  //     console.log(`Chat.tsx: Getting tools...`)
+  //     const response = await fetch(
+  //       // `src/pages/api/UIUC-api/tools/getN8nWorkflows?course_name=${course_name}`,
+  //       `/api/UIUC-api/tools/getN8nWorkflows?api_key=n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6`,
+  //     )
+  //     const n8nTools = await response.json()
+  //     console.log(`Chat.tsx: RAWWWW TOOLS for: ${n8nTools}`)
+  //     if (n8nTools.length == 0) {
+  //       console.error(`Chat.tsx: No tools found...`)
+  //       return []
+  //     }
 
-      const openaiCompatibleTools = getOpenAIFunctionsFromN8n(n8nTools)
-      console.log('In Chat.tsx, openaiCompatibleTools: ', openaiCompatibleTools)
-      return openaiCompatibleTools
-    }
-    getTools()
-  }, [])
+  //     const openaiCompatibleTools = getOpenAIFunctionsFromN8n(n8nTools)
+  //     console.log('In Chat.tsx, openaiCompatibleTools: ', openaiCompatibleTools)
+  //     return openaiCompatibleTools
+  //   }
+  //   getTools()
+  // }, [])
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase

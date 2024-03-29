@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { Conversation, Message } from '~/types/chat'
 
 export default async function handleTools(
@@ -105,7 +106,7 @@ interface Node {
   type: string
 }
 
-interface WorkflowNode {
+interface N8nWorkflow {
   id: string
   name: string
   type: string
@@ -130,7 +131,7 @@ export interface OpenAICompatibleTool {
 }
 
 export function getOpenAIFunctionsFromN8n(
-  workflows: WorkflowNode[],
+  workflows: N8nWorkflow[],
 ): OpenAICompatibleTool[] {
   const extractedObjects: OpenAICompatibleTool[] = []
 
@@ -178,3 +179,54 @@ export function getOpenAIFunctionsFromN8n(
 // Usage example:
 // const extracted = extractParameters(giantJson);
 // console.log(extracted);
+
+export const useFetchAllWorkflows = (
+  course_name?: string,
+  api_key?: string,
+  limit: number = 10,
+  pagination: string = 'true',
+  full_details: boolean = false,
+) => {
+  if (!course_name && !api_key) {
+    throw new Error('One of course_name OR api_key is required')
+  }
+
+  return useQuery({
+    queryKey: ['tools', api_key],
+    queryFn: async () => {
+      if (isNaN(limit) || limit <= 0) {
+        limit = 10
+      }
+
+      if (!api_key) {
+        const response = await fetch(
+          `/api/UIUC-api/tools/getN8nKeyFromProject?course_name=${course_name}`,
+          {
+            method: 'GET',
+          },
+        )
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+        api_key = await response.json()
+        console.log('⚠️ API Key from getN8nAPIKey: ', api_key)
+      }
+
+      const parsedPagination = pagination.toLowerCase() === 'true'
+
+      const response = await fetch(
+        `http://localhost:8000/getworkflows?api_key=${api_key}&limit=${parsedLimit}&pagination=${parsedPagination}`,
+      )
+      if (!response.ok) {
+        // return res.status(response.status).json({ error: response.statusText })
+        throw new Error(`Unable to fetch n8n tools. ${response.statusText}`)
+      }
+
+      const workflows = await response.json()
+      if (full_details) return workflows[0]
+
+      const openAIFunctions = getOpenAIFunctionsFromN8n(workflows[0])
+      return openAIFunctions
+    },
+  })
+}

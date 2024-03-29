@@ -68,9 +68,6 @@ export function useFetchEnabledDocGroups(course_name: string) {
 
       return docGroups as DocumentGroup[]
     },
-    // onSuccess: (data) => {
-    //   // This can be used to transform the data before it is returned but will be deprecated in the future
-    // },
   })
 }
 

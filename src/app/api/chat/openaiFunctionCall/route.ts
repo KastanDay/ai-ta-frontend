@@ -122,7 +122,7 @@ export async function POST(req: Request) {
     model: 'gpt-3.5-turbo-0613', // hard code function calling model.
     stream: true,
     messages: message_to_send,
-    functions: tools, // TODO
+    functions: tools,
     // functions,
   })
 
