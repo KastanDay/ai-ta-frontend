@@ -22,7 +22,7 @@ import {
 } from '~/utils/streamProcessing'
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '~/utils/app/const'
 import { v4 as uuidv4 } from 'uuid'
-import { getBaseUrl } from '~/utils/api'
+import { getBaseUrl } from '~/utils/apiUtils'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 
 // Configuration for the runtime environment

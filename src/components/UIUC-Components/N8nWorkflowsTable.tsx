@@ -26,7 +26,6 @@ import {
   Switch,
 } from '@mantine/core'
 import axios from 'axios'
-import { showToastOnFileDeleted } from './MakeOldCoursePage'
 import { useRouter } from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Montserrat } from 'next/font/google'

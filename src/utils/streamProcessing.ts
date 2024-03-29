@@ -13,7 +13,7 @@ import { OpenAIModel, OpenAIModelID, OpenAIModels } from '~/types/openai'
 import { NextRequest, NextResponse } from 'next/server'
 import { replaceCitationLinks } from './citations'
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
-import { getBaseUrl } from './api'
+import { getBaseUrl } from '~/utils/apiUtils'
 import posthog from 'posthog-js'
 
 export const config = {

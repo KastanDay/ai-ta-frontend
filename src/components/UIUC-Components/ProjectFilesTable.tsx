@@ -30,7 +30,12 @@ import { notifications, showNotification } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
 
 import { CourseDocument, DocumentGroup } from 'src/types/courseMaterials'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from '@tanstack/react-query'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
 import {
   useAppendToDocGroup,
@@ -92,7 +97,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     refetch: refetchDocuments,
   } = useQuery({
     queryKey: ['documents', course_name, page],
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     queryFn: async () => {
       // console.log('Fetching documents for page: ', page)
       const from = (page - 1) * PAGE_SIZE
@@ -161,8 +166,8 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     }
   }
 
-  const deleteDocumentMutation = useMutation(
-    async (recordsToDelete: CourseDocument[]) => {
+  const deleteDocumentMutation = useMutation({
+    mutationFn: async (recordsToDelete: CourseDocument[]) => {
       console.log('Deleting records:', recordsToDelete)
       const API_URL = 'https://flask-production-751b.up.railway.app'
       const deletePromises = recordsToDelete.map((record) =>
@@ -177,80 +182,80 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
       await Promise.all(deletePromises)
       console.log('Deleted records')
     },
-    {
-      onMutate: async (recordsToDelete) => {
-        console.log('in onMutate')
-        await queryClient.cancelQueries(['documents', course_name])
+    onMutate: async (recordsToDelete) => {
+      console.log('in onMutate')
+      await queryClient.cancelQueries({ queryKey: ['documents', course_name] })
 
-        const previousDocuments = queryClient.getQueryData<CourseDocument[]>([
-          'documents',
-          course_name,
-        ])
+      const previousDocuments = queryClient.getQueryData<CourseDocument[]>([
+        'documents',
+        course_name,
+      ])
 
-        const previousDocumentGroups = queryClient.getQueryData([
-          'documentGroups',
-          course_name,
-        ])
+      const previousDocumentGroups = queryClient.getQueryData([
+        'documentGroups',
+        course_name,
+      ])
 
-        queryClient.setQueryData<CourseDocument[]>(
-          ['documents', course_name],
-          (old = []) => {
-            return old.filter(
-              (doc) =>
-                !recordsToDelete.find(
-                  (record) =>
-                    record.url === doc.url || record.s3_path === doc.s3_path,
-                ),
-            )
-          },
-        )
+      queryClient.setQueryData<CourseDocument[]>(
+        ['documents', course_name],
+        (old = []) => {
+          return old.filter(
+            (doc) =>
+              !recordsToDelete.find(
+                (record) =>
+                  record.url === doc.url || record.s3_path === doc.s3_path,
+              ),
+          )
+        },
+      )
 
-        queryClient.setQueryData<DocumentGroup[]>(
-          ['documentGroups', course_name],
-          (old = []) => {
-            return old.map((doc_group) => {
-              recordsToDelete.forEach((record) => {
-                if (doc_group.name in record.doc_groups) {
-                  doc_group.doc_count -= 1
-                }
-              })
-              return doc_group
+      queryClient.setQueryData<DocumentGroup[]>(
+        ['documentGroups', course_name],
+        (old = []) => {
+          return old.map((doc_group) => {
+            recordsToDelete.forEach((record) => {
+              if (doc_group.name in record.doc_groups) {
+                doc_group.doc_count -= 1
+              }
             })
-          },
-        )
+            return doc_group
+          })
+        },
+      )
 
-        return { previousDocuments, previousDocumentGroups }
-      },
-      onError: (err, variables, context) => {
-        console.log('Error deleting documents:', err)
-        if (context?.previousDocuments) {
-          queryClient.setQueryData(
-            ['documents', course_name],
-            context.previousDocuments,
-          )
-        }
-
-        if (context?.previousDocumentGroups) {
-          queryClient.setQueryData(
-            ['documentGroups', course_name],
-            context.previousDocumentGroups,
-          )
-        }
-
-        showToastOnFileDeleted(theme, true)
-      },
-      onSettled: async () => {
-        showToastOnFileDeleted(theme)
-        const sleep = (ms: number) =>
-          new Promise((resolve) => setTimeout(resolve, ms))
-        console.log('sleeping for 500ms')
-        await sleep(500)
-        console.log('Invalidating queries')
-        queryClient.invalidateQueries(['documents', course_name])
-        queryClient.invalidateQueries(['documentGroups', course_name])
-      },
+      return { previousDocuments, previousDocumentGroups }
     },
-  )
+    onError: (err, variables, context) => {
+      console.log('Error deleting documents:', err)
+      if (context?.previousDocuments) {
+        queryClient.setQueryData(
+          ['documents', course_name],
+          context.previousDocuments,
+        )
+      }
+
+      if (context?.previousDocumentGroups) {
+        queryClient.setQueryData(
+          ['documentGroups', course_name],
+          context.previousDocumentGroups,
+        )
+      }
+
+      showToastOnFileDeleted(theme, true)
+    },
+    onSettled: async () => {
+      showToastOnFileDeleted(theme)
+      const sleep = (ms: number) =>
+        new Promise((resolve) => setTimeout(resolve, ms))
+      console.log('sleeping for 500ms')
+      await sleep(500)
+      console.log('Invalidating queries')
+      queryClient.invalidateQueries({ queryKey: ['documents', course_name] })
+      queryClient.invalidateQueries({
+        queryKey: ['documentGroups', course_name],
+      })
+    },
+  })
 
   if (isErrorDocuments) {
     showNotification({

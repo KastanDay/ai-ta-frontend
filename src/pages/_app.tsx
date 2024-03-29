@@ -7,7 +7,7 @@ import { appWithTranslation } from 'next-i18next'
 import { ClerkProvider } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 
-import { api } from '~/utils/api'
+// import { api } from '~/utils/api'
 
 import '~/styles/globals.css'
 import Maintenance from '~/components/UIUC-Components/Maintenance'
@@ -120,4 +120,4 @@ const MyApp: AppType<{ session: Session | null }> = ({
 
 // export default .withTRPC(MyApp)
 
-export default api.withTRPC(appWithTranslation(MyApp))
+export default appWithTranslation(MyApp)

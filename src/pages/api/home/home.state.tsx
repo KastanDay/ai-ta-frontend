@@ -4,7 +4,6 @@ import { FolderInterface } from '@/types/folder'
 import { OpenAIModel, OpenAIModelID } from '@/types/openai'
 import { PluginKey } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
-import { EssentialToolDetails } from '~/utils/functionCalling/handleFunctionCalling'
 
 export interface HomeInitialState {
   apiKey: string
@@ -31,7 +30,6 @@ export interface HomeInitialState {
   serverSidePluginKeysSet: boolean
   cooldown: number
   showModelSettings: boolean
-  availableTools: EssentialToolDetails[]
   isImg2TextLoading: boolean | undefined
   isRouting: boolean | undefined
   routingResponse: string | undefined
@@ -64,7 +62,6 @@ export const initialState: HomeInitialState = {
   serverSidePluginKeysSet: false,
   cooldown: 0,
   showModelSettings: false,
-  availableTools: [],
   isImg2TextLoading: undefined,
   isRouting: undefined,
   routingResponse: undefined,

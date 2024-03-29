@@ -3,7 +3,7 @@ import { Title, Flex, Blockquote, Text } from '@mantine/core'
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
-import { useAuth } from '@clerk/nextjs'
+// import { useAuth } from '@clerk/nextjs'
 import Navbar from './navbars/Navbar'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
 import GlobalFooter from './GlobalFooter'
