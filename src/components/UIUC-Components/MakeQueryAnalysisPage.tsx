@@ -12,6 +12,7 @@ import {
   // FileInput,
   // rem,
   Title,
+  Text,
   Flex,
   createStyles,
   // Divider,
@@ -24,6 +25,7 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import { LoadingSpinner } from './LoadingSpinner'
+import { downloadConversationHistory } from '../../pages/api/UIUC-api/downloadConvoHistory'
 
 const useStyles = createStyles((theme: MantineTheme) => ({
   downloadButton: {
@@ -76,7 +78,7 @@ const MakeQueryAnalysisPage = ({
   course_data: any
 }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  const { classes } = useStyles()
+  const { classes, theme } = useStyles()
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
   // const { isSignedIn, user } = useUser()
   const clerk_user = useUser()
@@ -168,35 +170,11 @@ const MakeQueryAnalysisPage = ({
     )
   }
 
-  const downloadConversationHistory = async (courseName: string) => {
+  const handleDownload = async (courseName: string) => {
+    setIsLoading(true)
     try {
-      setIsLoading(true)
-      const response = await axios.get(
-        `https://flask-production-751b.up.railway.app/export-convo-history-csv?course_name=${courseName}`,
-        { responseType: 'blob' },
-      )
-      const url = window.URL.createObjectURL(response.data)
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', `${courseName}_conversation_history.zip`)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link) // Clean up by removing the link element
-      window.URL.revokeObjectURL(url) // Free up memory by releasing the object URL
-    } catch (error) {
-      console.error('Error fetching conversation history:', error)
-      notifications.show({
-        id: 'error-notification',
-        title: 'Error',
-        message:
-          'Failed to fetch conversation history. Please try again later.',
-        color: 'red',
-        radius: 'lg',
-        icon: <IconAlertCircle />,
-        className: 'my-notification-class',
-        style: { backgroundColor: '#15162c' },
-        loading: false,
-      })
+      const result = await downloadConversationHistory(courseName)
+      showToastOnUpdate(theme, false, false, result.message)
     } finally {
       setIsLoading(false)
     }
@@ -256,7 +234,7 @@ const MakeQueryAnalysisPage = ({
                         <IconCloudDownload />
                       )
                     }
-                    onClick={() => downloadConversationHistory(course_name)}
+                    onClick={() => handleDownload(course_name)}
                   >
                     Download Conversation History
                   </Button>
@@ -329,6 +307,7 @@ const MakeQueryAnalysisPage = ({
 
 import {
   IconAlertCircle,
+  IconAlertTriangle,
   IconCheck,
   IconCloudDownload,
   IconDownload,
@@ -357,6 +336,7 @@ import { extractEmailsFromClerk } from './clerkHelpers'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
 import Navbar from './navbars/Navbar'
+import Link from 'next/link'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
@@ -576,3 +556,51 @@ const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
 }
 
 export default MakeQueryAnalysisPage
+
+export const showToastOnUpdate = (
+  theme: MantineTheme,
+  was_error = false,
+  isReset = false,
+  message: string,
+) => {
+  return notifications.show({
+    id: 'convo-or-documents-export',
+    withCloseButton: true,
+    closeButtonProps: { color: 'green' },
+    onClose: () => console.log('error unmounted'),
+    onOpen: () => console.log('error mounted'),
+    autoClose: 30000,
+    title: (
+      <Text size={'lg'} className={`${montserrat_heading.className}`}>
+        {message}
+      </Text>
+    ),
+    message: (
+      <Text className={`${montserrat_paragraph.className}`}>
+        Check{' '}
+        <Link
+          href={
+            'https://docs.uiuc.chat/features/bulk-export-documents-or-conversation-history'
+          }
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: 'underline', color: 'lightpurple' }}
+        >
+          our docs
+        </Link>{' '}
+        for example code to process this data.
+      </Text>
+    ),
+    color: 'green',
+    radius: 'lg',
+    icon: <IconCheck />,
+    className: 'my-notification-class',
+    style: {
+      backgroundColor: 'rgba(42,42,64,0.6)',
+      backdropFilter: 'blur(10px)',
+      borderLeft: '5px solid green',
+    },
+    withBorder: true,
+    loading: false,
+  })
+}
