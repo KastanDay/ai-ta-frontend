@@ -34,7 +34,6 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
   useEffect(() => {
     if (clerk_obj.isLoaded) {
       if (clerk_obj.isSignedIn) {
-        console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
         const emails = extractEmailsFromClerk(clerk_obj.user)
         setUserEmail(emails[0] || 'no_email')
 
@@ -45,7 +44,7 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
       }
       setIsLoaded(true)
     } else {
-      console.debug('NOT LOADED OR SIGNED IN')
+      // console.debug('NOT LOADED OR SIGNED IN')
     }
   }, [clerk_obj.isLoaded])
 
@@ -149,7 +148,6 @@ export function LandingPageHeader({
   useEffect(() => {
     if (clerk_obj.isLoaded) {
       if (clerk_obj.isSignedIn) {
-        console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
         const emails = extractEmailsFromClerk(clerk_obj.user)
         setUserEmail(emails[0] || 'no_email')
 
@@ -160,7 +158,7 @@ export function LandingPageHeader({
       }
       setIsLoaded(true)
     } else {
-      console.debug('NOT LOADED OR SIGNED IN')
+      // console.debug('NOT LOADED OR SIGNED IN')
     }
   }, [clerk_obj.isLoaded])
 

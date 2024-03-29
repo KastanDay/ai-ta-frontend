@@ -15,6 +15,7 @@ import {
   List,
 } from '@mantine/core'
 import {
+  IconAlertCircle,
   IconHome,
   IconSitemap,
   IconSubtask,
@@ -29,6 +30,12 @@ import { callSetCourseMetadata } from '~/utils/apiUtils'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { useRef } from 'react'
 import { LoadingSpinner } from './LoadingSpinner'
+import { Montserrat } from 'next/font/google'
+
+const montserrat_med = Montserrat({
+  weight: '500',
+  subsets: ['latin'],
+})
 
 interface WebScrapeProps {
   is_new_course: boolean
@@ -222,14 +229,18 @@ export const WebScrape = ({
         }
       } else {
         // Standard web scrape
-        data = await scrapeWeb(
-          url,
-          courseName,
-          maxUrls.trim() !== '' ? parseInt(maxUrls) : 50,
-          scrapeStrategy,
-        )
+        try {
+          await scrapeWeb(
+            url,
+            courseName,
+            maxUrls.trim() !== '' ? parseInt(maxUrls) : 50,
+            scrapeStrategy,
+          )
+        } catch (error: any) {
+          console.error('Error while scraping web:', error)
+        }
         // let ingest finalize things. It should be finished, but the DB is slow.
-        await new Promise((resolve) => setTimeout(resolve, 3000))
+        await new Promise((resolve) => setTimeout(resolve, 8000))
 
         if (is_new_course) {
           // set course exists in fast course_metadatas KV db
@@ -364,9 +375,40 @@ export const WebScrape = ({
       )
       console.log('Response from web scraping endpoint:', response.data)
       return response.data
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error during web scraping:', error)
-      return null
+
+      notifications.show({
+        id: 'error-notification',
+        withCloseButton: true,
+        closeButtonProps: { color: 'red' },
+        onClose: () => console.log('error unmounted'),
+        onOpen: () => console.log('error mounted'),
+        autoClose: 12000,
+        title: (
+          <Text size={'lg'} className={`${montserrat_med.className}`}>
+            {'Error during web scraping. Please try again.'}
+          </Text>
+        ),
+        message: (
+          <Text className={`${montserrat_med.className} text-neutral-200`}>
+            {error.message}
+          </Text>
+        ),
+        color: 'red',
+        radius: 'lg',
+        icon: <IconAlertCircle />,
+        className: 'my-notification-class',
+        style: {
+          backgroundColor: 'rgba(42,42,64,0.3)',
+          backdropFilter: 'blur(10px)',
+          borderLeft: '5px solid red',
+        },
+        withBorder: true,
+        loading: false,
+      })
+      // return error
+      // throw error
     }
   }
 
@@ -411,10 +453,8 @@ export const WebScrape = ({
 
   useEffect(() => {
     if (url && url.length > 0 && validateUrl(url)) {
-      console.log('url updated : ', url)
       setIsUrlUpdated(true)
     } else {
-      console.log('url empty')
       setIsUrlUpdated(false)
     }
   }, [url])
