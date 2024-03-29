@@ -596,7 +596,7 @@ export const showToastOnUpdate = (
     icon: <IconCheck />,
     className: 'my-notification-class',
     style: {
-      backgroundColor: 'rgba(42,42,64,0.3)',
+      backgroundColor: 'rgba(42,42,64,0.6)',
       backdropFilter: 'blur(10px)',
       borderLeft: '5px solid green',
     },
