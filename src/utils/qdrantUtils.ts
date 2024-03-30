@@ -38,6 +38,7 @@ export async function addDocumentsToDocGroupQdrant(
       ],
     };
 
+    // Following commented out code can be used for verifying Qdrant updates:
     // const dummyVector = new Array(1536).fill(0);
 
     // const searchResultBefore = await qdrantClient.search(collection_name ? collection_name : "", {
@@ -71,42 +72,6 @@ export async function addDocumentsToDocGroupQdrant(
     // }
     } catch (error) {
     console.error('Error in addDocumentsToDocGroup:', error)
-    throw error
-  }
-}
-
-export async function appendDocGroupQdrant(
-  courseName: string,
-  doc: CourseDocument,
-  docGroup: string,
-) {
-  try {
-    if (!doc.doc_groups) {
-      doc.doc_groups = []
-    }
-    if (!doc.doc_groups.includes(docGroup)) {
-      doc.doc_groups.push(docGroup)
-    }
-    await addDocumentsToDocGroupQdrant(courseName, doc)
-  } catch (error) {
-    console.error('Error in appendDocGroup:', error)
-    throw error
-  }
-}
-
-export async function removeDocGroupQdrant(
-  courseName: string,
-  doc: CourseDocument,
-  docGroup: string,
-) {
-  try {
-    if (!doc.doc_groups) {
-      doc.doc_groups = []
-    }
-    doc.doc_groups = doc.doc_groups.filter((group: string) => group !== docGroup)
-    await addDocumentsToDocGroupQdrant(courseName, doc)
-  } catch (error) {
-    console.error('Error in removeDocGroupQdrant:', error)
     throw error
   }
 }
