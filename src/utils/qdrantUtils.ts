@@ -79,6 +79,7 @@ export async function addDocumentsToDocGroupQdrant(
       doc_readable_filename: doc.readable_filename,
       doc_unique_identifier: doc.url && doc.url !== '' ? doc.url : doc.s3_path && doc.s3_path !== '' ? doc.s3_path : null,
       doc_groups: doc.doc_groups,
+      error_logs: error,
     });
 
     throw error
