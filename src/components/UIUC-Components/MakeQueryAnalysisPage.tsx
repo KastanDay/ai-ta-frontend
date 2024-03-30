@@ -172,9 +172,9 @@ const MakeQueryAnalysisPage = ({
     try {
       setIsLoading(true)
       const response = await axios.get(
-        `https://flask-production-751b.up.railway.app/export-convo-history-csv?course_name=${courseName}`,
-        { responseType: 'blob' },
-      )
+        `/api/getConversationHistory?course_name=${courseName}`,
+        { responseType: 'blob' }
+      );
       const url = window.URL.createObjectURL(response.data)
       const link = document.createElement('a')
       link.href = url
