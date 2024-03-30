@@ -47,7 +47,11 @@ export const N8nWorkflowsTable = ({
     isSuccess: isSuccess,
     isError: isErrorTools,
     refetch: refetchWorkflows,
-  } = useFetchAllWorkflows(course_name, n8nApiKey)
+  } = useFetchAllWorkflows(course_name, n8nApiKey, 10, 'true', true)
+
+  useEffect(() => {
+    console.log('N*N records', records)
+  }, [records])
 
   const handleActiveChange = async (id: string, checked: boolean) => {
     // Make API call
@@ -110,12 +114,15 @@ export const N8nWorkflowsTable = ({
 
   const startIndex = (page - 1) * PAGE_SIZE
   const endIndex = startIndex + PAGE_SIZE
-  let currentRecords
-  if (records && records.length !== 0) {
-    console.log('before the current', records)
-    currentRecords = (records as WorkflowRecord[]).slice(startIndex, endIndex)
-  }
-  console.log('currentRecords b4 data:', currentRecords)
+
+  // Not the right way to implement pagination... have to do it at the API/Request level
+  // let currentRecords
+  // if (records && records.length !== 0) {
+  //   console.log('before the current', records)
+  //   currentRecords = (records as WorkflowRecord[]).slice(startIndex, endIndex)
+  // }
+  // console.log('currentRecords b4 data:', currentRecords)
+
   return (
     <>
       <Title
@@ -148,16 +155,16 @@ export const N8nWorkflowsTable = ({
         fetching={isLoadingRecords}
         customLoader={<LoadingSpinner />}
         // keyField="id"
-        records={currentRecords}
+        records={records as WorkflowRecord[]}
         columns={[
-          { accessor: 'id', width: 175 },
-          { accessor: 'name', width: 100 },
+          // { accessor: 'id', width: 175 },
+          { accessor: 'name' },
           {
             accessor: 'active',
             width: 100,
             render: (record, index) => (
               <Switch
-                checked={record.active}
+                checked={!!record.active}
                 onChange={(event) => {
                   // TODO: double check this...
                   // setRecords((prevRecords) =>
@@ -167,20 +174,23 @@ export const N8nWorkflowsTable = ({
                   //       : record,
                   //   ),
                   // )
-                  console.log('record:', record.id)
-                  console.log('event:', event.target.checked)
+                  console.log('handleActiveChange - record:', record.id)
+                  console.log(
+                    'handleActiveChange - event:',
+                    event.target.checked,
+                  )
                   handleActiveChange(record.id, event.target.checked)
                 }}
               />
             ),
           },
-          {
-            accessor: 'tags',
-            width: 100,
-            render: (record, index) => {
-              return record.tags.map((tag) => tag.name).join(', ')
-            },
-          },
+          // {
+          //   accessor: 'tags',
+          //   width: 100,
+          //   render: (record, index) => {
+          //     return record.tags.map((tag) => tag.name).join(', ')
+          //   },
+          // },
           {
             accessor: 'createdAt',
             // textAlign: 'left',

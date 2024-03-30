@@ -4,9 +4,12 @@ import { Conversation, Message } from '~/types/chat'
 export default async function handleTools(
   message: Message,
   availableTools: OpenAICompatibleTool[],
+  imageUrls: string[],
+  imageDescription: string,
   selectedConversation: Conversation,
   openaiKey: string,
 ) {
+  // TODO: Use imageURLs and imageDescription to call the appropriate tool
   console.log('Available tools in handleFunctionCalling: ', availableTools)
   try {
     const response = await fetch('/api/chat/openaiFunctionCall', {
@@ -17,6 +20,8 @@ export default async function handleTools(
       body: JSON.stringify({
         conversation: selectedConversation,
         tools: availableTools,
+        imageUrls: imageUrls,
+        imageDescription: imageDescription,
         openaiKey: openaiKey,
       }),
     })
@@ -48,10 +53,10 @@ export default async function handleTools(
       console.log('Function call from openaiFunctionCall: ', function_call)
 
       // TODO: Do tool calling here!!
-      if (function_call) {
-        console.log('Function call: ', function_call)
-        callN8nFunction(function_call, selectedConversation)
-      }
+      // if (function_call) {
+      //   console.log('Function call: ', function_call)
+      //   callN8nFunction(function_call, selectedConversation)
+      // }
       return function_call
     } else {
       console.log('No response body.')

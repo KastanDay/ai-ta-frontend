@@ -81,12 +81,17 @@ export async function POST(req: Request) {
     conversation,
     tools,
     openaiKey,
+    imageUrls,
+    imageDescription,
   }: {
     messages: Message
     tools: ChatCompletionCreateParams.Function[]
     conversation: Conversation
+    imageUrls: string[]
+    imageDescription: string
     openaiKey: string
   } = await req.json()
+  // TODO MAKE USE OF IMAGE DESCRIPTION AND IMAGE URLS
 
   console.log('OpenAI Key: ', openaiKey)
 

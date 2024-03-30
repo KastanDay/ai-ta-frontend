@@ -123,7 +123,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   } = useFetchEnabledDocGroups(getCurrentPageName())
 
   const {
-    data: availableTools,
+    data: tools,
     isSuccess: isSuccessTools,
     isLoading: isLoadingTools,
     isError: isErrorTools,
@@ -203,7 +203,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   useEffect(() => {
     if (isSuccessTools) {
       const toolsActions =
-        availableTools?.map((tool: OpenAICompatibleTool, index: number) => ({
+        tools?.map((tool: OpenAICompatibleTool, index: number) => ({
           id: `tool-${index}`,
           title: tool.name,
           description: tool.description,
@@ -216,7 +216,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       console.log('actions: ', [...actions, ...toolsActions])
       setActions([...actions, ...toolsActions])
     }
-  }, [availableTools, isSuccessTools])
+  }, [tools, isSuccessTools])
 
   const getOpenAIKey = (courseMetadata: CourseMetadata) => {
     const key =
@@ -324,6 +324,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const handleRoutingForImageContent = async (
     message: Message,
+    tools: OpenAICompatibleTool[],
     endpoint: string,
     updatedConversation: Conversation,
     searchQuery: string,
@@ -333,11 +334,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     const imageContent = (message.content as Content[]).filter(
       (content) => content.type === 'image_url',
     )
+
     if (imageContent.length > 0) {
-      console.log(
-        'Running routing for image content because imageContent exists',
-        imageContent,
+      // console.log('imageContent:', imageContent)
+      const imageUrls = imageContent.map(
+        (content) => content.image_url?.url as string,
       )
+      console.log('imageURLs:', imageUrls)
+
       homeDispatch({ field: 'isRouting', value: true })
 
       try {
@@ -353,7 +357,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
         console.log('Routing response: ', response)
         homeDispatch({ field: 'isRouting', value: false })
-        homeDispatch({ field: 'routingResponse', value: response })
+        homeDispatch({
+          field: 'routingResponse',
+          value: JSON.stringify(response, null, 2),
+        })
         // For future use, if we want to handle different types of routing responses for image content then we can add more cases here
         if ('Pests' === response) {
           await handlePestDetection(
@@ -363,19 +370,22 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             currentMessageIndex,
           )
         }
-        searchQuery = await handleImageContent(
+        const { updatedSearchQuery, imgDesc } = await handleImageContent(
           message,
           endpoint,
           updatedConversation,
           searchQuery,
           controller,
         )
+        searchQuery = updatedSearchQuery
+        return { searchQuery, imgDesc }
       } catch (error) {
         console.error('Error in chat.tsx running handleImageContent():', error)
         controller.abort()
       }
     }
-    return searchQuery
+    const imgDesc = ''
+    return { searchQuery, imgDesc }
   }
 
   const handleImageContent = async (
@@ -389,11 +399,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       (content) =>
         content.type === 'image_url' || content.type === 'tool_image_url',
     )
+    let imgDesc = ''
     if (imageContent.length > 0) {
       homeDispatch({ field: 'isImg2TextLoading', value: true })
 
       try {
-        const imgDesc = await fetchImageDescription(
+        imgDesc = await fetchImageDescription(
           message,
           getCurrentPageName(),
           endpoint,
@@ -426,7 +437,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         homeDispatch({ field: 'isImg2TextLoading', value: false })
       }
     }
-    return searchQuery
+    const updatedSearchQuery = searchQuery
+    return { updatedSearchQuery, imgDesc }
   }
 
   const handleContextSearch = async (
@@ -479,6 +491,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       deleteCount = 0,
       plugin: Plugin | null = null,
       actions: SpotlightAction[],
+      tools: OpenAICompatibleTool[],
     ) => {
       setCurrentMessage(message)
       resetMessageStates()
@@ -529,18 +542,24 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         const controller = new AbortController()
 
         // Run image to text conversion, attach to Message object.
+        let imgDesc = ''
         if (Array.isArray(message.content)) {
+          // if (true) {
           // Fetch current message index from updatedConversation
           console.log('Running routing for image content', message.content)
           // Run routing for image content, attach to Message object.
-          searchQuery = await handleRoutingForImageContent(
-            message,
-            endpoint,
-            updatedConversation,
-            searchQuery,
-            controller,
-            currentMessageIndex,
-          )
+          const { searchQuery: newSearchQuery, imgDesc: newImgDesc } =
+            await handleRoutingForImageContent(
+              message,
+              tools,
+              endpoint,
+              updatedConversation,
+              searchQuery,
+              controller,
+              currentMessageIndex,
+            )
+          searchQuery = newSearchQuery
+          imgDesc = newImgDesc
         }
 
         // Run context search, attach to Message object.
@@ -552,14 +571,26 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         // If tools are available, try using tools:
-        console.log('Right before handleTools!')
-        console.log(
-          'updatedConversation: ',
-          JSON.stringify(updatedConversation),
+        // console.log('Right before handleTools!')
+        // console.log(
+        //   'updatedConversation: ',
+        //   JSON.stringify(updatedConversation),
+        // )
+        // Get imageURLs
+        const imageContent = (message.content as Content[]).filter(
+          (content) => content.type === 'image_url',
         )
+        const imageUrls = imageContent.map(
+          (content) => content.image_url?.url as string,
+        )
+        console.log('Image URLs in main:', imageUrls)
+        console.log('Message in main:', message)
+
         await handleTools(
           message,
-          [], // tools
+          tools,
+          imageUrls,
+          imgDesc,
           updatedConversation,
           getOpenAIKey(courseMetadata),
         )
@@ -859,7 +890,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
-      handleSend(currentMessage, 2, null, actions)
+      handleSend(currentMessage, 2, null, actions, tools)
     }
   }, [currentMessage, handleSend])
 
@@ -1191,6 +1222,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                             selectedConversation?.messages.length - index,
                             null,
                             actions,
+                            tools,
                           )
                         }}
                         onImageUrlsUpdate={onImageUrlsUpdate}
@@ -1210,7 +1242,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 textareaRef={textareaRef}
                 onSend={(message, plugin) => {
                   // setCurrentMessage(message)
-                  handleSend(message, 0, plugin, actions)
+                  handleSend(message, 0, plugin, actions, tools)
                 }}
                 onScrollDownClick={handleScrollDown}
                 onRegenerate={handleRegenerate}
