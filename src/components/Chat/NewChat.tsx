@@ -258,26 +258,28 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
 
     try {
-      // Log conversation to our Flask Backend (especially Nomic)
-      const response = await fetch(
-        `https://flask-production-751b.up.railway.app/onResponseCompletion`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            course_name: getCurrentPageName(),
-            conversation: conversation,
-          }),
+      const response = await fetch(`/api/UIUC-api/logConversationToFlask`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      )
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.message)
+        body: JSON.stringify({
+          course_name: getCurrentPageName(),
+          conversation: conversation,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
+      // console.log('new method worked frontend');
+  
       return data.success
     } catch (error) {
-      console.error('Error in chat.tsx running onResponseCompletion():', error)
-      return false
+      console.error('Error in chat.tsx running onMessageReceived():', error);
     }
   }
 
