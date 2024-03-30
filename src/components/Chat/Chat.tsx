@@ -172,7 +172,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       // console.log('new method worked frontend');
   
-      // Handle the response data as needed
+      return data.success
     } catch (error) {
       console.error('Error in chat.tsx running onMessageReceived():', error);
     }
