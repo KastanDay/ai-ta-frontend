@@ -2,8 +2,6 @@
 import { CourseDocument } from '~/types/courseMaterials'
 import { qdrant } from '@/utils/qdrantClient'
 import posthog from 'posthog-js';
-import { useUser } from '@clerk/nextjs'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 
 const collection_name = process.env.QDRANT_COLLECTION_NAME
 
@@ -70,11 +68,7 @@ export async function addDocumentsToDocGroupQdrant(
     } catch (error) {
     console.error('Error in addDocumentsToDocGroup:', error)
     
-    const { user } = useUser()
-    const user_emails = extractEmailsFromClerk(user)
-
     posthog.capture('add_doc_group', {
-      user_id: user_emails,
       course_name: courseName,
       doc_readable_filename: doc.readable_filename,
       doc_unique_identifier: doc.url && doc.url !== '' ? doc.url : doc.s3_path && doc.s3_path !== '' ? doc.s3_path : null,
