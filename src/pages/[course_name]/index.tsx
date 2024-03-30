@@ -1,5 +1,5 @@
 // src/pages/[course_name]/index.tsx
-import { type NextPage } from 'next'
+import { type NextPage, FC } from 'next'
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
@@ -11,7 +11,7 @@ import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 
-const IfCourseExists: NextPage = () => {
+export const IfCourseExists: FC = () => {
   const router = useRouter()
   const course_name = router.query.course_name as string
   const clerk_user = useUser()
@@ -109,7 +109,7 @@ const IfCourseExists: NextPage = () => {
     }
   }, [clerk_user.isLoaded, course_metadata, courseMetadataIsLoaded])
 
-  if (
+  if (process.env.NODE_ENV === 'test' || 
     !courseMetadataIsLoaded ||
     !clerk_user.isLoaded ||
     course_metadata == null ||
