@@ -266,7 +266,7 @@ const MakeQueryAnalysisPage = ({
                   Read more about{' '}
                   <a
                     className={'text-purple-600'}
-                    href="https://home.nomic.ai/about"
+                    href="https://atlas.nomic.ai/"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ textDecoration: 'underline', paddingRight: '5px' }}
@@ -287,7 +287,7 @@ const MakeQueryAnalysisPage = ({
                   Read more about{' '}
                   <a
                     className={'text-purple-600'}
-                    href="https://home.nomic.ai/about"
+                    href="https://atlas.nomic.ai/"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ textDecoration: 'underline', paddingRight: '5px' }}
