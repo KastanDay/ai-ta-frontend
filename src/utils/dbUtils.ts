@@ -30,7 +30,6 @@ export async function fetchDocumentGroups(courseName: string) {
       .select('id, name, enabled, doc_count')
       .eq('course_name', courseName)
       .order('name', { ascending: true })
-
     if (error) {
       console.error('Failed to fetch document groups:', error.message)
       throw new Error(`Failed to fetch document groups: ${error.message}`)
@@ -41,7 +40,6 @@ export async function fetchDocumentGroups(courseName: string) {
     throw error
   }
 }
-
 export async function addDocumentsToDocGroup(
   courseName: string,
   doc: CourseDocument,
@@ -54,7 +52,6 @@ export async function addDocumentsToDocGroup(
       p_readable_filename: doc.readable_filename,
       p_doc_groups: doc.doc_groups,
     })
-
     if (!data) {
       console.error(
         'Failed to add documents to doc group:',
@@ -69,7 +66,6 @@ export async function addDocumentsToDocGroup(
     throw error
   }
 }
-
 export async function appendDocGroup(
   courseName: string,
   doc: CourseDocument,
@@ -88,7 +84,6 @@ export async function appendDocGroup(
     throw error
   }
 }
-
 export async function removeDocGroup(
   courseName: string,
   doc: CourseDocument,

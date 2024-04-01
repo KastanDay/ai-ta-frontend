@@ -329,23 +329,23 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
         height="80vh"
         // emptyState={
         // Error state:
-        noRecordsIcon={
-          <Stack align="center" p={30}>
-            <Text c="dimmed" size="md">
-              Ah! We hit a wall when fetching your documents. The database must
-              be on fire 🔥
-            </Text>
-            <Image
-              style={{ minWidth: 300, maxWidth: '30vw' }}
-              radius="md"
-              src="https://assets.kastan.ai/this-is-fine.jpg"
-              alt="No data found"
-            />
-            <Text c="dimmed" size="md">
-              So.. please try again later.
-            </Text>
-          </Stack>
-        }
+        // noRecordsIcon={
+        //   <Stack align="center" p={30}>
+        //     <Text c="dimmed" size="md">
+        //       Ah! We hit a wall when fetching your documents. The database must
+        //       be on fire 🔥
+        //     </Text>
+        //     <Image
+        //       style={{ minWidth: 300, maxWidth: '30vw' }}
+        //       radius="md"
+        //       src="https://assets.kastan.ai/this-is-fine.jpg"
+        //       alt="No data found"
+        //     />
+        //     <Text c="dimmed" size="md">
+        //       So.. please try again later.
+        //     </Text>
+        //   </Stack>
+        // }
         rowStyle={(row) => {
           if (selectedRecords.includes(row)) {
             return { backgroundColor: 'hsla(280, 100%, 70%, 0.5)' }
