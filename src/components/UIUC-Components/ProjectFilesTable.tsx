@@ -463,7 +463,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
                   creatable={documentGroups && documentGroups.length > 0}
                   getCreateLabel={(query) => `+ Create ${query}`}
                   onCreate={(doc_group_name) => {
-                    createDocumentGroup.mutate({ doc_group_name })
+                    createDocumentGroup.mutate({ record, doc_group_name })
                     return { value: doc_group_name, label: doc_group_name }
                   }}
                   onChange={(newSelectedGroups) =>

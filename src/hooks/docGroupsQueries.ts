@@ -82,7 +82,13 @@ export function useCreateDocumentGroup(
   page: number,
 ) {
   return useMutation(
-    async ({ doc_group_name }: { doc_group_name: string }) => {
+    async ({
+      record,
+      doc_group_name,
+    }: {
+      record: CourseDocument
+      doc_group_name: string
+    }) => {
       const response = await fetch('/api/documentGroups', {
         method: 'POST',
         headers: {
@@ -101,7 +107,7 @@ export function useCreateDocumentGroup(
     },
     {
       // Optimistically update the cache
-      onMutate: async ({ doc_group_name }) => {
+      onMutate: async ({ record, doc_group_name }) => {
         await queryClient.cancelQueries(['documentGroups', course_name])
         await queryClient.cancelQueries(['documents', course_name])
         const previousDocumentGroups = queryClient.getQueryData([
@@ -139,10 +145,16 @@ export function useCreateDocumentGroup(
             if (!old) return
             // Perform the optimistic update
             const updatedDocuments = old?.final_docs.map((doc) => {
-              return {
-                ...doc,
-                doc_groups: [...(doc.doc_groups || []), doc_group_name],
+              if (
+                (record.s3_path && doc.s3_path === record.s3_path) ||
+                (record.url && doc.url === record.url)
+              ) {
+                return {
+                  ...doc,
+                  doc_groups: [...(doc.doc_groups || []), doc_group_name],
+                }
               }
+              return doc
             })
             return {
               ...old,
