@@ -241,7 +241,10 @@ export function useAppendToDocGroup(
           if (!old) return
 
           const updatedDocuments = old?.final_docs.map((doc) => {
-            if (doc.url === record.url || doc.s3_path === record.s3_path) {
+            if (
+              (record.s3_path && doc.s3_path === record.s3_path) ||
+              (record.url && doc.url === record.url)
+            ) {
               return {
                 ...doc,
                 doc_groups: [...(doc.doc_groups || []), appendedGroup],
@@ -350,7 +353,10 @@ export function useRemoveFromDocGroup(
             if (!old) return
             // Perform the optimistic update
             const updatedDocuments = old?.final_docs.map((doc) => {
-              if (doc.url === record.url || doc.s3_path === record.s3_path) {
+              if (
+                (record.s3_path && doc.s3_path === record.s3_path) ||
+                (record.url && doc.url === record.url)
+              ) {
                 return {
                   ...doc,
                   doc_groups: (doc.doc_groups || []).filter(

@@ -199,7 +199,8 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
               (doc) =>
                 !recordsToDelete.find(
                   (record) =>
-                    record.url === doc.url || record.s3_path === doc.s3_path,
+                    (record.s3_path && record.s3_path === doc.s3_path) ||
+                    (record.url && record.url === doc.url),
                 ),
             )
           },

@@ -1,7 +1,7 @@
 // src/pages/api/documentGroups.ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import posthog from 'posthog-js';
-import { CourseDocument } from 'src/types/courseMaterials';
+import { NextApiRequest, NextApiResponse } from 'next'
+import posthog from 'posthog-js'
+import { CourseDocument } from 'src/types/courseMaterials'
 import { getAuth } from '@clerk/nextjs/server'
 import {
   addDocumentsToDocGroup,
@@ -12,9 +12,7 @@ import {
   updateDocGroupStatus,
 } from '~/utils/dbUtils'
 
-import {
-  addDocumentsToDocGroupQdrant,
-} from '~/utils/qdrantUtils'
+import { addDocumentsToDocGroupQdrant } from '~/utils/qdrantUtils'
 
 interface RequestBody {
   action:
@@ -43,13 +41,19 @@ export default async function handler(
         console.log('Adding documents to doc group:', doc)
 
         posthog.capture('add_doc_group', {
-          distinct_id: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+          distinct_id:
+            req.headers['x-forwarded-for'] || req.socket.remoteAddress,
           curr_user_id: await getAuth(req).userId,
           course_name: courseName,
           doc_readable_filename: doc.readable_filename,
-          doc_unique_identifier: doc.url && doc.url !== '' ? doc.url : doc.s3_path && doc.s3_path !== '' ? doc.s3_path : null,
+          doc_unique_identifier:
+            doc.url && doc.url !== ''
+              ? doc.url
+              : doc.s3_path && doc.s3_path !== ''
+                ? doc.s3_path
+                : null,
           doc_groups: doc.doc_groups,
-        });
+        })
 
         await addDocumentsToDocGroup(courseName, doc)
         await addDocumentsToDocGroupQdrant(courseName, doc)
@@ -58,22 +62,28 @@ export default async function handler(
         console.log('Appending doc group:', docGroup, 'to doc:', doc)
 
         posthog.capture('append_doc_group', {
-          distinct_id: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+          distinct_id:
+            req.headers['x-forwarded-for'] || req.socket.remoteAddress,
           curr_user_id: await getAuth(req).userId,
           course_name: courseName,
           doc_readable_filename: doc.readable_filename,
-          doc_unique_identifier: doc.url && doc.url !== '' ? doc.url : doc.s3_path && doc.s3_path !== '' ? doc.s3_path : null,
+          doc_unique_identifier:
+            doc.url && doc.url !== ''
+              ? doc.url
+              : doc.s3_path && doc.s3_path !== ''
+                ? doc.s3_path
+                : null,
           doc_groups: doc.doc_groups,
           doc_group: docGroup,
-        });
+        })
 
         await appendDocGroup(courseName, doc, docGroup)
 
         if (!doc.doc_groups) {
-          doc.doc_groups = [];
+          doc.doc_groups = []
         }
         if (!doc.doc_groups.includes(docGroup)) {
-          doc.doc_groups.push(docGroup);
+          doc.doc_groups.push(docGroup)
         }
         await addDocumentsToDocGroupQdrant(courseName, doc)
         res.status(200).json({ success: true })
@@ -81,21 +91,29 @@ export default async function handler(
         console.log('Removing doc group: ', docGroup, 'from doc: ', doc)
 
         posthog.capture('remove_doc_group', {
-          distinct_id: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+          distinct_id:
+            req.headers['x-forwarded-for'] || req.socket.remoteAddress,
           curr_user_id: await getAuth(req).userId,
           course_name: courseName,
           doc_readable_filename: doc.readable_filename,
-          doc_unique_identifier: doc.url && doc.url !== '' ? doc.url : doc.s3_path && doc.s3_path !== '' ? doc.s3_path : null,
+          doc_unique_identifier:
+            doc.url && doc.url !== ''
+              ? doc.url
+              : doc.s3_path && doc.s3_path !== ''
+                ? doc.s3_path
+                : null,
           doc_groups: doc.doc_groups,
           doc_group: docGroup,
-        });
+        })
 
         await removeDocGroup(courseName, doc, docGroup)
 
         if (!doc.doc_groups) {
           doc.doc_groups = []
         }
-        doc.doc_groups = doc.doc_groups.filter((group: string) => group !== docGroup)
+        doc.doc_groups = doc.doc_groups.filter(
+          (group: string) => group !== docGroup,
+        )
         await addDocumentsToDocGroupQdrant(courseName, doc)
         res.status(200).json({ success: true })
       } else if (action === 'getDocumentGroups') {

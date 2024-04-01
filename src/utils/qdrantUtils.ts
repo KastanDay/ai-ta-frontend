@@ -1,7 +1,7 @@
 // qdrantUtils.ts
 import { CourseDocument } from '~/types/courseMaterials'
 import { qdrant } from '@/utils/qdrantClient'
-import posthog from 'posthog-js';
+import posthog from 'posthog-js'
 
 const collection_name = process.env.QDRANT_COLLECTION_NAME
 
@@ -13,25 +13,25 @@ export async function addDocumentsToDocGroupQdrant(
     const searchFilter = {
       must: [
         {
-          key: "course_name",
+          key: 'course_name',
           match: {
-            value: courseName
-          }
+            value: courseName,
+          },
         },
         {
-          key: "url",
+          key: 'url',
           match: {
-            value: doc.url ? doc.url : ''
-          }
+            value: doc.url ? doc.url : '',
+          },
         },
         {
-          key: "s3_path",
+          key: 's3_path',
           match: {
-            value: doc.s3_path ? doc.s3_path : ''
-          }
-        }
+            value: doc.s3_path ? doc.s3_path : '',
+          },
+        },
       ],
-    };
+    }
 
     // Following commented out code can be used for verifying Qdrant updates:
     // const dummyVector = new Array(1536).fill(0);
@@ -48,12 +48,12 @@ export async function addDocumentsToDocGroupQdrant(
     //   console.log("Payload:", document.payload);
     // }
 
-    qdrant.setPayload(collection_name ? collection_name : "", {
+    qdrant.setPayload(collection_name ? collection_name : '', {
       payload: {
         doc_groups: doc.doc_groups,
-      }, 
+      },
       filter: searchFilter,
-    });
+    })
 
     // const searchResultAfter = await qdrant.search(collection_name ? collection_name : "", {
     //   vector: dummyVector,
@@ -65,16 +65,21 @@ export async function addDocumentsToDocGroupQdrant(
     // for (const document of searchResultAfter) {
     //   console.log("Payload:", document.payload);
     // }
-    } catch (error) {
+  } catch (error) {
     console.error('Error in addDocumentsToDocGroup:', error)
-    
+
     posthog.capture('add_doc_group', {
       course_name: courseName,
       doc_readable_filename: doc.readable_filename,
-      doc_unique_identifier: doc.url && doc.url !== '' ? doc.url : doc.s3_path && doc.s3_path !== '' ? doc.s3_path : null,
+      doc_unique_identifier:
+        doc.url && doc.url !== ''
+          ? doc.url
+          : doc.s3_path && doc.s3_path !== ''
+            ? doc.s3_path
+            : null,
       doc_groups: doc.doc_groups,
       error_logs: error,
-    });
+    })
 
     throw error
   }
