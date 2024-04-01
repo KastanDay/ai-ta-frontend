@@ -439,29 +439,27 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
               <Group position="apart" spacing="xs">
                 <MultiSelect
                   data={
-                    documentGroups && documentGroups.length > 0
+                    documentGroups
                       ? [...documentGroups].map((doc_group) => ({
                           value: doc_group.name || '',
                           label: doc_group.name || '',
                         }))
-                      : [
-                          {
-                            value: 'loading',
-                            label: 'Loading groups...',
-                            disabled: true,
-                          },
-                        ]
+                      : []
                   }
                   value={record.doc_groups ? record.doc_groups : []}
                   placeholder={
-                    documentGroups && documentGroups.length > 0
-                      ? 'Select Group'
-                      : 'Loading...'
+                    isLoadingDocumentGroups
+                      ? 'Loading...'
+                      : 'Select Group'
                   }
-                  searchable={documentGroups && documentGroups.length > 0}
-                  nothingFound="No options"
-                  creatable={documentGroups && documentGroups.length > 0}
-                  getCreateLabel={(query) => `+ Create ${query}`}
+                  searchable={!isLoadingDocumentGroups}
+                  nothingFound={
+                    isLoadingDocumentGroups
+                      ? 'Loading...'
+                      : 'No Options'
+                  }
+                  creatable
+                  getCreateLabel={(query) => `+ Create "${query}"`}
                   onCreate={(doc_group_name) => {
                     createDocumentGroup.mutate({ record, doc_group_name })
                     return { value: doc_group_name, label: doc_group_name }
@@ -497,7 +495,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
                   //     }
                   //   }
                   // }}
-                  disabled={!documentGroups || documentGroups.length === 0}
+                  disabled={isLoadingDocumentGroups}
                   sx={{ flex: 1, width: '100%' }}
                   classNames={{
                     value: 'tag-item self-center',
