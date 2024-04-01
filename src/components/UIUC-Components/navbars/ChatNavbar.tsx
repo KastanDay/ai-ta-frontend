@@ -1,7 +1,6 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { magicBellTheme } from '~/components/UIUC-Components/navbars/GlobalHeader'
-import {} from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import Image from 'next/image'
 import { useEffect, useState, useContext, useRef } from 'react'
@@ -17,6 +16,7 @@ import {
   Transition,
   Paper,
 } from '@mantine/core'
+import { spotlight } from '@mantine/spotlight'
 import {
   MessageChatbot,
   Folder,
@@ -25,6 +25,7 @@ import {
   MessageCode,
 } from 'tabler-icons-react'
 import {
+  IconFileText,
   // IconExternalLink,
   IconRobot,
   // IconCloudUpload,
@@ -87,7 +88,8 @@ const useStyles = createStyles((theme) => ({
   link: {
     // textTransform: 'uppercase',
     fontSize: rem(12),
-    padding: `${theme.spacing.sm} ${theme.spacing.sm}`,
+    textAlign: 'center',
+    padding: `3px ${theme.spacing.sm}`,
     margin: '0.2rem',
     fontWeight: 700,
     transition:
@@ -112,6 +114,7 @@ const useStyles = createStyles((theme) => ({
       textAlign: 'right',
       borderRadius: 0,
       padding: theme.spacing.sm,
+      margin: '0.2rem 0 0.2rem 0',
     },
   },
   burger: {
@@ -146,12 +149,21 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
+interface ChatNavbarProps {
+  spotlight?: typeof spotlight
+  course_name?: string
+  bannerUrl?: string
+  isgpt4?: boolean
+  className?: string
+}
+
 const ChatNavbar = ({
+  spotlight,
   course_name = '',
   bannerUrl = '',
   isgpt4 = true,
   className = '',
-}) => {
+}: ChatNavbarProps) => {
   const { classes, theme } = useStyles()
   const router = useRouter()
   const [activeLink, setActiveLink] = useState(router.asPath)
@@ -222,59 +234,71 @@ const ChatNavbar = ({
     fetchCourses()
   }, [clerk_user.isLoaded, clerk_user.isSignedIn])
 
-  const handleLinkClick = (path: string) => {
-    setActiveLink(path)
-    toggle()
-  }
-
-  const items = isAdminOrOwner
-    ? [
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Chat
-            </span>
-          ),
-          icon: <MessageChatIcon />,
-          link: `/${getCurrentCourseName()}/chat`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Materials
-            </span>
-          ),
-          icon: <FolderIcon />,
-          link: `/${getCurrentCourseName()}/materials`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Analysis
-            </span>
-          ),
-          icon: <ReportIcon />,
-          link: `/${getCurrentCourseName()}/query-analysis`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Prompting
-            </span>
-          ),
-          icon: <SettingIcon />,
-          link: `/${getCurrentCourseName()}/prompt`,
-        },
-      ]
-    : []
+  const items = [
+    ...(spotlight
+      ? [
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Groups/Tools
+              </span>
+            ),
+            icon: <SpotlightIcon />,
+            action: () => spotlight.open(), // This opens the Spotlight
+          },
+        ]
+      : []),
+    ...(isAdminOrOwner
+      ? [
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Chat
+              </span>
+            ),
+            icon: <MessageChatIcon />,
+            link: `/${getCurrentCourseName()}/chat`,
+          },
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Materials
+              </span>
+            ),
+            icon: <FolderIcon />,
+            link: `/${getCurrentCourseName()}/materials`,
+          },
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Analysis
+              </span>
+            ),
+            icon: <ReportIcon />,
+            link: `/${getCurrentCourseName()}/query-analysis`,
+          },
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Prompting
+              </span>
+            ),
+            icon: <SettingIcon />,
+            link: `/${getCurrentCourseName()}/prompt`,
+          },
+        ]
+      : []),
+  ]
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -368,28 +392,84 @@ const ChatNavbar = ({
                 <Paper
                   className={classes.dropdown}
                   withBorder
-                  style={{ ...styles, transform: 'translateY(26px)' }}
+                  style={{
+                    ...styles,
+                    transform: 'translateY(26px)',
+                    minWidth: '120px',
+                  }}
                 >
-                  {items.map((item, index) => (
-                    <Link
-                      key={index}
-                      href={item.link}
-                      onClick={() => handleLinkClick(item.link)}
-                      data-active={activeLink === item.link}
-                      className={classes.link}
-                    >
-                      <span
-                        style={{
-                          display: 'flex',
-                          alignItems: 'left',
-                          justifyContent: 'flex-start',
-                        }}
-                      >
-                        {item.icon}
-                        {item.name}
-                      </span>
-                    </Link>
-                  ))}
+                  {items.map((item, index) => {
+                    if (item.link) {
+                      return (
+                        <Link
+                          key={index}
+                          href={item.link}
+                          onClick={() => {
+                            setActiveLink(router.asPath)
+                            toggle()
+                          }}
+                          data-active={activeLink === item.link}
+                          className={classes.link}
+                          style={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {item.icon}
+                          <span
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-center',
+                              padding: '0px',
+                              whiteSpace: 'nowrap',
+                              width: '100%',
+                            }}
+                          >
+                            {item.name}
+                          </span>
+                        </Link>
+                      )
+                    } else {
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            if (item.action) {
+                              item.action()
+                            }
+                            toggle()
+                          }}
+                          data-active={activeLink === item.link}
+                          className={classes.link}
+                          style={{ width: '100%' }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                            }}
+                          >
+                            {item.icon}
+                            <span
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'flex-center',
+                                padding: '0px',
+                                whiteSpace: 'nowrap',
+                                width: '100%',
+                              }}
+                            >
+                              {item.name}
+                            </span>
+                          </div>
+                        </button>
+                      )
+                    }
+                  })}
                 </Paper>
               )}
             </Transition>
@@ -400,27 +480,82 @@ const ChatNavbar = ({
               style={{ padding: 0, margin: 0 }}
             >
               <div className={classes.links}>
-                {items.map((item, index) => (
-                  <Link
-                    key={index}
-                    href={item.link}
-                    onClick={() => handleLinkClick(item.link)}
-                    data-active={activeLink === item.link}
-                    className={classes.link}
-                  >
-                    <span
-                      style={{
-                        display: 'flex',
-                        alignItems: 'left',
-                        justifyContent: 'flex-start',
-                        padding: '0px',
-                      }}
-                    >
-                      {item.icon}
-                      {item.name}
-                    </span>
-                  </Link>
-                ))}
+                {items.map((item, index) => {
+                  if (item.link) {
+                    return (
+                      <Link
+                        key={index}
+                        href={item.link}
+                        onClick={() => {
+                          setActiveLink(router.asPath)
+                        }}
+                        data-active={activeLink === item.link}
+                        className={classes.link}
+                        style={{ padding: '3px 12px' }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            width: '100%',
+                          }}
+                        >
+                          {item.icon}
+                          <span
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-center',
+                              padding: '0px',
+                              height: '40px',
+                              whiteSpace: 'nowrap',
+                              marginLeft: '5px',
+                            }}
+                          >
+                            {item.name}
+                          </span>
+                        </div>
+                      </Link>
+                    )
+                  } else {
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          if (item.action) {
+                            item.action()
+                          }
+                        }}
+                        data-active={activeLink === item.link}
+                        className={classes.link}
+                        style={{ padding: '3px 12px' }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            width: '100%',
+                          }}
+                        >
+                          {item.icon}
+                          <span
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-center',
+                              padding: '0px',
+                              height: '40px',
+                              whiteSpace: 'nowrap',
+                              marginLeft: '5px',
+                            }}
+                          >
+                            {item.name}
+                          </span>
+                        </div>
+                      </button>
+                    )
+                  }
+                })}
               </div>
               <div style={{ display: 'block' }}>
                 <button
@@ -558,6 +693,17 @@ const ChatNavbar = ({
   )
 }
 export default ChatNavbar
+
+export function SpotlightIcon() {
+  return (
+    <IconFileText
+      size={20}
+      strokeWidth={2}
+      // color={'white'}
+      style={{ marginRight: '4px', marginLeft: '4px' }}
+    />
+  )
+}
 
 export function MessageChatIcon() {
   return (

@@ -7,6 +7,7 @@ import {
   addDocumentsToDocGroup,
   appendDocGroup,
   fetchDocumentGroups,
+  fetchEnabledDocGroups,
   removeDocGroup,
   updateDocGroupStatus,
 } from '~/utils/dbUtils'
@@ -22,6 +23,7 @@ interface RequestBody {
     | 'removeDocGroup'
     | 'getDocumentGroups'
     | 'updateDocGroupStatus'
+    | 'fetchEnabledDocGroups'
   courseName: string
   doc?: CourseDocument
   docGroup?: string
@@ -107,6 +109,9 @@ export default async function handler(
         console.log('Updating doc group status: ', docGroup, 'to: ', enabled)
         await updateDocGroupStatus(courseName, docGroup, enabled)
         res.status(200).json({ success: true })
+      } else if (action === 'fetchEnabledDocGroups') {
+        const documents = await fetchEnabledDocGroups(courseName)
+        res.status(200).json({ success: true, documents })
       } else {
         res.status(400).json({ success: false, error: 'Invalid action' })
       }
