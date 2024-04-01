@@ -119,6 +119,23 @@ export async function POST(req: Request) {
     content: conversation.prompt,
   })
 
+  if (imageUrls.length > 0 && imageDescription) {
+    const imageInfo = `Image URLs: ${imageUrls.join(', ')}; Description: ${imageDescription}`
+    if (message_to_send.length > 0) {
+      const lastMessage = message_to_send[message_to_send.length - 1]
+      if (lastMessage) {
+        // Ensure the last message is defined
+        lastMessage.content += `\n\n${imageInfo}`
+      }
+    } else {
+      // If there are no messages, add a new one with the image information
+      message_to_send.push({
+        role: 'system',
+        content: imageInfo,
+      })
+    }
+  }
+
   console.log('Message to send: ', message_to_send)
 
   console.log('Tools to be used: ', tools)
