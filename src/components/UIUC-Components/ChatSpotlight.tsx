@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
   SpotlightProvider,
   SpotlightAction,
   SpotlightActionProps,
 } from '@mantine/spotlight'
-import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
 import { IconSearch } from '@tabler/icons-react'
 import {
   Group,
@@ -17,7 +16,6 @@ import {
 import { montserrat_heading } from 'fonts'
 
 interface ChatSpotlightProps {
-  courseName: string
   actions: SpotlightAction[]
   setActions: (actions: SpotlightAction[]) => void
 }
@@ -47,7 +45,6 @@ const useStyles = createStyles((theme) => ({
 }))
 
 const ChatSpotlight: React.FC<ChatSpotlightProps> = ({
-  courseName,
   actions,
   setActions,
 }) => {

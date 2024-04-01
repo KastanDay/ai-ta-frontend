@@ -898,7 +898,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   return (
     <>
       <ChatSpotlight
-        courseName={getCurrentPageName()}
         actions={actions}
         setActions={(actions) => {
           setActions(actions)
