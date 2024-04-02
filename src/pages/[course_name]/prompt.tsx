@@ -9,7 +9,7 @@ import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
-import { Button, Card, Checkbox, CheckboxProps, Flex, Group, Input, MantineTheme, Select, Text, Textarea, Title, useMantineTheme } from '@mantine/core'
+import { Button, Card, Checkbox, CheckboxProps, Flex, Group, Input, MantineTheme, Select, Table, Text, Textarea, Title, useMantineTheme } from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { DEFAULT_SYSTEM_PROMPT } from '~/utils/app/const'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -205,6 +205,73 @@ const CourseMain: NextPage = () => {
     )
   }
 
+  const pythonCode = `
+    def fibonacci(n):
+        if n <= 0:
+            return []
+        elif n == 1:
+            return [0]
+        elif n == 2:
+            return [0, 1]
+        else:
+            fib = [0, 1]
+            for i in range(2, n):
+                fib.append(fib[i-1] + fib[i-2])
+        return fib`;
+
+  const elements = [
+    {
+      theSystemPrompt: "You are ChatGPT, a helpful assistant. Follow the user's instructions carefully. Respond using markdown.",
+      user: pythonCode,
+      response: `The provided Python function \`fibonacci(n)\` is designed to generate a list containing the Fibonacci sequence up to the \`n\`-th element. The Fibonacci sequence is a series of numbers where each number is the sum of the two preceding ones, usually starting with 0 and 1. The function handles different cases based on the value of \`n\`:
+
+      - If \`n\` is less than or equal to 0, it returns an empty list, indicating that there are no elements in the sequence.
+      - If \`n\` is 1, it returns a list containing only the first element of the Fibonacci sequence, \`[0]\`.
+      - If \`n\` is 2, it returns the first two elements, \`[0, 1]\`.
+      - For any other value of \`n\`, it initializes a list with the first two elements of the sequence, \`[0, 1]\`, and then enters a loop to calculate the remaining elements up to the \`n\`-th element. Each new element is the sum of the two previous elements in the list.
+      
+      The function concludes by returning the list \`fib\`, which contains the Fibonacci sequence up to the \`n\`-th element.
+      
+      This function is an example of a simple algorithm and does not directly relate to the provided course materials, as there is no mention of the Fibonacci sequence or related algorithms in the excerpts from the Stack Overflow Blog or the Object-Oriented Design Flowchart document.
+      
+      ### Relevant Sources:
+      
+      There are no relevant sources to cite for this response.`
+    },
+    {
+      theSystemPrompt: "You are ChatGPT, a helpful assistant. Follow the user's instructions carefully. Respond using markdown. Your task is to analyze the provided Python code snippet and suggest improvements to optimize its performance. Identify areas where the code can be made more efficient, faster, or less resource-intensive. Provide specific suggestions for optimization, along with explanations of how these changes can enhance the code's performance. The optimized code should maintain the same functionality as the original code while demonstrating improved efficiency.",
+      user: pythonCode,
+      response: `The provided Python function \`fibonacci(n)\` generates a list of Fibonacci numbers up to the \`n\`-th element. Here are some suggestions for optimizing this function:
+
+      1. **Avoid Recalculating Values**: The current implementation recalculates the Fibonacci numbers in each iteration of the loop. This is not necessary as we can simply keep track of the last two numbers and update them as we go.
+      
+      2. **Use Tuple Unpacking**: Instead of using an array to store all the Fibonacci numbers, we can use two variables and update them in each iteration. This will save memory as we don't need to store the entire sequence at all times.
+      
+      3. **Reduce Function Calls**: The multiple \`elif\` statements can be reduced to a single \`if-else\` block, which will reduce the number of checks and function calls.
+      
+      Here is the optimized version of the code:
+      
+      \`\`\`python
+      def fibonacci(n):
+          if n <= 0:
+              return []
+          elif n == 1:
+              return [0]
+          else:
+              a, b = 0, 1
+              fib = [a]
+              for _ in range(1, n):
+                  fib.append(b)
+                  a, b = b, a + b
+          return fib
+      \`\`\`
+      
+      In this optimized version, we start with the first two Fibonacci numbers \`a\` and \`b\`. We then iterate \`n-1\` times, appending the next Fibonacci number to the list and updating \`a\` and \`b\` accordingly using tuple unpacking. This version is more efficient because it avoids the overhead of array indexing and reduces the memory footprint by not storing the entire sequence at all times.
+      
+      Please note that this code maintains the same functionality as the original code but demonstrates improved efficiency. There are no references to this specific code optimization in the provided documents, so this analysis is based on general programming best practices.`
+    },
+  ]
+
 
   return (
     <>
@@ -240,7 +307,7 @@ const CourseMain: NextPage = () => {
                       variant="column"
                       style={{
                         justifyContent: 'center',
-                        width: '75%',
+                        width: '90%',
                         alignSelf: 'center',
                         overflow: 'hidden',
                       }}
@@ -251,7 +318,7 @@ const CourseMain: NextPage = () => {
                         gradient={{ from: 'gold', to: 'white', deg: 50 }}
                         style={{ marginBottom: '0.5rem' }}
                         align="center"
-                        className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
                       >
                         Customize system prompt
                       </Title>
@@ -289,7 +356,7 @@ const CourseMain: NextPage = () => {
                       >
                         <div
                           style={{
-                            width: '95%',
+                            width: '100%',
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
@@ -306,6 +373,7 @@ const CourseMain: NextPage = () => {
                           >
                             Example
                           </Title>
+
                           {/* <Select
                             placeholder="Select an option"
                             data={languageOptions}
@@ -333,6 +401,29 @@ const CourseMain: NextPage = () => {
                             {copiedCodeSnippet ? <IconCheck /> : <IconCopy />}
                           </Button> */}
                         </div>
+
+                        <Table striped withBorder withColumnBorders>
+                          <thead>
+                            <tr>
+                              <th>System Prompt</th>
+                              {elements.map((element, index) => (
+                                <td key={`prompt-${index}`}>{element.theSystemPrompt}</td>
+                              ))}
+                            </tr>
+                            <tr>
+                              <th>User</th>
+                              {elements.map((element, index) => (
+                                <td key={`user-${index}`}><pre><code>{element.user}</code></pre></td>
+                              ))}
+                            </tr>
+                            <tr>
+                              <th>Response</th>
+                              {elements.map((element, index) => (
+                                <td key={`response-${index}`}>{element.response}</td>
+                              ))}
+                            </tr>
+                          </thead>
+                        </Table>
                         {/* <Textarea
                           value={codeSnippets[selectedLanguage] as string}
                           autosize
@@ -356,7 +447,7 @@ const CourseMain: NextPage = () => {
                   <div className="card flex h-full flex-col">
                     <Group position="left" m="3rem" variant="column">
                       <Title
-                        className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
                         variant="gradient"
                         gradient={{ from: 'gold', to: 'white', deg: 170 }}
                         order={3}
@@ -371,7 +462,7 @@ const CourseMain: NextPage = () => {
                         maxRows={20}
                         style={{ width: '100%' }}
                         placeholder="Enter a system prompt"
-                        className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                        className={`pt - 3 ${montserrat_paragraph.variable} font - montserratParagraph`}
                         value={systemPrompt}
                         onChange={(e) => {
                           setBaseSystemPrompt(e.target.value);
@@ -382,7 +473,7 @@ const CourseMain: NextPage = () => {
                         label={`Add greetings at the beginning of the conversation.`}
                         // wrapperProps={{}}
                         // description="Course is private by default."
-                        className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                        className={`${montserrat_paragraph.variable} font - montserratParagraph`}
                         // style={{ marginTop: '4rem' }}
                         size="md"
                         // bg='#020307'
@@ -397,7 +488,7 @@ const CourseMain: NextPage = () => {
                         label={`Content includes equations; LaTeX notation preferred.`}
                         // wrapperProps={{}}
                         // description="Course is private by default."
-                        className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                        className={`${montserrat_paragraph.variable} font - montserratParagraph`}
                         // style={{ marginTop: '4rem' }}
                         size="md"
                         // bg='#020307'
@@ -409,10 +500,10 @@ const CourseMain: NextPage = () => {
                       // onChange={handleCheckboxChange}
                       />
                       <Checkbox
-                        label={`Focus exclusively on document-based references—avoid incorporating knowledge from outside sources. Essential for legal and similar fields to maintain response quality.`}
+                        label={`Focus exclusively on document - based references—avoid incorporating knowledge from outside sources.Essential for legal and similar fields to maintain response quality.`}
                         // wrapperProps={{}}
                         // description="Course is private by default."
-                        className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                        className={`${montserrat_paragraph.variable} font - montserratParagraph`}
                         // style={{ marginTop: '4rem' }}
                         size="md"
                         // bg='#020307'
@@ -424,7 +515,7 @@ const CourseMain: NextPage = () => {
                       // onChange={handleCheckboxChange}
                       />
                       <Title
-                        className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
                         variant="gradient"
                         gradient={{ from: 'gold', to: 'white', deg: 170 }}
                         order={4}
@@ -438,14 +529,14 @@ const CourseMain: NextPage = () => {
                         maxRows={20}
                         style={{ width: '100%', paddingTop: '0px' }}
                         placeholder="Enter guidelines that the chat response should adhere to..."
-                        className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                        className={`pt - 3 ${montserrat_paragraph.variable} font - montserratParagraph`}
                         value={thingsToDo}
                         onChange={(e) => {
                           setThingsToDo(e.target.value)
                         }}
                       />
                       <Title
-                        className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
                         variant="gradient"
                         gradient={{ from: 'gold', to: 'white', deg: 170 }}
                         order={4}
@@ -459,7 +550,7 @@ const CourseMain: NextPage = () => {
                         maxRows={20}
                         style={{ width: '100%', paddingTop: '0px' }}
                         placeholder="Edit the guidelines that the chat response should not adhere to..."
-                        className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                        className={`pt - 3 ${montserrat_paragraph.variable} font - montserratParagraph`}
                         value={thingsNotToDo}
                         onChange={(e) => {
                           setThingsNotToDo(e.target.value)
