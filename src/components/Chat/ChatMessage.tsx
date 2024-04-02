@@ -642,7 +642,7 @@ export const ChatMessage: FC<Props> = memo(
                                   }}
                                   className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
-                                  Generating Pest Detection Report:
+                                  Running tool...
                                 </p>
                                 <LoadingSpinner size="xs" />
                               </div>
@@ -670,7 +670,7 @@ export const ChatMessage: FC<Props> = memo(
                                   }}
                                   className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
-                                  Generating Pest Detection Report:
+                                  Running tool...
                                 </p>
                                 <IconCheck size={25} />
                               </div>

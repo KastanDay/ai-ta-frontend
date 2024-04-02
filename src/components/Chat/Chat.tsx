@@ -603,6 +603,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           imgDesc,
           updatedConversation,
           getOpenAIKey(courseMetadata),
+          homeDispatch,
         )
         // todo: add toolResult to messages
 
@@ -616,6 +617,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         // @ts-ignore -- can't get the .text property to behave
         if (
           updatedConversation.messages[currentMessageIndex] &&
+          // @ts-ignore -- can't get the .text property to behave
           updatedConversation.messages[currentMessageIndex]?.content[0]?.text
         ) {
           // @ts-ignore -- can't get the .text property to behave

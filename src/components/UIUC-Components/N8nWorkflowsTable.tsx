@@ -123,6 +123,21 @@ export const N8nWorkflowsTable = ({
   // }
   // console.log('currentRecords b4 data:', currentRecords)
 
+  const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1000)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsWideScreen(window.innerWidth >= 1000)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const dataTableStyle = {
+    width: isWideScreen ? '50%' : '95%',
+  }
+
   return (
     <>
       <Title
@@ -150,7 +165,11 @@ export const N8nWorkflowsTable = ({
         .
       </Text>
       <DataTable
-        height={300}
+        height={500}
+        style={dataTableStyle}
+        // style={{
+        //   width: '50%',
+        // }}
         withBorder
         fetching={isLoadingRecords}
         customLoader={<LoadingSpinner />}

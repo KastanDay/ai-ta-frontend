@@ -120,6 +120,7 @@ const ChatSpotlight: React.FC<ChatSpotlightProps> = ({
       actions={actions}
       query={spotlightQuery}
       onQueryChange={setSpotlightQuery}
+      limit={20} // limit the number of actions shown
       searchIcon={<IconSearch size="1.2rem" />}
       searchPlaceholder="Search for your favourite tools or document groups..."
       actionComponent={(props) => (

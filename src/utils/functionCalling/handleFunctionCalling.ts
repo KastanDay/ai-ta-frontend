@@ -1,5 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
+import { Dispatch } from 'react'
 import { Conversation, Message } from '~/types/chat'
+import { ActionType } from '@/hooks/useCreateReducer'
+import { HomeInitialState } from '~/pages/api/home/home.state'
 
 export default async function handleTools(
   message: Message,
@@ -8,10 +11,13 @@ export default async function handleTools(
   imageDescription: string,
   selectedConversation: Conversation,
   openaiKey: string,
+  homeDispatch: Dispatch<ActionType<HomeInitialState>>,
 ) {
   // TODO: Use imageURLs and imageDescription to call the appropriate tool
   console.log('Available tools in handleFunctionCalling: ', availableTools)
   try {
+    homeDispatch({ field: 'isRouting', value: true })
+
     const response = await fetch('/api/chat/openaiFunctionCall', {
       method: 'POST',
       headers: {
@@ -51,13 +57,25 @@ export default async function handleTools(
         function_call.arguments = args
       }
 
+      homeDispatch({ field: 'isRouting', value: false })
+      // homeDispatch({ field: 'isPestDetectionLoading', value: false })
+
       // Add back the original name, for matching in N8N interface.
       function_call.readableName = function_call.name.replace(/_/g, ' ')
       console.log('Function call from openaiFunctionCall: ', function_call)
 
+      homeDispatch({
+        field: 'routingResponse',
+        // value: JSON.stringify(function_call, null, 2),
+        value: `${function_call.readableName}\nArguments: ${JSON.stringify(function_call.arguments)}`,
+      })
+
       // TODO: Do tool calling here!!
       if (function_call) {
-        return await callN8nFunction(function_call, 'todo!') // TODO: Get API key
+        homeDispatch({ field: 'isPestDetectionLoading', value: true })
+        const response = await callN8nFunction(function_call, 'todo!') // TODO: Get API key
+        homeDispatch({ field: 'isPestDetectionLoading', value: false })
+        return response
       }
     } else {
       console.debug('HandleTools routing response missing - No response body.')
