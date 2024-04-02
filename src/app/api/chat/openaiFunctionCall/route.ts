@@ -120,7 +120,7 @@ export async function POST(req: Request) {
   })
 
   if (imageUrls.length > 0 && imageDescription) {
-    const imageInfo = `Image URLs: ${imageUrls.join(', ')}; Description: ${imageDescription}`
+    const imageInfo = `Image URL(s): ${imageUrls.join(', ')};\nImage Description: ${imageDescription}`
     if (message_to_send.length > 0) {
       const lastMessage = message_to_send[message_to_send.length - 1]
       if (lastMessage) {

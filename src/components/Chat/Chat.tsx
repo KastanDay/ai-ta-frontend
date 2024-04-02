@@ -88,7 +88,6 @@ import { fetchRoutingResponse } from '~/pages/api/UIUC-api/fetchRoutingResponse'
 import { fetchPestDetectionResponse } from '~/pages/api/UIUC-api/fetchPestDetectionResponse'
 import handleTools, {
   OpenAICompatibleTool,
-  getOpenAIFunctionsFromN8n,
   useFetchAllWorkflows,
 } from '~/utils/functionCalling/handleFunctionCalling'
 import {
@@ -201,22 +200,33 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }, [documentGroups, isSuccessDocumentGroups])
 
   useEffect(() => {
+    console.log('IsSuccessTools: ', isSuccessTools)
+    console.log('isErrorTools: ', isErrorTools)
+    console.log('toolLoadingError: ', toolLoadingError)
     if (isSuccessTools) {
+      console.log('Tools in Chat.tsx: ', tools)
       const toolsActions =
         tools?.map((tool: OpenAICompatibleTool, index: number) => ({
           id: `tool-${index}`,
-          title: tool.name,
+          title: tool.readableName,
           description: tool.description,
           group: 'Tools',
           checked: true,
-          onTrigger: () => console.log(`${tool.name} triggered`),
+          onTrigger: () => console.log(`${tool.readableName} triggered`),
         })) || []
 
       console.log('toolsActions: ', toolsActions)
       console.log('actions: ', [...actions, ...toolsActions])
       setActions([...actions, ...toolsActions])
+    } else if (isErrorTools) {
+      errorToast({
+        title: 'Error loading tools',
+        message:
+          toolLoadingError.message +
+          '.\nPlease refresh the page or try again later. Regular chat features may still work.',
+      })
     }
-  }, [tools, isSuccessTools])
+  }, [tools, isSuccessTools, isErrorTools, toolLoadingError])
 
   const getOpenAIKey = (courseMetadata: CourseMetadata) => {
     const key =
@@ -586,13 +596,35 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         console.log('Image URLs in main:', imageUrls)
         console.log('Message in main:', message)
 
-        await handleTools(
+        const toolResult = await handleTools(
           message,
           tools,
           imageUrls,
           imgDesc,
           updatedConversation,
           getOpenAIKey(courseMetadata),
+        )
+        // todo: add toolResult to messages
+
+        console.log('Tool result:', toolResult)
+        // toolResult.readableName
+        // toolResult.arguments
+        // console.log('Current message index:', currentMessageIndex)
+        // console.log('Updated conversation:', updatedConversation.messages)
+        // console.log('Updated conversation[currentMessageIndex]:', updatedConversation.messages[currentMessageIndex])
+
+        // @ts-ignore -- can't get the .text property to behave
+        if (
+          updatedConversation.messages[currentMessageIndex] &&
+          updatedConversation.messages[currentMessageIndex]?.content[0]?.text
+        ) {
+          // @ts-ignore -- can't get the .text property to behave
+          updatedConversation.messages[currentMessageIndex].content[0].text +=
+            '\nTool result: ' + JSON.stringify(toolResult)
+        }
+        console.log(
+          'AFTER TOOL -- Updated conversation[currentMessageIndex]:',
+          updatedConversation.messages[currentMessageIndex],
         )
 
         const chatBody: ChatBody = {
@@ -1260,3 +1292,35 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   )
   Chat.displayName = 'Chat'
 })
+
+function errorToast({ title, message }: { title: string; message: string }) {
+  notifications.show({
+    id: 'error-notification-reused',
+    withCloseButton: true,
+    closeButtonProps: { color: 'red' },
+    onClose: () => console.log('error unmounted'),
+    onOpen: () => console.log('error mounted'),
+    autoClose: 12000,
+    title: (
+      <Text size={'lg'} className={`${montserrat_med.className}`}>
+        {title}
+      </Text>
+    ),
+    message: (
+      <Text className={`${montserrat_med.className} text-neutral-200`}>
+        {message}
+      </Text>
+    ),
+    color: 'red',
+    radius: 'lg',
+    icon: <IconAlertCircle />,
+    className: 'my-notification-class',
+    style: {
+      backgroundColor: 'rgba(42,42,64,0.3)',
+      backdropFilter: 'blur(10px)',
+      borderLeft: '5px solid red',
+    },
+    withBorder: true,
+    loading: false,
+  })
+}

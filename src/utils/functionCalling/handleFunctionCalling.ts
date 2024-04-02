@@ -50,44 +50,56 @@ export default async function handleTools(
         const args = JSON.parse(function_call.arguments)
         function_call.arguments = args
       }
+
+      // Add back the original name, for matching in N8N interface.
+      function_call.readableName = function_call.name.replace(/_/g, ' ')
       console.log('Function call from openaiFunctionCall: ', function_call)
 
       // TODO: Do tool calling here!!
-      // if (function_call) {
-      //   console.log('Function call: ', function_call)
-      //   callN8nFunction(function_call, selectedConversation)
-      // }
-      return function_call
+      if (function_call) {
+        return await callN8nFunction(function_call, 'todo!') // TODO: Get API key
+      }
     } else {
-      console.log('No response body.')
+      console.debug('HandleTools routing response missing - No response body.')
     }
   } catch (error) {
     console.error('Error calling openaiFunctionCall: ', error)
   }
-  // TODO: return the updated message. This is a placeholder.
-  // return message
 }
 
 // TODO: finalize this function calling
-const callN8nFunction = async (
-  function_call: any,
-  selectedConversation: Conversation,
-) => {
-  const response = await fetch('http://localhost:8000/runWorkflow', {
+const callN8nFunction = async (function_call: any, n8n_api_key: string) => {
+  console.log('Calling n8n function with data: ', function_call)
+
+  const response = await fetch('http://localhost:8000/run_flow', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      function_call: function_call,
-      conversation: selectedConversation,
+      api_key:
+        'n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6',
+      name: function_call.readableName,
+      data: function_call.arguments,
     }),
   })
   if (!response.ok) {
     console.error('Error calling n8n function: ', response)
+    throw new Error(`Error calling n8n function. Status: ${response.status}`)
   }
+
+  // Parse final answer from n8n workflow object
   const data = await response.json()
   console.log('N8n function response: ', data)
+  const resultData = data[0].data.resultData
+  const finalNodeType = resultData.lastNodeExecuted
+  console.log('N8n final node type: ', finalNodeType)
+  const finalResponse =
+    resultData.runData[finalNodeType][0].data.main[0][0].json
+  console.log('N8n final response: ', finalResponse)
+  // N8n final response: {Search result: 'No agriculture info available (hard coded testing response).'}
+
+  return finalResponse
 }
 
 // conform to the OpenAI function calling API
@@ -127,6 +139,7 @@ interface ExtractedParameter {
 
 export interface OpenAICompatibleTool {
   name: string
+  readableName: string
   description: string
   parameters: {
     type: 'object'
@@ -169,6 +182,7 @@ export function getOpenAIFunctionsFromN8n(
 
     extractedObjects.push({
       name: workflow.name.replace(/\s+/g, '_'),
+      readableName: workflow.name,
       description: formTriggerNode.parameters.formDescription,
       parameters: {
         type: 'object',
@@ -226,13 +240,14 @@ export const useFetchAllWorkflows = (
       )
       if (!response.ok) {
         // return res.status(response.status).json({ error: response.statusText })
-        throw new Error(`Unable to fetch n8n tools. ${response.statusText}`)
+        throw new Error(`Unable to fetch n8n tools: ${response.statusText}`)
       }
 
       const workflows = await response.json()
       if (full_details) return workflows[0]
 
       const openAIFunctions = getOpenAIFunctionsFromN8n(workflows[0])
+      console.log('All OpenAI Functions: ', openAIFunctions)
       return openAIFunctions
     },
   })
