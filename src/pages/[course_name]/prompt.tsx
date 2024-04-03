@@ -20,6 +20,7 @@ import Head from 'next/head'
 import { useMediaQuery } from '@mantine/hooks'
 import { IconAlertTriangle, IconCheck, IconExternalLink } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
+import { useChat } from 'ai/react';
 
 const montserrat = Montserrat({
   weight: '700',
@@ -61,6 +62,8 @@ const CourseMain: NextPage = () => {
   const [thingsToDo, setThingsToDo] = useState('');
   const [thingsNotToDo, setThingsNotToDo] = useState('');
   const [originalSystemPrompt, setOriginalSystemPrompt] = useState('');
+  const { messages, input, handleInputChange, handleSubmit } = useChat();
+
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -205,74 +208,6 @@ const CourseMain: NextPage = () => {
     )
   }
 
-  const pythonCode = `
-    def fibonacci(n):
-        if n <= 0:
-            return []
-        elif n == 1:
-            return [0]
-        elif n == 2:
-            return [0, 1]
-        else:
-            fib = [0, 1]
-            for i in range(2, n):
-                fib.append(fib[i-1] + fib[i-2])
-        return fib`;
-
-  const elements = [
-    {
-      theSystemPrompt: "You are ChatGPT, a helpful assistant. Follow the user's instructions carefully. Respond using markdown.",
-      user: pythonCode,
-      response: `The provided Python function \`fibonacci(n)\` is designed to generate a list containing the Fibonacci sequence up to the \`n\`-th element. The Fibonacci sequence is a series of numbers where each number is the sum of the two preceding ones, usually starting with 0 and 1. The function handles different cases based on the value of \`n\`:
-
-      - If \`n\` is less than or equal to 0, it returns an empty list, indicating that there are no elements in the sequence.
-      - If \`n\` is 1, it returns a list containing only the first element of the Fibonacci sequence, \`[0]\`.
-      - If \`n\` is 2, it returns the first two elements, \`[0, 1]\`.
-      - For any other value of \`n\`, it initializes a list with the first two elements of the sequence, \`[0, 1]\`, and then enters a loop to calculate the remaining elements up to the \`n\`-th element. Each new element is the sum of the two previous elements in the list.
-      
-      The function concludes by returning the list \`fib\`, which contains the Fibonacci sequence up to the \`n\`-th element.
-      
-      This function is an example of a simple algorithm and does not directly relate to the provided course materials, as there is no mention of the Fibonacci sequence or related algorithms in the excerpts from the Stack Overflow Blog or the Object-Oriented Design Flowchart document.
-      
-      ### Relevant Sources:
-      
-      There are no relevant sources to cite for this response.`
-    },
-    {
-      theSystemPrompt: "You are ChatGPT, a helpful assistant. Follow the user's instructions carefully. Respond using markdown. Your task is to analyze the provided Python code snippet and suggest improvements to optimize its performance. Identify areas where the code can be made more efficient, faster, or less resource-intensive. Provide specific suggestions for optimization, along with explanations of how these changes can enhance the code's performance. The optimized code should maintain the same functionality as the original code while demonstrating improved efficiency.",
-      user: pythonCode,
-      response: `The provided Python function \`fibonacci(n)\` generates a list of Fibonacci numbers up to the \`n\`-th element. Here are some suggestions for optimizing this function:
-
-      1. **Avoid Recalculating Values**: The current implementation recalculates the Fibonacci numbers in each iteration of the loop. This is not necessary as we can simply keep track of the last two numbers and update them as we go.
-      
-      2. **Use Tuple Unpacking**: Instead of using an array to store all the Fibonacci numbers, we can use two variables and update them in each iteration. This will save memory as we don't need to store the entire sequence at all times.
-      
-      3. **Reduce Function Calls**: The multiple \`elif\` statements can be reduced to a single \`if-else\` block, which will reduce the number of checks and function calls.
-      
-      Here is the optimized version of the code:
-      
-      \`\`\`python
-      def fibonacci(n):
-          if n <= 0:
-              return []
-          elif n == 1:
-              return [0]
-          else:
-              a, b = 0, 1
-              fib = [a]
-              for _ in range(1, n):
-                  fib.append(b)
-                  a, b = b, a + b
-          return fib
-      \`\`\`
-      
-      In this optimized version, we start with the first two Fibonacci numbers \`a\` and \`b\`. We then iterate \`n-1\` times, appending the next Fibonacci number to the list and updating \`a\` and \`b\` accordingly using tuple unpacking. This version is more efficient because it avoids the overhead of array indexing and reduces the memory footprint by not storing the entire sequence at all times.
-      
-      Please note that this code maintains the same functionality as the original code but demonstrates improved efficiency. There are no references to this specific code optimization in the provided documents, so this analysis is based on general programming best practices.`
-    },
-  ]
-
-
   return (
     <>
       <Navbar course_name={router.query.course_name as string} />
@@ -401,29 +336,6 @@ const CourseMain: NextPage = () => {
                             {copiedCodeSnippet ? <IconCheck /> : <IconCopy />}
                           </Button> */}
                         </div>
-
-                        <Table striped withBorder withColumnBorders>
-                          <thead>
-                            <tr>
-                              <th>System Prompt</th>
-                              {elements.map((element, index) => (
-                                <td key={`prompt-${index}`}>{element.theSystemPrompt}</td>
-                              ))}
-                            </tr>
-                            <tr>
-                              <th>User</th>
-                              {elements.map((element, index) => (
-                                <td key={`user-${index}`}><pre><code>{element.user}</code></pre></td>
-                              ))}
-                            </tr>
-                            <tr>
-                              <th>Response</th>
-                              {elements.map((element, index) => (
-                                <td key={`response-${index}`}>{element.response}</td>
-                              ))}
-                            </tr>
-                          </thead>
-                        </Table>
                         {/* <Textarea
                           value={codeSnippets[selectedLanguage] as string}
                           autosize
@@ -455,20 +367,52 @@ const CourseMain: NextPage = () => {
                       >
                         System Prompt
                       </Title>
-                      <Textarea
-                        // label={<strong>System Prompt</strong>}
-                        autosize
-                        minRows={3}
-                        maxRows={20}
-                        style={{ width: '100%' }}
-                        placeholder="Enter a system prompt"
-                        className={`pt - 3 ${montserrat_paragraph.variable} font - montserratParagraph`}
-                        value={systemPrompt}
-                        onChange={(e) => {
-                          setBaseSystemPrompt(e.target.value);
-                          setSystemPrompt(e.target.value)
-                        }}
-                      />
+                      <div>
+                        {messages.map(m => (
+                          <div key={m.id} className="whitespace-pre-wrap">
+                            {m.role === 'user' ? 'User: ' : 'AI: '}
+                            {m.content}
+                          </div>
+                        ))}
+                        <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+                          <Textarea
+                            autosize
+                            minRows={3}
+                            maxRows={20}
+                            placeholder="Enter the system prompt"
+                            className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                            value={input}  // systemPrompt
+                            onChange={(e) => {
+                              setBaseSystemPrompt(e.target.value);
+                              setSystemPrompt(e.target.value);
+                              handleInputChange(e);
+                            }}
+                            // There's no onSubmit here; form handles submission
+                            style={{ width: '100%' }}
+                          />
+                          <button type="submit" className="submit-button">
+                            Submit
+                          </button>
+                        </form>
+                      </div>
+
+                      {/* <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+                        {messages.map(m => (
+                          <div key={m.id} className="whitespace-pre-wrap">
+                            {m.role === 'user' ? 'User: ' : 'AI: '}
+                            {m.content}
+                          </div>
+                        ))}
+
+                        <form onSubmit={handleSubmit}>
+                          <input
+                            className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl"
+                            value={input}
+                            placeholder="Say something..."
+                            onChange={handleInputChange}
+                          />
+                        </form>
+                      </div> */}
                       <Checkbox
                         label={`Add greetings at the beginning of the conversation.`}
                         // wrapperProps={{}}
@@ -575,6 +519,14 @@ const CourseMain: NextPage = () => {
                           >
                             Update System Prompt
                           </Button>
+                          {/* <Button
+                            className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
+                            type="submit"
+                            onClick={handleSystemPromptSubmit}
+                            style={{ minWidth: 'fit-content' }}
+                          >
+                            Steam Sytem Prompt with ChatGPT
+                          </Button> */}
                           <Button
                             className="relative m-1 self-end bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
                             onClick={() => {
@@ -649,4 +601,3 @@ export const showToastOnPromptUpdate = (
   )
 }
 export default CourseMain
-
