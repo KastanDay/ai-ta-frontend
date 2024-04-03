@@ -171,8 +171,9 @@ const handler = async (req: Request): Promise<NextResponse> => {
     encoding.free() // keep this
 
     // Add custom instructions to system prompt
-    const systemPrompt =
-      promptToSend + "Only answer if it's related to the course materials."
+    // const systemPrompt =
+    //   promptToSend + "Only answer if it's related to the course materials."
+    const systemPrompt = promptToSend
 
     console.log('System prompt being sent to OpenAI: ', promptToSend)
     console.log('Message history being sent to OpenAI: ', messagesToSend)
