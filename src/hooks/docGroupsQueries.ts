@@ -226,13 +226,39 @@ export function useAppendToDocGroup(
       queryClient.setQueryData(
         ['documentGroups', course_name],
         (old: DocumentGroup[] | undefined) => {
-          console.log('Optimistic update - documentGroups:', old);
-          const updatedDocumentGroups = old?.map((docGroup) => {
-            if (docGroup.name === appendedGroup) {
-              return { ...docGroup, doc_count: (docGroup.doc_count || 0) + 1 }
+          if (!old) return []
+
+          const updatedDocumentGroups = old.map((group) => {
+            if (group.name === appendedGroup) {
+              const isDocumentInGroup = record.doc_groups?.includes(appendedGroup)
+              return {
+                ...group,
+                doc_count: group.doc_count + (isDocumentInGroup ? 0 : 1),
+              }
             }
-            return docGroup
+            return group
           })
+
+          const existingGroup = updatedDocumentGroups.find(
+            (group) => group.name === appendedGroup
+          )
+          if (!existingGroup) {
+            const newGroup = {
+              name: appendedGroup,
+              doc_count: 1,
+              enabled: false,
+              course_name,
+            }
+            const insertIndex = updatedDocumentGroups.findIndex(
+              (group) => group.name.localeCompare(appendedGroup) > 0
+            )
+            if (insertIndex === -1) {
+              updatedDocumentGroups.push(newGroup)
+            } else {
+              updatedDocumentGroups.splice(insertIndex, 0, newGroup)
+            }
+          }
+          console.log('Optimistic update - documentGroups:', updatedDocumentGroups);
           return updatedDocumentGroups
         },
       )
@@ -252,21 +278,21 @@ export function useAppendToDocGroup(
           console.log('Optimistic update - documents:', old);
           if (!old) return
 
-          const updatedDocuments = old?.final_docs.map((doc) => {
+          const updatedDocuments = old.final_docs.map((doc) => {
             if (
               (record.s3_path && doc.s3_path === record.s3_path) ||
               (record.url && doc.url === record.url)
             ) {
               return {
                 ...doc,
-                doc_groups: [...(doc.doc_groups || []), appendedGroup],
+                doc_groups: Array.from(new Set([...(doc.doc_groups || []), appendedGroup])),
               }
             }
             return doc
           })
           return {
             ...old,
-            updatedDocuments,
+            final_docs: updatedDocuments,
           }
         },
       )
