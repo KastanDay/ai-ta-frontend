@@ -76,114 +76,114 @@ export function useFetchEnabledDocGroups(course_name: string) {
 
 // ------------- Mutations -------------
 
-export function useCreateDocumentGroup(
-  course_name: string,
-  queryClient: QueryClient,
-  page: number,
-) {
-  return useMutation(
-    async ({
-      record,
-      doc_group_name,
-    }: {
-      record: CourseDocument
-      doc_group_name: string
-    }) => {
-      const response = await fetch('/api/documentGroups', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'createDocGroup',
-          courseName: course_name,
-          docGroup: doc_group_name,
-        }),
-      })
-      if (!response.ok) {
-        throw new Error('Failed to create document group')
-      }
-      return response.json()
-    },
-    {
-      // Optimistically update the cache
-      onMutate: async ({ record, doc_group_name }) => {
-        await queryClient.cancelQueries(['documentGroups', course_name])
-        await queryClient.cancelQueries(['documents', course_name])
-        const previousDocumentGroups = queryClient.getQueryData([
-          'documentGroups',
-          course_name,
-        ])
-        queryClient.setQueryData(
-          ['documentGroups', course_name],
-          (old: DocumentGroup[] | undefined) => {
-            // Perform the optimistic update
-            return [
-              ...(old || []),
-              {
-                name: doc_group_name,
-                enabled: true,
-                doc_count: 1,
-                course_name: course_name,
-              },
-            ]
-          },
-        )
+// export function useCreateDocumentGroup(
+//   course_name: string,
+//   queryClient: QueryClient,
+//   page: number,
+// ) {
+//   return useMutation(
+//     async ({
+//       record,
+//       doc_group_name,
+//     }: {
+//       record: CourseDocument
+//       doc_group_name: string
+//     }) => {
+//       const response = await fetch('/api/documentGroups', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({
+//           action: 'createDocGroup',
+//           courseName: course_name,
+//           docGroup: doc_group_name,
+//         }),
+//       })
+//       if (!response.ok) {
+//         throw new Error('Failed to create document group')
+//       }
+//       return response.json()
+//     },
+//     {
+//       // Optimistically update the cache
+//       onMutate: async ({ record, doc_group_name }) => {
+//         await queryClient.cancelQueries(['documentGroups', course_name])
+//         await queryClient.cancelQueries(['documents', course_name])
+//         const previousDocumentGroups = queryClient.getQueryData([
+//           'documentGroups',
+//           course_name,
+//         ])
+//         queryClient.setQueryData(
+//           ['documentGroups', course_name],
+//           (old: DocumentGroup[] | undefined) => {
+//             // Perform the optimistic update
+//             return [
+//               ...(old || []),
+//               {
+//                 name: doc_group_name,
+//                 enabled: true,
+//                 doc_count: 1,
+//                 course_name: course_name,
+//               },
+//             ]
+//           },
+//         )
 
-        const previousDocuments = queryClient.getQueryData([
-          'documents',
-          course_name,
-          page,
-        ])
-        queryClient.setQueryData(
-          ['documents', course_name, page],
-          (
-            old:
-              | { final_docs: CourseDocument[]; total_count: number }
-              | undefined,
-          ) => {
-            if (!old) return
-            // Perform the optimistic update
-            const updatedDocuments = old?.final_docs.map((doc) => {
-              if (
-                (record.s3_path && doc.s3_path === record.s3_path) ||
-                (record.url && doc.url === record.url)
-              ) {
-                return {
-                  ...doc,
-                  doc_groups: [...(doc.doc_groups || []), doc_group_name],
-                }
-              }
-              return doc
-            })
-            return {
-              ...old,
-              final_docs: updatedDocuments,
-            }
-          },
-        )
+//         const previousDocuments = queryClient.getQueryData([
+//           'documents',
+//           course_name,
+//           page,
+//         ])
+//         queryClient.setQueryData(
+//           ['documents', course_name, page],
+//           (
+//             old:
+//               | { final_docs: CourseDocument[]; total_count: number }
+//               | undefined,
+//           ) => {
+//             if (!old) return
+//             // Perform the optimistic update
+//             const updatedDocuments = old?.final_docs.map((doc) => {
+//               if (
+//                 (record.s3_path && doc.s3_path === record.s3_path) ||
+//                 (record.url && doc.url === record.url)
+//               ) {
+//                 return {
+//                   ...doc,
+//                   doc_groups: [...(doc.doc_groups || []), doc_group_name],
+//                 }
+//               }
+//               return doc
+//             })
+//             return {
+//               ...old,
+//               final_docs: updatedDocuments,
+//             }
+//           },
+//         )
 
-        return { previousDocumentGroups, previousDocuments }
-      },
-      onError: (err, variables, context) => {
-        // Rollback on error
-        queryClient.setQueryData(
-          ['documentGroups', course_name],
-          context?.previousDocumentGroups,
-        )
-        queryClient.setQueryData(
-          ['documents', course_name, page],
-          context?.previousDocuments,
-        )
-      },
-      onSettled: () => {
-        // Refetch after mutation or error
-        queryClient.invalidateQueries(['documentGroups', course_name])
-        queryClient.invalidateQueries(['documents', course_name])
-      },
-    },
-  )
-}
+//         return { previousDocumentGroups, previousDocuments }
+//       },
+//       onError: (err, variables, context) => {
+//         // Rollback on error
+//         queryClient.setQueryData(
+//           ['documentGroups', course_name],
+//           context?.previousDocumentGroups,
+//         )
+//         queryClient.setQueryData(
+//           ['documents', course_name, page],
+//           context?.previousDocuments,
+//         )
+//       },
+//       onSettled: () => {
+//         // Refetch after mutation or error
+//         queryClient.invalidateQueries(['documentGroups', course_name])
+//         queryClient.invalidateQueries(['documents', course_name])
+//       },
+//     },
+//   )
+// }
 
 export function useAppendToDocGroup(
   course_name: string,
@@ -215,8 +215,8 @@ export function useAppendToDocGroup(
       }
       return response.json()
     },
-    // Optimistically update the cache
     onMutate: async ({ record, appendedGroup }) => {
+      console.log('Appending to document group:', record, appendedGroup);
       await queryClient.cancelQueries(['documentGroups', course_name])
       await queryClient.cancelQueries(['documents', course_name])
       const previousDocumentGroups = queryClient.getQueryData([
@@ -226,7 +226,7 @@ export function useAppendToDocGroup(
       queryClient.setQueryData(
         ['documentGroups', course_name],
         (old: DocumentGroup[] | undefined) => {
-          // Perform the optimistic update
+          console.log('Optimistic update - documentGroups:', old);
           const updatedDocumentGroups = old?.map((docGroup) => {
             if (docGroup.name === appendedGroup) {
               return { ...docGroup, doc_count: (docGroup.doc_count || 0) + 1 }
@@ -249,7 +249,7 @@ export function useAppendToDocGroup(
             | { final_docs: CourseDocument[]; total_count: number }
             | undefined,
         ) => {
-          // Perform the optimistic update
+          console.log('Optimistic update - documents:', old);
           if (!old) return
 
           const updatedDocuments = old?.final_docs.map((doc) => {
@@ -273,7 +273,7 @@ export function useAppendToDocGroup(
       return { previousDocumentGroups, previousDocuments }
     },
     onError: (err, variables, context) => {
-      // Rollback on error
+      console.error('Error appending to document group:', err, context);
       queryClient.setQueryData(
         ['documentGroups', course_name],
         context?.previousDocumentGroups,
@@ -285,7 +285,7 @@ export function useAppendToDocGroup(
       )
     },
     onSettled: () => {
-      // Refetch after mutation or error
+      console.log('Append to document group mutation settled');
       queryClient.invalidateQueries(['documentGroups', course_name])
       queryClient.invalidateQueries(['documents', course_name])
     },

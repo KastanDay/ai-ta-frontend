@@ -34,7 +34,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
 import {
   useAppendToDocGroup,
-  useCreateDocumentGroup,
+  // useCreateDocumentGroup,
   useGetDocumentGroups,
   useRemoveFromDocGroup,
   useUpdateDocGroup,
@@ -69,11 +69,11 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
   // TODO: I think this is only available in V5>??? Not sure. Why are we on the old V4!!!!
   // const { mutate: appendToDocGroup, isLoading, isError, error } = useAppendToDocGroup(course_name);
   const getDocumentGroups = useGetDocumentGroups(course_name)
-  const createDocumentGroup = useCreateDocumentGroup(
-    course_name,
-    queryClient,
-    page,
-  )
+  // const createDocumentGroup = useCreateDocumentGroup(
+  //   course_name,
+  //   queryClient,
+  //   page,
+  // )
   const appendToDocGroup = useAppendToDocGroup(course_name, queryClient, page)
   const removeFromDocGroup = useRemoveFromDocGroup(
     course_name,
@@ -461,7 +461,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
                   creatable
                   getCreateLabel={(query) => `+ Create "${query}"`}
                   onCreate={(doc_group_name) => {
-                    createDocumentGroup.mutate({ record, doc_group_name })
+                    // createDocumentGroup.mutate({ record, doc_group_name })
                     return { value: doc_group_name, label: doc_group_name }
                   }}
                   onChange={(newSelectedGroups) =>
