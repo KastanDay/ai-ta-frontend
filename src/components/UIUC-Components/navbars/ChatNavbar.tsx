@@ -53,12 +53,13 @@ const styles: Record<string, React.CSSProperties> = {
     // position: 'relative',
     // height: '40%',
     height: '52px',
-    maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
+    maxWidth:
+      typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
     // maxWidth: '100%',
     // paddingRight:
     //   typeof window !== 'undefined' && window.innerWidth > 600 ? '10px' : '2px',
     paddingLeft:
-      typeof window !== 'undefined' && window.innerWidth > 600 ? '25px' : '5px'
+      typeof window !== 'undefined' && window.innerWidth > 600 ? '25px' : '5px',
   },
   thumbnailImage: {
     objectFit: 'cover',
@@ -126,7 +127,7 @@ const useStyles = createStyles((theme) => ({
       marginRight: '8px',
     },
     marginRight: '3px',
-    marginLeft: '0px'
+    marginLeft: '0px',
   },
   dropdown: {
     position: 'absolute',
@@ -337,7 +338,7 @@ const ChatNavbar = ({
     <div
       className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'} -mr-5 pb-16 pl-5`}
       style={{ display: show ? 'block' : 'none' }}
-    // style={{ display: show ? 'flex' : 'none', flexDirection: 'row', height: '40%', alignItems: 'center' }}
+      // style={{ display: show ? 'flex' : 'none', flexDirection: 'row', height: '40%', alignItems: 'center' }}
     >
       <div
         // className="mt-4"
@@ -347,8 +348,8 @@ const ChatNavbar = ({
         {/* <Flex style={{ flexDirection: 'row' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"> */}
 
         <Flex
-          justify='flex-start'
-          direction='row'
+          justify="flex-start"
+          direction="row"
           styles={{ height: '10px', flexWrap: 'nowrap', gap: '0rem' }}
           className="navbar rounded-badge bg-[#15162c] shadow-lg shadow-purple-800"
         >
@@ -362,7 +363,7 @@ const ChatNavbar = ({
             }}
           > */}
           <Link href="/" style={{ flex: 'none', flexWrap: 'nowrap' }}>
-            <h2 className="sm:ms-3 cursor-pointer sm:text-[2rem] md:text-3xl font-extrabold tracking-tight text-white sm:text-[2rem]">
+            <h2 className="cursor-pointer font-extrabold tracking-tight text-white sm:ms-3 sm:text-[2rem] sm:text-[2rem] md:text-3xl">
               UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
             </h2>
           </Link>
@@ -381,7 +382,13 @@ const ChatNavbar = ({
             </div>
           ) : (
             // Placeholder div
-            <div style={{ ...styles.logoContainerBox, flex: '1', visibility: 'hidden' }}></div>
+            <div
+              style={{
+                ...styles.logoContainerBox,
+                flex: '1',
+                visibility: 'hidden',
+              }}
+            ></div>
           )}
           {/* </Flex> */}
           {/* </div> */}
@@ -389,7 +396,12 @@ const ChatNavbar = ({
 
           {/* <div style={{ display: 'flex', justifyContent: 'flex-end' }}> */}
           {/* <Flex direction='row' justify='flex-end' styles={{ flex: 1 }}> */}
-          <Group position='right' styles={{ marginLeft: 'auto', flexWrap: 'nowrap' }} spacing='0px' noWrap>
+          <Group
+            position="right"
+            styles={{ marginLeft: 'auto', flexWrap: 'nowrap' }}
+            spacing="0px"
+            noWrap
+          >
             {/* TODO: .mantine-kivjf7 {gap: 0rem} */}
             {/* This is the hamburger menu / dropdown */}
             <Transition
@@ -589,7 +601,11 @@ const ChatNavbar = ({
                   >
                     <IconRobot
                       size={24}
-                      style={{ position: 'relative', top: '-2px', paddingLeft: '-3px' }}
+                      style={{
+                        position: 'relative',
+                        top: '-2px',
+                        paddingLeft: '-3px',
+                      }}
                     />
                     <span
                       className="home-header_text-underline"
@@ -701,8 +717,8 @@ const ChatNavbar = ({
           </Group>
         </Flex>
         {/* </div> */}
-      </div >
-    </div >
+      </div>
+    </div>
   )
 }
 export default ChatNavbar

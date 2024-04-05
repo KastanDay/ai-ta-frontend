@@ -448,15 +448,11 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
                   }
                   value={record.doc_groups ? record.doc_groups : []}
                   placeholder={
-                    isLoadingDocumentGroups
-                      ? 'Loading...'
-                      : 'Select Group'
+                    isLoadingDocumentGroups ? 'Loading...' : 'Select Group'
                   }
                   searchable={!isLoadingDocumentGroups}
                   nothingFound={
-                    isLoadingDocumentGroups
-                      ? 'Loading...'
-                      : 'No Options'
+                    isLoadingDocumentGroups ? 'Loading...' : 'No Options'
                   }
                   creatable
                   getCreateLabel={(query) => `+ Create "${query}"`}

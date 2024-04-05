@@ -216,7 +216,7 @@ export function useAppendToDocGroup(
       return response.json()
     },
     onMutate: async ({ record, appendedGroup }) => {
-      console.log('Appending to document group:', record, appendedGroup);
+      console.log('Appending to document group:', record, appendedGroup)
       await queryClient.cancelQueries(['documentGroups', course_name])
       await queryClient.cancelQueries(['documents', course_name])
       const previousDocumentGroups = queryClient.getQueryData([
@@ -230,7 +230,8 @@ export function useAppendToDocGroup(
 
           const updatedDocumentGroups = old.map((group) => {
             if (group.name === appendedGroup) {
-              const isDocumentInGroup = record.doc_groups?.includes(appendedGroup)
+              const isDocumentInGroup =
+                record.doc_groups?.includes(appendedGroup)
               return {
                 ...group,
                 doc_count: group.doc_count + (isDocumentInGroup ? 0 : 1),
@@ -240,7 +241,7 @@ export function useAppendToDocGroup(
           })
 
           const existingGroup = updatedDocumentGroups.find(
-            (group) => group.name === appendedGroup
+            (group) => group.name === appendedGroup,
           )
           if (!existingGroup) {
             const newGroup = {
@@ -250,7 +251,7 @@ export function useAppendToDocGroup(
               course_name,
             }
             const insertIndex = updatedDocumentGroups.findIndex(
-              (group) => group.name.localeCompare(appendedGroup) > 0
+              (group) => group.name.localeCompare(appendedGroup) > 0,
             )
             if (insertIndex === -1) {
               updatedDocumentGroups.push(newGroup)
@@ -258,7 +259,10 @@ export function useAppendToDocGroup(
               updatedDocumentGroups.splice(insertIndex, 0, newGroup)
             }
           }
-          console.log('Optimistic update - documentGroups:', updatedDocumentGroups);
+          console.log(
+            'Optimistic update - documentGroups:',
+            updatedDocumentGroups,
+          )
           return updatedDocumentGroups
         },
       )
@@ -275,7 +279,7 @@ export function useAppendToDocGroup(
             | { final_docs: CourseDocument[]; total_count: number }
             | undefined,
         ) => {
-          console.log('Optimistic update - documents:', old);
+          console.log('Optimistic update - documents:', old)
           if (!old) return
 
           const updatedDocuments = old.final_docs.map((doc) => {
@@ -285,7 +289,9 @@ export function useAppendToDocGroup(
             ) {
               return {
                 ...doc,
-                doc_groups: Array.from(new Set([...(doc.doc_groups || []), appendedGroup])),
+                doc_groups: Array.from(
+                  new Set([...(doc.doc_groups || []), appendedGroup]),
+                ),
               }
             }
             return doc
@@ -299,7 +305,7 @@ export function useAppendToDocGroup(
       return { previousDocumentGroups, previousDocuments }
     },
     onError: (err, variables, context) => {
-      console.error('Error appending to document group:', err, context);
+      console.error('Error appending to document group:', err, context)
       queryClient.setQueryData(
         ['documentGroups', course_name],
         context?.previousDocumentGroups,
@@ -311,7 +317,7 @@ export function useAppendToDocGroup(
       )
     },
     onSettled: () => {
-      console.log('Append to document group mutation settled');
+      console.log('Append to document group mutation settled')
       queryClient.invalidateQueries(['documentGroups', course_name])
       queryClient.invalidateQueries(['documents', course_name])
     },
