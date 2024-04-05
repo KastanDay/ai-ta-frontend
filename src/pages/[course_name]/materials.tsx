@@ -109,12 +109,8 @@ const CourseMain: NextPage = () => {
   }
 
   if (courseData === null) {
-    return (
-      <MakeNewCoursePage
-        course_name={course_name as string}
-        current_user_email={user_emails[0] as string}
-      />
-    )
+    router.push('/new?course_name=' + course_name)
+    return
   }
 
   return (
