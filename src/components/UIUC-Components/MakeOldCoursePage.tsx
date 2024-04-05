@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { Title, Flex, Blockquote, Text } from '@mantine/core'
+import { Title, Flex, Blockquote, Text, List } from '@mantine/core'
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
@@ -138,34 +138,55 @@ const MakeOldCoursePage = ({
                   >
                     <Text
                       size="lg"
-                      className={`label ${montserrat_paragraph.className} inline-block p-0 text-neutral-200`}
+                      className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
                     >
-                      Introducing Document Groups
+                      {/* Introducing Document Groups */}
+                      Exciting News: Document Groups Are Here!{' '}
+                      <span style={{ fontSize: '22px' }}>🎉</span>
                     </Text>
+                    <br></br>
                     <Text
-                      className={`label ${montserrat_paragraph.className} inline-block p-0 text-neutral-200`}
+                      className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
                       size={'md'}
                     >
-                      To enhance organization and efficiency, we&apos;ve
-                      introduced Document Groups. This feature allows admins and
-                      project owners to categorize a large list of documents
-                      into smaller, manageable groups. It offers more control
-                      over document management for admins while simplifying the
-                      process for users to find relevant information quickly.
-                      Document Groups can be used as a filtering criterion
-                      during retrieval, aiding navigation through large volumes
-                      of documents.
+                      Document Groups help you find what you need faster.
+                      <br></br>
+                      You can:
                     </Text>
+                    <List>
+                      <List.Item className="pl-4">
+                        <Text
+                          className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                          size={'md'}
+                        >
+                          Organize documents into clear, manageable categories
+                        </Text>
+                      </List.Item>
+                      <List.Item className="pl-4">
+                        <Text
+                          className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                          size={'md'}
+                        >
+                          Enable and disable Document Groups to control what
+                          your chatbot users see.
+                        </Text>
+                      </List.Item>
+                      <List.Item className="pl-4">
+                        <Text
+                          className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                          size={'md'}
+                        >
+                          Chat with subsets of your data using filters (coming
+                          soon to the /chat page)
+                        </Text>
+                      </List.Item>
+                    </List>
                     <Text
-                      className={`label ${montserrat_paragraph.className} inline-block p-0 text-neutral-200`}
+                      className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
                       size={'md'}
                     >
-                      Admins and owners have the flexibility to enable or
-                      disable these groups, tailoring the feature to their
-                      specific needs, ensuring users benefit from an organized
-                      and streamlined document retrieval process that improves
-                      their ability to access and utilize information
-                      effectively.
+                      Try it out and start navigating huge projects with ease
+                      and control <span style={{ fontSize: '22px' }}>🙌</span>
                     </Text>
                   </Blockquote>
                   <DocGroupsTable course_name={course_name} />
