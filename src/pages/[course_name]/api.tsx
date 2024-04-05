@@ -38,19 +38,13 @@ const ApiPage: NextPage = () => {
 
     const fetchMetadata = async () => {
       setIsLoading(true)
-
       try {
-        const response = await fetch(
-          `/api/UIUC-api/getCourseExists?course_name=${course_name}`,
-        )
-        const courseExistsData = await response.json()
-        setCourseExists(courseExistsData)
-        console.log('Course Exists data', courseExistsData)
+        const metadata: CourseMetadata = await fetchCourseMetadata(course_name)
+        setCourseMetadata(metadata)
 
-        if (courseExistsData) {
-          const metadata: CourseMetadata =
-            await fetchCourseMetadata(course_name)
-          setCourseMetadata(metadata)
+        if (metadata === null) {
+          await router.push('/new?course_name=' + course_name)
+          return
         }
       } catch (error) {
         console.error(error)

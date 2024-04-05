@@ -1,5 +1,4 @@
 import { type NextPage } from 'next'
-import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import MakeOldCoursePage from '~/components/UIUC-Components/MakeOldCoursePage'
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
@@ -12,20 +11,19 @@ import { Title } from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { montserrat_heading } from 'fonts'
 import Navbar from '~/components/UIUC-Components/navbars/Navbar'
+import { CourseMetadata } from '~/types/courseMetadata'
+import { fetchCourseMetadata } from '~/utils/apiUtils'
 
 const CourseMain: NextPage = () => {
   const router = useRouter()
 
   const GetCurrentPageName = () => {
-    // return router.asPath.slice(1).split('/')[0]
-    // Possible improvement.
-    return router.query.course_name as string // Change this line
+    return router.query.course_name as string
   }
 
   const course_name = GetCurrentPageName() as string
   const { user, isLoaded, isSignedIn } = useUser()
   const [courseData, setCourseData] = useState(null)
-  const [courseExists, setCourseExists] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -33,26 +31,25 @@ const CourseMain: NextPage = () => {
       if (course_name == undefined) {
         return
       }
+      // check exists
+      const metadata: CourseMetadata = await fetchCourseMetadata(course_name)
+      if (metadata === null) {
+        await router.push('/new?course_name=' + course_name)
+        return
+      }
+      // Get all data
       const response = await fetch(
-        `/api/UIUC-api/getCourseExists?course_name=${course_name}`,
+        `https://flask-production-751b.up.railway.app/getAll?course_name=${course_name}`,
       )
       const data = await response.json()
-      setCourseExists(data)
-      if (data) {
-        const response = await fetch(
-          `https://flask-production-751b.up.railway.app/getAll?course_name=${course_name}`,
-        )
-        const data = await response.json()
-        const courseData = data.distinct_files
-        setCourseData(courseData)
-      }
+      setCourseData(data.distinct_files)
       setIsLoading(false)
     }
     fetchCourseData()
   }, [router.isReady])
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!isLoaded || isLoading) {
+  if (!isLoaded || isLoading || courseData === null) {
     return (
       <MainPageBackground>
         <LoadingSpinner />
@@ -96,21 +93,6 @@ const CourseMain: NextPage = () => {
     course_name.toLowerCase() == 'extreme'
   ) {
     return <CannotEditGPT4Page course_name={course_name as string} />
-  }
-
-  if (courseExists === null) {
-    return (
-      <MainPageBackground>
-        {/* add the navbar if have access */}
-        <Navbar />
-        <LoadingSpinner />
-      </MainPageBackground>
-    )
-  }
-
-  if (courseData === null) {
-    router.push('/new?course_name=' + course_name)
-    return <></>
   }
 
   return (

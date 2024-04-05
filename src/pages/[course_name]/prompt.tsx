@@ -38,8 +38,6 @@ const CourseMain: NextPage = () => {
 
   const course_name = GetCurrentPageName() as string
   const { user, isLoaded, isSignedIn } = useUser()
-  const [courseData, setCourseData] = useState(null)
-  const [courseExists, setCourseExists] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [systemPrompt, setSystemPrompt] = useState('')
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
@@ -47,22 +45,21 @@ const CourseMain: NextPage = () => {
   )
   const clerk_user = useUser()
   const emails = extractEmailsFromClerk(clerk_user.user)
-  const currUserEmail = emails[0]
 
   useEffect(() => {
     const fetchCourseData = async () => {
       if (course_name == undefined) {
         return
       }
-      const response = await fetch(
-        `/api/UIUC-api/getCourseExists?course_name=${course_name}`,
-      )
-      const data = await response.json()
-      setCourseExists(data)
       const response_metadata = await fetch(
         `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
       )
       const courseMetadata = (await response_metadata.json()).course_metadata
+
+      if (courseMetadata === null) {
+        await router.push('/new?course_name=' + course_name)
+        return
+      }
       setCourseMetadata(courseMetadata)
       setSystemPrompt(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
 
@@ -138,19 +135,6 @@ const CourseMain: NextPage = () => {
     course_name.toLowerCase() == 'extreme'
   ) {
     return <CannotEditGPT4Page course_name={course_name as string} />
-  }
-
-  if (courseExists === null) {
-    return (
-      <MainPageBackground>
-        <LoadingSpinner />
-      </MainPageBackground>
-    )
-  }
-
-  if (courseData === null || !courseExists) {
-    router.push('/new?course_name=' + course_name)
-    return <></>
   }
 
   return (

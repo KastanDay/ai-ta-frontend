@@ -11,6 +11,8 @@ import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackgro
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { Title } from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
+import { fetchCourseMetadata } from '~/utils/apiUtils'
+import { CourseMetadata } from '~/types/courseMetadata'
 
 const montserrat = Montserrat({
   weight: '700',
@@ -37,19 +39,18 @@ const CourseMain: NextPage = () => {
       if (course_name == undefined) {
         return
       }
+      // Check exists
+      const metadata: CourseMetadata = await fetchCourseMetadata(course_name)
+      if (metadata === null) {
+        await router.push('/new?course_name=' + course_name)
+        return
+      }
+      // Get documents
       const response = await fetch(
-        `/api/UIUC-api/getCourseExists?course_name=${course_name}`,
+        `https://flask-production-751b.up.railway.app/getAll?course_name=${course_name}`,
       )
       const data = await response.json()
-      setCourseExists(data)
-      if (data) {
-        const response = await fetch(
-          `https://flask-production-751b.up.railway.app/getAll?course_name=${course_name}`,
-        )
-        const data = await response.json()
-        const courseData = data.distinct_files
-        setCourseData(courseData)
-      }
+      setCourseData(data.distinct_files)
       setIsLoading(false)
     }
     fetchCourseData()
@@ -108,17 +109,6 @@ const CourseMain: NextPage = () => {
         <LoadingSpinner />
       </MainPageBackground>
     )
-  }
-
-  if (courseData === null) {
-    router.push('/new?course_name=' + course_name)
-    return <></>
-    // return (
-    //   <MakeNewCoursePage
-    //     course_name={course_name as string}
-    //     current_user_email={user_emails[0] as string}
-    //   />
-    // )
   }
 
   return (
