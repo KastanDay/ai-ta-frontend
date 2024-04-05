@@ -19,13 +19,11 @@ const NotAuthorizedPage: NextPage = () => {
     return router.asPath.slice(1).split('/')[0] as string
   }
 
-  const course_name = getCurrentPageName()
-  console.log('not_auth.tsx -- course_name:', course_name)
-
   useEffect(() => {
-    if (!clerk_user.isLoaded) {
+    if (!clerk_user.isLoaded || !router.isReady) {
       return
     }
+    const course_name = getCurrentPageName()
 
     async function fetchCourseMetadata(course_name: string) {
       try {
@@ -112,7 +110,7 @@ const NotAuthorizedPage: NextPage = () => {
         )
       }
     })
-  }, [clerk_user.isLoaded])
+  }, [clerk_user.isLoaded, router.isReady])
 
   if (!clerk_user.isLoaded || !componentToRender) {
     console.debug('not_authorized.tsx -- Loading spinner')

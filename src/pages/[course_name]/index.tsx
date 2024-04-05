@@ -18,10 +18,7 @@ const IfCourseExists: NextPage = () => {
     null,
   )
   const getCurrentPageName = () => {
-    const ret = router.query.course_name as string
-    console.log('index.tsx -- getCurrentPageName:', ret)
-    return ret
-    // return router.query.course_name as string
+    return router.query.course_name as string
   }
 
   useEffect(() => {
