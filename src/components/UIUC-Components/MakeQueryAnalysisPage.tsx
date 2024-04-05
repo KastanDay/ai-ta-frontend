@@ -70,13 +70,7 @@ export const GetCurrentPageName = () => {
   return useRouter().asPath.slice(1).split('/')[0] as string
 }
 
-const MakeQueryAnalysisPage = ({
-  course_name,
-  course_data,
-}: {
-  course_name: string
-  course_data: any
-}) => {
+const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   const { classes, theme } = useStyles()
   const { isLoaded, userId, sessionId, getToken } = useAuth() // Clerk Auth
@@ -154,7 +148,6 @@ const MakeQueryAnalysisPage = ({
     )
   }
 
-  // TODO: update this check to consider Admins & participants.
   if (
     courseMetadata &&
     currentEmail !== (courseMetadata.course_owner as string) &&

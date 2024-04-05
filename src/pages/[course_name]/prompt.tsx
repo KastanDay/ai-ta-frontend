@@ -1,7 +1,5 @@
 import { type NextPage } from 'next'
-import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import React, { useEffect, useState } from 'react'
-import { Montserrat } from 'next/font/google'
 import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
 import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
@@ -9,72 +7,53 @@ import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { Button, Flex, Text, Textarea, Title } from '@mantine/core'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { DEFAULT_SYSTEM_PROMPT } from '~/utils/app/const'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
-import { callSetCourseMetadata } from '~/utils/apiUtils'
+import { callSetCourseMetadata, fetchCourseMetadata } from '~/utils/apiUtils'
 import Navbar from '~/components/UIUC-Components/navbars/Navbar'
 import Head from 'next/head'
-
-const montserrat = Montserrat({
-  weight: '700',
-  subsets: ['latin'],
-})
-
-const montserrat_light = Montserrat({
-  weight: '400',
-  subsets: ['latin'],
-})
 
 const CourseMain: NextPage = () => {
   const router = useRouter()
 
-  const GetCurrentPageName = () => {
-    // return router.asPath.slice(1).split('/')[0]
-    // Possible improvement.
-    return router.query.course_name as string // Change this line
+  const getCurrentPageName = () => {
+    return router.query.course_name as string
   }
 
-  const course_name = GetCurrentPageName() as string
   const { user, isLoaded, isSignedIn } = useUser()
-  const [courseData, setCourseData] = useState(null)
-  const [courseExists, setCourseExists] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [systemPrompt, setSystemPrompt] = useState('')
+  const [courseName, setCourseName] = useState<string | null>(null)
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
-  const clerk_user = useUser()
-  const emails = extractEmailsFromClerk(clerk_user.user)
-  const currUserEmail = emails[0]
 
   useEffect(() => {
+    if (!router.isReady) return
     const fetchCourseData = async () => {
-      if (course_name == undefined) {
+      const local_course_name = getCurrentPageName()
+
+      // Check exists
+      const metadata: CourseMetadata =
+        await fetchCourseMetadata(local_course_name)
+      if (metadata === null) {
+        await router.push('/new?course_name=' + local_course_name)
         return
       }
-      const response = await fetch(
-        `/api/UIUC-api/getCourseExists?course_name=${course_name}`,
-      )
-      const data = await response.json()
-      setCourseExists(data)
-      const response_metadata = await fetch(
-        `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
-      )
-      const courseMetadata = (await response_metadata.json()).course_metadata
-      setCourseMetadata(courseMetadata)
-      setSystemPrompt(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
 
+      setCourseName(local_course_name)
+      setCourseMetadata(metadata)
+      setSystemPrompt(metadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
       setIsLoading(false)
     }
     fetchCourseData()
   }, [router.isReady])
 
   const handleSystemPromptSubmit = async () => {
-    if (courseMetadata && course_name && systemPrompt) {
+    if (courseMetadata && courseName && systemPrompt) {
       courseMetadata.system_prompt = systemPrompt
-      const success = await callSetCourseMetadata(course_name, courseMetadata)
+      const success = await callSetCourseMetadata(courseName, courseMetadata)
       if (!success) {
         console.log('Error updating course metadata')
       }
@@ -82,9 +61,9 @@ const CourseMain: NextPage = () => {
   }
 
   const resetSystemPrompt = async () => {
-    if (courseMetadata && course_name) {
+    if (courseMetadata && courseName) {
       courseMetadata.system_prompt = DEFAULT_SYSTEM_PROMPT
-      const success = await callSetCourseMetadata(course_name, courseMetadata)
+      const success = await callSetCourseMetadata(courseName, courseMetadata)
       if (!success) {
         alert('Error resetting system prompt')
       }
@@ -94,7 +73,7 @@ const CourseMain: NextPage = () => {
   }
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!isLoaded || isLoading) {
+  if (!isLoaded || isLoading || courseName == null) {
     return (
       <MainPageBackground>
         <LoadingSpinner />
@@ -103,66 +82,25 @@ const CourseMain: NextPage = () => {
   }
 
   if (!isSignedIn) {
-    console.log('User not logged in', isSignedIn, isLoaded, course_name)
-    return <AuthComponent course_name={course_name} />
-  }
-
-  const user_emails = extractEmailsFromClerk(user)
-
-  // if their account is somehow broken (with no email address)
-  if (user_emails.length == 0) {
-    return (
-      <MainPageBackground>
-        <Title
-          className={montserrat.className}
-          variant="gradient"
-          gradient={{ from: 'gold', to: 'white', deg: 50 }}
-          order={3}
-          p="xl"
-          style={{ marginTop: '4rem' }}
-        >
-          You&apos;ve encountered a software bug!<br></br>Your account has no
-          email address. Please shoot me an email so I can fix it for you:{' '}
-          <a className="goldUnderline" href="mailto:kvday2@illinois.edu">
-            kvday2@illinois.edu
-          </a>
-        </Title>
-      </MainPageBackground>
-    )
+    console.log('User not logged in', isSignedIn, isLoaded, courseName)
+    return <AuthComponent course_name={courseName} />
   }
 
   // Don't edit certain special pages (no context allowed)
   if (
-    course_name.toLowerCase() == 'gpt4' ||
-    course_name.toLowerCase() == 'global' ||
-    course_name.toLowerCase() == 'extreme'
+    courseName.toLowerCase() == 'gpt4' ||
+    courseName.toLowerCase() == 'global' ||
+    courseName.toLowerCase() == 'extreme'
   ) {
-    return <CannotEditGPT4Page course_name={course_name as string} />
-  }
-
-  if (courseExists === null) {
-    return (
-      <MainPageBackground>
-        <LoadingSpinner />
-      </MainPageBackground>
-    )
-  }
-
-  if (courseExists === false) {
-    return (
-      <MakeNewCoursePage
-        course_name={course_name as string}
-        current_user_email={user_emails[0] as string}
-      />
-    )
+    return <CannotEditGPT4Page course_name={courseName} />
   }
 
   return (
     <>
-      <Navbar course_name={course_name} />
+      <Navbar course_name={courseName} />
 
       <Head>
-        <title>{course_name}</title>
+        <title>{courseName}</title>
         <meta
           name="description"
           content="The AI teaching assistant built for students at UIUC."

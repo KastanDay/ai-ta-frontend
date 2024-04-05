@@ -1,5 +1,4 @@
 import { type NextPage } from 'next'
-import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import MakeOldCoursePage from '~/components/UIUC-Components/MakeOldCoursePage'
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
@@ -11,48 +10,48 @@ import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { Title } from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { montserrat_heading } from 'fonts'
-import Navbar from '~/components/UIUC-Components/navbars/Navbar'
+import { CourseMetadata } from '~/types/courseMetadata'
+import { fetchCourseMetadata } from '~/utils/apiUtils'
 
 const CourseMain: NextPage = () => {
   const router = useRouter()
 
-  const GetCurrentPageName = () => {
-    // return router.asPath.slice(1).split('/')[0]
-    // Possible improvement.
-    return router.query.course_name as string // Change this line
+  const getCurrentPageName = () => {
+    return router.query.course_name as string
   }
 
-  const course_name = GetCurrentPageName() as string
+  // const course_name = GetCurrentPageName() as string
   const { user, isLoaded, isSignedIn } = useUser()
-  const [courseData, setCourseData] = useState(null)
-  const [courseExists, setCourseExists] = useState(null)
+  const [courseName, setCourseName] = useState<string | null>(null)
+  const [courseData, setCourseData] = useState()
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    if (!router.isReady) return
     const fetchCourseData = async () => {
-      if (course_name == undefined) {
+      const course_name = getCurrentPageName()
+
+      // check exists
+      const metadata: CourseMetadata = await fetchCourseMetadata(course_name)
+      if (metadata === null) {
+        await router.push('/new?course_name=' + course_name)
         return
       }
+
+      // Get all data
       const response = await fetch(
-        `/api/UIUC-api/getCourseExists?course_name=${course_name}`,
+        `https://flask-production-751b.up.railway.app/getAll?course_name=${course_name}`,
       )
       const data = await response.json()
-      setCourseExists(data)
-      if (data) {
-        const response = await fetch(
-          `https://flask-production-751b.up.railway.app/getAll?course_name=${course_name}`,
-        )
-        const data = await response.json()
-        const courseData = data.distinct_files
-        setCourseData(courseData)
-      }
+      setCourseData(data.distinct_files)
+      setCourseName(course_name)
       setIsLoading(false)
     }
     fetchCourseData()
   }, [router.isReady])
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!isLoaded || isLoading) {
+  if (!isLoaded || isLoading || courseName == null) {
     return (
       <MainPageBackground>
         <LoadingSpinner />
@@ -60,9 +59,9 @@ const CourseMain: NextPage = () => {
     )
   }
 
-  if (!isSignedIn) {
-    console.log('User not logged in', isSignedIn, isLoaded, course_name)
-    return <AuthComponent course_name={course_name} />
+  if (!isSignedIn && courseName) {
+    console.log('User not logged in', isSignedIn, isLoaded, courseName)
+    return <AuthComponent course_name={courseName} />
   }
 
   const user_emails = extractEmailsFromClerk(user)
@@ -89,41 +88,38 @@ const CourseMain: NextPage = () => {
     )
   }
 
-  // Don't edit certain special pages (no context allowed)
-  if (
-    course_name.toLowerCase() == 'gpt4' ||
-    course_name.toLowerCase() == 'global' ||
-    course_name.toLowerCase() == 'extreme'
-  ) {
-    return <CannotEditGPT4Page course_name={course_name as string} />
-  }
-
-  if (courseExists === null) {
+  if (!courseName) {
     return (
       <MainPageBackground>
-        {/* add the navbar if have access */}
-        <Navbar />
         <LoadingSpinner />
       </MainPageBackground>
     )
   }
 
-  if (courseData === null) {
+  if (isLoaded) {
+    if (
+      courseName.toLowerCase() == 'gpt4' ||
+      courseName.toLowerCase() == 'global' ||
+      courseName.toLowerCase() == 'extreme'
+    ) {
+      // Don't edit certain special pages (no context allowed)
+      return <CannotEditGPT4Page course_name={courseName as string} />
+    }
+
     return (
-      <MakeNewCoursePage
-        course_name={course_name as string}
-        current_user_email={user_emails[0] as string}
-      />
+      <>
+        <MakeOldCoursePage
+          course_name={courseName as string}
+          course_data={courseData as any}
+        />
+      </>
+    )
+  } else {
+    return (
+      <MainPageBackground>
+        <LoadingSpinner />
+      </MainPageBackground>
     )
   }
-
-  return (
-    <>
-      <MakeOldCoursePage
-        course_name={course_name as string}
-        course_data={courseData}
-      />
-    </>
-  )
 }
 export default CourseMain
