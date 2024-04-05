@@ -24,7 +24,6 @@ const IfCourseExists: NextPage = () => {
   useEffect(() => {
     if (!router.isReady) return
     const fetchMetadata = async () => {
-      console.log('index.tsx -- router.isReady:', router.isReady)
       const course_name = getCurrentPageName()
       const metadata: CourseMetadata = await fetchCourseMetadata(course_name)
 
@@ -35,7 +34,6 @@ const IfCourseExists: NextPage = () => {
 
       if (!metadata.is_private) {
         // Public -- redirect as quickly as possible!
-        console.debug('Public course, redirecting to chat page')
         await router.replace(`/${course_name}/chat`)
         return
       }
