@@ -27,8 +27,6 @@ const ApiPage: NextPage = () => {
   const [courseExists, setCourseExists] = useState<boolean | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [permission, setPermission] = useState<string | null>(null)
-  const [bannerUrl, setBannerUrl] = useState<string>('')
-  const [currentEmail, setCurrentEmail] = useState('')
 
   const course_name = GetCurrentPageName() as string
 
@@ -76,22 +74,14 @@ const ApiPage: NextPage = () => {
 
     const handlePermissionsAndData = async () => {
       try {
-        const userEmail = extractEmailsFromClerk(user.user)
-        setCurrentEmail(userEmail[0] as string)
-
         const permission_str = get_user_permission(courseMetadata, user, router)
         console.log('Permission: ', permission_str)
         setPermission(permission_str)
 
-        if (courseMetadata.banner_image_s3) {
-          const url = await fetchPresignedUrl(courseMetadata.banner_image_s3)
-          setBannerUrl(url as string)
-          console.log('Got banner image: ', url)
-        }
-
         if (courseExists === false) {
           console.log('Course does not exist, redirecting to new course page')
-          router.replace(`/${router.query.course_name}/new`)
+          await router.replace(`/${router.query.course_name}/new`)
+          return
         }
 
         if (permission_str !== 'edit') {
@@ -99,7 +89,8 @@ const ApiPage: NextPage = () => {
             'User does not have edit permissions, redirecting to not authorized page, permission: ',
             permission,
           )
-          router.replace(`/${router.query.course_name}/not_authorized`)
+          await router.replace(`/${router.query.course_name}/not_authorized`)
+          return
         }
       } catch (error) {
         console.error('Error handling permissions and data: ', error)
@@ -119,7 +110,7 @@ const ApiPage: NextPage = () => {
 
   if (!user || !user.isSignedIn) {
     router.replace('/sign-in')
-    return null
+    return <></>
   }
 
   return (
