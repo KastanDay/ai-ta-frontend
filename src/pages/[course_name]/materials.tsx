@@ -21,9 +21,8 @@ const CourseMain: NextPage = () => {
     return router.query.course_name as string
   }
 
-  // const course_name = GetCurrentPageName() as string
+  const courseName = getCurrentPageName() as string
   const { user, isLoaded, isSignedIn } = useUser()
-  const [courseName, setCourseName] = useState<string | null>(null)
   const [currentEmail, setCurrentEmail] = useState('')
   const [metadata, setMetadata] = useState<CourseMetadata | null>()
   const [isLoading, setIsLoading] = useState(true)
@@ -31,29 +30,18 @@ const CourseMain: NextPage = () => {
   useEffect(() => {
     if (!router.isReady) return
     const fetchCourseData = async () => {
-      const course_name = getCurrentPageName()
-
-      // check exists
-      const metadata: CourseMetadata = await fetchCourseMetadata(course_name)
-      if (metadata === null) {
-        await router.push('/new?course_name=' + course_name)
-        return
-      }
-
-      // Get all data
-      const response = await fetch(
-        `https://flask-production-751b.up.railway.app/getAll?course_name=${course_name}`,
-      )
-      const data = await response.json()
-      setCourseExists(data)
-
       const userEmail = extractEmailsFromClerk(user)
       setCurrentEmail(userEmail[0] as string)
 
       try {
         const metadata: CourseMetadata = (await fetchCourseMetadata(
-          course_name,
+          courseName,
         )) as CourseMetadata
+
+        if (metadata === null) {
+          await router.push('/new?course_name=' + courseName)
+          return
+        }
 
         if (metadata && metadata.is_private) {
           metadata.is_private = JSON.parse(
@@ -68,7 +56,7 @@ const CourseMain: NextPage = () => {
       setIsLoading(false)
     }
     fetchCourseData()
-  }, [router.isReady, course_name, isLoaded])
+  }, [router.isReady, courseName, isLoaded])
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   if (!isLoaded || isLoading || !metadata || courseName == null) {
@@ -115,31 +103,23 @@ const CourseMain: NextPage = () => {
       </MainPageBackground>
     )
   }
-
-  if (isLoaded) {
-    if (
-      courseName.toLowerCase() == 'gpt4' ||
-      courseName.toLowerCase() == 'global' ||
-      courseName.toLowerCase() == 'extreme'
-    ) {
-      // Don't edit certain special pages (no context allowed)
-      return <CannotEditGPT4Page course_name={courseName as string} />
-    }
-
-    return (
-      <>
-        <MakeOldCoursePage
-          course_name={courseName as string}
-          course_data={courseData as any}
-        />
-      </>
-    )
-  } else {
-    return (
-      <MainPageBackground>
-        <LoadingSpinner />
-      </MainPageBackground>
-    )
+  if (
+    courseName.toLowerCase() == 'gpt4' ||
+    courseName.toLowerCase() == 'global' ||
+    courseName.toLowerCase() == 'extreme'
+  ) {
+    // Don't edit certain special pages (no context allowed)
+    return <CannotEditGPT4Page course_name={courseName as string} />
   }
+
+  return (
+    <>
+      <MakeOldCoursePage
+        course_name={courseName as string}
+        metadata={metadata}
+        current_email={currentEmail}
+      />
+    </>
+  )
 }
 export default CourseMain
