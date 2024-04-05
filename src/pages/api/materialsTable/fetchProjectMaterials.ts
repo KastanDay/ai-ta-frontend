@@ -39,15 +39,7 @@ export default async function fetchDocuments(
 
   try {
     // Fetch the paginated documents
-
-    console.log(
-      'Fetching documents for course:',
-      course_name,
-      'from:',
-      from,
-      'to:',
-      to,
-    )
+    // TODO: add search filter...
     const { data: documents, error } = await supabase
       .from('documents')
       .select(

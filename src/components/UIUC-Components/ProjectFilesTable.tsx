@@ -7,7 +7,6 @@ import {
   Modal,
   Group,
   MultiSelect,
-  TextInput,
   Text,
   Paper,
   Center,
@@ -21,7 +20,6 @@ import {
   IconCheck,
   IconEye,
   IconTrash,
-  IconX,
 } from '@tabler/icons-react'
 import { DataTable } from 'mantine-datatable'
 import { useState } from 'react'
@@ -34,10 +32,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
 import {
   useAppendToDocGroup,
-  // useCreateDocumentGroup,
   useGetDocumentGroups,
   useRemoveFromDocGroup,
-  useUpdateDocGroup,
 } from '~/hooks/docGroupsQueries'
 import { LoadingSpinner } from './LoadingSpinner'
 
@@ -66,24 +62,17 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
   const [recordsToDelete, setRecordsToDelete] = useState<CourseDocument[]>([])
   const [page, setPage] = useState(1)
 
-  // TODO: I think this is only available in V5>??? Not sure. Why are we on the old V4!!!!
-  // const { mutate: appendToDocGroup, isLoading, isError, error } = useAppendToDocGroup(course_name);
-  const getDocumentGroups = useGetDocumentGroups(course_name)
-  // const createDocumentGroup = useCreateDocumentGroup(
-  //   course_name,
-  //   queryClient,
-  //   page,
-  // )
   const appendToDocGroup = useAppendToDocGroup(course_name, queryClient, page)
   const removeFromDocGroup = useRemoveFromDocGroup(
     course_name,
     queryClient,
     page,
   )
-  const updateDocGroup = useUpdateDocGroup(course_name, queryClient)
-  const { classes, theme } = useStyles()
+  const { theme } = useStyles()
 
   // ------------- Queries -------------
+  // TODO: filtering... could happen here
+  // useEffect(() => {
   const {
     data: documents,
     isLoading: isLoadingDocuments,
@@ -94,29 +83,17 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     queryKey: ['documents', course_name, page],
     keepPreviousData: true,
     queryFn: async () => {
-      // console.log('Fetching documents for page: ', page)
       const from = (page - 1) * PAGE_SIZE
       const to = from + PAGE_SIZE - 1
-
-      // console.log(
-      //   'Fetching documents for page: ',
-      //   page,
-      //   ' from:',
-      //   from,
-      //   ' to:',
-      //   to,
-      // )
 
       const response = await fetch(
         `/api/materialsTable/fetchProjectMaterials?from=${from}&to=${to}&course_name=${course_name}`,
       )
-
       if (!response.ok) {
         throw new Error('Failed to fetch document groups')
       }
 
       const data = await response.json()
-      // console.log('Fetched documents:', data)
       return data
     },
   })
@@ -328,25 +305,6 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
         striped
         highlightOnHover
         height="80vh"
-        // emptyState={
-        // Error state:
-        // noRecordsIcon={
-        //   <Stack align="center" p={30}>
-        //     <Text c="dimmed" size="md">
-        //       Ah! We hit a wall when fetching your documents. The database must
-        //       be on fire 🔥
-        //     </Text>
-        //     <Image
-        //       style={{ minWidth: 300, maxWidth: '30vw' }}
-        //       radius="md"
-        //       src="https://assets.kastan.ai/this-is-fine.jpg"
-        //       alt="No data found"
-        //     />
-        //     <Text c="dimmed" size="md">
-        //       So.. please try again later.
-        //     </Text>
-        //   </Stack>
-        // }
         rowStyle={(row) => {
           if (selectedRecords.includes(row)) {
             return { backgroundColor: 'hsla(280, 100%, 70%, 0.5)' }
@@ -361,75 +319,78 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
             accessor: 'File Name',
             render: ({ readable_filename }) =>
               readable_filename ? `${readable_filename}` : '',
-            filter: (
-              <TextInput
-                label="File Name"
-                description="Show uploaded files that include the specified text"
-                placeholder="Search files..."
-                rightSection={
-                  <ActionIcon
-                    size="sm"
-                    variant="transparent"
-                    c="dimmed"
-                    onClick={() => setQuery('')}
-                  >
-                    <IconX size={14} />
-                  </ActionIcon>
-                }
-                value={query}
-                onChange={(e) => setQuery(e.currentTarget.value)}
-              />
-            ),
-            filtering: query !== '',
+            // TODO: enable filtering. This code here is correct, needs help above...
+            // filter: (
+            //   <TextInput
+            //     label="File Name"
+            //     description="Show uploaded files that include the specified text"
+            //     placeholder="Search files..."
+            //     rightSection={
+            //       <ActionIcon
+            //         size="sm"
+            //         variant="transparent"
+            //         c="dimmed"
+            //         onClick={() => setQuery('')}
+            //       >
+            //         <IconX size={14} />
+            //       </ActionIcon>
+            //     }
+            //     value={query}
+            //     onChange={(e) => setQuery(e.currentTarget.value)}
+            //   />
+            // ),
+            // filtering: query !== '',
           },
           {
             accessor: 'URL',
             render: ({ url }) => (url ? `${url}` : ''),
             width: '25%',
-            filter: (
-              <TextInput
-                label="URL"
-                description="Show all urls that include the specified text"
-                placeholder="Search urls..."
-                rightSection={
-                  <ActionIcon
-                    size="sm"
-                    variant="transparent"
-                    c="dimmed"
-                    onClick={() => setQuery('')}
-                  >
-                    <IconX size={14} />
-                  </ActionIcon>
-                }
-                value={query}
-                onChange={(e) => setQuery(e.currentTarget.value)}
-              />
-            ),
-            filtering: query !== '',
+            // TODO: enable filtering. This code here is correct, needs help above...
+            // filter: (
+            //   <TextInput
+            //     label="URL"
+            //     description="Show all urls that include the specified text"
+            //     placeholder="Search urls..."
+            //     rightSection={
+            //       <ActionIcon
+            //         size="sm"
+            //         variant="transparent"
+            //         c="dimmed"
+            //         onClick={() => setQuery('')}
+            //       >
+            //         <IconX size={14} />
+            //       </ActionIcon>
+            //     }
+            //     value={query}
+            //     onChange={(e) => setQuery(e.currentTarget.value)}
+            //   />
+            // ),
+            // filtering: query !== '',
           },
           {
             accessor: 'The Starting URL of Web Scraping',
             render: ({ base_url }) => (base_url ? `${base_url}` : ''),
-            filter: (
-              <TextInput
-                label="The Starting URL of Web Scraping"
-                description="Show all urls that include the specified text"
-                placeholder="Search urls..."
-                rightSection={
-                  <ActionIcon
-                    size="sm"
-                    variant="transparent"
-                    c="dimmed"
-                    onClick={() => setQuery('')}
-                  >
-                    <IconX size={14} />
-                  </ActionIcon>
-                }
-                value={query}
-                onChange={(e) => setQuery(e.currentTarget.value)}
-              />
-            ),
-            filtering: query !== '',
+            // TODO: enable filtering. This code here is correct, needs help above...
+            // filter: (
+            //   <TextInput
+            //     label="The Starting URL of Web Scraping"
+            //     description="Show all urls that include the specified text"
+            //     placeholder="Search urls..."
+            //     rightSection={
+            //       <ActionIcon
+            //         size="sm"
+            //         variant="transparent"
+            //         c="dimmed"
+            //         onClick={() => setQuery('')}
+            //       >
+            //         <IconX size={14} />
+            //       </ActionIcon>
+            //     }
+            //     value={query}
+            //     onChange={(e) => setQuery(e.currentTarget.value)}
+            //   />
+            // ),
+            // filtering: query !== '',
           },
           {
             accessor: 'doc_group',
@@ -463,34 +424,6 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
                   onChange={(newSelectedGroups) =>
                     handleDocumentGroupsChange(record, newSelectedGroups)
                   }
-                  // MOVED onChange into function, just for cleanliness.
-                  // onChange={async (newSelectedGroups) => {
-                  //   const doc_groups = record.doc_groups ? record.doc_groups : []
-
-                  //   const removedGroups = doc_groups.filter(
-                  //     (group) => !newSelectedGroups.includes(group),
-                  //   )
-                  //   const appendedGroups = newSelectedGroups.filter(
-                  //     (group) => !doc_groups.includes(group),
-                  //   )
-
-                  //   if (removedGroups.length > 0) {
-                  //     for (const removedGroup of removedGroups) {
-                  //       removeFromDocGroup(course_name).mutate({
-                  //         record,
-                  //         removedGroup,
-                  //       })
-                  //     }
-                  //   }
-                  //   if (appendedGroups.length > 0) {
-                  //     for (const appendedGroup of appendedGroups) {
-                  //       useAppendToDocGroup(course_name).mutate({
-                  //         record,
-                  //         appendedGroup,
-                  //       })
-                  //     }
-                  //   }
-                  // }}
                   disabled={isLoadingDocumentGroups}
                   sx={{ flex: 1, width: '100%' }}
                   classNames={{
