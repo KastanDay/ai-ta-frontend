@@ -115,7 +115,7 @@ const NotAuthorizedPage: NextPage = () => {
   }, [clerk_user.isLoaded])
 
   if (!clerk_user.isLoaded || !componentToRender) {
-    console.log('not_authorized.tsx -- Loading spinner')
+    console.debug('not_authorized.tsx -- Loading spinner')
     return (
       <MainPageBackground>
         <LoadingSpinner />

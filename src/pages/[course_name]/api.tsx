@@ -24,8 +24,6 @@ const ApiPage: NextPage = () => {
     null,
   )
   const [isLoading, setIsLoading] = useState(true)
-  const [permission, setPermission] = useState<string | null>(null)
-
   const course_name = GetCurrentPageName() as string
 
   // First useEffect to fetch course metadata
@@ -68,12 +66,11 @@ const ApiPage: NextPage = () => {
         }
 
         const permission_str = get_user_permission(courseMetadata, user, router)
-        setPermission(permission_str)
 
         if (permission_str !== 'edit') {
           console.log(
             'User does not have edit permissions, redirecting to not authorized page, permission: ',
-            permission,
+            permission_str,
           )
           await router.replace(`/${course_name}/not_authorized`)
           return
@@ -82,7 +79,6 @@ const ApiPage: NextPage = () => {
         console.error('Error handling permissions and data: ', error)
       }
     }
-
     handlePermissionsAndData()
   }, [courseMetadata, user.isLoaded, isLoading, router])
 
