@@ -133,6 +133,7 @@ const ChatSpotlight: React.FC<ChatSpotlightProps> = ({
         content: 'bg-[#15162c] rounded-lg',
         searchInput: `bg-[rgba(42,42,64,0.4)]`,
       }}
+      // onScroll={}
     ></SpotlightProvider>
   )
 }

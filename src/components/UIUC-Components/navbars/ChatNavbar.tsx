@@ -150,7 +150,6 @@ const useStyles = createStyles((theme) => ({
 }))
 
 interface ChatNavbarProps {
-  spotlight?: typeof spotlight
   course_name?: string
   bannerUrl?: string
   isgpt4?: boolean
@@ -158,7 +157,6 @@ interface ChatNavbarProps {
 }
 
 const ChatNavbar = ({
-  spotlight,
   course_name = '',
   bannerUrl = '',
   isgpt4 = true,
@@ -237,17 +235,17 @@ const ChatNavbar = ({
   const items = [
     ...(spotlight
       ? [
-          {
-            name: (
-              <span
-                className={`${montserrat_heading.variable} font-montserratHeading`}
-              >
-                Groups/Tools
-              </span>
-            ),
-            icon: <SpotlightIcon />,
-            action: () => spotlight.open(), // This opens the Spotlight
-          },
+          // {
+          //   name: (
+          //     <span
+          //       className={`${montserrat_heading.variable} font-montserratHeading`}
+          //     >
+          //       Groups/Tools
+          //     </span>
+          //   ),
+          //   icon: <SpotlightIcon />,
+          //   action: () => spotlight.open(), // This opens the Spotlight
+          // },
         ]
       : []),
     ...(isAdminOrOwner
