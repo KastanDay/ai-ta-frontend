@@ -110,7 +110,7 @@ const CourseMain: NextPage = () => {
 
   if (courseData === null) {
     router.push('/new?course_name=' + course_name)
-    return
+    return <></>
   }
 
   return (
