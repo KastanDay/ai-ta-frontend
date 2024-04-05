@@ -22,7 +22,7 @@ export async function validateApiKeyAndRetrieveData(
   apiKey: string,
   course_name: string,
 ) {
-  console.log('Validating apiKey', apiKey, ' for course_name', course_name)
+  // console.log('Validating apiKey', apiKey, ' for course_name', course_name)
   // Attempt to retrieve the user ID associated with the API key from the database.
   const { data, error } = (await supabase
     .from('api_keys')
@@ -45,15 +45,15 @@ export async function validateApiKeyAndRetrieveData(
 
       // Todo: Create a procedure to increment the API call count for the user.
       /**
-			 * create function increment (usage int, apikey string)
-				returns void as
-				$$
-					update api_keys 
-					set usage_count = usage_count + usage
-					where api_key = apiKey
-				$$ 
-				language sql volatile;
-			 */
+       * create function increment (usage int, apikey string)
+        returns void as
+        $$
+          update api_keys 
+          set usage_count = usage_count + usage
+          where api_key = apiKey
+        $$ 
+        language sql volatile;
+       */
       // Increment the API call count for the user.
       const { error: updateError } = await supabase.rpc('increment', {
         usage: 1,

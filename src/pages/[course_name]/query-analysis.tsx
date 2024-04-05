@@ -19,7 +19,6 @@ const CourseMain: NextPage = () => {
   const getCurrentPageName = () => {
     return router.query.course_name as string
   }
-  console.log('Course name in main part', getCurrentPageName())
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -39,7 +38,7 @@ const CourseMain: NextPage = () => {
   }, [router.isReady])
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!isLoaded || isLoading) {
+  if (!isLoaded || isLoading || courseName === null) {
     return (
       <MainPageBackground>
         <LoadingSpinner />

@@ -72,7 +72,7 @@ const CourseMain: NextPage = () => {
   }
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!isLoaded || isLoading) {
+  if (!isLoaded || isLoading || courseName === null) {
     return (
       <MainPageBackground>
         <LoadingSpinner />

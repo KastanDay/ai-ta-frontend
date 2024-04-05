@@ -46,7 +46,7 @@ const ApiPage: NextPage = () => {
 
   // Second useEffect to handle permissions and other dependent data
   useEffect(() => {
-    if (isLoading || !user.isLoaded) {
+    if (isLoading || !user.isLoaded || courseName === null) {
       // Do not proceed if we are still loading or if the user data is not loaded yet.
       return
     }
@@ -74,7 +74,7 @@ const ApiPage: NextPage = () => {
     handlePermissionsAndData()
   }, [courseMetadata, user.isLoaded])
 
-  if (isLoading || !user.isLoaded) {
+  if (isLoading || !user.isLoaded || courseName === null) {
     return (
       <MainPageBackground>
         <LoadingSpinner />
