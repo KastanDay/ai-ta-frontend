@@ -430,43 +430,44 @@ const ChatNavbar = ({
                           </span>
                         </Link>
                       )
-                    } else {
-                      return (
-                        <button
-                          key={index}
-                          onClick={() => {
-                            if (item.action) {
-                              item.action()
-                            }
-                            toggle()
-                          }}
-                          data-active={activeLink === item.link}
-                          className={classes.link}
-                          style={{ width: '100%' }}
-                        >
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                            }}
-                          >
-                            {item.icon}
-                            <span
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'flex-center',
-                                padding: '0px',
-                                whiteSpace: 'nowrap',
-                                width: '100%',
-                              }}
-                            >
-                              {item.name}
-                            </span>
-                          </div>
-                        </button>
-                      )
                     }
+                    // else {
+                    //   return (
+                    //     <button
+                    //       key={index}
+                    //       onClick={() => {
+                    //         if (item.action) {
+                    //           item.action()
+                    //         }
+                    //         toggle()
+                    //       }}
+                    //       data-active={activeLink === item.link}
+                    //       className={classes.link}
+                    //       style={{ width: '100%' }}
+                    //     >
+                    //       <div
+                    //         style={{
+                    //           display: 'flex',
+                    //           alignItems: 'center',
+                    //         }}
+                    //       >
+                    //         {item.icon}
+                    //         <span
+                    //           style={{
+                    //             display: 'flex',
+                    //             alignItems: 'center',
+                    //             justifyContent: 'flex-center',
+                    //             padding: '0px',
+                    //             whiteSpace: 'nowrap',
+                    //             width: '100%',
+                    //           }}
+                    //         >
+                    //           {item.name}
+                    //         </span>
+                    //       </div>
+                    //     </button>
+                    //   )
+                    // }
                   })}
                 </Paper>
               )}
@@ -515,44 +516,45 @@ const ChatNavbar = ({
                         </div>
                       </Link>
                     )
-                  } else {
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          if (item.action) {
-                            item.action()
-                          }
-                        }}
-                        data-active={activeLink === item.link}
-                        className={classes.link}
-                        style={{ padding: '3px 12px' }}
-                      >
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            width: '100%',
-                          }}
-                        >
-                          {item.icon}
-                          <span
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'flex-center',
-                              padding: '0px',
-                              height: '40px',
-                              whiteSpace: 'nowrap',
-                              marginLeft: '5px',
-                            }}
-                          >
-                            {item.name}
-                          </span>
-                        </div>
-                      </button>
-                    )
                   }
+                  // else {
+                  //   return (
+                  //     <button
+                  //       key={index}
+                  //       onClick={() => {
+                  //         if (item.action) {
+                  //           item.action()
+                  //         }
+                  //       }}
+                  //       data-active={activeLink === item.link}
+                  //       className={classes.link}
+                  //       style={{ padding: '3px 12px' }}
+                  //     >
+                  //       <div
+                  //         style={{
+                  //           display: 'flex',
+                  //           alignItems: 'center',
+                  //           width: '100%',
+                  //         }}
+                  //       >
+                  //         {item.icon}
+                  //         <span
+                  //           style={{
+                  //             display: 'flex',
+                  //             alignItems: 'center',
+                  //             justifyContent: 'flex-center',
+                  //             padding: '0px',
+                  //             height: '40px',
+                  //             whiteSpace: 'nowrap',
+                  //             marginLeft: '5px',
+                  //           }}
+                  //         >
+                  //           {item.name}
+                  //         </span>
+                  //       </div>
+                  //     </button>
+                  //   )
+                  // }
                 })}
               </div>
               <div style={{ display: 'block' }}>
