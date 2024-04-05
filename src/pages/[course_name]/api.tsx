@@ -45,6 +45,7 @@ const ApiPage: NextPage = () => {
         )
         const courseExistsData = await response.json()
         setCourseExists(courseExistsData)
+        console.log('Course Exists data', courseExistsData)
 
         if (courseExistsData) {
           const metadata: CourseMetadata =
@@ -68,28 +69,27 @@ const ApiPage: NextPage = () => {
       return
     }
 
-    if (!courseMetadata || !user.isLoaded) {
-      return
-    }
-
     const handlePermissionsAndData = async () => {
       try {
-        const permission_str = get_user_permission(courseMetadata, user, router)
-        console.log('Permission: ', permission_str)
-        setPermission(permission_str)
-
-        if (courseExists === false) {
+        if (!courseExists) {
           console.log('Course does not exist, redirecting to new course page')
-          await router.replace(`/${router.query.course_name}/new`)
+          await router.replace(`/new?course_name=${course_name}`)
           return
         }
+
+        if (!courseMetadata || !user.isLoaded) {
+          return
+        }
+
+        const permission_str = get_user_permission(courseMetadata, user, router)
+        setPermission(permission_str)
 
         if (permission_str !== 'edit') {
           console.log(
             'User does not have edit permissions, redirecting to not authorized page, permission: ',
             permission,
           )
-          await router.replace(`/${router.query.course_name}/not_authorized`)
+          await router.replace(`/${course_name}/not_authorized`)
           return
         }
       } catch (error) {
@@ -98,7 +98,7 @@ const ApiPage: NextPage = () => {
     }
 
     handlePermissionsAndData()
-  }, [courseMetadata, user.isLoaded, isLoading, router])
+  }, [courseMetadata, user.isLoaded, isLoading, router, courseExists])
 
   if (isLoading || !user.isLoaded) {
     return (
