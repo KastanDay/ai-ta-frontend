@@ -1,7 +1,19 @@
 'use client'
 
-import { TextInput, Text, ScrollArea, Table, Switch } from '@mantine/core'
-import { IconSearch, IconTrash } from '@tabler/icons-react'
+import {
+  TextInput,
+  Text,
+  ScrollArea,
+  Table,
+  Switch,
+  Tooltip,
+} from '@mantine/core'
+import {
+  IconHelp,
+  IconInfoSquareRounded,
+  IconSearch,
+  IconTrash,
+} from '@tabler/icons-react'
 import { useMemo, useState } from 'react'
 import { showNotification } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
@@ -96,7 +108,6 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
               <th style={{ width: '70%', wordWrap: 'break-word' }}>
                 Document Group
               </th>
-              {/* <th style={{ width: '40%', wordWrap: 'break-word' }}>Description</th> */}
               <th style={{ width: '15%', wordWrap: 'break-word' }}>
                 Number of Docs
               </th>
@@ -107,7 +118,27 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
                   textAlign: 'center',
                 }}
               >
-                Enabled
+                <Tooltip
+                  multiline
+                  color="#CC65FF"
+                  style={{ zIndex: -10 }}
+                  arrowPosition="center"
+                  arrowSize={8}
+                  withArrow
+                  // position="bottom-start"
+                  label="Any documents in a Disabled doc group will NOT be included in the chatbot results. Useful to quickly hide content from users."
+                >
+                  <span
+                    style={{
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span>Enabled</span>
+                    <IconHelp size={16} style={{ marginLeft: '4px' }} />
+                  </span>
+                </Tooltip>
               </th>
             </tr>
           </thead>

@@ -89,38 +89,7 @@ const MakeOldCoursePage = ({
               courseMetadata={metadata}
             />
 
-            {/* Course files header/background */}
-            <div
-              className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
-              style={{ zIndex: 1, background: '#15162c' }}
-            >
-              <Flex direction="row" justify="space-between">
-                <div className="flex flex-row items-start justify-start">
-                  <Title
-                    className={`${montserrat_heading.variable} font-montserratHeading`}
-                    variant="gradient"
-                    gradient={{
-                      from: 'hsl(280,100%,70%)',
-                      to: 'white',
-                      deg: 185,
-                    }}
-                    order={3}
-                    p="xl"
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    {' '}
-                    Document Groups
-                  </Title>
-                </div>
-              </Flex>
-              {/* NOMIC not bad, not great */}
-              {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
-            </div>
-            <div className="flex w-[85%] flex-col items-center justify-center pb-2 pt-8">
+            <div className="flex w-[85%] flex-col items-center justify-center pb-8 pt-8">
               {metadata && (
                 <>
                   <Blockquote
@@ -130,7 +99,7 @@ const MakeOldCoursePage = ({
                       root: {
                         background:
                           'linear-gradient(to right, rgba(106, 13, 173), rgba(80, 0, 220), rgba(0, 100, 255))',
-                        marginBottom: '20px',
+                        // marginBottom: '20px',
                         borderRadius: '10px',
                         overflow: 'hidden',
                       },
@@ -189,12 +158,44 @@ const MakeOldCoursePage = ({
                       and control <span style={{ fontSize: '22px' }}>🙌</span>
                     </Text>
                   </Blockquote>
-                  <DocGroupsTable course_name={course_name} />
                 </>
               )}
             </div>
+            {/* Course files header/background */}
             <div
-              className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
+              className="w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
+              style={{ zIndex: 1, background: '#15162c' }}
+            >
+              <Flex direction="row" justify="space-between">
+                <div className="flex flex-row items-start justify-start">
+                  <Title
+                    className={`${montserrat_heading.variable} font-montserratHeading`}
+                    variant="gradient"
+                    gradient={{
+                      from: 'hsl(280,100%,70%)',
+                      to: 'white',
+                      deg: 185,
+                    }}
+                    order={3}
+                    p="xl"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {' '}
+                    Document Groups
+                  </Title>
+                </div>
+              </Flex>
+            </div>
+            <div className="w-[85%] pb-8 pt-8">
+              <DocGroupsTable course_name={course_name} />
+            </div>
+
+            <div
+              className="w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
             >
               <Flex direction="row" justify="space-between">
