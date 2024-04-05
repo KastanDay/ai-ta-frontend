@@ -1,5 +1,4 @@
 import { type NextPage } from 'next'
-import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import React, { useEffect, useState } from 'react'
 import { Montserrat } from 'next/font/google'
 import { useRouter } from 'next/router'
@@ -31,9 +30,7 @@ const CourseMain: NextPage = () => {
   const router = useRouter()
 
   const GetCurrentPageName = () => {
-    // return router.asPath.slice(1).split('/')[0]
-    // Possible improvement.
-    return router.query.course_name as string // Change this line
+    return router.query.course_name as string
   }
 
   const course_name = GetCurrentPageName() as string
@@ -43,8 +40,6 @@ const CourseMain: NextPage = () => {
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
-  const clerk_user = useUser()
-  const emails = extractEmailsFromClerk(clerk_user.user)
 
   useEffect(() => {
     const fetchCourseData = async () => {

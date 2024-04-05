@@ -8,8 +8,7 @@ import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackgro
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import ApiKeyManagement from '~/components/UIUC-Components/ApiKeyManagament'
 import { CourseMetadata } from '~/types/courseMetadata'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
-import { fetchCourseMetadata, fetchPresignedUrl } from '~/utils/apiUtils'
+import { fetchCourseMetadata } from '~/utils/apiUtils'
 import { Flex } from '@mantine/core'
 import Navbar from '~/components/UIUC-Components/navbars/Navbar'
 
@@ -24,7 +23,6 @@ const ApiPage: NextPage = () => {
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
-  const [courseExists, setCourseExists] = useState<boolean | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [permission, setPermission] = useState<string | null>(null)
 
@@ -58,19 +56,13 @@ const ApiPage: NextPage = () => {
 
   // Second useEffect to handle permissions and other dependent data
   useEffect(() => {
-    if (isLoading || !user.isLoaded || courseExists === null) {
+    if (isLoading || !user.isLoaded) {
       // Do not proceed if we are still loading or if the user data is not loaded yet.
       return
     }
 
     const handlePermissionsAndData = async () => {
       try {
-        if (!courseExists) {
-          console.log('Course does not exist, redirecting to new course page')
-          await router.replace(`/new?course_name=${course_name}`)
-          return
-        }
-
         if (!courseMetadata || !user.isLoaded) {
           return
         }
@@ -92,7 +84,7 @@ const ApiPage: NextPage = () => {
     }
 
     handlePermissionsAndData()
-  }, [courseMetadata, user.isLoaded, isLoading, router, courseExists])
+  }, [courseMetadata, user.isLoaded, isLoading, router])
 
   if (isLoading || !user.isLoaded) {
     return (
