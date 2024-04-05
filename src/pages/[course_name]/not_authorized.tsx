@@ -3,7 +3,6 @@ import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { CanViewOnlyCourse } from '~/components/UIUC-Components/CanViewOnlyCourse'
-// import { CannotEditCourse } from '~/components/UIUC-Components/CannotEditCourse'
 import { CannotViewCourse } from '~/components/UIUC-Components/CannotViewCourse'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
@@ -34,6 +33,7 @@ const NotAuthorizedPage: NextPage = () => {
           `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
         )
 
+        // TODO: replace this with the util functions for fetchCourseMetadata() and with get_user_permission()
         if (response.ok) {
           const data = await response.json()
           if (data.success === false) {

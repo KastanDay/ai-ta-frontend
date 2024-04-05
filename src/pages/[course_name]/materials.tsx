@@ -10,46 +10,47 @@ import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { Title } from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { montserrat_heading } from 'fonts'
-import Navbar from '~/components/UIUC-Components/navbars/Navbar'
 import { CourseMetadata } from '~/types/courseMetadata'
 import { fetchCourseMetadata } from '~/utils/apiUtils'
 
 const CourseMain: NextPage = () => {
   const router = useRouter()
 
-  const GetCurrentPageName = () => {
+  const getCurrentPageName = () => {
     return router.query.course_name as string
   }
 
-  const course_name = GetCurrentPageName() as string
+  // const course_name = GetCurrentPageName() as string
   const { user, isLoaded, isSignedIn } = useUser()
-  const [courseData, setCourseData] = useState(null)
+  const [courseName, setCourseName] = useState<string | null>(null)
+  const [courseData, setCourseData] = useState()
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchCourseData = async () => {
-      if (course_name == undefined) {
-        return
-      }
+      const course_name = getCurrentPageName()
+
       // check exists
       const metadata: CourseMetadata = await fetchCourseMetadata(course_name)
       if (metadata === null) {
         await router.push('/new?course_name=' + course_name)
         return
       }
+
       // Get all data
       const response = await fetch(
         `https://flask-production-751b.up.railway.app/getAll?course_name=${course_name}`,
       )
       const data = await response.json()
       setCourseData(data.distinct_files)
+      setCourseName(course_name)
       setIsLoading(false)
     }
     fetchCourseData()
   }, [router.isReady])
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!isLoaded || isLoading || courseData === null) {
+  if (!isLoaded || isLoading) {
     return (
       <MainPageBackground>
         <LoadingSpinner />
@@ -57,9 +58,9 @@ const CourseMain: NextPage = () => {
     )
   }
 
-  if (!isSignedIn) {
-    console.log('User not logged in', isSignedIn, isLoaded, course_name)
-    return <AuthComponent course_name={course_name} />
+  if (!isSignedIn && courseName) {
+    console.log('User not logged in', isSignedIn, isLoaded, courseName)
+    return <AuthComponent course_name={courseName} />
   }
 
   const user_emails = extractEmailsFromClerk(user)
@@ -86,22 +87,38 @@ const CourseMain: NextPage = () => {
     )
   }
 
-  // Don't edit certain special pages (no context allowed)
-  if (
-    course_name.toLowerCase() == 'gpt4' ||
-    course_name.toLowerCase() == 'global' ||
-    course_name.toLowerCase() == 'extreme'
-  ) {
-    return <CannotEditGPT4Page course_name={course_name as string} />
+  if (!courseName) {
+    return (
+      <MainPageBackground>
+        <LoadingSpinner />
+      </MainPageBackground>
+    )
   }
 
-  return (
-    <>
-      <MakeOldCoursePage
-        course_name={course_name as string}
-        course_data={courseData}
-      />
-    </>
-  )
+  if (isLoaded) {
+    if (
+      courseName.toLowerCase() == 'gpt4' ||
+      courseName.toLowerCase() == 'global' ||
+      courseName.toLowerCase() == 'extreme'
+    ) {
+      // Don't edit certain special pages (no context allowed)
+      return <CannotEditGPT4Page course_name={courseName as string} />
+    }
+
+    return (
+      <>
+        <MakeOldCoursePage
+          course_name={courseName as string}
+          course_data={courseData as any}
+        />
+      </>
+    )
+  } else {
+    return (
+      <MainPageBackground>
+        <LoadingSpinner />
+      </MainPageBackground>
+    )
+  }
 }
 export default CourseMain

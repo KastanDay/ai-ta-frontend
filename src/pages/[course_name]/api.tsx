@@ -12,11 +12,6 @@ import { fetchCourseMetadata } from '~/utils/apiUtils'
 import { Flex } from '@mantine/core'
 import Navbar from '~/components/UIUC-Components/navbars/Navbar'
 
-export const GetCurrentPageName = () => {
-  // /CS-125/materials --> CS-125
-  return useRouter().asPath.slice(1).split('/')[0] as string
-}
-
 const ApiPage: NextPage = () => {
   const router = useRouter()
   const user = useUser()
@@ -24,33 +19,30 @@ const ApiPage: NextPage = () => {
     null,
   )
   const [isLoading, setIsLoading] = useState(true)
-  const course_name = GetCurrentPageName() as string
+  const [courseName, setCourseName] = useState<string | null>(null)
+
+  const getCurrentPageName = () => {
+    return router.query.course_name as string
+  }
 
   // First useEffect to fetch course metadata
   useEffect(() => {
-    if (!router.isReady || !course_name) {
-      return
-    }
+    const fetchCourseData = async () => {
+      const local_course_name = getCurrentPageName()
 
-    const fetchMetadata = async () => {
-      setIsLoading(true)
-      try {
-        const metadata: CourseMetadata = await fetchCourseMetadata(course_name)
-        setCourseMetadata(metadata)
-
-        if (metadata === null) {
-          await router.push('/new?course_name=' + course_name)
-          return
-        }
-      } catch (error) {
-        console.error(error)
-      } finally {
-        setIsLoading(false)
+      // Check exists
+      const metadata: CourseMetadata =
+        await fetchCourseMetadata(local_course_name)
+      if (metadata === null) {
+        await router.push('/new?course_name=' + local_course_name)
+        return
       }
+      setCourseName(local_course_name)
+      setCourseMetadata(metadata)
+      setIsLoading(false)
     }
-
-    fetchMetadata()
-  }, [course_name, router.isReady])
+    fetchCourseData()
+  }, [router.isReady])
 
   // Second useEffect to handle permissions and other dependent data
   useEffect(() => {
@@ -68,11 +60,11 @@ const ApiPage: NextPage = () => {
         const permission_str = get_user_permission(courseMetadata, user, router)
 
         if (permission_str !== 'edit') {
-          console.log(
+          console.debug(
             'User does not have edit permissions, redirecting to not authorized page, permission: ',
             permission_str,
           )
-          await router.replace(`/${course_name}/not_authorized`)
+          await router.replace(`/${courseName}/not_authorized`)
           return
         }
       } catch (error) {
@@ -80,7 +72,7 @@ const ApiPage: NextPage = () => {
       }
     }
     handlePermissionsAndData()
-  }, [courseMetadata, user.isLoaded, isLoading, router])
+  }, [courseMetadata, user.isLoaded])
 
   if (isLoading || !user.isLoaded) {
     return (

@@ -1,56 +1,38 @@
 import { type NextPage } from 'next'
-import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import MakeNomicVisualizationPage from '~/components/UIUC-Components/MakeQueryAnalysisPage'
 import React, { useEffect, useState } from 'react'
-import { Montserrat } from 'next/font/google'
 import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
 import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
-import { Title } from '@mantine/core'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { fetchCourseMetadata } from '~/utils/apiUtils'
 import { CourseMetadata } from '~/types/courseMetadata'
 
-const montserrat = Montserrat({
-  weight: '700',
-  subsets: ['latin'],
-})
-
 const CourseMain: NextPage = () => {
   const router = useRouter()
-
-  const GetCurrentPageName = () => {
-    // return router.asPath.slice(1).split('/')[0]
-    // Possible improvement.
-    return router.query.course_name as string // Change this line
-  }
-
-  const course_name = GetCurrentPageName() as string
+  const [courseName, setCourseName] = useState<string | null>(null)
   const { user, isLoaded, isSignedIn } = useUser()
-  const [courseData, setCourseData] = useState(null)
-  const [courseExists, setCourseExists] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  const getCurrentPageName = () => {
+    return router.query.course_name as string
+  }
+  console.log('Course name in main part', getCurrentPageName())
 
   useEffect(() => {
     const fetchCourseData = async () => {
-      if (course_name == undefined) {
-        return
-      }
+      const local_course_name = getCurrentPageName()
+
       // Check exists
-      const metadata: CourseMetadata = await fetchCourseMetadata(course_name)
+      const metadata: CourseMetadata =
+        await fetchCourseMetadata(local_course_name)
       if (metadata === null) {
-        await router.push('/new?course_name=' + course_name)
+        await router.push('/new?course_name=' + local_course_name)
         return
       }
-      // Get documents
-      const response = await fetch(
-        `https://flask-production-751b.up.railway.app/getAll?course_name=${course_name}`,
-      )
-      const data = await response.json()
-      setCourseData(data.distinct_files)
+      setCourseName(local_course_name)
       setIsLoading(false)
     }
     fetchCourseData()
@@ -66,57 +48,22 @@ const CourseMain: NextPage = () => {
   }
 
   if (!isSignedIn) {
-    console.log('User not logged in', isSignedIn, isLoaded, course_name)
-    return <AuthComponent course_name={course_name} />
-  }
-
-  const user_emails = extractEmailsFromClerk(user)
-
-  // if their account is somehow broken (with no email address)
-  if (user_emails.length == 0) {
-    return (
-      <MainPageBackground>
-        <Title
-          className={montserrat.className}
-          variant="gradient"
-          gradient={{ from: 'gold', to: 'white', deg: 50 }}
-          order={3}
-          p="xl"
-          style={{ marginTop: '4rem' }}
-        >
-          You&apos;ve encountered a software bug!<br></br>Your account has no
-          email address. Please shoot me an email so I can fix it for you:{' '}
-          <a className="goldUnderline" href="mailto:kvday2@illinois.edu">
-            kvday2@illinois.edu
-          </a>
-        </Title>
-      </MainPageBackground>
-    )
+    console.log('User not logged in', isSignedIn, isLoaded, courseName)
+    return <AuthComponent course_name={courseName as string} />
   }
 
   // Don't edit certain special pages (no context allowed)
   if (
-    course_name.toLowerCase() == 'gpt4' ||
-    course_name.toLowerCase() == 'global' ||
-    course_name.toLowerCase() == 'extreme'
+    courseName!.toLowerCase() == 'gpt4' ||
+    courseName!.toLowerCase() == 'global' ||
+    courseName!.toLowerCase() == 'extreme'
   ) {
-    return <CannotEditGPT4Page course_name={course_name as string} />
-  }
-
-  if (courseExists === null) {
-    return (
-      <MainPageBackground>
-        <LoadingSpinner />
-      </MainPageBackground>
-    )
+    return <CannotEditGPT4Page course_name={courseName as string} />
   }
 
   return (
     <>
-      <MakeNomicVisualizationPage
-        course_name={course_name as string}
-        course_data={courseData}
-      />
+      <MakeNomicVisualizationPage course_name={courseName as string} />
     </>
   )
 }

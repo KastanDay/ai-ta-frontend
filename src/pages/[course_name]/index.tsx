@@ -72,19 +72,5 @@ const IfCourseExists: NextPage = () => {
       <LoadingSpinner />
     </MainPageBackground>
   )
-
-  // if (
-  //   !courseMetadataIsLoaded ||
-  //   !user.isLoaded ||
-  //   courseMetadata == null ||
-  //   (courseMetadata.is_private && !user.isSignedIn)
-  // ) {
-  //   return (
-  //     <MainPageBackground>
-  //       <LoadingSpinner />
-  //     </MainPageBackground>
-  //   )
-  // }
-  // return <></>
 }
 export default IfCourseExists
