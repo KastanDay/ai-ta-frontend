@@ -27,6 +27,7 @@ const CourseMain: NextPage = () => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    if (!router.isReady) return
     const fetchCourseData = async () => {
       const course_name = getCurrentPageName()
 

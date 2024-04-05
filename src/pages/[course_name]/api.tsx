@@ -25,8 +25,8 @@ const ApiPage: NextPage = () => {
     return router.query.course_name as string
   }
 
-  // First useEffect to fetch course metadata
   useEffect(() => {
+    if (!router.isReady) return
     const fetchCourseData = async () => {
       const local_course_name = getCurrentPageName()
 

@@ -18,11 +18,16 @@ const IfCourseExists: NextPage = () => {
     null,
   )
   const getCurrentPageName = () => {
-    return router.query.course_name as string
+    const ret = router.query.course_name as string
+    console.log('index.tsx -- getCurrentPageName:', ret)
+    return ret
+    // return router.query.course_name as string
   }
 
   useEffect(() => {
+    if (!router.isReady) return
     const fetchMetadata = async () => {
+      console.log('index.tsx -- router.isReady:', router.isReady)
       const course_name = getCurrentPageName()
       const metadata: CourseMetadata = await fetchCourseMetadata(course_name)
 

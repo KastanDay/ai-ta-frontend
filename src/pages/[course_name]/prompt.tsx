@@ -30,6 +30,7 @@ const CourseMain: NextPage = () => {
   )
 
   useEffect(() => {
+    if (!router.isReady) return
     const fetchCourseData = async () => {
       const local_course_name = getCurrentPageName()
 
