@@ -274,12 +274,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ;(message.content as Content[])[imgDescIndex] = {
+          ; (message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ;(message.content as Content[]).push({
+          ; (message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -399,7 +399,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           messages: updatedConversation.messages,
           key:
             courseMetadata?.openai_api_key &&
-            courseMetadata?.openai_api_key != ''
+              courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
           // prompt property is intentionally left undefined to avoid TypeScript errors
@@ -678,7 +678,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
       handleSend(
@@ -776,14 +776,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-    courseMetadata.example_questions.length > 0
+      courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-          'Make a bullet point list of key takeaways of the course.',
-          'What is [your favorite topic] and why is it worth learning about?',
-          'How can I effectively prepare for the upcoming exam?',
-          'How many assignments in the course?',
-        ]
+        'Make a bullet point list of key takeaways of the course.',
+        'What is [your favorite topic] and why is it worth learning about?',
+        'How can I effectively prepare for the upcoming exam?',
+        'How many assignments in the course?',
+      ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
@@ -901,157 +901,140 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   )
 
   return (
-    <>
-      {/* <ChatSpotlight
-        actions={actions}
-        setActions={(actions) => {
-          setActions(actions)
-        }}
-      /> */}
-      <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
-        <div className="justify-center" style={{ height: '46px' }}>
-          <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
-        </div>
-        <div className="mt-10 flex-grow overflow-auto">
-          {!(apiKey || serverSideApiKeyIsSet) ? (
-            <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
-              <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
-                <div className="mb-2 flex flex-col items-center text-center">
-                  <IconAlertTriangle
-                    size={'54'}
-                    className="mr-2 block text-orange-400 "
+    <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
+      <div className="justify-center" style={{ height: '40px' }}>
+        <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
+      </div>
+      <div className="mt-10 flex-grow overflow-auto">
+        {!(apiKey || serverSideApiKeyIsSet) ? (
+          <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
+            <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
+              <div className="mb-2 flex flex-col items-center text-center">
+                <IconAlertTriangle
+                  size={'54'}
+                  className="mr-2 block text-orange-400 "
+                />
+                <div className="mt-4 text-left text-gray-100">
+                  {' '}
+                  {t(
+                    'Please set your OpenAI API key in the bottom left of the screen.',
+                  )}
+                  <div className="mt-2 font-normal">
+                    <Text size={'md'} className="text-gray-100">
+                      If you don&apos;t have a key yet, you can get one here:{' '}
+                      <a
+                        href="https://platform.openai.com/account/api-keys"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-purple-500 hover:underline"
+                      >
+                        OpenAI API key{' '}
+                        <IconExternalLink
+                          className="mr-2 inline-block"
+                          style={{ position: 'relative', top: '-3px' }}
+                        />
+                      </a>
+                    </Text>
+                    <Text size={'md'} className="pt-10 text-gray-400">
+                      <IconLock className="mr-2 inline-block" />
+                      This key will live securely encrypted in your
+                      browser&apos;s cache. It&apos;s all client-side so our
+                      servers never see it.
+                    </Text>
+                    <Text size={'md'} className="pt-10 text-gray-400">
+                      <IconBrain className="mr-2 inline-block" />
+                      GPT 3.5 is default. For GPT-4 access, either complete one
+                      billing cycle as an OpenAI API customer or pre-pay a
+                      minimum of $0.50. See
+                      <a
+                        className="text-purple-500 hover:underline"
+                        href="https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {' '}
+                        this documentation for details{' '}
+                        <IconExternalLink
+                          className="mr-2 inline-block"
+                          style={{ position: 'relative', top: '-3px' }}
+                        />
+                      </a>
+                    </Text>
+                    <Text size={'md'} className="pt-10 text-gray-400">
+                      <IconCreditCard className="mr-2 inline-block" />
+                      You only pay the standard OpenAI prices, per token read or
+                      generated by the model.
+                    </Text>
+                  </div>
+                </div>
+                <div className="absolute bottom-4 left-0 animate-ping flex-col place-items-start text-left">
+                  <IconArrowLeft
+                    size={'36'}
+                    className="transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
                   />
-                  <div className="mt-4 text-left text-gray-100">
-                    {' '}
-                    {t(
-                      'Please set your OpenAI API key in the bottom left of the screen.',
-                    )}
-                    <div className="mt-2 font-normal">
-                      <Text size={'md'} className="text-gray-100">
-                        If you don&apos;t have a key yet, you can get one here:{' '}
-                        <a
-                          href="https://platform.openai.com/account/api-keys"
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-purple-500 hover:underline"
-                        >
-                          OpenAI API key{' '}
-                          <IconExternalLink
-                            className="mr-2 inline-block"
-                            style={{ position: 'relative', top: '-3px' }}
-                          />
-                        </a>
-                      </Text>
-                      <Text size={'md'} className="pt-10 text-gray-400">
-                        <IconLock className="mr-2 inline-block" />
-                        This key will live securely encrypted in your
-                        browser&apos;s cache. It&apos;s all client-side so our
-                        servers never see it.
-                      </Text>
-                      <Text size={'md'} className="pt-10 text-gray-400">
-                        <IconBrain className="mr-2 inline-block" />
-                        GPT 3.5 is default. For GPT-4 access, either complete
-                        one billing cycle as an OpenAI API customer or pre-pay a
-                        minimum of $0.50. See
-                        <a
-                          className="text-purple-500 hover:underline"
-                          href="https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {' '}
-                          this documentation for details{' '}
-                          <IconExternalLink
-                            className="mr-2 inline-block"
-                            style={{ position: 'relative', top: '-3px' }}
-                          />
-                        </a>
-                      </Text>
-                      <Text size={'md'} className="pt-10 text-gray-400">
-                        <IconCreditCard className="mr-2 inline-block" />
-                        You only pay the standard OpenAI prices, per token read
-                        or generated by the model.
-                      </Text>
-                    </div>
-                  </div>
-                  <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
-                    <IconArrowLeft
-                      size={'36'}
-                      className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
-                    />
-                  </div>
                 </div>
               </div>
             </div>
-          ) : modelError ? (
-            <ErrorMessageDiv error={modelError} />
-          ) : (
-            <>
-              <div
-                className="mt-4 max-h-full"
-                ref={chatContainerRef}
-                onScroll={handleScroll}
-              >
-                {selectedConversation?.messages.length === 0 ? (
-                  <>
-                    <div className="mt-16">
-                      {renderIntroductoryStatements()}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {selectedConversation?.messages.map((message, index) => (
-                      <MemoizedChatMessage
-                        key={index}
-                        message={message}
-                        contentRenderer={renderMessageContent}
-                        messageIndex={index}
-                        onEdit={(editedMessage) => {
-                          // setCurrentMessage(editedMessage)
-                          handleSend(
-                            editedMessage,
-                            selectedConversation?.messages.length - index,
-                            null,
-                            // actions,
-                          )
-                        }}
-                        onImageUrlsUpdate={onImageUrlsUpdate}
-                      />
-                    ))}
-                    {loading && <ChatLoader />}
-                    <div
-                      className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
-                      ref={messagesEndRef}
+          </div>
+        ) : modelError ? (
+          <ErrorMessageDiv error={modelError} />
+        ) : (
+          <>
+            <div
+              className="mt-4 max-h-full"
+              ref={chatContainerRef}
+              onScroll={handleScroll}
+            >
+              {selectedConversation?.messages.length === 0 ? (
+                <>
+                  <div className="mt-16">{renderIntroductoryStatements()}</div>
+                </>
+              ) : (
+                <>
+                  {selectedConversation?.messages.map((message, index) => (
+                    <MemoizedChatMessage
+                      key={index}
+                      message={message}
+                      contentRenderer={renderMessageContent}
+                      messageIndex={index}
+                      onEdit={(editedMessage) => {
+                        // setCurrentMessage(editedMessage)
+                        handleSend(
+                          editedMessage,
+                          selectedConversation?.messages.length - index,
+                        )
+                      }}
+                      onImageUrlsUpdate={onImageUrlsUpdate}
                     />
-                  </>
-                )}
-              </div>
-              {/* <div className="w-full max-w-[calc(100% - var(--sidebar-width))] mx-auto flex justify-center"> */}
-              <ChatInput
-                stopConversationRef={stopConversationRef}
-                textareaRef={textareaRef}
-                onSend={(message, plugin) => {
-                  // setCurrentMessage(message)
-                  handleSend(
-                    message,
-                    0,
-                    plugin,
-                    // actions
-                  )
-                }}
-                onScrollDownClick={handleScrollDown}
-                onRegenerate={handleRegenerate}
-                showScrollDownButton={showScrollDownButton}
-                inputContent={inputContent}
-                setInputContent={setInputContent}
-                courseName={getCurrentPageName()}
-              />
-              {/* </div> */}
-            </>
-          )}
-        </div>
+                  ))}
+                  {loading && <ChatLoader />}
+                  <div
+                    className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
+                    ref={messagesEndRef}
+                  />
+                </>
+              )}
+            </div>
+            {/* <div className="w-full max-w-[calc(100% - var(--sidebar-width))] mx-auto flex justify-center"> */}
+            <ChatInput
+              stopConversationRef={stopConversationRef}
+              textareaRef={textareaRef}
+              onSend={(message, plugin) => {
+                // setCurrentMessage(message)
+                handleSend(message, 0, plugin)
+              }}
+              onScrollDownClick={handleScrollDown}
+              onRegenerate={handleRegenerate}
+              showScrollDownButton={showScrollDownButton}
+              inputContent={inputContent}
+              setInputContent={setInputContent}
+              courseName={getCurrentPageName()}
+            />
+            {/* </div> */}
+          </>
+        )}
       </div>
-    </>
+    </div>
   )
   Chat.displayName = 'Chat'
 })

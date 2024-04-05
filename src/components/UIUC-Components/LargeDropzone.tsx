@@ -225,17 +225,20 @@ export function LargeDropzone({
       { success_ingest: [], failure_ingest: [] },
     )
 
-    console.log('Ingestion Summary:', resultSummary)
-
     setUploadInProgress(false)
 
-    // showSuccessToast(resultSummary.success_ingest.length)
+    if (is_new_course) {
+      await router.push(`/${courseName}/materials`)
+      return
+    }
+
+    // Toasts... but just for submitted to queue.
+    // NOTE: Were just getting "SUBMISSION to task queue" status, not the success of the ingest job itself!!
+
     if (resultSummary.success_ingest.length > 0) {
       showIngestInProgressToast(resultSummary.success_ingest.length)
     }
 
-    // TODO: better to refresh just the table, not the entire page... makes it hard to persist toast... need full UI element for failures.
-    // NOTE: Were just getting "SUBMISSION to task queue" status, not the success of the ingest job itself!!
     if (resultSummary.failure_ingest.length > 0) {
       // some failures
       showFailedIngestToast(
