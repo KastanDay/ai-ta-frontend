@@ -53,9 +53,9 @@ const CourseMain: NextPage = () => {
 
   // Don't edit certain special pages (no context allowed)
   if (
-    courseName!.toLowerCase() == 'gpt4' ||
-    courseName!.toLowerCase() == 'global' ||
-    courseName!.toLowerCase() == 'extreme'
+    courseName.toLowerCase() == 'gpt4' ||
+    courseName.toLowerCase() == 'global' ||
+    courseName.toLowerCase() == 'extreme'
   ) {
     return <CannotEditGPT4Page course_name={courseName as string} />
   }

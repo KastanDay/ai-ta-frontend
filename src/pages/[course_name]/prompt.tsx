@@ -82,21 +82,21 @@ const CourseMain: NextPage = () => {
 
   if (!isSignedIn) {
     console.log('User not logged in', isSignedIn, isLoaded, courseName)
-    return <AuthComponent course_name={courseName as string} />
+    return <AuthComponent course_name={courseName} />
   }
 
   // Don't edit certain special pages (no context allowed)
   if (
-    courseName!.toLowerCase() == 'gpt4' ||
-    courseName!.toLowerCase() == 'global' ||
-    courseName!.toLowerCase() == 'extreme'
+    courseName.toLowerCase() == 'gpt4' ||
+    courseName.toLowerCase() == 'global' ||
+    courseName.toLowerCase() == 'extreme'
   ) {
-    return <CannotEditGPT4Page course_name={courseName as string} />
+    return <CannotEditGPT4Page course_name={courseName} />
   }
 
   return (
     <>
-      <Navbar course_name={courseName as string} />
+      <Navbar course_name={courseName} />
 
       <Head>
         <title>{courseName}</title>
