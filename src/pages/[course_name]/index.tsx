@@ -1,6 +1,5 @@
 // src/pages/[course_name]/index.tsx
 import { type NextPage } from 'next'
-import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { Text } from '@mantine/core'
@@ -9,7 +8,6 @@ import { useUser } from '@clerk/nextjs'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 
 const IfCourseExists: NextPage = () => {
   const router = useRouter()
@@ -21,20 +19,25 @@ const IfCourseExists: NextPage = () => {
   )
 
   useEffect(() => {
-    const fetchCourseMetadata = async () => {
-      const response = await fetch(
-        `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
-      )
-      const data = await response.json()
-      console.log('in [course_name]/index.tsx -- data: ', data.course_metadata)
-      setCourseMetadata(data.course_metadata)
-      setCourseMetadataIsLoaded(true)
+    if (course_name) {
+      const fetchCourseMetadata = async () => {
+        const response = await fetch(
+          `/api/UIUC-api/getCourseMetadata?course_name=${course_name}`,
+        )
+        const data = await response.json()
+        setCourseMetadata(data.course_metadata)
+        setCourseMetadataIsLoaded(true)
+      }
+      fetchCourseMetadata()
     }
-
-    fetchCourseMetadata()
   }, [course_name])
 
   useEffect(() => {
+    if (courseMetadataIsLoaded && course_metadata === null) {
+      router.push('/new?course_name=' + course_name)
+      return
+    }
+
     if (courseMetadataIsLoaded && course_metadata != null) {
       if (!course_metadata.is_private) {
         // Public
@@ -123,24 +126,20 @@ const IfCourseExists: NextPage = () => {
   }
   // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
 
-  const curr_user_emails = extractEmailsFromClerk(clerk_user.user)
+  // const curr_user_emails = extractEmailsFromClerk(clerk_user.user)
 
   // here we redirect depending on Auth.
-  return (
-    <>
-      {course_metadata ? (
-        <MainPageBackground>
-          <LoadingSpinner />
-          <br></br>
-          <Text weight={800}>Checking if course exists...</Text>
-        </MainPageBackground>
-      ) : (
-        <MakeNewCoursePage
-          course_name={course_name}
-          current_user_email={curr_user_emails[0] as string}
-        />
-      )}
-    </>
-  )
+  if (course_metadata) {
+    return (
+      <MainPageBackground>
+        <LoadingSpinner />
+        <br></br>
+        <Text weight={800}>Checking if course exists...</Text>
+      </MainPageBackground>
+    )
+  } else {
+    router.push('/new?course_name=' + course_name)
+    return <></>
+  }
 }
 export default IfCourseExists

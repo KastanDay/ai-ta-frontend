@@ -22,10 +22,10 @@ const montserrat = Montserrat({
   subsets: ['latin'],
 })
 
-const montserrat_light = Montserrat({
-  weight: '400',
-  subsets: ['latin'],
-})
+// const montserrat_light = Montserrat({
+//   weight: '400',
+//   subsets: ['latin'],
+// })
 
 const CourseMain: NextPage = () => {
   const router = useRouter()
@@ -148,13 +148,9 @@ const CourseMain: NextPage = () => {
     )
   }
 
-  if (courseExists === false) {
-    return (
-      <MakeNewCoursePage
-        course_name={course_name as string}
-        current_user_email={user_emails[0] as string}
-      />
-    )
+  if (courseData === null || !courseExists) {
+    router.push('/new?course_name=' + course_name)
+    return <></>
   }
 
   return (
