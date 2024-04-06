@@ -14,12 +14,14 @@ import {
   Image,
   createStyles,
   MantineTheme,
+  TextInput,
 } from '@mantine/core'
 import {
   IconAlertTriangle,
   IconCheck,
   IconEye,
   IconTrash,
+  IconX,
 } from '@tabler/icons-react'
 import { DataTable } from 'mantine-datatable'
 import { useState } from 'react'
@@ -57,7 +59,8 @@ const PAGE_SIZE = 100
 export function ProjectFilesTable({ course_name }: { course_name: string }) {
   const queryClient = useQueryClient()
   const [selectedRecords, setSelectedRecords] = useState<CourseDocument[]>([])
-  const [query, setQuery] = useState('')
+  const [filterKey, setFilterKey] = useState<string>('')
+  const [filterValue, setFilterValue] = useState<string>('')
   const [modalOpened, setModalOpened] = useState(false)
   const [recordsToDelete, setRecordsToDelete] = useState<CourseDocument[]>([])
   const [page, setPage] = useState(1)
@@ -71,8 +74,6 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
   const { theme } = useStyles()
 
   // ------------- Queries -------------
-  // TODO: filtering... could happen here
-  // useEffect(() => {
   const {
     data: documents,
     isLoading: isLoadingDocuments,
@@ -80,14 +81,16 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     error: documentsError,
     refetch: refetchDocuments,
   } = useQuery({
-    queryKey: ['documents', course_name, page],
-    keepPreviousData: true,
+    queryKey: ['documents', course_name, page, filterKey, filterValue],
+    // keepPreviousData: true,
     queryFn: async () => {
       const from = (page - 1) * PAGE_SIZE
       const to = from + PAGE_SIZE - 1
 
+      console.log('Fetching documents:', filterKey, filterValue)
+
       const response = await fetch(
-        `/api/materialsTable/fetchProjectMaterials?from=${from}&to=${to}&course_name=${course_name}`,
+        `/api/materialsTable/fetchProjectMaterials?from=${from}&to=${to}&course_name=${course_name}&filter_key=${filterKey}&filter_value=${filterValue}`,
       )
       if (!response.ok) {
         throw new Error('Failed to fetch document groups')
@@ -319,78 +322,93 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
             accessor: 'File Name',
             render: ({ readable_filename }) =>
               readable_filename ? `${readable_filename}` : '',
-            // TODO: enable filtering. This code here is correct, needs help above...
-            // filter: (
-            //   <TextInput
-            //     label="File Name"
-            //     description="Show uploaded files that include the specified text"
-            //     placeholder="Search files..."
-            //     rightSection={
-            //       <ActionIcon
-            //         size="sm"
-            //         variant="transparent"
-            //         c="dimmed"
-            //         onClick={() => setQuery('')}
-            //       >
-            //         <IconX size={14} />
-            //       </ActionIcon>
-            //     }
-            //     value={query}
-            //     onChange={(e) => setQuery(e.currentTarget.value)}
-            //   />
-            // ),
-            // filtering: query !== '',
+            filter: (
+              <TextInput
+                label="File Name"
+                description="Show uploaded files that include the specified text"
+                placeholder="Search files..."
+                rightSection={
+                  <ActionIcon
+                    size="sm"
+                    variant="transparent"
+                    c="dimmed"
+                    onClick={() => {
+                      setFilterKey('readable_filename')
+                      setFilterValue('')
+                    }}
+                  >
+                    <IconX size={14} />
+                  </ActionIcon>
+                }
+                value={filterValue}
+                onChange={(e) => {
+                  setFilterKey('readable_filename')
+                  setFilterValue(e.currentTarget.value)
+                }}
+              />
+            ),
+            filtering: filterKey !== null,
           },
           {
             accessor: 'URL',
             render: ({ url }) => (url ? `${url}` : ''),
             width: '25%',
-            // TODO: enable filtering. This code here is correct, needs help above...
-            // filter: (
-            //   <TextInput
-            //     label="URL"
-            //     description="Show all urls that include the specified text"
-            //     placeholder="Search urls..."
-            //     rightSection={
-            //       <ActionIcon
-            //         size="sm"
-            //         variant="transparent"
-            //         c="dimmed"
-            //         onClick={() => setQuery('')}
-            //       >
-            //         <IconX size={14} />
-            //       </ActionIcon>
-            //     }
-            //     value={query}
-            //     onChange={(e) => setQuery(e.currentTarget.value)}
-            //   />
-            // ),
-            // filtering: query !== '',
+            filter: (
+              <TextInput
+                label="URL"
+                description="Show all urls that include the specified text"
+                placeholder="Search urls..."
+                rightSection={
+                  <ActionIcon
+                    size="sm"
+                    variant="transparent"
+                    c="dimmed"
+                    onClick={() => {
+                      setFilterKey('url')
+                      setFilterValue('')
+                    }}
+                  >
+                    <IconX size={14} />
+                  </ActionIcon>
+                }
+                value={filterValue}
+                onChange={(e) => {
+                  setFilterKey('url')
+                  setFilterValue(e.currentTarget.value)
+                }}
+              />
+            ),
+            filtering: filterKey !== null,
           },
           {
             accessor: 'The Starting URL of Web Scraping',
             render: ({ base_url }) => (base_url ? `${base_url}` : ''),
-            // TODO: enable filtering. This code here is correct, needs help above...
-            // filter: (
-            //   <TextInput
-            //     label="The Starting URL of Web Scraping"
-            //     description="Show all urls that include the specified text"
-            //     placeholder="Search urls..."
-            //     rightSection={
-            //       <ActionIcon
-            //         size="sm"
-            //         variant="transparent"
-            //         c="dimmed"
-            //         onClick={() => setQuery('')}
-            //       >
-            //         <IconX size={14} />
-            //       </ActionIcon>
-            //     }
-            //     value={query}
-            //     onChange={(e) => setQuery(e.currentTarget.value)}
-            //   />
-            // ),
-            // filtering: query !== '',
+            filter: (
+              <TextInput
+                label="The Starting URL of Web Scraping"
+                description="Show all urls that include the specified text"
+                placeholder="Search urls..."
+                rightSection={
+                  <ActionIcon
+                    size="sm"
+                    variant="transparent"
+                    c="dimmed"
+                    onClick={() => {
+                      setFilterKey('base_url')
+                      setFilterValue('')
+                    }}
+                  >
+                    <IconX size={14} />
+                  </ActionIcon>
+                }
+                value={filterValue}
+                onChange={(e) => {
+                  setFilterKey('base_url')
+                  setFilterValue(e.currentTarget.value)
+                }}
+              />
+            ),
+            filtering: filterKey !== null,
           },
           {
             accessor: 'doc_group',

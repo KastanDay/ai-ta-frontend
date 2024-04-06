@@ -121,11 +121,9 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
                 <Tooltip
                   multiline
                   color="#CC65FF"
-                  style={{ zIndex: -10 }}
                   arrowPosition="center"
                   arrowSize={8}
                   withArrow
-                  // position="bottom-start"
                   label="Any documents in a Disabled doc group will NOT be included in the chatbot results. Useful to quickly hide content from users."
                 >
                   <span

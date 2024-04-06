@@ -29,6 +29,8 @@ export default async function fetchDocuments(
   const fromStr = url.searchParams.get('from')
   const toStr = url.searchParams.get('to')
   const course_name = url.searchParams.get('course_name')
+  const search_key = url.searchParams.get('filter_key') as string
+  const search_value = url.searchParams.get('filter_value') as string
 
   if (fromStr === null || toStr === null) {
     throw new Error('Missing required query parameters: from and to')
@@ -37,9 +39,10 @@ export default async function fetchDocuments(
   const from = parseInt(fromStr)
   const to = parseInt(toStr)
 
+  console.log('Search key: ', search_key)
+  console.log('Search value: ', search_value)
+
   try {
-    // Fetch the paginated documents
-    // TODO: add search filter...
     const { data: documents, error } = await supabase
       .from('documents')
       .select(
@@ -57,6 +60,7 @@ export default async function fetchDocuments(
       `,
       )
       .match({ course_name: course_name })
+      .ilike(search_key, '%' + search_value + '%') // e.g. readable_filename: 'some string'
       .order('created_at', { ascending: false })
       .range(from, to)
 
@@ -69,6 +73,7 @@ export default async function fetchDocuments(
       .from('documents')
       .select('id', { count: 'exact', head: true })
       .match({ course_name: course_name })
+      .ilike(search_key, '%' + search_value + '%') // e.g. readable_filename: 'some string'
 
     if (countError) {
       throw countError
