@@ -87,12 +87,18 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
         <TextInput
           placeholder="Search by Document Group"
           mb="sm"
+          radius="md"
           icon={<IconSearch />}
           value={documentGroupSearch}
           onChange={handleDocumentGroupSearchChange}
         />
         <Table
-          style={{ width: '100%', tableLayout: 'fixed' }}
+          style={{
+            width: '100%',
+            tableLayout: 'fixed',
+            borderRadius: '10px',
+            overflow: 'hidden',
+          }}
           withBorder
           withColumnBorders
           highlightOnHover
