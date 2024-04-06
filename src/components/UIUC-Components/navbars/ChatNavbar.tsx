@@ -1,7 +1,6 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { magicBellTheme } from '~/components/UIUC-Components/navbars/GlobalHeader'
-import { } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import Image from 'next/image'
 import { useEffect, useState, useContext, useRef } from 'react'
@@ -17,6 +16,7 @@ import {
   Transition,
   Paper,
 } from '@mantine/core'
+import { spotlight } from '@mantine/spotlight'
 import {
   MessageChatbot,
   Folder,
@@ -25,6 +25,7 @@ import {
   MessageCode,
 } from 'tabler-icons-react'
 import {
+  IconFileText,
   // IconExternalLink,
   IconRobot,
   // IconCloudUpload,
@@ -52,12 +53,13 @@ const styles: Record<string, React.CSSProperties> = {
     // position: 'relative',
     // height: '40%',
     height: '52px',
-    maxWidth: typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
+    maxWidth:
+      typeof window !== 'undefined' && window.innerWidth > 600 ? '80%' : '100%',
     // maxWidth: '100%',
     // paddingRight:
     //   typeof window !== 'undefined' && window.innerWidth > 600 ? '10px' : '2px',
     paddingLeft:
-      typeof window !== 'undefined' && window.innerWidth > 600 ? '25px' : '5px'
+      typeof window !== 'undefined' && window.innerWidth > 600 ? '25px' : '5px',
   },
   thumbnailImage: {
     objectFit: 'cover',
@@ -90,7 +92,8 @@ const useStyles = createStyles((theme) => ({
   link: {
     // textTransform: 'uppercase',
     fontSize: rem(12),
-    padding: `${theme.spacing.sm} ${theme.spacing.sm}`,
+    textAlign: 'center',
+    padding: `3px ${theme.spacing.sm}`,
     margin: '0.2rem',
     fontWeight: 700,
     transition:
@@ -115,6 +118,7 @@ const useStyles = createStyles((theme) => ({
       textAlign: 'center',
       borderRadius: 0,
       padding: theme.spacing.sm,
+      margin: '0.2rem 0 0.2rem 0',
     },
   },
   burger: {
@@ -123,7 +127,7 @@ const useStyles = createStyles((theme) => ({
       marginRight: '8px',
     },
     marginRight: '3px',
-    marginLeft: '0px'
+    marginLeft: '0px',
   },
   dropdown: {
     position: 'absolute',
@@ -152,12 +156,19 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
+interface ChatNavbarProps {
+  course_name?: string
+  bannerUrl?: string
+  isgpt4?: boolean
+  className?: string
+}
+
 const ChatNavbar = ({
   course_name = '',
   bannerUrl = '',
   isgpt4 = true,
   className = '',
-}) => {
+}: ChatNavbarProps) => {
   const { classes, theme } = useStyles()
   const router = useRouter()
   const [activeLink, setActiveLink] = useState(router.asPath)
@@ -228,59 +239,71 @@ const ChatNavbar = ({
     fetchCourses()
   }, [clerk_user.isLoaded, clerk_user.isSignedIn])
 
-  const handleLinkClick = (path: string) => {
-    setActiveLink(path)
-    toggle()
-  }
-
-  const items = isAdminOrOwner
-    ? [
-      {
-        name: (
-          <span
-            className={`${montserrat_heading.variable} font-montserratHeading`}
-          >
-            Chat
-          </span>
-        ),
-        icon: <MessageChatIcon />,
-        link: `/${getCurrentCourseName()}/chat`,
-      },
-      {
-        name: (
-          <span
-            className={`${montserrat_heading.variable} font-montserratHeading`}
-          >
-            Materials
-          </span>
-        ),
-        icon: <FolderIcon />,
-        link: `/${getCurrentCourseName()}/materials`,
-      },
-      {
-        name: (
-          <span
-            className={`${montserrat_heading.variable} font-montserratHeading`}
-          >
-            Analysis
-          </span>
-        ),
-        icon: <ReportIcon />,
-        link: `/${getCurrentCourseName()}/query-analysis`,
-      },
-      {
-        name: (
-          <span
-            className={`${montserrat_heading.variable} font-montserratHeading`}
-          >
-            Prompting
-          </span>
-        ),
-        icon: <SettingIcon />,
-        link: `/${getCurrentCourseName()}/prompt`,
-      },
-    ]
-    : []
+  const items = [
+    ...(spotlight
+      ? [
+          // {
+          //   name: (
+          //     <span
+          //       className={`${montserrat_heading.variable} font-montserratHeading`}
+          //     >
+          //       Groups/Tools
+          //     </span>
+          //   ),
+          //   icon: <SpotlightIcon />,
+          //   action: () => spotlight.open(), // This opens the Spotlight
+          // },
+        ]
+      : []),
+    ...(isAdminOrOwner
+      ? [
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Chat
+              </span>
+            ),
+            icon: <MessageChatIcon />,
+            link: `/${getCurrentCourseName()}/chat`,
+          },
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Materials
+              </span>
+            ),
+            icon: <FolderIcon />,
+            link: `/${getCurrentCourseName()}/materials`,
+          },
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Analysis
+              </span>
+            ),
+            icon: <ReportIcon />,
+            link: `/${getCurrentCourseName()}/query-analysis`,
+          },
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Prompting
+              </span>
+            ),
+            icon: <SettingIcon />,
+            link: `/${getCurrentCourseName()}/prompt`,
+          },
+        ]
+      : []),
+  ]
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -315,7 +338,7 @@ const ChatNavbar = ({
     <div
       className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'} -mr-5 pb-16 pl-5`}
       style={{ display: show ? 'block' : 'none' }}
-    // style={{ display: show ? 'flex' : 'none', flexDirection: 'row', height: '40%', alignItems: 'center' }}
+      // style={{ display: show ? 'flex' : 'none', flexDirection: 'row', height: '40%', alignItems: 'center' }}
     >
       <div
         // className="mt-4"
@@ -325,8 +348,8 @@ const ChatNavbar = ({
         {/* <Flex style={{ flexDirection: 'row' }} className="navbar rounded-badge h-24 bg-[#15162c] shadow-lg shadow-purple-800"> */}
 
         <Flex
-          justify='flex-start'
-          direction='row'
+          justify="flex-start"
+          direction="row"
           styles={{ height: '10px', flexWrap: 'nowrap', gap: '0rem' }}
           className="navbar rounded-badge bg-[#15162c] shadow-lg shadow-purple-800"
         >
@@ -340,7 +363,7 @@ const ChatNavbar = ({
             }}
           > */}
           <Link href="/" style={{ flex: 'none', flexWrap: 'nowrap' }}>
-            <h2 className="sm:ms-3 cursor-pointer sm:text-[2rem] md:text-3xl font-extrabold tracking-tight text-white sm:text-[2rem]">
+            <h2 className="cursor-pointer font-extrabold tracking-tight text-white sm:ms-3 sm:text-[2rem] sm:text-[2rem] md:text-3xl">
               UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
             </h2>
           </Link>
@@ -359,7 +382,13 @@ const ChatNavbar = ({
             </div>
           ) : (
             // Placeholder div
-            <div style={{ ...styles.logoContainerBox, flex: '1', visibility: 'hidden' }}></div>
+            <div
+              style={{
+                ...styles.logoContainerBox,
+                flex: '1',
+                visibility: 'hidden',
+              }}
+            ></div>
           )}
           {/* </Flex> */}
           {/* </div> */}
@@ -367,7 +396,12 @@ const ChatNavbar = ({
 
           {/* <div style={{ display: 'flex', justifyContent: 'flex-end' }}> */}
           {/* <Flex direction='row' justify='flex-end' styles={{ flex: 1 }}> */}
-          <Group position='right' styles={{ marginLeft: 'auto', flexWrap: 'nowrap' }} spacing='0px' noWrap>
+          <Group
+            position="right"
+            styles={{ marginLeft: 'auto', flexWrap: 'nowrap' }}
+            spacing="0px"
+            noWrap
+          >
             {/* TODO: .mantine-kivjf7 {gap: 0rem} */}
             {/* This is the hamburger menu / dropdown */}
             <Transition
@@ -379,29 +413,85 @@ const ChatNavbar = ({
                 <Paper
                   className={classes.dropdown}
                   withBorder
-                  style={{ ...styles, transform: 'translateY(26px)' }}
+                  style={{
+                    ...styles,
+                    transform: 'translateY(26px)',
+                    minWidth: '120px',
+                  }}
                 >
-                  {items.map((item, index) => (
-                    <Link
-                      key={index}
-                      href={item.link}
-                      onClick={() => handleLinkClick(item.link)}
-                      data-active={activeLink === item.link}
-                      className={classes.link}
-                    >
-                      <span
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center'
-                          // alignItems: 'left',
-                          // justifyContent: 'flex-start',
-                        }}
-                      >
-                        {item.icon}
-                        {item.name}
-                      </span>
-                    </Link>
-                  ))}
+                  {items.map((item, index) => {
+                    if (item.link) {
+                      return (
+                        <Link
+                          key={index}
+                          href={item.link}
+                          onClick={() => {
+                            setActiveLink(router.asPath)
+                            toggle()
+                          }}
+                          data-active={activeLink === item.link}
+                          className={classes.link}
+                          style={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {item.icon}
+                          <span
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-center',
+                              padding: '0px',
+                              whiteSpace: 'nowrap',
+                              width: '100%',
+                            }}
+                          >
+                            {item.name}
+                          </span>
+                        </Link>
+                      )
+                    }
+                    // else {
+                    //   return (
+                    //     <button
+                    //       key={index}
+                    //       onClick={() => {
+                    //         if (item.action) {
+                    //           item.action()
+                    //         }
+                    //         toggle()
+                    //       }}
+                    //       data-active={activeLink === item.link}
+                    //       className={classes.link}
+                    //       style={{ width: '100%' }}
+                    //     >
+                    //       <div
+                    //         style={{
+                    //           display: 'flex',
+                    //           alignItems: 'center',
+                    //         }}
+                    //       >
+                    //         {item.icon}
+                    //         <span
+                    //           style={{
+                    //             display: 'flex',
+                    //             alignItems: 'center',
+                    //             justifyContent: 'flex-center',
+                    //             padding: '0px',
+                    //             whiteSpace: 'nowrap',
+                    //             width: '100%',
+                    //           }}
+                    //         >
+                    //           {item.name}
+                    //         </span>
+                    //       </div>
+                    //     </button>
+                    //   )
+                    // }
+                  })}
                 </Paper>
               )}
             </Transition>
@@ -412,27 +502,83 @@ const ChatNavbar = ({
               style={{ padding: 0, margin: 0 }}
             >
               <div className={classes.links}>
-                {items.map((item, index) => (
-                  <Link
-                    key={index}
-                    href={item.link}
-                    onClick={() => handleLinkClick(item.link)}
-                    data-active={activeLink === item.link}
-                    className={classes.link}
-                  >
-                    <span
-                      style={{
-                        display: 'flex',
-                        alignItems: 'left',
-                        justifyContent: 'flex-start',
-                        padding: '0px',
-                      }}
-                    >
-                      {item.icon}
-                      {item.name}
-                    </span>
-                  </Link>
-                ))}
+                {items.map((item, index) => {
+                  if (item.link) {
+                    return (
+                      <Link
+                        key={index}
+                        href={item.link}
+                        onClick={() => {
+                          setActiveLink(router.asPath)
+                        }}
+                        data-active={activeLink === item.link}
+                        className={classes.link}
+                        style={{ padding: '3px 12px' }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            width: '100%',
+                          }}
+                        >
+                          {item.icon}
+                          <span
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-center',
+                              padding: '0px',
+                              height: '40px',
+                              whiteSpace: 'nowrap',
+                              marginLeft: '5px',
+                            }}
+                          >
+                            {item.name}
+                          </span>
+                        </div>
+                      </Link>
+                    )
+                  }
+                  // else {
+                  //   return (
+                  //     <button
+                  //       key={index}
+                  //       onClick={() => {
+                  //         if (item.action) {
+                  //           item.action()
+                  //         }
+                  //       }}
+                  //       data-active={activeLink === item.link}
+                  //       className={classes.link}
+                  //       style={{ padding: '3px 12px' }}
+                  //     >
+                  //       <div
+                  //         style={{
+                  //           display: 'flex',
+                  //           alignItems: 'center',
+                  //           width: '100%',
+                  //         }}
+                  //       >
+                  //         {item.icon}
+                  //         <span
+                  //           style={{
+                  //             display: 'flex',
+                  //             alignItems: 'center',
+                  //             justifyContent: 'flex-center',
+                  //             padding: '0px',
+                  //             height: '40px',
+                  //             whiteSpace: 'nowrap',
+                  //             marginLeft: '5px',
+                  //           }}
+                  //         >
+                  //           {item.name}
+                  //         </span>
+                  //       </div>
+                  //     </button>
+                  //   )
+                  // }
+                })}
               </div>
               <div style={{ display: 'block' }}>
                 <button
@@ -455,7 +601,11 @@ const ChatNavbar = ({
                   >
                     <IconRobot
                       size={24}
-                      style={{ position: 'relative', top: '-2px', paddingLeft: '-3px' }}
+                      style={{
+                        position: 'relative',
+                        top: '-2px',
+                        paddingLeft: '-3px',
+                      }}
                     />
                     <span
                       className="home-header_text-underline"
@@ -567,11 +717,22 @@ const ChatNavbar = ({
           </Group>
         </Flex>
         {/* </div> */}
-      </div >
-    </div >
+      </div>
+    </div>
   )
 }
 export default ChatNavbar
+
+export function SpotlightIcon() {
+  return (
+    <IconFileText
+      size={20}
+      strokeWidth={2}
+      // color={'white'}
+      style={{ marginRight: '4px', marginLeft: '4px' }}
+    />
+  )
+}
 
 export function MessageChatIcon() {
   return (

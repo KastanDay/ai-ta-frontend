@@ -10,6 +10,7 @@ import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { Title } from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { montserrat_heading } from 'fonts'
+import Navbar from '~/components/UIUC-Components/navbars/Navbar'
 import { CourseMetadata } from '~/types/courseMetadata'
 import { fetchCourseMetadata } from '~/utils/apiUtils'
 
@@ -20,38 +21,45 @@ const CourseMain: NextPage = () => {
     return router.query.course_name as string
   }
 
-  // const course_name = GetCurrentPageName() as string
+  const courseName = getCurrentPageName() as string
   const { user, isLoaded, isSignedIn } = useUser()
-  const [courseName, setCourseName] = useState<string | null>(null)
-  const [courseData, setCourseData] = useState()
+  const [currentEmail, setCurrentEmail] = useState('')
+  const [metadata, setMetadata] = useState<CourseMetadata | null>()
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     if (!router.isReady) return
     const fetchCourseData = async () => {
-      const course_name = getCurrentPageName()
+      const userEmail = extractEmailsFromClerk(user)
+      setCurrentEmail(userEmail[0] as string)
 
-      // check exists
-      const metadata: CourseMetadata = await fetchCourseMetadata(course_name)
-      if (metadata === null) {
-        await router.push('/new?course_name=' + course_name)
-        return
+      try {
+        const metadata: CourseMetadata = (await fetchCourseMetadata(
+          courseName,
+        )) as CourseMetadata
+
+        if (metadata === null) {
+          await router.push('/new?course_name=' + courseName)
+          return
+        }
+
+        if (metadata && metadata.is_private) {
+          metadata.is_private = JSON.parse(
+            metadata.is_private as unknown as string,
+          )
+        }
+        setMetadata(metadata)
+      } catch (error) {
+        console.error(error)
+        // alert('An error occurred while fetching course metadata. Please try again later.')
       }
-
-      // Get all data
-      const response = await fetch(
-        `https://flask-production-751b.up.railway.app/getAll?course_name=${course_name}`,
-      )
-      const data = await response.json()
-      setCourseData(data.distinct_files)
-      setCourseName(course_name)
       setIsLoading(false)
     }
     fetchCourseData()
-  }, [router.isReady])
+  }, [router.isReady, courseName, isLoaded])
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!isLoaded || isLoading || courseName == null) {
+  if (!isLoaded || isLoading || !metadata || courseName == null) {
     return (
       <MainPageBackground>
         <LoadingSpinner />
@@ -95,31 +103,23 @@ const CourseMain: NextPage = () => {
       </MainPageBackground>
     )
   }
-
-  if (isLoaded) {
-    if (
-      courseName.toLowerCase() == 'gpt4' ||
-      courseName.toLowerCase() == 'global' ||
-      courseName.toLowerCase() == 'extreme'
-    ) {
-      // Don't edit certain special pages (no context allowed)
-      return <CannotEditGPT4Page course_name={courseName as string} />
-    }
-
-    return (
-      <>
-        <MakeOldCoursePage
-          course_name={courseName as string}
-          course_data={courseData as any}
-        />
-      </>
-    )
-  } else {
-    return (
-      <MainPageBackground>
-        <LoadingSpinner />
-      </MainPageBackground>
-    )
+  if (
+    courseName.toLowerCase() == 'gpt4' ||
+    courseName.toLowerCase() == 'global' ||
+    courseName.toLowerCase() == 'extreme'
+  ) {
+    // Don't edit certain special pages (no context allowed)
+    return <CannotEditGPT4Page course_name={courseName as string} />
   }
+
+  return (
+    <>
+      <MakeOldCoursePage
+        course_name={courseName as string}
+        metadata={metadata}
+        current_email={currentEmail}
+      />
+    </>
+  )
 }
 export default CourseMain
