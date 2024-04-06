@@ -34,32 +34,41 @@ const CourseMain: NextPage = () => {
       setCurrentEmail(userEmail[0] as string)
 
       try {
-        const metadata: CourseMetadata = (await fetchCourseMetadata(
+        const local_metadata: CourseMetadata = (await fetchCourseMetadata(
           courseName,
         )) as CourseMetadata
 
-        if (metadata === null) {
+        if (local_metadata == null) {
           await router.push('/new?course_name=' + courseName)
           return
         }
 
-        if (metadata && metadata.is_private) {
-          metadata.is_private = JSON.parse(
-            metadata.is_private as unknown as string,
+        if (local_metadata && local_metadata.is_private) {
+          local_metadata.is_private = JSON.parse(
+            local_metadata.is_private as unknown as string,
           )
         }
-        setMetadata(metadata)
+        setMetadata(local_metadata)
       } catch (error) {
         console.error(error)
         // alert('An error occurred while fetching course metadata. Please try again later.')
       }
-      setIsLoading(false)
     }
     fetchCourseData()
   }, [router.isReady, courseName, isLoaded])
 
+  useEffect(() => {
+    if (!router.isReady) return
+    if (!isLoaded) return
+    if (!metadata) return
+    if (metadata == null) return
+
+    // Everything is loaded
+    setIsLoading(false)
+  }, [router.isReady, isLoaded, metadata])
+
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!isLoaded || isLoading || !metadata || courseName == null) {
+  if (isLoading) {
     return (
       <MainPageBackground>
         <LoadingSpinner />
@@ -68,41 +77,10 @@ const CourseMain: NextPage = () => {
   }
 
   if (!isSignedIn && courseName) {
-    console.log('User not logged in', isSignedIn, isLoaded, courseName)
+    console.debug('User not logged in', isSignedIn, isLoaded, courseName)
     return <AuthComponent course_name={courseName} />
   }
 
-  const user_emails = extractEmailsFromClerk(user)
-
-  // if their account is somehow broken (with no email address)
-  if (user_emails.length == 0) {
-    return (
-      <MainPageBackground>
-        <Title
-          className={`${montserrat_heading.variable} font-montserratHeading`}
-          variant="gradient"
-          gradient={{ from: 'gold', to: 'white', deg: 50 }}
-          order={3}
-          p="xl"
-          style={{ marginTop: '4rem' }}
-        >
-          You&apos;ve encountered a software bug!<br></br>Your account has no
-          email address. Please shoot me an email so I can fix it for you:{' '}
-          <a className="goldUnderline" href="mailto:kvday2@illinois.edu">
-            kvday2@illinois.edu
-          </a>
-        </Title>
-      </MainPageBackground>
-    )
-  }
-
-  if (!courseName) {
-    return (
-      <MainPageBackground>
-        <LoadingSpinner />
-      </MainPageBackground>
-    )
-  }
   if (
     courseName.toLowerCase() == 'gpt4' ||
     courseName.toLowerCase() == 'global' ||
@@ -116,7 +94,7 @@ const CourseMain: NextPage = () => {
     <>
       <MakeOldCoursePage
         course_name={courseName as string}
-        metadata={metadata}
+        metadata={metadata as CourseMetadata}
         current_email={currentEmail}
       />
     </>
