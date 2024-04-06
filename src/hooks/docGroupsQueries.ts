@@ -247,7 +247,7 @@ export function useAppendToDocGroup(
             const newGroup = {
               name: appendedGroup,
               doc_count: 1,
-              enabled: false,
+              enabled: true,
               course_name,
             }
             const insertIndex = updatedDocumentGroups.findIndex(
