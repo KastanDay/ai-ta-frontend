@@ -39,11 +39,17 @@ export default async function fetchDocuments(
   const from = parseInt(fromStr)
   const to = parseInt(toStr)
 
+  // console.log('Search key: ', search_key)
+  // console.log('Search value: ', search_value)
+
   try {
-    const baseQuery = supabase
-      .from('documents')
-      .select(
-        `
+    let documents
+    let finalError
+    if (search_key && search_value) {
+      const { data: someDocs, error } = await supabase
+        .from('documents')
+        .select(
+          `
         id,
         course_name,
         readable_filename,
@@ -53,24 +59,46 @@ export default async function fetchDocuments(
         created_at,
         doc_groups (
           name
+          )
+          `,
         )
-      `,
-      )
-      .match({ course_name: course_name })
-      .order('created_at', { ascending: false })
-      .range(from, to)
-
-    let query = baseQuery
-
-    // Add filtering
-    if (search_key && search_value) {
-      query = baseQuery.ilike(search_key, `%${search_value}%`)
+        .match({ course_name: course_name })
+        .ilike(search_key, '%' + search_value + '%') // e.g. readable_filename: 'some string'
+        .order('created_at', { ascending: false })
+        .range(from, to)
+      documents = someDocs
+      finalError = error
+    } else {
+      const { data: someDocs, error } = await supabase
+        .from('documents')
+        .select(
+          `
+      id,
+      course_name,
+      readable_filename,
+      s3_path,
+      url,
+      base_url,
+      created_at,
+      doc_groups (
+        name
+        )
+        `,
+        )
+        .match({ course_name: course_name })
+        // NO FILTER
+        .order('created_at', { ascending: false })
+        .range(from, to)
+      documents = someDocs
+      finalError = error
     }
 
-    const { data: documents, error } = await query
+    if (finalError) {
+      throw finalError
+    }
 
-    if (error) {
-      throw error
+    if (!documents) {
+      throw new Error('Failed to fetch documents')
     }
 
     // Fetch the total count of documents for the selected course
