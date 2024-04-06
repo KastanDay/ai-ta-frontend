@@ -157,9 +157,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   // const [spotlightQuery, setSpotlightQuery] = useState('')
 
-  useEffect(() => {
-    console.log('updated actions: ', actions)
-  }, [actions])
+  // useEffect(() => {
+  //   console.log('updated actions: ', actions)
+  // }, [actions])
 
   useEffect(() => {
     // console.log('isSuccess: ', isSuccess)
