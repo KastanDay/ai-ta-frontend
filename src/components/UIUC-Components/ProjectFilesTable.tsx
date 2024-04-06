@@ -87,8 +87,6 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
       const from = (page - 1) * PAGE_SIZE
       const to = from + PAGE_SIZE - 1
 
-      console.log('Fetching documents:', filterKey, filterValue)
-
       const response = await fetch(
         `/api/materialsTable/fetchProjectMaterials?from=${from}&to=${to}&course_name=${course_name}&filter_key=${filterKey}&filter_value=${filterValue}`,
       )

@@ -39,11 +39,8 @@ export default async function fetchDocuments(
   const from = parseInt(fromStr)
   const to = parseInt(toStr)
 
-  console.log('Search key: ', search_key)
-  console.log('Search value: ', search_value)
-
   try {
-    const { data: documents, error } = await supabase
+    const baseQuery = supabase
       .from('documents')
       .select(
         `
@@ -60,9 +57,17 @@ export default async function fetchDocuments(
       `,
       )
       .match({ course_name: course_name })
-      .ilike(search_key, '%' + search_value + '%') // e.g. readable_filename: 'some string'
       .order('created_at', { ascending: false })
       .range(from, to)
+
+    let query = baseQuery
+
+    // Add filtering
+    if (search_key && search_value) {
+      query = baseQuery.ilike(search_key, `%${search_value}%`)
+    }
+
+    const { data: documents, error } = await query
 
     if (error) {
       throw error
