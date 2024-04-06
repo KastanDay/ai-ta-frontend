@@ -101,12 +101,27 @@ export default async function fetchDocuments(
       throw new Error('Failed to fetch documents')
     }
 
-    // Fetch the total count of documents for the selected course
-    const { count, error: countError } = await supabase
-      .from('documents')
-      .select('id', { count: 'exact', head: true })
-      .match({ course_name: course_name })
-      .ilike(search_key, '%' + search_value + '%') // e.g. readable_filename: 'some string'
+    let count
+    let countError
+    if (search_key && search_value) {
+      // Fetch the total count of documents for the selected course
+      const { count: tmpCount, error: tmpCountError } = await supabase
+        .from('documents')
+        .select('id', { count: 'exact', head: true })
+        .match({ course_name: course_name })
+        .ilike(search_key, '%' + search_value + '%') // e.g. readable_filename: 'some string'
+      count = tmpCount
+      countError = tmpCountError
+    } else {
+      // Fetch the total count of documents for the selected course
+      const { count: tmpCount, error: tmpCountError } = await supabase
+        .from('documents')
+        .select('id', { count: 'exact', head: true })
+        .match({ course_name: course_name })
+      // NO FILTER
+      count = tmpCount
+      countError = tmpCountError
+    }
 
     if (countError) {
       throw countError
