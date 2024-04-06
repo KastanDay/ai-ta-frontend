@@ -8,14 +8,8 @@ import {
   Switch,
   Tooltip,
 } from '@mantine/core'
-import {
-  IconHelp,
-  IconInfoSquareRounded,
-  IconSearch,
-  IconTrash,
-} from '@tabler/icons-react'
+import { IconHelp, IconSearch } from '@tabler/icons-react'
 import { useMemo, useState } from 'react'
-import { showNotification } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
 
 import {
@@ -124,7 +118,7 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
                   arrowPosition="center"
                   arrowSize={8}
                   withArrow
-                  label="Any documents in a Disabled doc group will NOT be included in the chatbot results. Useful to quickly hide content from users."
+                  label="If a document is included in ANY enabled group, it will be included in chatbot results. Enabled groups take precedence over disabled groups. Useful to quickly hide content from users."
                 >
                   <span
                     style={{
