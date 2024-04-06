@@ -80,7 +80,7 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
           width: '100%',
           margin: 'auto',
           borderRadius: '10px',
-          overflow: 'hidden',
+          overflow: 'visible',
           marginBottom: '20px',
         }}
       >
@@ -117,8 +117,9 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
                   color="#CC65FF"
                   arrowPosition="center"
                   arrowSize={8}
+                  width={400}
                   withArrow
-                  label="If a document is included in ANY enabled group, it will be included in chatbot results. Enabled groups take precedence over disabled groups. Useful to quickly hide content from users."
+                  label="If a document is included in ANY enabled group, it will be included in chatbot results. Enabled groups take precedence over disabled groups."
                 >
                   <span
                     style={{
