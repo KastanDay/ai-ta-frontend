@@ -31,16 +31,20 @@ export default async function fetchDocuments(
   const course_name = url.searchParams.get('course_name')
   const search_key = url.searchParams.get('filter_key') as string
   const search_value = url.searchParams.get('filter_value') as string
+  let sort_column = url.searchParams.get('sort_column') as string
+  let sort_direction = url.searchParams.get('sort_direction') === 'asc' // Convert 'asc' to true, 'desc' to false
 
   if (fromStr === null || toStr === null) {
     throw new Error('Missing required query parameters: from and to')
   }
 
+  if (sort_column == null || sort_direction == null) {
+    sort_column = 'created_at'
+    sort_direction = false // 'desc' equivalent
+  }
+
   const from = parseInt(fromStr)
   const to = parseInt(toStr)
-
-  // console.log('Search key: ', search_key)
-  // console.log('Search value: ', search_value)
 
   try {
     let documents
@@ -64,7 +68,7 @@ export default async function fetchDocuments(
         )
         .match({ course_name: course_name })
         .ilike(search_key, '%' + search_value + '%') // e.g. readable_filename: 'some string'
-        .order('created_at', { ascending: false })
+        .order(sort_column, { ascending: sort_direction })
         .range(from, to)
       documents = someDocs
       finalError = error
@@ -87,7 +91,7 @@ export default async function fetchDocuments(
         )
         .match({ course_name: course_name })
         // NO FILTER
-        .order('created_at', { ascending: false })
+        .order(sort_column, { ascending: sort_direction })
         .range(from, to)
       documents = someDocs
       finalError = error
