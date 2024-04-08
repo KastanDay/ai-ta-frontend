@@ -1,4 +1,5 @@
 // src/pages/[course_name]/api.tsx
+'use client';
 import { type NextPage } from 'next'
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import React, { useEffect, useState } from 'react'
@@ -62,7 +63,7 @@ const CourseMain: NextPage = () => {
   const [thingsToDo, setThingsToDo] = useState('');
   const [thingsNotToDo, setThingsNotToDo] = useState('');
   const [originalSystemPrompt, setOriginalSystemPrompt] = useState('');
-  const { messages, input, handleInputChange, handleSubmit } = useChat();
+  const { messages, input, handleInputChange, handleSubmit } = useChat({ api: '/api/chat/openAI' });
 
 
   useEffect(() => {
@@ -306,45 +307,67 @@ const CourseMain: NextPage = () => {
                             gradient={{ from: 'gold', to: 'white', deg: 50 }}
                             style={{ flexGrow: 2, marginLeft: '1rem' }}
                           >
-                            Example
+                            System Prompt
                           </Title>
+                          {/* <div>
+                            {messages.map(m => (
+                              <div key={m.id} className="whitespace-pre-wrap">
+                                {m.role === 'user' ? 'User: ' : 'AI: '}
+                                {m.content}
+                              </div>
+                            ))}
+                            <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+                              <Textarea
+                                autosize
+                                minRows={3}
+                                maxRows={20}
+                                placeholder="Enter the system prompt"
+                                className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                value={input}  // systemPrompt
+                                onChange={(e) => {
+                                  // setBaseSystemPrompt(e.target.value);
+                                  // setSystemPrompt(e.target.value);
+                                  handleInputChange(e);
+                                }}
+                                // There's no onSubmit here; form handles submission
+                                style={{ width: '100%' }}
+                              />
+                              <button type="submit" className="submit-button">
+                                Submit
+                              </button>
+                            </form>
+                          </div> */}
+                          <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+                            {messages.map(m => (
+                              <div key={m.id} className="whitespace-pre-wrap">
+                                {m.role === 'user' ? 'User: ' : 'AI: '}
+                                {m.content}
+                              </div>
+                            ))}
 
-                          {/* <Select
-                            placeholder="Select an option"
-                            data={languageOptions}
-                            value={selectedLanguage}
-                            style={{ width: '7rem' }} // Ensures the button is wide enough to show all text and does not shrink
-                            onChange={(value: string | null) => {
-                              if (
-                                value === 'curl' ||
-                                value === 'python' ||
-                                value === 'node'
-                              ) {
-                                setSelectedLanguage(value)
-                              }
-                            }}
-                          // style={{ width: '30%', minWidth: '20px' }}
-                          /> */}
-                          {/* <Button
-                            onClick={() =>
-                              handleCopyCodeSnippet(codeSnippets[selectedLanguage])
-                            }
-                            variant="subtle"
-                            size="xs"
-                            className="ms-2 min-h-[2.5rem] transform rounded-bl-xl rounded-br-md rounded-tl-md rounded-tr-xl bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
-                          >
-                            {copiedCodeSnippet ? <IconCheck /> : <IconCopy />}
-                          </Button> */}
+                            <form onSubmit={handleSubmit}>
+                              <input
+                                className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl"
+                                value={input}
+                                placeholder="Say something..."
+                                onChange={handleInputChange}
+                              />
+                            </form>
+                          </div>
+
                         </div>
-                        {/* <Textarea
-                          value={codeSnippets[selectedLanguage] as string}
-                          autosize
-                          variant="unstyled"
-                          wrapperProps={{ overflow: 'hidden' }}
-                          className="relative w-[100%] min-w-[20rem] overflow-hidden rounded-b-xl border-t-2 border-gray-400 bg-[#0c0c27] pl-8 text-white"
-                          readOnly
-                        /> */}
+
                       </div>
+                      {/* <Title
+                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
+                        variant="gradient"
+                        gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                        order={3}
+                        style={{ paddingTop: '18px' }}
+                      >
+                        System Prompt
+                      </Title> */}
+
                     </Group>
                   </div>
                 </div>
@@ -358,43 +381,7 @@ const CourseMain: NextPage = () => {
                 >
                   <div className="card flex h-full flex-col">
                     <Group position="left" m="3rem" variant="column">
-                      <Title
-                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
-                        variant="gradient"
-                        gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                        order={3}
-                        style={{ paddingTop: '18px' }}
-                      >
-                        System Prompt
-                      </Title>
-                      <div>
-                        {messages.map(m => (
-                          <div key={m.id} className="whitespace-pre-wrap">
-                            {m.role === 'user' ? 'User: ' : 'AI: '}
-                            {m.content}
-                          </div>
-                        ))}
-                        <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-                          <Textarea
-                            autosize
-                            minRows={3}
-                            maxRows={20}
-                            placeholder="Enter the system prompt"
-                            className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                            value={input}  // systemPrompt
-                            onChange={(e) => {
-                              setBaseSystemPrompt(e.target.value);
-                              setSystemPrompt(e.target.value);
-                              handleInputChange(e);
-                            }}
-                            // There's no onSubmit here; form handles submission
-                            style={{ width: '100%' }}
-                          />
-                          <button type="submit" className="submit-button">
-                            Submit
-                          </button>
-                        </form>
-                      </div>
+
 
                       {/* <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
                         {messages.map(m => (
