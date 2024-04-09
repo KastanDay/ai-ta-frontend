@@ -63,7 +63,7 @@ const CourseMain: NextPage = () => {
   const [thingsToDo, setThingsToDo] = useState('');
   const [thingsNotToDo, setThingsNotToDo] = useState('');
   const [originalSystemPrompt, setOriginalSystemPrompt] = useState('');
-  const { messages, input, handleInputChange, handleSubmit } = useChat({ api: '/api/chat/openAI' });
+  const [chatInitialized, setChatInitialized] = useState(false);
 
 
   useEffect(() => {
@@ -84,9 +84,19 @@ const CourseMain: NextPage = () => {
       setSystemPrompt(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
       setBaseSystemPrompt(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
       setIsLoading(false)
+      setChatInitialized(true)
     }
     fetchCourseData()
+
   }, [router.isReady])
+
+  let { messages, input, handleInputChange, handleSubmit } = useChat({ api: '/api/chat/openAI', initialInput: chatInitialized ? systemPrompt : '' });
+  input = 'Add this prompt';
+
+  useEffect(() => {
+    console.log('input', input);
+
+  }, [input])
 
   useEffect(() => {
     let newSystemPrompt = baseSystemPrompt;
@@ -309,34 +319,6 @@ const CourseMain: NextPage = () => {
                           >
                             System Prompt
                           </Title>
-                          {/* <div>
-                            {messages.map(m => (
-                              <div key={m.id} className="whitespace-pre-wrap">
-                                {m.role === 'user' ? 'User: ' : 'AI: '}
-                                {m.content}
-                              </div>
-                            ))}
-                            <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-                              <Textarea
-                                autosize
-                                minRows={3}
-                                maxRows={20}
-                                placeholder="Enter the system prompt"
-                                className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                value={input}  // systemPrompt
-                                onChange={(e) => {
-                                  // setBaseSystemPrompt(e.target.value);
-                                  // setSystemPrompt(e.target.value);
-                                  handleInputChange(e);
-                                }}
-                                // There's no onSubmit here; form handles submission
-                                style={{ width: '100%' }}
-                              />
-                              <button type="submit" className="submit-button">
-                                Submit
-                              </button>
-                            </form>
-                          </div> */}
                           <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
                             {messages.map(m => (
                               <div key={m.id} className="whitespace-pre-wrap">
@@ -344,29 +326,48 @@ const CourseMain: NextPage = () => {
                                 {m.content}
                               </div>
                             ))}
-
                             <form onSubmit={handleSubmit}>
+
+                              <Textarea
+                                autosize
+                                minRows={3}
+                                maxRows={20}
+                                placeholder="Enter the system prompt..."
+                                className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                value={input}
+                                onChange={
+                                  (e) => {
+                                    setBaseSystemPrompt(e.target.value);
+                                    setSystemPrompt(e.target.value);
+                                    handleInputChange(e);
+
+                                  }
+                                }
+                                style={{ width: '100%' }}
+                              />
+
+                              <Button type='submit'>
+                                Optimize System Prompt
+                              </Button>
+                            </form>
+
+
+                            {/* <form onSubmit={handleSubmit}>
                               <input
                                 className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl"
                                 value={input}
-                                placeholder="Say something..."
+                                placeholder="Enter your system prompt..."
+                                // setBaseSystemPrompt(e.target.value);
+                                // setSystemPrompt(e.target.value);
                                 onChange={handleInputChange}
                               />
-                            </form>
+                            </form> */}
                           </div>
 
                         </div>
 
                       </div>
-                      {/* <Title
-                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
-                        variant="gradient"
-                        gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                        order={3}
-                        style={{ paddingTop: '18px' }}
-                      >
-                        System Prompt
-                      </Title> */}
+
 
                     </Group>
                   </div>
@@ -400,6 +401,15 @@ const CourseMain: NextPage = () => {
                           />
                         </form>
                       </div> */}
+                      <Title
+                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
+                        variant="gradient"
+                        gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                        order={3}
+                        style={{ paddingTop: '18px' }}
+                      >
+                        Add Instructions to System Prompt
+                      </Title>
                       <Checkbox
                         label={`Add greetings at the beginning of the conversation.`}
                         // wrapperProps={{}}
