@@ -1,5 +1,5 @@
 // src/pages/[course_name]/api.tsx
-'use client';
+'use client'
 import { type NextPage } from 'next'
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import React, { useEffect, useState } from 'react'
@@ -10,7 +10,22 @@ import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
-import { Button, Card, Checkbox, CheckboxProps, Flex, Group, Input, MantineTheme, Select, Table, Text, Textarea, Title, useMantineTheme } from '@mantine/core'
+import {
+  Button,
+  Card,
+  Checkbox,
+  CheckboxProps,
+  Flex,
+  Group,
+  Input,
+  MantineTheme,
+  Select,
+  Table,
+  Text,
+  Textarea,
+  Title,
+  useMantineTheme,
+} from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { DEFAULT_SYSTEM_PROMPT } from '~/utils/app/const'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -19,9 +34,13 @@ import { callSetCourseMetadata } from '~/utils/apiUtils'
 import Navbar from '~/components/UIUC-Components/navbars/Navbar'
 import Head from 'next/head'
 import { useMediaQuery } from '@mantine/hooks'
-import { IconAlertTriangle, IconCheck, IconExternalLink } from '@tabler/icons-react'
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconExternalLink,
+} from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
-import { useChat } from 'ai/react';
+import { useChat } from 'ai/react'
 
 const montserrat = Montserrat({
   weight: '700',
@@ -34,9 +53,9 @@ const montserrat_light = Montserrat({
 })
 
 const CourseMain: NextPage = () => {
-  const [checked1, setChecked1] = useState(false);
-  const [checked2, setChecked2] = useState(false);
-  const [checked3, setChecked3] = useState(false);
+  const [checked1, setChecked1] = useState(false)
+  const [checked2, setChecked2] = useState(false)
+  const [checked3, setChecked3] = useState(false)
 
   const theme = useMantineTheme()
   const router = useRouter()
@@ -59,12 +78,11 @@ const CourseMain: NextPage = () => {
   const clerk_user = useUser()
   const emails = extractEmailsFromClerk(clerk_user.user)
   const currUserEmail = emails[0]
-  const [baseSystemPrompt, setBaseSystemPrompt] = useState('');
-  const [thingsToDo, setThingsToDo] = useState('');
-  const [thingsNotToDo, setThingsNotToDo] = useState('');
-  const [originalSystemPrompt, setOriginalSystemPrompt] = useState('');
-  const [chatInitialized, setChatInitialized] = useState(false);
-
+  const [baseSystemPrompt, setBaseSystemPrompt] = useState('')
+  const [thingsToDo, setThingsToDo] = useState('')
+  const [thingsNotToDo, setThingsNotToDo] = useState('')
+  const [originalSystemPrompt, setOriginalSystemPrompt] = useState('')
+  const [chatInitialized, setChatInitialized] = useState(false)
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -87,49 +105,50 @@ const CourseMain: NextPage = () => {
       setChatInitialized(true)
     }
     fetchCourseData()
-
   }, [router.isReady])
 
-  let { messages, input, handleInputChange, handleSubmit } = useChat({ api: '/api/chat/openAI', initialInput: chatInitialized ? systemPrompt : '' });
-  input = 'Add this prompt';
+  let { messages, input, handleInputChange, reload, setMessages } = useChat({
+    api: '/api/chat/openAI',
+  })
 
   useEffect(() => {
-    console.log('input', input);
-
+    // Just for testing
+    console.log('input', input)
   }, [input])
 
   useEffect(() => {
-    let newSystemPrompt = baseSystemPrompt;
+    let newSystemPrompt = baseSystemPrompt
 
     if (checked1) {
-      newSystemPrompt += "\nContent includes equations; LaTeX notation preferred.";
+      newSystemPrompt +=
+        '\nContent includes equations; LaTeX notation preferred.'
     }
 
     if (checked2) {
-      newSystemPrompt += "\nFocus exclusively on document-based references—avoid incorporating knowledge from outside sources. Essential for legal and similar fields to maintain response quality.";
+      newSystemPrompt +=
+        '\nFocus exclusively on document-based references—avoid incorporating knowledge from outside sources. Essential for legal and similar fields to maintain response quality.'
     }
 
     if (checked3 && courseMetadata?.course_intro_message) {
-      newSystemPrompt += `\n${courseMetadata.course_intro_message} If the user asks an introductory question or greeting along the lines of 'hello' or 'what can you do?' or 'What's in here ?' or 'what is ${course_name}?' or similar, then please respond with a warm welcome to ${course_name}, the AI ${course_name} assistant chatbot. Tell them that you can answer questions using the entire knowledge base of Extension. Feel free to ask!`;
+      newSystemPrompt += `\n${courseMetadata.course_intro_message} If the user asks an introductory question or greeting along the lines of 'hello' or 'what can you do?' or 'What's in here ?' or 'what is ${course_name}?' or similar, then please respond with a warm welcome to ${course_name}, the AI ${course_name} assistant chatbot. Tell them that you can answer questions using the entire knowledge base of Extension. Feel free to ask!`
     } else if (checked3) {
-      newSystemPrompt += `\nIf the user asks an introductory question or greeting along the lines of 'hello' or 'what can you do?' or 'What's in here ?' or 'what is ${course_name}?' or similar, then please respond with a warm welcome to ${course_name}, the AI ${course_name} assistant chatbot. Tell them that you can answer questions using the entire knowledge base of Extension. Feel free to ask!`;
+      newSystemPrompt += `\nIf the user asks an introductory question or greeting along the lines of 'hello' or 'what can you do?' or 'What's in here ?' or 'what is ${course_name}?' or similar, then please respond with a warm welcome to ${course_name}, the AI ${course_name} assistant chatbot. Tell them that you can answer questions using the entire knowledge base of Extension. Feel free to ask!`
     }
 
     if (thingsToDo) {
-      newSystemPrompt += "\nThings to do: " + thingsToDo;
+      newSystemPrompt += '\nThings to do: ' + thingsToDo
     }
     if (thingsNotToDo) {
-      newSystemPrompt += "\nThings NOT to do: " + thingsNotToDo;
+      newSystemPrompt += '\nThings NOT to do: ' + thingsNotToDo
     }
 
-    setSystemPrompt(newSystemPrompt);
-  }, [checked1, checked2, checked3, thingsToDo, thingsNotToDo, courseMetadata]);
+    setSystemPrompt(newSystemPrompt)
+  }, [checked1, checked2, checked3, thingsToDo, thingsNotToDo, courseMetadata])
 
   const handleSystemPromptSubmit = async () => {
     if (courseMetadata && course_name && systemPrompt) {
-
-      courseMetadata.system_prompt = systemPrompt;
-      const success = await callSetCourseMetadata(course_name, courseMetadata);
+      courseMetadata.system_prompt = systemPrompt
+      const success = await callSetCourseMetadata(course_name, courseMetadata)
 
       if (!success) {
         console.log('Error updating course metadata')
@@ -224,7 +243,6 @@ const CourseMain: NextPage = () => {
       <Navbar course_name={router.query.course_name as string} />
       <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center">
         <div className="items-left flex w-full flex-col justify-center py-0">
-
           <Flex direction="column" align="center" w="100%">
             <Card
               shadow="xs"
@@ -277,7 +295,6 @@ const CourseMain: NextPage = () => {
                           rel="noopener noreferrer"
                         >
                           official OpenAI documentation
-
                           <IconExternalLink
                             className="mr-2 inline-block"
                             style={{ position: 'relative', top: '-3px' }}
@@ -285,9 +302,9 @@ const CourseMain: NextPage = () => {
                         </a>
                       </Title>
                       <Title order={4} w={'90%'}>
-                        Modify with caution. Unnecessary alterations might reduce
-                        effectiveness, similar to overly restrictive coding. Changes
-                        affect all project users.
+                        Modify with caution. Unnecessary alterations might
+                        reduce effectiveness, similar to overly restrictive
+                        coding. Changes affect all project users.
                       </Title>
                       <div
                         style={{
@@ -319,15 +336,22 @@ const CourseMain: NextPage = () => {
                           >
                             System Prompt
                           </Title>
-                          <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
-                            {messages.map(m => (
+                          <div className="stretch mx-auto flex w-full max-w-md flex-col py-24">
+                            {messages.map((m) => (
                               <div key={m.id} className="whitespace-pre-wrap">
                                 {m.role === 'user' ? 'User: ' : 'AI: '}
                                 {m.content}
                               </div>
                             ))}
-                            <form onSubmit={handleSubmit}>
-
+                            <form
+                              onSubmit={(e) =>
+                                handleSubmitPromptOptimization(
+                                  e,
+                                  reload,
+                                  setMessages,
+                                )
+                              }
+                            >
                               <Textarea
                                 autosize
                                 minRows={3}
@@ -335,22 +359,18 @@ const CourseMain: NextPage = () => {
                                 placeholder="Enter the system prompt..."
                                 className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
                                 value={input}
-                                onChange={
-                                  (e) => {
-                                    setBaseSystemPrompt(e.target.value);
-                                    setSystemPrompt(e.target.value);
-                                    handleInputChange(e);
-
-                                  }
-                                }
+                                onChange={(e) => {
+                                  setBaseSystemPrompt(e.target.value)
+                                  setSystemPrompt(e.target.value)
+                                  handleInputChange(e)
+                                }}
                                 style={{ width: '100%' }}
                               />
 
-                              <Button type='submit'>
+                              <Button type="submit">
                                 Optimize System Prompt
                               </Button>
                             </form>
-
 
                             {/* <form onSubmit={handleSubmit}>
                               <input
@@ -363,12 +383,8 @@ const CourseMain: NextPage = () => {
                               />
                             </form> */}
                           </div>
-
                         </div>
-
                       </div>
-
-
                     </Group>
                   </div>
                 </div>
@@ -382,8 +398,6 @@ const CourseMain: NextPage = () => {
                 >
                   <div className="card flex h-full flex-col">
                     <Group position="left" m="3rem" variant="column">
-
-
                       {/* <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
                         {messages.map(m => (
                           <div key={m.id} className="whitespace-pre-wrap">
@@ -421,9 +435,11 @@ const CourseMain: NextPage = () => {
                         color="grape"
                         // icon={CheckboxIcon}
                         checked={checked3}
-                        onChange={(event) => setChecked3(event.currentTarget.checked)}
-                      // defaultChecked={isPrivate}
-                      // onChange={handleCheckboxChange}
+                        onChange={(event) =>
+                          setChecked3(event.currentTarget.checked)
+                        }
+                        // defaultChecked={isPrivate}
+                        // onChange={handleCheckboxChange}
                       />
                       <Checkbox
                         label={`Content includes equations; LaTeX notation preferred.`}
@@ -436,9 +452,11 @@ const CourseMain: NextPage = () => {
                         color="grape"
                         // icon={CheckboxIcon}
                         checked={checked1}
-                        onChange={(event) => setChecked1(event.currentTarget.checked)}
-                      // defaultChecked={isPrivate}
-                      // onChange={handleCheckboxChange}
+                        onChange={(event) =>
+                          setChecked1(event.currentTarget.checked)
+                        }
+                        // defaultChecked={isPrivate}
+                        // onChange={handleCheckboxChange}
                       />
                       <Checkbox
                         label={`Focus exclusively on document - based references—avoid incorporating knowledge from outside sources.Essential for legal and similar fields to maintain response quality.`}
@@ -451,9 +469,11 @@ const CourseMain: NextPage = () => {
                         color="grape"
                         // icon={CheckboxIcon}
                         checked={checked2}
-                        onChange={(event) => setChecked2(event.currentTarget.checked)}
-                      // defaultChecked={isPrivate}
-                      // onChange={handleCheckboxChange}
+                        onChange={(event) =>
+                          setChecked2(event.currentTarget.checked)
+                        }
+                        // defaultChecked={isPrivate}
+                        // onChange={handleCheckboxChange}
                       />
                       <Title
                         className={`label ${montserrat_heading.variable} font - montserratHeading`}
@@ -498,7 +518,6 @@ const CourseMain: NextPage = () => {
                         }}
                       />
                       <div style={{ paddingTop: '10px', width: '100%' }}>
-
                         <div
                           style={{
                             paddingTop: '10px',
@@ -507,7 +526,6 @@ const CourseMain: NextPage = () => {
                             justifyContent: 'space-between',
                           }}
                         >
-
                           <Button
                             className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
                             type="submit"
@@ -536,10 +554,7 @@ const CourseMain: NextPage = () => {
                           </Button>
                         </div>
                       </div>
-
                     </Group>
-
-
                   </div>
                 </div>
               </Flex>
@@ -555,46 +570,68 @@ export const showToastOnPromptUpdate = (
   was_error = false,
   isReset = false,
 ) => {
-  return (
-    notifications.show({
-      id: 'prompt-updated',
-      withCloseButton: true,
-      onClose: () => console.log('unmounted'),
-      onOpen: () => console.log('mounted'),
-      autoClose: 12000,
-      title: was_error ? 'Error updating prompt' : (isReset ? 'Resetting prompt...' : 'Updating prompt...'),
-      message: was_error
-        ? "An error occurred while updating the prompt. Please try again."
-        : (isReset ? 'The prompt has been reset to default.' : 'The prompt has been updated successfully.'),
-      icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
-      styles: {
-        root: {
-          backgroundColor: theme.colors.nearlyWhite,
-          borderColor: was_error
-            ? theme.colors.errorBorder
-            : theme.colors.aiPurple,
-        },
-        title: {
-          color: theme.colors.nearlyBlack,
-        },
-        description: {
-          color: theme.colors.nearlyBlack,
-        },
-        closeButton: {
-          color: theme.colors.nearlyBlack,
-          '&:hover': {
-            backgroundColor: theme.colors.dark[1],
-          },
-        },
-        icon: {
-          backgroundColor: was_error
-            ? theme.colors.errorBackground
-            : theme.colors.successBackground,
-          padding: '4px',
+  return notifications.show({
+    id: 'prompt-updated',
+    withCloseButton: true,
+    onClose: () => console.log('unmounted'),
+    onOpen: () => console.log('mounted'),
+    autoClose: 12000,
+    title: was_error
+      ? 'Error updating prompt'
+      : isReset
+        ? 'Resetting prompt...'
+        : 'Updating prompt...',
+    message: was_error
+      ? 'An error occurred while updating the prompt. Please try again.'
+      : isReset
+        ? 'The prompt has been reset to default.'
+        : 'The prompt has been updated successfully.',
+    icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
+    styles: {
+      root: {
+        backgroundColor: theme.colors.nearlyWhite,
+        borderColor: was_error
+          ? theme.colors.errorBorder
+          : theme.colors.aiPurple,
+      },
+      title: {
+        color: theme.colors.nearlyBlack,
+      },
+      description: {
+        color: theme.colors.nearlyBlack,
+      },
+      closeButton: {
+        color: theme.colors.nearlyBlack,
+        '&:hover': {
+          backgroundColor: theme.colors.dark[1],
         },
       },
-      loading: false,
-    })
-  )
+      icon: {
+        backgroundColor: was_error
+          ? theme.colors.errorBackground
+          : theme.colors.successBackground,
+        padding: '4px',
+      },
+    },
+    loading: false,
+  })
 }
 export default CourseMain
+
+const handleSubmitPromptOptimization = async (
+  e: any,
+  reload: any,
+  setMessages: any,
+) => {
+  e.preventDefault()
+  console.log('submitting', e)
+  console.log('e.target[0].value', e.target[0].value)
+
+  const finalMessage = `Hi ChatGPT please do this.\n\n${e.target[0].value}\n\nFinal instructions.`
+
+  setMessages([
+    { role: 'system', content: 'My system message' },
+    { role: 'user', content: finalMessage },
+  ])
+  reload()
+}
