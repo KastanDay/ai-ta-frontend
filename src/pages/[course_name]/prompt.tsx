@@ -388,6 +388,8 @@ const CourseMain: NextPage = () => {
                     </Group>
                   </div>
                 </div>
+                {/* RIGHT SIDE OF CARD */}
+                {/* TODO Add condition if prompt is default or empty, show right side of card. Otherwise hide it. */}
                 <div
                   style={{
                     flex: isSmallScreen ? '1 1 100%' : '1 1 40%',
@@ -557,6 +559,7 @@ const CourseMain: NextPage = () => {
                     </Group>
                   </div>
                 </div>
+                {/* End of right side of Card */}
               </Flex>
             </Card>
           </Flex>
