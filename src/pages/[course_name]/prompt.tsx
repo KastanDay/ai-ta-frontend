@@ -55,7 +55,7 @@ const montserrat_light = Montserrat({
 const CourseMain: NextPage = () => {
   const [checked1, setChecked1] = useState(false)
   const [checked2, setChecked2] = useState(false)
-  const [checked3, setChecked3] = useState(false)
+  const [checked3, setChecked3] = useState(true)
 
   const theme = useMantineTheme()
   const router = useRouter()
@@ -82,7 +82,9 @@ const CourseMain: NextPage = () => {
   const [thingsToDo, setThingsToDo] = useState('')
   const [thingsNotToDo, setThingsNotToDo] = useState('')
   const [originalSystemPrompt, setOriginalSystemPrompt] = useState('')
-  const [chatInitialized, setChatInitialized] = useState(false)
+  const { messages, input, handleInputChange, reload, setMessages, setInput } = useChat({
+    api: '/api/chat/openAI',
+  })
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -102,19 +104,19 @@ const CourseMain: NextPage = () => {
       setSystemPrompt(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
       setBaseSystemPrompt(courseMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT)
       setIsLoading(false)
-      setChatInitialized(true)
+
     }
     fetchCourseData()
   }, [router.isReady])
 
-  let { messages, input, handleInputChange, reload, setMessages } = useChat({
-    api: '/api/chat/openAI',
-  })
+
 
   useEffect(() => {
     // Just for testing
-    console.log('input', input)
-  }, [input])
+    if (systemPrompt) {
+      setInput(systemPrompt)
+    }
+  }, [systemPrompt])
 
   useEffect(() => {
     let newSystemPrompt = baseSystemPrompt
@@ -366,7 +368,6 @@ const CourseMain: NextPage = () => {
                                 }}
                                 style={{ width: '100%' }}
                               />
-
                               <Button type="submit">
                                 Optimize System Prompt
                               </Button>
@@ -389,18 +390,18 @@ const CourseMain: NextPage = () => {
                   </div>
                 </div>
                 {/* RIGHT SIDE OF CARD */}
-                {/* TODO Add condition if prompt is default or empty, show right side of card. Otherwise hide it. */}
-                <div
-                  style={{
-                    flex: isSmallScreen ? '1 1 100%' : '1 1 40%',
-                    padding: '1rem',
-                    backgroundColor: '#15162c',
-                    color: 'white',
-                  }}
-                >
-                  <div className="card flex h-full flex-col">
-                    <Group position="left" m="3rem" variant="column">
-                      {/* <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+                {systemPrompt == DEFAULT_SYSTEM_PROMPT &&
+                  <div
+                    style={{
+                      flex: isSmallScreen ? '1 1 100%' : '1 1 40%',
+                      padding: '1rem',
+                      backgroundColor: '#15162c',
+                      color: 'white',
+                    }}
+                  >
+                    <div className="card flex h-full flex-col">
+                      <Group position="left" m="3rem" variant="column">
+                        {/* <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
                         {messages.map(m => (
                           <div key={m.id} className="whitespace-pre-wrap">
                             {m.role === 'user' ? 'User: ' : 'AI: '}
@@ -417,126 +418,126 @@ const CourseMain: NextPage = () => {
                           />
                         </form>
                       </div> */}
-                      <Title
-                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
-                        variant="gradient"
-                        gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                        order={3}
-                        style={{ paddingTop: '18px' }}
-                      >
-                        Add Instructions to System Prompt
-                      </Title>
-                      <Checkbox
-                        label={`Add greetings at the beginning of the conversation.`}
-                        // wrapperProps={{}}
-                        // description="Course is private by default."
-                        className={`${montserrat_paragraph.variable} font - montserratParagraph`}
-                        // style={{ marginTop: '4rem' }}
-                        size="md"
-                        // bg='#020307'
-                        color="grape"
-                        // icon={CheckboxIcon}
-                        checked={checked3}
-                        onChange={(event) =>
-                          setChecked3(event.currentTarget.checked)
-                        }
-                        // defaultChecked={isPrivate}
-                        // onChange={handleCheckboxChange}
-                      />
-                      <Checkbox
-                        label={`Content includes equations; LaTeX notation preferred.`}
-                        // wrapperProps={{}}
-                        // description="Course is private by default."
-                        className={`${montserrat_paragraph.variable} font - montserratParagraph`}
-                        // style={{ marginTop: '4rem' }}
-                        size="md"
-                        // bg='#020307'
-                        color="grape"
-                        // icon={CheckboxIcon}
-                        checked={checked1}
-                        onChange={(event) =>
-                          setChecked1(event.currentTarget.checked)
-                        }
-                        // defaultChecked={isPrivate}
-                        // onChange={handleCheckboxChange}
-                      />
-                      <Checkbox
-                        label={`Focus exclusively on document - based references—avoid incorporating knowledge from outside sources.Essential for legal and similar fields to maintain response quality.`}
-                        // wrapperProps={{}}
-                        // description="Course is private by default."
-                        className={`${montserrat_paragraph.variable} font - montserratParagraph`}
-                        // style={{ marginTop: '4rem' }}
-                        size="md"
-                        // bg='#020307'
-                        color="grape"
-                        // icon={CheckboxIcon}
-                        checked={checked2}
-                        onChange={(event) =>
-                          setChecked2(event.currentTarget.checked)
-                        }
-                        // defaultChecked={isPrivate}
-                        // onChange={handleCheckboxChange}
-                      />
-                      <Title
-                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
-                        variant="gradient"
-                        gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                        order={4}
-                      >
-                        Things to do
-                      </Title>
-                      <Textarea
-                        // label={<strong>Things to do</strong>}
-                        autosize
-                        minRows={3}
-                        maxRows={20}
-                        style={{ width: '100%', paddingTop: '0px' }}
-                        placeholder="Enter guidelines that the chat response should adhere to..."
-                        className={`pt - 3 ${montserrat_paragraph.variable} font - montserratParagraph`}
-                        value={thingsToDo}
-                        onChange={(e) => {
-                          setThingsToDo(e.target.value)
-                        }}
-                      />
-                      <Title
-                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
-                        variant="gradient"
-                        gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                        order={4}
-                      >
-                        Things NOT to do
-                      </Title>
-                      <Textarea
-                        // label={<strong>Things NOT to do</strong>}
-                        autosize
-                        minRows={3}
-                        maxRows={20}
-                        style={{ width: '100%', paddingTop: '0px' }}
-                        placeholder="Edit the guidelines that the chat response should not adhere to..."
-                        className={`pt - 3 ${montserrat_paragraph.variable} font - montserratParagraph`}
-                        value={thingsNotToDo}
-                        onChange={(e) => {
-                          setThingsNotToDo(e.target.value)
-                        }}
-                      />
-                      <div style={{ paddingTop: '10px', width: '100%' }}>
-                        <div
-                          style={{
-                            paddingTop: '10px',
-                            width: '100%',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                          }}
+                        <Title
+                          className={`label ${montserrat_heading.variable} font - montserratHeading`}
+                          variant="gradient"
+                          gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                          order={3}
+                          style={{ paddingTop: '18px' }}
                         >
-                          <Button
-                            className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
-                            type="submit"
-                            onClick={handleSystemPromptSubmit}
-                            style={{ minWidth: 'fit-content' }}
+                          Add Instructions to System Prompt
+                        </Title>
+                        <Checkbox
+                          label={`Add greetings at the beginning of the conversation.`}
+                          // wrapperProps={{}}
+                          // description="Course is private by default."
+                          className={`${montserrat_paragraph.variable} font - montserratParagraph`}
+                          // style={{ marginTop: '4rem' }}
+                          size="md"
+                          // bg='#020307'
+                          color="grape"
+                          // icon={CheckboxIcon}
+                          checked={checked3}
+                          onChange={(event) =>
+                            setChecked3(event.currentTarget.checked)
+                          }
+                        // defaultChecked={isPrivate}
+                        // onChange={handleCheckboxChange}
+                        />
+                        <Checkbox
+                          label={`Content includes equations; LaTeX notation preferred.`}
+                          // wrapperProps={{}}
+                          // description="Course is private by default."
+                          className={`${montserrat_paragraph.variable} font - montserratParagraph`}
+                          // style={{ marginTop: '4rem' }}
+                          size="md"
+                          // bg='#020307'
+                          color="grape"
+                          // icon={CheckboxIcon}
+                          checked={checked1}
+                          onChange={(event) =>
+                            setChecked1(event.currentTarget.checked)
+                          }
+                        // defaultChecked={isPrivate}
+                        // onChange={handleCheckboxChange}
+                        />
+                        <Checkbox
+                          label={`Focus exclusively on document - based references—avoid incorporating knowledge from outside sources.Essential for legal and similar fields to maintain response quality.`}
+                          // wrapperProps={{}}
+                          // description="Course is private by default."
+                          className={`${montserrat_paragraph.variable} font - montserratParagraph`}
+                          // style={{ marginTop: '4rem' }}
+                          size="md"
+                          // bg='#020307'
+                          color="grape"
+                          // icon={CheckboxIcon}
+                          checked={checked2}
+                          onChange={(event) =>
+                            setChecked2(event.currentTarget.checked)
+                          }
+                        // defaultChecked={isPrivate}
+                        // onChange={handleCheckboxChange}
+                        />
+                        <Title
+                          className={`label ${montserrat_heading.variable} font - montserratHeading`}
+                          variant="gradient"
+                          gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                          order={4}
+                        >
+                          Things to do
+                        </Title>
+                        <Textarea
+                          // label={<strong>Things to do</strong>}
+                          autosize
+                          minRows={3}
+                          maxRows={20}
+                          style={{ width: '100%', paddingTop: '0px' }}
+                          placeholder="Enter guidelines that the chat response should adhere to..."
+                          className={`pt - 3 ${montserrat_paragraph.variable} font - montserratParagraph`}
+                          value={thingsToDo}
+                          onChange={(e) => {
+                            setThingsToDo(e.target.value)
+                          }}
+                        />
+                        <Title
+                          className={`label ${montserrat_heading.variable} font - montserratHeading`}
+                          variant="gradient"
+                          gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                          order={4}
+                        >
+                          Things NOT to do
+                        </Title>
+                        <Textarea
+                          // label={<strong>Things NOT to do</strong>}
+                          autosize
+                          minRows={3}
+                          maxRows={20}
+                          style={{ width: '100%', paddingTop: '0px' }}
+                          placeholder="Edit the guidelines that the chat response should not adhere to..."
+                          className={`pt - 3 ${montserrat_paragraph.variable} font - montserratParagraph`}
+                          value={thingsNotToDo}
+                          onChange={(e) => {
+                            setThingsNotToDo(e.target.value)
+                          }}
+                        />
+                        <div style={{ paddingTop: '10px', width: '100%' }}>
+                          <div
+                            style={{
+                              paddingTop: '10px',
+                              width: '100%',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                            }}
                           >
-                            Update System Prompt
-                          </Button>
-                          {/* <Button
+                            <Button
+                              className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
+                              type="submit"
+                              onClick={handleSystemPromptSubmit}
+                              style={{ minWidth: 'fit-content' }}
+                            >
+                              Update System Prompt
+                            </Button>
+                            {/* <Button
                             className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
                             type="submit"
                             onClick={handleSystemPromptSubmit}
@@ -544,27 +545,28 @@ const CourseMain: NextPage = () => {
                           >
                             Steam Sytem Prompt with ChatGPT
                           </Button> */}
-                          <Button
-                            className="relative m-1 self-end bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
-                            onClick={() => {
-                              setSystemPrompt(DEFAULT_SYSTEM_PROMPT)
-                              resetSystemPrompt()
-                            }}
-                            style={{ minWidth: 'fit-content' }}
-                          >
-                            Reset
-                          </Button>
+                            <Button
+                              className="relative m-1 self-end bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
+                              onClick={() => {
+                                setSystemPrompt(DEFAULT_SYSTEM_PROMPT)
+                                resetSystemPrompt()
+                              }}
+                              style={{ minWidth: 'fit-content' }}
+                            >
+                              Reset
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    </Group>
+                      </Group>
+                    </div>
                   </div>
-                </div>
+                }
                 {/* End of right side of Card */}
               </Flex>
             </Card>
           </Flex>
-        </div>
-      </main>
+        </div >
+      </main >
     </>
   )
 }
@@ -629,11 +631,10 @@ const handleSubmitPromptOptimization = async (
   e.preventDefault()
   console.log('submitting', e)
   console.log('e.target[0].value', e.target[0].value)
-
   const finalMessage = `Hi ChatGPT please do this.\n\n${e.target[0].value}\n\nFinal instructions.`
 
   setMessages([
-    { role: 'system', content: 'My system message' },
+    { role: 'system', content: 'Hi Im system prompt' },
     { role: 'user', content: finalMessage },
   ])
   reload()
