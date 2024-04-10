@@ -155,17 +155,13 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
   const deleteDocumentMutation = useMutation(
     async (recordsToDelete: CourseDocument[]) => {
       console.debug('Deleting records:', recordsToDelete)
-      const API_URL = 'https://flask-production-751b.up.railway.app'
-      const deletePromises = recordsToDelete.map((record) =>
-        axios.delete(`${API_URL}/delete`, {
-          params: {
-            course_name: record.course_name,
-            s3_path: record.s3_path,
-            url: record.url,
-          },
-        }),
-      )
-      await Promise.all(deletePromises)
+      await fetch('/api/deleteDocuments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(recordsToDelete),
+      })
       console.debug('Deleted records')
     },
     {
