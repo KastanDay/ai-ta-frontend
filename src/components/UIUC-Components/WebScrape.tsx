@@ -187,34 +187,13 @@ export const WebScrape = ({
         const canvasCourseIdParts = url.split('canvas.illinois.edu/courses/')
         const canvasCourseId = canvasCourseIdParts[1]?.split('/')[0]
 
+        // console.log("calling new canvas ingest")
         try {
-          const response = await axios.get(
-            'https://flask-production-751b.up.railway.app/ingestCanvas',
-            {
-              params: {
-                course_id: canvasCourseId,
-                course_name: courseName,
-                files: selectedCanvasOptions.includes('files')
-                  ? 'true'
-                  : 'false',
-                pages: selectedCanvasOptions.includes('pages')
-                  ? 'true'
-                  : 'false',
-                modules: selectedCanvasOptions.includes('modules')
-                  ? 'true'
-                  : 'false',
-                syllabus: selectedCanvasOptions.includes('syllabus')
-                  ? 'true'
-                  : 'false',
-                assignments: selectedCanvasOptions.includes('assignments')
-                  ? 'true'
-                  : 'false',
-                discussions: selectedCanvasOptions.includes('discussions')
-                  ? 'true'
-                  : 'false',
-              },
-            },
-          )
+          const response = await axios.post('/api/ingestCanvas', {
+            canvasCourseId,
+            courseName,
+            selectedCanvasOptions,
+          });
 
           if (response.data.outcome) {
             console.log('Canvas content ingestion was successful!')
