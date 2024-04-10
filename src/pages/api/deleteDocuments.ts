@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import axios from 'axios'
 import { CourseDocument } from 'src/types/courseMaterials'
 
-const API_URL = 'https://flask-production-751b.up.railway.app'
+const flask_url = process.env.FLASK_URL
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,7 +15,7 @@ export default async function handler(
 
     try {
       const deletePromises = recordsToDelete.map((record) =>
-        axios.delete(`${API_URL}/delete`, {
+        axios.delete(`${flask_url}/delete`, {
           params: {
             course_name: record.course_name,
             s3_path: record.s3_path,

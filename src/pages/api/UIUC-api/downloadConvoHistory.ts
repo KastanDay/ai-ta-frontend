@@ -1,5 +1,7 @@
 import axios from 'axios'
 
+const flask_url = process.env.FLASK_URL
+
 interface DownloadResult {
   message: string
 }
@@ -9,7 +11,7 @@ export const downloadConversationHistory = async (
 ): Promise<DownloadResult> => {
   try {
     const response = await axios.get(
-      `https://flask-production-751b.up.railway.app/export-convo-history-csv?course_name=${courseName}`,
+      `${flask_url}/export-convo-history-csv?course_name=${courseName}`,
       { responseType: 'blob' },
     )
 

@@ -1,6 +1,8 @@
 import axios, { AxiosResponse } from 'axios'
 import { ContextWithMetadata } from '~/types/chat'
 
+const flask_url = process.env.FLASK_URL
+
 export const fetchMQRContexts = async (
   course_name: string,
   search_query: string,
@@ -9,7 +11,7 @@ export const fetchMQRContexts = async (
 ) => {
   try {
     const response: AxiosResponse<ContextWithMetadata[]> = await axios.get(
-      `https://flask-production-751b.up.railway.app/getTopContextsWithMQR`,
+      `${flask_url}/getTopContextsWithMQR`,
       {
         params: {
           course_name: course_name,

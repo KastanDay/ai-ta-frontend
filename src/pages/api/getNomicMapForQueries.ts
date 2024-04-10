@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
+const flask_url = process.env.FLASK_URL
+
 export const runtime = 'edge'
 
 export default async function handler(req: NextRequest, res: NextResponse) {
@@ -8,7 +10,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     const course_name = req.nextUrl.searchParams.get('course_name')
 
     const response = await fetch(
-      `https://flask-production-751b.up.railway.app/getNomicMap?course_name=${course_name}`,
+      `${flask_url}/getNomicMap?course_name=${course_name}`,
     )
     const data = await response.json()
 

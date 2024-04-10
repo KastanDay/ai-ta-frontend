@@ -2,13 +2,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 
+const flask_url = process.env.FLASK_URL
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // console.log("made it to new canvas ingest");
   if (req.method === 'POST') {
     const { canvasCourseId, courseName, selectedCanvasOptions } = req.body;
     try {
       const response = await axios.get(
-        'https://flask-production-751b.up.railway.app/ingestCanvas',
+        `${flask_url}/ingestCanvas`,
         {
           params: {
             course_id: canvasCourseId,

@@ -1,5 +1,7 @@
 import { ContextWithMetadata } from '~/types/chat'
 
+const flask_url = process.env.FLASK_URL
+
 export const config = {
   runtime: 'edge',
 }
@@ -18,7 +20,7 @@ export const fetchContexts = async (
     doc_groups: JSON.stringify(doc_groups),
   }).toString()
 
-  const url = `https://flask-production-751b.up.railway.app/getTopContexts?${queryParams}`
+  const url = `${flask_url}/getTopContexts?${queryParams}`
 
   try {
     const response = await fetch(url)

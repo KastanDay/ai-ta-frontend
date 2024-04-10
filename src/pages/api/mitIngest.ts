@@ -2,9 +2,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 
+const flask_url = process.env.FLASK_URL
+
 const mitDownload = async (url: string, courseName: string, localDir: string) => {
   try {
-    const response = await axios.get('https://flask-production-751b.up.railway.app/mit-download', {
+    const response = await axios.get(`${flask_url}/mit-download`, {
       params: {
         url: url,
         course_name: courseName,

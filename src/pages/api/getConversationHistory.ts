@@ -2,13 +2,15 @@
 import axios from 'axios';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+const flask_url = process.env.FLASK_URL
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     const { course_name } = req.query;
 
     try {
       const response = await axios.get(
-        `https://flask-production-751b.up.railway.app/export-convo-history-csv?course_name=${course_name}`,
+        `${flask_url}/export-convo-history-csv?course_name=${course_name}`,
         { responseType: 'arraybuffer' }
       );
 

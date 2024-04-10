@@ -1,12 +1,14 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { ChatBody, Conversation, Message } from '@/types/chat';
 
+const flask_url = process.env.FLASK_URL
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     try {
       const { course_name, conversation } = req.body as { course_name: string; conversation: Conversation };
 
-      const response = await fetch(`https://flask-production-751b.up.railway.app/onResponseCompletion`, {
+      const response = await fetch(`${flask_url}/onResponseCompletion`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
