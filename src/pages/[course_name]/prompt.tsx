@@ -19,6 +19,7 @@ import {
   Group,
   Input,
   MantineTheme,
+  Modal,
   Select,
   Table,
   Text,
@@ -33,7 +34,7 @@ import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { callSetCourseMetadata } from '~/utils/apiUtils'
 import Navbar from '~/components/UIUC-Components/navbars/Navbar'
 import Head from 'next/head'
-import { useMediaQuery } from '@mantine/hooks'
+import { useDisclosure, useMediaQuery } from '@mantine/hooks'
 import {
   IconAlertTriangle,
   IconCheck,
@@ -82,9 +83,12 @@ const CourseMain: NextPage = () => {
   const [thingsToDo, setThingsToDo] = useState('')
   const [thingsNotToDo, setThingsNotToDo] = useState('')
   const [originalSystemPrompt, setOriginalSystemPrompt] = useState('')
+  const [opened, { close, open }] = useDisclosure(false);
   const { messages, input, handleInputChange, reload, setMessages, setInput } = useChat({
     api: '/api/chat/openAI',
   })
+  const [finalSystemPrompt, setFinalSystemPrompt] = useState('')
+
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -148,18 +152,28 @@ const CourseMain: NextPage = () => {
   }, [checked1, checked2, checked3, thingsToDo, thingsNotToDo, courseMetadata])
 
   const handleSystemPromptSubmit = async () => {
+    let success = false; // Declare success here
     if (courseMetadata && course_name && systemPrompt) {
-      courseMetadata.system_prompt = systemPrompt
-      const success = await callSetCourseMetadata(course_name, courseMetadata)
-
-      if (!success) {
-        console.log('Error updating course metadata')
-        showToastOnPromptUpdate(theme, true)
-      } else {
-        showToastOnPromptUpdate(theme)
-      }
+      courseMetadata.system_prompt = systemPrompt;
+      success = await callSetCourseMetadata(course_name, courseMetadata);
+    } else if (courseMetadata && course_name && finalSystemPrompt) {
+      courseMetadata.system_prompt = systemPrompt;
+      success = await callSetCourseMetadata(course_name, courseMetadata);
+    }
+    if (!success) {
+      console.log('Error updating course metadata');
+      showToastOnPromptUpdate(theme, true);
+    } else {
+      showToastOnPromptUpdate(theme);
     }
   }
+
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.role === 'assistant') {
+      setFinalSystemPrompt(lastMessage.content);
+    }
+  }, [messages]);
 
   const resetSystemPrompt = async () => {
     if (courseMetadata && course_name) {
@@ -322,14 +336,15 @@ const CourseMain: NextPage = () => {
                         <div
                           style={{
                             width: '100%',
-                            display: 'flex',
+                            // display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
                             background: '#15162c',
-                            paddingBottom: '1rem',
+                            padding: '1rem 4rem',
+
                           }}
                         >
-                          <Title
+                          {/* <Title
                             order={3}
                             align="left"
                             variant="gradient"
@@ -337,43 +352,73 @@ const CourseMain: NextPage = () => {
                             style={{ flexGrow: 2, marginLeft: '1rem' }}
                           >
                             System Prompt
-                          </Title>
-                          <div className="stretch mx-auto flex w-full max-w-md flex-col py-24">
-                            {messages.map((m) => (
-                              <div key={m.id} className="whitespace-pre-wrap">
-                                {m.role === 'user' ? 'User: ' : 'AI: '}
-                                {m.content}
-                              </div>
-                            ))}
-                            <form
-                              onSubmit={(e) =>
-                                handleSubmitPromptOptimization(
-                                  e,
-                                  reload,
-                                  setMessages,
-                                )
-                              }
-                            >
-                              <Textarea
-                                autosize
-                                minRows={3}
-                                maxRows={20}
-                                placeholder="Enter the system prompt..."
-                                className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                value={input}
-                                onChange={(e) => {
-                                  setBaseSystemPrompt(e.target.value)
-                                  setSystemPrompt(e.target.value)
-                                  handleInputChange(e)
-                                }}
-                                style={{ width: '100%' }}
-                              />
-                              <Button type="submit">
-                                Optimize System Prompt
-                              </Button>
-                            </form>
+                          </Title> */}
+                          {/* <div className="stretch mx-auto flex w-full max-w-md flex-col py-24"> */}
 
-                            {/* <form onSubmit={handleSubmit}>
+
+                          <form
+                            onSubmit={(e) =>
+                              handleSubmitPromptOptimization(
+                                e,
+                                reload,
+                                setMessages,
+                              )
+                            }
+                          >
+                            <Textarea
+                              autosize
+                              minRows={3}
+                              maxRows={20}
+                              placeholder="Enter the system prompt..."
+                              className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                              value={input}
+                              onChange={(e) => {
+                                setBaseSystemPrompt(e.target.value)
+                                setSystemPrompt(e.target.value)
+                                handleInputChange(e)
+                              }}
+                              style={{ width: '100%' }}
+                            />
+                            <Modal opened={opened} onClose={close} size='lg' title="Optimized System Prompt"
+                              centered>
+                              <Group mt="xl">
+                                {messages.map((message, i, { length }) => {
+                                  if (length - 1 === i && message.role === 'assistant') {
+                                    return <div style={{
+                                      border: '1px solid #6D28D9',
+                                      padding: '10px',
+                                      borderRadius: '5px'
+                                    }}>
+                                      {message.content}
+                                    </div>
+                                  }
+                                }, null)}
+                                {/* TODO: add the return value if there is no message found
+                                  double confirm the handleSystemPromptSubmit */}
+                                <Button
+                                  className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
+                                  type="submit"
+                                  onClick={handleSystemPromptSubmit}
+                                  style={{ minWidth: 'fit-content' }}
+                                >
+                                  Update System Prompt
+                                </Button>
+                                <Button variant="outline" className="relative m-1 self-end bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
+                                  onClick={close}>
+                                  Cancel
+                                </Button>
+                              </Group>
+                            </Modal>
+
+                            <Button type="submit" onClick={open}
+                              style={{ minWidth: 'fit-content', marginTop: '15px' }}
+
+                              className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600">
+                              Optimize System Prompt
+                            </Button>
+                          </form>
+
+                          {/* <form onSubmit={handleSubmit}>
                               <input
                                 className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl"
                                 value={input}
@@ -383,7 +428,7 @@ const CourseMain: NextPage = () => {
                                 onChange={handleInputChange}
                               />
                             </form> */}
-                          </div>
+                          {/* </div> */}
                         </div>
                       </div>
                     </Group>
@@ -623,11 +668,13 @@ export const showToastOnPromptUpdate = (
 }
 export default CourseMain
 
+
 const handleSubmitPromptOptimization = async (
   e: any,
   reload: any,
   setMessages: any,
 ) => {
+
   e.preventDefault()
   console.log('submitting', e)
   console.log('e.target[0].value', e.target[0].value)
@@ -637,5 +684,6 @@ const handleSubmitPromptOptimization = async (
     { role: 'system', content: 'Hi Im system prompt' },
     { role: 'user', content: finalMessage },
   ])
+  // setFinalSystemPrompt(finalMessage)
   reload()
 }
