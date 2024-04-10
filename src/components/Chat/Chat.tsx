@@ -13,6 +13,7 @@ import {
   IconBrain,
   IconCreditCard,
   IconAlertCircle,
+  IconSearch,
   // IconArrowUpRight,
   // IconFileTextAi,
   // IconX,
@@ -29,7 +30,15 @@ import {
   useRef,
   useState,
 } from 'react'
-import { Button, Text } from '@mantine/core'
+import {
+  Button,
+  Group,
+  Switch,
+  Text,
+  UnstyledButton,
+  createStyles,
+  rem,
+} from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -75,6 +84,14 @@ import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
 import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
+import {
+  SpotlightProvider,
+  spotlight,
+  SpotlightAction,
+  SpotlightActionProps,
+} from '@mantine/spotlight'
+import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
+import ChatSpotlight from '../UIUC-Components/ChatSpotlight'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -91,6 +108,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   const [inputContent, setInputContent] = useState<string>('')
+
+  const {
+    data: documentGroups,
+    isSuccess,
+    isError,
+  } = useFetchEnabledDocGroups(getCurrentPageName())
+  const [actions, setActions] = useState<SpotlightAction[]>([])
 
   useEffect(() => {
     if (
@@ -131,6 +155,43 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  // const [spotlightQuery, setSpotlightQuery] = useState('')
+
+  // useEffect(() => {
+  //   console.log('updated actions: ', actions)
+  // }, [actions])
+
+  useEffect(() => {
+    // console.log('isSuccess: ', isSuccess)
+    if (isSuccess) {
+      const documentGroupActions =
+        documentGroups?.map((docGroup, index) => ({
+          id: `docGroup-${index}`,
+          title: docGroup.name,
+          description: `Description for ${docGroup.name}`,
+          group: 'Document Groups',
+          checked: true,
+          onTrigger: () => console.log(`${docGroup.name} triggered`),
+        })) || []
+
+      // const toolsActions = ['Tool 1', 'Tool 2', 'Tool 3'].map(
+      //   (tool, index) => ({
+      //     // const toolsActions = tools.map((tool, index) => ({
+      //     id: `tool-${index}`,
+      //     title: tool,
+      //     description: `Description for ${tool}`,
+      //     group: 'Tools',
+      //     checked: true,
+      //     onTrigger: () => console.log(`${tool} triggered`),
+      //   }),
+      // )
+
+      // console.log('documentGroupActions: ', documentGroupActions)
+      // console.log('actions: ', [...documentGroupActions, ...toolsActions])
+      setActions([...documentGroupActions])
+    }
+    // console.log('actions: ', actions)
+  }, [documentGroups, isSuccess])
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase
@@ -215,12 +276,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ; (message.content as Content[])[imgDescIndex] = {
+          ;(message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ; (message.content as Content[]).push({
+          ;(message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -239,6 +300,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     message: Message,
     selectedConversation: Conversation,
     searchQuery: string,
+    actions: SpotlightAction[],
   ) => {
     if (getCurrentPageName() != 'gpt4') {
       // Extract text from all user messages in the conversation
@@ -256,6 +318,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         getCurrentPageName(),
         searchQuery,
         token_limit,
+        actions
+          .filter(
+            (action) => action.checked && action.id?.startsWith('docGroup-'),
+          )
+          .map((action) => action.title),
       ).then((curr_contexts) => {
         message.contexts = curr_contexts as ContextWithMetadata[]
         console.log('message.contexts: ', message.contexts)
@@ -265,7 +332,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   // THIS IS WHERE MESSAGES ARE SENT.
   const handleSend = useCallback(
-    async (message: Message, deleteCount = 0, plugin: Plugin | null = null) => {
+    async (
+      message: Message,
+      deleteCount = 0,
+      plugin: Plugin | null = null,
+      actions: SpotlightAction[],
+    ) => {
       setCurrentMessage(message)
       // New way with React Context API
       // TODO: MOVE THIS INTO ChatMessage
@@ -317,14 +389,19 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }
 
         // Run context search, attach to Message object.
-        await handleContextSearch(message, selectedConversation, searchQuery)
+        await handleContextSearch(
+          message,
+          selectedConversation,
+          searchQuery,
+          actions,
+        )
 
         const chatBody: ChatBody = {
           model: updatedConversation.model,
           messages: updatedConversation.messages,
           key:
             courseMetadata?.openai_api_key &&
-              courseMetadata?.openai_api_key != ''
+            courseMetadata?.openai_api_key != ''
               ? courseMetadata.openai_api_key
               : apiKey,
           // prompt property is intentionally left undefined to avoid TypeScript errors
@@ -603,10 +680,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
-      handleSend(currentMessage, 2, null)
+      handleSend(currentMessage, 2, null, actions)
     }
   }, [currentMessage, handleSend])
 
@@ -696,14 +773,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-      courseMetadata.example_questions.length > 0
+    courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-        'Make a bullet point list of key takeaways of the course.',
-        'What is [your favorite topic] and why is it worth learning about?',
-        'How can I effectively prepare for the upcoming exam?',
-        'How many assignments in the course?',
-      ]
+          'Make a bullet point list of key takeaways of the course.',
+          'What is [your favorite topic] and why is it worth learning about?',
+          'How can I effectively prepare for the upcoming exam?',
+          'How many assignments in the course?',
+        ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
@@ -922,6 +999,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                         handleSend(
                           editedMessage,
                           selectedConversation?.messages.length - index,
+                          null,
+                          actions,
                         )
                       }}
                       onImageUrlsUpdate={onImageUrlsUpdate}
@@ -941,7 +1020,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               textareaRef={textareaRef}
               onSend={(message, plugin) => {
                 // setCurrentMessage(message)
-                handleSend(message, 0, plugin)
+                handleSend(message, 0, plugin, actions)
               }}
               onScrollDownClick={handleScrollDown}
               onRegenerate={handleRegenerate}

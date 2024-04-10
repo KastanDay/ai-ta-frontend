@@ -29,29 +29,31 @@ export default async function fetchDocuments(
   const fromStr = url.searchParams.get('from')
   const toStr = url.searchParams.get('to')
   const course_name = url.searchParams.get('course_name')
+  const search_key = url.searchParams.get('filter_key') as string
+  const search_value = url.searchParams.get('filter_value') as string
+  let sort_column = url.searchParams.get('sort_column') as string
+  let sort_direction = url.searchParams.get('sort_direction') === 'asc' // Convert 'asc' to true, 'desc' to false
 
   if (fromStr === null || toStr === null) {
     throw new Error('Missing required query parameters: from and to')
+  }
+
+  if (sort_column == null || sort_direction == null) {
+    sort_column = 'created_at'
+    sort_direction = false // 'desc' equivalent
   }
 
   const from = parseInt(fromStr)
   const to = parseInt(toStr)
 
   try {
-    // Fetch the paginated documents
-
-    console.log(
-      'Fetching documents for course:',
-      course_name,
-      'from:',
-      from,
-      'to:',
-      to,
-    )
-    const { data: documents, error } = await supabase
-      .from('documents')
-      .select(
-        `
+    let documents
+    let finalError
+    if (search_key && search_value) {
+      const { data: someDocs, error } = await supabase
+        .from('documents')
+        .select(
+          `
         id,
         course_name,
         readable_filename,
@@ -61,22 +63,69 @@ export default async function fetchDocuments(
         created_at,
         doc_groups (
           name
+          )
+          `,
         )
-      `,
-      )
-      .match({ course_name: course_name })
-      .order('created_at', { ascending: false })
-      .range(from, to)
-
-    if (error) {
-      throw error
+        .match({ course_name: course_name })
+        .ilike(search_key, '%' + search_value + '%') // e.g. readable_filename: 'some string'
+        .order(sort_column, { ascending: sort_direction })
+        .range(from, to)
+      documents = someDocs
+      finalError = error
+    } else {
+      const { data: someDocs, error } = await supabase
+        .from('documents')
+        .select(
+          `
+      id,
+      course_name,
+      readable_filename,
+      s3_path,
+      url,
+      base_url,
+      created_at,
+      doc_groups (
+        name
+        )
+        `,
+        )
+        .match({ course_name: course_name })
+        // NO FILTER
+        .order(sort_column, { ascending: sort_direction })
+        .range(from, to)
+      documents = someDocs
+      finalError = error
     }
 
-    // Fetch the total count of documents for the selected course
-    const { count, error: countError } = await supabase
-      .from('documents')
-      .select('id', { count: 'exact', head: true })
-      .match({ course_name: course_name })
+    if (finalError) {
+      throw finalError
+    }
+
+    if (!documents) {
+      throw new Error('Failed to fetch documents')
+    }
+
+    let count
+    let countError
+    if (search_key && search_value) {
+      // Fetch the total count of documents for the selected course
+      const { count: tmpCount, error: tmpCountError } = await supabase
+        .from('documents')
+        .select('id', { count: 'exact', head: true })
+        .match({ course_name: course_name })
+        .ilike(search_key, '%' + search_value + '%') // e.g. readable_filename: 'some string'
+      count = tmpCount
+      countError = tmpCountError
+    } else {
+      // Fetch the total count of documents for the selected course
+      const { count: tmpCount, error: tmpCountError } = await supabase
+        .from('documents')
+        .select('id', { count: 'exact', head: true })
+        .match({ course_name: course_name })
+      // NO FILTER
+      count = tmpCount
+      countError = tmpCountError
+    }
 
     if (countError) {
       throw countError

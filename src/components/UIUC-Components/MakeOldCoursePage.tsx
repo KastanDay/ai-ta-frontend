@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { Title, Flex, Blockquote, Text } from '@mantine/core'
+import { Title, Flex, Blockquote, Text, List } from '@mantine/core'
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
@@ -89,9 +89,81 @@ const MakeOldCoursePage = ({
               courseMetadata={metadata}
             />
 
+            <div className="flex w-[85%] flex-col items-center justify-center pb-8 pt-8">
+              {metadata && (
+                <>
+                  <Blockquote
+                    color="blue"
+                    icon={<IconInfoCircle />}
+                    styles={{
+                      root: {
+                        background:
+                          'linear-gradient(to right, rgba(106, 13, 173), rgba(80, 0, 220), rgba(0, 100, 255))',
+                        // marginBottom: '20px',
+                        borderRadius: '10px',
+                        overflow: 'hidden',
+                      },
+                    }}
+                  >
+                    <Text
+                      size="lg"
+                      className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                    >
+                      {/* Introducing Document Groups */}
+                      Exciting News: Document Groups Are Here!{' '}
+                      <span style={{ fontSize: '22px' }}>🎉</span>
+                    </Text>
+                    <br></br>
+                    <Text
+                      className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                      size={'md'}
+                    >
+                      Document Groups help you find what you need faster.
+                      <br></br>
+                      You can:
+                    </Text>
+                    <List>
+                      <List.Item className="pl-4">
+                        <Text
+                          className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                          size={'md'}
+                        >
+                          Organize documents into clear, manageable categories
+                        </Text>
+                      </List.Item>
+                      <List.Item className="pl-4">
+                        <Text
+                          className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                          size={'md'}
+                        >
+                          Enable and disable Document Groups to control what
+                          your chatbot users see.
+                        </Text>
+                      </List.Item>
+                      <List.Item className="pl-4">
+                        <Text
+                          className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                          size={'md'}
+                        >
+                          Chat with subsets of your data using filters (coming
+                          soon to the /chat page)
+                        </Text>
+                      </List.Item>
+                    </List>
+                    <Text
+                      className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                      size={'md'}
+                    >
+                      Try it out and start navigating huge projects with ease
+                      and control <span style={{ fontSize: '22px' }}>🙌</span>
+                    </Text>
+                  </Blockquote>
+                </>
+              )}
+            </div>
             {/* Course files header/background */}
             <div
-              className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
+              className="w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
             >
               <Flex direction="row" justify="space-between">
@@ -117,63 +189,13 @@ const MakeOldCoursePage = ({
                   </Title>
                 </div>
               </Flex>
-              {/* NOMIC not bad, not great */}
-              {/* <iframe className="nomic-iframe pl-20" id="iframe6a6ab0e4-06c0-41f6-8798-7891877373be" allow="clipboard-read; clipboard-write" src="https://atlas.nomic.ai/map/d5d9e9d2-6d86-47c1-98fc-9cccba688559/6a6ab0e4-06c0-41f6-8798-7891877373be"/> */}
             </div>
-            <div className="flex w-[85%] flex-col items-center justify-center pb-2 pt-8">
-              {metadata && (
-                <>
-                  <Blockquote
-                    color="blue"
-                    icon={<IconInfoCircle />}
-                    styles={{
-                      root: {
-                        background:
-                          'linear-gradient(to right, rgba(106, 13, 173), rgba(80, 0, 220), rgba(0, 100, 255))',
-                        marginBottom: '20px',
-                        borderRadius: '10px',
-                        overflow: 'hidden',
-                      },
-                    }}
-                  >
-                    <Text
-                      size="lg"
-                      className={`label ${montserrat_paragraph.className} inline-block p-0 text-neutral-200`}
-                    >
-                      Introducing Document Groups
-                    </Text>
-                    <Text
-                      className={`label ${montserrat_paragraph.className} inline-block p-0 text-neutral-200`}
-                      size={'md'}
-                    >
-                      To enhance organization and efficiency, we&apos;ve
-                      introduced Document Groups. This feature allows admins and
-                      project owners to categorize a large list of documents
-                      into smaller, manageable groups. It offers more control
-                      over document management for admins while simplifying the
-                      process for users to find relevant information quickly.
-                      Document Groups can be used as a filtering criterion
-                      during retrieval, aiding navigation through large volumes
-                      of documents.
-                    </Text>
-                    <Text
-                      className={`label ${montserrat_paragraph.className} inline-block p-0 text-neutral-200`}
-                      size={'md'}
-                    >
-                      Admins and owners have the flexibility to enable or
-                      disable these groups, tailoring the feature to their
-                      specific needs, ensuring users benefit from an organized
-                      and streamlined document retrieval process that improves
-                      their ability to access and utilize information
-                      effectively.
-                    </Text>
-                  </Blockquote>
-                  <DocGroupsTable course_name={course_name} />
-                </>
-              )}
+            <div className="w-[85%] pb-8 pt-8">
+              <DocGroupsTable course_name={course_name} />
             </div>
+
             <div
-              className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
+              className="w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
             >
               <Flex direction="row" justify="space-between">
@@ -195,7 +217,7 @@ const MakeOldCoursePage = ({
                     }}
                   >
                     {' '}
-                    Project Files
+                    Document Groups
                   </Title>
                 </div>
               </Flex>
