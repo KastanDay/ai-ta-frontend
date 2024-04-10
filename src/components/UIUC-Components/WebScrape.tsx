@@ -399,16 +399,11 @@ export const WebScrape = ({
     try {
       if (!url || !courseName || !localDir) return null
       console.log('calling downloadMITCourse')
-      const response = await axios.get(
-        `https://flask-production-751b.up.railway.app/mit-download`,
-        {
-          params: {
-            url: url,
-            course_name: courseName,
-            local_dir: localDir,
-          },
-        },
-      )
+      const response = await axios.post('/api/mitIngest', {
+        url,
+        courseName,
+        localDir,
+      });
       return response.data
     } catch (error) {
       console.error('Error during MIT course download:', error)
