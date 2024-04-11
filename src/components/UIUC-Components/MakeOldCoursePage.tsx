@@ -217,7 +217,7 @@ const MakeOldCoursePage = ({
                     }}
                   >
                     {' '}
-                    Document Groups
+                    Project Files
                   </Title>
                 </div>
               </Flex>
