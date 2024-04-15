@@ -20,6 +20,7 @@ import {
   Input,
   MantineTheme,
   Modal,
+  Paper,
   Select,
   Table,
   Text,
@@ -39,6 +40,8 @@ import {
   IconAlertTriangle,
   IconCheck,
   IconExternalLink,
+  IconLayoutSidebarRightExpand,
+  IconSparkles,
 } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import { useChat } from 'ai/react'
@@ -302,26 +305,37 @@ const CourseMain: NextPage = () => {
                       >
                         Customize system prompt
                       </Title>
-                      <Title order={4} w={'90%'}>
-                        For guidance on crafting prompts, consult the
-                        <a
-                          className={'pl-1 text-purple-600'}
-                          href="https://platform.openai.com/docs/guides/prompt-engineering"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          official OpenAI documentation
-                          <IconExternalLink
-                            className="mr-2 inline-block"
-                            style={{ position: 'relative', top: '-3px' }}
-                          />
-                        </a>
-                      </Title>
-                      <Title order={4} w={'90%'}>
-                        Modify with caution. Unnecessary alterations might
-                        reduce effectiveness, similar to overly restrictive
-                        coding. Changes affect all project users.
-                      </Title>
+                      <Paper shadow="xs" radius="md" p="md">
+                        <Title order={4} w={'100%'}>
+                          For guidance on crafting prompts, consult the
+                          <a
+                            className={'pl-1 text-purple-600'}
+                            href="https://platform.openai.com/docs/guides/prompt-engineering"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            official OpenAI documentation
+                            <IconExternalLink
+                              className="mr-2 inline-block"
+                              style={{ position: 'relative', top: '-3px' }}
+                            />
+                          </a>
+                          <br />
+                          <a
+                            className={'pl-1 text-purple-600'}
+                            href="https://docs.anthropic.com/claude/prompt-library"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            official Anthropic Prompt Library
+                            <IconExternalLink
+                              className="mr-2 inline-block"
+                              style={{ position: 'relative', top: '-3px' }}
+                            />
+                          </a>
+                        </Title>
+                      </Paper>
+
                       <div
                         style={{
                           width: '100%',
@@ -344,18 +358,23 @@ const CourseMain: NextPage = () => {
 
                           }}
                         >
-                          {/* <Title
-                            order={3}
-                            align="left"
+
+                          <Title
+                            className={`label ${montserrat_heading.variable} font - montserratHeading`}
                             variant="gradient"
-                            gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                            style={{ flexGrow: 2, marginLeft: '1rem' }}
+                            gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                            order={4}
                           >
-                            System Prompt
-                          </Title> */}
-                          {/* <div className="stretch mx-auto flex w-full max-w-md flex-col py-24"> */}
+                            System Prompt Optimization
+                          </Title>
+                          <Button type="submit" onClick={open}
+                            style={{ minWidth: 'fit-content', marginTop: '15px', paddingLeft: '8px' }}
 
-
+                            className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600">
+                            <IconSparkles stroke={1} />
+                            Optimize System Prompt
+                          </Button>
+                          <IconLayoutSidebarRightExpand stroke={2} />
                           <form
                             onSubmit={(e) =>
                               handleSubmitPromptOptimization(
@@ -365,6 +384,15 @@ const CourseMain: NextPage = () => {
                               )
                             }
                           >
+                            {/* <Title
+                              className={`label ${montserrat_heading.variable} font - montserratHeading`}
+                              variant="gradient"
+                              gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                              order={4}
+                            >
+                              System Prompt
+                            </Title>
+                            <p>This system prompt is used on ALL messages in this project. Read more...</p> */}
                             <Textarea
                               autosize
                               minRows={3}
@@ -378,7 +406,13 @@ const CourseMain: NextPage = () => {
                                 handleInputChange(e)
                               }}
                               style={{ width: '100%' }}
-                            />
+                            />     <Button type="submit" onClick={open}
+                              style={{ minWidth: 'fit-content', marginTop: '15px', paddingLeft: '8px' }}
+
+                              className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600">
+                              <IconSparkles stroke={1} />
+                              Optimize System Prompt
+                            </Button>
                             <Modal opened={opened} onClose={close} size='lg' title="Optimized System Prompt"
                               centered>
                               <Group mt="xl">
@@ -410,13 +444,31 @@ const CourseMain: NextPage = () => {
                               </Group>
                             </Modal>
 
-                            <Button type="submit" onClick={open}
-                              style={{ minWidth: 'fit-content', marginTop: '15px' }}
 
-                              className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600">
-                              Optimize System Prompt
-                            </Button>
                           </form>
+
+                          <Button
+                            className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
+                            type="submit"
+                            onClick={handleSystemPromptSubmit}
+                            style={{ minWidth: 'fit-content' }}
+                          >
+                            Update System Prompt
+                          </Button>
+                          <Button variant="outline" className="relative m-1 self-end bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
+                            onClick={close}>
+                            Cancel
+                          </Button>
+                          <Button
+                            className="relative m-1 self-end bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
+                            onClick={() => {
+                              setSystemPrompt(DEFAULT_SYSTEM_PROMPT)
+                              resetSystemPrompt()
+                            }}
+                            style={{ minWidth: 'fit-content' }}
+                          >
+                            Reset
+                          </Button>
 
                           {/* <form onSubmit={handleSubmit}>
                               <input
