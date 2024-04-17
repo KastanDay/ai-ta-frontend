@@ -84,7 +84,7 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   },
   [OpenAIModelID.GPT_4_HACKATHON]: {
     id: OpenAIModelID.GPT_4_HACKATHON,
-    name: 'GPT-4 Hackthon',
+    name: 'GPT-4 Hackathon',
     maxLength: 24000,
     tokenLimit: 128000,
   },
