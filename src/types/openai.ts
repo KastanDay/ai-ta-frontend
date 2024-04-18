@@ -17,7 +17,8 @@ export enum OpenAIModelID {
   // GPT_4_32K = 'gpt-4-32k',
   // Azure -- ONLY GPT-4 supported for now... due to deployment param being env var...
   GPT_4_AZURE = 'gpt-4-128k',
-  GPT_4_HACKATHON = 'gpt-4-hackathon'
+  GPT_4_HACKATHON = 'gpt-4-hackathon',
+  GPT_4_2024_04_09 = 'gpt-4-turbo-2024-04-09',
   // GPT_3_5_AZ = 'gpt-35-turbo',
   // GPT_3_5_16k_AZURE = 'gpt-35-turbo-16k'
 }
@@ -53,6 +54,12 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   [OpenAIModelID.GPT_4_0125_PREVIEW]: {
     id: OpenAIModelID.GPT_4_0125_PREVIEW,
     name: 'GPT-4 Turbo 0125 (128k)',
+    maxLength: 24000,
+    tokenLimit: 128000,
+  },
+  [OpenAIModelID.GPT_4_2024_04_09]: {
+    id: OpenAIModelID.GPT_4_2024_04_09,
+    name: 'GPT-4 Turbo 0409 (128k)',
     maxLength: 24000,
     tokenLimit: 128000,
   },
