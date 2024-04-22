@@ -623,8 +623,7 @@ const Home = () => {
 
             <div className="flex h-full w-full pt-[48px] sm:pt-0">
               {isDragging &&
-                selectedConversation?.model.id ===
-                  OpenAIModelID.GPT_4_VISION && (
+                (selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION || selectedConversation?.model.id === OpenAIModelID.GPT_4_2024_04_09) && (
                   <div className="absolute inset-0 z-10 flex h-full w-full flex-col items-center justify-center bg-black opacity-75">
                     <GradientIconPhoto />
                     <span className="text-3xl font-extrabold text-white">

@@ -247,6 +247,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     const imageContent = (message.content as Content[]).filter(
       (content) => content.type === 'image_url',
     )
+
+    // console.log("Image Content: ", imageContent)
+
     if (imageContent.length > 0) {
       homeDispatch({ field: 'isImg2TextLoading', value: true })
 
@@ -374,6 +377,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         const endpoint = getEndpoint(plugin)
 
         const controller = new AbortController()
+
+        console.log("Made it to message image handling code in handleSend with message: ", message)
 
         // Run image to text conversion, attach to Message object.
         if (Array.isArray(message.content)) {
@@ -618,7 +623,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               field: 'conversations',
               value: updatedConversations,
             })
-            console.log('updatedConversations: ', updatedConversations)
+            // console.log('updatedConversations: ', updatedConversations)
             saveConversations(updatedConversations)
             homeDispatch({ field: 'messageIsStreaming', value: false })
           } catch (error) {

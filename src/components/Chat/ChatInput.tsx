@@ -172,6 +172,8 @@ export const ChatInput = ({
     const textContent = content
     let imageContent: Content[] = [] // Explicitly declare the type for imageContent
 
+    console.log("image files length: ", imageFiles.length);
+
     if (imageFiles.length > 0 && !uploadingImage) {
       setUploadingImage(true)
       try {
@@ -211,6 +213,9 @@ export const ChatInput = ({
       return
     }
 
+    // currently logs 1 when there should be 2+
+    console.log("number of images: ", imageContent.length);
+
     // Construct the content array
     const contentArray: Content[] = [
       ...(textContent ? [{ type: 'text', text: textContent }] : []),
@@ -222,6 +227,8 @@ export const ChatInput = ({
       role: 'user',
       content: contentArray,
     }
+
+    console.log("sending message for vision: ", messageForGPT4Vision)
 
     // Use the onSend prop to send the structured message
     onSend(messageForGPT4Vision, plugin) // Cast to unknown then to Message if needed
@@ -511,7 +518,7 @@ export const ChatInput = ({
   const theme = useMantineTheme()
 
   useEffect(() => {
-    if (selectedConversation?.model.id !== OpenAIModelID.GPT_4_VISION) {
+    if (selectedConversation?.model.id !== OpenAIModelID.GPT_4_VISION && selectedConversation?.model.id !== OpenAIModelID.GPT_4_2024_04_09) {
       return // Exit early if the model is not GPT-4 Vision
     }
 
@@ -685,7 +692,7 @@ export const ChatInput = ({
           </Tooltip> */}
 
           {/* BUTTON 2: Image Icon and Input */}
-          {selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
+          {(selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION || selectedConversation?.model.id === OpenAIModelID.GPT_4_2024_04_09) && (
             <button
               className="absolute bottom-1.5 left-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
               onClick={() => document.getElementById('imageUpload')?.click()}
@@ -798,7 +805,7 @@ export const ChatInput = ({
             {/* Button 3: main input text area  */}
             <div
               className={
-                selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION
+                (selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION || selectedConversation?.model.id === OpenAIModelID.GPT_4_2024_04_09)
                   ? 'pl-8'
                   : 'pl-1'
               }
