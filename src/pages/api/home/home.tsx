@@ -320,6 +320,7 @@ const Home = () => {
 
     // Ordered list of preferred model IDs -- the first available model will be used as default
     const preferredModelIds = [
+      'gpt-4-turbo-2024-04-09',
       'gpt-4-128k',
       'gpt-4-0125-preview',
       'gpt-4-1106-preview',
