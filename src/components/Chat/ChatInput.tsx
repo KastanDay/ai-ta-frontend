@@ -166,77 +166,74 @@ export const ChatInput = ({
 
   const handleSend = async () => {
     if (messageIsStreaming) {
-      return
+      return;
     }
-
-    const textContent = content
-    let imageContent: Content[] = [] // Explicitly declare the type for imageContent
-
+  
+    const textContent = content;
+    let imageContent: Content[] = [];
+  
     console.log("image files length: ", imageFiles.length);
-
+  
     if (imageFiles.length > 0 && !uploadingImage) {
-      setUploadingImage(true)
+      setUploadingImage(true);
       try {
-        // If imageUrls is empty, upload all images and get their URLs
-        const imageUrlsToUse =
-          imageUrls.length > 0
-            ? imageUrls
-            : await Promise.all(
-                imageFiles.map((file) =>
-                  uploadImageAndGetUrl(file, courseName),
-                ),
-              )
-
+        // Always upload new images and get their URLs
+        const newImageUrls = await Promise.all(
+          imageFiles.map((file) =>
+            uploadImageAndGetUrl(file, courseName),
+          ),
+        );
+  
+        // Update the imageUrls state with new URLs
+        setImageUrls(newImageUrls.filter(url => url !== ''));
+  
         // Construct image content for the message
-        imageContent = imageUrlsToUse
-          .filter((url): url is string => url !== '') // Type-guard to filter out empty strings
+        imageContent = newImageUrls
+          .filter((url): url is string => url !== '')
           .map((url) => ({
             type: 'image_url',
             image_url: { url },
-          }))
-
-        // console.log("Final imageUrls: ", imageContent)
-
+          }));
+  
         // Clear the files after uploading
-        setImageFiles([])
-        setImagePreviewUrls([])
+        setImageFiles([]);
+        setImagePreviewUrls([]);
       } catch (error) {
-        console.error('Error uploading files:', error)
-        setImageError('Error uploading files')
+        console.error('Error uploading files:', error);
+        setImageError('Error uploading files');
       } finally {
-        setUploadingImage(false)
+        setUploadingImage(false);
       }
     }
-
+  
     if (!textContent && imageContent.length === 0) {
-      alert(t('Please enter a message or upload an image'))
-      return
+      alert(t('Please enter a message or upload an image'));
+      return;
     }
-
-    // currently logs 1 when there should be 2+
+  
     console.log("number of images: ", imageContent.length);
-
+  
     // Construct the content array
     const contentArray: Content[] = [
       ...(textContent ? [{ type: 'text', text: textContent }] : []),
       ...imageContent,
-    ]
-
+    ];
+  
     // Create a structured message for GPT-4 Vision
     const messageForGPT4Vision: Message = {
       role: 'user',
       content: contentArray,
-    }
-
-    console.log("sending message for vision: ", messageForGPT4Vision)
-
+    };
+  
+    console.log("sending message for vision: ", messageForGPT4Vision);
+  
     // Use the onSend prop to send the structured message
-    onSend(messageForGPT4Vision, plugin) // Cast to unknown then to Message if needed
-
+    onSend(messageForGPT4Vision, plugin);
+  
     // Reset states
-    setContent('')
-    setPlugin(null)
-    setImagePreviews([])
+    setContent('');
+    setPlugin(null);
+    setImagePreviews([]);
   }
 
   const handleStopConversation = () => {
