@@ -172,7 +172,7 @@ export const ChatInput = ({
     const textContent = content;
     let imageContent: Content[] = [];
   
-    console.log("image files length: ", imageFiles.length);
+    // console.log("image files length: ", imageFiles.length);
   
     if (imageFiles.length > 0 && !uploadingImage) {
       setUploadingImage(true);
@@ -211,7 +211,7 @@ export const ChatInput = ({
       return;
     }
   
-    console.log("number of images: ", imageContent.length);
+    // console.log("number of images: ", imageContent.length);
   
     // Construct the content array
     const contentArray: Content[] = [
@@ -225,7 +225,7 @@ export const ChatInput = ({
       content: contentArray,
     };
   
-    console.log("sending message for vision: ", messageForGPT4Vision);
+    // console.log("sending message for vision: ", messageForGPT4Vision);
   
     // Use the onSend prop to send the structured message
     onSend(messageForGPT4Vision, plugin);

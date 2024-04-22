@@ -378,7 +378,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
         const controller = new AbortController()
 
-        console.log("Made it to message image handling code in handleSend with message: ", message)
+        // console.log("Made it to message image handling code in handleSend with message: ", message)
 
         // Run image to text conversion, attach to Message object.
         if (Array.isArray(message.content)) {
