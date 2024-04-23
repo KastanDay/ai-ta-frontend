@@ -51,6 +51,7 @@ import {
   type Conversation,
   type Message,
   Content,
+  Action,
 } from '@/types/chat'
 import { type Plugin } from '@/types/plugin'
 
@@ -84,14 +85,7 @@ import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
 import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
-import {
-  SpotlightProvider,
-  spotlight,
-  SpotlightAction,
-  SpotlightActionProps,
-} from '@mantine/spotlight'
 import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
-import ChatSpotlight from '../UIUC-Components/ChatSpotlight'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -109,12 +103,15 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const [inputContent, setInputContent] = useState<string>('')
 
+  const [enabledDocumentGroups, setEnabledDocumentGroups] = useState<string[]>(
+    [],
+  )
+
   const {
-    data: documentGroups,
+    data: docGroups,
     isSuccess,
     isError,
   } = useFetchEnabledDocGroups(getCurrentPageName())
-  const [actions, setActions] = useState<SpotlightAction[]>([])
 
   useEffect(() => {
     if (
@@ -141,6 +138,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       prompts,
       showModelSettings,
       isImg2TextLoading,
+      documentGroups,
+      tools,
     },
     handleUpdateConversation,
     dispatch: homeDispatch,
@@ -155,21 +154,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  // const [spotlightQuery, setSpotlightQuery] = useState('')
-
-  // useEffect(() => {
-  //   console.log('updated actions: ', actions)
-  // }, [actions])
 
   useEffect(() => {
     // console.log('isSuccess: ', isSuccess)
     if (isSuccess) {
       const documentGroupActions =
-        documentGroups?.map((docGroup, index) => ({
-          id: `docGroup-${index}`,
-          title: docGroup.name,
-          description: `Description for ${docGroup.name}`,
-          group: 'Document Groups',
+        docGroups?.map((docGroup, index) => ({
+          id: `DocGroup-${index}`,
+          name: docGroup.name,
           checked: true,
           onTrigger: () => console.log(`${docGroup.name} triggered`),
         })) || []
@@ -186,12 +178,31 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       //   }),
       // )
 
-      // console.log('documentGroupActions: ', documentGroupActions)
-      // console.log('actions: ', [...documentGroupActions, ...toolsActions])
-      setActions([...documentGroupActions])
+      homeDispatch({
+        field: 'documentGroups',
+        value: [...documentGroupActions],
+      })
+      setEnabledDocumentGroups(
+        documentGroups
+          .filter((documentGroup) => documentGroup.checked)
+          .map((documentGroup) => documentGroup.name),
+      )
+
+      // homeDispatch({
+      //   field: 'tools',
+      //   value: [...toolsActions],
+      // })
+      // setEnabledTools(toolsActions.filter((tool) => tool.checked).map((tool) => tool.name))
     }
-    // console.log('actions: ', actions)
-  }, [documentGroups, isSuccess])
+  }, [docGroups, isSuccess])
+
+  useEffect(() => {
+    setEnabledDocumentGroups(
+      documentGroups
+        .filter((action) => action.checked)
+        .map((action) => action.name),
+    )
+  }, [documentGroups])
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase
@@ -298,7 +309,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     message: Message,
     selectedConversation: Conversation,
     searchQuery: string,
-    actions: SpotlightAction[],
+    documentGroups: string[],
   ) => {
     if (getCurrentPageName() != 'gpt4') {
       // Extract text from all user messages in the conversation
@@ -316,11 +327,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         getCurrentPageName(),
         searchQuery,
         token_limit,
-        actions
-          .filter(
-            (action) => action.checked && action.id?.startsWith('docGroup-'),
-          )
-          .map((action) => action.title),
+        documentGroups,
       ).then((curr_contexts) => {
         message.contexts = curr_contexts as ContextWithMetadata[]
         console.log('message.contexts: ', message.contexts)
@@ -334,7 +341,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       message: Message,
       deleteCount = 0,
       plugin: Plugin | null = null,
-      actions: SpotlightAction[],
+      enabledDocumentGroups: string[],
     ) => {
       setCurrentMessage(message)
       // New way with React Context API
@@ -391,7 +398,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           message,
           selectedConversation,
           searchQuery,
-          actions,
+          enabledDocumentGroups,
         )
 
         const chatBody: ChatBody = {
@@ -681,7 +688,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
-      handleSend(currentMessage, 2, null, actions)
+      handleSend(currentMessage, 2, null, enabledDocumentGroups)
     }
   }, [currentMessage, handleSend])
 
@@ -998,7 +1005,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                           editedMessage,
                           selectedConversation?.messages.length - index,
                           null,
-                          actions,
+                          enabledDocumentGroups,
                         )
                       }}
                       onImageUrlsUpdate={onImageUrlsUpdate}
@@ -1018,7 +1025,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               textareaRef={textareaRef}
               onSend={(message, plugin) => {
                 // setCurrentMessage(message)
-                handleSend(message, 0, plugin, actions)
+                handleSend(message, 0, plugin, enabledDocumentGroups)
               }}
               onScrollDownClick={handleScrollDown}
               onRegenerate={handleRegenerate}

@@ -1,4 +1,4 @@
-import { Conversation, Message } from '@/types/chat'
+import { Action, Conversation, Message } from '@/types/chat'
 import { ErrorMessage } from '@/types/error'
 import { FolderInterface } from '@/types/folder'
 import { OpenAIModel, OpenAIModelID } from '@/types/openai'
@@ -31,6 +31,8 @@ export interface HomeInitialState {
   cooldown: number
   showModelSettings: boolean
   isImg2TextLoading: boolean
+  documentGroups: Action[]
+  tools: Action[]
 }
 
 export const initialState: HomeInitialState = {
@@ -59,4 +61,6 @@ export const initialState: HomeInitialState = {
   cooldown: 0,
   showModelSettings: false,
   isImg2TextLoading: false,
+  documentGroups: [],
+  tools: [],
 }
