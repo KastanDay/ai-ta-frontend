@@ -166,74 +166,73 @@ export const ChatInput = ({
 
   const handleSend = async () => {
     if (messageIsStreaming) {
-      return;
+      return
     }
-  
-    const textContent = content;
-    let imageContent: Content[] = [];
-  
-    // console.log("image files length: ", imageFiles.length);
-  
+
+    const textContent = content
+    let imageContent: Content[] = [] // Explicitly declare the type for imageContent
+
     if (imageFiles.length > 0 && !uploadingImage) {
-      setUploadingImage(true);
+      setUploadingImage(true)
       try {
-        // Always upload new images and get their URLs
-        const newImageUrls = await Promise.all(
-          imageFiles.map((file) =>
-            uploadImageAndGetUrl(file, courseName),
-          ),
-        );
-  
-        // Update the imageUrls state with new URLs
-        setImageUrls(newImageUrls.filter(url => url !== ''));
-  
+        // If imageUrls is empty, upload all images and get their URLs
+        const imageUrlsToUse =
+          imageUrls.length > 0
+            ? imageUrls
+            : await Promise.all(
+                imageFiles.map((file) =>
+                  uploadImageAndGetUrl(file, courseName),
+                ),
+              )
+
         // Construct image content for the message
-        imageContent = newImageUrls
-          .filter((url): url is string => url !== '')
+        imageContent = imageUrlsToUse
+          .filter((url): url is string => url !== '') // Type-guard to filter out empty strings
           .map((url) => ({
             type: 'image_url',
             image_url: { url },
-          }));
-  
+          }))
+
+        // console.log("Final imageUrls: ", imageContent)
+
         // Clear the files after uploading
-        setImageFiles([]);
-        setImagePreviewUrls([]);
+        setImageFiles([])
+        setImagePreviewUrls([])
       } catch (error) {
-        console.error('Error uploading files:', error);
-        setImageError('Error uploading files');
+        console.error('Error uploading files:', error)
+        setImageError('Error uploading files')
       } finally {
-        setUploadingImage(false);
+        setUploadingImage(false)
       }
     }
-  
+
     if (!textContent && imageContent.length === 0) {
-      alert(t('Please enter a message or upload an image'));
-      return;
+      alert(t('Please enter a message or upload an image'))
+      return
     }
-  
-    // console.log("number of images: ", imageContent.length);
-  
+
     // Construct the content array
     const contentArray: Content[] = [
       ...(textContent ? [{ type: 'text', text: textContent }] : []),
       ...imageContent,
-    ];
-  
+    ]
+
     // Create a structured message for GPT-4 Vision
     const messageForGPT4Vision: Message = {
       role: 'user',
       content: contentArray,
-    };
-  
-    // console.log("sending message for vision: ", messageForGPT4Vision);
-  
+    }
+
     // Use the onSend prop to send the structured message
-    onSend(messageForGPT4Vision, plugin);
-  
+    onSend(messageForGPT4Vision, plugin) // Cast to unknown then to Message if needed
+
     // Reset states
-    setContent('');
-    setPlugin(null);
-    setImagePreviews([]);
+    setContent('')
+    setPlugin(null)
+    setImagePreviews([])
+    setImageUrls([]);
+    setImageFiles([]);
+    setImagePreviewUrls([]); 
   }
 
   const handleStopConversation = () => {
@@ -391,120 +390,116 @@ export const ChatInput = ({
 
   const handleImageUpload = useCallback(
     async (files: File[]) => {
-      const validFiles = files.filter((file) => isImageValid(file.name))
-      const invalidFilesCount = files.length - validFiles.length
-
+      const validFiles = files.filter((file) => isImageValid(file.name));
+      const invalidFilesCount = files.length - validFiles.length;
+  
       if (invalidFilesCount > 0) {
         setImageError(
           `${invalidFilesCount} invalid file type(s). Please upload .jpg or .png images.`,
-        )
-        showToastOnInvalidImage()
+        );
+        showToastOnInvalidImage();
       }
-
-      const imageProcessingPromises = validFiles.map((file) => {
-        return new Promise<ProcessedImage>((resolve, reject) => {
-          const reader = new FileReader()
-
-          reader.onloadend = () => {
-            const result = reader.result
-            if (typeof result === 'string') {
-              const img = new Image()
-              img.src = result
-
-              img.onload = () => {
-                let newWidth, newHeight
-                const MAX_WIDTH = 2048
-                const MAX_HEIGHT = 2048
-                const MIN_SIDE = 768
-
-                if (img.width > img.height) {
-                  newHeight = MIN_SIDE
-                  newWidth = (img.width / img.height) * newHeight
-                  if (newWidth > MAX_WIDTH) {
-                    newWidth = MAX_WIDTH
-                    newHeight = (img.height / img.width) * newWidth
-                  }
-                } else {
-                  newWidth = MIN_SIDE
-                  newHeight = (img.height / img.width) * newWidth
-                  if (newHeight > MAX_HEIGHT) {
-                    newHeight = MAX_HEIGHT
-                    newWidth = (img.width / img.height) * newHeight
-                  }
-                }
-
-                const canvas = document.createElement('canvas')
-                const ctx = canvas.getContext('2d')
-                if (ctx) {
-                  canvas.width = newWidth
-                  canvas.height = newHeight
-                  ctx.drawImage(img, 0, 0, newWidth, newHeight)
-
-                  canvas.toBlob(
-                    (blob) => {
-                      if (blob) {
-                        const resizedFile = new File([blob], file.name, {
-                          type: 'image/jpeg',
-                          lastModified: Date.now(),
-                        })
-
-                        resolve({
-                          resizedFile,
-                          dataUrl: canvas.toDataURL('image/jpeg'),
-                        })
-                      } else {
-                        reject(new Error('Canvas toBlob failed'))
-                      }
-                    },
-                    'image/jpeg',
-                    0.9,
-                  )
-                } else {
-                  reject(new Error('Canvas Context is null'))
-                }
-              }
-            } else {
-              reject(new Error('FileReader did not return a string result'))
-            }
-          }
-
-          reader.onerror = reject
-          reader.readAsDataURL(file)
-        })
-      })
-
+  
+      const imageProcessingPromises = validFiles.map((file) =>
+        processAndUploadImage(file)
+      );
+  
       try {
-        const processedImages = await Promise.all(imageProcessingPromises)
-        setImageFiles((prev) => [
-          ...prev,
-          ...processedImages.map((img) => img.resizedFile),
-        ])
-        setImagePreviewUrls((prev) => [
-          ...prev,
-          ...processedImages.map((img) => img.dataUrl),
-        ])
-
-        // Store the URLs of the uploaded images
-        const uploadedImageUrls = (
-          await Promise.all(
-            processedImages.map((img) =>
-              uploadImageAndGetUrl(img.resizedFile, courseName),
-            ),
-          )
-        ).filter(Boolean)
-        setImageUrls(uploadedImageUrls as string[])
+        const processedImages = await Promise.all(imageProcessingPromises);
+        const newImageFiles = processedImages.map((img) => img.resizedFile);
+        const newImagePreviewUrls = processedImages.map((img) => img.dataUrl);
+        const newImageUrls = processedImages.map((img) => img.uploadedUrl);
+  
+        setImageFiles((prev) => [...prev, ...newImageFiles]);
+        setImagePreviewUrls((prev) => [...prev, ...newImagePreviewUrls]);
+        setImageUrls((prev) => [...prev, ...newImageUrls.filter(Boolean)]);
       } catch (error) {
-        console.error('Error processing files:', error)
+        console.error('Error processing files:', error);
       }
     },
     [
       setImageError,
       setImageFiles,
       setImagePreviewUrls,
+      setImageUrls,
       showToastOnInvalidImage,
       courseName,
     ],
-  )
+  );
+  
+  async function processAndUploadImage(file: File): Promise<ProcessedImage & { uploadedUrl: string }> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+  
+      reader.onloadend = async () => {
+        const result = reader.result;
+        if (typeof result === 'string') {
+          const img = new Image();
+          img.src = result;
+  
+          img.onload = async () => {
+            const { newWidth, newHeight } = calculateDimensions(img);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              canvas.width = newWidth;
+              canvas.height = newHeight;
+              ctx.drawImage(img, 0, 0, newWidth, newHeight);
+  
+              canvas.toBlob(async (blob) => {
+                if (blob) {
+                  const resizedFile = new File([blob], file.name, {
+                    type: 'image/jpeg',
+                    lastModified: Date.now(),
+                  });
+  
+                  const uploadedUrl = await uploadImageAndGetUrl(resizedFile, courseName);
+                  resolve({
+                    resizedFile,
+                    dataUrl: canvas.toDataURL('image/jpeg'),
+                    uploadedUrl,
+                  });
+                } else {
+                  reject(new Error('Canvas toBlob failed'));
+                }
+              }, 'image/jpeg', 0.9);
+            } else {
+              reject(new Error('Canvas Context is null'));
+            }
+          };
+        } else {
+          reject(new Error('FileReader did not return a string result'));
+        }
+      };
+  
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+  
+  function calculateDimensions(img: HTMLImageElement): { newWidth: number; newHeight: number } {
+    const MAX_WIDTH = 2048;
+    const MAX_HEIGHT = 2048;
+    const MIN_SIDE = 768;
+  
+    let newWidth, newHeight;
+    if (img.width > img.height) {
+      newHeight = MIN_SIDE;
+      newWidth = (img.width / img.height) * newHeight;
+      if (newWidth > MAX_WIDTH) {
+        newWidth = MAX_WIDTH;
+        newHeight = (img.height / img.width) * newWidth;
+      }
+    } else {
+      newWidth = MIN_SIDE;
+      newHeight = (img.height / img.width) * newWidth;
+      if (newHeight > MAX_HEIGHT) {
+        newHeight = MAX_HEIGHT;
+        newWidth = (img.width / img.height) * newHeight;
+      }
+    }
+    return { newWidth, newHeight };
+  }
 
   // Function to open the modal with the selected image
   const openModal = (imageSrc: string) => {
