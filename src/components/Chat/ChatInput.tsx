@@ -43,7 +43,7 @@ import { CSSProperties } from 'react'
 
 import { fetchPresignedUrl, uploadToS3 } from 'src/utils/apiUtils'
 import { ImagePreview } from './ImagePreview'
-import { OpenAIModelID } from '~/types/openai'
+import { OpenAIModelID, VisionCapableModels } from '~/types/openai'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -510,7 +510,7 @@ export const ChatInput = ({
   const theme = useMantineTheme()
 
   useEffect(() => {
-    if (selectedConversation?.model.id !== OpenAIModelID.GPT_4_VISION && selectedConversation?.model.id !== OpenAIModelID.GPT_4_2024_04_09) {
+    if (!VisionCapableModels.has(selectedConversation?.model.id as OpenAIModelID)) {
       return // Exit early if the model is not GPT-4 Vision
     }
 
@@ -684,7 +684,7 @@ export const ChatInput = ({
           </Tooltip> */}
 
           {/* BUTTON 2: Image Icon and Input */}
-          {(selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION || selectedConversation?.model.id === OpenAIModelID.GPT_4_2024_04_09) && (
+          {selectedConversation?.model.id && VisionCapableModels.has(selectedConversation.model.id as OpenAIModelID) && (
             <button
               className="absolute bottom-1.5 left-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
               onClick={() => document.getElementById('imageUpload')?.click()}
@@ -797,7 +797,8 @@ export const ChatInput = ({
             {/* Button 3: main input text area  */}
             <div
               className={
-                (selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION || selectedConversation?.model.id === OpenAIModelID.GPT_4_2024_04_09)
+                (VisionCapableModels.has(selectedConversation?.model.id as OpenAIModelID))
+
                   ? 'pl-8'
                   : 'pl-1'
               }
