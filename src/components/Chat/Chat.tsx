@@ -91,6 +91,13 @@ const montserrat_med = Montserrat({
   weight: '500',
   subsets: ['latin'],
 })
+
+const DEFAULT_DOCUMENT_GROUP = {
+  id: 'DocGroup-all',
+  name: 'All Document Groups', // This value can be stored in an env variable
+  checked: true,
+}
+
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
   const clerk_obj = useUser()
@@ -158,13 +165,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   useEffect(() => {
     // console.log('isSuccess: ', isSuccess)
     if (isSuccess) {
-      const documentGroupActions =
-        docGroups?.map((docGroup, index) => ({
+      const documentGroupActions = [
+        DEFAULT_DOCUMENT_GROUP,
+        ...(docGroups?.map((docGroup, index) => ({
           id: `DocGroup-${index}`,
           name: docGroup.name,
-          checked: true,
+          checked: false,
           onTrigger: () => console.log(`${docGroup.name} triggered`),
-        })) || []
+        })) || []),
+      ]
+
+      // console.log('documentGroupActions: ', documentGroupActions)
 
       // const toolsActions = ['Tool 1', 'Tool 2', 'Tool 3'].map(
       //   (tool, index) => ({
