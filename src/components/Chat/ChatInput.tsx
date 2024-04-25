@@ -233,6 +233,10 @@ export const ChatInput = ({
     setImageUrls([]);
     setImageFiles([]);
     setImagePreviewUrls([]); 
+
+    if (imageUploadRef.current) {
+      imageUploadRef.current.value = '';
+    }
   }
 
   const handleStopConversation = () => {
