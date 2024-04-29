@@ -28,6 +28,8 @@ import {
   IconFileText,
   // IconExternalLink,
   IconRobot,
+  IconSettings,
+  IconTools,
   // IconCloudUpload,
   // IconSettings,
 } from '@tabler/icons-react'
@@ -39,6 +41,7 @@ import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelper
 import { type CourseMetadata } from '~/types/courseMetadata'
 import HomeContext from '~/pages/api/home/home.context'
 import { ModelSelect } from '../../Chat/ModelSelect'
+import { UserSettings } from '../../Chat/UserSettings'
 import MagicBell, {
   FloatingNotificationInbox,
 } from '@magicbell/magicbell-react'
@@ -190,7 +193,7 @@ const ChatNavbar = ({
   //   setModelName(selectedConversation?.model.name)
   // }, [selectedConversation])
 
-  const modelSettingsContainer = useRef<HTMLDivElement | null>(null)
+  // const modelSettingsContainer = useRef<HTMLDivElement | null>(null)
   const topBarRef = useRef<HTMLDivElement | null>(null)
   const getCurrentCourseName = () => {
     return router.asPath.split('/')[1]
@@ -304,35 +307,6 @@ const ChatNavbar = ({
         ]
       : []),
   ]
-
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      event.target instanceof Node &&
-      topBarRef.current &&
-      topBarRef.current.contains(event.target)
-    ) {
-      // Do nothing, the click on button + and click outside should cancel out
-    } else if (
-      modelSettingsContainer.current &&
-      topBarRef.current &&
-      event.target instanceof Node &&
-      !modelSettingsContainer.current.contains(event.target)
-    ) {
-      homeDispatch({ field: 'showModelSettings', value: false })
-    }
-  }
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [modelSettingsContainer])
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [topBarRef])
 
   return (
     <div
@@ -585,6 +559,10 @@ const ChatNavbar = ({
                   className={`${classes.link}`}
                   style={{ padding: '0px 10px', minWidth: '120px' }}
                   onClick={() => {
+                    console.log(
+                      'clicked model settings, toggling showModelSettings: ',
+                      showModelSettings,
+                    )
                     homeDispatch({
                       field: 'showModelSettings',
                       value: !showModelSettings,
@@ -599,7 +577,7 @@ const ChatNavbar = ({
                       width: '100%',
                     }}
                   >
-                    <IconRobot
+                    <IconSettings
                       size={24}
                       style={{
                         position: 'relative',
@@ -619,11 +597,12 @@ const ChatNavbar = ({
                       }}
                     >
                       <span
-                        style={{ marginLeft: '5px', whiteSpace: 'nowrap' }}
+                        style={{ whiteSpace: 'nowrap' }}
                         className={`${montserrat_heading.variable} font-montserratHeading`}
                       >
                         {/* Model: {modelName} */}
-                        {selectedConversation?.model.name}
+                        {/* {selectedConversation?.model.name} */}
+                        Settings
                       </span>
                     </span>
                   </div>
@@ -637,12 +616,9 @@ const ChatNavbar = ({
                   top: '75px',
                 }}
               >
-                {showModelSettings && (
-                  <ModelSelect
-                    ref={modelSettingsContainer}
-                    style={{ width: '100%', backgroundColor: '#1d1f33' }}
-                  />
-                )}
+                <UserSettings
+                // ref={modelSettingsContainer}
+                />
               </div>
             </Container>
 
