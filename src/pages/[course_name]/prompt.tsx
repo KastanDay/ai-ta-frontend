@@ -59,7 +59,7 @@ const montserrat_light = Montserrat({
 const CourseMain: NextPage = () => {
   const [checked1, setChecked1] = useState(false)
   const [checked2, setChecked2] = useState(false)
-  const [checked3, setChecked3] = useState(true)
+  const [checked3, setChecked3] = useState(false)
 
   const theme = useMantineTheme()
   const router = useRouter()
@@ -90,7 +90,8 @@ const CourseMain: NextPage = () => {
   const { messages, input, handleInputChange, reload, setMessages, setInput } = useChat({
     api: '/api/chat/openAI',
   })
-  const [finalSystemPrompt, setFinalSystemPrompt] = useState('')
+  const [optimizedSystemPrompt, setOptimizedSystemPrompt] = useState('');
+  const [isSystemPromptSaved, setIsSystemPromptSaved] = useState(false);
 
 
   useEffect(() => {
@@ -155,11 +156,8 @@ const CourseMain: NextPage = () => {
   }, [checked1, checked2, checked3, thingsToDo, thingsNotToDo, courseMetadata])
 
   const handleSystemPromptSubmit = async () => {
-    let success = false; // Declare success here
+    let success = false;
     if (courseMetadata && course_name && systemPrompt) {
-      courseMetadata.system_prompt = systemPrompt;
-      success = await callSetCourseMetadata(course_name, courseMetadata);
-    } else if (courseMetadata && course_name && finalSystemPrompt) {
       courseMetadata.system_prompt = systemPrompt;
       success = await callSetCourseMetadata(course_name, courseMetadata);
     }
@@ -171,12 +169,6 @@ const CourseMain: NextPage = () => {
     }
   }
 
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage && lastMessage.role === 'assistant') {
-      setFinalSystemPrompt(lastMessage.content);
-    }
-  }, [messages]);
 
   const resetSystemPrompt = async () => {
     if (courseMetadata && course_name) {
@@ -303,38 +295,9 @@ const CourseMain: NextPage = () => {
                         align="center"
                         className={`label ${montserrat_heading.variable} font - montserratHeading`}
                       >
-                        Customize system prompt
+                        Customize System Prompt
                       </Title>
-                      <Paper shadow="xs" radius="md" p="md">
-                        <Title order={4} w={'100%'}>
-                          For guidance on crafting prompts, consult the
-                          <a
-                            className={'pl-1 text-purple-600'}
-                            href="https://platform.openai.com/docs/guides/prompt-engineering"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            official OpenAI documentation
-                            <IconExternalLink
-                              className="mr-2 inline-block"
-                              style={{ position: 'relative', top: '-3px' }}
-                            />
-                          </a>
-                          <br />
-                          <a
-                            className={'pl-1 text-purple-600'}
-                            href="https://docs.anthropic.com/claude/prompt-library"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            official Anthropic Prompt Library
-                            <IconExternalLink
-                              className="mr-2 inline-block"
-                              style={{ position: 'relative', top: '-3px' }}
-                            />
-                          </a>
-                        </Title>
-                      </Paper>
+
 
                       <div
                         style={{
@@ -367,14 +330,8 @@ const CourseMain: NextPage = () => {
                           >
                             System Prompt Optimization
                           </Title>
-                          <Button type="submit" onClick={open}
-                            style={{ minWidth: 'fit-content', marginTop: '15px', paddingLeft: '8px' }}
 
-                            className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600">
-                            <IconSparkles stroke={1} />
-                            Optimize System Prompt
-                          </Button>
-                          <IconLayoutSidebarRightExpand stroke={2} />
+                          {/* <IconLayoutSidebarRightExpand stroke={2} /> */}
                           <form
                             onSubmit={(e) =>
                               handleSubmitPromptOptimization(
@@ -406,13 +363,30 @@ const CourseMain: NextPage = () => {
                                 handleInputChange(e)
                               }}
                               style={{ width: '100%' }}
-                            />     <Button type="submit" onClick={open}
-                              style={{ minWidth: 'fit-content', marginTop: '15px', paddingLeft: '8px' }}
+                            />
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
 
-                              className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600">
-                              <IconSparkles stroke={1} />
-                              Optimize System Prompt
-                            </Button>
+                              <Button type="submit" onClick={open}
+                                style={{ minWidth: 'fit-content', marginTop: '15px', paddingLeft: '8px' }}
+
+                                className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600">
+                                <IconSparkles stroke={1} />
+                                Optimize System Prompt
+                              </Button>
+                              <Button
+                                className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
+                                type="submit"
+                                onClick={() => {
+                                  setOptimizedSystemPrompt(input);
+                                  setIsSystemPromptSaved(true);
+
+                                }}
+                                style={{ minWidth: 'fit-content' }}
+                              >
+                                Save System Prompt
+                              </Button>
+                            </div>
+
                             <Modal opened={opened} onClose={close} size='lg' title="Optimized System Prompt"
                               centered>
                               <Group mt="xl">
@@ -432,10 +406,19 @@ const CourseMain: NextPage = () => {
                                 <Button
                                   className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
                                   type="submit"
-                                  onClick={handleSystemPromptSubmit}
+                                  onClick={() => {
+                                    const lastMessage = messages[messages.length - 1];
+                                    if (lastMessage && lastMessage.role === 'assistant') {
+                                      setOptimizedSystemPrompt(lastMessage.content);
+                                      setBaseSystemPrompt(lastMessage.content);
+                                      setSystemPrompt(lastMessage.content);
+                                      setIsSystemPromptSaved(true);
+                                    }
+                                    close();
+                                  }}
                                   style={{ minWidth: 'fit-content' }}
                                 >
-                                  Update System Prompt
+                                  Save System Prompt
                                 </Button>
                                 <Button variant="outline" className="relative m-1 self-end bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
                                   onClick={close}>
@@ -447,18 +430,179 @@ const CourseMain: NextPage = () => {
 
                           </form>
 
-                          <Button
+
+                        </div>
+                      </div>
+                    </Group>
+                    <Paper shadow="xs" radius="md" p="md" style={{ width: '90%', margin: 'auto', backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
+                      <Title order={6} w={'100%'}>
+                        For guidance on crafting prompts, consult the
+                        <br />
+                        <a
+                          className={'pl-1 text-purple-600 text-sm'}
+                          href="https://platform.openai.com/docs/guides/prompt-engineering"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          official OpenAI documentation
+                          <IconExternalLink size={12}
+                            className="mr-2 inline-block"
+                            style={{ position: 'relative', top: '-3px', fontSize: '0.5em' }}
+                          />
+                        </a>
+                        <br />
+                        <a
+                          className={'pl-1 text-purple-600 text-sm'}
+                          href="https://docs.anthropic.com/claude/prompt-library"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          official Anthropic Prompt Library
+                          <IconExternalLink size={12}
+                            className="mr-2 inline-block"
+                            style={{ position: 'relative', top: '-3px' }}
+                          />
+                        </a>
+                      </Title>
+                    </Paper>
+                  </div>
+                </div>
+                {/* RIGHT SIDE OF CARD */}
+                {/* {systemPrompt == DEFAULT_SYSTEM_PROMPT && */}
+                <div
+                  style={{
+                    flex: isSmallScreen ? '1 1 100%' : '1 1 40%',
+                    padding: '1rem',
+                    backgroundColor: '#15162c',
+                    color: 'white',
+                  }}
+                >
+                  <div className="card flex h-full flex-col">
+                    <Group position="left" m="3rem" variant="column">
+
+                      <Title
+                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
+                        variant="gradient"
+                        gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                        order={3}
+                        style={{ paddingTop: '18px' }}
+                      >
+                        Add Instructions to System Prompt
+                      </Title>
+                      <Checkbox
+                        label={`Add greetings at the beginning of the conversation.`}
+                        // wrapperProps={{}}
+                        // description="Course is private by default."
+                        className={`${montserrat_paragraph.variable} font - montserratParagraph`}
+                        // style={{ marginTop: '4rem' }}
+                        size="md"
+                        // bg='#020307'
+                        color="grape"
+                        // icon={CheckboxIcon}
+                        checked={checked3}
+                        onChange={(event) =>
+                          setChecked3(event.currentTarget.checked)
+                        }
+                      />
+                      <Checkbox
+                        label={`Content includes equations; LaTeX notation preferred.`}
+                        // wrapperProps={{}}
+                        // description="Course is private by default."
+                        className={`${montserrat_paragraph.variable} font - montserratParagraph`}
+                        // style={{ marginTop: '4rem' }}
+                        size="md"
+                        // bg='#020307'
+                        color="grape"
+                        // icon={CheckboxIcon}
+                        checked={checked1}
+                        onChange={(event) =>
+                          setChecked1(event.currentTarget.checked)
+                        }
+                      />
+                      <Checkbox
+                        label={`Focus exclusively on document - based references—avoid incorporating knowledge from outside sources.Essential for legal and similar fields to maintain response quality.`}
+                        // wrapperProps={{}}
+                        // description="Course is private by default."
+                        className={`${montserrat_paragraph.variable} font - montserratParagraph`}
+                        // style={{ marginTop: '4rem' }}
+                        size="md"
+                        // bg='#020307'
+                        color="grape"
+                        // icon={CheckboxIcon}
+                        checked={checked2}
+                        onChange={(event) =>
+                          setChecked2(event.currentTarget.checked)
+                        }
+                      />
+                      <Title
+                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
+                        variant="gradient"
+                        gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                        order={4}
+                      >
+                        Things to do
+                      </Title>
+                      <Textarea
+                        // label={<strong>Things to do</strong>}
+                        autosize
+                        minRows={3}
+                        maxRows={20}
+                        style={{ width: '100%', paddingTop: '0px' }}
+                        placeholder="Enter guidelines that the chat response should adhere to..."
+                        className={`pt - 3 ${montserrat_paragraph.variable} font - montserratParagraph`}
+                        value={thingsToDo}
+                        onChange={(e) => {
+                          setThingsToDo(e.target.value)
+                        }}
+                      />
+                      <Title
+                        className={`label ${montserrat_heading.variable} font - montserratHeading`}
+                        variant="gradient"
+                        gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                        order={4}
+                      >
+                        Things NOT to do
+                      </Title>
+                      <Textarea
+                        // label={<strong>Things NOT to do</strong>}
+                        autosize
+                        minRows={3}
+                        maxRows={20}
+                        style={{ width: '100%', paddingTop: '0px' }}
+                        placeholder="Edit the guidelines that the chat response should not adhere to..."
+                        className={`pt - 3 ${montserrat_paragraph.variable} font - montserratParagraph`}
+                        value={thingsNotToDo}
+                        onChange={(e) => {
+                          setThingsNotToDo(e.target.value)
+                        }}
+                      />
+                      <div style={{ paddingTop: '10px', width: '100%' }}>
+                        <div
+                          style={{
+                            paddingTop: '10px',
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          {isSystemPromptSaved && (
+                            <Button
+                              className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
+                              type="submit"
+                              onClick={handleSystemPromptSubmit}
+                              style={{ minWidth: 'fit-content' }}
+                            >
+                              Update System Prompt
+                            </Button>
+                          )}
+                          {/* <Button
                             className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
                             type="submit"
                             onClick={handleSystemPromptSubmit}
                             style={{ minWidth: 'fit-content' }}
                           >
-                            Update System Prompt
-                          </Button>
-                          <Button variant="outline" className="relative m-1 self-end bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
-                            onClick={close}>
-                            Cancel
-                          </Button>
+                            Steam Sytem Prompt with ChatGPT
+                          </Button> */}
                           <Button
                             className="relative m-1 self-end bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
                             onClick={() => {
@@ -469,195 +613,12 @@ const CourseMain: NextPage = () => {
                           >
                             Reset
                           </Button>
-
-                          {/* <form onSubmit={handleSubmit}>
-                              <input
-                                className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl"
-                                value={input}
-                                placeholder="Enter your system prompt..."
-                                // setBaseSystemPrompt(e.target.value);
-                                // setSystemPrompt(e.target.value);
-                                onChange={handleInputChange}
-                              />
-                            </form> */}
-                          {/* </div> */}
                         </div>
                       </div>
                     </Group>
                   </div>
                 </div>
-                {/* RIGHT SIDE OF CARD */}
-                {systemPrompt == DEFAULT_SYSTEM_PROMPT &&
-                  <div
-                    style={{
-                      flex: isSmallScreen ? '1 1 100%' : '1 1 40%',
-                      padding: '1rem',
-                      backgroundColor: '#15162c',
-                      color: 'white',
-                    }}
-                  >
-                    <div className="card flex h-full flex-col">
-                      <Group position="left" m="3rem" variant="column">
-                        {/* <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
-                        {messages.map(m => (
-                          <div key={m.id} className="whitespace-pre-wrap">
-                            {m.role === 'user' ? 'User: ' : 'AI: '}
-                            {m.content}
-                          </div>
-                        ))}
-
-                        <form onSubmit={handleSubmit}>
-                          <input
-                            className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl"
-                            value={input}
-                            placeholder="Say something..."
-                            onChange={handleInputChange}
-                          />
-                        </form>
-                      </div> */}
-                        <Title
-                          className={`label ${montserrat_heading.variable} font - montserratHeading`}
-                          variant="gradient"
-                          gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                          order={3}
-                          style={{ paddingTop: '18px' }}
-                        >
-                          Add Instructions to System Prompt
-                        </Title>
-                        <Checkbox
-                          label={`Add greetings at the beginning of the conversation.`}
-                          // wrapperProps={{}}
-                          // description="Course is private by default."
-                          className={`${montserrat_paragraph.variable} font - montserratParagraph`}
-                          // style={{ marginTop: '4rem' }}
-                          size="md"
-                          // bg='#020307'
-                          color="grape"
-                          // icon={CheckboxIcon}
-                          checked={checked3}
-                          onChange={(event) =>
-                            setChecked3(event.currentTarget.checked)
-                          }
-                        // defaultChecked={isPrivate}
-                        // onChange={handleCheckboxChange}
-                        />
-                        <Checkbox
-                          label={`Content includes equations; LaTeX notation preferred.`}
-                          // wrapperProps={{}}
-                          // description="Course is private by default."
-                          className={`${montserrat_paragraph.variable} font - montserratParagraph`}
-                          // style={{ marginTop: '4rem' }}
-                          size="md"
-                          // bg='#020307'
-                          color="grape"
-                          // icon={CheckboxIcon}
-                          checked={checked1}
-                          onChange={(event) =>
-                            setChecked1(event.currentTarget.checked)
-                          }
-                        // defaultChecked={isPrivate}
-                        // onChange={handleCheckboxChange}
-                        />
-                        <Checkbox
-                          label={`Focus exclusively on document - based references—avoid incorporating knowledge from outside sources.Essential for legal and similar fields to maintain response quality.`}
-                          // wrapperProps={{}}
-                          // description="Course is private by default."
-                          className={`${montserrat_paragraph.variable} font - montserratParagraph`}
-                          // style={{ marginTop: '4rem' }}
-                          size="md"
-                          // bg='#020307'
-                          color="grape"
-                          // icon={CheckboxIcon}
-                          checked={checked2}
-                          onChange={(event) =>
-                            setChecked2(event.currentTarget.checked)
-                          }
-                        // defaultChecked={isPrivate}
-                        // onChange={handleCheckboxChange}
-                        />
-                        <Title
-                          className={`label ${montserrat_heading.variable} font - montserratHeading`}
-                          variant="gradient"
-                          gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                          order={4}
-                        >
-                          Things to do
-                        </Title>
-                        <Textarea
-                          // label={<strong>Things to do</strong>}
-                          autosize
-                          minRows={3}
-                          maxRows={20}
-                          style={{ width: '100%', paddingTop: '0px' }}
-                          placeholder="Enter guidelines that the chat response should adhere to..."
-                          className={`pt - 3 ${montserrat_paragraph.variable} font - montserratParagraph`}
-                          value={thingsToDo}
-                          onChange={(e) => {
-                            setThingsToDo(e.target.value)
-                          }}
-                        />
-                        <Title
-                          className={`label ${montserrat_heading.variable} font - montserratHeading`}
-                          variant="gradient"
-                          gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                          order={4}
-                        >
-                          Things NOT to do
-                        </Title>
-                        <Textarea
-                          // label={<strong>Things NOT to do</strong>}
-                          autosize
-                          minRows={3}
-                          maxRows={20}
-                          style={{ width: '100%', paddingTop: '0px' }}
-                          placeholder="Edit the guidelines that the chat response should not adhere to..."
-                          className={`pt - 3 ${montserrat_paragraph.variable} font - montserratParagraph`}
-                          value={thingsNotToDo}
-                          onChange={(e) => {
-                            setThingsNotToDo(e.target.value)
-                          }}
-                        />
-                        <div style={{ paddingTop: '10px', width: '100%' }}>
-                          <div
-                            style={{
-                              paddingTop: '10px',
-                              width: '100%',
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                            }}
-                          >
-                            <Button
-                              className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
-                              type="submit"
-                              onClick={handleSystemPromptSubmit}
-                              style={{ minWidth: 'fit-content' }}
-                            >
-                              Update System Prompt
-                            </Button>
-                            {/* <Button
-                            className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
-                            type="submit"
-                            onClick={handleSystemPromptSubmit}
-                            style={{ minWidth: 'fit-content' }}
-                          >
-                            Steam Sytem Prompt with ChatGPT
-                          </Button> */}
-                            <Button
-                              className="relative m-1 self-end bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
-                              onClick={() => {
-                                setSystemPrompt(DEFAULT_SYSTEM_PROMPT)
-                                resetSystemPrompt()
-                              }}
-                              style={{ minWidth: 'fit-content' }}
-                            >
-                              Reset
-                            </Button>
-                          </div>
-                        </div>
-                      </Group>
-                    </div>
-                  </div>
-                }
+                {/* } */}
                 {/* End of right side of Card */}
               </Flex>
             </Card>
