@@ -171,8 +171,8 @@ const handler = async (req: Request): Promise<NextResponse> => {
     const systemPrompt =
       promptToSend + "Only answer if it's related to the course materials."
 
-    console.log('System prompt being sent to OpenAI: ', promptToSend)
-    console.log('Message history being sent to OpenAI: ', messagesToSend)
+    // console.log('System prompt being sent to OpenAI: ', promptToSend)
+    // console.log('Message history being sent to OpenAI: ', messagesToSend)
 
     const apiStream = await OpenAIStream(
       modelObj,

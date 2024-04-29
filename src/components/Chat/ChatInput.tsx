@@ -43,7 +43,7 @@ import { CSSProperties } from 'react'
 
 import { fetchPresignedUrl, uploadToS3 } from 'src/utils/apiUtils'
 import { ImagePreview } from './ImagePreview'
-import { OpenAIModelID } from '~/types/openai'
+import { OpenAIModelID, VisionCapableModels } from '~/types/openai'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -230,6 +230,13 @@ export const ChatInput = ({
     setContent('')
     setPlugin(null)
     setImagePreviews([])
+    setImageUrls([]);
+    setImageFiles([]);
+    setImagePreviewUrls([]); 
+
+    if (imageUploadRef.current) {
+      imageUploadRef.current.value = '';
+    }
   }
 
   const handleStopConversation = () => {
@@ -387,120 +394,116 @@ export const ChatInput = ({
 
   const handleImageUpload = useCallback(
     async (files: File[]) => {
-      const validFiles = files.filter((file) => isImageValid(file.name))
-      const invalidFilesCount = files.length - validFiles.length
-
+      const validFiles = files.filter((file) => isImageValid(file.name));
+      const invalidFilesCount = files.length - validFiles.length;
+  
       if (invalidFilesCount > 0) {
         setImageError(
           `${invalidFilesCount} invalid file type(s). Please upload .jpg or .png images.`,
-        )
-        showToastOnInvalidImage()
+        );
+        showToastOnInvalidImage();
       }
-
-      const imageProcessingPromises = validFiles.map((file) => {
-        return new Promise<ProcessedImage>((resolve, reject) => {
-          const reader = new FileReader()
-
-          reader.onloadend = () => {
-            const result = reader.result
-            if (typeof result === 'string') {
-              const img = new Image()
-              img.src = result
-
-              img.onload = () => {
-                let newWidth, newHeight
-                const MAX_WIDTH = 2048
-                const MAX_HEIGHT = 2048
-                const MIN_SIDE = 768
-
-                if (img.width > img.height) {
-                  newHeight = MIN_SIDE
-                  newWidth = (img.width / img.height) * newHeight
-                  if (newWidth > MAX_WIDTH) {
-                    newWidth = MAX_WIDTH
-                    newHeight = (img.height / img.width) * newWidth
-                  }
-                } else {
-                  newWidth = MIN_SIDE
-                  newHeight = (img.height / img.width) * newWidth
-                  if (newHeight > MAX_HEIGHT) {
-                    newHeight = MAX_HEIGHT
-                    newWidth = (img.width / img.height) * newHeight
-                  }
-                }
-
-                const canvas = document.createElement('canvas')
-                const ctx = canvas.getContext('2d')
-                if (ctx) {
-                  canvas.width = newWidth
-                  canvas.height = newHeight
-                  ctx.drawImage(img, 0, 0, newWidth, newHeight)
-
-                  canvas.toBlob(
-                    (blob) => {
-                      if (blob) {
-                        const resizedFile = new File([blob], file.name, {
-                          type: 'image/jpeg',
-                          lastModified: Date.now(),
-                        })
-
-                        resolve({
-                          resizedFile,
-                          dataUrl: canvas.toDataURL('image/jpeg'),
-                        })
-                      } else {
-                        reject(new Error('Canvas toBlob failed'))
-                      }
-                    },
-                    'image/jpeg',
-                    0.9,
-                  )
-                } else {
-                  reject(new Error('Canvas Context is null'))
-                }
-              }
-            } else {
-              reject(new Error('FileReader did not return a string result'))
-            }
-          }
-
-          reader.onerror = reject
-          reader.readAsDataURL(file)
-        })
-      })
-
+  
+      const imageProcessingPromises = validFiles.map((file) =>
+        processAndUploadImage(file)
+      );
+  
       try {
-        const processedImages = await Promise.all(imageProcessingPromises)
-        setImageFiles((prev) => [
-          ...prev,
-          ...processedImages.map((img) => img.resizedFile),
-        ])
-        setImagePreviewUrls((prev) => [
-          ...prev,
-          ...processedImages.map((img) => img.dataUrl),
-        ])
-
-        // Store the URLs of the uploaded images
-        const uploadedImageUrls = (
-          await Promise.all(
-            processedImages.map((img) =>
-              uploadImageAndGetUrl(img.resizedFile, courseName),
-            ),
-          )
-        ).filter(Boolean)
-        setImageUrls(uploadedImageUrls as string[])
+        const processedImages = await Promise.all(imageProcessingPromises);
+        const newImageFiles = processedImages.map((img) => img.resizedFile);
+        const newImagePreviewUrls = processedImages.map((img) => img.dataUrl);
+        const newImageUrls = processedImages.map((img) => img.uploadedUrl);
+  
+        setImageFiles((prev) => [...prev, ...newImageFiles]);
+        setImagePreviewUrls((prev) => [...prev, ...newImagePreviewUrls]);
+        setImageUrls((prev) => [...prev, ...newImageUrls.filter(Boolean)]);
       } catch (error) {
-        console.error('Error processing files:', error)
+        console.error('Error processing files:', error);
       }
     },
     [
       setImageError,
       setImageFiles,
       setImagePreviewUrls,
+      setImageUrls,
       showToastOnInvalidImage,
       courseName,
     ],
-  )
+  );
+  
+  async function processAndUploadImage(file: File): Promise<ProcessedImage & { uploadedUrl: string }> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+  
+      reader.onloadend = async () => {
+        const result = reader.result;
+        if (typeof result === 'string') {
+          const img = new Image();
+          img.src = result;
+  
+          img.onload = async () => {
+            const { newWidth, newHeight } = calculateDimensions(img);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              canvas.width = newWidth;
+              canvas.height = newHeight;
+              ctx.drawImage(img, 0, 0, newWidth, newHeight);
+  
+              canvas.toBlob(async (blob) => {
+                if (blob) {
+                  const resizedFile = new File([blob], file.name, {
+                    type: 'image/jpeg',
+                    lastModified: Date.now(),
+                  });
+  
+                  const uploadedUrl = await uploadImageAndGetUrl(resizedFile, courseName);
+                  resolve({
+                    resizedFile,
+                    dataUrl: canvas.toDataURL('image/jpeg'),
+                    uploadedUrl,
+                  });
+                } else {
+                  reject(new Error('Canvas toBlob failed'));
+                }
+              }, 'image/jpeg', 0.9);
+            } else {
+              reject(new Error('Canvas Context is null'));
+            }
+          };
+        } else {
+          reject(new Error('FileReader did not return a string result'));
+        }
+      };
+  
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+  
+  function calculateDimensions(img: HTMLImageElement): { newWidth: number; newHeight: number } {
+    const MAX_WIDTH = 2048;
+    const MAX_HEIGHT = 2048;
+    const MIN_SIDE = 768;
+  
+    let newWidth, newHeight;
+    if (img.width > img.height) {
+      newHeight = MIN_SIDE;
+      newWidth = (img.width / img.height) * newHeight;
+      if (newWidth > MAX_WIDTH) {
+        newWidth = MAX_WIDTH;
+        newHeight = (img.height / img.width) * newWidth;
+      }
+    } else {
+      newWidth = MIN_SIDE;
+      newHeight = (img.height / img.width) * newWidth;
+      if (newHeight > MAX_HEIGHT) {
+        newHeight = MAX_HEIGHT;
+        newWidth = (img.width / img.height) * newHeight;
+      }
+    }
+    return { newWidth, newHeight };
+  }
 
   // Function to open the modal with the selected image
   const openModal = (imageSrc: string) => {
@@ -511,7 +514,7 @@ export const ChatInput = ({
   const theme = useMantineTheme()
 
   useEffect(() => {
-    if (selectedConversation?.model.id !== OpenAIModelID.GPT_4_VISION) {
+    if (!VisionCapableModels.has(selectedConversation?.model.id as OpenAIModelID)) {
       return // Exit early if the model is not GPT-4 Vision
     }
 
@@ -685,7 +688,7 @@ export const ChatInput = ({
           </Tooltip> */}
 
           {/* BUTTON 2: Image Icon and Input */}
-          {selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
+          {selectedConversation?.model.id && VisionCapableModels.has(selectedConversation.model.id as OpenAIModelID) && (
             <button
               className="absolute bottom-1.5 left-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
               onClick={() => document.getElementById('imageUpload')?.click()}
@@ -798,7 +801,8 @@ export const ChatInput = ({
             {/* Button 3: main input text area  */}
             <div
               className={
-                selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION
+                (VisionCapableModels.has(selectedConversation?.model.id as OpenAIModelID))
+
                   ? 'pl-8'
                   : 'pl-1'
               }

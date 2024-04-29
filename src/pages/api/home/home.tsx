@@ -31,6 +31,7 @@ import {
   OpenAIModelID,
   OpenAIModels,
   fallbackModelID,
+  VisionCapableModels,
 } from '@/types/openai'
 import { type Prompt } from '@/types/prompt'
 
@@ -623,8 +624,7 @@ const Home = () => {
 
             <div className="flex h-full w-full pt-[48px] sm:pt-0">
               {isDragging &&
-                selectedConversation?.model.id ===
-                  OpenAIModelID.GPT_4_VISION && (
+                (VisionCapableModels.has(selectedConversation?.model.id as OpenAIModelID)) && (
                   <div className="absolute inset-0 z-10 flex h-full w-full flex-col items-center justify-center bg-black opacity-75">
                     <GradientIconPhoto />
                     <span className="text-3xl font-extrabold text-white">
