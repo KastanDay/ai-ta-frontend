@@ -11,6 +11,7 @@ import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import {
+  Alert,
   Button,
   Card,
   Checkbox,
@@ -37,6 +38,7 @@ import Navbar from '~/components/UIUC-Components/navbars/Navbar'
 import Head from 'next/head'
 import { useDisclosure, useMediaQuery } from '@mantine/hooks'
 import {
+  IconAlertCircle,
   IconAlertTriangle,
   IconCheck,
   IconExternalLink,
@@ -434,6 +436,9 @@ const CourseMain: NextPage = () => {
                         </div>
                       </div>
                     </Group>
+                    <Alert icon={<IconAlertCircle size="1rem" />} title="Attention!" color="pink" style={{ width: '90%', margin: 'auto', marginTop: '0px', color: 'pink' }}>
+                      <span style={{ color: 'pink' }}>Remember to save and update the system prompt before you leave this page.</span>
+                    </Alert>
                     <Paper shadow="xs" radius="md" p="md" style={{ width: '90%', margin: 'auto', backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
                       <Title order={6} w={'100%'}>
                         For guidance on crafting prompts, consult the
