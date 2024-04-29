@@ -71,6 +71,8 @@ const Home = () => {
       prompts,
       temperature,
       models,
+      documentGroups,
+      tools,
     },
     dispatch,
   } = contextValue
@@ -395,6 +397,23 @@ const Home = () => {
     dispatch({ field: 'isImg2TextLoading', value: isImg2TextLoading })
   }
 
+  // Update actions for a prompt
+  const handleUpdateDocumentGroups = (id: string) => {
+    documentGroups.map((documentGroup) =>
+      documentGroup.id === id
+        ? { ...documentGroup, checked: !documentGroup.checked }
+        : documentGroup,
+    )
+    dispatch({ field: 'documentGroups', value: documentGroups })
+  }
+
+  // Update actions for a prompt
+  const handleUpdateTools = (id: string) => {
+    tools.map((tool) =>
+      tool.id === id ? { ...tool, checked: !tool.checked } : tool,
+    )
+    dispatch({ field: 'tools', value: tools })
+  }
   const [isDragging, setIsDragging] = useState<boolean>(false)
   const [dragEnterCounter, setDragEnterCounter] = useState(0)
 
@@ -600,6 +619,8 @@ const Home = () => {
           handleSelectConversation,
           handleUpdateConversation,
           setIsImg2TextLoading,
+          handleUpdateDocumentGroups,
+          handleUpdateTools,
         }}
       >
         <Head>

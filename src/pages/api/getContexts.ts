@@ -11,18 +11,26 @@ export const fetchContexts = async (
   doc_groups: string[] = [],
 ): Promise<ContextWithMetadata[]> => {
   console.log('fetchContexts search query:', search_query, token_limit)
-  const queryParams = new URLSearchParams({
+  const requestBody = {
     course_name: course_name,
     search_query: search_query,
-    token_limit: token_limit.toString(),
-    doc_groups: JSON.stringify(doc_groups),
-  }).toString()
+    token_limit: token_limit,
+    doc_groups: doc_groups,
+  }
 
-  const url = `https://flask-production-751b.up.railway.app/getTopContexts?${queryParams}`
+  const url = `https://flask-pr-258.up.railway.app/getTopContexts`
 
   try {
-    const response = await fetch(url)
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    })
+
     if (!response.ok) {
+      console.error('Failed to fetch contexts. Err status:', response.status)
       throw new Error('Failed to fetch contexts. Err status:' + response.status)
     }
     const data: ContextWithMetadata[] = await response.json()
