@@ -94,7 +94,7 @@ const montserrat_med = Montserrat({
 
 const DEFAULT_DOCUMENT_GROUP = {
   id: 'DocGroup-all',
-  name: 'All Document Groups', // This value can be stored in an env variable
+  name: 'All Documents', // This value can be stored in an env variable
   checked: true,
 }
 
@@ -214,6 +214,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         .map((action) => action.name),
     )
   }, [documentGroups])
+
+  useEffect(() => {
+    console.log('enabledDocumentGroups: ', enabledDocumentGroups)
+  }, [enabledDocumentGroups])
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase
