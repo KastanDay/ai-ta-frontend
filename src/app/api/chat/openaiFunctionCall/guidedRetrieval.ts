@@ -42,30 +42,22 @@ export default async function guidedRetrieval(req: NextApiRequest, res: NextApiR
 }
 
 async function interactWithLLM(openai: OpenAI, documents: ContextWithMetadata[], prompt: string): Promise<string[]> {
-  const relevanceResponses: string[] = [];
-
-  for (const document of documents) {
-    const input = `Is the following document relevant to "${prompt}"? ${document.text}`;
-    const response = await openai.completions.create({
+  const responses = await Promise.all(documents.map(document => {
+    const singlePrompt = `Is the following document relevant to "${prompt}"? ${document.text}`;
+    return openai.completions.create({
       model: 'gpt-3.5-turbo-0613',
-      prompt: input,
+      prompt: singlePrompt,
       max_tokens: 3,
       n: 1,
       stop: null,
+    }).then(response => {
+      if (!response.choices || response.choices.length === 0 || !response.choices[0]) {
+        return 'No'; // Handle the case where choices or the first choice is undefined
+      }
+      const responseText = response.choices[0].text.trim().toLowerCase();
+      return responseText.includes('yes') || responseText.includes('true') ? 'Yes' : 'No';
     });
+  }));
 
-    const choice = response.choices[0];
-    if (choice) {
-        const responseText = choice.text.trim();
-        if (responseText.toLowerCase().includes('yes') || responseText.toLowerCase().includes('true')) {
-            relevanceResponses.push('Yes');
-        } else {
-            relevanceResponses.push('No');
-        }
-    } else {
-        relevanceResponses.push('No');
-    }
-  }
-
-  return relevanceResponses;
+  return responses;
 }
