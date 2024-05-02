@@ -2,7 +2,8 @@ import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackgro
 import { Title, Text, Input } from '@mantine/core'
 
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
-import { IconAt } from '@tabler/icons-react'
+import { IconAt, IconError404, IconSunset2, IconX } from '@tabler/icons-react'
+import { notifications } from '@mantine/notifications'
 
 export default function Unsubscribe() {
   const handleSubmit = async (event: any) => {
@@ -11,14 +12,23 @@ export default function Unsubscribe() {
     const email = formData.get('email') // Assuming 'email' is the name attribute of your email input field
 
     if (!email) {
-      alert('Please enter an email address.')
+      notifications.show({
+        id: 'error-notification',
+        title: 'Please enter an email.',
+        message: 'Looked like the box was empty 👀',
+        autoClose: 20000,
+        color: 'red',
+        radius: 'lg',
+        icon: <IconX />,
+        className: 'my-notification-class',
+        style: { backgroundColor: '#15162c' },
+        loading: false,
+      })
       return
     }
 
-    // Placeholder for fetch call
-    // You can replace the URL and method according to your API endpoint
     try {
-      const response = await fetch('/api/unsubscribe', {
+      const response = await fetch('/api/UIUC-api/newsletterUnsubscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,14 +37,48 @@ export default function Unsubscribe() {
       })
 
       if (!response.ok) {
+        notifications.show({
+          id: 'network-error-notification',
+          title: 'Our database is having a bad day. 😢',
+          message:
+            "Seems like we couldn't unsubscribe you. Please try again later. Email help@uiuc.chat for assistance.",
+          autoClose: 20000,
+          color: 'red',
+          radius: 'lg',
+          icon: <IconX />,
+          className: 'my-notification-class',
+          style: { backgroundColor: '#15162c' },
+          loading: false,
+        })
         throw new Error('Network response was not ok')
       }
 
-      // Handle success response
-      alert('You have been successfully unsubscribed.')
+      notifications.show({
+        id: 'success-notification',
+        title: 'Successfully unsubscribed.',
+        message: "See ya, wouldn't wanna be ya! 🌅",
+        autoClose: 20000,
+        // color: 'green',
+        radius: 'lg',
+        icon: <IconSunset2 />,
+        className: 'my-notification-class',
+        style: { backgroundColor: '#15162c' },
+        loading: false,
+      })
     } catch (error) {
       console.error('There was a problem with the fetch operation:', error)
-      alert('Error unsubscribing. Please try again later.')
+      notifications.show({
+        id: 'network-error-notification',
+        title: 'Our database is having a bad day. 😢',
+        message: `Seems like we couldn't unsubscribe you. Please try again later. Email help@uiuc.chat for assistance. Full error: ${error}`,
+        autoClose: 20000,
+        color: 'red',
+        radius: 'lg',
+        icon: <IconX />,
+        className: 'my-notification-class',
+        style: { backgroundColor: '#15162c' },
+        loading: false,
+      })
     }
   }
 
