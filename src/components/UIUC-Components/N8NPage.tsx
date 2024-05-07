@@ -55,6 +55,7 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
     null,
   )
   const [currentEmail, setCurrentEmail] = useState('')
+  const [n8nApiKeyTextbox, setN8nApiKeyTextbox] = useState('')
   const [n8nApiKey, setN8nApiKey] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -67,7 +68,52 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
   } = useFetchAllWorkflows(GetCurrentPageName())
 
   const handleSaveApiKey = async () => {
-    // const flows_table = await fetchWorkflows(10, true)
+    console.log('IN handleSaveApiKey w/ key: ', n8nApiKeyTextbox)
+
+    // TEST KEY TO SEE IF VALID (unless it's empty, that's fine.)
+    if (n8nApiKeyTextbox) {
+      const keyTestResponse = await fetch(`/api/UIUC-api/tools/testN8nAPI`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          n8nApiKey: n8nApiKeyTextbox,
+        }),
+      })
+
+      if (!keyTestResponse.ok) {
+        notifications.show({
+          id: 'error-notification-bad-key',
+          title: 'Key appears invalid',
+          message:
+            'This API key cannot fetch any workflows. Please check your key and try again.',
+          autoClose: 15000,
+          color: 'red',
+          radius: 'lg',
+          icon: <IconAlertCircle />,
+          className: 'my-notification-class',
+          style: { backgroundColor: '#15162c' },
+          loading: false,
+        })
+
+        return
+      }
+    } else {
+      console.log('KEY IS EMPTY: ', n8nApiKeyTextbox)
+    }
+
+    console.log('Saving n8n API Key:', n8nApiKeyTextbox)
+    const response = await fetch(`/api/UIUC-api/tools/upsertN8nAPIKey`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        course_name: currentPageName,
+        n8n_api_key: n8nApiKeyTextbox,
+      }),
+    })
 
     refetchWorkflows()
 
@@ -91,17 +137,6 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
       })
       return
     }
-    console.log('Saving n8n API Key:', n8nApiKey)
-    const response = await fetch(`/api/UIUC-api/upsertN8nAPIKey`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        course_name: currentPageName,
-        n8n_api_key: n8nApiKey,
-      }),
-    })
 
     if (response.ok) {
       notifications.show({
@@ -147,6 +182,7 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
         })
         const data = await response.json()
         console.log('data!!!', data)
+        setN8nApiKeyTextbox(data.api_key[0].n8n_api_key)
         setN8nApiKey(data.api_key[0].n8n_api_key)
         // return data.success
       } catch (error) {
@@ -361,9 +397,9 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
                     label="n8n API Key"
                     description="We use this to run your workflows. You can find your n8n API Key in your n8n account settings."
                     placeholder="Enter your n8n API Key here"
-                    value={n8nApiKey}
+                    value={n8nApiKeyTextbox}
                     onChange={(event) =>
-                      setN8nApiKey(event.currentTarget.value)
+                      setN8nApiKeyTextbox(event.target.value)
                     }
                     className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                   />
