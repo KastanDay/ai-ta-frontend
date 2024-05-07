@@ -22,7 +22,7 @@ export async function validateApiKeyAndRetrieveData(
   apiKey: string,
   course_name: string,
 ) {
-  console.log('Validating apiKey', apiKey, ' for course_name', course_name)
+  // console.log('Validating apiKey', apiKey, ' for course_name', course_name)
   // Attempt to retrieve the user ID associated with the API key from the database.
   const { data, error } = (await supabase
     .from('api_keys')
@@ -31,13 +31,13 @@ export async function validateApiKeyAndRetrieveData(
     .eq('is_active', true)
     .single()) as { data: { user_id: string } | null; error: Error | null }
 
-  console.log('data', data)
+  // console.log('data', data)
 
   // Determine if the API key is valid based on the absence of errors and presence of data.
   const isValidApiKey = !error && data !== null
   let userObject = null
 
-  console.log('isValidApiKey', isValidApiKey)
+  // console.log('isValidApiKey', isValidApiKey)
   if (isValidApiKey) {
     try {
       // Retrieve the full Clerk user object using the user ID.
@@ -45,15 +45,15 @@ export async function validateApiKeyAndRetrieveData(
 
       // Todo: Create a procedure to increment the API call count for the user.
       /**
-			 * create function increment (usage int, apikey string)
-				returns void as
-				$$
-					update api_keys 
-					set usage_count = usage_count + usage
-					where api_key = apiKey
-				$$ 
-				language sql volatile;
-			 */
+       * create function increment (usage int, apikey string)
+        returns void as
+        $$
+          update api_keys 
+          set usage_count = usage_count + usage
+          where api_key = apiKey
+        $$ 
+        language sql volatile;
+       */
       // Increment the API call count for the user.
       const { error: updateError } = await supabase.rpc('increment', {
         usage: 1,
@@ -79,7 +79,7 @@ export async function validateApiKeyAndRetrieveData(
       throw userError
     }
   }
-  console.log('userObject', userObject, 'isValidApiKey', isValidApiKey)
+  // console.log('userObject', userObject, 'isValidApiKey', isValidApiKey)
   return { isValidApiKey, userObject }
 }
 

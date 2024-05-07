@@ -21,7 +21,6 @@ const handler = async (req: Request): Promise<Response> => {
       key: string
     }
     apiKey = key ? key : (process.env.OPENAI_API_KEY as string)
-    console.log('Validating apikey:', apiKey)
     // Check if the key starts with 'sk-' (indicating it's not encrypted)
     if (key && isEncrypted(key)) {
       // Decrypt the key

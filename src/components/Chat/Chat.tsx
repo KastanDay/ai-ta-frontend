@@ -13,6 +13,7 @@ import {
   IconBrain,
   IconCreditCard,
   IconAlertCircle,
+  IconSearch,
   // IconArrowUpRight,
   // IconFileTextAi,
   // IconX,
@@ -29,7 +30,15 @@ import {
   useRef,
   useState,
 } from 'react'
-import { Button, Text } from '@mantine/core'
+import {
+  Button,
+  Group,
+  Switch,
+  Text,
+  UnstyledButton,
+  createStyles,
+  rem,
+} from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -75,6 +84,20 @@ import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
 import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
+import { fetchRoutingResponse } from '~/pages/api/UIUC-api/fetchRoutingResponse'
+import { fetchPestDetectionResponse } from '~/pages/api/UIUC-api/fetchPestDetectionResponse'
+import handleTools, {
+  OpenAICompatibleTool,
+  useFetchAllWorkflows,
+} from '~/utils/functionCalling/handleFunctionCalling'
+import {
+  SpotlightProvider,
+  spotlight,
+  SpotlightAction,
+  SpotlightActionProps,
+} from '@mantine/spotlight'
+import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
+import ChatSpotlight from '../UIUC-Components/ChatSpotlight'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -91,6 +114,23 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   }
 
   const [inputContent, setInputContent] = useState<string>('')
+
+  const {
+    data: documentGroups,
+    isSuccess: isSuccessDocumentGroups,
+    // isError: isErrorDocumentGroups,
+  } = useFetchEnabledDocGroups(getCurrentPageName())
+
+  const {
+    data: tools,
+    isSuccess: isSuccessTools,
+    isLoading: isLoadingTools,
+    isError: isErrorTools,
+    error: toolLoadingError,
+    // refetch: refetchTools,
+  } = useFetchAllWorkflows(getCurrentPageName())
+
+  const [actions, setActions] = useState<SpotlightAction[]>([]) // Doc groups & tools are "actions" of spotlight
 
   useEffect(() => {
     if (
@@ -117,6 +157,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       prompts,
       showModelSettings,
       isImg2TextLoading,
+      isRouting,
+      isPestDetectionLoading, // change to isFunctionCallLoading
+      isRetrievalLoading,
     },
     handleUpdateConversation,
     dispatch: homeDispatch,
@@ -131,6 +174,67 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [spotlightQuery, setSpotlightQuery] = useState('')
+
+  useEffect(() => {
+    console.log('updated actions: ', actions)
+  }, [actions])
+
+  useEffect(() => {
+    if (isSuccessDocumentGroups) {
+      const documentGroupActions =
+        documentGroups?.map((docGroup, index) => ({
+          id: `docGroup-${index}`,
+          title: docGroup.name,
+          description: `Description for ${docGroup.name}`,
+          group: 'Document Groups',
+          checked: true,
+          onTrigger: () => console.log(`${docGroup.name} triggered`),
+        })) || []
+
+      console.log('documentGroupActions: ', documentGroupActions)
+      console.log('actions: ', [...documentGroupActions, ...actions])
+      setActions([...documentGroupActions, ...actions])
+    }
+    // console.log('actions: ', actions)
+  }, [documentGroups, isSuccessDocumentGroups])
+
+  useEffect(() => {
+    console.log('IsSuccessTools: ', isSuccessTools)
+    console.log('isErrorTools: ', isErrorTools)
+    console.log('toolLoadingError: ', toolLoadingError)
+    if (isSuccessTools) {
+      console.log('Tools in Chat.tsx: ', tools)
+      const toolsActions =
+        tools?.map((tool: OpenAICompatibleTool, index: number) => ({
+          id: `tool-${index}`,
+          title: tool.readableName,
+          description: tool.description,
+          group: 'Tools',
+          checked: true,
+          onTrigger: () => console.log(`${tool.readableName} triggered`),
+        })) || []
+
+      console.log('toolsActions: ', toolsActions)
+      console.log('actions: ', [...actions, ...toolsActions])
+      setActions([...actions, ...toolsActions])
+    } else if (isErrorTools) {
+      errorToast({
+        title: 'Error loading tools',
+        message:
+          toolLoadingError.message +
+          '.\nPlease refresh the page or try again later. Regular chat features may still work.',
+      })
+    }
+  }, [tools, isSuccessTools, isErrorTools, toolLoadingError])
+
+  const getOpenAIKey = (courseMetadata: CourseMetadata) => {
+    const key =
+      courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != ''
+        ? courseMetadata.openai_api_key
+        : apiKey
+    return key
+  }
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase
@@ -176,6 +280,124 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
   }
 
+  const handlePestDetection = async (
+    message: Message,
+    imageContent: Content[],
+    updatedConversation: Conversation,
+    currentMessageIndex: number,
+  ) => {
+    homeDispatch({ field: 'isPestDetectionLoading', value: true })
+    // Call pest detection API to get the s3 paths of the annotated images
+    const pestDetectionResponse = await fetchPestDetectionResponse(
+      imageContent.map((content) => content.image_url?.url as string),
+    )
+    console.log('Pest detection response: ', pestDetectionResponse)
+    // Update the message content and append the annotated images to the message
+    for (const url of pestDetectionResponse) {
+      const presignedUrl = await fetchPresignedUrl(url)
+      if (presignedUrl) {
+        ;(message.content as Content[]).push({
+          type: 'tool_image_url',
+          image_url: {
+            url: presignedUrl,
+          },
+        })
+      }
+    }
+
+    updatedConversation.messages[currentMessageIndex] = message
+
+    homeDispatch({
+      field: 'selectedConversation',
+      value: updatedConversation,
+    })
+
+    const updatedConversations = updateConversations(updatedConversation)
+    if (!updatedConversations) {
+      throw new Error('Failed to update conversations')
+    }
+
+    homeDispatch({ field: 'conversations', value: updatedConversations })
+    saveConversations(updatedConversations)
+    // Assuming onImageUrlsUpdate is designed to handle the update
+    // onImageUrlsUpdate({
+    // ...message,
+    // content: message.content,
+    // }, updateConversations.length - 1);
+
+    console.log(
+      'Updated message content after pest detection and fetching presigned urls: ',
+      message.content,
+    )
+    homeDispatch({ field: 'isPestDetectionLoading', value: false })
+  }
+
+  const handleRoutingForImageContent = async (
+    message: Message,
+    tools: OpenAICompatibleTool[],
+    endpoint: string,
+    updatedConversation: Conversation,
+    searchQuery: string,
+    controller: AbortController,
+    currentMessageIndex: number,
+  ) => {
+    const imageContent = (message.content as Content[]).filter(
+      (content) => content.type === 'image_url',
+    )
+
+    if (imageContent.length > 0) {
+      // console.log('imageContent:', imageContent)
+      const imageUrls = imageContent.map(
+        (content) => content.image_url?.url as string,
+      )
+      console.log('imageURLs:', imageUrls)
+
+      homeDispatch({ field: 'isRouting', value: true })
+
+      try {
+        //Todo: Add a check to get a list of allowed tools for routing from the DB and use them in the prompt
+        // Replace routing with function calling w/ tools.
+        const response = await fetchRoutingResponse(
+          message,
+          getCurrentPageName(),
+          endpoint,
+          updatedConversation,
+          getOpenAIKey(courseMetadata),
+          controller,
+        )
+        console.log('Routing response: ', response)
+        homeDispatch({ field: 'isRouting', value: false })
+        homeDispatch({
+          field: 'routingResponse',
+          value: JSON.stringify(response, null, 2),
+        })
+        // For future use, if we want to handle different types of routing responses for image content then we can add more cases here
+        if ('Pests' === response) {
+          await handlePestDetection(
+            message,
+            imageContent,
+            updatedConversation,
+            currentMessageIndex,
+          )
+        }
+        const { updatedSearchQuery, imgDesc } = await handleImageContent(
+          message,
+          endpoint,
+          updatedConversation,
+          searchQuery,
+          controller,
+        )
+        searchQuery = updatedSearchQuery
+        return { searchQuery, imgDesc }
+      } catch (error) {
+        console.error('Error in chat.tsx running handleImageContent():', error)
+        controller.abort()
+      }
+    }
+    const imgDesc = ''
+    return { searchQuery, imgDesc }
+  }
+
   const handleImageContent = async (
     message: Message,
     endpoint: string,
@@ -184,27 +406,22 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     controller: AbortController,
   ) => {
     const imageContent = (message.content as Content[]).filter(
-      (content) => content.type === 'image_url',
+      (content) =>
+        content.type === 'image_url' || content.type === 'tool_image_url',
     )
+    let imgDesc = ''
     if (imageContent.length > 0) {
       homeDispatch({ field: 'isImg2TextLoading', value: true })
 
-      const key =
-        courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != ''
-          ? courseMetadata.openai_api_key
-          : apiKey
-
       try {
-        const imgDesc = await fetchImageDescription(
+        imgDesc = await fetchImageDescription(
           message,
           getCurrentPageName(),
           endpoint,
           updatedConversation,
-          key,
+          getOpenAIKey(courseMetadata),
           controller,
         )
-
-        searchQuery += ` Image description: ${imgDesc}`
 
         const imgDescIndex = (message.content as Content[]).findIndex(
           (content) =>
@@ -230,19 +447,26 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         homeDispatch({ field: 'isImg2TextLoading', value: false })
       }
     }
-    return searchQuery
+    const updatedSearchQuery = searchQuery
+    return { updatedSearchQuery, imgDesc }
   }
 
   const handleContextSearch = async (
     message: Message,
     selectedConversation: Conversation,
     searchQuery: string,
+    actions: SpotlightAction[],
   ) => {
     if (getCurrentPageName() != 'gpt4') {
+      homeDispatch({ field: 'isRetrievalLoading', value: true })
       // Extract text from all user messages in the conversation
       const token_limit =
         OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
-      const useMQRetrieval = localStorage.getItem('UseMQRetrieval') === 'true'
+
+      // ! DISABLE MQR FOR NOW -- too unreliable
+      // const useMQRetrieval = localStorage.getItem('UseMQRetrieval') === 'true'
+      const useMQRetrieval = false
+
       const fetchContextsFunc = useMQRetrieval
         ? fetchMQRContexts
         : fetchContexts
@@ -250,17 +474,37 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         getCurrentPageName(),
         searchQuery,
         token_limit,
+        actions
+          .filter(
+            (action) => action.checked && action.id?.startsWith('docGroup-'),
+          )
+          .map((action) => action.title),
       ).then((curr_contexts) => {
         message.contexts = curr_contexts as ContextWithMetadata[]
-        console.log('message.contexts: ', message.contexts)
+        // console.log('message.contexts: ', message.contexts)
       })
+      homeDispatch({ field: 'isRetrievalLoading', value: false })
     }
+  }
+
+  const resetMessageStates = () => {
+    homeDispatch({ field: 'isRouting', value: undefined })
+    homeDispatch({ field: 'isPestDetectionLoading', value: undefined })
+    homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+    homeDispatch({ field: 'isRetrievalLoading', value: undefined })
   }
 
   // THIS IS WHERE MESSAGES ARE SENT.
   const handleSend = useCallback(
-    async (message: Message, deleteCount = 0, plugin: Plugin | null = null) => {
+    async (
+      message: Message,
+      deleteCount = 0,
+      plugin: Plugin | null = null,
+      actions: SpotlightAction[],
+      tools: OpenAICompatibleTool[],
+    ) => {
       setCurrentMessage(message)
+      resetMessageStates()
       // New way with React Context API
       // TODO: MOVE THIS INTO ChatMessage
       // console.log('IN handleSend: ', message)
@@ -269,11 +513,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ? message.content.map((content) => content.text).join(' ')
         : message.content
 
-      // console.log("QUERY: ", searchQuery)
+      console.log('QUERY: ', searchQuery)
 
       if (selectedConversation) {
         let updatedConversation: Conversation
         if (deleteCount) {
+          //Remove the images generated by one of the tools from the message when the user regenerates the message i.e. have content.type === 'tool_image_url'
+          message.content = (message.content as Content[]).filter(
+            (content) => content.type !== 'tool_image_url',
+          )
+          // TODO: check for function calling, remove that. So regenerate works.
+
           const updatedMessages = [...selectedConversation.messages]
           for (let i = 0; i < deleteCount; i++) {
             updatedMessages.pop()
@@ -292,35 +542,97 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           field: 'selectedConversation',
           value: updatedConversation,
         })
+        const currentMessageIndex = updatedConversation.messages.length - 1
         homeDispatch({ field: 'loading', value: true })
         homeDispatch({ field: 'messageIsStreaming', value: true })
+        // console.log("Current message index: ", currentMessageIndex)
 
         const endpoint = getEndpoint(plugin)
 
         const controller = new AbortController()
 
         // Run image to text conversion, attach to Message object.
+        let imgDesc = ''
         if (Array.isArray(message.content)) {
-          searchQuery = await handleImageContent(
-            message,
-            endpoint,
-            updatedConversation,
-            searchQuery,
-            controller,
-          )
+          // if (true) {
+          // Fetch current message index from updatedConversation
+          console.log('Running routing for image content', message.content)
+          // Run routing for image content, attach to Message object.
+          const { searchQuery: newSearchQuery, imgDesc: newImgDesc } =
+            await handleRoutingForImageContent(
+              message,
+              tools,
+              endpoint,
+              updatedConversation,
+              searchQuery,
+              controller,
+              currentMessageIndex,
+            )
+          searchQuery = newSearchQuery
+          imgDesc = newImgDesc
         }
 
         // Run context search, attach to Message object.
-        await handleContextSearch(message, selectedConversation, searchQuery)
+        await handleContextSearch(
+          message,
+          selectedConversation,
+          searchQuery,
+          actions,
+        )
+
+        // If tools are available, try using tools:
+        // console.log('Right before handleTools!')
+        // console.log(
+        //   'updatedConversation: ',
+        //   JSON.stringify(updatedConversation),
+        // )
+        // Get imageURLs
+        const imageContent = (message.content as Content[]).filter(
+          (content) => content.type === 'image_url',
+        )
+        const imageUrls = imageContent.map(
+          (content) => content.image_url?.url as string,
+        )
+        console.log('Image URLs in main:', imageUrls)
+        console.log('Message in main:', message)
+
+        const toolResult = await handleTools(
+          message,
+          tools,
+          imageUrls,
+          imgDesc,
+          updatedConversation,
+          getOpenAIKey(courseMetadata),
+          homeDispatch,
+        )
+        // todo: add toolResult to messages
+
+        console.log('Tool result:', toolResult)
+        // toolResult.readableName
+        // toolResult.arguments
+        // console.log('Current message index:', currentMessageIndex)
+        // console.log('Updated conversation:', updatedConversation.messages)
+        // console.log('Updated conversation[currentMessageIndex]:', updatedConversation.messages[currentMessageIndex])
+
+        // @ts-ignore -- can't get the .text property to behave
+        if (
+          updatedConversation.messages[currentMessageIndex] &&
+          // @ts-ignore -- can't get the .text property to behave
+          updatedConversation.messages[currentMessageIndex]?.content[0]?.text
+        ) {
+          // @ts-ignore -- can't get the .text property to behave
+          updatedConversation.messages[currentMessageIndex].content[0].text +=
+            '\nTool result: ' + JSON.stringify(toolResult)
+        }
+        console.log(
+          'AFTER TOOL -- Updated conversation[currentMessageIndex]:',
+          updatedConversation.messages[currentMessageIndex],
+        )
 
         const chatBody: ChatBody = {
           model: updatedConversation.model,
           messages: updatedConversation.messages,
-          key:
-            courseMetadata?.openai_api_key &&
-            courseMetadata?.openai_api_key != ''
-              ? courseMetadata.openai_api_key
-              : apiKey,
+          key: getOpenAIKey(courseMetadata),
           // prompt property is intentionally left undefined to avoid TypeScript errors
           // and to meet the requirement of not passing any prompt.
           prompt: '',
@@ -359,6 +671,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           const final_response = await response.json()
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
+          // homeDispatch({ field: 'isRouting', value: undefined })
+          // homeDispatch({ field: 'isPestDetectionLoading', value: undefined })
+          // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+          // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
           notifications.show({
             id: 'error-notification',
             withCloseButton: true,
@@ -394,6 +710,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         if (!data) {
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
+          // homeDispatch({ field: 'isRouting', value: undefined })
+          // homeDispatch({ field: 'isPestDetectionLoading', value: undefined })
+          // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+          // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
           return
         }
         if (!plugin) {
@@ -413,6 +733,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             }
           }
           homeDispatch({ field: 'loading', value: false })
+          // homeDispatch({ field: 'isRouting', value: undefined })
+          // homeDispatch({ field: 'isPestDetectionLoading', value: undefined })
+          // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+          // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
           const reader = data.getReader()
           const decoder = new TextDecoder()
           let done = false
@@ -515,12 +839,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             saveConversation(updatedConversation)
             // todo: add clerk user info to onMessagereceived for logging.
             if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
-              console.log('clerk_obj.isLoaded && clerk_obj.isSignedIn')
               const emails = extractEmailsFromClerk(clerk_obj.user)
               updatedConversation.user_email = emails[0]
               onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
             } else {
-              console.log('NOT LOADED OR SIGNED IN')
               onMessageReceived(updatedConversation)
             }
 
@@ -602,7 +924,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
-      handleSend(currentMessage, 2, null)
+      handleSend(currentMessage, 2, null, actions, tools)
     }
   }, [currentMessage, handleSend])
 
@@ -705,7 +1027,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const renderIntroductoryStatements = () => {
     return (
       <div className="xs:mx-2 mt-4 max-w-3xl gap-3 px-4 last:mb-2 sm:mx-4 md:mx-auto lg:mx-auto ">
-        <div className="backdrop-filter-[blur(10px)] rounded-lg border border-2 border-[rgba(42,42,120,0.55)] bg-[rgba(42,42,64,0.4)] p-6">
+        <div className="backdrop-filter-[blur(10px)] rounded-lg border-2 border-[rgba(42,42,120,0.55)] bg-[rgba(42,42,64,0.4)] p-6">
           <Text
             className={`mb-2 text-lg text-white ${montserrat_heading.variable} font-montserratHeading`}
             style={{ whiteSpace: 'pre-wrap' }}
@@ -753,7 +1075,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       return (
         <>
           {message.content.map((content, index) => {
-            if (content.type === 'image' && content.image_url) {
+            if (content.type === 'image_url' && content.image_url) {
               return (
                 <img
                   key={index}
@@ -817,140 +1139,190 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   )
 
   return (
-    <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
-      <div className="justify-center" style={{ height: '46px' }}>
-        <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
-      </div>
-      <div className="mt-10 flex-grow overflow-auto">
-        {!(apiKey || serverSideApiKeyIsSet) ? (
-          <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
-            <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
-              <div className="mb-2 flex flex-col items-center text-center">
-                <IconAlertTriangle
-                  size={'54'}
-                  className="mr-2 block text-orange-400 "
-                />
-                <div className="mt-4 text-left text-gray-100">
-                  {' '}
-                  {t(
-                    'Please set your OpenAI API key in the bottom left of the screen.',
-                  )}
-                  <div className="mt-2 font-normal">
-                    <Text size={'md'} className="text-gray-100">
-                      If you don&apos;t have a key yet, you can get one here:{' '}
-                      <a
-                        href="https://platform.openai.com/account/api-keys"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-purple-500 hover:underline"
-                      >
-                        OpenAI API key{' '}
-                        <IconExternalLink
-                          className="mr-2 inline-block"
-                          style={{ position: 'relative', top: '-3px' }}
-                        />
-                      </a>
-                    </Text>
-                    <Text size={'md'} className="pt-10 text-gray-400">
-                      <IconLock className="mr-2 inline-block" />
-                      This key will live securely encrypted in your
-                      browser&apos;s cache. It&apos;s all client-side so our
-                      servers never see it.
-                    </Text>
-                    <Text size={'md'} className="pt-10 text-gray-400">
-                      <IconBrain className="mr-2 inline-block" />
-                      GPT 3.5 is default. For GPT-4 access, either complete one
-                      billing cycle as an OpenAI API customer or pre-pay a
-                      minimum of $0.50. See
-                      <a
-                        className="text-purple-500 hover:underline"
-                        href="https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {' '}
-                        this documentation for details{' '}
-                        <IconExternalLink
-                          className="mr-2 inline-block"
-                          style={{ position: 'relative', top: '-3px' }}
-                        />
-                      </a>
-                    </Text>
-                    <Text size={'md'} className="pt-10 text-gray-400">
-                      <IconCreditCard className="mr-2 inline-block" />
-                      You only pay the standard OpenAI prices, per token read or
-                      generated by the model.
-                    </Text>
-                  </div>
-                </div>
-                <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
-                  <IconArrowLeft
-                    size={'36'}
-                    className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
+    <>
+      <ChatSpotlight
+        courseName={getCurrentPageName()}
+        actions={actions}
+        setActions={(actions) => {
+          setActions(actions)
+        }}
+      />
+      <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
+        <div className="justify-center" style={{ height: '46px' }}>
+          <ChatNavbar
+            spotlight={spotlight}
+            bannerUrl={bannerUrl as string}
+            isgpt4={true}
+          />
+        </div>
+        <div className="mt-10 flex-grow overflow-auto">
+          {!(apiKey || serverSideApiKeyIsSet) ? (
+            <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
+              <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
+                <div className="mb-2 flex flex-col items-center text-center">
+                  <IconAlertTriangle
+                    size={'54'}
+                    className="mr-2 block text-orange-400 "
                   />
+                  <div className="mt-4 text-left text-gray-100">
+                    {' '}
+                    {t(
+                      'Please set your OpenAI API key in the bottom left of the screen.',
+                    )}
+                    <div className="mt-2 font-normal">
+                      <Text size={'md'} className="text-gray-100">
+                        If you don&apos;t have a key yet, you can get one here:{' '}
+                        <a
+                          href="https://platform.openai.com/account/api-keys"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-purple-500 hover:underline"
+                        >
+                          OpenAI API key{' '}
+                          <IconExternalLink
+                            className="mr-2 inline-block"
+                            style={{ position: 'relative', top: '-3px' }}
+                          />
+                        </a>
+                      </Text>
+                      <Text size={'md'} className="pt-10 text-gray-400">
+                        <IconLock className="mr-2 inline-block" />
+                        This key will live securely encrypted in your
+                        browser&apos;s cache. It&apos;s all client-side so our
+                        servers never see it.
+                      </Text>
+                      <Text size={'md'} className="pt-10 text-gray-400">
+                        <IconBrain className="mr-2 inline-block" />
+                        GPT 3.5 is default. For GPT-4 access, either complete
+                        one billing cycle as an OpenAI API customer or pre-pay a
+                        minimum of $0.50. See
+                        <a
+                          className="text-purple-500 hover:underline"
+                          href="https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {' '}
+                          this documentation for details{' '}
+                          <IconExternalLink
+                            className="mr-2 inline-block"
+                            style={{ position: 'relative', top: '-3px' }}
+                          />
+                        </a>
+                      </Text>
+                      <Text size={'md'} className="pt-10 text-gray-400">
+                        <IconCreditCard className="mr-2 inline-block" />
+                        You only pay the standard OpenAI prices, per token read
+                        or generated by the model.
+                      </Text>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
+                    <IconArrowLeft
+                      size={'36'}
+                      className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ) : modelError ? (
-          <ErrorMessageDiv error={modelError} />
-        ) : (
-          <>
-            <div
-              className="mt-4 max-h-full"
-              ref={chatContainerRef}
-              onScroll={handleScroll}
-            >
-              {selectedConversation?.messages.length === 0 ? (
-                <>
-                  <div className="mt-16">{renderIntroductoryStatements()}</div>
-                </>
-              ) : (
-                <>
-                  {selectedConversation?.messages.map((message, index) => (
-                    <MemoizedChatMessage
-                      key={index}
-                      message={message}
-                      contentRenderer={renderMessageContent}
-                      messageIndex={index}
-                      onEdit={(editedMessage) => {
-                        // setCurrentMessage(editedMessage)
-                        handleSend(
-                          editedMessage,
-                          selectedConversation?.messages.length - index,
-                        )
-                      }}
-                      onImageUrlsUpdate={onImageUrlsUpdate}
+          ) : modelError ? (
+            <ErrorMessageDiv error={modelError} />
+          ) : (
+            <>
+              <div
+                className="mt-4 max-h-full"
+                ref={chatContainerRef}
+                onScroll={handleScroll}
+              >
+                {selectedConversation?.messages.length === 0 ? (
+                  <>
+                    <div className="mt-16">
+                      {renderIntroductoryStatements()}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {selectedConversation?.messages.map((message, index) => (
+                      <MemoizedChatMessage
+                        key={index}
+                        message={message}
+                        contentRenderer={renderMessageContent}
+                        messageIndex={index}
+                        onEdit={(editedMessage) => {
+                          // setCurrentMessage(editedMessage)
+                          handleSend(
+                            editedMessage,
+                            selectedConversation?.messages.length - index,
+                            null,
+                            actions,
+                            tools,
+                          )
+                        }}
+                        onImageUrlsUpdate={onImageUrlsUpdate}
+                      />
+                    ))}
+                    {loading && <ChatLoader />}
+                    <div
+                      className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
+                      ref={messagesEndRef}
                     />
-                  ))}
-                  {loading && <ChatLoader />}
-                  <div
-                    className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
-                    ref={messagesEndRef}
-                  />
-                </>
-              )}
-            </div>
-            {/* <div className="w-full max-w-[calc(100% - var(--sidebar-width))] mx-auto flex justify-center"> */}
-            <ChatInput
-              stopConversationRef={stopConversationRef}
-              textareaRef={textareaRef}
-              onSend={(message, plugin) => {
-                // setCurrentMessage(message)
-                handleSend(message, 0, plugin)
-              }}
-              onScrollDownClick={handleScrollDown}
-              onRegenerate={handleRegenerate}
-              showScrollDownButton={showScrollDownButton}
-              inputContent={inputContent}
-              setInputContent={setInputContent}
-              courseName={getCurrentPageName()}
-            />
-            {/* </div> */}
-          </>
-        )}
+                  </>
+                )}
+              </div>
+              {/* <div className="w-full max-w-[calc(100% - var(--sidebar-width))] mx-auto flex justify-center"> */}
+              <ChatInput
+                stopConversationRef={stopConversationRef}
+                textareaRef={textareaRef}
+                onSend={(message, plugin) => {
+                  // setCurrentMessage(message)
+                  handleSend(message, 0, plugin, actions, tools)
+                }}
+                onScrollDownClick={handleScrollDown}
+                onRegenerate={handleRegenerate}
+                showScrollDownButton={showScrollDownButton}
+                inputContent={inputContent}
+                setInputContent={setInputContent}
+                courseName={getCurrentPageName()}
+              />
+              {/* </div> */}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
   Chat.displayName = 'Chat'
 })
+
+function errorToast({ title, message }: { title: string; message: string }) {
+  notifications.show({
+    id: 'error-notification-reused',
+    withCloseButton: true,
+    closeButtonProps: { color: 'red' },
+    onClose: () => console.log('error unmounted'),
+    onOpen: () => console.log('error mounted'),
+    autoClose: 12000,
+    title: (
+      <Text size={'lg'} className={`${montserrat_med.className}`}>
+        {title}
+      </Text>
+    ),
+    message: (
+      <Text className={`${montserrat_med.className} text-neutral-200`}>
+        {message}
+      </Text>
+    ),
+    color: 'red',
+    radius: 'lg',
+    icon: <IconAlertCircle />,
+    className: 'my-notification-class',
+    style: {
+      backgroundColor: 'rgba(42,42,64,0.3)',
+      backdropFilter: 'blur(10px)',
+      borderLeft: '5px solid red',
+    },
+    withBorder: true,
+    loading: false,
+  })
+}

@@ -87,23 +87,6 @@ const Home = () => {
   )
 
   useEffect(() => {
-    // TODO: Get tools given course_name.
-    const getTools = async () => {
-      const response = await fetch(
-        `src/pages/api/UIUC-api/tools/getN8nWorkflows?course_name=${course_name}`,
-      )
-
-      const tools = await response.json()
-      console.log(`home.tsx: Tools for ${course_name}: ${tools}`)
-    }
-    // dispatch({
-    //   field: 'defaultModelId',
-    //   value: model.id,
-    // })
-    getTools()
-  }, [course_name])
-
-  useEffect(() => {
     // Set model after we fetch available models
     const model = selectBestModel()
 
@@ -228,8 +211,25 @@ const Home = () => {
       try {
         if (!course_metadata || !key) return
         const data = await getModels({ key: key })
-        // console.log('models from getModels()', data)
-        dispatch({ field: 'models', value: data })
+        // dispatch({ field: 'models', value: data })
+
+        // @ts-ignore -- this type cast is FINE!! UGH
+        const models = data as OpenAIModel[]
+        if (course_metadata.disabled_models) {
+          // Convert IDs to model objects
+          const disabledModelObjects = course_metadata.disabled_models.map(
+            (id) => models.find((model) => model.id === id),
+          )
+
+          // Filter out disabled models
+          const validModels = models.filter(
+            (model) => !disabledModelObjects.includes(model),
+          )
+          dispatch({ field: 'models', value: validModels })
+        } else {
+          // All models are enabled
+          dispatch({ field: 'models', value: data })
+        }
       } catch (error) {
         console.error('Error fetching models user has access to: ', error)
         dispatch({ field: 'modelError', value: getModelsError(error) })
@@ -318,12 +318,7 @@ const Home = () => {
   const selectBestModel = (): OpenAIModel => {
     const defaultModelId = OpenAIModelID.GPT_4_VISION
 
-    // Return the default model if the models array is empty
-    if (models.length === 0) {
-      return OpenAIModels[defaultModelId]
-    }
-
-    // Ordered list of preferred model IDs
+    // Ordered list of preferred model IDs -- the first available model will be used as default
     const preferredModelIds = [
       'gpt-4-vision-preview',
       'gpt-4-128k',
@@ -396,6 +391,26 @@ const Home = () => {
   // Image to Text
   const setIsImg2TextLoading = (isImg2TextLoading: boolean) => {
     dispatch({ field: 'isImg2TextLoading', value: isImg2TextLoading })
+  }
+
+  // Routing
+  const setIsRouting = (isRouting: boolean) => {
+    dispatch({ field: 'isRouting', value: isRouting })
+  }
+
+  // Routing Response
+  const setRoutingResponse = (routingResponse: string) => {
+    dispatch({ field: 'routingResponse', value: routingResponse })
+  }
+
+  // Pest Detection
+  const setIsPestDetectionLoading = (isPestDetectionLoading: boolean) => {
+    dispatch({ field: 'isPestDetectionLoading', value: isPestDetectionLoading })
+  }
+
+  // Retrieval
+  const setIsRetrievalLoading = (isRetrievalLoading: boolean) => {
+    dispatch({ field: 'isRetrievalLoading', value: isRetrievalLoading })
   }
 
   const [isDragging, setIsDragging] = useState<boolean>(false)
@@ -603,6 +618,10 @@ const Home = () => {
           handleSelectConversation,
           handleUpdateConversation,
           setIsImg2TextLoading,
+          setIsRouting,
+          setRoutingResponse,
+          setIsPestDetectionLoading,
+          setIsRetrievalLoading,
         }}
       >
         <Head>

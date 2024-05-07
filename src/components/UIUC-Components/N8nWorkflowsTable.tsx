@@ -1,57 +1,33 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import React, { HTMLAttributes, HTMLProps, useEffect, useState } from 'react'
-import ReactDOM from 'react-dom/client'
+import React, { useEffect, useState } from 'react'
 import dayjs from 'dayjs'
 
-import {
-  Column,
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  Row,
-  SortingState,
-  Table,
-  useReactTable,
-} from '@tanstack/react-table'
 import { notifications } from '@mantine/notifications'
-import {
-  createStyles,
-  Group,
-  TextInput,
-  Title,
-  Text,
-  Switch,
-} from '@mantine/core'
-import axios from 'axios'
-import { showToastOnFileDeleted } from './MakeOldCoursePage'
-import { useRouter } from 'next/router'
+import { Title, Text, Switch } from '@mantine/core'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Montserrat } from 'next/font/google'
-const useStyles = createStyles((theme) => ({}))
+import { useFetchAllWorkflows } from '~/utils/functionCalling/handleFunctionCalling'
 
 import {
-  IconArrowsSort,
-  IconCaretDown,
-  IconCaretUp,
-  IconSquareArrowUp,
+  // IconArrowsSort,
+  // IconCaretDown,
+  // IconCaretUp,
+  // IconSquareArrowUp,
   IconAlertCircle,
 } from '@tabler/icons-react'
 import { DataTable } from 'mantine-datatable'
 import { WorkflowRecord } from '~/types/tools'
+import { LoadingSpinner } from './LoadingSpinner'
 
-const PAGE_SIZE = 5
+const PAGE_SIZE = 10
 
 interface N8nWorkflowsTableProps {
   n8nApiKey: string
-  isLoading: boolean
   course_name: string
-  fetchWorkflows: (
-    limit: number,
-    pagination: boolean,
-  ) => Promise<WorkflowRecord[]>
+  // fetchWorkflows: (
+  //   limit?: number,
+  //   pagination?: boolean,
+  // ) => Promise<WorkflowRecord[]>
 }
 
 const montserrat_med = Montserrat({
@@ -61,17 +37,21 @@ const montserrat_med = Montserrat({
 
 export const N8nWorkflowsTable = ({
   n8nApiKey,
-  fetchWorkflows,
   course_name,
 }: N8nWorkflowsTableProps) => {
   const [page, setPage] = useState(1)
-  const [records, setRecords] = useState<WorkflowRecord[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  // const [n8nApiKey, setN8nApiKey] = useState(
-  //   '',
-  // ) // !WARNING PUT IN YOUR API KEY HERE
-  const [limit, setLimit] = useState(10)
-  const [pagination, setPagination] = useState(true)
+
+  const {
+    data: records,
+    isLoading: isLoadingRecords,
+    isSuccess: isSuccess,
+    isError: isErrorTools,
+    refetch: refetchWorkflows,
+  } = useFetchAllWorkflows(course_name, n8nApiKey, 10, 'true', true)
+
+  useEffect(() => {
+    console.log('N*N records', records)
+  }, [records])
 
   const handleActiveChange = async (id: string, checked: boolean) => {
     // Make API call
@@ -87,11 +67,12 @@ export const N8nWorkflowsTable = ({
     if (!response.ok) {
       const errorData = await response.json()
       console.log('errorData:', errorData)
-      setRecords((prevRecords) =>
-        prevRecords.map((record) =>
-          record.id === id ? { ...record, active: !checked } : record,
-        ),
-      )
+      await refetchWorkflows()
+      // setRecords((prevRecords) =>
+      //   prevRecords.map((record) =>
+      //     record.id === id ? { ...record, active: !checked } : record,
+      //   ),
+      // )
       notifications.show({
         id: 'error-notification',
         withCloseButton: true,
@@ -125,64 +106,38 @@ export const N8nWorkflowsTable = ({
   }
 
   useEffect(() => {
-    const fetchData = async () => {
-      const data = await fetchWorkflows(limit, pagination)
-      console.log('data before setting the records:', data)
-      if (data) {
-        setRecords(data)
-      }
-      setIsLoading(false)
-    }
+    // Refetch if API key changes
+    refetchWorkflows()
+  }, [n8nApiKey])
 
-    fetchData()
-  }, [n8nApiKey, limit, pagination, fetchWorkflows])
+  console.debug('records before datatable:', records)
 
-  if (isLoading) {
-    return <div>Loading...</div>
-  }
-
-  // if (!records) {
-  //   notifications.show({
-  //     id: 'error-notification',
-  //     withCloseButton: true,
-  //     closeButtonProps: { color: 'red' },
-  //     onClose: () => console.log('error unmounted'),
-  //     onOpen: () => console.log('error mounted'),
-  //     autoClose: 12000,
-  //     title: (
-  //       <Text size={'lg'} className={`${montserrat_med.className}`}>
-  //         Error fetching workflows
-  //       </Text>
-  //     ),
-  //     message: (
-  //       <Text className={`${montserrat_med.className} text-neutral-200`}>
-  //         No records found. Please check your API key and try again.
-  //       </Text>
-  //     ),
-  //     color: 'red',
-  //     radius: 'lg',
-  //     icon: <IconAlertCircle />,
-  //     className: 'my-notification-class',
-  //     style: {
-  //       backgroundColor: 'rgba(42,42,64,0.3)',
-  //       backdropFilter: 'blur(10px)',
-  //       borderLeft: '5px solid red',
-  //     },
-  //     withBorder: true,
-  //     loading: false,
-  //   })
-  //   return
-  // }
-
-  console.log('records before datatable:', records)
   const startIndex = (page - 1) * PAGE_SIZE
   const endIndex = startIndex + PAGE_SIZE
-  let currentRecords
-  if (records && records.length !== 0) {
-    console.log('before the current', records)
-    currentRecords = (records as WorkflowRecord[]).slice(startIndex, endIndex)
+
+  // Not the right way to implement pagination... have to do it at the API/Request level
+  // let currentRecords
+  // if (records && records.length !== 0) {
+  //   console.log('before the current', records)
+  //   currentRecords = (records as WorkflowRecord[]).slice(startIndex, endIndex)
+  // }
+  // console.log('currentRecords b4 data:', currentRecords)
+
+  const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1000)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsWideScreen(window.innerWidth >= 1000)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const dataTableStyle = {
+    width: isWideScreen ? '50%' : '95%',
   }
-  console.log('currentRecords b4 data:', currentRecords)
+
   return (
     <>
       <Title
@@ -210,41 +165,51 @@ export const N8nWorkflowsTable = ({
         .
       </Text>
       <DataTable
-        height={300}
+        height={500}
+        style={dataTableStyle}
+        // style={{
+        //   width: '50%',
+        // }}
         withBorder
+        fetching={isLoadingRecords}
+        customLoader={<LoadingSpinner />}
         // keyField="id"
-        records={currentRecords}
+        records={records as WorkflowRecord[]}
         columns={[
-          { accessor: 'id', width: 175 },
-          { accessor: 'name', width: 100 },
+          // { accessor: 'id', width: 175 },
+          { accessor: 'name' },
           {
             accessor: 'active',
             width: 100,
             render: (record, index) => (
               <Switch
-                checked={record.active}
+                checked={!!record.active}
                 onChange={(event) => {
-                  setRecords((prevRecords) =>
-                    prevRecords.map((record, idx) =>
-                      idx === index
-                        ? { ...record, active: event.target.checked }
-                        : record,
-                    ),
+                  // TODO: double check this...
+                  // setRecords((prevRecords) =>
+                  //   prevRecords.map((record, idx) =>
+                  //     idx === index
+                  //       ? { ...record, active: event.target.checked }
+                  //       : record,
+                  //   ),
+                  // )
+                  console.log('handleActiveChange - record:', record.id)
+                  console.log(
+                    'handleActiveChange - event:',
+                    event.target.checked,
                   )
-                  console.log('record:', record.id)
-                  console.log('event:', event.target.checked)
                   handleActiveChange(record.id, event.target.checked)
                 }}
               />
             ),
           },
-          {
-            accessor: 'tags',
-            width: 100,
-            render: (record, index) => {
-              return record.tags.map((tag) => tag.name).join(', ')
-            },
-          },
+          // {
+          //   accessor: 'tags',
+          //   width: 100,
+          //   render: (record, index) => {
+          //     return record.tags.map((tag) => tag.name).join(', ')
+          //   },
+          // },
           {
             accessor: 'createdAt',
             // textAlign: 'left',
@@ -265,7 +230,7 @@ export const N8nWorkflowsTable = ({
           },
         ]}
         // totalRecords={records.length}
-        totalRecords={records.length}
+        totalRecords={records?.length || 0}
         recordsPerPage={PAGE_SIZE}
         page={page}
         onPageChange={(p) => setPage(p)}

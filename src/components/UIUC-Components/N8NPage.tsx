@@ -32,6 +32,7 @@ import { useRouter } from 'next/router'
 import { LoadingSpinner } from './LoadingSpinner'
 import { useAuth, useUser } from '@clerk/nextjs'
 import { Montserrat } from 'next/font/google'
+import { useFetchAllWorkflows } from '~/utils/functionCalling/handleFunctionCalling'
 
 export const GetCurrentPageName = () => {
   // /CS-125/materials --> CS-125
@@ -57,8 +58,24 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
   const [n8nApiKey, setN8nApiKey] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  const {
+    data: flows_table,
+    isSuccess: isSuccess,
+    // isLoading: isLoadingTools,
+    isError: isErrorTools,
+    refetch: refetchWorkflows,
+  } = useFetchAllWorkflows(GetCurrentPageName())
+
   const handleSaveApiKey = async () => {
-    const flows_table = await fetchWorkflows(10, true)
+    // const flows_table = await fetchWorkflows(10, true)
+
+    refetchWorkflows()
+
+    if (isErrorTools) {
+      errorFetchingWorkflowsToast()
+      return
+    }
+
     if (!flows_table) {
       notifications.show({
         id: 'error-notification',
@@ -166,49 +183,36 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
     fetchData()
   }, [currentPageName, clerk_user.isLoaded])
 
-  const fetchWorkflows = async (limit: number, pagination: boolean) => {
-    if (!n8nApiKey) {
-      console.log('n8nApiKey is not set. Skipping API call.')
-      return
-    }
-    console.log('before fetch:')
-    const response = await fetch(
-      `/api/UIUC-api/tools/getN8nWorkflows?api_key=${n8nApiKey}&limit=${limit}&pagination=${pagination}`,
-    )
-    if (!response.ok) {
-      notifications.show({
-        id: 'error-notification',
-        withCloseButton: true,
-        closeButtonProps: { color: 'red' },
-        onClose: () => console.log('error unmounted'),
-        onOpen: () => console.log('error mounted'),
-        autoClose: 12000,
-        title: (
-          <Text size={'lg'} className={`${montserrat_med.className}`}>
-            Error fetching workflows
-          </Text>
-        ),
-        message: (
-          <Text className={`${montserrat_med.className} text-neutral-200`}>
-            No records found. Please check your API key and try again.
-          </Text>
-        ),
-        color: 'red',
-        radius: 'lg',
-        icon: <IconAlertCircle />,
-        className: 'my-notification-class',
-        style: {
-          backgroundColor: 'rgba(42,42,64,0.3)',
-          backdropFilter: 'blur(10px)',
-          borderLeft: '5px solid red',
-        },
-        withBorder: true,
-        loading: false,
-      })
-      return
-    }
-    const data = await response.json()
-    return data
+  const errorFetchingWorkflowsToast = () => {
+    notifications.show({
+      id: 'error-notification',
+      withCloseButton: true,
+      closeButtonProps: { color: 'red' },
+      onClose: () => console.log('error unmounted'),
+      onOpen: () => console.log('error mounted'),
+      autoClose: 12000,
+      title: (
+        <Text size={'lg'} className={`${montserrat_med.className}`}>
+          Error fetching workflows
+        </Text>
+      ),
+      message: (
+        <Text className={`${montserrat_med.className} text-neutral-200`}>
+          No records found. Please check your API key and try again.
+        </Text>
+      ),
+      color: 'red',
+      radius: 'lg',
+      icon: <IconAlertCircle />,
+      className: 'my-notification-class',
+      style: {
+        backgroundColor: 'rgba(42,42,64,0.3)',
+        backdropFilter: 'blur(10px)',
+        borderLeft: '5px solid red',
+      },
+      withBorder: true,
+      loading: false,
+    })
   }
 
   if (!isLoaded || !courseMetadata) {
@@ -378,9 +382,7 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
 
             <N8nWorkflowsTable
               n8nApiKey={n8nApiKey}
-              isLoading={isLoading}
               course_name={course_name}
-              fetchWorkflows={fetchWorkflows}
             />
           </Flex>
         </div>

@@ -21,7 +21,7 @@ import {
 } from 'react'
 
 import { useTranslation } from 'next-i18next'
-import { Content, Message } from '@/types/chat'
+import { Content, Message, MessageType } from '@/types/chat'
 import { Plugin } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
 
@@ -198,6 +198,7 @@ export const ChatInput = ({
         // Clear the files after uploading
         setImageFiles([])
         setImagePreviewUrls([])
+        setImageUrls([])
       } catch (error) {
         console.error('Error uploading files:', error)
         setImageError('Error uploading files')
@@ -213,7 +214,9 @@ export const ChatInput = ({
 
     // Construct the content array
     const contentArray: Content[] = [
-      ...(textContent ? [{ type: 'text', text: textContent }] : []),
+      ...(textContent
+        ? [{ type: 'text' as MessageType, text: textContent }]
+        : []),
       ...imageContent,
     ]
 
@@ -656,7 +659,7 @@ export const ChatInput = ({
             </button>
           )}
 
-        <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white pl-8 shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#15162c] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4">
+        <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#15162c] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4">
           {/* BUTTON 1: Plugins Button -- DEPRECATED */}
           {/* <button
             className="absolute left-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
@@ -687,7 +690,7 @@ export const ChatInput = ({
           {/* BUTTON 2: Image Icon and Input */}
           {selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
             <button
-              className="absolute bottom-1.5 left-10 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+              className="absolute bottom-1.5 left-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
               onClick={() => document.getElementById('imageUpload')?.click()}
             >
               <IconPhoto size={22} />

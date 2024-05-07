@@ -5,11 +5,16 @@ import {
 } from '~/types/courseMetadata'
 import { log } from 'next-axiom'
 import { v4 as uuidv4 } from 'uuid'
-import { getBaseUrl } from './api'
 
 // Configuration for runtime environment
 export const config = {
   runtime: 'edge',
+}
+
+export const getBaseUrl = () => {
+  if (typeof window !== 'undefined') return '' // browser should use relative url
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}` // SSR should use vercel url
+  return `http://localhost:${process.env.PORT ?? 3000}` // dev SSR should use localhost
 }
 
 /**

@@ -24,8 +24,10 @@ const Maintenance = ({}: {
             UIUC.chat is down for maintenance
           </Title>
           <Text size="lg">
-            Our database provider, Supabase, is down. We will be back shortly
-            after they are back online.
+            Due to a surge in new documents, our vector database is nearing
+            capacity. We&apos;re expanding the database now (a simple EC2
+            instance on AWS) and we&apos;ll be back shortly. No data was lost,
+            and the upgrade will be seamless for everyone.
           </Text>
           {/* <Text size="lg">
             Motivation: Things to explosive product growth, accompanied by the
