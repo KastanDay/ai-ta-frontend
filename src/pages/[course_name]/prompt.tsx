@@ -697,7 +697,11 @@ const handleSubmitPromptOptimization = async (
   e.preventDefault()
   console.log('submitting', e)
   console.log('e.target[0].value', e.target[0].value)
-  const finalMessage = `persona you are prompt expert The following is a system prompt I want to set for a project: \n\n${e.target[0].value}\n\n Please help me optimize the system prompt and return the result as the optimized system prompt without any extra wordings so that I can directly use.`
+  const finalMessage = `You are a prompt expert. Follow the instructions closely and refine the system prompts as specified:
+
+  ${e.target[0].value}
+  
+  Ensure the final output is professionally tailored and directly usable.`
 
   setMessages([
     { role: 'system', content: 'Hi Im system prompt' },
