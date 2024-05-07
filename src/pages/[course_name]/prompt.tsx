@@ -409,11 +409,13 @@ const CourseMain: NextPage = () => {
                               <Group mt="xl">
                                 {messages.map((message, i, { length }) => {
                                   if (length - 1 === i && message.role === 'assistant') {
-                                    return <div style={{
-                                      border: '1px solid #6D28D9',
-                                      padding: '10px',
-                                      borderRadius: '5px'
-                                    }}>
+                                    return <div
+                                      key={i}
+                                      style={{
+                                        border: '1px solid #6D28D9',
+                                        padding: '10px',
+                                        borderRadius: '5px'
+                                      }}>
                                       {message.content}
                                     </div>
                                   }
