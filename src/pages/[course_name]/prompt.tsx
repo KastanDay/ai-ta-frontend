@@ -129,6 +129,8 @@ const CourseMain: NextPage = () => {
     // Just for testing
     if (systemPrompt) {
       setInput(systemPrompt)
+      console.log('system prompt in ueseffected', systemPrompt)
+      console.log('input in useeffect', input)
     }
   }, [systemPrompt])
 
@@ -161,10 +163,10 @@ const CourseMain: NextPage = () => {
     setSystemPrompt(newSystemPrompt)
   }, [checked1, checked2, checked3, thingsToDo, thingsNotToDo, courseMetadata])
 
-  const handleSystemPromptSubmit = async () => {
+  const handleSystemPromptSubmit = async (newSystemPrompt: string) => {
     let success = false;
-    if (courseMetadata && course_name && systemPrompt) {
-      courseMetadata.system_prompt = systemPrompt;
+    if (courseMetadata && course_name && newSystemPrompt) {
+      courseMetadata.system_prompt = newSystemPrompt;
       success = await callSetCourseMetadata(course_name, courseMetadata);
     }
     if (!success) {
@@ -391,22 +393,11 @@ const CourseMain: NextPage = () => {
                                 <IconSparkles stroke={1} />
                                 Optimize System Prompt
                               </Button>
-                              {/* <Button
-                                className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
-                                type="submit"
-                                onClick={() => {
-                                  setOptimizedSystemPrompt(input);
-                                  setIsSystemPromptSaved(true);
 
-                                }}
-                                style={{ minWidth: 'fit-content' }}
-                              >
-                                Save System Prompt
-                              </Button> */}
                               <Button
                                 className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
                                 type="submit"
-                                onClick={handleSystemPromptSubmit}
+                                onClick={() => { handleSystemPromptSubmit(systemPrompt) }}
                                 style={{ minWidth: 'fit-content' }}
                               >
                                 Update System Prompt
@@ -436,16 +427,18 @@ const CourseMain: NextPage = () => {
                                   onClick={() => {
                                     const lastMessage = messages[messages.length - 1];
                                     if (lastMessage && lastMessage.role === 'assistant') {
-                                      setOptimizedSystemPrompt(lastMessage.content);
-                                      setBaseSystemPrompt(lastMessage.content);
-                                      setSystemPrompt(lastMessage.content);
-                                      setIsSystemPromptSaved(true);
+                                      const newSystemPrompt = lastMessage.content;
+                                      setOptimizedSystemPrompt(newSystemPrompt);
+                                      setBaseSystemPrompt(newSystemPrompt);
+                                      setSystemPrompt(newSystemPrompt);
+                                      handleSystemPromptSubmit(newSystemPrompt);
+                                      console.log('system prompt', newSystemPrompt)
                                     }
                                     close();
                                   }}
                                   style={{ minWidth: 'fit-content' }}
                                 >
-                                  Save System Prompt
+                                  Update System Prompt
                                 </Button>
                                 <Button variant="outline" className="relative m-1 self-end bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
                                   onClick={close}>
@@ -461,9 +454,9 @@ const CourseMain: NextPage = () => {
                         </div>
                       </div>
                     </Group>
-                    <Alert icon={<IconAlertCircle size="1rem" />} title="Attention!" color="pink" style={{ width: isRightSideVisible ? '90%' : '73%', margin: 'auto', marginTop: '0px', color: 'pink' }}>
+                    {/* <Alert icon={<IconAlertCircle size="1rem" />} title="Attention!" color="pink" style={{ width: isRightSideVisible ? '90%' : '73%', margin: 'auto', marginTop: '0px', color: 'pink' }}>
                       <span style={{ color: 'pink' }}>Remember to save and update the system prompt before you leave this page.</span>
-                    </Alert>
+                    </Alert> */}
                     <Paper shadow="xs" radius="md" p="md" style={{ width: isRightSideVisible ? '90%' : '73%', margin: 'auto', marginTop: '8px', backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
                       <Title order={6} w={'100%'}>
                         For guidance on crafting prompts, consult the
@@ -615,22 +608,6 @@ const CourseMain: NextPage = () => {
                               justifyContent: 'space-between',
                             }}
                           >
-                            {/* {isSystemPromptSaved ? ( */}
-                            {/* <Button
-                                className="relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
-                                type="submit"
-                                onClick={handleSystemPromptSubmit}
-                                style={{ minWidth: 'fit-content' }}
-                              >
-                                Update System Prompt
-                              </Button> */}
-                            {/* ) : (
-                              <Button
-                                style={{ minWidth: 'fit-content', visibility: 'hidden' }}
-                              >
-                                Update System Prompt
-                              </Button>
-                            )} */}
 
                             <Button
                               className="relative m-1 self-end bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
@@ -720,7 +697,7 @@ const handleSubmitPromptOptimization = async (
   e.preventDefault()
   console.log('submitting', e)
   console.log('e.target[0].value', e.target[0].value)
-  const finalMessage = `The following is a system prompt I want to set for a project: \n\n${e.target[0].value}\n\n Please help me optimize the system prompt and return the result as the optimized system prompt without any extra wordings so that I can directly use.`
+  const finalMessage = `persona you are prompt expert The following is a system prompt I want to set for a project: \n\n${e.target[0].value}\n\n Please help me optimize the system prompt and return the result as the optimized system prompt without any extra wordings so that I can directly use.`
 
   setMessages([
     { role: 'system', content: 'Hi Im system prompt' },
