@@ -16,9 +16,10 @@ export enum OpenAIModelID {
   GPT_4_VISION = 'gpt-4-vision-preview',
   // GPT_4_32K = 'gpt-4-32k',
   // Azure -- ONLY GPT-4 supported for now... due to deployment param being env var...
+  // This values are deployment names, not model names
   GPT_4_AZURE = 'gpt-4-128k',
   GPT_4_HACKATHON = 'gpt-4-hackathon',
-  GPT_4_2024_04_09 = 'gpt-4-turbo-2024-04-09',
+  GPT_4_2024_04_09 = 'gpt-4-04-09',
   // GPT_3_5_AZ = 'gpt-35-turbo',
   // GPT_3_5_16k_AZURE = 'gpt-35-turbo-16k'
 }
@@ -105,5 +106,5 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
 
 export const VisionCapableModels: Set<OpenAIModelID> = new Set([
   OpenAIModelID.GPT_4_VISION,
-  OpenAIModelID.GPT_4_2024_04_09 // Add other vision capable models here as needed
-]);
+  OpenAIModelID.GPT_4_2024_04_09, // Add other vision capable models here as needed
+])
