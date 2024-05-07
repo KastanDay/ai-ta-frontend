@@ -50,7 +50,7 @@ export const N8nWorkflowsTable = ({
   } = useFetchAllWorkflows(course_name, n8nApiKey, 10, 'true', true)
 
   useEffect(() => {
-    console.log('N*N records', records)
+    console.log('N8N records', records)
   }, [records])
 
   const handleActiveChange = async (id: string, checked: boolean) => {
@@ -135,20 +135,20 @@ export const N8nWorkflowsTable = ({
   }, [])
 
   const dataTableStyle = {
-    width: isWideScreen ? '50%' : '95%',
+    width: isWideScreen ? '65%' : '92%',
   }
 
   return (
     <>
       <Title
         order={3}
-        // w={'80%'}
+        // w={}
         // size={'xl'}
         className={`pb-3 pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
       >
         Your n8n tools
       </Title>
-      <Text className="pb-2">
+      <Text w={isWideScreen ? '65%' : '92%'} className="pb-2">
         These tools can be automatically invoked by the LLM to fetch additional
         data to answer user questions on the{' '}
         <a

@@ -89,7 +89,7 @@ export default async function handleTools(
 const callN8nFunction = async (function_call: any, n8n_api_key: string) => {
   console.log('Calling n8n function with data: ', function_call)
 
-  const response = await fetch('http://localhost:8000/run_flow', {
+  const response = await fetch(`${process.env.RAILWAY_URL}/run_flow`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -254,7 +254,7 @@ export const useFetchAllWorkflows = (
       console.log('About to fetch workflows. Key:', api_key)
 
       const response = await fetch(
-        `http://localhost:8000/getworkflows?api_key=${api_key}&limit=${limit}&pagination=${parsedPagination}`,
+        `${process.env.RAILWAY_URL}/getworkflows?api_key=${api_key}&limit=${limit}&pagination=${parsedPagination}`,
       )
       if (!response.ok) {
         // return res.status(response.status).json({ error: response.statusText })

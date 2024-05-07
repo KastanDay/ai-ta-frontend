@@ -1,7 +1,5 @@
 // ingest.ts
 import { NextApiRequest, NextApiResponse } from 'next'
-import axios, { AxiosResponse } from 'axios'
-import { WorkflowRecord } from '~/types/tools'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
@@ -17,21 +15,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       activate.charAt(0).toUpperCase() + activate.slice(1)
     console.log('activate', activateCapitalized)
 
-    // localhost: 8000 / getworkflows ? api_key = n8n_api_304b9f5f0836aba9a8aa1c20fafbebfff49b2e1f2c2191c764aad26b614a19c320b0ffa041c0785f & limit=10 & pagination=True
-    // const response: AxiosResponse = await axios.get(
-    //   // `https://flask-production-751b.up.railway.app/getworkflows`,
-    // ?api_key=n8n_api_304b9f5f0836aba9a8aa1c20fafbebfff49b2e1f2c2191c764aad26b614a19c320b0ffa041c0785f&limit=10&pagination=True
-    //   `http://localhost:8000/getworkflows`,
-    //   {
-    //     params: {
-    //       api_key: api_key,
-    //       limit: parsedLimit,
-    //       pagination: parsedPagination,
-    //     },
-    //   },
-    // )
     const response = await fetch(
-      `http://localhost:8000/switch_workflow?id=${id}&api_key=${api_key}&activate=${activateCapitalized}`,
+      `${process.env.RAILWAY_URL}/switch_workflow?id=${id}&api_key=${api_key}&activate=${activateCapitalized}`,
     )
     if (!response.ok) {
       console.log('response not ok', response.text)
