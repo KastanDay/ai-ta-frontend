@@ -9,21 +9,26 @@ export default async function handler(req: NextRequest, res: NextResponse) {
   const requestBody = await req.json()
   console.log('upsertN8nAPIKey course_name and n8n_api_key:', requestBody)
   const { course_name, n8n_api_key } = requestBody
-  if (!course_name || !n8n_api_key) {
+  if (!course_name) {
     return new NextResponse(
       JSON.stringify({
         success: false,
-        error: 'course_name and n8n_api_key are required',
+        error: 'course_name is required',
       }),
       { status: 400 },
     )
   }
   const { data, error } = await supabase
     .from('projects')
-    .upsert({
-      n8n_api_key: n8n_api_key,
-      course_name: course_name,
-    })
+    .upsert(
+      {
+        n8n_api_key: n8n_api_key,
+        course_name: course_name,
+      },
+      {
+        onConflict: 'course_name',
+      },
+    )
     .eq('course_name', course_name)
     .select()
   console.log('upsertN8nAPIKey data:', data)
