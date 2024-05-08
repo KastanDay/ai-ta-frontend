@@ -93,8 +93,9 @@ const CourseMain: NextPage = () => {
   const [thingsNotToDo, setThingsNotToDo] = useState('')
   const [originalSystemPrompt, setOriginalSystemPrompt] = useState('')
   const [opened, { close, open }] = useDisclosure(false);
+  const [apiKey, setApiKey] = useState<string | undefined>(undefined);
   const { messages, input, handleInputChange, reload, setMessages, setInput } = useChat({
-    api: '/api/chat/openAI',
+    api: '/api/chat/openAI', body: { apiKey: apiKey },
   })
   const [optimizedSystemPrompt, setOptimizedSystemPrompt] = useState('');
   const [isSystemPromptSaved, setIsSystemPromptSaved] = useState(false);
@@ -256,6 +257,38 @@ const CourseMain: NextPage = () => {
         current_user_email={user_emails[0] as string}
       />
     )
+  }
+
+  const handleSubmitPromptOptimization = async (
+    e: any,
+    reload: any,
+    setMessages: any,
+
+  ) => {
+    let apiKey;
+    if (courseMetadata?.openai_api_key) {
+      apiKey = courseMetadata.openai_api_key;
+    } else {
+      apiKey = process.env.VLADS_OPENAI_KEY
+    }
+    setApiKey(apiKey);
+
+    e.preventDefault()
+    console.log('submitting', e)
+    console.log('e.target[0].value', e.target[0].value)
+    const finalMessage = `
+    You are a prompt expert. This system prompt, used for a project you created, guides the theme during conversations and interactions with the model. Please follow the instructions closely and refine the system prompts as specified:
+    
+    ${e.target[0].value}
+    
+    Ensure the final output is professionally tailored to the project's needs and can be used directly.`
+
+    setMessages([
+      { role: 'system', content: 'Hi Im system prompt' },
+      { role: 'user', content: finalMessage },
+    ])
+    // setFinalSystemPrompt(finalMessage)
+    reload()
   }
 
   return (
@@ -691,26 +724,4 @@ export const showToastOnPromptUpdate = (
 export default CourseMain
 
 
-const handleSubmitPromptOptimization = async (
-  e: any,
-  reload: any,
-  setMessages: any,
-) => {
 
-  e.preventDefault()
-  console.log('submitting', e)
-  console.log('e.target[0].value', e.target[0].value)
-  const finalMessage = `
-  You are a prompt expert. This system prompt, used for a project you created, guides the theme during conversations and interactions with the model. Please follow the instructions closely and refine the system prompts as specified:
-  
-  ${e.target[0].value}
-  
-  Ensure the final output is professionally tailored to the project's needs and can be used directly.`
-
-  setMessages([
-    { role: 'system', content: 'Hi Im system prompt' },
-    { role: 'user', content: finalMessage },
-  ])
-  // setFinalSystemPrompt(finalMessage)
-  reload()
-}
