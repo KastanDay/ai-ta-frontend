@@ -265,13 +265,14 @@ const CourseMain: NextPage = () => {
     setMessages: any,
 
   ) => {
-    let apiKey;
+    let newApiKey;
     if (courseMetadata?.openai_api_key) {
-      apiKey = courseMetadata.openai_api_key;
+      newApiKey = courseMetadata.openai_api_key;
     } else {
-      apiKey = process.env.VLADS_OPENAI_KEY
+      newApiKey = process.env.VLADS_OPENAI_KEY
     }
-    setApiKey(apiKey);
+    setApiKey(newApiKey);
+    console.log()
 
     e.preventDefault()
     console.log('submitting', e)
