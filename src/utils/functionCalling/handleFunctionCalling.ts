@@ -4,6 +4,8 @@ import { Conversation, Message } from '~/types/chat'
 import { ActionType } from '@/hooks/useCreateReducer'
 import { HomeInitialState } from '~/pages/api/home/home.state'
 
+// TODO: move this to the backend so it's in the API!!
+
 export default async function handleTools(
   message: Message,
   availableTools: OpenAICompatibleTool[],
@@ -89,18 +91,21 @@ export default async function handleTools(
 const callN8nFunction = async (function_call: any, n8n_api_key: string) => {
   console.log('Calling n8n function with data: ', function_call)
 
-  const response = await fetch(`${process.env.RAILWAY_URL}/run_flow`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+  const response = await fetch(
+    `https://flask-production-751b.up.railway.app/run_flow`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        api_key:
+          'n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6',
+        name: function_call.readableName,
+        data: function_call.arguments,
+      }),
     },
-    body: JSON.stringify({
-      api_key:
-        'n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6',
-      name: function_call.readableName,
-      data: function_call.arguments,
-    }),
-  })
+  )
   if (!response.ok) {
     console.error('Error calling n8n function: ', response)
     throw new Error(`Error calling n8n function. Status: ${response.status}`)
@@ -253,8 +258,10 @@ export const useFetchAllWorkflows = (
 
       console.log('About to fetch workflows. Key:', api_key)
 
+      //! console.log("Railway url: ", process.env.RAILWAY_URL) // undefined !!!
+
       const response = await fetch(
-        `${process.env.RAILWAY_URL}/getworkflows?api_key=${api_key}&limit=${limit}&pagination=${parsedPagination}`,
+        `https://flask-production-751b.up.railway.app/getworkflows?api_key=${api_key}&limit=${limit}&pagination=${parsedPagination}`,
       )
       if (!response.ok) {
         // return res.status(response.status).json({ error: response.statusText })
