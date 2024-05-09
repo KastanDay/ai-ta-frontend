@@ -7,6 +7,7 @@ export interface CourseDocument {
   created_at: string
   base_url: string
   doc_groups: string[]
+  error: string
 }
 
 export interface DocumentGroup {
