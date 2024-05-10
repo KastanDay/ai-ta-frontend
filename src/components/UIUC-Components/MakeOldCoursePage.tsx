@@ -1,9 +1,16 @@
 import Head from 'next/head'
-import { Title, Flex, Blockquote, Text, List } from '@mantine/core'
+import {
+  Title,
+  Flex,
+  Blockquote,
+  Text,
+  List,
+  Tabs,
+  Indicator,
+} from '@mantine/core'
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
-import { useAuth } from '@clerk/nextjs'
 import Navbar from './navbars/Navbar'
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
 import GlobalFooter from './GlobalFooter'
@@ -27,6 +34,8 @@ const MakeOldCoursePage = ({
 }) => {
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
   const [bannerUrl, setBannerUrl] = useState<string>('')
+  const [tabValue, setTabValue] = useState<string | null>('success')
+  const [failedCount, setFailedCount] = useState<number>(0)
 
   const router = useRouter()
   useEffect(() => {
@@ -222,10 +231,48 @@ const MakeOldCoursePage = ({
                 </div>
               </Flex>
             </div>
-            <div className="flex w-[85%] flex-col items-center justify-center pb-2 pt-8">
+            <div className="flex w-[85%] max-w-full flex-col items-center justify-center pb-2 pt-8">
               {metadata && (
                 <>
-                  <ProjectFilesTable course_name={course_name} />
+                  <Tabs
+                    defaultValue="success"
+                    value={tabValue}
+                    onTabChange={setTabValue}
+                    color="grape"
+                    className="w-[100%] max-w-full"
+                  >
+                    <Tabs.List>
+                      <Tabs.Tab value="success">Success</Tabs.Tab>
+
+                      <Indicator
+                        inline
+                        disabled={!failedCount}
+                        label={failedCount}
+                        color="grape"
+                        offset={6}
+                        size={16}
+                        className=" text-center"
+                      >
+                        <Tabs.Tab value="failed">Failed</Tabs.Tab>
+                      </Indicator>
+                    </Tabs.List>
+
+                    <Tabs.Panel value="success" pt="xs">
+                      <ProjectFilesTable
+                        key="success"
+                        course_name={course_name}
+                        setFailedCount={setFailedCount}
+                        tabValue={tabValue as string}
+                      />
+                    </Tabs.Panel>
+                    <Tabs.Panel value="failed" pt="xs">
+                      <ProjectFilesTable
+                        key="failed"
+                        course_name={course_name}
+                        tabValue={tabValue as string}
+                      />
+                    </Tabs.Panel>
+                  </Tabs>
                 </>
               )}
             </div>
