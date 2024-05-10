@@ -81,6 +81,7 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
           n8nApiKey: n8nApiKeyTextbox,
         }),
       })
+      console.log('keyTestResponse: ', await keyTestResponse.json())
 
       if (!keyTestResponse.ok) {
         notifications.show({
@@ -270,7 +271,7 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-        // current_email={currentEmail as string}
+      // current_email={currentEmail as string}
       />
     )
   }
