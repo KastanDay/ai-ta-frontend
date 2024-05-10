@@ -84,7 +84,7 @@ export function ProjectFilesTable({
   const [errorModalOpened, setErrorModalOpened] = useState(false)
   const [currentError, setCurrentError] = useState('')
 
-  const openModel = (open: boolean, error: string = '') => {
+  const openModel = (open: boolean, error = '') => {
     setErrorModalOpened(open)
     setCurrentError(error)
   }
@@ -177,6 +177,22 @@ export function ProjectFilesTable({
     isError: isErrorDocumentGroups,
     refetch: refetchDocumentGroups,
   } = useGetDocumentGroups(course_name)
+
+  useEffect(() => {
+    if (tabValue === 'failed') {
+      const newOverflowStates: { [key: number]: boolean } = {}
+      Object.keys(textRefs.current).forEach((key) => {
+        const index = Number(key)
+        const currentRef = textRefs.current[index]
+        if (currentRef && currentRef.current) {
+          const isOverflowing =
+            currentRef.current.scrollHeight > currentRef.current.clientHeight
+          newOverflowStates[index] = isOverflowing
+        }
+      })
+      setOverflowStates(newOverflowStates)
+    }
+  }, [failedDocuments, tabValue])
 
   // ------------- Mutations -------------
 
@@ -359,20 +375,6 @@ export function ProjectFilesTable({
       })
     )
   }
-
-  useEffect(() => {
-    const newOverflowStates: { [key: number]: boolean } = {}
-    Object.keys(textRefs.current).forEach((key) => {
-      const index = Number(key)
-      const currentRef = textRefs.current[index]
-      if (currentRef && currentRef.current) {
-        const isOverflowing =
-          currentRef.current.scrollHeight > currentRef.current.clientHeight
-        newOverflowStates[index] = isOverflowing
-      }
-    })
-    setOverflowStates(newOverflowStates)
-  }, [failedDocuments, tabValue])
 
   return (
     <>

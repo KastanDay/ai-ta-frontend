@@ -35,6 +35,9 @@ export default async function fetchFailedDocuments(
   try {
     let failedDocs
     let finalError
+
+    let count
+    let countError
     if (search_key && search_value) {
       const { data: someDocs, error } = await supabase
         .from('documents_failed')
@@ -45,12 +48,6 @@ export default async function fetchFailedDocuments(
         .ilike(search_key, '%' + search_value + '%')
         .order(sort_column, { ascending: sort_direction })
         .range(from, to)
-
-      if (error) throw error
-
-      if (!someDocs) {
-        throw new Error('No failed documents found')
-      }
 
       failedDocs = someDocs
       finalError = error
@@ -64,27 +61,36 @@ export default async function fetchFailedDocuments(
         .order(sort_column, { ascending: sort_direction })
         .range(from, to)
 
-      if (error) throw error
-
-      if (!someDocs) {
-        throw new Error('No failed documents found')
-      }
-
       failedDocs = someDocs
       finalError = error
     }
 
-    let count
-    let countError
+    if (finalError) {
+      throw finalError
+    }
 
-    // Fetch the total count of documents for the selected course
-    const { count: tmpCount, error: tmpCountError } = await supabase
-      .from('documents_failed')
-      .select('id', { count: 'exact', head: true })
-      .match({ course_name: course_name })
-    // NO FILTER
-    count = tmpCount
-    countError = tmpCountError
+    if (!failedDocs) {
+      throw new Error('Failed to fetch failed documents')
+    }
+
+    if (search_key && search_value) {
+      const { data: someDocs, error } = await supabase
+        .from('documents_failed')
+        .select('id', { count: 'exact', head: true })
+        .match({ course_name: course_name })
+        .ilike(search_key, '%' + search_value + '%')
+      count = someDocs
+      countError = error
+    } else {
+      // Fetch the total count of documents for the selected course
+      const { count: tmpCount, error: tmpCountError } = await supabase
+        .from('documents_failed')
+        .select('id', { count: 'exact', head: true })
+        .match({ course_name: course_name })
+      // NO FILTER
+      count = tmpCount
+      countError = tmpCountError
+    }
 
     if (countError) {
       throw countError
