@@ -33,6 +33,7 @@ import { LoadingSpinner } from './LoadingSpinner'
 import { useAuth, useUser } from '@clerk/nextjs'
 import { Montserrat } from 'next/font/google'
 import { useFetchAllWorkflows } from '~/utils/functionCalling/handleFunctionCalling'
+import { boolean } from 'zod'
 
 export const GetCurrentPageName = () => {
   // /CS-125/materials --> CS-125
@@ -57,6 +58,7 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
   const [currentEmail, setCurrentEmail] = useState('')
   const [n8nApiKeyTextbox, setN8nApiKeyTextbox] = useState('')
   const [n8nApiKey, setN8nApiKey] = useState('')
+  const [isEmptyWorkflowTable, setIsEmptyWorkflowTable] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const {
@@ -97,10 +99,13 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
           style: { backgroundColor: '#15162c' },
           loading: false,
         })
-
+        // Key invalid - exit early
         return
       }
+
+      setIsEmptyWorkflowTable(false)
     } else {
+      setIsEmptyWorkflowTable(true)
       console.log('KEY IS EMPTY: ', n8nApiKeyTextbox)
     }
 
@@ -420,6 +425,7 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
             <N8nWorkflowsTable
               n8nApiKey={n8nApiKey}
               course_name={course_name}
+              isEmptyWorkflowTable={isEmptyWorkflowTable}
             />
           </Flex>
         </div>

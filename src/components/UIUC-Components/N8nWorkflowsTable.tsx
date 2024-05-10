@@ -24,6 +24,7 @@ const PAGE_SIZE = 10
 interface N8nWorkflowsTableProps {
   n8nApiKey: string
   course_name: string
+  isEmptyWorkflowTable: boolean
   // fetchWorkflows: (
   //   limit?: number,
   //   pagination?: boolean,
@@ -38,6 +39,7 @@ const montserrat_med = Montserrat({
 export const N8nWorkflowsTable = ({
   n8nApiKey,
   course_name,
+  isEmptyWorkflowTable,
 }: N8nWorkflowsTableProps) => {
   const [page, setPage] = useState(1)
 
@@ -174,7 +176,7 @@ export const N8nWorkflowsTable = ({
         fetching={isLoadingRecords}
         customLoader={<LoadingSpinner />}
         // keyField="id"
-        records={records as WorkflowRecord[]}
+        records={isEmptyWorkflowTable ? [] : (records as WorkflowRecord[])}
         columns={[
           // { accessor: 'id', width: 175 },
           { accessor: 'name' },
@@ -240,11 +242,11 @@ export const N8nWorkflowsTable = ({
         loadingText="Loading..."
         // 👇 uncomment the next line to display a custom text when no records were found
         noRecordsText="No records found"
-        // 👇 uncomment the next line to use a custom pagination text
-        // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
-        // 👇 uncomment the next lines to use custom pagination colors
-        // paginationActiveBackgroundColor="green"
-        // paginationActiveTextColor="#e6e348"
+      // 👇 uncomment the next line to use a custom pagination text
+      // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
+      // 👇 uncomment the next lines to use custom pagination colors
+      // paginationActiveBackgroundColor="green"
+      // paginationActiveTextColor="#e6e348"
       />
     </>
   )
