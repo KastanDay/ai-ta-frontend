@@ -1,20 +1,30 @@
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
-import { Title, Text, Input } from '@mantine/core'
+import { Title, Text, Group, Badge } from '@mantine/core'
 
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
-import { IconAt, IconError404, IconSunset2, IconX } from '@tabler/icons-react'
+import { IconSunset2, IconX } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router';
+
 
 export default function Unsubscribe() {
-  const handleSubmit = async (event: any) => {
-    event.preventDefault() // Prevent default form submission behavior
-    const formData = new FormData(event.target)
-    const email = formData.get('email') // Assuming 'email' is the name attribute of your email input field
+  const [email, setEmail] = useState('');
+  // const [successfulUnsubscribe, setSuccessfulUnsubscribe] = useState<boolean>(false);
+  const router = useRouter();
 
+  useEffect(() => {
+    if (router.isReady) {
+      const emailParam = router.query.email;
+      if (typeof emailParam === 'string') setEmail(emailParam);
+    }
+  }, [router.isReady, router.query]);
+
+  const handleSubmit = async (event: any) => {
     if (!email) {
       notifications.show({
         id: 'error-notification',
-        title: 'Please enter an email.',
+        title: 'No email identified. 🤔',
         message: 'Looked like the box was empty 👀',
         autoClose: 20000,
         color: 'red',
@@ -56,8 +66,8 @@ export default function Unsubscribe() {
       notifications.show({
         id: 'success-notification',
         title: 'Successfully unsubscribed.',
-        message: "See ya, wouldn't wanna be ya! 🌅",
-        autoClose: 20000,
+        message: "See ya, wouldn't wanna be ya! 🌅 Redirecting to home page in 5 seconds...",
+        autoClose: 5000,
         // color: 'green',
         radius: 'lg',
         icon: <IconSunset2 />,
@@ -65,6 +75,11 @@ export default function Unsubscribe() {
         style: { backgroundColor: '#15162c' },
         loading: false,
       })
+
+      // setSuccessfulUnsubscribe(true);
+      setTimeout(() => {
+        router.push('/');
+      }, 5000);
     } catch (error) {
       console.error('There was a problem with the fetch operation:', error)
       notifications.show({
@@ -97,8 +112,7 @@ export default function Unsubscribe() {
           size="md"
           className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
         >
-          Enter your email address to unsubscribe from the UIUC.chat email
-          newsletter.
+          Unsubscribe from the UIUC.chat email newsletter.
         </Text>
         <Text
           size="sm"
@@ -106,26 +120,32 @@ export default function Unsubscribe() {
         >
           I guess your inbox just got a little bit cleaner, but less exciting 😒{' '}
         </Text>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <Input.Wrapper id="input-demo" label="Email Address">
-            <Input
-              icon={<IconAt />}
-              radius="md"
-              id="email-input"
-              placeholder="hi@example.org"
-              name="email"
-            />
-          </Input.Wrapper>
-          <div>
-            <button
-              className="flex w-full justify-center rounded-md border border-transparent bg-[#9d4edd] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#8441ba] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-              type="submit"
-            >
-              Unsubscribe
-            </button>
-          </div>
-        </form>
+        <Group>
+          <Text
+            size="md"
+            className={`label ${montserrat_paragraph.className}select-text p-0 text-neutral-200`}
+          >
+            Email:
+          </Text>
+          <Badge size="lg" color="grape" radius="md">{email}</Badge>
+        </Group>
+
+        <div>
+          <button
+            className="flex w-full justify-center rounded-md border border-transparent bg-[#9d4edd] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#8441ba] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+            onClick={handleSubmit}
+          >
+            Unsubscribe
+          </button>
+        </div>
       </div>
+      {/* {successfulUnsubscribe && (
+        <div>
+          <Title size='h3'>
+            Success, redirecting to home page in 5 seconds...
+          </Title>
+        </div>
+      )} */}
     </MainPageBackground>
   )
 }
