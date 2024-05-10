@@ -10,7 +10,6 @@ import { useRouter } from 'next/router';
 
 export default function Unsubscribe() {
   const [email, setEmail] = useState('');
-  // const [successfulUnsubscribe, setSuccessfulUnsubscribe] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -76,7 +75,6 @@ export default function Unsubscribe() {
         loading: false,
       })
 
-      // setSuccessfulUnsubscribe(true);
       setTimeout(() => {
         router.push('/');
       }, 5000);
@@ -139,13 +137,6 @@ export default function Unsubscribe() {
           </button>
         </div>
       </div>
-      {/* {successfulUnsubscribe && (
-        <div>
-          <Title size='h3'>
-            Success, redirecting to home page in 5 seconds...
-          </Title>
-        </div>
-      )} */}
     </MainPageBackground>
   )
 }
