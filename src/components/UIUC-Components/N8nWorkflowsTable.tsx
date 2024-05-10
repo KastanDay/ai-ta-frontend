@@ -18,6 +18,8 @@ import {
 import { DataTable } from 'mantine-datatable'
 import { WorkflowRecord } from '~/types/tools'
 import { LoadingSpinner } from './LoadingSpinner'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import axios from 'axios'
 
 const PAGE_SIZE = 10
 
@@ -40,7 +42,7 @@ export const N8nWorkflowsTable = ({
   course_name,
 }: N8nWorkflowsTableProps) => {
   const [page, setPage] = useState(1)
-
+  const queryClient = useQueryClient()
   const {
     data: records,
     isLoading: isLoadingRecords,
@@ -49,30 +51,30 @@ export const N8nWorkflowsTable = ({
     refetch: refetchWorkflows,
   } = useFetchAllWorkflows(course_name, n8nApiKey, 10, 'true', true)
 
-  useEffect(() => {
-    console.log('N8N records', records)
-  }, [records])
+  const mutate_active_flows = useMutation({
+    mutationFn: async ({ id, checked }: { id: string; checked: boolean }) => {
+      const response = await fetch(
+        `/api/UIUC-api/tools/activateWorkflow?api_key=${n8nApiKey}&id=${id}&activate=${checked}`,
+      )
+      const data = await response.json()
 
-  const handleActiveChange = async (id: string, checked: boolean) => {
-    // Make API call
-    console.log('id:', id)
-    console.log('checked:', checked)
+      if (!response.ok) {
+        throw new Error(data.error)
+      }
+      // console.log('response:', await response.json())
 
-    const response = await fetch(
-      `/api/UIUC-api/tools/activateWorkflow?api_key=${n8nApiKey}&id=${id}&activate=${checked}`,
-    )
+      return data
+    },
 
-    console.log('response:', response)
-    // Handle response
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.log('errorData:', errorData)
-      await refetchWorkflows()
-      // setRecords((prevRecords) =>
-      //   prevRecords.map((record) =>
-      //     record.id === id ? { ...record, active: !checked } : record,
-      //   ),
-      // )
+    onMutate: (variables) => {
+      // A mutation is about to happen!
+
+      // Optionally return a context containing data to use when for example rolling back
+      return { id: 1 }
+    },
+    onError: (error, variables, context) => {
+      // An error happened!
+      console.log(`Error happened ${error}`)
       notifications.show({
         id: 'error-notification',
         withCloseButton: true,
@@ -87,7 +89,7 @@ export const N8nWorkflowsTable = ({
         ),
         message: (
           <Text className={`${montserrat_med.className} text-neutral-200`}>
-            {errorData.error}
+            {error.message}
           </Text>
         ),
         color: 'red',
@@ -102,8 +104,22 @@ export const N8nWorkflowsTable = ({
         withBorder: true,
         loading: false,
       })
-    }
-  }
+    },
+    onSuccess: (data, variables, context) => {
+      // Boom baby!
+      console.log(`success`, data)
+    },
+    onSettled: (data, error, variables, context) => {
+      // Error or success... doesn't matter!
+      queryClient.invalidateQueries({
+        queryKey: ['tools', n8nApiKey],
+      })
+    },
+  })
+
+  useEffect(() => {
+    console.log('N8N records', records)
+  }, [records])
 
   useEffect(() => {
     // Refetch if API key changes
@@ -193,12 +209,10 @@ export const N8nWorkflowsTable = ({
                   //       : record,
                   //   ),
                   // )
-                  console.log('handleActiveChange - record:', record.id)
-                  console.log(
-                    'handleActiveChange - event:',
-                    event.target.checked,
-                  )
-                  handleActiveChange(record.id, event.target.checked)
+                  mutate_active_flows.mutate({
+                    id: record.id,
+                    checked: event.target.checked,
+                  })
                 }}
               />
             ),
