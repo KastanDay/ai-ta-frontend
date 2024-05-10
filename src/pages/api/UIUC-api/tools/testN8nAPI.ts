@@ -18,5 +18,6 @@ export default async function handler(req: any, res: any) {
     // return res.status(response.status).json({ error: response.statusText })
     throw new Error(`Unable to fetch n8n tools: ${response.statusText}`)
   }
+  return res.status(200).json({ message: 'Success' })
   // console.log('Fetch was ok. ', await response.json())
 }
