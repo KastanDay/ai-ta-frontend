@@ -28,7 +28,6 @@ export async function POST(req: Request) {
     }
     let apiKey = authHeader.substring(7);
     const { messages } = await req.json();
-    console.log('before decrypted apikey', apiKey)
 
     if (!apiKey.startsWith('sk')) {
       apiKey = await decrypt(apiKey, process.env.NEXT_PUBLIC_SIGNING_KEY as string) as string

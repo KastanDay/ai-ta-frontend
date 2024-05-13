@@ -295,12 +295,40 @@ const CourseMain: NextPage = () => {
     e.preventDefault()
 
     const finalMessage = `
-    Today, you will be writing instructions for an eager, helpful, but inexperienced and unworldly AI assistant. This assistant requires careful instruction and clear examples to understand how to behave effectively. Follow the steps below to write precise and thorough instructions that will guide the assistant to accomplish tasks consistently, accurately, and correctly. If the question is related to the subject in ANY WAY then always answer the question even if the documents are not helpful. Give the users the most helpful response possible as best you can. Remember this: always give a reasonable answer to the users question and never refuse to answer even if you have little information to go on; give an array of helpful answers if necessary. ALWAYS respond with something helpful to answer their questions and propose solutions. ALWAYS provide citations when relevant but don't stack too many citations together.:
-    
+    Today, you will be writing instructions for an eager, helpful, but inexperienced and unworldly AI assistant. This assistant requires careful instruction and clear examples to understand how to behave effectively. Follow the steps below to write precise and thorough instructions that will guide the assistant to accomplish tasks consistently, accurately, and correctly.
+
     ${e.target[0].value}
 
-    Note: This is probably obvious to you already, but you are not *completing* the task here. You are writing instructions for an AI to complete the task.
-`
+    In addition to the specific instructions provided, keep the following guidelines in mind:
+
+    Task Explanation:
+    Begin with a detailed explanation of the task at hand. Clearly outline the objectives and the desired outcome.
+
+    Step-by-Step Guidance:
+    Break down the task into clear, sequential steps.
+    Provide specific actions the assistant should take at each step.
+
+    Examples and Clarifications:
+    Include examples to illustrate each step.
+    Clarify any potential ambiguities with additional explanations or scenarios.
+
+    Handling Subject-Related Questions:
+    If the question is related to the subject in ANY WAY, ensure the assistant always provides an answer, even if the available documents are not directly helpful.
+    Encourage the assistant to give the most helpful response possible, drawing from general knowledge if specific information is lacking.
+
+    Always Provide Help:
+    Instruct the assistant to always give a reasonable answer to the user's question.
+    If there is limited information, suggest an array of potential helpful answers or solutions.
+
+    Citations and Sources:
+    When relevant, provide citations to support the information given.
+    Avoid stacking too many citations together; use them judiciously to maintain clarity.
+
+    Professional Tailoring:
+    Ensure the final instructions are professionally tailored to meet the project's needs.
+    The instructions should be clear, concise, and directly usable.
+    Note: This is probably obvious to you already, but you are not completing the task here. You are writing instructions for an AI to complete the task.
+    `
 
     setMessages([
       { role: 'system', content: 'Hi Im system prompt' },
