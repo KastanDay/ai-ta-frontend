@@ -15,15 +15,18 @@ import {
   // IconSquareArrowUp,
   IconAlertCircle,
 } from '@tabler/icons-react'
-import { DataTable } from 'mantine-datatable'
+import { DataTable, DataTableSortStatus } from 'mantine-datatable'
 import { WorkflowRecord } from '~/types/tools'
 import { LoadingSpinner } from './LoadingSpinner'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import axios from 'axios'
 
 const PAGE_SIZE = 10
 
 interface N8nWorkflowsTableProps {
   n8nApiKey: string
   course_name: string
+  isEmptyWorkflowTable: boolean
   // fetchWorkflows: (
   //   limit?: number,
   //   pagination?: boolean,
@@ -38,9 +41,14 @@ const montserrat_med = Montserrat({
 export const N8nWorkflowsTable = ({
   n8nApiKey,
   course_name,
+  isEmptyWorkflowTable,
 }: N8nWorkflowsTableProps) => {
   const [page, setPage] = useState(1)
-
+  const queryClient = useQueryClient()
+  // const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
+  //   columnAccessor: 'created_at',
+  //   direction: 'desc',
+  // })
   const {
     data: records,
     isLoading: isLoadingRecords,
@@ -49,30 +57,30 @@ export const N8nWorkflowsTable = ({
     refetch: refetchWorkflows,
   } = useFetchAllWorkflows(course_name, n8nApiKey, 10, 'true', true)
 
-  useEffect(() => {
-    console.log('N*N records', records)
-  }, [records])
+  const mutate_active_flows = useMutation({
+    mutationFn: async ({ id, checked }: { id: string; checked: boolean }) => {
+      const response = await fetch(
+        `/api/UIUC-api/tools/activateWorkflow?api_key=${n8nApiKey}&id=${id}&activate=${checked}`,
+      )
+      const data = await response.json()
 
-  const handleActiveChange = async (id: string, checked: boolean) => {
-    // Make API call
-    console.log('id:', id)
-    console.log('checked:', checked)
+      if (!response.ok) {
+        throw new Error(data.error)
+      }
+      // console.log('response:', await response.json())
 
-    const response = await fetch(
-      `/api/UIUC-api/tools/activateWorkflow?api_key=${n8nApiKey}&id=${id}&activate=${checked}`,
-    )
+      return data
+    },
 
-    console.log('response:', response)
-    // Handle response
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.log('errorData:', errorData)
-      await refetchWorkflows()
-      // setRecords((prevRecords) =>
-      //   prevRecords.map((record) =>
-      //     record.id === id ? { ...record, active: !checked } : record,
-      //   ),
-      // )
+    onMutate: (variables) => {
+      // A mutation is about to happen!
+
+      // Optionally return a context containing data to use when for example rolling back
+      return { id: 1 }
+    },
+    onError: (error, variables, context) => {
+      // An error happened!
+      console.log(`Error happened ${error}`)
       notifications.show({
         id: 'error-notification',
         withCloseButton: true,
@@ -87,7 +95,7 @@ export const N8nWorkflowsTable = ({
         ),
         message: (
           <Text className={`${montserrat_med.className} text-neutral-200`}>
-            {errorData.error}
+            {error.message}
           </Text>
         ),
         color: 'red',
@@ -102,8 +110,22 @@ export const N8nWorkflowsTable = ({
         withBorder: true,
         loading: false,
       })
-    }
-  }
+    },
+    onSuccess: (data, variables, context) => {
+      // Boom baby!
+      console.log(`success`, data)
+    },
+    onSettled: (data, error, variables, context) => {
+      // Error or success... doesn't matter!
+      queryClient.invalidateQueries({
+        queryKey: ['tools', n8nApiKey],
+      })
+    },
+  })
+
+  useEffect(() => {
+    console.log('N8N records', records)
+  }, [records])
 
   useEffect(() => {
     // Refetch if API key changes
@@ -116,12 +138,12 @@ export const N8nWorkflowsTable = ({
   const endIndex = startIndex + PAGE_SIZE
 
   // Not the right way to implement pagination... have to do it at the API/Request level
-  // let currentRecords
-  // if (records && records.length !== 0) {
-  //   console.log('before the current', records)
-  //   currentRecords = (records as WorkflowRecord[]).slice(startIndex, endIndex)
-  // }
-  // console.log('currentRecords b4 data:', currentRecords)
+  let currentRecords
+  if (records && records.length !== 0) {
+    console.log('before the current', records)
+    currentRecords = (records as WorkflowRecord[]).slice(startIndex, endIndex)
+  }
+  console.log('currentRecords b4 data:', currentRecords)
 
   const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1000)
 
@@ -135,20 +157,31 @@ export const N8nWorkflowsTable = ({
   }, [])
 
   const dataTableStyle = {
-    width: isWideScreen ? '50%' : '95%',
+    width: isWideScreen ? '65%' : '92%',
   }
+
+  // const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
+  //   columnAccessor: 'created_at',
+  //   direction: 'desc',
+  // })
+  // const [ordered, setOrder] = useState(sortBy(records, 'created_at'))
+
+  // useEffect(() => {
+  //   const data = sortBy(records, sortStatus.columnAccessor) as WorkflowRecord[]
+  //   setOrder(sortStatus.direction === 'desc' ? data.reverse() : data)
+  // }, [sortStatus])
 
   return (
     <>
       <Title
         order={3}
-        // w={'80%'}
+        // w={}
         // size={'xl'}
         className={`pb-3 pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
       >
         Your n8n tools
       </Title>
-      <Text className="pb-2">
+      <Text w={isWideScreen ? '65%' : '92%'} className="pb-2">
         These tools can be automatically invoked by the LLM to fetch additional
         data to answer user questions on the{' '}
         <a
@@ -174,7 +207,9 @@ export const N8nWorkflowsTable = ({
         fetching={isLoadingRecords}
         customLoader={<LoadingSpinner />}
         // keyField="id"
-        records={records as WorkflowRecord[]}
+        records={
+          isEmptyWorkflowTable ? [] : (currentRecords as WorkflowRecord[])
+        }
         columns={[
           // { accessor: 'id', width: 175 },
           { accessor: 'name' },
@@ -193,12 +228,10 @@ export const N8nWorkflowsTable = ({
                   //       : record,
                   //   ),
                   // )
-                  console.log('handleActiveChange - record:', record.id)
-                  console.log(
-                    'handleActiveChange - event:',
-                    event.target.checked,
-                  )
-                  handleActiveChange(record.id, event.target.checked)
+                  mutate_active_flows.mutate({
+                    id: record.id,
+                    checked: event.target.checked,
+                  })
                 }}
               />
             ),
