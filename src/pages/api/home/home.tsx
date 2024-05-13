@@ -31,6 +31,7 @@ import {
   OpenAIModelID,
   OpenAIModels,
   fallbackModelID,
+  VisionCapableModels,
 } from '@/types/openai'
 import { type Prompt } from '@/types/prompt'
 
@@ -70,6 +71,8 @@ const Home = () => {
       prompts,
       temperature,
       models,
+      documentGroups,
+      tools,
     },
     dispatch,
   } = contextValue
@@ -320,10 +323,12 @@ const Home = () => {
 
     // Ordered list of preferred model IDs -- the first available model will be used as default
     const preferredModelIds = [
-      'gpt-4-vision-preview',
+      'gpt-4o',
+      'gpt-4-turbo-2024-04-09',
       'gpt-4-128k',
       'gpt-4-0125-preview',
       'gpt-4-1106-preview',
+      'gpt-4-vision-preview',
       'gpt-4',
       'gpt-3.5-turbo-16k',
       'gpt-3.5-turbo',
@@ -413,6 +418,24 @@ const Home = () => {
     dispatch({ field: 'isRetrievalLoading', value: isRetrievalLoading })
   }
 
+  // Update actions for a prompt
+  const handleUpdateDocumentGroups = (id: string) => {
+    documentGroups.map((documentGroup) =>
+      documentGroup.id === id
+        ? { ...documentGroup, checked: !documentGroup.checked }
+        : documentGroup,
+    )
+    dispatch({ field: 'documentGroups', value: documentGroups })
+  }
+
+  // Update actions for a prompt
+  // Fetch n8nWorkflow instead of OpenAI Compatible tools.
+  const handleUpdateTools = (id: string) => {
+    tools.map((tool) =>
+      tool.id === id ? { ...tool, checked: !tool.enabled } : tool,
+    )
+    dispatch({ field: 'tools', value: tools })
+  }
   const [isDragging, setIsDragging] = useState<boolean>(false)
   const [dragEnterCounter, setDragEnterCounter] = useState(0)
 
@@ -622,6 +645,8 @@ const Home = () => {
           setRoutingResponse,
           setIsPestDetectionLoading,
           setIsRetrievalLoading,
+          handleUpdateDocumentGroups,
+          handleUpdateTools,
         }}
       >
         <Head>
@@ -646,8 +671,7 @@ const Home = () => {
 
             <div className="flex h-full w-full pt-[48px] sm:pt-0">
               {isDragging &&
-                selectedConversation?.model.id ===
-                  OpenAIModelID.GPT_4_VISION && (
+                (VisionCapableModels.has(selectedConversation?.model.id as OpenAIModelID)) && (
                   <div className="absolute inset-0 z-10 flex h-full w-full flex-col items-center justify-center bg-black opacity-75">
                     <GradientIconPhoto />
                     <span className="text-3xl font-extrabold text-white">

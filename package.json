@@ -31,6 +31,7 @@
     "@mantine/nprogress": "^6.0.10",
     "@mantine/spotlight": "^6.0.10",
     "@mantine/tiptap": "^6.0.10",
+    "@qdrant/js-client-rest": "^1.9.0",
     "@supabase/supabase-js": "^2.38.4",
     "@t3-oss/env-nextjs": "^0.2.1",
     "@tabler/icons-react": "^2.17.0",

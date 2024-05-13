@@ -1,9 +1,10 @@
-import { Conversation, Message } from '@/types/chat'
+import { Action, Conversation, Message } from '@/types/chat'
 import { ErrorMessage } from '@/types/error'
 import { FolderInterface } from '@/types/folder'
 import { OpenAIModel, OpenAIModelID } from '@/types/openai'
 import { PluginKey } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
+import { OpenAICompatibleTool, UIUCTool } from '~/utils/functionCalling/handleFunctionCalling'
 
 export interface HomeInitialState {
   apiKey: string
@@ -30,11 +31,13 @@ export interface HomeInitialState {
   serverSidePluginKeysSet: boolean
   cooldown: number
   showModelSettings: boolean
-  isImg2TextLoading: boolean | undefined
+  isImg2TextLoading: boolean
   isRouting: boolean | undefined
   routingResponse: string | undefined
   isPestDetectionLoading: boolean | undefined
   isRetrievalLoading: boolean | undefined
+  documentGroups: Action[]
+  tools: UIUCTool[]
 }
 
 export const initialState: HomeInitialState = {
@@ -62,9 +65,11 @@ export const initialState: HomeInitialState = {
   serverSidePluginKeysSet: false,
   cooldown: 0,
   showModelSettings: false,
-  isImg2TextLoading: undefined,
   isRouting: undefined,
   routingResponse: undefined,
   isPestDetectionLoading: undefined,
   isRetrievalLoading: undefined,
+  isImg2TextLoading: false,
+  documentGroups: [],
+  tools: [],
 }

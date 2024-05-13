@@ -7,7 +7,6 @@ import {
   Modal,
   Group,
   MultiSelect,
-  TextInput,
   Text,
   Paper,
   Center,
@@ -15,36 +14,35 @@ import {
   Image,
   createStyles,
   MantineTheme,
+  TextInput,
+  Code,
+  CopyButton,
+  Tooltip,
 } from '@mantine/core'
 import {
   IconAlertTriangle,
   IconCheck,
+  IconCopy,
   IconEye,
   IconTrash,
   IconX,
 } from '@tabler/icons-react'
-import { DataTable } from 'mantine-datatable'
-import { useState } from 'react'
+import { DataTable, DataTableSortStatus } from 'mantine-datatable'
+import { createRef, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { notifications, showNotification } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
 
 import { CourseDocument, DocumentGroup } from 'src/types/courseMaterials'
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  keepPreviousData,
-} from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
 import {
   useAppendToDocGroup,
-  useCreateDocumentGroup,
   useGetDocumentGroups,
   useRemoveFromDocGroup,
-  useUpdateDocGroup,
 } from '~/hooks/docGroupsQueries'
 import { LoadingSpinner } from './LoadingSpinner'
+import { montserrat_heading } from 'fonts'
 
 const useStyles = createStyles((theme) => ({}))
 
@@ -63,30 +61,51 @@ const GlobalStyle = createGlobalStyle`
 
 const PAGE_SIZE = 100
 
-export function ProjectFilesTable({ course_name }: { course_name: string }) {
+export function ProjectFilesTable({
+  course_name,
+  setFailedCount = (count: number) => { },
+  tabValue,
+}: {
+  course_name: string
+  setFailedCount?: (count: number) => void
+  tabValue: string
+}) {
   const queryClient = useQueryClient()
   const [selectedRecords, setSelectedRecords] = useState<CourseDocument[]>([])
-  const [query, setQuery] = useState('')
+  const [filterKey, setFilterKey] = useState<string>('')
+  const [filterValue, setFilterValue] = useState<string>('')
   const [modalOpened, setModalOpened] = useState(false)
   const [recordsToDelete, setRecordsToDelete] = useState<CourseDocument[]>([])
   const [page, setPage] = useState(1)
+  const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
+    columnAccessor: 'created_at',
+    direction: 'desc',
+  })
+  const [errorModalOpened, setErrorModalOpened] = useState(false)
+  const [currentError, setCurrentError] = useState('')
 
-  // TODO: I think this is only available in V5>??? Not sure. Why are we on the old V4!!!!
-  // const { mutate: appendToDocGroup, isLoading, isError, error } = useAppendToDocGroup(course_name);
-  const getDocumentGroups = useGetDocumentGroups(course_name)
-  const createDocumentGroup = useCreateDocumentGroup(
-    course_name,
-    queryClient,
-    page,
-  )
+  const openModel = (open: boolean, error = '') => {
+    setErrorModalOpened(open)
+    setCurrentError(error)
+  }
+
   const appendToDocGroup = useAppendToDocGroup(course_name, queryClient, page)
   const removeFromDocGroup = useRemoveFromDocGroup(
     course_name,
     queryClient,
     page,
   )
-  const updateDocGroup = useUpdateDocGroup(course_name, queryClient)
-  const { classes, theme } = useStyles()
+  const { theme } = useStyles()
+
+  // State to track overflow status of error column in each row of failed documents
+  const [overflowStates, setOverflowStates] = useState<{
+    [key: number]: boolean
+  }>({})
+
+  // Refs for each row of failed documents
+  const textRefs = useRef<{ [key: number]: React.RefObject<HTMLDivElement> }>(
+    {},
+  )
 
   // ------------- Queries -------------
   const {
@@ -96,33 +115,59 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     error: documentsError,
     refetch: refetchDocuments,
   } = useQuery({
-    queryKey: ['documents', course_name, page],
-    placeholderData: keepPreviousData,
+    queryKey: [
+      'documents',
+      course_name,
+      page,
+      filterKey,
+      filterValue,
+      sortStatus.columnAccessor,
+      sortStatus.direction,
+    ],
+    // keepPreviousData: true,
     queryFn: async () => {
-      // console.log('Fetching documents for page: ', page)
       const from = (page - 1) * PAGE_SIZE
       const to = from + PAGE_SIZE - 1
 
-      // console.log(
-      //   'Fetching documents for page: ',
-      //   page,
-      //   ' from:',
-      //   from,
-      //   ' to:',
-      //   to,
-      // )
-
       const response = await fetch(
-        `/api/materialsTable/fetchProjectMaterials?from=${from}&to=${to}&course_name=${course_name}`,
+        `/api/materialsTable/fetchProjectMaterials?from=${from}&to=${to}&course_name=${course_name}&filter_key=${filterKey}&filter_value=${filterValue}&sort_column=${sortStatus.columnAccessor}&sort_direction=${sortStatus.direction}`,
       )
-
       if (!response.ok) {
         throw new Error('Failed to fetch document groups')
       }
 
       const data = await response.json()
-      // console.log('Fetched documents:', data)
       return data
+    },
+  })
+
+  const {
+    data: failedDocuments,
+    isLoading: isLoadingFailedDocuments,
+    isError: isErrorFailedDocuments,
+    error: failedDocumentsError,
+  } = useQuery({
+    queryKey: [
+      'failedDocuments',
+      course_name,
+      page,
+      filterKey,
+      filterValue,
+      sortStatus.columnAccessor,
+      sortStatus.direction,
+    ],
+    queryFn: async () => {
+      const from = (page - 1) * PAGE_SIZE
+      const to = from + PAGE_SIZE - 1
+      const response = await fetch(
+        `/api/materialsTable/fetchFailedDocuments?from=${from}&to=${to}&course_name=${course_name}&filter_key=${filterKey}&filter_value=${filterValue}&sort_column=${sortStatus.columnAccessor}&sort_direction=${sortStatus.direction}`,
+      )
+      if (!response.ok) {
+        throw new Error('Failed to fetch failed documents')
+      }
+      const failedDocumentsResponse = await response.json()
+      setFailedCount(failedDocumentsResponse.recent_fail_count)
+      return failedDocumentsResponse
     },
   })
 
@@ -132,6 +177,22 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     isError: isErrorDocumentGroups,
     refetch: refetchDocumentGroups,
   } = useGetDocumentGroups(course_name)
+
+  useEffect(() => {
+    if (tabValue === 'failed') {
+      const newOverflowStates: { [key: number]: boolean } = {}
+      Object.keys(textRefs.current).forEach((key) => {
+        const index = Number(key)
+        const currentRef = textRefs.current[index]
+        if (currentRef && currentRef.current) {
+          const isOverflowing =
+            currentRef.current.scrollHeight > currentRef.current.clientHeight
+          newOverflowStates[index] = isOverflowing
+        }
+      })
+      setOverflowStates(newOverflowStates)
+    }
+  }, [failedDocuments, tabValue])
 
   // ------------- Mutations -------------
 
@@ -168,7 +229,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
 
   const deleteDocumentMutation = useMutation({
     mutationFn: async (recordsToDelete: CourseDocument[]) => {
-      console.log('Deleting records:', recordsToDelete)
+      console.debug('Deleting records:', recordsToDelete)
       const API_URL = 'https://flask-production-751b.up.railway.app'
       const deletePromises = recordsToDelete.map((record) =>
         axios.delete(`${API_URL}/delete`, {
@@ -180,10 +241,10 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
         }),
       )
       await Promise.all(deletePromises)
-      console.log('Deleted records')
+      console.debug('Deleted records')
     },
     onMutate: async (recordsToDelete) => {
-      console.log('in onMutate')
+      console.debug('in onMutate')
       await queryClient.cancelQueries({ queryKey: ['documents', course_name] })
 
       const previousDocuments = queryClient.getQueryData<CourseDocument[]>([
@@ -203,7 +264,8 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
             (doc) =>
               !recordsToDelete.find(
                 (record) =>
-                  record.url === doc.url || record.s3_path === doc.s3_path,
+                  (record.s3_path && record.s3_path === doc.s3_path) ||
+                  (record.url && record.url === doc.url),
               ),
           )
         },
@@ -226,7 +288,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
       return { previousDocuments, previousDocumentGroups }
     },
     onError: (err, variables, context) => {
-      console.log('Error deleting documents:', err)
+      console.debug('Error deleting documents:', err)
       if (context?.previousDocuments) {
         queryClient.setQueryData(
           ['documents', course_name],
@@ -247,13 +309,11 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
       showToastOnFileDeleted(theme)
       const sleep = (ms: number) =>
         new Promise((resolve) => setTimeout(resolve, ms))
-      console.log('sleeping for 500ms')
+      console.debug('sleeping for 500ms')
       await sleep(500)
-      console.log('Invalidating queries')
+      console.debug('Invalidating queries')
       queryClient.invalidateQueries({ queryKey: ['documents', course_name] })
-      queryClient.invalidateQueries({
-        queryKey: ['documentGroups', course_name],
-      })
+      queryClient.invalidateQueries({ queryKey: ['documentGroups', course_name] })
     },
   })
 
@@ -274,8 +334,8 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
       notifications.show({
         id: 'file-deleted-from-materials',
         withCloseButton: true,
-        onClose: () => console.log('unmounted'),
-        onOpen: () => console.log('mounted'),
+        // onClose: () => console.debug('unmounted'),
+        // onOpen: () => console.debug('mounted'),
         autoClose: 12000,
         // position="top-center",
         title: was_error ? 'Error deleting file' : 'Deleting file...',
@@ -318,11 +378,21 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
     <>
       <GlobalStyle />
       <DataTable
-        records={documents?.final_docs}
+        records={
+          tabValue === 'failed'
+            ? failedDocuments?.final_docs
+            : documents?.final_docs
+        }
         // records={[]}
-        totalRecords={documents?.total_count}
+        totalRecords={
+          tabValue === 'failed'
+            ? failedDocuments?.total_count
+            : documents?.total_count
+        }
         page={page}
         onPageChange={setPage}
+        sortStatus={sortStatus}
+        onSortStatusChange={setSortStatus}
         fetching={isLoadingDocuments || isLoadingDocumentGroups}
         recordsPerPage={PAGE_SIZE}
         customLoader={<LoadingSpinner />}
@@ -332,25 +402,6 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
         striped
         highlightOnHover
         height="80vh"
-        // emptyState={
-        // Error state:
-        noRecordsIcon={
-          <Stack align="center" p={30}>
-            <Text c="dimmed" size="md">
-              Ah! We hit a wall when fetching your documents. The database must
-              be on fire 🔥
-            </Text>
-            <Image
-              style={{ minWidth: 300, maxWidth: '30vw' }}
-              radius="md"
-              src="https://assets.kastan.ai/this-is-fine.jpg"
-              alt="No data found"
-            />
-            <Text c="dimmed" size="md">
-              So.. please try again later.
-            </Text>
-          </Stack>
-        }
         rowStyle={(row) => {
           if (selectedRecords.includes(row)) {
             return { backgroundColor: 'hsla(280, 100%, 70%, 0.5)' }
@@ -362,9 +413,20 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
         }}
         columns={[
           {
-            accessor: 'File Name',
+            accessor: 'readable_filename',
+            title: 'File Name',
+            // render: ({ readable_filename }) =>
+            //   readable_filename ? `${readable_filename}` : '',
             render: ({ readable_filename }) =>
-              readable_filename ? `${readable_filename}` : '',
+              readable_filename ? (
+                <div style={{ wordWrap: 'break-word', maxWidth: '18vw' }}>
+                  {readable_filename}
+                </div>
+              ) : (
+                ''
+              ),
+            width: '18vw',
+            sortable: true,
             filter: (
               <TextInput
                 label="File Name"
@@ -375,21 +437,36 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
                     size="sm"
                     variant="transparent"
                     c="dimmed"
-                    onClick={() => setQuery('')}
+                    onClick={() => {
+                      setFilterKey('readable_filename')
+                      setFilterValue('')
+                    }}
                   >
                     <IconX size={14} />
                   </ActionIcon>
                 }
-                value={query}
-                onChange={(e) => setQuery(e.currentTarget.value)}
+                value={filterValue}
+                onChange={(e) => {
+                  setFilterKey('readable_filename')
+                  setFilterValue(e.currentTarget.value)
+                }}
               />
             ),
-            filtering: query !== '',
+            filtering: filterKey !== null,
           },
           {
-            accessor: 'URL',
-            render: ({ url }) => (url ? `${url}` : ''),
-            width: '25%',
+            accessor: 'url',
+            title: 'URL',
+            render: ({ url }) =>
+              url ? (
+                <div style={{ wordWrap: 'break-word', maxWidth: '18vw' }}>
+                  {url}
+                </div>
+              ) : (
+                ''
+              ),
+            sortable: true,
+            width: '18vw',
             filter: (
               <TextInput
                 label="URL"
@@ -400,20 +477,36 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
                     size="sm"
                     variant="transparent"
                     c="dimmed"
-                    onClick={() => setQuery('')}
+                    onClick={() => {
+                      setFilterKey('url')
+                      setFilterValue('')
+                    }}
                   >
                     <IconX size={14} />
                   </ActionIcon>
                 }
-                value={query}
-                onChange={(e) => setQuery(e.currentTarget.value)}
+                value={filterValue}
+                onChange={(e) => {
+                  setFilterKey('url')
+                  setFilterValue(e.currentTarget.value)
+                }}
               />
             ),
-            filtering: query !== '',
+            filtering: filterKey !== null,
           },
           {
-            accessor: 'The Starting URL of Web Scraping',
-            render: ({ base_url }) => (base_url ? `${base_url}` : ''),
+            accessor: 'base_url',
+            title: 'The Starting URL of Web Scraping',
+            render: ({ base_url }) =>
+              base_url ? (
+                <div style={{ wordWrap: 'break-word', maxWidth: '18vw' }}>
+                  {base_url}
+                </div>
+              ) : (
+                ''
+              ),
+            sortable: true,
+            width: '18vw',
             filter: (
               <TextInput
                 label="The Starting URL of Web Scraping"
@@ -424,156 +517,221 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
                     size="sm"
                     variant="transparent"
                     c="dimmed"
-                    onClick={() => setQuery('')}
+                    onClick={() => {
+                      setFilterKey('base_url')
+                      setFilterValue('')
+                    }}
                   >
                     <IconX size={14} />
                   </ActionIcon>
                 }
-                value={query}
-                onChange={(e) => setQuery(e.currentTarget.value)}
+                value={filterValue}
+                onChange={(e) => {
+                  setFilterKey('base_url')
+                  setFilterValue(e.currentTarget.value)
+                }}
               />
             ),
-            filtering: query !== '',
+            filtering: filterKey !== null,
           },
           {
-            accessor: 'doc_group',
-            title: 'Document Groups',
-            width: 200, // Increase this value to make the column wider
-            render: (record) => (
-              <Group position="apart" spacing="xs">
-                <MultiSelect
-                  data={
-                    documentGroups && documentGroups.length > 0
-                      ? [...documentGroups].map((doc_group) => ({
-                          value: doc_group.name || '',
-                          label: doc_group.name || '',
-                        }))
-                      : [
-                          {
-                            value: 'loading',
-                            label: 'Loading groups...',
-                            disabled: true,
-                          },
-                        ]
-                  }
-                  value={record.doc_groups ? record.doc_groups : []}
-                  placeholder={
-                    documentGroups && documentGroups.length > 0
-                      ? 'Select Group'
-                      : 'Loading...'
-                  }
-                  searchable={documentGroups && documentGroups.length > 0}
-                  nothingFound="No options"
-                  creatable={documentGroups && documentGroups.length > 0}
-                  getCreateLabel={(query) => `+ Create ${query}`}
-                  onCreate={(doc_group_name) => {
-                    createDocumentGroup.mutate({ doc_group_name })
-                    return { value: doc_group_name, label: doc_group_name }
-                  }}
-                  onChange={(newSelectedGroups) =>
-                    handleDocumentGroupsChange(record, newSelectedGroups)
-                  }
-                  // MOVED onChange into function, just for cleanliness.
-                  // onChange={async (newSelectedGroups) => {
-                  //   const doc_groups = record.doc_groups ? record.doc_groups : []
-
-                  //   const removedGroups = doc_groups.filter(
-                  //     (group) => !newSelectedGroups.includes(group),
-                  //   )
-                  //   const appendedGroups = newSelectedGroups.filter(
-                  //     (group) => !doc_groups.includes(group),
-                  //   )
-
-                  //   if (removedGroups.length > 0) {
-                  //     for (const removedGroup of removedGroups) {
-                  //       removeFromDocGroup(course_name).mutate({
-                  //         record,
-                  //         removedGroup,
-                  //       })
-                  //     }
-                  //   }
-                  //   if (appendedGroups.length > 0) {
-                  //     for (const appendedGroup of appendedGroups) {
-                  //       useAppendToDocGroup(course_name).mutate({
-                  //         record,
-                  //         appendedGroup,
-                  //       })
-                  //     }
-                  //   }
-                  // }}
-                  disabled={!documentGroups || documentGroups.length === 0}
-                  sx={{ flex: 1, width: '100%' }}
-                  classNames={{
-                    value: 'tag-item self-center',
-                  }}
-                  styles={{
-                    input: {
-                      paddingTop: '12px',
-                      paddingBottom: '12px',
-                    },
-                    value: {
-                      marginTop: '2px',
-                    },
-                  }}
-                />
-              </Group>
-            ),
+            accessor: 'created_at',
+            title: 'Date created',
+            render: ({ created_at }) =>
+              created_at ? new Date(created_at).toLocaleString() : '',
+            width: 130,
+            sortable: true,
+            // TODO: Think about how to allow filtering on date... need different UI to select date range
+            // filter: (
+            //   <TextInput
+            //     label="Date created"
+            //     description="Show uploaded files that include the specified text"
+            //     placeholder="Search files..."
+            //     rightSection={
+            //       <ActionIcon
+            //         size="sm"
+            //         variant="transparent"
+            //         c="dimmed"
+            //         onClick={() => {
+            //           setFilterKey('readable_filename')
+            //           setFilterValue('')
+            //         }}
+            //       >
+            //         <IconX size={14} />
+            //       </ActionIcon>
+            //     }
+            //     value={filterValue}
+            //     onChange={(e) => {
+            //       setFilterKey('readable_filename')
+            //       setFilterValue(e.currentTarget.value)
+            //     }}
+            //   />
+            // ),
+            // filtering: filterKey !== null,
           },
-          {
-            accessor: 'actions',
-            title: <Box mr={6}>Actions</Box>,
-            width: 81,
-            render: (materials: any, index: number) => {
-              const openModal = async (action: string) => {
-                let urlToOpen = materials.url
-                if (!materials.url && materials.s3_path) {
-                  const presignedUrl = await fetchPresignedUrl(
-                    materials.s3_path,
+          ...(tabValue === 'failed'
+            ? [
+              {
+                accessor: 'error',
+                title: 'Error',
+                width: 200,
+                render: ({ error }: { error: string }, index: number) => {
+                  // Ensure a ref exists for this row
+                  if (!textRefs.current[index]) {
+                    textRefs.current[index] = createRef()
+                  }
+
+                  return (
+                    <div>
+                      <Text
+                        ref={textRefs.current[index]}
+                        size="sm"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          maxWidth: '100%',
+                        }}
+                      >
+                        {error}
+                      </Text>
+                      {overflowStates[index] && (
+                        <Text
+                          size="sm"
+                          color="grape"
+                          onClick={() => openModel(true, error)}
+                          className="rounded-md hover:underline"
+                          style={{
+                            cursor: 'pointer',
+                            bottom: 0,
+                            textAlign: 'right',
+                          }}
+                        >
+                          Read more
+                        </Text>
+                      )}
+                    </div>
                   )
-                  urlToOpen = presignedUrl
-                }
-                if (action === 'view' && urlToOpen) {
-                  window.open(urlToOpen, '_blank')
-                } else if (action === 'delete') {
-                  setRecordsToDelete([materials])
-                  setModalOpened(true)
-                }
-              }
+                },
+              },
+            ]
+            : [
+              {
+                accessor: 'doc_group',
+                title: 'Document Groups',
+                width: 200, // Increase this value to make the column wider
+                render: (record: CourseDocument) => (
+                  <Group position="apart" spacing="xs">
+                    <MultiSelect
+                      data={
+                        documentGroups
+                          ? [...documentGroups].map((doc_group) => ({
+                            value: doc_group.name || '',
+                            label: doc_group.name || '',
+                          }))
+                          : []
+                      }
+                      value={record.doc_groups ? record.doc_groups : []}
+                      placeholder={
+                        isLoadingDocumentGroups
+                          ? 'Loading...'
+                          : 'Select Group'
+                      }
+                      searchable={!isLoadingDocumentGroups}
+                      nothingFound={
+                        isLoadingDocumentGroups ? 'Loading...' : 'No Options'
+                      }
+                      creatable
+                      getCreateLabel={(query) => `+ Create "${query}"`}
+                      onCreate={(doc_group_name) => {
+                        // createDocumentGroup.mutate({ record, doc_group_name })
+                        return {
+                          value: doc_group_name,
+                          label: doc_group_name,
+                        }
+                      }}
+                      onChange={(newSelectedGroups) =>
+                        handleDocumentGroupsChange(record, newSelectedGroups)
+                      }
+                      disabled={isLoadingDocumentGroups}
+                      sx={{ flex: 1, width: '100%' }}
+                      classNames={{
+                        value: 'tag-item self-center',
+                      }}
+                      styles={{
+                        input: {
+                          paddingTop: '12px',
+                          paddingBottom: '12px',
+                        },
+                        value: {
+                          marginTop: '2px',
+                        },
+                      }}
+                    />
+                  </Group>
+                ),
+              },
+            ]),
+          ...(tabValue === 'failed'
+            ? []
+            : [
+              {
+                accessor: 'actions',
+                title: <Box mr={6}>Actions</Box>,
+                width: 75,
+                render: (materials: any, index: number) => {
+                  const openModal = async (action: string) => {
+                    let urlToOpen = materials.url
+                    if (!materials.url && materials.s3_path) {
+                      const presignedUrl = await fetchPresignedUrl(
+                        materials.s3_path,
+                      )
+                      urlToOpen = presignedUrl
+                    }
+                    if (action === 'view' && urlToOpen) {
+                      window.open(urlToOpen, '_blank')
+                    } else if (action === 'delete') {
+                      setRecordsToDelete([materials])
+                      setModalOpened(true)
+                    }
+                  }
 
-              return (
-                <Group>
-                  <ActionIcon
-                    size="sm"
-                    variant="subtle"
-                    color="green"
-                    onClick={() => openModal('view')}
-                  >
-                    <IconEye size={16} />
-                  </ActionIcon>
-                  <ActionIcon
-                    size="sm"
-                    variant="subtle"
-                    color="red"
-                    onClick={() => openModal('delete')}
-                  >
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Group>
-              )
-            },
-          },
+                  return (
+                    <Group spacing="xs">
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color="green"
+                        onClick={() => openModal('view')}
+                      >
+                        <IconEye size={16} />
+                      </ActionIcon>
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color="red"
+                        onClick={() => openModal('delete')}
+                      >
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Group>
+                  )
+                },
+              },
+            ]),
         ]}
         selectedRecords={selectedRecords}
         onSelectedRecordsChange={(newSelectedRecords) => {
           if (newSelectedRecords.length > 0) {
             setSelectedRecords(newSelectedRecords)
-            console.log('New selection:', newSelectedRecords)
+            console.debug('New selection:', newSelectedRecords)
           } else {
             setSelectedRecords([])
           }
         }}
-        // Accessor not necessary when documents have an `id` property
-        // idAccessor={(row: any) => (row.url ? row.url : row.s3_path)}
+      // Accessor not necessary when documents have an `id` property
+      // idAccessor={(row: any) => (row.url ? row.url : row.s3_path)}
       />{' '}
       {/* End DataTable */}
       <Paper
@@ -599,11 +757,10 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
             }}
           >
             {selectedRecords.length
-              ? `Delete ${
-                  selectedRecords.length === 1
-                    ? '1 selected record'
-                    : `${selectedRecords.length} selected records`
-                }`
+              ? `Delete ${selectedRecords.length === 1
+                ? '1 selected record'
+                : `${selectedRecords.length} selected records`
+              }`
               : 'Select records to delete'}
           </Button>
         </Center>
@@ -639,7 +796,7 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
             className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
             onClick={async () => {
               setModalOpened(false)
-              console.log('Deleting records:', recordsToDelete)
+              console.debug('Deleting records:', recordsToDelete)
               deleteDocumentMutation.mutate(recordsToDelete)
               // await handleDelete(recordsToDelete)
               setRecordsToDelete([])
@@ -647,6 +804,65 @@ export function ProjectFilesTable({ course_name }: { course_name: string }) {
           >
             Delete
           </Button>
+        </div>
+      </Modal>
+      <Modal
+        opened={errorModalOpened}
+        onClose={() => setErrorModalOpened(false)}
+        title="Error Details"
+        size={'xl'}
+        closeOnEscape={true}
+        transitionProps={{ transition: 'fade', duration: 200 }}
+        centered
+        radius={'lg'}
+        overlayProps={{ blur: 3, opacity: 0.55 }}
+        styles={{
+          header: {
+            backgroundColor: '#15162c',
+            borderBottom: '2px solid',
+            borderColor: theme.colors.dark[3],
+          },
+          body: {
+            backgroundColor: '#15162c',
+          },
+          title: {
+            color: 'white',
+            fontFamily: montserrat_heading.variable,
+            fontWeight: 'bold',
+          },
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
+            paddingTop: '20px',
+          }}
+        >
+          <Code style={{ whiteSpace: 'pre-wrap' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <CopyButton value={currentError} timeout={2000}>
+                {({ copied, copy }) => (
+                  <Tooltip
+                    label={copied ? 'Copied' : 'Copy'}
+                    withArrow
+                    position="right"
+                  >
+                    <ActionIcon color={copied ? 'teal' : 'gray'} onClick={copy}>
+                      {copied ? (
+                        <IconCheck size="1rem" />
+                      ) : (
+                        <IconCopy size="1rem" />
+                      )}
+                    </ActionIcon>
+                  </Tooltip>
+                )}
+              </CopyButton>
+            </div>
+            {currentError}
+          </Code>
         </div>
       </Modal>
     </>
@@ -676,7 +892,7 @@ function errorStateForProjectFilesTable() {
             radius="lg"
             src="https://assets.kastan.ai/this-is-fine.jpg"
             alt="No data found"
-            // style={{ filter: 'grayscale(1)' }}
+          // style={{ filter: 'grayscale(1)' }}
           />
           <Text c="dimmed" size="md">
             So.. please try again later.

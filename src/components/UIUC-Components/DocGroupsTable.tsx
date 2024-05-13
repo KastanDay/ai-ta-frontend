@@ -1,9 +1,15 @@
 'use client'
 
-import { TextInput, Text, ScrollArea, Table, Switch } from '@mantine/core'
-import { IconSearch, IconTrash } from '@tabler/icons-react'
+import {
+  TextInput,
+  Text,
+  ScrollArea,
+  Table,
+  Switch,
+  Tooltip,
+} from '@mantine/core'
+import { IconHelp, IconSearch } from '@tabler/icons-react'
 import { useMemo, useState } from 'react'
-import { showNotification } from '@mantine/notifications'
 import { createGlobalStyle } from 'styled-components'
 
 import {
@@ -74,19 +80,25 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
           width: '100%',
           margin: 'auto',
           borderRadius: '10px',
-          overflow: 'hidden',
+          overflow: 'visible',
           marginBottom: '20px',
         }}
       >
         <TextInput
           placeholder="Search by Document Group"
           mb="sm"
+          radius="md"
           icon={<IconSearch />}
           value={documentGroupSearch}
           onChange={handleDocumentGroupSearchChange}
         />
         <Table
-          style={{ width: '100%', tableLayout: 'fixed' }}
+          style={{
+            width: '100%',
+            tableLayout: 'fixed',
+            borderRadius: '10px',
+            overflow: 'hidden',
+          }}
           withBorder
           withColumnBorders
           highlightOnHover
@@ -96,7 +108,6 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
               <th style={{ width: '70%', wordWrap: 'break-word' }}>
                 Document Group
               </th>
-              {/* <th style={{ width: '40%', wordWrap: 'break-word' }}>Description</th> */}
               <th style={{ width: '15%', wordWrap: 'break-word' }}>
                 Number of Docs
               </th>
@@ -107,7 +118,26 @@ export function DocGroupsTable({ course_name }: { course_name: string }) {
                   textAlign: 'center',
                 }}
               >
-                Enabled
+                <Tooltip
+                  multiline
+                  color="#CC65FF"
+                  arrowPosition="center"
+                  arrowSize={8}
+                  width={400}
+                  withArrow
+                  label="If a document is included in ANY enabled group, it will be included in chatbot results. Enabled groups take precedence over disabled groups."
+                >
+                  <span
+                    style={{
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span>Enabled</span>
+                    <IconHelp size={16} style={{ marginLeft: '4px' }} />
+                  </span>
+                </Tooltip>
               </th>
             </tr>
           </thead>
