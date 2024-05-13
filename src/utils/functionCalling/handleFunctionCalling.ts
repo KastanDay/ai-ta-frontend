@@ -8,7 +8,7 @@ import { HomeInitialState } from '~/pages/api/home/home.state'
 
 export default async function handleTools(
   message: Message,
-  availableTools: OpenAICompatibleTool[],
+  availableTools: UIUCTool[],
   imageUrls: string[],
   imageDescription: string,
   selectedConversation: Conversation,
@@ -20,6 +20,10 @@ export default async function handleTools(
   try {
     homeDispatch({ field: 'isRouting', value: true })
 
+    // Convert UIUCTool to OpenAICompatibleTool
+    const openAITools = getOpenAIToolFromUIUCTool(availableTools)
+    console.log('OpenAI compatible tools (handle tools): ', openAITools)
+
     const response = await fetch('/api/chat/openaiFunctionCall', {
       method: 'POST',
       headers: {
@@ -27,12 +31,16 @@ export default async function handleTools(
       },
       body: JSON.stringify({
         conversation: selectedConversation,
-        tools: availableTools,
+        tools: openAITools,
         imageUrls: imageUrls,
         imageDescription: imageDescription,
         openaiKey: openaiKey,
       }),
     })
+    if (!response.ok) {
+      // print error message
+      console.error('Error calling openaiFunctionCall: ', response)
+    }
 
     if (response.body) {
       const reader = response.body.getReader()
@@ -181,8 +189,8 @@ export interface OpenAICompatibleTool {
 export interface UIUCTool {
   id: string
   name: string
-  enabled: boolean
-  course_name: string // TBD...
+  enabled?: boolean
+  course_name?: string
   readableName: string
   description: string
   parameters: {
@@ -192,10 +200,25 @@ export interface UIUCTool {
   }
 }
 
-export function getOpenAIFunctionsFromN8n(
-  workflows: N8nWorkflow[],
+export function getOpenAIToolFromUIUCTool(
+  tools: UIUCTool[],
 ): OpenAICompatibleTool[] {
-  const extractedObjects: OpenAICompatibleTool[] = []
+
+  return tools.map((tool) => {
+    return {
+      id: tool.name,
+      name: tool.name,
+      readableName: tool.readableName,
+      description: tool.description,
+      parameters: tool.parameters,
+    }
+  })
+}
+
+export function getUIUCToolFromN8n(
+  workflows: N8nWorkflow[],
+): UIUCTool[] {
+  const extractedObjects: UIUCTool[] = []
 
   for (const workflow of workflows) {
     console.log('workflowGroup: ', workflow)
@@ -225,6 +248,7 @@ export function getOpenAIFunctionsFromN8n(
     })
 
     extractedObjects.push({
+      id: workflow.id,
       name: workflow.name.replace(/\s+/g, '_'),
       readableName: workflow.name,
       description: formTriggerNode.parameters.formDescription,
@@ -256,7 +280,7 @@ export const useFetchAllWorkflows = (
 
   return useQuery({
     queryKey: ['tools', api_key],
-    queryFn: async () => {
+    queryFn: async (): Promise<UIUCTool[]> => {
       if (isNaN(limit) || limit <= 0) {
         limit = 10
       }
@@ -292,9 +316,9 @@ export const useFetchAllWorkflows = (
       const workflows = await response.json()
       if (full_details) return workflows[0]
 
-      const openAIFunctions = getOpenAIFunctionsFromN8n(workflows[0])
-      console.log('All OpenAI Functions: ', openAIFunctions)
-      return openAIFunctions
+      const uiucTools = getUIUCToolFromN8n(workflows[0])
+      console.log('All uiuc tools: ', uiucTools)
+      return uiucTools as UIUCTool[]
     },
   })
 }
