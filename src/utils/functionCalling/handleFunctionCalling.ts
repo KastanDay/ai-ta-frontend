@@ -173,6 +173,25 @@ export interface OpenAICompatibleTool {
   }
 }
 
+// TODO: Refine type here, use in chat.tsx
+// name: string
+// enabled: boolean
+// course_name: string
+// doc_count: number
+export interface UIUCTool {
+  id: string
+  name: string
+  enabled: boolean
+  course_name: string // TBD...
+  readableName: string
+  description: string
+  parameters: {
+    type: 'object'
+    properties: Record<string, ExtractedParameter>
+    required: string[]
+  }
+}
+
 export function getOpenAIFunctionsFromN8n(
   workflows: N8nWorkflow[],
 ): OpenAICompatibleTool[] {

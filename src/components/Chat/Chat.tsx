@@ -51,6 +51,7 @@ import {
   type Conversation,
   type Message,
   Content,
+  Action,
 } from '@/types/chat'
 import { type Plugin } from '@/types/plugin'
 
@@ -97,12 +98,18 @@ import {
   SpotlightActionProps,
 } from '@mantine/spotlight'
 import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
-import ChatSpotlight from '../UIUC-Components/ChatSpotlight'
 
 const montserrat_med = Montserrat({
   weight: '500',
   subsets: ['latin'],
 })
+
+const DEFAULT_DOCUMENT_GROUP = {
+  id: 'DocGroup-all',
+  name: 'All Documents', // This value can be stored in an env variable
+  checked: true,
+}
+
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
   const clerk_obj = useUser()
@@ -115,22 +122,24 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const [inputContent, setInputContent] = useState<string>('')
 
+  const [enabledDocumentGroups, setEnabledDocumentGroups] = useState<string[]>(
+    [],
+  )
+
   const {
-    data: documentGroups,
+    data: documentGroupsResponse, // TODO: Update name everywhere (from documentGroups)
     isSuccess: isSuccessDocumentGroups,
     // isError: isErrorDocumentGroups,
   } = useFetchEnabledDocGroups(getCurrentPageName())
 
   const {
-    data: tools,
+    data: toolsResponse, // TODO: Update name everywhere (from tools)
     isSuccess: isSuccessTools,
     isLoading: isLoadingTools,
     isError: isErrorTools,
     error: toolLoadingError,
     // refetch: refetchTools,
   } = useFetchAllWorkflows(getCurrentPageName())
-
-  const [actions, setActions] = useState<SpotlightAction[]>([]) // Doc groups & tools are "actions" of spotlight
 
   useEffect(() => {
     if (
@@ -158,8 +167,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       showModelSettings,
       isImg2TextLoading,
       isRouting,
-      isPestDetectionLoading, // change to isFunctionCallLoading
+      isPestDetectionLoading, // TODO change to isFunctionCallLoading
       isRetrievalLoading,
+      documentGroups,
+      tools,
     },
     handleUpdateConversation,
     dispatch: homeDispatch,
@@ -176,57 +187,55 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [spotlightQuery, setSpotlightQuery] = useState('')
 
-  useEffect(() => {
-    console.log('updated actions: ', actions)
-  }, [actions])
+  // TODO: Update to new settings page, not spotlight...
+  // useEffect(() => {
+  //   if (isSuccessDocumentGroups) {
+  //     const documentGroupActions =
+  //       documentGroups?.map((docGroup, index) => ({
+  //         id: `docGroup-${index}`,
+  //         title: docGroup.name,
+  //         description: `Description for ${docGroup.name}`,
+  //         group: 'Document Groups',
+  //         checked: true,
+  //         onTrigger: () => console.log(`${docGroup.name} triggered`),
+  //       })) || []
 
-  useEffect(() => {
-    if (isSuccessDocumentGroups) {
-      const documentGroupActions =
-        documentGroups?.map((docGroup, index) => ({
-          id: `docGroup-${index}`,
-          title: docGroup.name,
-          description: `Description for ${docGroup.name}`,
-          group: 'Document Groups',
-          checked: true,
-          onTrigger: () => console.log(`${docGroup.name} triggered`),
-        })) || []
+  //     console.log('documentGroupActions: ', documentGroupActions)
+  //     console.log('actions: ', [...documentGroupActions, ...actions])
+  //     setActions([...documentGroupActions, ...actions])
+  //   }
+  //   // console.log('actions: ', actions)
+  // }, [documentGroups, isSuccessDocumentGroups])
 
-      console.log('documentGroupActions: ', documentGroupActions)
-      console.log('actions: ', [...documentGroupActions, ...actions])
-      setActions([...documentGroupActions, ...actions])
-    }
-    // console.log('actions: ', actions)
-  }, [documentGroups, isSuccessDocumentGroups])
+  // TODO: Update to new settings page, not spotlight...
+  // useEffect(() => {
+  //   console.log('IsSuccessTools: ', isSuccessTools)
+  //   console.log('isErrorTools: ', isErrorTools)
+  //   console.log('toolLoadingError: ', toolLoadingError)
+  //   if (isSuccessTools) {
+  //     console.log('Tools in Chat.tsx: ', tools)
+  //     const toolsActions =
+  //       tools?.map((tool: OpenAICompatibleTool, index: number) => ({
+  //         id: `tool-${index}`,
+  //         title: tool.readableName,
+  //         description: tool.description,
+  //         group: 'Tools',
+  //         checked: true,
+  //         onTrigger: () => console.log(`${tool.readableName} triggered`),
+  //       })) || []
 
-  useEffect(() => {
-    console.log('IsSuccessTools: ', isSuccessTools)
-    console.log('isErrorTools: ', isErrorTools)
-    console.log('toolLoadingError: ', toolLoadingError)
-    if (isSuccessTools) {
-      console.log('Tools in Chat.tsx: ', tools)
-      const toolsActions =
-        tools?.map((tool: OpenAICompatibleTool, index: number) => ({
-          id: `tool-${index}`,
-          title: tool.readableName,
-          description: tool.description,
-          group: 'Tools',
-          checked: true,
-          onTrigger: () => console.log(`${tool.readableName} triggered`),
-        })) || []
-
-      console.log('toolsActions: ', toolsActions)
-      console.log('actions: ', [...actions, ...toolsActions])
-      setActions([...actions, ...toolsActions])
-    } else if (isErrorTools) {
-      errorToast({
-        title: 'Error loading tools',
-        message:
-          toolLoadingError.message +
-          '.\nPlease refresh the page or try again later. Regular chat features may still work.',
-      })
-    }
-  }, [tools, isSuccessTools, isErrorTools, toolLoadingError])
+  //     console.log('toolsActions: ', toolsActions)
+  //     console.log('actions: ', [...actions, ...toolsActions])
+  //     setActions([...actions, ...toolsActions])
+  //   } else if (isErrorTools) {
+  //     errorToast({
+  //       title: 'Error loading tools',
+  //       message:
+  //         toolLoadingError.message +
+  //         '.\nPlease refresh the page or try again later. Regular chat features may still work.',
+  //     })
+  //   }
+  // }, [tools, isSuccessTools, isErrorTools, toolLoadingError])
 
   const getOpenAIKey = (courseMetadata: CourseMetadata) => {
     const key =
@@ -235,6 +244,63 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         : apiKey
     return key
   }
+
+  // useEffect(() => {
+  //   // console.log('isSuccess: ', isSuccess)
+  //   if (isSuccess) {
+  //     const documentGroupActions = [
+  //       DEFAULT_DOCUMENT_GROUP,
+  //       ...(docGroups?.map((docGroup, index) => ({
+  //         id: `DocGroup-${index}`,
+  //         name: docGroup.name,
+  //         checked: false,
+  //         onTrigger: () => console.log(`${docGroup.name} triggered`),
+  //       })) || []),
+  //     ]
+
+  //     // console.log('documentGroupActions: ', documentGroupActions)
+
+  //     // const toolsActions = ['Tool 1', 'Tool 2', 'Tool 3'].map(
+  //     //   (tool, index) => ({
+  //     //     // const toolsActions = tools.map((tool, index) => ({
+  //     //     id: `tool-${index}`,
+  //     //     title: tool,
+  //     //     description: `Description for ${tool}`,
+  //     //     group: 'Tools',
+  //     //     checked: true,
+  //     //     onTrigger: () => console.log(`${tool} triggered`),
+  //     //   }),
+  //     // )
+
+  //     homeDispatch({
+  //       field: 'documentGroups',
+  //       value: [...documentGroupActions],
+  //     })
+  //     setEnabledDocumentGroups(
+  //       documentGroups
+  //         .filter((documentGroup) => documentGroup.checked)
+  //         .map((documentGroup) => documentGroup.name),
+  //     )
+
+  //     // homeDispatch({
+  //     //   field: 'tools',
+  //     //   value: [...toolsActions],
+  //     // })
+  //     // setEnabledTools(toolsActions.filter((tool) => tool.checked).map((tool) => tool.name))
+  //   }
+  // }, [docGroups, isSuccess])
+
+  useEffect(() => {
+    setEnabledDocumentGroups(
+      documentGroups
+        .filter((action) => action.checked)
+        .map((action) => action.name),
+    )
+  }, [documentGroups])
+
+  useEffect(() => {
+    console.log('enabledDocumentGroups: ', enabledDocumentGroups)
+  }, [enabledDocumentGroups])
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase
@@ -296,7 +362,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     for (const url of pestDetectionResponse) {
       const presignedUrl = await fetchPresignedUrl(url)
       if (presignedUrl) {
-        ;(message.content as Content[]).push({
+        ; (message.content as Content[]).push({
           type: 'tool_image_url',
           image_url: {
             url: presignedUrl,
@@ -430,12 +496,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ;(message.content as Content[])[imgDescIndex] = {
+          ; (message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ;(message.content as Content[]).push({
+          ; (message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -455,7 +521,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     message: Message,
     selectedConversation: Conversation,
     searchQuery: string,
-    actions: SpotlightAction[],
+    documentGroups: string[],
   ) => {
     if (getCurrentPageName() != 'gpt4') {
       homeDispatch({ field: 'isRetrievalLoading', value: true })
@@ -474,11 +540,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         getCurrentPageName(),
         searchQuery,
         token_limit,
-        actions
-          .filter(
-            (action) => action.checked && action.id?.startsWith('docGroup-'),
-          )
-          .map((action) => action.title),
+        documentGroups,
       ).then((curr_contexts) => {
         message.contexts = curr_contexts as ContextWithMetadata[]
         // console.log('message.contexts: ', message.contexts)
@@ -500,8 +562,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       message: Message,
       deleteCount = 0,
       plugin: Plugin | null = null,
-      actions: SpotlightAction[],
       tools: OpenAICompatibleTool[],
+      enabledDocumentGroups: string[],
     ) => {
       setCurrentMessage(message)
       resetMessageStates()
@@ -551,6 +613,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
         const controller = new AbortController()
 
+        // console.log("Made it to message image handling code in handleSend with message: ", message)
+
         // Run image to text conversion, attach to Message object.
         let imgDesc = ''
         if (Array.isArray(message.content)) {
@@ -577,7 +641,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           message,
           selectedConversation,
           searchQuery,
-          actions,
+          enabledDocumentGroups,
         )
 
         // If tools are available, try using tools:
@@ -627,6 +691,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         console.log(
           'AFTER TOOL -- Updated conversation[currentMessageIndex]:',
           updatedConversation.messages[currentMessageIndex],
+          enabledDocumentGroups,
         )
 
         const chatBody: ChatBody = {
@@ -861,7 +926,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               field: 'conversations',
               value: updatedConversations,
             })
-            console.log('updatedConversations: ', updatedConversations)
+            // console.log('updatedConversations: ', updatedConversations)
             saveConversations(updatedConversations)
             homeDispatch({ field: 'messageIsStreaming', value: false })
           } catch (error) {
@@ -921,10 +986,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
-      handleSend(currentMessage, 2, null, actions, tools)
+      handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
     }
   }, [currentMessage, handleSend])
 
@@ -1014,14 +1079,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-    courseMetadata.example_questions.length > 0
+      courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-          'Make a bullet point list of key takeaways of the course.',
-          'What is [your favorite topic] and why is it worth learning about?',
-          'How can I effectively prepare for the upcoming exam?',
-          'How many assignments in the course?',
-        ]
+        'Make a bullet point list of key takeaways of the course.',
+        'What is [your favorite topic] and why is it worth learning about?',
+        'How can I effectively prepare for the upcoming exam?',
+        'How many assignments in the course?',
+      ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
@@ -1139,30 +1204,76 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   )
 
   return (
-    <>
-      <ChatSpotlight
-        courseName={getCurrentPageName()}
-        actions={actions}
-        setActions={(actions) => {
-          setActions(actions)
-        }}
-      />
-      <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
-        <div className="justify-center" style={{ height: '46px' }}>
-          <ChatNavbar
-            spotlight={spotlight}
-            bannerUrl={bannerUrl as string}
-            isgpt4={true}
-          />
-        </div>
-        <div className="mt-10 flex-grow overflow-auto">
-          {!(apiKey || serverSideApiKeyIsSet) ? (
-            <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
-              <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
-                <div className="mb-2 flex flex-col items-center text-center">
-                  <IconAlertTriangle
-                    size={'54'}
-                    className="mr-2 block text-orange-400 "
+    <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
+      <div className="justify-center" style={{ height: '40px' }}>
+        <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
+      </div>
+      <div className="mt-10 flex-grow overflow-auto">
+        {!(apiKey || serverSideApiKeyIsSet) ? (
+          <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
+            <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
+              <div className="mb-2 flex flex-col items-center text-center">
+                <IconAlertTriangle
+                  size={'54'}
+                  className="mr-2 block text-orange-400 "
+                />
+                <div className="mt-4 text-left text-gray-100">
+                  {' '}
+                  {t(
+                    'Please set your OpenAI API key in the bottom left of the screen.',
+                  )}
+                  <div className="mt-2 font-normal">
+                    <Text size={'md'} className="text-gray-100">
+                      If you don&apos;t have a key yet, you can get one here:{' '}
+                      <a
+                        href="https://platform.openai.com/account/api-keys"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-purple-500 hover:underline"
+                      >
+                        OpenAI API key{' '}
+                        <IconExternalLink
+                          className="mr-2 inline-block"
+                          style={{ position: 'relative', top: '-3px' }}
+                        />
+                      </a>
+                    </Text>
+                    <Text size={'md'} className="pt-10 text-gray-400">
+                      <IconLock className="mr-2 inline-block" />
+                      This key will live securely encrypted in your
+                      browser&apos;s cache. It&apos;s all client-side so our
+                      servers never see it.
+                    </Text>
+                    <Text size={'md'} className="pt-10 text-gray-400">
+                      <IconBrain className="mr-2 inline-block" />
+                      GPT 3.5 is default. For GPT-4 access, either complete one
+                      billing cycle as an OpenAI API customer or pre-pay a
+                      minimum of $0.50. See
+                      <a
+                        className="text-purple-500 hover:underline"
+                        href="https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {' '}
+                        this documentation for details{' '}
+                        <IconExternalLink
+                          className="mr-2 inline-block"
+                          style={{ position: 'relative', top: '-3px' }}
+                        />
+                      </a>
+                    </Text>
+                    <Text size={'md'} className="pt-10 text-gray-400">
+                      <IconCreditCard className="mr-2 inline-block" />
+                      You only pay the standard OpenAI prices, per token read or
+                      generated by the model.
+                    </Text>
+                  </div>
+                </div>
+                <div className="absolute bottom-4 left-0 animate-ping flex-col place-items-start text-left">
+                  <IconArrowLeft
+                    size={'36'}
+                    className="transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
                   />
                   <div className="mt-4 text-left text-gray-100">
                     {' '}
@@ -1226,71 +1337,68 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 </div>
               </div>
             </div>
-          ) : modelError ? (
-            <ErrorMessageDiv error={modelError} />
-          ) : (
-            <>
-              <div
-                className="mt-4 max-h-full"
-                ref={chatContainerRef}
-                onScroll={handleScroll}
-              >
-                {selectedConversation?.messages.length === 0 ? (
-                  <>
-                    <div className="mt-16">
-                      {renderIntroductoryStatements()}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {selectedConversation?.messages.map((message, index) => (
-                      <MemoizedChatMessage
-                        key={index}
-                        message={message}
-                        contentRenderer={renderMessageContent}
-                        messageIndex={index}
-                        onEdit={(editedMessage) => {
-                          // setCurrentMessage(editedMessage)
-                          handleSend(
-                            editedMessage,
-                            selectedConversation?.messages.length - index,
-                            null,
-                            actions,
-                            tools,
-                          )
-                        }}
-                        onImageUrlsUpdate={onImageUrlsUpdate}
-                      />
-                    ))}
-                    {loading && <ChatLoader />}
-                    <div
-                      className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
-                      ref={messagesEndRef}
+          </div>
+        ) : modelError ? (
+          <ErrorMessageDiv error={modelError} />
+        ) : (
+          <>
+            <div
+              className="mt-4 max-h-full"
+              ref={chatContainerRef}
+              onScroll={handleScroll}
+            >
+              {selectedConversation?.messages.length === 0 ? (
+                <>
+                  <div className="mt-16">{renderIntroductoryStatements()}</div>
+                </>
+              ) : (
+                <>
+                  {selectedConversation?.messages.map((message, index) => (
+                    <MemoizedChatMessage
+                      key={index}
+                      message={message}
+                      contentRenderer={renderMessageContent}
+                      messageIndex={index}
+                      onEdit={(editedMessage) => {
+                        // setCurrentMessage(editedMessage)
+                        handleSend(
+                          editedMessage,
+                          selectedConversation?.messages.length - index,
+                          null,
+                          tools,
+                          enabledDocumentGroups,
+                        )
+                      }}
+                      onImageUrlsUpdate={onImageUrlsUpdate}
                     />
-                  </>
-                )}
-              </div>
-              {/* <div className="w-full max-w-[calc(100% - var(--sidebar-width))] mx-auto flex justify-center"> */}
-              <ChatInput
-                stopConversationRef={stopConversationRef}
-                textareaRef={textareaRef}
-                onSend={(message, plugin) => {
-                  // setCurrentMessage(message)
-                  handleSend(message, 0, plugin, actions, tools)
-                }}
-                onScrollDownClick={handleScrollDown}
-                onRegenerate={handleRegenerate}
-                showScrollDownButton={showScrollDownButton}
-                inputContent={inputContent}
-                setInputContent={setInputContent}
-                courseName={getCurrentPageName()}
-              />
-              {/* </div> */}
-            </>
-          )}
-        </div>
-      </div>
-    </>
+                  ))}
+                  {loading && <ChatLoader />}
+                  <div
+                    className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
+                    ref={messagesEndRef}
+                  />
+                </>
+              )}
+            </div>
+            {/* <div className="w-full max-w-[calc(100% - var(--sidebar-width))] mx-auto flex justify-center"> */}
+            <ChatInput
+              stopConversationRef={stopConversationRef}
+              textareaRef={textareaRef}
+              onSend={(message, plugin) => {
+                // setCurrentMessage(message)
+                handleSend(message, 0, plugin, tools, enabledDocumentGroups)
+              }}
+              onScrollDownClick={handleScrollDown}
+              onRegenerate={handleRegenerate}
+              showScrollDownButton={showScrollDownButton}
+              inputContent={inputContent}
+              setInputContent={setInputContent}
+              courseName={getCurrentPageName()}
+            />
+          </>
+        )}
+      </div >
+    </div >
   )
   Chat.displayName = 'Chat'
 })

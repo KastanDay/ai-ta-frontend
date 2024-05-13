@@ -70,3 +70,9 @@ export interface ChatApiBody {
   stream?: boolean
   api_key: string
 }
+
+export interface Action {
+  id: string
+  name: string
+  checked: boolean
+}
