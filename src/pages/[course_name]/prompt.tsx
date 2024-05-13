@@ -96,7 +96,9 @@ const CourseMain: NextPage = () => {
   const [opened, { close, open }] = useDisclosure(false);
   const [apiKey, setApiKey] = useState<string | undefined>(undefined);
   const { messages, input, handleInputChange, reload, setMessages, setInput } = useChat({
-    api: '/api/chat/openAI', body: { apiKey: apiKey },
+    api: '/api/chat/openAI', headers: {
+      'Authorization': `Bearer ${apiKey}`
+    },
   })
   const [optimizedSystemPrompt, setOptimizedSystemPrompt] = useState('');
   const [isSystemPromptSaved, setIsSystemPromptSaved] = useState(false);
