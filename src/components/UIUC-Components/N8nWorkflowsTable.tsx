@@ -21,7 +21,7 @@ import { LoadingSpinner } from './LoadingSpinner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 2
 
 interface N8nWorkflowsTableProps {
   n8nApiKey: string
@@ -138,12 +138,12 @@ export const N8nWorkflowsTable = ({
   const endIndex = startIndex + PAGE_SIZE
 
   // Not the right way to implement pagination... have to do it at the API/Request level
-  let currentRecords
-  if (records && records.length !== 0) {
-    console.log('before the current', records)
-    currentRecords = (records as WorkflowRecord[]).slice(startIndex, endIndex)
-  }
-  console.log('currentRecords b4 data:', currentRecords)
+  // let currentRecords
+  // if (records && records.length !== 0) {
+  //   console.log('before the current', records)
+  //   currentRecords = (records as WorkflowRecord[]).slice(startIndex, endIndex)
+  // }
+  // console.log('currentRecords b4 data:', currentRecords)
 
   const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1000)
 
@@ -170,6 +170,22 @@ export const N8nWorkflowsTable = ({
   //   const data = sortBy(records, sortStatus.columnAccessor) as WorkflowRecord[]
   //   setOrder(sortStatus.direction === 'desc' ? data.reverse() : data)
   // }, [sortStatus])
+
+  let currentRecords
+  let sortedRecords
+
+  if (records && records.length !== 0) {
+    sortedRecords = [...records].sort((a, b) => {
+      const dateA = new Date(a.createdAt)
+      const dateB = new Date(b.createdAt)
+      return dateB.getTime() - dateA.getTime()
+    })
+    console.log('sorted Records', sortedRecords)
+    currentRecords = (sortedRecords as WorkflowRecord[]).slice(
+      startIndex,
+      endIndex,
+    )
+  }
 
   return (
     <>
