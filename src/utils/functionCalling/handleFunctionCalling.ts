@@ -113,9 +113,10 @@ const callN8nFunction = async (function_call: any, n8n_api_key: string) => {
   }
 
   // Parse final answer from n8n workflow object
-  const data = await response.json()
-  console.log('N8n function response: ', data)
-  const resultData = data[0].data.resultData
+  const n8nResponse = await response.json()
+  console.log('N8n function response: ', n8nResponse)
+  // const resultData = data[0].data.resultData
+  const resultData = n8nResponse.data.resultData
   const finalNodeType = resultData.lastNodeExecuted
   console.log('N8n final node type: ', finalNodeType)
   const finalResponse =
