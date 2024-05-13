@@ -295,11 +295,12 @@ const CourseMain: NextPage = () => {
     e.preventDefault()
 
     const finalMessage = `
-    You are a prompt expert. This system prompt, used for a project you created, guides the theme during conversations and interactions with the model. Please follow the instructions closely and refine the system prompts as specified:
+    Today, you will be writing instructions for an eager, helpful, but inexperienced and unworldly AI assistant. This assistant requires careful instruction and clear examples to understand how to behave effectively. Follow the steps below to write precise and thorough instructions that will guide the assistant to accomplish tasks consistently, accurately, and correctly. If the question is related to the subject in ANY WAY then always answer the question even if the documents are not helpful. Give the users the most helpful response possible as best you can. Remember this: always give a reasonable answer to the users question and never refuse to answer even if you have little information to go on; give an array of helpful answers if necessary. ALWAYS respond with something helpful to answer their questions and propose solutions. ALWAYS provide citations when relevant but don't stack too many citations together.:
     
     ${e.target[0].value}
-    
-    Ensure the final output is professionally tailored to the project's needs and can be used directly.`
+
+    Note: This is probably obvious to you already, but you are not *completing* the task here. You are writing instructions for an AI to complete the task.
+`
 
     setMessages([
       { role: 'system', content: 'Hi Im system prompt' },
