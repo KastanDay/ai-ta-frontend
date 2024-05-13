@@ -63,6 +63,7 @@ const montserrat_light = Montserrat({
 })
 
 const CourseMain: NextPage = () => {
+
   const [checked1, setChecked1] = useState(false)
   const [checked2, setChecked2] = useState(false)
   const [checked3, setChecked3] = useState(false)
@@ -125,7 +126,15 @@ const CourseMain: NextPage = () => {
     fetchCourseData()
   }, [router.isReady])
 
-
+  useEffect(() => {
+    let newApiKey;
+    if (courseMetadata?.openai_api_key) {
+      newApiKey = courseMetadata.openai_api_key;
+    } else {
+      newApiKey = process.env.VLADS_OPENAI_KEY;
+    }
+    setApiKey(newApiKey);
+  }, [courseMetadata, process.env.VLADS_OPENAI_KEY]);
 
   useEffect(() => {
     // Just for testing
@@ -259,24 +268,30 @@ const CourseMain: NextPage = () => {
     )
   }
 
+
+
   const handleSubmitPromptOptimization = async (
     e: any,
     reload: any,
     setMessages: any,
 
   ) => {
-    let newApiKey;
-    if (courseMetadata?.openai_api_key) {
-      newApiKey = courseMetadata.openai_api_key;
-    } else {
-      newApiKey = process.env.VLADS_OPENAI_KEY
-    }
-    setApiKey(newApiKey);
-    console.log()
+    // let newApiKey;
+    // let the_key;
+    // if (courseMetadata?.openai_api_key) {
+    //   newApiKey = courseMetadata.openai_api_key;
+    //   the_key = newApiKey;
 
+    // } else {
+    //   newApiKey = process.env.VLADS_OPENAI_KEY
+    //   the_key = newApiKey;
+
+    // }
+    // setApiKey(newApiKey);
+
+    console.log('apikey set to', apiKey);
     e.preventDefault()
-    console.log('submitting', e)
-    console.log('e.target[0].value', e.target[0].value)
+
     const finalMessage = `
     You are a prompt expert. This system prompt, used for a project you created, guides the theme during conversations and interactions with the model. Please follow the instructions closely and refine the system prompts as specified:
     
