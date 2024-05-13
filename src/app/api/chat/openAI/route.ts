@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     const openai = new OpenAI({
       apiKey: apiKey,
     })
-    console.log('apikey', apiKey)
+    // console.log('apikey', apiKey)
     console.log('Messages to send to OpenAI: ', JSON.stringify(messages))
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',

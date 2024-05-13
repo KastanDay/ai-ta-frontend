@@ -289,7 +289,7 @@ const CourseMain: NextPage = () => {
     // }
     // setApiKey(newApiKey);
 
-    console.log('apikey set to', apiKey);
+    // console.log('apikey set to', apiKey);
     e.preventDefault()
 
     const finalMessage = `
