@@ -15,7 +15,7 @@ import {
   // IconSquareArrowUp,
   IconAlertCircle,
 } from '@tabler/icons-react'
-import { DataTable } from 'mantine-datatable'
+import { DataTable, DataTableSortStatus } from 'mantine-datatable'
 import { WorkflowRecord } from '~/types/tools'
 import { LoadingSpinner } from './LoadingSpinner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -45,6 +45,10 @@ export const N8nWorkflowsTable = ({
 }: N8nWorkflowsTableProps) => {
   const [page, setPage] = useState(1)
   const queryClient = useQueryClient()
+  // const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
+  //   columnAccessor: 'created_at',
+  //   direction: 'desc',
+  // })
   const {
     data: records,
     isLoading: isLoadingRecords,
@@ -134,12 +138,12 @@ export const N8nWorkflowsTable = ({
   const endIndex = startIndex + PAGE_SIZE
 
   // Not the right way to implement pagination... have to do it at the API/Request level
-  // let currentRecords
-  // if (records && records.length !== 0) {
-  //   console.log('before the current', records)
-  //   currentRecords = (records as WorkflowRecord[]).slice(startIndex, endIndex)
-  // }
-  // console.log('currentRecords b4 data:', currentRecords)
+  let currentRecords
+  if (records && records.length !== 0) {
+    console.log('before the current', records)
+    currentRecords = (records as WorkflowRecord[]).slice(startIndex, endIndex)
+  }
+  console.log('currentRecords b4 data:', currentRecords)
 
   const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1000)
 
@@ -155,6 +159,17 @@ export const N8nWorkflowsTable = ({
   const dataTableStyle = {
     width: isWideScreen ? '65%' : '92%',
   }
+
+  // const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
+  //   columnAccessor: 'created_at',
+  //   direction: 'desc',
+  // })
+  // const [ordered, setOrder] = useState(sortBy(records, 'created_at'))
+
+  // useEffect(() => {
+  //   const data = sortBy(records, sortStatus.columnAccessor) as WorkflowRecord[]
+  //   setOrder(sortStatus.direction === 'desc' ? data.reverse() : data)
+  // }, [sortStatus])
 
   return (
     <>
@@ -192,7 +207,9 @@ export const N8nWorkflowsTable = ({
         fetching={isLoadingRecords}
         customLoader={<LoadingSpinner />}
         // keyField="id"
-        records={isEmptyWorkflowTable ? [] : (records as WorkflowRecord[])}
+        records={
+          isEmptyWorkflowTable ? [] : (currentRecords as WorkflowRecord[])
+        }
         columns={[
           // { accessor: 'id', width: 175 },
           { accessor: 'name' },
@@ -256,11 +273,11 @@ export const N8nWorkflowsTable = ({
         loadingText="Loading..."
         // 👇 uncomment the next line to display a custom text when no records were found
         noRecordsText="No records found"
-      // 👇 uncomment the next line to use a custom pagination text
-      // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
-      // 👇 uncomment the next lines to use custom pagination colors
-      // paginationActiveBackgroundColor="green"
-      // paginationActiveTextColor="#e6e348"
+        // 👇 uncomment the next line to use a custom pagination text
+        // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
+        // 👇 uncomment the next lines to use custom pagination colors
+        // paginationActiveBackgroundColor="green"
+        // paginationActiveTextColor="#e6e348"
       />
     </>
   )
