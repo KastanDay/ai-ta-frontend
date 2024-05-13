@@ -91,12 +91,6 @@ import handleTools, {
   OpenAICompatibleTool,
   useFetchAllWorkflows,
 } from '~/utils/functionCalling/handleFunctionCalling'
-import {
-  SpotlightProvider,
-  spotlight,
-  SpotlightAction,
-  SpotlightActionProps,
-} from '@mantine/spotlight'
 import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
 
 const montserrat_med = Montserrat({
@@ -125,15 +119,18 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const [enabledDocumentGroups, setEnabledDocumentGroups] = useState<string[]>(
     [],
   )
+  const [enabledTools, setEnabledTools] = useState<string[]>(
+    [],
+  )
 
   const {
-    data: documentGroupsResponse, // TODO: Update name everywhere (from documentGroups)
+    data: documentGroupsHook,
     isSuccess: isSuccessDocumentGroups,
     // isError: isErrorDocumentGroups,
   } = useFetchEnabledDocGroups(getCurrentPageName())
 
   const {
-    data: toolsResponse, // TODO: Update name everywhere (from tools)
+    data: toolsHook,
     isSuccess: isSuccessTools,
     isLoading: isLoadingTools,
     isError: isErrorTools,
@@ -245,50 +242,26 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     return key
   }
 
-  // useEffect(() => {
-  //   // console.log('isSuccess: ', isSuccess)
-  //   if (isSuccess) {
-  //     const documentGroupActions = [
-  //       DEFAULT_DOCUMENT_GROUP,
-  //       ...(docGroups?.map((docGroup, index) => ({
-  //         id: `DocGroup-${index}`,
-  //         name: docGroup.name,
-  //         checked: false,
-  //         onTrigger: () => console.log(`${docGroup.name} triggered`),
-  //       })) || []),
-  //     ]
+  // Document Groups
+  useEffect(() => {
+    if (isSuccessDocumentGroups) {
 
-  //     // console.log('documentGroupActions: ', documentGroupActions)
+      const documentGroupActions = [
+        DEFAULT_DOCUMENT_GROUP,
+        ...(documentGroupsHook?.map((docGroup, index) => ({
+          id: `DocGroup-${index}`,
+          name: docGroup.name,
+          checked: false,
+          onTrigger: () => console.log(`${docGroup.name} triggered`),
+        })) || []),
+      ]
 
-  //     // const toolsActions = ['Tool 1', 'Tool 2', 'Tool 3'].map(
-  //     //   (tool, index) => ({
-  //     //     // const toolsActions = tools.map((tool, index) => ({
-  //     //     id: `tool-${index}`,
-  //     //     title: tool,
-  //     //     description: `Description for ${tool}`,
-  //     //     group: 'Tools',
-  //     //     checked: true,
-  //     //     onTrigger: () => console.log(`${tool} triggered`),
-  //     //   }),
-  //     // )
-
-  //     homeDispatch({
-  //       field: 'documentGroups',
-  //       value: [...documentGroupActions],
-  //     })
-  //     setEnabledDocumentGroups(
-  //       documentGroups
-  //         .filter((documentGroup) => documentGroup.checked)
-  //         .map((documentGroup) => documentGroup.name),
-  //     )
-
-  //     // homeDispatch({
-  //     //   field: 'tools',
-  //     //   value: [...toolsActions],
-  //     // })
-  //     // setEnabledTools(toolsActions.filter((tool) => tool.checked).map((tool) => tool.name))
-  //   }
-  // }, [docGroups, isSuccess])
+      homeDispatch({
+        field: 'documentGroups',
+        value: [...documentGroupActions],
+      })
+    }
+  }, [documentGroupsHook, isSuccessDocumentGroups])
 
   useEffect(() => {
     setEnabledDocumentGroups(
@@ -298,9 +271,24 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     )
   }, [documentGroups])
 
+  // TOOLS
   useEffect(() => {
-    console.log('enabledDocumentGroups: ', enabledDocumentGroups)
-  }, [enabledDocumentGroups])
+    if (isSuccessTools) {
+      homeDispatch({
+        field: 'tools',
+        value: [...toolsHook],
+      })
+    }
+  }, [toolsHook, isSuccessTools])
+
+  useEffect(() => {
+    setEnabledTools(
+      tools
+        .filter((action) => action.enabled)
+        .map((action) => action.name),
+    )
+  }, [tools])
+
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase
