@@ -1,4 +1,3 @@
-import { ChatBody, Conversation, Message } from '@/types/chat'
 import { supabase } from '@/utils/supabaseClient'
 
 const logConversationToSupabase = async (req: any, res: any) => {

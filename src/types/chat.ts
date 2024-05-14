@@ -1,5 +1,6 @@
 import { UIUCTool } from '~/utils/functionCalling/handleFunctionCalling'
 import { OpenAIModel } from './openai'
+import { CourseMetadata } from './courseMetadata'
 
 export interface Message {
   // id: string;
@@ -16,6 +17,7 @@ export interface ToolResult {
   toolContexts?: ContextWithMetadata[]
 }
 
+// tool_image_url is for images returned by tools
 export type MessageType = 'text' | 'image_url' | 'tool_image_url'
 
 export interface Content {
@@ -46,14 +48,12 @@ export interface ContextWithMetadata {
 export type Role = 'assistant' | 'user' | 'system'
 
 export interface ChatBody {
-  model: OpenAIModel
-  messages: Message[]
+  conversation: Conversation
   key: string
-  prompt: string
-  temperature: number
   course_name: string
   stream: boolean
   isImage: boolean
+  courseMetadata?: CourseMetadata
   // NO FOLDER ID
 }
 

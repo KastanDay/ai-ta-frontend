@@ -466,11 +466,8 @@ export function constructChatBody(
   stream: boolean,
 ): ChatBody {
   return {
-    model: conversation.model,
-    messages: conversation.messages,
+    conversation: conversation,
     key: key,
-    prompt: conversation.prompt,
-    temperature: conversation.temperature,
     course_name: course_name,
     stream: stream,
     isImage: false,
@@ -738,12 +735,12 @@ export async function handleImageContent(
     )
 
     if (imgDescIndex !== -1) {
-      ;(message.content as Content[])[imgDescIndex] = {
+      ; (message.content as Content[])[imgDescIndex] = {
         type: 'text',
         text: `Image description: ${imgDesc}`,
       }
     } else {
-      ;(message.content as Content[]).push({
+      ; (message.content as Content[]).push({
         type: 'text',
         text: `Image description: ${imgDesc}`,
       })

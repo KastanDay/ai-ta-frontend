@@ -1,44 +1,139 @@
-// import { Content, ContextWithMetadata, Conversation } from '~/types/chat'
-// import { decrypt, isEncrypted } from './crypto'
-// import {
-//   getStuffedPrompt,
-//   getSystemPrompt,
-// } from '~/pages/api/contextStuffingHelper'
+import { Content, ContextWithMetadata, Conversation } from '~/types/chat'
+import { decrypt, isEncrypted } from './crypto'
+import {
+  getStuffedPrompt,
+  getSystemPrompt,
+} from '~/pages/api/contextStuffingHelper'
+import { CourseMetadata } from '~/types/courseMetadata'
+import { getCourseMetadata } from '~/pages/api/UIUC-api/getCourseMetadata'
 
-// export const buildPrompt = async ({
+interface Prompts {
+  systemPrompt: string
+  userPrompt: string
+}
+
+export const buildPrompt = async ({
+  conversation,
+  rawOpenaiKey,
+  courseMetadata,
+}: {
+  conversation: Conversation
+  rawOpenaiKey: string
+  projectName: string
+  courseMetadata: CourseMetadata | undefined
+}): Promise<Prompts> => {
+  /*
+  System prompt -- defined by user. Then we add the citations instructions to it.
+
+  Priorities for building prompt w/ limited window: 
+    1. ✅ most recent user message
+    2. ✅ image description
+    3. ✅ tool result
+    4. query_topContext
+    5. image_topContext
+    6. tool_topContext
+    7. conversation history
+  */
+
+  const allPromises = []
+
+  const tokenLimit = conversation.model.tokenLimit - 1500 // save space for images, OpenAI's handling, etc.
+
+  // const openaiKeyPromise = parseOpenaiKey(rawOpenaiKey)
+  // const lastUserMessagePromise = _getLastUserMessage({ conversation })
+  // const lastToolResultPromise = _getLastToolResult({ conversation })
+  // const systemPrompt = _getSystemPrompt({ courseMetadata, conversation }) // faster to await... otherwise control flow too complex for no good reason
+
+
+  allPromises.push(parseOpenaiKey(rawOpenaiKey))
+  allPromises.push(_getLastUserMessage({ conversation }))
+  allPromises.push(_getLastToolResult({ conversation }))
+  allPromises.push(_getSystemPrompt({ courseMetadata, conversation }))
+
+  // Todo: do these things in parallel -- await later
+
+  // Get system prompt
+
+
+  const [openaiKey, lastUserMessage, lastToolResult, systemPrompt] = await Promise.all(allPromises)
+
+  // Do final prompt building
+  let userPrompt = ''
+  userPrompt += lastUserMessage
+  // Do some dreaming thinking about what this context building should look like! 
+  // "Please respond to my query: "
+
+  return { systemPrompt: systemPrompt as string, userPrompt }
+}
+
+
+
+// const _getLastQueryTopContext = async ({
 //   conversation,
-//   rawOpenaiKey,
 // }: {
 //   conversation: Conversation
-//   rawOpenaiKey: string
-//   projectName: string
-// }): Promise<Conversation> => {
-//   /*
-//   Priorities for building prompt w/ limited window: 
-//     1. most recent user message
-//     2. image description
-//     3. tool result
-//     4. query_topContext
-//     5. image_topContext
-//     6. tool_topContext
-//     7. conversation history
-//   */
-
-//   const tokenLimit = conversation.model.tokenLimit - 2001 // save space for images, OpenAI's handling, etc.
-//   const openaiKeyPromise = parseOpenaiKey(rawOpenaiKey)
-
-//   // Todo: do these things in parallel -- await later
-//   const systemPromptPromise = getSystemPrompt(conversation.name)
-//   const query_prompt = getStuffedPrompt()
-
-//   const [systemPrompt, openaiKey, otherAsyncResult] = await Promise.all([
-//     systemPromptPromise,
-//     openaiKeyPromise,
-//     otherAsyncOperationPromise,
-//   ])
-
-//   return conversation
+// }): Promise<string> => {
+//   const queryTopContexts = conversation.messages?.[conversation.messages.length - 1]?.contexts?.map((context) => {
+//     return `Context: ${context.text}`
+//   })
+//   if (queryTopContexts) {
+//     return queryTopContexts.join('\n')
+//   } else {
+//     return ''
+//   }
 // }
+
+
+const _getSystemPrompt = async ({
+  courseMetadata,
+  conversation,
+}: {
+  courseMetadata: CourseMetadata | undefined
+  conversation: Conversation
+}): Promise<string> => {
+  let systemPrompt
+  if (courseMetadata) {
+    systemPrompt = courseMetadata.system_prompt || process.env.DEFAULT_SYSTEM_PROMPT as string
+  } else {
+    systemPrompt = await getCourseMetadata(conversation.name).then((courseMetadata) => {
+      return courseMetadata?.system_prompt || process.env.DEFAULT_SYSTEM_PROMPT as string
+    })
+  }
+  return systemPrompt
+}
+const _getLastToolResult = async ({
+  conversation,
+}: {
+  conversation: Conversation
+}): Promise<string> => {
+  const toolResults = conversation.messages?.[conversation.messages.length - 1]?.tools?.map((tool) => {
+    return `Tool: ${tool.tool?.name}\nOutput: ${tool.toolResult}`
+  })
+  if (toolResults) {
+    return toolResults.join('\n')
+  } else {
+    return ''
+  }
+}
+const _getLastUserMessage = async ({
+  conversation,
+}: {
+  conversation: Conversation
+}): Promise<string> => {
+  /* 
+    Gets either/or user message and/or image descriptions.
+  */
+
+  let most_recent_user_message = '';
+  const lastMessageContent = conversation.messages?.[conversation.messages.length - 1]?.content;
+  if (typeof lastMessageContent === 'string') {
+    most_recent_user_message = lastMessageContent;
+  } else if (Array.isArray(lastMessageContent)) {
+    most_recent_user_message = lastMessageContent.map(content => content.text || '').join('\n');
+  }
+  return most_recent_user_message
+}
+
 
 // const _buildTopContextPrompt = ({
 //   conversation,
@@ -119,43 +214,15 @@
 //   }
 // }
 
-// // function conversationToMessages(conversation: Conversation) {
-// //   // simplify the conversation object to an array of messages
-// //   const transformedData = conversation.messages.map(message => {
-// //     // Handle different content types within a message
-// //     let contentString = '';
-// //     if (typeof message.content === 'string') {
-// //       contentString = message.content;
-// //     } else {
-// //       // Assuming content is an array of Content objects
-// //       contentString = message.content.map(content => {
-// //         if (content.type === 'text') {
-// //           return content.text || '';
-// //         } else if (content.type === 'image_url') {
-// //           return `Image: ${content.image_url?.url || ''}`;
-// //         } else {
-// //           // Handle other types as needed
-// //           return '';
-// //         }
-// //       }).join(', ');
-// //     }
-// //     return {
-// //       role: message.role,
-// //       content: contentString
-// //     };
-// //   });
-// //   return transformedData;
-// // }
-
-// const parseOpenaiKey = async (openaiKey: string) => {
-//   if (openaiKey && isEncrypted(openaiKey)) {
-//     const decryptedText = await decrypt(
-//       openaiKey,
-//       process.env.NEXT_PUBLIC_SIGNING_KEY as string,
-//     )
-//     openaiKey = decryptedText as string
-//   } else {
-//     // console.log('Using client key for openai chat: ', apiKey)
-//   }
-//   return openaiKey
-// }
+const parseOpenaiKey = async (openaiKey: string) => {
+  if (openaiKey && isEncrypted(openaiKey)) {
+    const decryptedText = await decrypt(
+      openaiKey,
+      process.env.NEXT_PUBLIC_SIGNING_KEY as string,
+    )
+    openaiKey = decryptedText as string
+  } else {
+    // console.log('Using client key for openai chat: ', apiKey)
+  }
+  return openaiKey
+}

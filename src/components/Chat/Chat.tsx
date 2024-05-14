@@ -639,22 +639,18 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           enabledDocumentGroups,
         )
 
-        // If tools are available, try using tools:
-        // console.log('Right before handleTools!')
-        // console.log(
-        //   'updatedConversation: ',
-        //   JSON.stringify(updatedConversation),
-        // )
-        // Get imageURLs
+
+        // Get imageURLs -- better way/place to do this? Move into handleTools?
         const imageContent = (message.content as Content[]).filter(
           (content) => content.type === 'image_url',
         )
         const imageUrls = imageContent.map(
           (content) => content.image_url?.url as string,
         )
-        console.log('Image URLs in main:', imageUrls)
-        console.log('Message in main:', message)
+        // console.log('Image URLs in main:', imageUrls)
+        // console.log('Message in main:', message)
 
+        // If tools are available, try using tools:
         const toolResult = await handleTools(
           message,
           tools,
@@ -665,64 +661,26 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           getOpenAIKey(courseMetadata),
           homeDispatch,
         )
-
-
         console.log('Tool result:', message.tools)
-
-        // TODO REMOVE  --  Hack -- add tool result to message content. 
-        // @ts-ignore -- can't get the .text property to behave
-        // if (
-        //   updatedConversation.messages[currentMessageIndex] &&
-        //   // @ts-ignore -- can't get the .text property to behave
-        //   updatedConversation.messages[currentMessageIndex]?.content[0]?.text
-        // ) {
-        //   // @ts-ignore -- can't get the .text property to behave
-        //   updatedConversation.messages[currentMessageIndex].content[0].text +=
-        //     '\nTool result: ' + JSON.stringify(message.tools[0]?.toolResult)
-        // }
-        // console.log(
-        //   'AFTER TOOL -- Updated conversation[currentMessageIndex]:',
-        //   updatedConversation.messages[currentMessageIndex],
-        //   enabledDocumentGroups,
-        // )
 
 
         const chatBody: ChatBody = {
-          model: updatedConversation.model,
-          messages: updatedConversation.messages,
+          conversation: updatedConversation,
           key: getOpenAIKey(courseMetadata),
-          // prompt property is intentionally left undefined to avoid TypeScript errors
-          // and to meet the requirement of not passing any prompt.
-          prompt: '',
-          temperature: updatedConversation.temperature,
           course_name: getCurrentPageName(),
+          courseMetadata: courseMetadata,
           stream: true,
           isImage: false,
         }
 
-        let body
-        if (!plugin) {
-          body = JSON.stringify(chatBody)
-        } else {
-          body = JSON.stringify({
-            ...chatBody,
-            googleAPIKey: pluginKeys
-              .find((key) => key.pluginId === 'google-search')
-              ?.requiredKeys.find((key) => key.key === 'GOOGLE_API_KEY')?.value,
-            googleCSEId: pluginKeys
-              .find((key) => key.pluginId === 'google-search')
-              ?.requiredKeys.find((key) => key.key === 'GOOGLE_CSE_ID')?.value,
-          })
-        }
-
-        // This is where we call the OpenAI API
+        // Call the OpenAI API
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           signal: controller.signal,
-          body,
+          body: JSON.stringify(chatBody),
         })
 
         if (!response.ok) {

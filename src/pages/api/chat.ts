@@ -14,6 +14,7 @@ import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
 import { getStuffedPrompt, getSystemPrompt } from './contextStuffingHelper'
 import { OpenAIModelID, OpenAIModels } from '~/types/openai'
 import { NextResponse } from 'next/server'
+import { buildPrompt } from '~/utils/buildPrompt'
 
 export const config = {
   runtime: 'edge',
@@ -21,36 +22,27 @@ export const config = {
 
 const handler = async (req: Request): Promise<NextResponse> => {
   try {
-    // console.log('Top of /api/chat.ts. req: ', req)
     const {
-      model,
-      messages,
+      conversation,
       key,
-      prompt,
-      temperature,
       course_name,
+      courseMetadata,
       stream,
       isImage,
     } = (await req.json()) as ChatBody
 
-    // console.log(
-    //   'After message parsing: ',
-    //   model,
-    //   messages,
-    //   key,
-    //   prompt,
-    //   temperature,
-    //   course_name,
-    //   stream,
-    //   isImage,
-    // )
+    const model = conversation.model
+    const messages = conversation.messages
+    const temperature = conversation.temperature
 
-    await init((imports) => WebAssembly.instantiate(wasm, imports))
+    // await init((imports) => WebAssembly.instantiate(wasm, imports))
     const encoding = new Tiktoken(
       tiktokenModel.bpe_ranks,
       tiktokenModel.special_tokens,
       tiktokenModel.pat_str,
     )
+
+    const { systemPrompt: goodSystemPrompt, userPrompt } = await buildPrompt({ conversation, rawOpenaiKey: key, projectName: course_name, courseMetadata })
 
     let modelObj
     if (typeof model === 'string') {
@@ -61,11 +53,6 @@ const handler = async (req: Request): Promise<NextResponse> => {
 
     const token_limit = OpenAIModels[modelObj.id as OpenAIModelID].tokenLimit
     console.log("Model's token limit", token_limit)
-
-    let promptToSend = prompt
-    if (!promptToSend) {
-      promptToSend = await getSystemPrompt(course_name)
-    }
 
     let temperatureToUse = temperature
     if (temperatureToUse == null) {
@@ -80,7 +67,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
       // Extract image description...
       // Change the content type for 'tool_image_url' to 'image_url'
       // This is very important to differentiate the tool generated images from user uploaded images. Otherwise "regenerate" behavior will treat tool-result images as user images.
-      ;(messages[messages.length - 1]?.content as Content[]).forEach(
+      ; (messages[messages.length - 1]?.content as Content[]).forEach(
         (content) => {
           if (content.type === 'tool_image_url') {
             console.debug(
@@ -113,7 +100,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
         search_query,
         contexts_arr,
         token_limit,
-        promptToSend,
+        goodSystemPrompt,
       )) as string
       if (typeof messages[messages.length - 1]?.content === 'string') {
         messages[messages.length - 1]!.content = stuffedPrompt
@@ -142,7 +129,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
     }
 
     // Take most recent N messages that will fit in the context window
-    const prompt_tokens = encoding.encode(promptToSend)
+    const prompt_tokens = encoding.encode(goodSystemPrompt)
 
     let tokenCount = prompt_tokens.length
     let messagesToSend: OpenAIChatMessage[] = []
@@ -173,14 +160,13 @@ const handler = async (req: Request): Promise<NextResponse> => {
     // Add custom instructions to system prompt
     // const systemPrompt =
     //   promptToSend + "Only answer if it's related to the course materials."
-    const systemPrompt = promptToSend
 
     // console.log('System prompt being sent to OpenAI: ', promptToSend)
     // console.log('Message history being sent to OpenAI: ', messagesToSend)
 
     const apiStream = await OpenAIStream(
       modelObj,
-      systemPrompt,
+      goodSystemPrompt,
       temperatureToUse,
       key,
       messagesToSend,

@@ -41,31 +41,32 @@ export const fetchRoutingResponse = async (
 
   // For future use to add more tools/classes, we can make a DB call to get the allowed tools/classes for the course and use them in the prompt
 
+  updatedConversation.messages = [
+    {
+      ...message,
+      role: 'user',
+      content: [
+        ...imageContent,
+        {
+          type: 'text',
+          text: `Given the user question and images, classify the request as either being about \`Pests\`, or \`Other\`.
+          Do not respond with more than one word.
+          These categories will be used to route the request to the appropriate tool. So, even if the user doesn't explicitly asks about a specific category but the intent is clear, please classify the request accordingly.
+          <question>
+          ${question}
+          </question>
+          Classification:`,
+        },
+      ],
+    },
+  ]
+
+  updatedConversation.temperature = 0.1
+
   // Construct the body for the chat API request
   const chatBody: ChatBody = {
-    model: updatedConversation.model,
-    messages: [
-      {
-        ...message,
-        role: 'user',
-        content: [
-          ...imageContent,
-          {
-            type: 'text',
-            text: `Given the user question and images, classify the request as either being about \`Pests\`, or \`Other\`.
-						Do not respond with more than one word.
-						These categories will be used to route the request to the appropriate tool. So, even if the user doesn't explicitly asks about a specific category but the intent is clear, please classify the request accordingly.
-						<question>
-						${question}
-						</question>
-						Classification:`,
-          },
-        ],
-      },
-    ],
+    conversation: updatedConversation,
     key: apiKey,
-    prompt: '',
-    temperature: 0.1,
     course_name: course_name,
     stream: false,
     isImage: true,

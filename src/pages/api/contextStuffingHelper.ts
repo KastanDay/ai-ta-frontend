@@ -67,7 +67,7 @@ export async function getStuffedPrompt(
       return searchQuery
     }
 
-    tokenLimit = tokenLimit - 2001 // for the completion. We always reserve 1k + some for the system prompt I think...
+    tokenLimit = tokenLimit - 1500 // for the completion. We always reserve 1k + some for the system prompt I think...
 
     const encoding = new Tiktoken(
       tiktokenModel.bpe_ranks,
@@ -78,9 +78,8 @@ export async function getStuffedPrompt(
     let tokenCounter = encoding.encode(system_prompt + searchQuery).length
     const validDocs = []
     for (const [index, d] of contexts.entries()) {
-      const docString = `---\n${index + 1}: ${d.readable_filename}${
-        d.pagenumber ? ', page: ' + d.pagenumber : ''
-      }\n${d.text}\n`
+      const docString = `---\n${index + 1}: ${d.readable_filename}${d.pagenumber ? ', page: ' + d.pagenumber : ''
+        }\n${d.text}\n`
       const numTokens = encoding.encode(docString).length
       console.log(
         `token_counter: ${tokenCounter}, num_tokens: ${numTokens}, token_limit: ${tokenLimit}`,
@@ -97,8 +96,7 @@ export async function getStuffedPrompt(
     const contextText = validDocs
       .map(
         ({ index, d }) =>
-          `${index + 1}: ${d.readable_filename}${
-            d.pagenumber ? ', page: ' + d.pagenumber : ''
+          `${index + 1}: ${d.readable_filename}${d.pagenumber ? ', page: ' + d.pagenumber : ''
           }\n${d.text}\n`,
       )
       .join(separator)
