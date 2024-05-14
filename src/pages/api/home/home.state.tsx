@@ -34,7 +34,8 @@ export interface HomeInitialState {
   isImg2TextLoading: boolean
   isRouting: boolean | undefined
   routingResponse: string | undefined
-  isPestDetectionLoading: boolean | undefined
+  // isPestDetectionLoading: boolean | undefined
+  isRunningTool: boolean | undefined
   isRetrievalLoading: boolean | undefined
   documentGroups: Action[]
   tools: UIUCTool[]
@@ -67,7 +68,7 @@ export const initialState: HomeInitialState = {
   showModelSettings: false,
   isRouting: undefined,
   routingResponse: undefined,
-  isPestDetectionLoading: undefined,
+  isRunningTool: undefined,
   isRetrievalLoading: undefined,
   isImg2TextLoading: false,
   documentGroups: [],

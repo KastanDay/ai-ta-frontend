@@ -6,7 +6,7 @@ import { notifications } from '@mantine/notifications'
 import { Title, Text, Switch } from '@mantine/core'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Montserrat } from 'next/font/google'
-import { useFetchAllWorkflows } from '~/utils/functionCalling/handleFunctionCalling'
+import { UIUCTool, useFetchAllWorkflows } from '~/utils/functionCalling/handleFunctionCalling'
 
 import {
   // IconArrowsSort,
@@ -16,10 +16,8 @@ import {
   IconAlertCircle,
 } from '@tabler/icons-react'
 import { DataTable, DataTableSortStatus } from 'mantine-datatable'
-import { WorkflowRecord } from '~/types/tools'
 import { LoadingSpinner } from './LoadingSpinner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import axios from 'axios'
 
 const PAGE_SIZE = 2
 
@@ -176,12 +174,12 @@ export const N8nWorkflowsTable = ({
 
   if (records && records.length !== 0) {
     sortedRecords = [...records].sort((a, b) => {
-      const dateA = new Date(a.createdAt)
-      const dateB = new Date(b.createdAt)
+      const dateA = new Date(a.createdAt as string)
+      const dateB = new Date(b.createdAt as string)
       return dateB.getTime() - dateA.getTime()
     })
     console.log('sorted Records', sortedRecords)
-    currentRecords = (sortedRecords as WorkflowRecord[]).slice(
+    currentRecords = (sortedRecords as UIUCTool[]).slice(
       startIndex,
       endIndex,
     )
@@ -224,7 +222,7 @@ export const N8nWorkflowsTable = ({
         customLoader={<LoadingSpinner />}
         // keyField="id"
         records={
-          isEmptyWorkflowTable ? [] : (currentRecords as WorkflowRecord[])
+          isEmptyWorkflowTable ? [] : (currentRecords as UIUCTool[])
         }
         columns={[
           // { accessor: 'id', width: 175 },
@@ -234,7 +232,7 @@ export const N8nWorkflowsTable = ({
             width: 100,
             render: (record, index) => (
               <Switch
-                checked={!!record.active}
+                checked={!!record.enabled}
                 onChange={(event) => {
                   // TODO: double check this...
                   // setRecords((prevRecords) =>
@@ -264,7 +262,7 @@ export const N8nWorkflowsTable = ({
             // textAlign: 'left',
             width: 120,
             render: (record, index) => {
-              const { createdAt } = record as { createdAt: Date }
+              const { createdAt } = record as { createdAt: string }
               return dayjs(createdAt).format('MMM D YYYY, h:mm A')
             },
           },
@@ -273,7 +271,7 @@ export const N8nWorkflowsTable = ({
             // textAlign: 'left',
             width: 120,
             render: (record, index) => {
-              const { updatedAt } = record as { updatedAt: Date }
+              const { updatedAt } = record as { updatedAt: string }
               return dayjs(updatedAt).format('MMM D YYYY, h:mm A')
             },
           },
@@ -289,11 +287,11 @@ export const N8nWorkflowsTable = ({
         loadingText="Loading..."
         // 👇 uncomment the next line to display a custom text when no records were found
         noRecordsText="No records found"
-        // 👇 uncomment the next line to use a custom pagination text
-        // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
-        // 👇 uncomment the next lines to use custom pagination colors
-        // paginationActiveBackgroundColor="green"
-        // paginationActiveTextColor="#e6e348"
+      // 👇 uncomment the next line to use a custom pagination text
+      // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
+      // 👇 uncomment the next lines to use custom pagination colors
+      // paginationActiveBackgroundColor="green"
+      // paginationActiveTextColor="#e6e348"
       />
     </>
   )

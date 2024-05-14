@@ -12,6 +12,7 @@ export default async function handleTools(
   imageUrls: string[],
   imageDescription: string,
   selectedConversation: Conversation,
+  currentMessageIndex: number,
   openaiKey: string,
   homeDispatch: Dispatch<ActionType<HomeInitialState>>,
 ) {
@@ -80,12 +81,26 @@ export default async function handleTools(
         value: `${function_call.readableName}\nArguments: ${JSON.stringify(function_call.arguments)}`,
       })
 
-      // TODO: Do tool calling here!!
+      // Do tool calling here!!
       if (function_call) {
-        homeDispatch({ field: 'isPestDetectionLoading', value: true })
-        const response = await callN8nFunction(function_call, 'todo!') // TODO: Get API key
-        homeDispatch({ field: 'isPestDetectionLoading', value: false })
-        return response
+        homeDispatch({ field: 'isRunningTool', value: true })
+        const toolResult = await callN8nFunction(function_call, 'todo!') // TODO: Get API key
+
+        homeDispatch({ field: 'isRunningTool', value: false })
+
+        // Get UIUCTool from openAI function call name
+        const uiucTool = availableTools.find((tool) => tool.name === function_call.name)
+
+        // Add tool result to messages
+        if (message.tools) {
+          message.tools.push({ toolResult: JSON.stringify(toolResult), tool: uiucTool });
+        } else {
+          message.tools = [{ toolResult: JSON.stringify(toolResult), tool: uiucTool }];
+        }
+        selectedConversation.messages[currentMessageIndex] = message
+        homeDispatch({ field: 'selectedConversation', value: selectedConversation })
+
+        return toolResult
       }
     } else {
       console.debug('HandleTools routing response missing - No response body.')
@@ -156,15 +171,17 @@ interface Node {
   type: string
 }
 
-interface N8nWorkflow {
+export interface N8nWorkflow {
   id: string
   name: string
   type: string
   active: boolean
   nodes: Node[]
+  createdAt: string
+  updatedAt: string
 }
 
-interface ExtractedParameter {
+interface Parameter {
   type: 'string' | 'textarea' | 'number' | 'Date' | 'DropdownList'
   description: string
   enum?: string[]
@@ -174,9 +191,9 @@ export interface OpenAICompatibleTool {
   name: string
   readableName: string
   description: string
-  parameters: {
+  parameters?: {
     type: 'object'
-    properties: Record<string, ExtractedParameter>
+    properties: Record<string, Parameter>
     required: string[]
   }
 }
@@ -189,15 +206,17 @@ export interface OpenAICompatibleTool {
 export interface UIUCTool {
   id: string
   name: string
-  enabled?: boolean
-  course_name?: string
   readableName: string
   description: string
-  parameters: {
+  parameters?: {
     type: 'object'
-    properties: Record<string, ExtractedParameter>
+    properties: Record<string, Parameter>
     required: string[]
   }
+  courseName?: string
+  enabled?: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 export function getOpenAIToolFromUIUCTool(
@@ -210,7 +229,11 @@ export function getOpenAIToolFromUIUCTool(
       name: tool.name,
       readableName: tool.readableName,
       description: tool.description,
-      parameters: tool.parameters,
+      parameters: tool.parameters ? {
+        type: 'object',
+        properties: tool.parameters.properties,
+        required: tool.parameters.required
+      } : undefined
     }
   })
 }
@@ -221,8 +244,6 @@ export function getUIUCToolFromN8n(
   const extractedObjects: UIUCTool[] = []
 
   for (const workflow of workflows) {
-    console.log('workflowGroup: ', workflow)
-
     // Only active workflows
     if (!workflow.active) continue
 
@@ -232,40 +253,46 @@ export function getUIUCToolFromN8n(
     )
     if (!formTriggerNode) continue
 
-    const properties: Record<string, ExtractedParameter> = {}
+    const properties: Record<string, Parameter> = {}
     const required: string[] = []
+    let parameters = {}
 
-    formTriggerNode.parameters.formFields.values.forEach((field) => {
-      const key = field.fieldLabel.replace(/\s+/g, '_').toLowerCase() // Replace spaces with underscores and lowercase
-      properties[key] = {
-        type: field.fieldType === 'number' ? 'number' : 'string',
-        description: field.fieldLabel,
-      }
+    if (formTriggerNode.parameters.formFields) {
+      formTriggerNode.parameters.formFields.values.forEach((field) => {
+        const key = field.fieldLabel.replace(/\s+/g, '_').toLowerCase() // Replace spaces with underscores and lowercase
+        properties[key] = {
+          type: field.fieldType === 'number' ? 'number' : 'string',
+          description: field.fieldLabel,
+        }
 
-      if (field.requiredField) {
-        required.push(key)
-      }
-    })
+        if (field.requiredField) {
+          required.push(key)
+        }
+        parameters = {
+          type: 'object',
+          properties,
+          required,
+        }
+      })
+    }
+
+    console.log('Extracted workflow: ', workflow)
+    console.log('Extracted workflow.createdAt: ', workflow.createdAt)
 
     extractedObjects.push({
       id: workflow.id,
       name: workflow.name.replace(/\s+/g, '_'),
       readableName: workflow.name,
       description: formTriggerNode.parameters.formDescription,
-      parameters: {
-        type: 'object',
-        properties,
-        required,
-      },
+      updatedAt: workflow.updatedAt,
+      createdAt: workflow.createdAt,
+      // @ts-ignore -- can't get the 'only add if non-zero' to work nicely. It's fine.
+      parameters: Object.keys(parameters).length > 0 ? parameters : undefined
     })
   }
 
   return extractedObjects
 }
-
-// Usage example:
-// const extracted = extractParameters(giantJson);
-// console.log(extracted);
 
 export const useFetchAllWorkflows = (
   course_name?: string,
@@ -318,7 +345,7 @@ export const useFetchAllWorkflows = (
 
       const uiucTools = getUIUCToolFromN8n(workflows[0])
       console.log('All uiuc tools: ', uiucTools)
-      return uiucTools as UIUCTool[]
+      return uiucTools
     },
   })
 }

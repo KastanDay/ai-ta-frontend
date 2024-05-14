@@ -88,7 +88,7 @@ import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
 import { fetchRoutingResponse } from '~/pages/api/UIUC-api/fetchRoutingResponse'
 import { fetchPestDetectionResponse } from '~/pages/api/UIUC-api/fetchPestDetectionResponse'
 import handleTools, {
-  OpenAICompatibleTool,
+  UIUCTool,
   useFetchAllWorkflows,
 } from '~/utils/functionCalling/handleFunctionCalling'
 import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
@@ -164,7 +164,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       showModelSettings,
       isImg2TextLoading,
       isRouting,
-      isPestDetectionLoading, // TODO change to isFunctionCallLoading
+      isRunningTool, // TODO change to isFunctionCallLoading
       isRetrievalLoading,
       documentGroups,
       tools,
@@ -278,6 +278,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         field: 'tools',
         value: [...toolsHook],
       })
+    } else if (isErrorTools) {
+      errorToast({
+        title: 'Error loading tools',
+        message:
+          toolLoadingError.message +
+          '.\nPlease refresh the page or try again later. Regular chat features may still work.',
+      })
     }
   }, [toolsHook, isSuccessTools])
 
@@ -340,7 +347,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     updatedConversation: Conversation,
     currentMessageIndex: number,
   ) => {
-    homeDispatch({ field: 'isPestDetectionLoading', value: true })
+    homeDispatch({ field: 'isRunningTool', value: true })
     // Call pest detection API to get the s3 paths of the annotated images
     const pestDetectionResponse = await fetchPestDetectionResponse(
       imageContent.map((content) => content.image_url?.url as string),
@@ -383,12 +390,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       'Updated message content after pest detection and fetching presigned urls: ',
       message.content,
     )
-    homeDispatch({ field: 'isPestDetectionLoading', value: false })
+    homeDispatch({ field: 'isRunningTool', value: false })
   }
 
   const handleRoutingForImageContent = async (
     message: Message,
-    tools: OpenAICompatibleTool[],
+    tools: UIUCTool[],
     endpoint: string,
     updatedConversation: Conversation,
     searchQuery: string,
@@ -539,7 +546,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const resetMessageStates = () => {
     homeDispatch({ field: 'isRouting', value: undefined })
-    homeDispatch({ field: 'isPestDetectionLoading', value: undefined })
+    homeDispatch({ field: 'isRunningTool', value: undefined })
     homeDispatch({ field: 'isImg2TextLoading', value: undefined })
     homeDispatch({ field: 'isRetrievalLoading', value: undefined })
   }
@@ -550,7 +557,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       message: Message,
       deleteCount = 0,
       plugin: Plugin | null = null,
-      tools: OpenAICompatibleTool[],
+      tools: UIUCTool[],
       enabledDocumentGroups: string[],
     ) => {
       setCurrentMessage(message)
@@ -654,33 +661,31 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           imageUrls,
           imgDesc,
           updatedConversation,
+          currentMessageIndex,
           getOpenAIKey(courseMetadata),
           homeDispatch,
         )
-        // todo: add toolResult to messages
 
-        console.log('Tool result:', toolResult)
-        // toolResult.readableName
-        // toolResult.arguments
-        // console.log('Current message index:', currentMessageIndex)
-        // console.log('Updated conversation:', updatedConversation.messages)
-        // console.log('Updated conversation[currentMessageIndex]:', updatedConversation.messages[currentMessageIndex])
 
+        console.log('Tool result:', message.tools)
+
+        // TODO REMOVE  --  Hack -- add tool result to message content. 
         // @ts-ignore -- can't get the .text property to behave
-        if (
-          updatedConversation.messages[currentMessageIndex] &&
-          // @ts-ignore -- can't get the .text property to behave
-          updatedConversation.messages[currentMessageIndex]?.content[0]?.text
-        ) {
-          // @ts-ignore -- can't get the .text property to behave
-          updatedConversation.messages[currentMessageIndex].content[0].text +=
-            '\nTool result: ' + JSON.stringify(toolResult)
-        }
-        console.log(
-          'AFTER TOOL -- Updated conversation[currentMessageIndex]:',
-          updatedConversation.messages[currentMessageIndex],
-          enabledDocumentGroups,
-        )
+        // if (
+        //   updatedConversation.messages[currentMessageIndex] &&
+        //   // @ts-ignore -- can't get the .text property to behave
+        //   updatedConversation.messages[currentMessageIndex]?.content[0]?.text
+        // ) {
+        //   // @ts-ignore -- can't get the .text property to behave
+        //   updatedConversation.messages[currentMessageIndex].content[0].text +=
+        //     '\nTool result: ' + JSON.stringify(message.tools[0]?.toolResult)
+        // }
+        // console.log(
+        //   'AFTER TOOL -- Updated conversation[currentMessageIndex]:',
+        //   updatedConversation.messages[currentMessageIndex],
+        //   enabledDocumentGroups,
+        // )
+
 
         const chatBody: ChatBody = {
           model: updatedConversation.model,
@@ -725,7 +730,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
           // homeDispatch({ field: 'isRouting', value: undefined })
-          // homeDispatch({ field: 'isPestDetectionLoading', value: undefined })
+          // homeDispatch({ field: 'isRunningTool', value: undefined })
           // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
           // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
           notifications.show({
@@ -764,7 +769,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
           // homeDispatch({ field: 'isRouting', value: undefined })
-          // homeDispatch({ field: 'isPestDetectionLoading', value: undefined })
+          // homeDispatch({ field: 'isRunningTool', value: undefined })
           // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
           // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
           return
@@ -787,7 +792,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           }
           homeDispatch({ field: 'loading', value: false })
           // homeDispatch({ field: 'isRouting', value: undefined })
-          // homeDispatch({ field: 'isPestDetectionLoading', value: undefined })
+          // homeDispatch({ field: 'isRunningTool', value: undefined })
           // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
           // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
           const reader = data.getReader()

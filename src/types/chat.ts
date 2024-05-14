@@ -1,11 +1,19 @@
+import { UIUCTool } from '~/utils/functionCalling/handleFunctionCalling'
 import { OpenAIModel } from './openai'
 
 export interface Message {
   // id: string;
   role: Role
   content: string | Content[]
-  contexts?: ContextWithMetadata[] // todo: make sure things works.
+  contexts?: ContextWithMetadata[]
+  tools?: ToolResult[]
   responseTimeSec?: number
+}
+
+export interface ToolResult {
+  tool?: UIUCTool
+  toolResult?: string
+  toolContexts?: ContextWithMetadata[]
 }
 
 export type MessageType = 'text' | 'image_url' | 'tool_image_url'
