@@ -1,11 +1,17 @@
 import { OpenAIModel } from './openai'
 
+// TODO: think about conforming to OpenAI's vision and tool spec.
 export interface Message {
   // id: string;
   role: Role
   content: string | Content[]
-  contexts?: ContextWithMetadata[] // todo: make sure things works.
+  contexts?: ContextWithMetadata[]
+  toolResults?: ToolResult[]
   responseTimeSec?: number
+}
+export interface ToolResult {
+  toolResult?: string
+  toolContexts?: ContextWithMetadata[]
 }
 
 export type MessageType = 'text' | 'image_url' | 'tool_image_url'

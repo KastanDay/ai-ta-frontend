@@ -164,7 +164,7 @@ interface N8nWorkflow {
   nodes: Node[]
 }
 
-interface ExtractedParameter {
+interface Parameter {
   type: 'string' | 'textarea' | 'number' | 'Date' | 'DropdownList'
   description: string
   enum?: string[]
@@ -174,11 +174,13 @@ export interface OpenAICompatibleTool {
   name: string
   readableName: string
   description: string
-  parameters: {
-    type: 'object'
-    properties: Record<string, ExtractedParameter>
-    required: string[]
-  }
+  parameters:
+    | {
+        type: 'object'
+        properties: Record<string, Parameter>
+        required: string[]
+      }
+    | {}
 }
 
 // TODO: Refine type here, use in chat.tsx
@@ -232,31 +234,40 @@ export function getUIUCToolFromN8n(
     )
     if (!formTriggerNode) continue
 
-    const properties: Record<string, ExtractedParameter> = {}
+    const properties: Record<string, Parameter> = {}
     const required: string[] = []
 
-    formTriggerNode.parameters.formFields.values.forEach((field) => {
-      const key = field.fieldLabel.replace(/\s+/g, '_').toLowerCase() // Replace spaces with underscores and lowercase
-      properties[key] = {
-        type: field.fieldType === 'number' ? 'number' : 'string',
-        description: field.fieldLabel,
-      }
+    let parameters = {}
+    if (formTriggerNode.parameters.formFields) {
+      formTriggerNode.parameters.formFields.values.forEach((field) => {
+        const key = field.fieldLabel.replace(/\s+/g, '_').toLowerCase() // Replace spaces with underscores and lowercase
+        properties[key] = {
+          type: field.fieldType === 'number' ? 'number' : 'string',
+          description: field.fieldLabel,
+        }
 
-      if (field.requiredField) {
-        required.push(key)
+        if (field.requiredField) {
+          required.push(key)
+        }
+      })
+      parameters = {
+        type: 'object',
+        properties,
+        required,
       }
-    })
+    }
 
     extractedObjects.push({
       id: workflow.id,
       name: workflow.name.replace(/\s+/g, '_'),
       readableName: workflow.name,
       description: formTriggerNode.parameters.formDescription,
-      parameters: {
-        type: 'object',
-        properties,
-        required,
-      },
+      parameters,
+      // parameters: {
+      //   type: 'object',
+      //   properties,
+      //   required,
+      // },
     })
   }
 

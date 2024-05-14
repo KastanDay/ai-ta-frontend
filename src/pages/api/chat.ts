@@ -100,16 +100,11 @@ const handler = async (req: Request): Promise<NextResponse> => {
     const contexts_arr = messages[messages.length - 1]
       ?.contexts as ContextWithMetadata[]
 
-    // else if (course_name == 'global' || course_name == 'search-all') {
-    // todo
-    // }
-
     if (course_name == 'gpt4') {
       console.log('NO CONTEXT STUFFING FOR /chat slug')
     } else if (!isImage) {
       // regular context stuffing
       const stuffedPrompt = (await getStuffedPrompt(
-        course_name,
         search_query,
         contexts_arr,
         token_limit,

@@ -92,6 +92,7 @@ import handleTools, {
   useFetchAllWorkflows,
 } from '~/utils/functionCalling/handleFunctionCalling'
 import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
+import { buildPrompt } from '~/utils/buildPrompt'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -197,42 +198,50 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   //         onTrigger: () => console.log(`${docGroup.name} triggered`),
   //       })) || []
 
-  //     console.log('documentGroupActions: ', documentGroupActions)
-  //     console.log('actions: ', [...documentGroupActions, ...actions])
-  //     setActions([...documentGroupActions, ...actions])
-  //   }
-  //   // console.log('actions: ', actions)
-  // }, [documentGroups, isSuccessDocumentGroups])
+  useEffect(() => {
+    if (isSuccessDocumentGroups) {
+      const documentGroupActions =
+        documentGroups?.map((docGroup, index) => ({
+          id: `docGroup-${index}`,
+          title: docGroup.name,
+          description: `Description for ${docGroup.name}`,
+          group: 'Document Groups',
+          checked: true,
+          onTrigger: () => console.debug(`${docGroup.name} triggered`),
+        })) || []
 
-  // TODO: Update to new settings page, not spotlight...
-  // useEffect(() => {
-  //   console.log('IsSuccessTools: ', isSuccessTools)
-  //   console.log('isErrorTools: ', isErrorTools)
-  //   console.log('toolLoadingError: ', toolLoadingError)
-  //   if (isSuccessTools) {
-  //     console.log('Tools in Chat.tsx: ', tools)
-  //     const toolsActions =
-  //       tools?.map((tool: OpenAICompatibleTool, index: number) => ({
-  //         id: `tool-${index}`,
-  //         title: tool.readableName,
-  //         description: tool.description,
-  //         group: 'Tools',
-  //         checked: true,
-  //         onTrigger: () => console.log(`${tool.readableName} triggered`),
-  //       })) || []
+      console.debug('documentGroupActions: ', documentGroupActions)
+      console.debug('actions: ', [...documentGroupActions, ...actions])
+      setActions([...documentGroupActions, ...actions])
+    }
+    // console.log('actions: ', actions)
+  }, [documentGroups, isSuccessDocumentGroups])
 
-  //     console.log('toolsActions: ', toolsActions)
-  //     console.log('actions: ', [...actions, ...toolsActions])
-  //     setActions([...actions, ...toolsActions])
-  //   } else if (isErrorTools) {
-  //     errorToast({
-  //       title: 'Error loading tools',
-  //       message:
-  //         toolLoadingError.message +
-  //         '.\nPlease refresh the page or try again later. Regular chat features may still work.',
-  //     })
-  //   }
-  // }, [tools, isSuccessTools, isErrorTools, toolLoadingError])
+  useEffect(() => {
+    if (isSuccessTools) {
+      console.debug('Tools in Chat.tsx: ', tools)
+      const toolsActions =
+        tools?.map((tool: OpenAICompatibleTool, index: number) => ({
+          id: `tool-${index}`,
+          title: tool.readableName,
+          description: tool.description,
+          group: 'Tools',
+          checked: true,
+          onTrigger: () => console.debug(`${tool.readableName} triggered`),
+        })) || []
+
+      console.debug('toolsActions: ', toolsActions)
+      console.debug('actions: ', [...actions, ...toolsActions])
+      setActions([...actions, ...toolsActions])
+    } else if (isErrorTools) {
+      errorToast({
+        title: 'Error loading tools',
+        message:
+          toolLoadingError.message +
+          '.\nPlease refresh the page or try again later. Regular chat features may still work.',
+      })
+    }
+  }, [tools, isSuccessTools, isErrorTools, toolLoadingError])
 
   const getOpenAIKey = (courseMetadata: CourseMetadata) => {
     const key =
@@ -648,7 +657,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         console.log('Image URLs in main:', imageUrls)
         console.log('Message in main:', message)
 
-        const toolResult = await handleTools(
+        console.log('conversation before tools:', updatedConversation)
+
+        message.toolResult = await handleTools(
           message,
           tools,
           imageUrls,
@@ -657,15 +668,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           getOpenAIKey(courseMetadata),
           homeDispatch,
         )
-        // todo: add toolResult to messages
+        // todo: remove this naive method...
 
-        console.log('Tool result:', toolResult)
-        // toolResult.readableName
-        // toolResult.arguments
-        // console.log('Current message index:', currentMessageIndex)
-        // console.log('Updated conversation:', updatedConversation.messages)
-        // console.log('Updated conversation[currentMessageIndex]:', updatedConversation.messages[currentMessageIndex])
+        console.log('Tool result:', message.toolResult)
+        console.log('Current message index:', currentMessageIndex)
+        console.log('Updated conversation:', updatedConversation.messages)
+        console.log(
+          'Updated conversation[currentMessageIndex]:',
+          updatedConversation.messages[currentMessageIndex],
+        )
 
+        // Append tool result to the message content
         // @ts-ignore -- can't get the .text property to behave
         if (
           updatedConversation.messages[currentMessageIndex] &&
@@ -674,13 +687,20 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ) {
           // @ts-ignore -- can't get the .text property to behave
           updatedConversation.messages[currentMessageIndex].content[0].text +=
-            '\nTool result: ' + JSON.stringify(toolResult)
+            '\nTool result: ' + JSON.stringify(message.toolResult)
         }
         console.log(
           'AFTER TOOL -- Updated conversation[currentMessageIndex]:',
           updatedConversation.messages[currentMessageIndex],
           enabledDocumentGroups,
         )
+
+        // TODO: buildPrompt
+        const finalConvoToSend = await buildPrompt({
+          conversation: updatedConversation,
+          openaiKey: getOpenAIKey(courseMetadata),
+          projectName: getCurrentPageName(),
+        })
 
         const chatBody: ChatBody = {
           model: updatedConversation.model,

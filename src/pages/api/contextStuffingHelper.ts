@@ -43,20 +43,10 @@ export async function getSystemPrompt(course_name: string) {
     Here are excerpts from the high-quality documents provided:
     \n"`
 
-  // Law school "closed world" question answering
-  if (course_name == 'Law794-TransactionalDraftingAlam') {
-    const lawPreprompt =
-      'This is for the law domain and we train law students to stick to facts that are in the record. Do not improvise or use your world knowledge, stick to only the information provided and make heavy use of direct quotes instead of paraphrasing or summarizing.\n'
-    prePrompt = lawPreprompt + prePrompt
-  }
-
-  return (
-    systemPrompt + prePrompt + '\n\nNow please respond to my conversation: '
-  )
+  return systemPrompt + prePrompt + '\n\nNow please respond to my conversation.'
 }
 
 export async function getStuffedPrompt(
-  course_name: string,
   searchQuery: string,
   contexts: ContextWithMetadata[],
   tokenLimit = 8000,
