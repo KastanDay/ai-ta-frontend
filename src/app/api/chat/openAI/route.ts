@@ -3,13 +3,9 @@ import { OpenAIStream, StreamingTextResponse } from 'ai'
 import { NextResponse } from 'next/server'
 import { decrypt } from '~/utils/crypto'
 
-
-
 export const runtime = 'edge'
 
 export async function POST(req: Request) {
-
-
   try {
     // let { messages, apiKey } = await req.json()
     // console.log('headers', req.headers);
@@ -22,30 +18,33 @@ export async function POST(req: Request) {
     //   headers: headers,
     // })
 
-    const authHeader = req.headers.get('authorization');
+    const authHeader = req.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+      })
     }
-    let apiKey = authHeader.substring(7);
-    const { messages } = await req.json();
+    let apiKey = authHeader.substring(7)
+    const { messages } = await req.json()
 
     if (!apiKey.startsWith('sk')) {
-      apiKey = await decrypt(apiKey, process.env.NEXT_PUBLIC_SIGNING_KEY as string) as string
+      apiKey = (await decrypt(
+        apiKey,
+        process.env.NEXT_PUBLIC_SIGNING_KEY as string,
+      )) as string
       console.log('apikey', apiKey)
-
     }
     if (!apiKey) {
       apiKey = process.env.VLADS_OPENAI_KEY as string
     }
 
     const openai = new OpenAI({
-      apiKey
-    });
+      apiKey,
+    })
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       stream: true,
       messages,
-
     })
 
     const stream = OpenAIStream(response)
@@ -59,4 +58,4 @@ export async function POST(req: Request) {
       throw error
     }
   }
-} 
+}
