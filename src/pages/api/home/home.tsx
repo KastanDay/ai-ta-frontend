@@ -409,8 +409,8 @@ const Home = () => {
   }
 
   // Pest Detection
-  const setIsPestDetectionLoading = (isPestDetectionLoading: boolean) => {
-    dispatch({ field: 'isPestDetectionLoading', value: isPestDetectionLoading })
+  const setIsRunningTool = (isRunningTool: boolean) => {
+    dispatch({ field: 'isRunningTool', value: isRunningTool })
   }
 
   // Retrieval
@@ -643,7 +643,7 @@ const Home = () => {
           setIsImg2TextLoading,
           setIsRouting,
           setRoutingResponse,
-          setIsPestDetectionLoading,
+          setIsRunningTool,
           setIsRetrievalLoading,
           handleUpdateDocumentGroups,
           handleUpdateTools,
