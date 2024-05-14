@@ -6,6 +6,11 @@ import { HomeInitialState } from '~/pages/api/home/home.state'
 
 // TODO: move this to the backend so it's in the API!!
 
+export interface RoutingResponse {
+  toolName: string
+  arguments: JSON
+}
+
 export default async function handleTools(
   message: Message,
   availableTools: UIUCTool[],
@@ -78,7 +83,13 @@ export default async function handleTools(
       homeDispatch({
         field: 'routingResponse',
         // value: JSON.stringify(function_call, null, 2),
-        value: `${function_call.readableName}\nArguments: ${JSON.stringify(function_call.arguments)}`,
+        // value: `${function_call.readableName}\nArguments: ${JSON.stringify(function_call.arguments)}`,
+        value: [
+          {
+            toolName: function_call.readableName,
+            arguments: function_call.arguments,
+          },
+        ],
       })
 
       // Do tool calling here!!

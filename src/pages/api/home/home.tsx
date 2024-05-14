@@ -48,6 +48,7 @@ import { type CourseMetadata } from '~/types/courseMetadata'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
+import { RoutingResponse } from '~/utils/functionCalling/handleFunctionCalling'
 
 const Home = () => {
   const { t } = useTranslation('chat')
@@ -404,7 +405,7 @@ const Home = () => {
   }
 
   // Routing Response
-  const setRoutingResponse = (routingResponse: string) => {
+  const setRoutingResponse = (routingResponse: RoutingResponse) => {
     dispatch({ field: 'routingResponse', value: routingResponse })
   }
 

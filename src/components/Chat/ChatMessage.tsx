@@ -9,6 +9,7 @@ import {
   Accordion,
   Popover,
   Button,
+  Badge,
 } from '@mantine/core'
 import {
   IconCheck,
@@ -719,12 +720,25 @@ export const ChatMessage: FC<Props> = memo(
                                         color: '#9d4edd',
                                       }}
                                     >
-                                      Routing the request to relevant tools:
+                                      {/* @ts-ignore -- idk */}
+                                      Routing the request to{' '}
+                                      <Badge color="grape" radius="md">
+                                        {routingResponse[0].toolName}
+                                      </Badge>
+                                      :
                                     </Accordion.Control>
                                     <Accordion.Panel
                                       className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
                                     >
-                                      Routing to: {routingResponse}
+                                      {/* @ts-ignore -- idk */}
+                                      Arguments:{' '}
+                                      <pre>
+                                        {JSON.stringify(
+                                          routingResponse[0].arguments,
+                                          null,
+                                          2,
+                                        )}
+                                      </pre>
                                     </Accordion.Panel>
                                   </Accordion.Item>
                                 </Accordion>
@@ -774,34 +788,50 @@ export const ChatMessage: FC<Props> = memo(
                                   }}
                                 >
                                   <Accordion order={2}>
-                                    <Accordion.Item
-                                      value={'Routing'}
-                                      style={{ border: 0 }}
-                                    >
-                                      <Accordion.Control
-                                        className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                        style={{
-                                          marginRight: '10px',
-                                          fontWeight: 'bold',
-                                          textShadow: '0 0 10px',
-                                          color: '#9d4edd',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                        }}
+                                    {message?.tools?.map((tool, index) => (
+                                      <Accordion.Item
+                                        key={index}
+                                        value={tool.tool?.name as string}
+                                        style={{ border: 0 }}
                                       >
-                                        Tool output:
-                                      </Accordion.Control>
-                                      <Accordion.Panel
-                                        className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
-                                      >
-                                        {message?.tools?.map((tool, index) => (
-                                          <div key={index}>
-                                            <p>Tool: {tool.tool?.name}</p>
-                                            <p>Output: {tool.toolResult}</p>
-                                          </div>
-                                        ))}
-                                      </Accordion.Panel>
-                                    </Accordion.Item>
+                                        <Accordion.Control
+                                          className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                          style={{
+                                            marginRight: '10px',
+                                            fontWeight: 'bold',
+                                            textShadow: '0 0 10px',
+                                            color: '#9d4edd',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                          }}
+                                        >
+                                          Tool output from{' '}
+                                          <Badge
+                                            color="grape"
+                                            radius="md"
+                                            size="md"
+                                          >
+                                            {tool.tool?.readableName}
+                                          </Badge>
+                                        </Accordion.Control>
+                                        <Accordion.Panel
+                                          className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
+                                        >
+                                          <pre
+                                            style={{
+                                              whiteSpace: 'pre-wrap',
+                                              wordWrap: 'break-word',
+                                            }}
+                                          >
+                                            {JSON.parse(
+                                              tool.toolResult as string,
+                                            )
+                                              .data.replace(/\\r\\n/g, '\n')
+                                              .replace(/\\t/g, '\t')}
+                                          </pre>
+                                        </Accordion.Panel>
+                                      </Accordion.Item>
+                                    ))}
                                   </Accordion>
                                 </div>
                               </>

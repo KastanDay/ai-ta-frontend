@@ -6,6 +6,7 @@ import { PluginKey } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
 import {
   OpenAICompatibleTool,
+  RoutingResponse,
   UIUCTool,
 } from '~/utils/functionCalling/handleFunctionCalling'
 
@@ -36,7 +37,7 @@ export interface HomeInitialState {
   showModelSettings: boolean
   isImg2TextLoading: boolean
   isRouting: boolean | undefined
-  routingResponse: string | undefined
+  routingResponse: RoutingResponse[] | undefined
   // isPestDetectionLoading: boolean | undefined
   isRunningTool: boolean | undefined
   isRetrievalLoading: boolean | undefined

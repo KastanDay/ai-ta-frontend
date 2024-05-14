@@ -422,6 +422,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
         console.log('Routing response: ', response)
         homeDispatch({ field: 'isRouting', value: false })
+        // TODO: Update pests routing response for list of {tool: string, arguments: string}
         homeDispatch({
           field: 'routingResponse',
           value: JSON.stringify(response, null, 2),
