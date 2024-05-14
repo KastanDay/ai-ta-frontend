@@ -444,7 +444,7 @@ const CourseMain: NextPage = () => {
                               minRows={3}
                               maxRows={20}
                               placeholder="Enter the system prompt..."
-                              className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                              className="pt-3"
                               value={input}
                               onChange={(e) => {
                                 setBaseSystemPrompt(e.target.value)
@@ -452,6 +452,11 @@ const CourseMain: NextPage = () => {
                                 handleInputChange(e)
                               }}
                               style={{ width: '100%' }}
+                              styles={{
+                                input: {
+                                  fontFamily: 'var(--font-montserratParagraph)',
+                                },
+                              }}
                             />
                             <div
                               style={{
@@ -588,11 +593,15 @@ const CourseMain: NextPage = () => {
                         backgroundColor: 'rgba(0, 0, 0, 0.3)',
                       }}
                     >
-                      <Title order={6} w={'100%'}>
+                      <Title
+                        order={6}
+                        w={'100%'}
+                        className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                      >
                         For guidance on crafting prompts, consult the
                         <br />
                         <a
-                          className={'pl-1 text-sm text-purple-600'}
+                          className={`pl-1 text-sm text-purple-600 ${montserrat_paragraph.variable} font-montserratParagraph`}
                           href="https://platform.openai.com/docs/guides/prompt-engineering"
                           target="_blank"
                           rel="noopener noreferrer"
@@ -610,7 +619,7 @@ const CourseMain: NextPage = () => {
                         </a>
                         <br />
                         <a
-                          className={'pl-1 text-sm text-purple-600'}
+                          className={`pl-1 text-sm text-purple-600 ${montserrat_paragraph.variable} font-montserratParagraph`}
                           href="https://docs.anthropic.com/claude/prompt-library"
                           target="_blank"
                           rel="noopener noreferrer"
