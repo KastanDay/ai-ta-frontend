@@ -119,9 +119,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const [enabledDocumentGroups, setEnabledDocumentGroups] = useState<string[]>(
     [],
   )
-  const [enabledTools, setEnabledTools] = useState<string[]>(
-    [],
-  )
+  const [enabledTools, setEnabledTools] = useState<string[]>([])
 
   const {
     data: documentGroupsHook,
@@ -245,7 +243,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   // Document Groups
   useEffect(() => {
     if (isSuccessDocumentGroups) {
-
       const documentGroupActions = [
         DEFAULT_DOCUMENT_GROUP,
         ...(documentGroupsHook?.map((docGroup, index) => ({
@@ -290,12 +287,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   useEffect(() => {
     setEnabledTools(
-      tools
-        .filter((action) => action.enabled)
-        .map((action) => action.name),
+      tools.filter((action) => action.enabled).map((action) => action.name),
     )
   }, [tools])
-
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase
@@ -357,7 +351,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     for (const url of pestDetectionResponse) {
       const presignedUrl = await fetchPresignedUrl(url)
       if (presignedUrl) {
-        ; (message.content as Content[]).push({
+        ;(message.content as Content[]).push({
           type: 'tool_image_url',
           image_url: {
             url: presignedUrl,
@@ -491,12 +485,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ; (message.content as Content[])[imgDescIndex] = {
+          ;(message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ; (message.content as Content[]).push({
+          ;(message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -639,7 +633,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           enabledDocumentGroups,
         )
 
-
         // Get imageURLs -- better way/place to do this? Move into handleTools?
         const imageContent = (message.content as Content[]).filter(
           (content) => content.type === 'image_url',
@@ -662,7 +655,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           homeDispatch,
         )
         console.log('Tool result:', message.tools)
-
 
         const chatBody: ChatBody = {
           conversation: updatedConversation,
@@ -937,7 +929,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
       handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
@@ -1030,14 +1022,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-      courseMetadata.example_questions.length > 0
+    courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-        'Make a bullet point list of key takeaways of the course.',
-        'What is [your favorite topic] and why is it worth learning about?',
-        'How can I effectively prepare for the upcoming exam?',
-        'How many assignments in the course?',
-      ]
+          'Make a bullet point list of key takeaways of the course.',
+          'What is [your favorite topic] and why is it worth learning about?',
+          'How can I effectively prepare for the upcoming exam?',
+          'How many assignments in the course?',
+        ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
@@ -1348,8 +1340,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             />
           </>
         )}
-      </div >
-    </div >
+      </div>
+    </div>
   )
   Chat.displayName = 'Chat'
 })

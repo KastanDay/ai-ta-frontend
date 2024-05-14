@@ -6,7 +6,10 @@ import { notifications } from '@mantine/notifications'
 import { Title, Text, Switch } from '@mantine/core'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Montserrat } from 'next/font/google'
-import { UIUCTool, useFetchAllWorkflows } from '~/utils/functionCalling/handleFunctionCalling'
+import {
+  UIUCTool,
+  useFetchAllWorkflows,
+} from '~/utils/functionCalling/handleFunctionCalling'
 
 import {
   // IconArrowsSort,
@@ -179,10 +182,7 @@ export const N8nWorkflowsTable = ({
       return dateB.getTime() - dateA.getTime()
     })
     console.log('sorted Records', sortedRecords)
-    currentRecords = (sortedRecords as UIUCTool[]).slice(
-      startIndex,
-      endIndex,
-    )
+    currentRecords = (sortedRecords as UIUCTool[]).slice(startIndex, endIndex)
   }
 
   return (
@@ -221,9 +221,7 @@ export const N8nWorkflowsTable = ({
         fetching={isLoadingRecords}
         customLoader={<LoadingSpinner />}
         // keyField="id"
-        records={
-          isEmptyWorkflowTable ? [] : (currentRecords as UIUCTool[])
-        }
+        records={isEmptyWorkflowTable ? [] : (currentRecords as UIUCTool[])}
         columns={[
           // { accessor: 'id', width: 175 },
           { accessor: 'name' },
@@ -287,11 +285,11 @@ export const N8nWorkflowsTable = ({
         loadingText="Loading..."
         // 👇 uncomment the next line to display a custom text when no records were found
         noRecordsText="No records found"
-      // 👇 uncomment the next line to use a custom pagination text
-      // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
-      // 👇 uncomment the next lines to use custom pagination colors
-      // paginationActiveBackgroundColor="green"
-      // paginationActiveTextColor="#e6e348"
+        // 👇 uncomment the next line to use a custom pagination text
+        // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
+        // 👇 uncomment the next lines to use custom pagination colors
+        // paginationActiveBackgroundColor="green"
+        // paginationActiveTextColor="#e6e348"
       />
     </>
   )

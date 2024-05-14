@@ -89,16 +89,26 @@ export default async function handleTools(
         homeDispatch({ field: 'isRunningTool', value: false })
 
         // Get UIUCTool from openAI function call name
-        const uiucTool = availableTools.find((tool) => tool.name === function_call.name)
+        const uiucTool = availableTools.find(
+          (tool) => tool.name === function_call.name,
+        )
 
         // Add tool result to messages
         if (message.tools) {
-          message.tools.push({ toolResult: JSON.stringify(toolResult), tool: uiucTool });
+          message.tools.push({
+            toolResult: JSON.stringify(toolResult),
+            tool: uiucTool,
+          })
         } else {
-          message.tools = [{ toolResult: JSON.stringify(toolResult), tool: uiucTool }];
+          message.tools = [
+            { toolResult: JSON.stringify(toolResult), tool: uiucTool },
+          ]
         }
         selectedConversation.messages[currentMessageIndex] = message
-        homeDispatch({ field: 'selectedConversation', value: selectedConversation })
+        homeDispatch({
+          field: 'selectedConversation',
+          value: selectedConversation,
+        })
 
         return toolResult
       }
@@ -122,7 +132,6 @@ const callN8nFunction = async (function_call: any, n8n_api_key: string) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-
         api_key:
           'n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6',
         name: function_call.readableName,
@@ -222,25 +231,24 @@ export interface UIUCTool {
 export function getOpenAIToolFromUIUCTool(
   tools: UIUCTool[],
 ): OpenAICompatibleTool[] {
-
   return tools.map((tool) => {
     return {
       id: tool.name,
       name: tool.name,
       readableName: tool.readableName,
       description: tool.description,
-      parameters: tool.parameters ? {
-        type: 'object',
-        properties: tool.parameters.properties,
-        required: tool.parameters.required
-      } : undefined
+      parameters: tool.parameters
+        ? {
+            type: 'object',
+            properties: tool.parameters.properties,
+            required: tool.parameters.required,
+          }
+        : undefined,
     }
   })
 }
 
-export function getUIUCToolFromN8n(
-  workflows: N8nWorkflow[],
-): UIUCTool[] {
+export function getUIUCToolFromN8n(workflows: N8nWorkflow[]): UIUCTool[] {
   const extractedObjects: UIUCTool[] = []
 
   for (const workflow of workflows) {
@@ -287,7 +295,7 @@ export function getUIUCToolFromN8n(
       updatedAt: workflow.updatedAt,
       createdAt: workflow.createdAt,
       // @ts-ignore -- can't get the 'only add if non-zero' to work nicely. It's fine.
-      parameters: Object.keys(parameters).length > 0 ? parameters : undefined
+      parameters: Object.keys(parameters).length > 0 ? parameters : undefined,
     })
   }
 

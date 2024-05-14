@@ -58,7 +58,8 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
   const [currentEmail, setCurrentEmail] = useState('')
   const [n8nApiKeyTextbox, setN8nApiKeyTextbox] = useState('')
   const [n8nApiKey, setN8nApiKey] = useState('')
-  const [isEmptyWorkflowTable, setIsEmptyWorkflowTable] = useState<boolean>(false)
+  const [isEmptyWorkflowTable, setIsEmptyWorkflowTable] =
+    useState<boolean>(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const {
@@ -276,7 +277,7 @@ const MakeToolsPage = ({ course_name }: { course_name: string }) => {
     return (
       <CannotEditCourse
         course_name={currentPageName as string}
-      // current_email={currentEmail as string}
+        // current_email={currentEmail as string}
       />
     )
   }

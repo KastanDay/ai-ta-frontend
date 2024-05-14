@@ -246,66 +246,66 @@ const ChatNavbar = ({
   const items = [
     ...(spotlight
       ? [
-        // {
-        //   name: (
-        //     <span
-        //       className={`${montserrat_heading.variable} font-montserratHeading`}
-        //     >
-        //       Groups/Tools
-        //     </span>
-        //   ),
-        //   icon: <SpotlightIcon />,
-        //   action: () => spotlight.open(), // This opens the Spotlight
-        // },
-      ]
+          // {
+          //   name: (
+          //     <span
+          //       className={`${montserrat_heading.variable} font-montserratHeading`}
+          //     >
+          //       Groups/Tools
+          //     </span>
+          //   ),
+          //   icon: <SpotlightIcon />,
+          //   action: () => spotlight.open(), // This opens the Spotlight
+          // },
+        ]
       : []),
     ...(isAdminOrOwner
       ? [
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Chat
-            </span>
-          ),
-          icon: <MessageChatIcon />,
-          link: `/${getCurrentCourseName()}/chat`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Materials
-            </span>
-          ),
-          icon: <FolderIcon />,
-          link: `/${getCurrentCourseName()}/materials`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Analysis
-            </span>
-          ),
-          icon: <ReportIcon />,
-          link: `/${getCurrentCourseName()}/query-analysis`,
-        },
-        {
-          name: (
-            <span
-              className={`${montserrat_heading.variable} font-montserratHeading`}
-            >
-              Prompting
-            </span>
-          ),
-          icon: <SettingIcon />,
-          link: `/${getCurrentCourseName()}/prompt`,
-        },
-      ]
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Chat
+              </span>
+            ),
+            icon: <MessageChatIcon />,
+            link: `/${getCurrentCourseName()}/chat`,
+          },
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Materials
+              </span>
+            ),
+            icon: <FolderIcon />,
+            link: `/${getCurrentCourseName()}/materials`,
+          },
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Analysis
+              </span>
+            ),
+            icon: <ReportIcon />,
+            link: `/${getCurrentCourseName()}/query-analysis`,
+          },
+          {
+            name: (
+              <span
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+              >
+                Prompting
+              </span>
+            ),
+            icon: <SettingIcon />,
+            link: `/${getCurrentCourseName()}/prompt`,
+          },
+        ]
       : []),
   ]
 
@@ -313,7 +313,7 @@ const ChatNavbar = ({
     <div
       className={`${isgpt4 ? 'bg-[#15162c]' : 'bg-[#2e026d]'} -mr-5 pb-16 pl-5`}
       style={{ display: show ? 'block' : 'none' }}
-    // style={{ display: show ? 'flex' : 'none', flexDirection: 'row', height: '40%', alignItems: 'center' }}
+      // style={{ display: show ? 'flex' : 'none', flexDirection: 'row', height: '40%', alignItems: 'center' }}
     >
       <div
         // className="mt-4"

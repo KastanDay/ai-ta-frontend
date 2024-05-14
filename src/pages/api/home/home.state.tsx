@@ -4,7 +4,10 @@ import { FolderInterface } from '@/types/folder'
 import { OpenAIModel, OpenAIModelID } from '@/types/openai'
 import { PluginKey } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
-import { OpenAICompatibleTool, UIUCTool } from '~/utils/functionCalling/handleFunctionCalling'
+import {
+  OpenAICompatibleTool,
+  UIUCTool,
+} from '~/utils/functionCalling/handleFunctionCalling'
 
 export interface HomeInitialState {
   apiKey: string
