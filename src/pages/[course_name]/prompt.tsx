@@ -16,9 +16,11 @@ import {
   Checkbox,
   Flex,
   Group,
+  List,
   MantineTheme,
   Modal,
   Paper,
+  Text,
   Textarea,
   Title,
   Tooltip,
@@ -60,7 +62,7 @@ const CourseMain: NextPage = () => {
     // Possible improvement.
     return router.query.course_name as string // Change this line
   }
-  const isSmallScreen = useMediaQuery('(max-width: 960px)')
+  const isSmallScreen = useMediaQuery('(max-width: 1280px)')
   const course_name = GetCurrentPageName() as string
   const { user, isLoaded, isSignedIn } = useUser()
   const [courseData, setCourseData] = useState(null)
@@ -345,8 +347,9 @@ const CourseMain: NextPage = () => {
             <Card
               shadow="xs"
               padding="none"
-              radius="xl"
-              style={{ maxWidth: '85%', width: '100%', marginTop: '4%' }}
+              // radius="xl"
+              // style={{ maxWidth: '85%', width: '100%', marginTop: '4%' }}
+              className="mt-[4%] w-[96%] md:w-[90%] "
             >
               <Flex
                 direction={isSmallScreen ? 'column' : 'row'}
@@ -367,9 +370,10 @@ const CourseMain: NextPage = () => {
                       m="3rem"
                       align="center"
                       variant="column"
+                      className="w-[100%] md:w-[90%] lg:w-[80%]"
                       style={{
                         justifyContent: 'center',
-                        width: '90%',
+                        // width: '97%',
                         alignSelf: 'center',
                         overflow: 'hidden',
                       }}
@@ -383,41 +387,110 @@ const CourseMain: NextPage = () => {
                       >
                         Customize System Prompt
                       </Title>
+                      <Paper
+                        className="rounded-xl"
+                        shadow="xs"
+                        // radius="lg"
+                        p="md"
+                        style={{
+                          // width: isRightSideVisible ? '90%' : '100%',
+                          width: '100%',
+                          // margin: 'auto',
+                          // marginTop: '8px',
+                          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                        }}
+                      >
+                        <Text
+                          size={'md'}
+                          // w={'100%'}
+                          className={`${montserrat_paragraph.variable} select-text font-montserratParagraph`}
+                        >
+                          For guidance on crafting prompts, consult
+                          <br />
+                          <List withPadding>
+                            <List.Item>
+                              the
+                              <a
+                                className={`pl-1 text-sm text-purple-600 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                href="https://platform.openai.com/docs/guides/prompt-engineering"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                official OpenAI prompt engineering guide
+                                <IconExternalLink
+                                  size={18}
+                                  className="inline-block pl-1"
+                                  style={{ position: 'relative', top: '-2px' }}
+                                />
+                              </a>
+                            </List.Item>
+
+                            <List.Item>
+                              the
+                              <a
+                                className={`pl-1 text-sm text-purple-600 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                href="https://docs.anthropic.com/claude/prompt-library"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                official Anthropic Prompt Library
+                                <IconExternalLink
+                                  size={18}
+                                  className="inline-block pl-1"
+                                  style={{ position: 'relative', top: '-2px' }}
+                                />
+                              </a>
+                            </List.Item>
+                          </List>
+                        </Text>
+
+                        <Text
+                          className={`label ${montserrat_paragraph.variable} inline-block select-text font-montserratParagraph`}
+                          // variant="gradient"
+                          // gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                          // order={4}
+                          size={'md'}
+                        >
+                          The System Prompt is used during <i>all</i>{' '}
+                          conversations on this project. It is the most powerful
+                          form of instructions to the model.
+                          <br></br>
+                          Include the most salient information possible, like
+                          good examples, welcome greetings and links to where
+                          users can learn more about your work.
+                        </Text>
+                      </Paper>
 
                       <div
                         style={{
-                          width: isRightSideVisible ? '100%' : '80%',
+                          width: isRightSideVisible ? '100%' : '100%',
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
                           background: '#15162c',
-                          paddingTop: '1rem',
-                          paddingBottom: '1rem',
-                          borderRadius: '1rem',
                         }}
+                        className="rounded-xl px-3 py-1 md:px-[4rem] md:py-[1rem]"
                       >
                         <div
                           style={{
                             width: '100%',
-                            // display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
                             background: '#15162c',
-                            padding: '1rem 4rem',
                           }}
                         >
                           <Flex justify="space-between" align="center">
                             <Title
-                              className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                              className={`label ${montserrat_heading.variable} pl-3 font-montserratHeading md:pl-0`}
                               variant="gradient"
                               gradient={{ from: 'gold', to: 'white', deg: 170 }}
                               order={4}
                             >
-                              System Prompt Optimization
+                              System Prompt
                             </Title>
                             {isRightSideVisible ? (
                               <Tooltip label="Close Prompt Builder" key="close">
-                                <div className="cursor-pointer hover:opacity-75">
+                                <div className="cursor-pointer p-4 hover:opacity-75 md:p-0">
                                   <IconLayoutSidebarRight
                                     stroke={2}
                                     onClick={() =>
@@ -428,7 +501,7 @@ const CourseMain: NextPage = () => {
                               </Tooltip>
                             ) : (
                               <Tooltip label="Open Prompt Builder" key="open">
-                                <div className="cursor-pointer hover:opacity-75">
+                                <div className="cursor-pointer p-4 hover:opacity-75 md:p-0">
                                   <IconLayoutSidebarRightExpand
                                     stroke={2}
                                     onClick={() =>
@@ -440,7 +513,7 @@ const CourseMain: NextPage = () => {
                             )}{' '}
                           </Flex>
                           <form
-                            className={`pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                            className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                             onSubmit={(e) =>
                               handleSubmitPromptOptimization(
                                 e,
@@ -463,7 +536,7 @@ const CourseMain: NextPage = () => {
                               minRows={3}
                               maxRows={20}
                               placeholder="Enter the system prompt..."
-                              className="pt-3"
+                              className="px-1 pt-3 md:px-0"
                               value={input}
                               onChange={(e) => {
                                 setBaseSystemPrompt(e.target.value)
@@ -477,24 +550,19 @@ const CourseMain: NextPage = () => {
                                 },
                               }}
                             />
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                              }}
-                            >
+                            <div className="flex w-full flex-col items-center pl-2 pt-4 md:flex-row md:items-start md:justify-between md:pl-0">
                               <Button
                                 type="submit"
                                 onClick={open}
                                 style={{
                                   minWidth: 'fit-content',
-                                  marginTop: '15px',
+                                  // marginTop: '15px',
                                   paddingLeft: '8px',
                                   background:
                                     'linear-gradient(to right, #6d28d9, #4f46e5, #2563eb)',
                                   transition: 'background 0.3s ease-in-out',
                                 }}
-                                className={`relative m-1 self-end text-white hover:border-indigo-600 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                className={`relative m-1 text-white hover:border-indigo-600 md:mr-2 ${montserrat_paragraph.variable} font-montserratParagraph`}
                                 onMouseEnter={(e) =>
                                   (e.currentTarget.style.background =
                                     'linear-gradient(to right, #4f46e5, #2563eb, #6d28d9)')
@@ -509,7 +577,7 @@ const CourseMain: NextPage = () => {
                               </Button>
 
                               <Button
-                                className={`relative m-1 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                className={`relative m-1 bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 ${montserrat_paragraph.variable} font-montserratParagraph`}
                                 type="submit"
                                 onClick={() => {
                                   handleSystemPromptSubmit(systemPrompt)
@@ -525,7 +593,7 @@ const CourseMain: NextPage = () => {
                               onClose={close}
                               size="xl"
                               title="Optimized System Prompt"
-                              className={`${montserrat_heading.variable} rounded-lg font-montserratHeading`}
+                              className={`${montserrat_heading.variable} rounded-xl font-montserratHeading`}
                               centered
                               radius={'lg'}
                               styles={{
@@ -602,57 +670,6 @@ const CourseMain: NextPage = () => {
                     {/* <Alert icon={<IconAlertCircle size="1rem" />} title="Attention!" color="pink" style={{ width: isRightSideVisible ? '90%' : '73%', margin: 'auto', marginTop: '0px', color: 'pink' }}>
                       <span style={{ color: 'pink' }}>Remember to save and update the system prompt before you leave this page.</span>
                     </Alert> */}
-                    <Paper
-                      shadow="xs"
-                      radius="md"
-                      p="md"
-                      style={{
-                        width: isRightSideVisible ? '90%' : '73%',
-                        margin: 'auto',
-                        marginTop: '8px',
-                        backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                      }}
-                    >
-                      <Title
-                        order={6}
-                        w={'100%'}
-                        className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-                      >
-                        For guidance on crafting prompts, consult the
-                        <br />
-                        <a
-                          className={`pl-1 text-sm text-purple-600 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                          href="https://platform.openai.com/docs/guides/prompt-engineering"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          official OpenAI documentation
-                          <IconExternalLink
-                            size={12}
-                            className="mr-2 inline-block"
-                            style={{
-                              position: 'relative',
-                              top: '-3px',
-                              fontSize: '0.5em',
-                            }}
-                          />
-                        </a>
-                        <br />
-                        <a
-                          className={`pl-1 text-sm text-purple-600 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                          href="https://docs.anthropic.com/claude/prompt-library"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          official Anthropic Prompt Library
-                          <IconExternalLink
-                            size={12}
-                            className="mr-2 inline-block"
-                            style={{ position: 'relative', top: '-3px' }}
-                          />
-                        </a>
-                      </Title>
-                    </Paper>
                   </div>
                 </div>
                 {/* RIGHT SIDE OF CARD */}
@@ -666,7 +683,7 @@ const CourseMain: NextPage = () => {
                     }}
                   >
                     <div className="card flex h-full flex-col">
-                      <Group position="left" m="3rem" variant="column">
+                      <Flex direction="column" m="3rem" gap="md">
                         <Title
                           className={`label ${montserrat_heading.variable} font-montserratHeading`}
                           variant="gradient"
@@ -784,7 +801,7 @@ const CourseMain: NextPage = () => {
                             </Button>
                           </div>
                         </div>
-                      </Group>
+                      </Flex>
                     </div>
                   </div>
                 )}
