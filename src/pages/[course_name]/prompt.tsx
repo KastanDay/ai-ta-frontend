@@ -547,6 +547,7 @@ const CourseMain: NextPage = () => {
                                           border: '1px solid #6D28D9',
                                           padding: '10px',
                                           borderRadius: '5px',
+                                          whiteSpace: 'pre-wrap',
                                         }}
                                         className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                                       >
