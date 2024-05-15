@@ -9,6 +9,7 @@ import {
   Accordion,
   Popover,
   Button,
+  Badge,
 } from '@mantine/core'
 import {
   IconCheck,
@@ -103,12 +104,11 @@ export const ChatMessage: FC<Props> = memo(
       state: {
         selectedConversation,
         conversations,
-        currentMessage,
         messageIsStreaming,
         isImg2TextLoading,
         isRouting,
         routingResponse,
-        isPestDetectionLoading,
+        isRunningTool,
         isRetrievalLoading,
       },
       dispatch: homeDispatch,
@@ -126,8 +126,8 @@ export const ChatMessage: FC<Props> = memo(
 
     // SET TIMER for message writing (from gpt-4)
     const [timerVisible, setTimerVisible] = useState(false)
-
     const { classes } = useStyles() // for Accordion
+
     useEffect(() => {
       if (message.role === 'assistant') {
         if (
@@ -256,7 +256,7 @@ export const ChatMessage: FC<Props> = memo(
       if (message.role === 'user') {
         fetchUrl()
       }
-    }, [message.content, messageIndex, isPestDetectionLoading])
+    }, [message.content, messageIndex, isRunningTool])
 
     const toggleEditing = () => {
       setIsEditing(!isEditing)
@@ -420,8 +420,8 @@ export const ChatMessage: FC<Props> = memo(
     return (
       <div
         className={`group md:px-4 ${message.role === 'assistant'
-            ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
-            : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
+          ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
+          : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
           }`}
         style={{ overflowWrap: 'anywhere' }}
       >
@@ -553,127 +553,6 @@ export const ChatMessage: FC<Props> = memo(
                                 </div>
                               ))}
                           </div>
-                          {isRouting &&
-                            (messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              1 ||
-                              messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                }}
-                              >
-                                <p
-                                  style={{
-                                    marginRight: '10px',
-                                    fontWeight: 'bold',
-                                    textShadow: '0 0 10px',
-                                  }}
-                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                >
-                                  Routing the request to relevant tools:
-                                </p>
-                                <LoadingSpinner size="xs" />
-                              </div>
-                            )}
-
-                          {isRouting === false &&
-                            routingResponse &&
-                            (messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              1 ||
-                              messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                }}
-                              >
-                                <Accordion order={2}>
-                                  <Accordion.Item
-                                    value={'Routing'}
-                                    style={{ border: 0 }}
-                                  >
-                                    <Accordion.Control
-                                      className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                      style={{
-                                        marginRight: '10px',
-                                        fontWeight: 'bold',
-                                        textShadow: '0 0 10px',
-                                        color: '#9d4edd',
-                                      }}
-                                    >
-                                      Routing the request to relevant tools:
-                                    </Accordion.Control>
-                                    <Accordion.Panel
-                                      className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
-                                    >
-                                      Routing to: {routingResponse}
-                                    </Accordion.Panel>
-                                  </Accordion.Item>
-                                </Accordion>
-                              </div>
-                            )}
-
-                          {isPestDetectionLoading &&
-                            (messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              1 ||
-                              messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                }}
-                              >
-                                <p
-                                  style={{
-                                    marginRight: '10px',
-                                    fontWeight: 'bold',
-                                    textShadow: '0 0 10px',
-                                  }}
-                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                >
-                                  Running tool...
-                                </p>
-                                <LoadingSpinner size="xs" />
-                              </div>
-                            )}
-
-                          {isPestDetectionLoading === false &&
-                            (messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              1 ||
-                              messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                }}
-                              >
-                                <p
-                                  style={{
-                                    marginRight: '10px',
-                                    fontWeight: 'bold',
-                                    textShadow: '0 0 10px',
-                                    color: '#9d4edd',
-                                  }}
-                                  className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-                                >
-                                  Running tool...
-                                </p>
-                                <IconCheck size={25} />
-                              </div>
-                            )}
 
                           {isImg2TextLoading &&
                             (messageIndex ===
@@ -783,6 +662,174 @@ export const ChatMessage: FC<Props> = memo(
                                 </p>
                                 <IconCheck size={25} />
                               </div>
+                            )}
+
+                          {isRouting &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                              1 ||
+                              messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                              2) && (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <p
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                  }}
+                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                >
+                                  Routing the request to relevant tools:
+                                </p>
+                                <LoadingSpinner size="xs" />
+                              </div>
+                            )}
+
+                          {isRouting === false &&
+                            routingResponse &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                              1 ||
+                              messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                              2) && (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <Accordion order={2}>
+                                  <Accordion.Item
+                                    value={'Routing'}
+                                    style={{ border: 0 }}
+                                  >
+                                    <Accordion.Control
+                                      className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                      style={{
+                                        marginRight: '10px',
+                                        fontWeight: 'bold',
+                                        textShadow: '0 0 10px',
+                                        color: '#9d4edd',
+                                      }}
+                                    >
+                                      Routing the request to{' '}
+                                      <Badge color="grape" radius="md">
+                                        {/* @ts-ignore -- idk */}
+                                        {routingResponse[0].toolName}
+                                      </Badge>
+                                      :
+                                    </Accordion.Control>
+                                    <Accordion.Panel
+                                      className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
+                                    >
+                                      Arguments:{' '}
+                                      <pre>
+                                        {/* @ts-ignore -- idk */}
+                                        {JSON.stringify(routingResponse[0].arguments, null, 2,)}
+                                      </pre>
+                                    </Accordion.Panel>
+                                  </Accordion.Item>
+                                </Accordion>
+                              </div>
+                            )}
+
+                          {isRunningTool &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                              1 ||
+                              messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                              2) && (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <p
+                                  style={{
+                                    marginRight: '10px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 0 10px',
+                                  }}
+                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                >
+                                  Running tool...
+                                </p>
+                                <LoadingSpinner size="xs" />
+                              </div>
+                            )}
+
+                          {isRunningTool === false &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                              1 ||
+                              messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                              2) && (
+                              <>
+                                {/* <IconCheck size={25} /> */}
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                  }}
+                                >
+                                  <Accordion order={2}>
+                                    {message?.tools?.map((tool, index) => (
+                                      <Accordion.Item
+                                        key={index}
+                                        value={tool.tool?.name as string}
+                                        style={{ border: 0 }}
+                                      >
+                                        <Accordion.Control
+                                          className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                          style={{
+                                            marginRight: '10px',
+                                            fontWeight: 'bold',
+                                            textShadow: '0 0 10px',
+                                            color: '#9d4edd',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                          }}
+                                        >
+                                          Tool output from{' '}
+                                          <Badge
+                                            color="grape"
+                                            radius="md"
+                                            size="md"
+                                          >
+                                            {tool.tool?.readableName}
+                                          </Badge>
+                                        </Accordion.Control>
+                                        <Accordion.Panel
+                                          className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
+                                        >
+                                          <pre
+                                            style={{
+                                              whiteSpace: 'pre-wrap',
+                                              wordWrap: 'break-word',
+                                            }}
+                                          >
+                                            {JSON.parse(
+                                              tool.toolResult as string,
+                                            )
+                                              .data.replace(/\\r\\n/g, '\n')
+                                              .replace(/\\t/g, '\t')}
+                                          </pre>
+                                        </Accordion.Panel>
+                                      </Accordion.Item>
+                                    ))}
+                                  </Accordion>
+                                </div>
+                              </>
                             )}
                         </div>
                       </>
@@ -953,10 +1000,10 @@ export const ChatMessage: FC<Props> = memo(
                     }}
                   >
                     {`${message.content}${messageIsStreaming &&
-                        messageIndex ==
-                        (selectedConversation?.messages.length ?? 0) - 1
-                        ? '`▍`'
-                        : ''
+                      messageIndex ==
+                      (selectedConversation?.messages.length ?? 0) - 1
+                      ? '`▍`'
+                      : ''
                       }`}
                   </MemoizedReactMarkdown>
                   {/* {message.contexts && message.contexts.length > 0 && (

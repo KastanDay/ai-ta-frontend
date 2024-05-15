@@ -48,6 +48,7 @@ import { type CourseMetadata } from '~/types/courseMetadata'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
+import { RoutingResponse } from '~/utils/functionCalling/handleFunctionCalling'
 
 const Home = () => {
   const { t } = useTranslation('chat')
@@ -404,13 +405,13 @@ const Home = () => {
   }
 
   // Routing Response
-  const setRoutingResponse = (routingResponse: string) => {
+  const setRoutingResponse = (routingResponse: RoutingResponse) => {
     dispatch({ field: 'routingResponse', value: routingResponse })
   }
 
   // Pest Detection
-  const setIsPestDetectionLoading = (isPestDetectionLoading: boolean) => {
-    dispatch({ field: 'isPestDetectionLoading', value: isPestDetectionLoading })
+  const setIsRunningTool = (isRunningTool: boolean) => {
+    dispatch({ field: 'isRunningTool', value: isRunningTool })
   }
 
   // Retrieval
@@ -643,7 +644,7 @@ const Home = () => {
           setIsImg2TextLoading,
           setIsRouting,
           setRoutingResponse,
-          setIsPestDetectionLoading,
+          setIsRunningTool,
           setIsRetrievalLoading,
           handleUpdateDocumentGroups,
           handleUpdateTools,
@@ -671,7 +672,9 @@ const Home = () => {
 
             <div className="flex h-full w-full pt-[48px] sm:pt-0">
               {isDragging &&
-                (VisionCapableModels.has(selectedConversation?.model.id as OpenAIModelID)) && (
+                VisionCapableModels.has(
+                  selectedConversation?.model.id as OpenAIModelID,
+                ) && (
                   <div className="absolute inset-0 z-10 flex h-full w-full flex-col items-center justify-center bg-black opacity-75">
                     <GradientIconPhoto />
                     <span className="text-3xl font-extrabold text-white">

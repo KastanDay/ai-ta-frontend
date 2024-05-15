@@ -16,12 +16,12 @@ import { addDocumentsToDocGroupQdrant } from '~/utils/qdrantUtils'
 
 interface RequestBody {
   action:
-  | 'addDocumentsToDocGroup'
-  | 'appendDocGroup'
-  | 'removeDocGroup'
-  | 'getDocumentGroups'
-  | 'updateDocGroupStatus'
-  | 'fetchEnabledDocGroups'
+    | 'addDocumentsToDocGroup'
+    | 'appendDocGroup'
+    | 'removeDocGroup'
+    | 'getDocumentGroups'
+    | 'updateDocGroupStatus'
+    | 'fetchEnabledDocGroups'
   courseName: string
   doc?: CourseDocument
   docGroup?: string

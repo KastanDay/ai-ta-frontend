@@ -38,33 +38,31 @@ export const fetchImageDescription = async (
     return ''
   }
 
+  updatedConversation.messages = [
+    {
+      ...message,
+      content: [
+        ...imageContent,
+        {
+          type: 'text',
+          text: `"Analyze and describe the given image, focusing solely on visible elements. Detail the image by:
+        - Identifying text (OCR information), objects, spatial relationships, colors, actions, annotations, and labels.
+        - Utilizing specific terminology relevant to the image's domain (e.g., medical, agricultural, technological).
+        - Categorizing the image and listing associated key terms.
+        - Summarizing with keywords or phrases reflecting the main themes based on the user query.
+        
+        Emphasize primary features before detailing secondary elements. For abstract or emotional content, infer the central message. Provide synonyms for technical terms where applicable. 
+        Ensure the description remains concise, precise and relevant for semantic retrieval, avoiding mention of non-present features. Don't be redundant or overly verbose as that may hurt the semantic retrieval."
+        
+        **Goal:** Create an accurate, focused description that enhances semantic document retrieval, using ONLY observable details in the form of keywords`,
+        },
+      ],
+    },
+  ]
   // Construct the body for the chat API request
   const chatBody: ChatBody = {
-    model: updatedConversation.model,
-    messages: [
-      {
-        ...message,
-        content: [
-          ...imageContent,
-          {
-            type: 'text',
-            text: `"Analyze and describe the given image, focusing solely on visible elements. Detail the image by:
-            - Identifying text (OCR information), objects, spatial relationships, colors, actions, annotations, and labels.
-            - Utilizing specific terminology relevant to the image's domain (e.g., medical, agricultural, technological).
-            - Categorizing the image and listing associated key terms.
-            - Summarizing with keywords or phrases reflecting the main themes based on the user query.
-            
-            Emphasize primary features before detailing secondary elements. For abstract or emotional content, infer the central message. Provide synonyms for technical terms where applicable. 
-            Ensure the description remains concise, precise and relevant for semantic retrieval, avoiding mention of non-present features. Don't be redundant or overly verbose as that may hurt the semantic retrieval."
-            
-            **Goal:** Create an accurate, focused description that enhances semantic document retrieval, using ONLY observable details in the form of keywords`,
-          },
-        ],
-      },
-    ],
+    conversation: updatedConversation,
     key: apiKey,
-    prompt: updatedConversation.prompt,
-    temperature: updatedConversation.temperature,
     course_name: course_name,
     stream: false,
     isImage: true,

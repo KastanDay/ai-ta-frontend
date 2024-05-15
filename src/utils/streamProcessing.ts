@@ -466,11 +466,8 @@ export function constructChatBody(
   stream: boolean,
 ): ChatBody {
   return {
-    model: conversation.model,
-    messages: conversation.messages,
+    conversation: conversation,
     key: key,
-    prompt: conversation.prompt,
-    temperature: conversation.temperature,
     course_name: course_name,
     stream: stream,
     isImage: false,
