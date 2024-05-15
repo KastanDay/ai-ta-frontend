@@ -419,10 +419,11 @@ export const ChatMessage: FC<Props> = memo(
 
     return (
       <div
-        className={`group md:px-4 ${message.role === 'assistant'
-          ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
-          : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
-          }`}
+        className={`group md:px-4 ${
+          message.role === 'assistant'
+            ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
+            : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
+        }`}
         style={{ overflowWrap: 'anywhere' }}
       >
         <div className="relative m-auto flex p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-5xl lg:px-0 xl:max-w-3xl">
@@ -557,10 +558,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isImg2TextLoading &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -584,10 +585,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isImg2TextLoading === false &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -612,10 +613,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isRetrievalLoading &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -639,10 +640,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isRetrievalLoading === false &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -667,10 +668,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isRouting &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -695,10 +696,10 @@ export const ChatMessage: FC<Props> = memo(
                             routingResponse &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -732,7 +733,11 @@ export const ChatMessage: FC<Props> = memo(
                                       Arguments:{' '}
                                       <pre>
                                         {/* @ts-ignore -- idk */}
-                                        {JSON.stringify(routingResponse[0].arguments, null, 2,)}
+                                        {JSON.stringify(
+                                          routingResponse[0].arguments,
+                                          null,
+                                          2,
+                                        )}
                                       </pre>
                                     </Accordion.Panel>
                                   </Accordion.Item>
@@ -743,10 +748,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isRunningTool &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -761,7 +766,13 @@ export const ChatMessage: FC<Props> = memo(
                                   }}
                                   className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
-                                  Running tool...
+                                  Running
+                                  <Badge color="grape" radius="md">
+                                    {routingResponse
+                                      ? routingResponse[0]?.toolName
+                                      : ''}
+                                  </Badge>
+                                  ...
                                 </p>
                                 <LoadingSpinner size="xs" />
                               </div>
@@ -770,10 +781,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isRunningTool === false &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <>
                                 {/* <IconCheck size={25} /> */}
                                 <div
@@ -818,11 +829,30 @@ export const ChatMessage: FC<Props> = memo(
                                               wordWrap: 'break-word',
                                             }}
                                           >
-                                            {JSON.parse(
-                                              tool.toolResult as string,
-                                            )
-                                              .data.replace(/\\r\\n/g, '\n')
-                                              .replace(/\\t/g, '\t')}
+                                            {(() => {
+                                              try {
+                                                const parsedResult = JSON.parse(
+                                                  tool.toolResult as string,
+                                                )
+                                                if (
+                                                  parsedResult &&
+                                                  parsedResult.data &&
+                                                  typeof parsedResult.data ===
+                                                    'string'
+                                                ) {
+                                                  return parsedResult.data
+                                                    .replace(/\\r\\n/g, '\n')
+                                                    .replace(/\\t/g, '\t')
+                                                }
+                                                return tool.toolResult // Return the original result if data is not in the expected format
+                                              } catch (error) {
+                                                console.error(
+                                                  'Failed to parse tool result:',
+                                                  error,
+                                                )
+                                                return tool.toolResult // Return the original text 'as-is' if parsing fails
+                                              }
+                                            })()}
                                           </pre>
                                         </Accordion.Panel>
                                       </Accordion.Item>
@@ -840,8 +870,8 @@ export const ChatMessage: FC<Props> = memo(
                           (messageIndex ===
                             (selectedConversation?.messages.length ?? 0) - 1 ||
                             messageIndex ===
-                            (selectedConversation?.messages.length ?? 0) -
-                            2) && (
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
                             <div
                               style={{ display: 'flex', alignItems: 'center' }}
                             >
@@ -862,8 +892,8 @@ export const ChatMessage: FC<Props> = memo(
                           (messageIndex ===
                             (selectedConversation?.messages.length ?? 0) - 1 ||
                             messageIndex ===
-                            (selectedConversation?.messages.length ?? 0) -
-                            2) && (
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
                             <div
                               style={{ display: 'flex', alignItems: 'center' }}
                             >
@@ -999,12 +1029,13 @@ export const ChatMessage: FC<Props> = memo(
                       },
                     }}
                   >
-                    {`${message.content}${messageIsStreaming &&
+                    {`${message.content}${
+                      messageIsStreaming &&
                       messageIndex ==
-                      (selectedConversation?.messages.length ?? 0) - 1
-                      ? '`▍`'
-                      : ''
-                      }`}
+                        (selectedConversation?.messages.length ?? 0) - 1
+                        ? '`▍`'
+                        : ''
+                    }`}
                   </MemoizedReactMarkdown>
                   {/* {message.contexts && message.contexts.length > 0 && (
                     <Group variant="row" spacing="xs">

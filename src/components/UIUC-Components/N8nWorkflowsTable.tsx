@@ -22,7 +22,7 @@ import { DataTable, DataTableSortStatus } from 'mantine-datatable'
 import { LoadingSpinner } from './LoadingSpinner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-const PAGE_SIZE = 2
+const PAGE_SIZE = 20
 
 interface N8nWorkflowsTableProps {
   n8nApiKey: string

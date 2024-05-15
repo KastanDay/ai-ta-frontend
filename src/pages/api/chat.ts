@@ -107,6 +107,7 @@ export const buildPrompt = async ({
   
 Priorities for building prompt w/ limited window: 
 1. ✅ most recent user message
+2. Last 1 or 2 convo history. At least the user message and the AI response. Key for follow-up questions.
 2. ✅ image description
 3. ✅ tool result
 4. query_topContext
