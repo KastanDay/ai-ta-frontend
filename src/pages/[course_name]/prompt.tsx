@@ -347,9 +347,8 @@ const CourseMain: NextPage = () => {
             <Card
               shadow="xs"
               padding="none"
-              // radius="xl"
-              // style={{ maxWidth: '85%', width: '100%', marginTop: '4%' }}
-              className="mt-[4%] w-[96%] md:w-[90%] "
+              radius="xl"
+              className="mt-[4%] w-[96%] md:w-[90%]"
             >
               <Flex
                 direction={isSmallScreen ? 'column' : 'row'}
