@@ -47,10 +47,10 @@ export async function addDocumentsToDocGroupQdrant(
         },
       ],
     }
-    console.log("Doc s3_path: ", doc.s3_path);
-    console.log("Doc url: ", doc.url);
-    console.log("Document being used:", doc);
-    console.log("Search filter being used:", JSON.stringify(searchFilter, null, 2));
+    // console.log("Doc s3_path: ", doc.s3_path);
+    // console.log("Doc url: ", doc.url);
+    // console.log("Document being used:", doc);
+    // console.log("Search filter being used:", JSON.stringify(searchFilter, null, 2));
 
     // Following commented out code can be used for verifying Qdrant updates:
     // const dummyVector = new Array(1536).fill(0);
