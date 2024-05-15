@@ -405,7 +405,7 @@ export function ProjectFilesTable({
         withBorder={true}
         striped
         highlightOnHover
-        height="80vh"
+        height="85vh"
         rowStyle={(row) => {
           if (selectedRecords.includes(row)) {
             return { backgroundColor: 'hsla(280, 100%, 70%, 0.5)' }
