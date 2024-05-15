@@ -43,6 +43,7 @@ import {
 } from '~/hooks/docGroupsQueries'
 import { LoadingSpinner } from './LoadingSpinner'
 import { montserrat_heading } from 'fonts'
+import { useMediaQuery } from '@mantine/hooks'
 
 const useStyles = createStyles((theme) => ({}))
 
@@ -83,6 +84,7 @@ export function ProjectFilesTable({
   })
   const [errorModalOpened, setErrorModalOpened] = useState(false)
   const [currentError, setCurrentError] = useState('')
+  const isSmallScreen = useMediaQuery('(max-width: 768px)')
 
   const openModel = (open: boolean, error = '') => {
     setErrorModalOpened(open)
@@ -421,13 +423,14 @@ export function ProjectFilesTable({
             //   readable_filename ? `${readable_filename}` : '',
             render: ({ readable_filename }) =>
               readable_filename ? (
-                <div style={{ wordWrap: 'break-word', maxWidth: '18vw' }}>
+                <div style={{ wordWrap: 'break-word' }} className="">
                   {readable_filename}
                 </div>
               ) : (
                 ''
               ),
-            width: '18vw',
+            // width: '14vw',
+            width: isSmallScreen ? '35vw' : '14vw',
             sortable: true,
             filter: (
               <TextInput
@@ -461,14 +464,14 @@ export function ProjectFilesTable({
             title: 'URL',
             render: ({ url }) =>
               url ? (
-                <div style={{ wordWrap: 'break-word', maxWidth: '18vw' }}>
+                <div style={{ wordWrap: 'break-word', maxWidth: '14vw' }}>
                   {url}
                 </div>
               ) : (
                 ''
               ),
             sortable: true,
-            width: '18vw',
+            width: '14vw',
             filter: (
               <TextInput
                 label="URL"
@@ -501,14 +504,13 @@ export function ProjectFilesTable({
             title: 'The Starting URL of Web Scraping',
             render: ({ base_url }) =>
               base_url ? (
-                <div style={{ wordWrap: 'break-word', maxWidth: '18vw' }}>
-                  {base_url}
-                </div>
+                <div style={{ wordWrap: 'break-word' }}>{base_url}</div>
               ) : (
                 ''
               ),
             sortable: true,
-            width: '18vw',
+            // width: '10vw',
+            width: isSmallScreen ? '12vw' : '12vw',
             filter: (
               <TextInput
                 label="The Starting URL of Web Scraping"
@@ -540,8 +542,15 @@ export function ProjectFilesTable({
             accessor: 'created_at',
             title: 'Date created',
             render: ({ created_at }) =>
-              created_at ? new Date(created_at).toLocaleString() : '',
-            width: 130,
+              created_at ? (
+                <div style={{ wordWrap: 'break-word' }}>
+                  {new Date(created_at).toLocaleString()}
+                </div>
+              ) : (
+                ''
+              ),
+            // width: 130,
+            width: isSmallScreen ? 60 : 130,
             sortable: true,
             // TODO: Think about how to allow filtering on date... need different UI to select date range
             // filter: (
