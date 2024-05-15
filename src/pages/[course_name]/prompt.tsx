@@ -134,31 +134,50 @@ const CourseMain: NextPage = () => {
   useEffect(() => {
     let newSystemPrompt = baseSystemPrompt
 
+    const addIfNotIncluded = (content: string) => {
+      if (!newSystemPrompt.includes(content)) {
+        newSystemPrompt += content
+      }
+    }
+
     if (checked1) {
-      newSystemPrompt +=
-        '\nContent includes equations; LaTeX notation preferred.'
+      addIfNotIncluded(
+        '\nContent includes equations; LaTeX notation preferred.',
+      )
     }
 
     if (checked2) {
-      newSystemPrompt +=
-        '\nFocus exclusively on document-based references—avoid incorporating knowledge from outside sources. Essential for legal and similar fields to maintain response quality.'
+      addIfNotIncluded(
+        '\nFocus exclusively on document-based references—avoid incorporating knowledge from outside sources. Essential for legal and similar fields to maintain response quality.',
+      )
     }
 
-    if (checked3 && courseMetadata?.course_intro_message) {
-      newSystemPrompt += `\n${courseMetadata.course_intro_message} If the user asks an introductory question or greeting along the lines of 'hello' or 'what can you do?' or 'What's in here ?' or 'what is ${course_name}?' or similar, then please respond with a warm welcome to ${course_name}, the AI ${course_name} assistant chatbot. Tell them that you can answer questions using the entire knowledge base of Extension. Feel free to ask!`
-    } else if (checked3) {
-      newSystemPrompt += `\nIf the user asks an introductory question or greeting along the lines of 'hello' or 'what can you do?' or 'What's in here ?' or 'what is ${course_name}?' or similar, then please respond with a warm welcome to ${course_name}, the AI ${course_name} assistant chatbot. Tell them that you can answer questions using the entire knowledge base of Extension. Feel free to ask!`
+    const introMessage =
+      checked3 && courseMetadata?.course_intro_message
+        ? `\n${courseMetadata.course_intro_message} If the user asks an introductory question or greeting along the lines of 'hello' or 'what can you do?' or 'What's in here ?' or 'what is ${course_name}?' or similar, then please respond with a warm welcome to ${course_name}, the AI ${course_name} assistant chatbot. Tell them that you can answer questions using the entire knowledge base of Extension. Feel free to ask!`
+        : `\nIf the user asks an introductory question or greeting along the lines of 'hello' or 'what can you do?' or 'What's in here ?' or 'what is ${course_name}?' or similar, then please respond with a warm welcome to ${course_name}, the AI ${course_name} assistant chatbot. Tell them that you can answer questions using the entire knowledge base of the project: ${course_name}. Feel free to ask!`
+
+    if (checked3) {
+      addIfNotIncluded(introMessage)
     }
 
     if (thingsToDo) {
-      newSystemPrompt += '\nThings to do: ' + thingsToDo
+      addIfNotIncluded('\nThings to do: ' + thingsToDo)
     }
     if (thingsNotToDo) {
-      newSystemPrompt += '\nThings NOT to do: ' + thingsNotToDo
+      addIfNotIncluded('\nThings NOT to do: ' + thingsNotToDo)
     }
 
     setSystemPrompt(newSystemPrompt)
-  }, [checked1, checked2, checked3, thingsToDo, thingsNotToDo, courseMetadata])
+  }, [
+    checked1,
+    checked2,
+    checked3,
+    thingsToDo,
+    thingsNotToDo,
+    courseMetadata,
+    baseSystemPrompt,
+  ])
 
   const handleSystemPromptSubmit = async (newSystemPrompt: string) => {
     let success = false
