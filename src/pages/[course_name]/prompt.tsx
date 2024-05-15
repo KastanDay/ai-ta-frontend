@@ -43,6 +43,7 @@ import {
 } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import { useChat } from 'ai/react'
+import GlobalFooter from '../../components/UIUC-Components/GlobalFooter'
 
 const montserrat = Montserrat({
   weight: '700',
@@ -341,7 +342,7 @@ const CourseMain: NextPage = () => {
   return (
     <>
       <Navbar course_name={router.query.course_name as string} />
-      <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center">
+      <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center pb-4">
         <div className="items-left flex w-full flex-col justify-center py-0">
           <Flex direction="column" align="center" w="100%">
             <Card
@@ -468,7 +469,7 @@ const CourseMain: NextPage = () => {
                           alignItems: 'center',
                           background: '#15162c',
                         }}
-                        className="rounded-xl px-3 py-1 md:px-[4rem] md:py-[1rem]"
+                        className="rounded-xl px-3 py-6 md:px-10 md:py-8"
                       >
                         <div
                           style={{
@@ -809,6 +810,7 @@ const CourseMain: NextPage = () => {
             </Card>
           </Flex>
         </div>
+        <GlobalFooter />
       </main>
     </>
   )
