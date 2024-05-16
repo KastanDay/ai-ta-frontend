@@ -1,7 +1,6 @@
 // chatinput.tsx
 import {
   IconArrowDown,
-  IconBrandGoogle,
   IconPlayerStop,
   IconRepeat,
   IconSend,
@@ -9,7 +8,7 @@ import {
   IconAlertCircle,
   IconX,
 } from '@tabler/icons-react'
-import { Switch } from '@mantine/core'
+import { Text } from '@mantine/core'
 import {
   KeyboardEvent,
   MutableRefObject,
@@ -32,10 +31,8 @@ import { PromptList } from './PromptList'
 import { VariableModal } from './VariableModal'
 
 import { notifications } from '@mantine/notifications'
-import { useMantineTheme, Modal, Tooltip } from '@mantine/core'
+import { useMantineTheme, Tooltip } from '@mantine/core'
 import { Montserrat } from 'next/font/google'
-
-import { v4 as uuidv4 } from 'uuid'
 
 import React from 'react'
 
@@ -43,7 +40,9 @@ import { CSSProperties } from 'react'
 
 import { fetchPresignedUrl, uploadToS3 } from 'src/utils/apiUtils'
 import { ImagePreview } from './ImagePreview'
-import { OpenAIModelID } from '~/types/openai'
+import { OpenAIModelID, VisionCapableModels } from '~/types/openai'
+import { montserrat_heading } from 'fonts'
+import { useMediaQuery } from '@mantine/hooks'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -103,11 +102,13 @@ export const ChatInput = ({
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
   const chatInputContainerRef = useRef<HTMLDivElement>(null)
+  const chatInputParentContainerRef = useRef<HTMLDivElement>(null)
   const [isFocused, setIsFocused] = useState(false)
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [imageUrls, setImageUrls] = useState<string[]>([])
+  const isSmallScreen = useMediaQuery('(max-width: 960px)')
 
   const removeButtonStyle: CSSProperties = {
     position: 'absolute',
@@ -136,7 +137,6 @@ export const ChatInput = ({
     paddingRight: imagePreviewUrls.length > 0 ? '10px' : '0',
     paddingBottom: '0',
     paddingLeft: '10px',
-    borderRadius: '4px', // This will round the edges slightly
   }
 
   const filteredPrompts = prompts.filter((prompt) =>
@@ -230,6 +230,13 @@ export const ChatInput = ({
     setContent('')
     setPlugin(null)
     setImagePreviews([])
+    setImageUrls([])
+    setImageFiles([])
+    setImagePreviewUrls([])
+
+    if (imageUploadRef.current) {
+      imageUploadRef.current.value = ''
+    }
   }
 
   const handleStopConversation = () => {
@@ -397,98 +404,19 @@ export const ChatInput = ({
         showToastOnInvalidImage()
       }
 
-      const imageProcessingPromises = validFiles.map((file) => {
-        return new Promise<ProcessedImage>((resolve, reject) => {
-          const reader = new FileReader()
-
-          reader.onloadend = () => {
-            const result = reader.result
-            if (typeof result === 'string') {
-              const img = new Image()
-              img.src = result
-
-              img.onload = () => {
-                let newWidth, newHeight
-                const MAX_WIDTH = 2048
-                const MAX_HEIGHT = 2048
-                const MIN_SIDE = 768
-
-                if (img.width > img.height) {
-                  newHeight = MIN_SIDE
-                  newWidth = (img.width / img.height) * newHeight
-                  if (newWidth > MAX_WIDTH) {
-                    newWidth = MAX_WIDTH
-                    newHeight = (img.height / img.width) * newWidth
-                  }
-                } else {
-                  newWidth = MIN_SIDE
-                  newHeight = (img.height / img.width) * newWidth
-                  if (newHeight > MAX_HEIGHT) {
-                    newHeight = MAX_HEIGHT
-                    newWidth = (img.width / img.height) * newHeight
-                  }
-                }
-
-                const canvas = document.createElement('canvas')
-                const ctx = canvas.getContext('2d')
-                if (ctx) {
-                  canvas.width = newWidth
-                  canvas.height = newHeight
-                  ctx.drawImage(img, 0, 0, newWidth, newHeight)
-
-                  canvas.toBlob(
-                    (blob) => {
-                      if (blob) {
-                        const resizedFile = new File([blob], file.name, {
-                          type: 'image/jpeg',
-                          lastModified: Date.now(),
-                        })
-
-                        resolve({
-                          resizedFile,
-                          dataUrl: canvas.toDataURL('image/jpeg'),
-                        })
-                      } else {
-                        reject(new Error('Canvas toBlob failed'))
-                      }
-                    },
-                    'image/jpeg',
-                    0.9,
-                  )
-                } else {
-                  reject(new Error('Canvas Context is null'))
-                }
-              }
-            } else {
-              reject(new Error('FileReader did not return a string result'))
-            }
-          }
-
-          reader.onerror = reject
-          reader.readAsDataURL(file)
-        })
-      })
+      const imageProcessingPromises = validFiles.map((file) =>
+        processAndUploadImage(file),
+      )
 
       try {
         const processedImages = await Promise.all(imageProcessingPromises)
-        setImageFiles((prev) => [
-          ...prev,
-          ...processedImages.map((img) => img.resizedFile),
-        ])
-        setImagePreviewUrls((prev) => [
-          ...prev,
-          ...processedImages.map((img) => img.dataUrl),
-        ])
+        const newImageFiles = processedImages.map((img) => img.resizedFile)
+        const newImagePreviewUrls = processedImages.map((img) => img.dataUrl)
+        const newImageUrls = processedImages.map((img) => img.uploadedUrl)
 
-        // Store the URLs of the uploaded images
-        const uploadedImageUrls = (
-          await Promise.all(
-            processedImages.map((img) =>
-              uploadImageAndGetUrl(img.resizedFile, courseName),
-            ),
-          )
-        ).filter(Boolean)
-        setImageUrls(uploadedImageUrls as string[])
+        setImageFiles((prev) => [...prev, ...newImageFiles])
+        setImagePreviewUrls((prev) => [...prev, ...newImagePreviewUrls])
+        setImageUrls((prev) => [...prev, ...newImageUrls.filter(Boolean)])
       } catch (error) {
         console.error('Error processing files:', error)
       }
@@ -497,10 +425,97 @@ export const ChatInput = ({
       setImageError,
       setImageFiles,
       setImagePreviewUrls,
+      setImageUrls,
       showToastOnInvalidImage,
       courseName,
     ],
   )
+
+  async function processAndUploadImage(
+    file: File,
+  ): Promise<ProcessedImage & { uploadedUrl: string }> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+
+      reader.onloadend = async () => {
+        const result = reader.result
+        if (typeof result === 'string') {
+          const img = new Image()
+          img.src = result
+
+          img.onload = async () => {
+            const { newWidth, newHeight } = calculateDimensions(img)
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
+            if (ctx) {
+              canvas.width = newWidth
+              canvas.height = newHeight
+              ctx.drawImage(img, 0, 0, newWidth, newHeight)
+
+              canvas.toBlob(
+                async (blob) => {
+                  if (blob) {
+                    const resizedFile = new File([blob], file.name, {
+                      type: 'image/jpeg',
+                      lastModified: Date.now(),
+                    })
+
+                    const uploadedUrl = await uploadImageAndGetUrl(
+                      resizedFile,
+                      courseName,
+                    )
+                    resolve({
+                      resizedFile,
+                      dataUrl: canvas.toDataURL('image/jpeg'),
+                      uploadedUrl,
+                    })
+                  } else {
+                    reject(new Error('Canvas toBlob failed'))
+                  }
+                },
+                'image/jpeg',
+                0.9,
+              )
+            } else {
+              reject(new Error('Canvas Context is null'))
+            }
+          }
+        } else {
+          reject(new Error('FileReader did not return a string result'))
+        }
+      }
+
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
+
+  function calculateDimensions(img: HTMLImageElement): {
+    newWidth: number
+    newHeight: number
+  } {
+    const MAX_WIDTH = 2048
+    const MAX_HEIGHT = 2048
+    const MIN_SIDE = 768
+
+    let newWidth, newHeight
+    if (img.width > img.height) {
+      newHeight = MIN_SIDE
+      newWidth = (img.width / img.height) * newHeight
+      if (newWidth > MAX_WIDTH) {
+        newWidth = MAX_WIDTH
+        newHeight = (img.height / img.width) * newWidth
+      }
+    } else {
+      newWidth = MIN_SIDE
+      newHeight = (img.height / img.width) * newWidth
+      if (newHeight > MAX_HEIGHT) {
+        newHeight = MAX_HEIGHT
+        newWidth = (img.width / img.height) * newHeight
+      }
+    }
+    return { newWidth, newHeight }
+  }
 
   // Function to open the modal with the selected image
   const openModal = (imageSrc: string) => {
@@ -511,7 +526,9 @@ export const ChatInput = ({
   const theme = useMantineTheme()
 
   useEffect(() => {
-    if (selectedConversation?.model.id !== OpenAIModelID.GPT_4_VISION) {
+    if (
+      !VisionCapableModels.has(selectedConversation?.model.id as OpenAIModelID)
+    ) {
       return // Exit early if the model is not GPT-4 Vision
     }
 
@@ -578,6 +595,29 @@ export const ChatInput = ({
   }, [content])
 
   useEffect(() => {
+    const handleFocus = () => {
+      if (chatInputParentContainerRef.current) {
+        chatInputParentContainerRef.current.style.boxShadow = `0 0 2px ${theme.colors.grape[6]}`
+      }
+    }
+
+    const handleBlur = () => {
+      if (chatInputParentContainerRef.current) {
+        chatInputParentContainerRef.current.style.boxShadow = 'none'
+      }
+    }
+
+    const textArea = textareaRef.current
+    textArea?.addEventListener('focus', handleFocus)
+    textArea?.addEventListener('blur', handleBlur)
+
+    return () => {
+      textArea?.removeEventListener('focus', handleFocus)
+      textArea?.removeEventListener('blur', handleBlur)
+    }
+  }, [textareaRef, chatInputParentContainerRef, isFocused])
+
+  useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (
         promptListRef.current &&
@@ -635,10 +675,10 @@ export const ChatInput = ({
     <div
       className={`absolute bottom-0 left-0 w-full border-transparent bg-transparent pt-6 dark:border-white/20 md:pt-2`}
     >
-      <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
+      <div className="stretch mx-2 mt-4 flex flex-col gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
         {messageIsStreaming && (
           <button
-            className="absolute left-0 right-0 top-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white px-4 py-2 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#15162c] dark:text-white md:mb-0 md:mt-2"
+            className={`absolute ${isSmallScreen ? '-top-28' : '-top-20'} left-0 right-0 mx-auto mb-12 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white px-4 py-2 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#15162c] dark:text-white md:mb-0 md:mt-2`}
             onClick={handleStopConversation}
           >
             <IconPlayerStop size={16} /> {t('Stop Generating')}
@@ -649,50 +689,31 @@ export const ChatInput = ({
           selectedConversation &&
           selectedConversation.messages.length > 0 && (
             <button
-              className="absolute left-0 right-0 top-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white px-4 py-2 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#343541] dark:text-white md:mb-0 md:mt-2"
+              className={`absolute ${isSmallScreen ? '-top-28' : '-top-20'} left-0 right-0 mx-auto mb-24 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white px-4 py-2 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#343541] dark:text-white md:mb-0 md:mt-2`}
               onClick={onRegenerate}
             >
               <IconRepeat size={16} /> {t('Regenerate response')}
             </button>
           )}
 
-        <div className="relative mx-2 flex w-full flex-grow flex-col rounded-md border border-black/10 bg-white shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:bg-[#15162c] dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4">
-          {/* BUTTON 1: Plugins Button -- DEPRECATED */}
-          {/* <button
-            className="absolute left-2 bottom-1.5 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
-            onClick={() => setShowPluginSelect(!showPluginSelect)}
-            onKeyDown={(e) => {
-              console.log(e)
-            }}
-          >
-            {plugin ? <IconBrandGoogle size={22} /> : <IconBolt size={22} />}
-          </button> */}
-
-          {/* BUTTON 1: UseMQRetrieval Switch */}
-          {/* <Tooltip // not working... :(
-            className="absolute bottom-1.5"
-            refProp="rootRef"
-            label="Switch tooltip MY LABEL"
-          >
-            <Switch
-              style={{ left: '70px', bottom: '8px' }}
-              className="absolute rounded-sm p-1 " //  bottom-1.5
-              // label={t('Only show conversations from current project')}
-              checked={useMQRetrieval}
-              onChange={(event) => setUseMQRetrieval(event.currentTarget.checked)}
-              color='violet.7'
-            />
-          </Tooltip> */}
-
+        <div
+          ref={chatInputParentContainerRef}
+          className="absolute bottom-0 mx-20 flex w-[60%] flex-col self-center rounded-t-3xl border border-black/10 bg-[#070712] px-4 pb-8 pt-4 shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4"
+        >
           {/* BUTTON 2: Image Icon and Input */}
-          {selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION && (
-            <button
-              className="absolute bottom-1.5 left-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
-              onClick={() => document.getElementById('imageUpload')?.click()}
-            >
-              <IconPhoto size={22} />
-            </button>
-          )}
+          {selectedConversation?.model.id &&
+            VisionCapableModels.has(
+              selectedConversation.model.id as OpenAIModelID,
+            ) && (
+              <button
+                className="absolute bottom-11 left-5 rounded-full p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+                onClick={() => document.getElementById('imageUpload')?.click()}
+              >
+                <div className="">
+                  <IconPhoto size={22} />
+                </div>
+              </button>
+            )}
           <input
             type="file"
             multiple
@@ -738,7 +759,6 @@ export const ChatInput = ({
             onBlur={() => setIsFocused(false)}
             onClick={() => textareaRef.current?.focus()} // Add this line
             style={{
-              outline: isFocused ? '2px solid #9acafa' : 'none', // Adjust the outline as needed
               ...chatInputContainerStyle, // Apply the dynamic padding here
             }}
           >
@@ -759,7 +779,7 @@ export const ChatInput = ({
                     position="top"
                     withArrow
                     style={{
-                      backgroundColor: '#505050',
+                      backgroundColor: '#2b2b2b',
                       color: 'white',
                     }}
                   >
@@ -797,13 +817,18 @@ export const ChatInput = ({
 
             {/* Button 3: main input text area  */}
             <div
-              className={
-                selectedConversation?.model.id === OpenAIModelID.GPT_4_VISION
-                  ? 'pl-8'
-                  : 'pl-1'
-              }
+              className={`
+                ${
+                  VisionCapableModels.has(
+                    selectedConversation?.model.id as OpenAIModelID,
+                  )
+                    ? 'pl-8'
+                    : 'pl-1'
+                }
+                  `}
             >
               <textarea
+                autoFocus
                 ref={textareaRef}
                 className="m-0 w-full flex-grow resize-none bg-[#070712] p-0 py-2 pr-8 text-black dark:bg-[#070712] dark:text-white md:py-2"
                 placeholder={
@@ -821,12 +846,13 @@ export const ChatInput = ({
                   overflow: 'hidden',
                   outline: 'none', // Add this line to remove the outline from the textarea
                   paddingTop: '14px',
+                  paddingBottom: '14px',
                 }}
               />
             </div>
 
             <button
-              className="absolute bottom-1.5 right-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
+              className="absolute bottom-11 right-5 rounded-full p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
               onClick={handleSend}
             >
               {messageIsStreaming ? (
@@ -868,6 +894,14 @@ export const ChatInput = ({
               />
             )}
           </div>
+
+          <Text
+            size={isSmallScreen ? '10px' : 'xs'}
+            className={`font-montserratHeading ${montserrat_heading.variable} pointer-events-none absolute bottom-2 left-6 mr-6 break-words text-neutral-400`}
+            tt={'capitalize'}
+          >
+            {selectedConversation?.model.name}
+          </Text>
         </div>
       </div>
     </div>

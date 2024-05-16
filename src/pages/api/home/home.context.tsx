@@ -2,7 +2,7 @@ import { Dispatch, createContext } from 'react'
 
 import { ActionType } from '@/hooks/useCreateReducer'
 
-import { Conversation } from '@/types/chat'
+import { Action, Conversation } from '@/types/chat'
 import { KeyValuePair } from '@/types/data'
 import { FolderType } from '@/types/folder'
 
@@ -21,6 +21,8 @@ export interface HomeContextProps {
     data: KeyValuePair,
   ) => void
   setIsImg2TextLoading: (isImg2TextLoading: boolean) => void
+  handleUpdateDocumentGroups: (id: string) => void
+  handleUpdateTools: (id: string) => void
 }
 
 const HomeContext = createContext<HomeContextProps>(undefined!)
