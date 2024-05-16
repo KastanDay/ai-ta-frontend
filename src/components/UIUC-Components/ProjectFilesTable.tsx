@@ -85,6 +85,7 @@ export function ProjectFilesTable({
   const [errorModalOpened, setErrorModalOpened] = useState(false)
   const [currentError, setCurrentError] = useState('')
   const isSmallScreen = useMediaQuery('(max-width: 768px)')
+  const isBetweenSmallAndMediumScreen = useMediaQuery('(max-width: 878px)')
 
   const openModel = (open: boolean, error = '') => {
     setErrorModalOpened(open)
@@ -471,7 +472,7 @@ export function ProjectFilesTable({
                 ''
               ),
             sortable: true,
-            width: '14vw',
+            width: isBetweenSmallAndMediumScreen ? '12vw' : '14vw',
             filter: (
               <TextInput
                 label="URL"
@@ -510,7 +511,7 @@ export function ProjectFilesTable({
               ),
             sortable: true,
             // width: '10vw',
-            width: isSmallScreen ? '12vw' : '12vw',
+            width: isBetweenSmallAndMediumScreen ? '11vw' : '14vw',
             filter: (
               <TextInput
                 label="The Starting URL of Web Scraping"
@@ -550,7 +551,11 @@ export function ProjectFilesTable({
                 ''
               ),
             // width: 130,
-            width: isSmallScreen ? 60 : 130,
+            width: isBetweenSmallAndMediumScreen
+              ? 80
+              : isSmallScreen
+                ? 60
+                : 130,
             sortable: true,
             // TODO: Think about how to allow filtering on date... need different UI to select date range
             // filter: (
