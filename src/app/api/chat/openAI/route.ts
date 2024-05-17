@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     let apiKey = authHeader.substring(7)
     const { messages } = await req.json()
 
-    if (apiKey == 'undefined') {
+    if (!apiKey || apiKey == 'undefined') {
       apiKey = process.env.VLADS_OPENAI_KEY as string
     }
     if (!apiKey.startsWith('sk')) {
