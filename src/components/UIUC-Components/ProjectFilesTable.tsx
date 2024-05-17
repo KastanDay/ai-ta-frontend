@@ -24,6 +24,7 @@ import {
   IconCheck,
   IconCopy,
   IconEye,
+  IconFileExport,
   IconTrash,
   IconX,
 } from '@tabler/icons-react'
@@ -44,6 +45,16 @@ import {
 import { LoadingSpinner } from './LoadingSpinner'
 import { montserrat_heading } from 'fonts'
 import { useMediaQuery } from '@mantine/hooks'
+import { IconInfoCircleFilled } from '@tabler/icons-react'
+import { handleExport } from '~/pages/api/UIUC-api/exportAllDocuments'
+import { showToastOnUpdate } from './MakeQueryAnalysisPage'
+import { useRouter } from 'next/router'
+
+
+// export const getCurrentPageName = () => {
+//   const router = useRouter()
+//   return router.asPath.slice(1).split('/')[0] as string
+// }
 
 const useStyles = createStyles((theme) => ({}))
 
@@ -64,7 +75,7 @@ const PAGE_SIZE = 100
 
 export function ProjectFilesTable({
   course_name,
-  setFailedCount = (count: number) => {},
+  setFailedCount = (count: number) => { },
   tabValue,
 }: {
   course_name: string
@@ -86,7 +97,12 @@ export function ProjectFilesTable({
   const [currentError, setCurrentError] = useState('')
   const isSmallScreen = useMediaQuery('(max-width: 768px)')
   const isBetweenSmallAndMediumScreen = useMediaQuery('(max-width: 878px)')
+  const [exportModalOpened, setExportModalOpened] = useState(false)
+  const router = useRouter()
 
+  const getCurrentPageName = () => {
+    return router.asPath.slice(1).split('/')[0] as string
+  }
   const openModel = (open: boolean, error = '') => {
     setErrorModalOpened(open)
     setCurrentError(error)
@@ -587,155 +603,155 @@ export function ProjectFilesTable({
           },
           ...(tabValue === 'failed'
             ? [
-                {
-                  accessor: 'error',
-                  title: 'Error',
-                  width: 200,
-                  render: ({ error }: { error: string }, index: number) => {
-                    // Ensure a ref exists for this row
-                    if (!textRefs.current[index]) {
-                      textRefs.current[index] = createRef()
-                    }
+              {
+                accessor: 'error',
+                title: 'Error',
+                width: 200,
+                render: ({ error }: { error: string }, index: number) => {
+                  // Ensure a ref exists for this row
+                  if (!textRefs.current[index]) {
+                    textRefs.current[index] = createRef()
+                  }
 
-                    return (
-                      <div>
+                  return (
+                    <div>
+                      <Text
+                        ref={textRefs.current[index]}
+                        size="sm"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          maxWidth: '100%',
+                        }}
+                      >
+                        {error}
+                      </Text>
+                      {overflowStates[index] && (
                         <Text
-                          ref={textRefs.current[index]}
                           size="sm"
+                          color="grape"
+                          onClick={() => openModel(true, error)}
+                          className="rounded-md hover:underline"
                           style={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 3,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                            maxWidth: '100%',
+                            cursor: 'pointer',
+                            bottom: 0,
+                            textAlign: 'right',
                           }}
                         >
-                          {error}
+                          Read more
                         </Text>
-                        {overflowStates[index] && (
-                          <Text
-                            size="sm"
-                            color="grape"
-                            onClick={() => openModel(true, error)}
-                            className="rounded-md hover:underline"
-                            style={{
-                              cursor: 'pointer',
-                              bottom: 0,
-                              textAlign: 'right',
-                            }}
-                          >
-                            Read more
-                          </Text>
-                        )}
-                      </div>
-                    )
-                  },
+                      )}
+                    </div>
+                  )
                 },
-              ]
+              },
+            ]
             : [
-                {
-                  accessor: 'doc_group',
-                  title: 'Document Groups',
-                  width: 200, // Increase this value to make the column wider
-                  render: (record: CourseDocument) => (
-                    <Group position="apart" spacing="xs">
-                      <MultiSelect
-                        data={
-                          documentGroups
-                            ? [...documentGroups].map((doc_group) => ({
-                                value: doc_group.name || '',
-                                label: doc_group.name || '',
-                              }))
-                            : []
+              {
+                accessor: 'doc_group',
+                title: 'Document Groups',
+                width: 200, // Increase this value to make the column wider
+                render: (record: CourseDocument) => (
+                  <Group position="apart" spacing="xs">
+                    <MultiSelect
+                      data={
+                        documentGroups
+                          ? [...documentGroups].map((doc_group) => ({
+                            value: doc_group.name || '',
+                            label: doc_group.name || '',
+                          }))
+                          : []
+                      }
+                      value={record.doc_groups ? record.doc_groups : []}
+                      placeholder={
+                        isLoadingDocumentGroups
+                          ? 'Loading...'
+                          : 'Select Group'
+                      }
+                      searchable={!isLoadingDocumentGroups}
+                      nothingFound={
+                        isLoadingDocumentGroups ? 'Loading...' : 'No Options'
+                      }
+                      creatable
+                      getCreateLabel={(query) => `+ Create "${query}"`}
+                      onCreate={(doc_group_name) => {
+                        // createDocumentGroup.mutate({ record, doc_group_name })
+                        return {
+                          value: doc_group_name,
+                          label: doc_group_name,
                         }
-                        value={record.doc_groups ? record.doc_groups : []}
-                        placeholder={
-                          isLoadingDocumentGroups
-                            ? 'Loading...'
-                            : 'Select Group'
-                        }
-                        searchable={!isLoadingDocumentGroups}
-                        nothingFound={
-                          isLoadingDocumentGroups ? 'Loading...' : 'No Options'
-                        }
-                        creatable
-                        getCreateLabel={(query) => `+ Create "${query}"`}
-                        onCreate={(doc_group_name) => {
-                          // createDocumentGroup.mutate({ record, doc_group_name })
-                          return {
-                            value: doc_group_name,
-                            label: doc_group_name,
-                          }
-                        }}
-                        onChange={(newSelectedGroups) =>
-                          handleDocumentGroupsChange(record, newSelectedGroups)
-                        }
-                        disabled={isLoadingDocumentGroups}
-                        sx={{ flex: 1, width: '100%' }}
-                        classNames={{
-                          value: 'tag-item self-center',
-                        }}
-                        styles={{
-                          input: {
-                            paddingTop: '12px',
-                            paddingBottom: '12px',
-                          },
-                          value: {
-                            marginTop: '2px',
-                          },
-                        }}
-                      />
-                    </Group>
-                  ),
-                },
-              ]),
+                      }}
+                      onChange={(newSelectedGroups) =>
+                        handleDocumentGroupsChange(record, newSelectedGroups)
+                      }
+                      disabled={isLoadingDocumentGroups}
+                      sx={{ flex: 1, width: '100%' }}
+                      classNames={{
+                        value: 'tag-item self-center',
+                      }}
+                      styles={{
+                        input: {
+                          paddingTop: '12px',
+                          paddingBottom: '12px',
+                        },
+                        value: {
+                          marginTop: '2px',
+                        },
+                      }}
+                    />
+                  </Group>
+                ),
+              },
+            ]),
           ...(tabValue === 'failed'
             ? []
             : [
-                {
-                  accessor: 'actions',
-                  title: <Box mr={6}>Actions</Box>,
-                  width: 75,
-                  render: (materials: any, index: number) => {
-                    const openModal = async (action: string) => {
-                      let urlToOpen = materials.url
-                      if (!materials.url && materials.s3_path) {
-                        const presignedUrl = await fetchPresignedUrl(
-                          materials.s3_path,
-                        )
-                        urlToOpen = presignedUrl
-                      }
-                      if (action === 'view' && urlToOpen) {
-                        window.open(urlToOpen, '_blank')
-                      } else if (action === 'delete') {
-                        setRecordsToDelete([materials])
-                        setModalOpened(true)
-                      }
+              {
+                accessor: 'actions',
+                title: <Box mr={6}>Actions</Box>,
+                width: 75,
+                render: (materials: any, index: number) => {
+                  const openModal = async (action: string) => {
+                    let urlToOpen = materials.url
+                    if (!materials.url && materials.s3_path) {
+                      const presignedUrl = await fetchPresignedUrl(
+                        materials.s3_path,
+                      )
+                      urlToOpen = presignedUrl
                     }
+                    if (action === 'view' && urlToOpen) {
+                      window.open(urlToOpen, '_blank')
+                    } else if (action === 'delete') {
+                      setRecordsToDelete([materials])
+                      setModalOpened(true)
+                    }
+                  }
 
-                    return (
-                      <Group spacing="xs">
-                        <ActionIcon
-                          size="sm"
-                          variant="subtle"
-                          color="green"
-                          onClick={() => openModal('view')}
-                        >
-                          <IconEye size={16} />
-                        </ActionIcon>
-                        <ActionIcon
-                          size="sm"
-                          variant="subtle"
-                          color="red"
-                          onClick={() => openModal('delete')}
-                        >
-                          <IconTrash size={16} />
-                        </ActionIcon>
-                      </Group>
-                    )
-                  },
+                  return (
+                    <Group spacing="xs">
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color="green"
+                        onClick={() => openModal('view')}
+                      >
+                        <IconEye size={16} />
+                      </ActionIcon>
+                      <ActionIcon
+                        size="sm"
+                        variant="subtle"
+                        color="red"
+                        onClick={() => openModal('delete')}
+                      >
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Group>
+                  )
                 },
-              ]),
+              },
+            ]),
         ]}
         selectedRecords={selectedRecords}
         onSelectedRecordsChange={(newSelectedRecords) => {
@@ -746,8 +762,8 @@ export function ProjectFilesTable({
             setSelectedRecords([])
           }
         }}
-        // Accessor not necessary when documents have an `id` property
-        // idAccessor={(row: any) => (row.url ? row.url : row.s3_path)}
+      // Accessor not necessary when documents have an `id` property
+      // idAccessor={(row: any) => (row.url ? row.url : row.s3_path)}
       />{' '}
       {/* End DataTable */}
       <Paper
@@ -773,13 +789,48 @@ export function ProjectFilesTable({
             }}
           >
             {selectedRecords.length
-              ? `Delete ${
-                  selectedRecords.length === 1
-                    ? '1 selected record'
-                    : `${selectedRecords.length} selected records`
-                }`
+              ? `Delete ${selectedRecords.length === 1
+                ? '1 selected record'
+                : `${selectedRecords.length} selected records`
+              }`
               : 'Select records to delete'}
           </Button>
+        </Center>
+        <Center>
+          <Button // button to export materials
+            uppercase
+            leftIcon={<IconFileExport size={16} />}
+            // disabled={!selectedRecords.length}
+            onClick={() => {
+              // setRecordsToExport(selectedRecords)
+              setExportModalOpened(true)
+            }}
+            style={{
+              // backgroundColor: selectedRecords.length
+              //   ? 'purple'
+              //   : 'transparent',
+              backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
+              marginTop: '20px',
+              marginRight: '5px',
+            }}
+          >
+            {/* {selectedRecords.length
+              ? `Export ${selectedRecords.length === 1
+                ? '1 selected record'
+                : `${selectedRecords.length} selected records`
+              }`
+              : 'Select records to export'} */}
+            Export Documents & Embeddings
+          </Button>
+          <Tooltip
+            multiline
+            width={280}
+            withArrow
+            transitionProps={{ duration: 200 }}
+            label="Download the post-processed text and vector embeddings (OpenAI Ada-002) used by the LLM. The export format is JSON Lines (.JSONL). To minimize data transfer costs, exporting original files (PDFs, etc.) is only available for individual documents."
+          >
+            <IconInfoCircleFilled size={23} />
+          </Tooltip>
         </Center>
       </Paper>
       <Modal
@@ -882,6 +933,47 @@ export function ProjectFilesTable({
           </Code>
         </div>
       </Modal>
+      <Modal
+        opened={exportModalOpened} // Use a separate state variable for the export modal
+        onClose={() => setExportModalOpened(false)} // Update the state variable when the modal is closed
+        title="Please confirm your action"
+      >
+        <Text size="sm" style={{ color: 'white' }}>
+          {`Are you sure you want to export all the documents and embeddings?`}
+        </Text>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginTop: '20px',
+          }}
+        >
+          <Button
+            className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
+            onClick={() => {
+              setExportModalOpened(false)
+            }}
+            style={{
+              backgroundColor: 'transparent',
+              marginRight: '7px',
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
+            onClick={async () => {
+              setExportModalOpened(false)
+              const result = await handleExport(getCurrentPageName())
+              if (result && result.message) {
+                showToastOnUpdate(theme, false, false, result.message)
+              }
+            }}
+          >
+            Export
+          </Button>
+        </div>
+      </Modal>
     </>
   )
 }
@@ -909,7 +1001,7 @@ function errorStateForProjectFilesTable() {
             radius="lg"
             src="https://assets.kastan.ai/this-is-fine.jpg"
             alt="No data found"
-            // style={{ filter: 'grayscale(1)' }}
+          // style={{ filter: 'grayscale(1)' }}
           />
           <Text c="dimmed" size="md">
             So.. please try again later.
