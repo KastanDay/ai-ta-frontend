@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { ContextWithMetadata } from '~/types/chat';
-import OpenAI from 'openai';
+import { createOpenAI } from '@ai-sdk/openai';  // Import createOpenAI from Vercel AI SDK
 import { decrypt, isEncrypted } from '~/utils/crypto';
 
 export default async function guidedRetrieval(req: NextApiRequest, res: NextApiResponse) {
@@ -10,7 +10,7 @@ export default async function guidedRetrieval(req: NextApiRequest, res: NextApiR
       return res.status(400).json({ error: 'Documents, prompt, or OpenAI key not provided.' });
     }
 
-    let decryptedKey: string; // Declare without initial value
+    let decryptedKey: string;
     if (isEncrypted(openaiKey)) {
       const signingKey = process.env.NEXT_PUBLIC_SIGNING_KEY;
       if (!signingKey) {
@@ -19,14 +19,20 @@ export default async function guidedRetrieval(req: NextApiRequest, res: NextApiR
       }
       decryptedKey = await decrypt(openaiKey, signingKey) || '';
     } else {
-      decryptedKey = openaiKey; // Use the original key if it's not encrypted
+      decryptedKey = openaiKey;
     }
 
-    const openai = new OpenAI({ apiKey: decryptedKey });
+    // Create a custom OpenAI provider instance with the decrypted key
+    const customOpenAI = createOpenAI({
+      apiKey: decryptedKey,
+    });
+
+    // Initialize OpenAI chat model using the custom provider instance
+    const ai = customOpenAI.chat('gpt-3.5-turbo');
 
     console.log('Starting document relevance determination...');
 
-    const relevanceResponses = await interactWithLLM(openai, documents, prompt);
+    const relevanceResponses = await interactWithLLM(ai, documents, prompt);
 
     console.log('Relevance responses:', relevanceResponses);
 
@@ -41,18 +47,17 @@ export default async function guidedRetrieval(req: NextApiRequest, res: NextApiR
   }
 }
 
-async function interactWithLLM(openai: OpenAI, documents: ContextWithMetadata[], prompt: string): Promise<string[]> {
+async function interactWithLLM(ai: ReturnType<typeof createOpenAI.prototype.chat>, documents: ContextWithMetadata[], prompt: string): Promise<string[]> {
   const responses = await Promise.all(documents.map(document => {
     const singlePrompt = `Is the following document relevant to "${prompt}"? ${document.text}`;
-    return openai.completions.create({
-      model: 'gpt-3.5-turbo-0613',
+    return ai.generateText({
       prompt: singlePrompt,
-      max_tokens: 3,
+      maxTokens: 3,
       n: 1,
       stop: null,
-    }).then(response => {
+    }).then((response: { choices: { text: string }[] }) => {
       if (!response.choices || response.choices.length === 0 || !response.choices[0]) {
-        return 'No'; // Handle the case where choices or the first choice is undefined
+        return 'No';
       }
       const responseText = response.choices[0].text.trim().toLowerCase();
       return responseText.includes('yes') || responseText.includes('true') ? 'Yes' : 'No';

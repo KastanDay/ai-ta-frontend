@@ -156,7 +156,7 @@ Priorities for building prompt w/ limited window:
   const userQuery = _buildUserQuery({ conversation })
 
   // query_topContext
-  const query_topContext = _buildQueryTopContext({
+  const query_topContext = await _buildQueryTopContext({
     conversation: conversation,
     encoding: encoding,
     tokenLimit:
@@ -164,7 +164,10 @@ Priorities for building prompt w/ limited window:
       encoding.encode(
         `\nFinally, please respond to the user's query: ${userQuery}`,
       ).length,
-  })
+    openaiKey: openaiKey || '',
+    courseMetadata: courseMetadata,
+    userQuery: userQuery, // Pass userQuery here
+  });
   if (query_topContext) {
     const queryContextMsg = `Here's high quality passages from the user's documents. Use these, and cite them carefully in the format previously described, to construct your answer: ${query_topContext}`
     remainingTokenBudget -= encoding.encode(queryContextMsg).length
@@ -259,16 +262,22 @@ const _buildConvoHistory = ({
   return messagesToSend
 }
 
-export function _buildQueryTopContext({
+export async function _buildQueryTopContext({
   conversation,
   encoding,
   tokenLimit = 8000,
+  openaiKey,
+  userQuery, // Add this parameter
 }: {
   conversation: Conversation
   encoding: Tiktoken
   tokenLimit: number
+  openaiKey: string
+  courseMetadata: CourseMetadata | undefined
+  userQuery: string // Add this type
 }) {
   try {
+    console.log("In _buildQueryTopContext start")
     const contexts = conversation.messages[conversation.messages.length - 1]
       ?.contexts as ContextWithMetadata[]
 
@@ -276,9 +285,36 @@ export function _buildQueryTopContext({
       return undefined
     }
 
+    console.log("Before Guided Retrieval");
+
+    // Call guidedRetrieval function
+    const guidedRetrievalResponse = await fetch('/api/chat/guidedRetrieval', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        documents: contexts,
+        prompt: userQuery,
+        openaiKey: openaiKey,
+      }),
+    });
+
+    console.log("After Guided Retrieval");
+
+    if (!guidedRetrievalResponse.ok) {
+      const errorData = await guidedRetrievalResponse.json();
+      console.error('Error in guided retrieval:', errorData.error);
+      return NextResponse.json({ error: 'Failed to process guided retrieval' }, { status: 500 });
+    }
+
+    const { relevantDocuments } = await guidedRetrievalResponse.json();
+
+    console.log('Relevant Documents:', relevantDocuments);
+
     let tokenCounter = 0 // encoding.encode(system_prompt + searchQuery).length
-    const validDocs = []
-    for (const [index, d] of contexts.entries()) {
+    const validDocs: { index: number; d: ContextWithMetadata }[] = []
+    for (const [index, d] of relevantDocuments.entries()) {
       const docString = `---\n${index + 1}: ${d.readable_filename}${
         d.pagenumber ? ', page: ' + d.pagenumber : ''
       }\n${d.text}\n`
@@ -307,7 +343,7 @@ export function _buildQueryTopContext({
     // const stuffedPrompt =
     //   contextText + '\n\nNow please respond to my query: ' + searchQuery
     // const totalNumTokens = encoding.encode(stuffedPrompt).length
-    console.log('contextText', contextText)
+    console.log('guided retrieval contextText: \n', contextText)
     // console.log(
     // `Total number of tokens: ${totalNumTokens}. Number of docs: ${contexts.length}, number of valid docs: ${validDocs.length}`,
     // )
