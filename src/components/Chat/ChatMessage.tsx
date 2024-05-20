@@ -732,7 +732,10 @@ export const ChatMessage: FC<Props> = memo(
                                       Arguments:{' '}
                                       <pre>
                                         {/* @ts-ignore -- idk */}
-                                        {JSON.stringify(routingResponse[0].arguments, null, 2,)}
+                                        {JSON.stringify(routingResponse[0].arguments,
+                                          null,
+                                          2,
+                                        )}
                                       </pre>
                                     </Accordion.Panel>
                                   </Accordion.Item>
@@ -761,7 +764,13 @@ export const ChatMessage: FC<Props> = memo(
                                   }}
                                   className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
-                                  Running tool...
+                                  Running
+                                  <Badge color="grape" radius="md">
+                                    {routingResponse
+                                      ? routingResponse[0]?.toolName
+                                      : ''}
+                                  </Badge>
+                                  ...
                                 </p>
                                 <LoadingSpinner size="xs" />
                               </div>
@@ -818,11 +827,30 @@ export const ChatMessage: FC<Props> = memo(
                                               wordWrap: 'break-word',
                                             }}
                                           >
-                                            {JSON.parse(
-                                              tool.toolResult as string,
-                                            )
-                                              .data.replace(/\\r\\n/g, '\n')
-                                              .replace(/\\t/g, '\t')}
+                                            {(() => {
+                                              try {
+                                                const parsedResult = JSON.parse(
+                                                  tool.toolResult as string,
+                                                )
+                                                if (
+                                                  parsedResult &&
+                                                  parsedResult.data &&
+                                                  typeof parsedResult.data ===
+                                                  'string'
+                                                ) {
+                                                  return parsedResult.data
+                                                    .replace(/\\r\\n/g, '\n')
+                                                    .replace(/\\t/g, '\t')
+                                                }
+                                                return tool.toolResult // Return the original result if data is not in the expected format
+                                              } catch (error) {
+                                                console.error(
+                                                  'Failed to parse tool result:',
+                                                  error,
+                                                )
+                                                return tool.toolResult // Return the original text 'as-is' if parsing fails
+                                              }
+                                            })()}
                                           </pre>
                                         </Accordion.Panel>
                                       </Accordion.Item>

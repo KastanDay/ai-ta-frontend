@@ -22,7 +22,7 @@ import { DataTable, DataTableSortStatus } from 'mantine-datatable'
 import { LoadingSpinner } from './LoadingSpinner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-const PAGE_SIZE = 2
+const PAGE_SIZE = 20
 
 interface N8nWorkflowsTableProps {
   n8nApiKey: string
@@ -96,7 +96,7 @@ export const N8nWorkflowsTable = ({
         ),
         message: (
           <Text className={`${montserrat_med.className} text-neutral-200`}>
-            {error.message}
+            {(error as Error).message}
           </Text>
         ),
         color: 'red',
@@ -285,11 +285,11 @@ export const N8nWorkflowsTable = ({
         loadingText="Loading..."
         // 👇 uncomment the next line to display a custom text when no records were found
         noRecordsText="No records found"
-        // 👇 uncomment the next line to use a custom pagination text
-        // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
-        // 👇 uncomment the next lines to use custom pagination colors
-        // paginationActiveBackgroundColor="green"
-        // paginationActiveTextColor="#e6e348"
+      // 👇 uncomment the next line to use a custom pagination text
+      // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
+      // 👇 uncomment the next lines to use custom pagination colors
+      // paginationActiveBackgroundColor="green"
+      // paginationActiveTextColor="#e6e348"
       />
     </>
   )
