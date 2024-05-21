@@ -8,7 +8,7 @@ import {
   OpenAICompatibleTool,
   RoutingResponse,
   UIUCTool,
-} from '~/utils/functionCalling/handleFunctionCalling'
+} from '~/pages/functionCalling/handleFunctionCalling'
 
 export interface HomeInitialState {
   apiKey: string

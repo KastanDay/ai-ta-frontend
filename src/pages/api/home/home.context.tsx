@@ -7,7 +7,7 @@ import { KeyValuePair } from '@/types/data'
 import { FolderType } from '@/types/folder'
 
 import { HomeInitialState } from './home.state'
-import { RoutingResponse } from '~/utils/functionCalling/handleFunctionCalling'
+import { RoutingResponse } from '~/pages/functionCalling/handleFunctionCalling'
 
 export interface HomeContextProps {
   state: HomeInitialState
@@ -24,7 +24,7 @@ export interface HomeContextProps {
   setIsImg2TextLoading: (isImg2TextLoading: boolean) => void
   setIsRouting: (isRouting: boolean) => void
   setRoutingResponse: (routingResponse: RoutingResponse) => void
-  setIsRunningTool: (isRunningTool: boolean) => void
+  // setRunningTool: (isRunningTool: boolean) => void
   setIsRetrievalLoading: (isRetrievalLoading: boolean) => void
   handleUpdateDocumentGroups: (id: string) => void
   handleUpdateTools: (id: string) => void

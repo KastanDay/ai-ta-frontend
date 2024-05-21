@@ -3,57 +3,13 @@ import OpenAI from 'openai'
 import type {
   ChatCompletionCreateParams,
   ChatCompletionMessageParam,
+  ChatCompletionTool,
 } from 'openai/resources/chat'
 
 import { Conversation, Message } from '~/types/chat'
 import { decrypt, isEncrypted } from '~/utils/crypto'
 
 export const runtime = 'edge'
-
-// Function definition:
-const functions: ChatCompletionCreateParams.Function[] = [
-  {
-    name: 'get_current_weather',
-    description: 'Get the current weather',
-    parameters: {
-      type: 'object',
-      properties: {
-        location: {
-          type: 'string',
-          description: 'The city and state, e.g. San Francisco, CA',
-        },
-        format: {
-          type: 'string',
-          enum: ['celsius', 'fahrenheit'],
-          description:
-            'The temperature unit to use. Infer this from the users location.',
-        },
-      },
-      required: ['location', 'format'],
-    },
-  },
-  {
-    name: 'run_pest_detection',
-    description:
-      'Run pest detection on an image if the user is concerned about their crop.',
-    // parameters: {
-    //   type: 'object',
-    //   properties: {
-    //     location: {
-    //       type: 'string',
-    //       description: 'T',
-    //     },
-    //     format: {
-    //       type: 'string',
-    //       enum: ['celsius', 'fahrenheit'],
-    //       description:
-    //         'The temperature unit to use. Infer this from the users location.',
-    //     },
-    //   },
-    //   required: ['location', 'format'],
-    // },
-  },
-]
 
 const conversationToMessages = (
   inputData: Conversation,
@@ -70,7 +26,7 @@ const conversationToMessages = (
     transformedData.push(simpleMessage)
   })
 
-  console.log('Transformed messages array: ', transformedData)
+  // console.log('Transformed messages array: ', transformedData)
 
   return transformedData
 }
@@ -84,8 +40,7 @@ export async function POST(req: Request) {
     imageUrls,
     imageDescription,
   }: {
-    messages: Message
-    tools: ChatCompletionCreateParams.Function[]
+    tools: ChatCompletionTool[]
     conversation: Conversation
     imageUrls: string[]
     imageDescription: string
@@ -142,12 +97,39 @@ export async function POST(req: Request) {
 
   const response = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo-0613', // hard code function calling model.
-    stream: true,
     messages: message_to_send,
-    functions: tools,
-    // functions,
+    tools: tools,
+    stream: false,
   })
+  console.log('Response from OpenAI: ', JSON.stringify(response))
+  // Wrap the response in a Response object
+  // if (!response.choices || response.choices.length === 0 || !response.choices[0]?.message.tool_calls) {
+  if (false) {
+    // TODO: better error checking
+    console.error('❌ ERROR --- No response from OpenAI!!')
+    return new Response('No response from OpenAI', { status: 500 })
+  } else {
+    console.log('In success case of endpoint :)')
+    const tools = response.choices[0]?.message.tool_calls
+    console.log('TOOLS PARSED OUT OF OPENAI: ', JSON.stringify(tools))
 
-  const stream = OpenAIStream(response)
-  return new StreamingTextResponse(stream)
+    // Response format, it's an array.
+    // "tool_calls": [
+    //   {
+    //     "id": "call_abc123",
+    //     "type": "function",
+    //     "function": {
+    //       "name": "get_current_weather",
+    //       "arguments": "{\n\"location\": \"Boston, MA\"\n}"
+    //     }
+    //   }
+    // ]
+
+    return new Response(JSON.stringify(tools), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  }
 }

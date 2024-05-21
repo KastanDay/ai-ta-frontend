@@ -32,7 +32,7 @@ import { useRouter } from 'next/router'
 import { LoadingSpinner } from './LoadingSpinner'
 import { useAuth, useUser } from '@clerk/nextjs'
 import { Montserrat } from 'next/font/google'
-import { useFetchAllWorkflows } from '~/utils/functionCalling/handleFunctionCalling'
+import { useFetchAllWorkflows } from '~/pages/functionCalling/handleFunctionCalling'
 import { boolean } from 'zod'
 
 export const GetCurrentPageName = () => {

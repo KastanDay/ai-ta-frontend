@@ -218,7 +218,7 @@ const _buildUserQuery = ({
     // Combine all text content into one string (like image descriptions)
     userQuery = latestUserMessage.map((c) => c.text || '').join('\n')
   }
-  console.log('Built userQuery: ', userQuery)
+  // console.log('Built userQuery: ', userQuery)
   return userQuery
 }
 const _buildConvoHistory = ({
@@ -283,9 +283,9 @@ export function _buildQueryTopContext({
         d.pagenumber ? ', page: ' + d.pagenumber : ''
       }\n${d.text}\n`
       const numTokens = encoding.encode(docString).length
-      console.log(
-        `token_counter: ${tokenCounter}, num_tokens: ${numTokens}, token_limit: ${tokenLimit}`,
-      )
+      // console.log(
+      //   `token_counter: ${tokenCounter}, num_tokens: ${numTokens}, token_limit: ${tokenLimit}`,
+      // )
       if (tokenCounter + numTokens <= tokenLimit) {
         tokenCounter += numTokens
         validDocs.push({ index, d })
@@ -307,7 +307,7 @@ export function _buildQueryTopContext({
     // const stuffedPrompt =
     //   contextText + '\n\nNow please respond to my query: ' + searchQuery
     // const totalNumTokens = encoding.encode(stuffedPrompt).length
-    console.log('contextText', contextText)
+    // console.log('contextText', contextText)
     // console.log(
     // `Total number of tokens: ${totalNumTokens}. Number of docs: ${contexts.length}, number of valid docs: ${validDocs.length}`,
     // )

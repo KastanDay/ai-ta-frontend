@@ -3,12 +3,15 @@ import { Dispatch } from 'react'
 import { Conversation, Message } from '~/types/chat'
 import { ActionType } from '@/hooks/useCreateReducer'
 import { HomeInitialState } from '~/pages/api/home/home.state'
+import { ChatCompletionMessageToolCall } from 'openai/resources/chat/completions'
 
 // TODO: move this to the backend so it's in the API!!
 
 export interface RoutingResponse {
   toolName: string
   arguments: JSON
+  isLoading: boolean
+  toolOutput: JSON
 }
 
 export default async function handleTools(
@@ -44,87 +47,66 @@ export default async function handleTools(
       }),
     })
     if (!response.ok) {
-      // print error message
-      console.error('Error calling openaiFunctionCall: ', response)
+      console.error(
+        'in HandleTools -- Error calling openaiFunctionCall: ',
+        response,
+      )
     }
+    const toolsResponse: ChatCompletionMessageToolCall[] = await response.json()
 
-    if (response.body) {
-      const reader = response.body.getReader()
-      let { value: chunk, done: readerDone } = await reader.read()
-      chunk = chunk ? chunk : new Uint8Array()
+    toolsResponse.forEach((tool) => {
+      console.log('Tool call function name: ', tool.function.name)
+      console.log('Tool call function arguments: ', tool.function.arguments)
+    })
 
-      const chunks = []
-      while (!readerDone) {
-        const segment = new TextDecoder().decode(chunk, { stream: true })
-        // console.log('Chunk from openaiFunctionCall: ', segment);
-        chunks.push(segment)
-        const result = await reader.read()
-        chunk = result.value
-        readerDone = result.done
-      }
+    homeDispatch({ field: 'isRouting', value: false })
+    homeDispatch({
+      field: 'routingResponse',
+      value: toolsResponse.map((tool) => ({
+        toolName: tool.function.name.replace(/_/g, ' '),
+        arguments: tool.function.arguments,
+        isLoading: true,
+      })),
+    })
 
-      // Parse function calling from OpenAI
-      const finalResponse = JSON.parse(chunks.join(''))
-      const { function_call } = finalResponse
+    // Tool calling in Parallel here!!
+    if (toolsResponse.length > 0) {
+      const toolResultsPromises = toolsResponse.map(async (tool) => {
+        const toolResult = await callN8nFunction(tool.function, 'todo!') // TODO: Get API key
 
-      // Parse the function arguments from JSON
-      if (function_call && function_call.arguments) {
-        const args = JSON.parse(function_call.arguments)
-        function_call.arguments = args
-      }
-
-      homeDispatch({ field: 'isRouting', value: false })
-      // homeDispatch({ field: 'isPestDetectionLoading', value: false })
-
-      // Add back the original name, for matching in N8N interface.
-      function_call.readableName = function_call.name.replace(/_/g, ' ')
-      console.log('Function call from openaiFunctionCall: ', function_call)
-
-      homeDispatch({
-        field: 'routingResponse',
-        // value: JSON.stringify(function_call, null, 2),
-        // value: `${function_call.readableName}\nArguments: ${JSON.stringify(function_call.arguments)}`,
-        value: [
-          {
-            toolName: function_call.readableName,
-            arguments: function_call.arguments,
+        homeDispatch({
+          field: 'routingResponse',
+          value: {
+            toolName: tool.function.name.replace(/_/g, ' '),
+            arguments: tool.function.arguments,
+            isLoading: false,
+            toolOutput: toolResult,
           },
-        ],
-      })
+        })
 
-      // Do tool calling here!!
-      if (function_call) {
-        homeDispatch({ field: 'isRunningTool', value: true })
-        const toolResult = await callN8nFunction(function_call, 'todo!') // TODO: Get API key
-
-        homeDispatch({ field: 'isRunningTool', value: false })
-
-        // Get UIUCTool from openAI function call name
-        const uiucTool = availableTools.find(
-          (tool) => tool.name === function_call.name,
-        )
-
-        // Add tool result to messages
         if (message.tools) {
           message.tools.push({
             toolResult: JSON.stringify(toolResult),
-            tool: uiucTool,
+            tool: availableTools.find((tool) => tool.name === tool.name),
           })
         } else {
           message.tools = [
-            { toolResult: JSON.stringify(toolResult), tool: uiucTool },
+            {
+              toolResult: JSON.stringify(toolResult),
+              tool: availableTools.find((tool) => tool.name === tool.name),
+            },
           ]
         }
-        selectedConversation.messages[currentMessageIndex] = message
-        homeDispatch({
-          field: 'selectedConversation',
-          value: selectedConversation,
-        })
+      })
+      const toolResults = await Promise.all(toolResultsPromises)
 
-        return toolResult
-      }
-    } else {
-      console.debug('HandleTools routing response missing - No response body.')
+      selectedConversation.messages[currentMessageIndex] = message
+      homeDispatch({
+        field: 'selectedConversation',
+        value: selectedConversation,
+      })
+
+      return null // TODO: figure out proper return? Maybe nothing.
     }
   } catch (error) {
     console.error('Error calling openaiFunctionCall: ', error)
@@ -202,19 +184,27 @@ export interface N8nWorkflow {
 }
 
 interface Parameter {
-  type: 'string' | 'textarea' | 'number' | 'Date' | 'DropdownList'
+  type: 'string' | 'textarea' | 'number' | 'Date' | 'DropdownList' | 'Boolean'
   description: string
   enum?: string[]
 }
 
 export interface OpenAICompatibleTool {
-  name: string
-  readableName: string
-  description: string
-  parameters?: {
-    type: 'object'
-    properties: Record<string, Parameter>
-    required: string[]
+  type: 'function'
+  function: {
+    name: string
+    description: string
+    parameters?: {
+      type: 'object'
+      properties: {
+        [key: string]: {
+          type: 'string' | 'number' | 'Boolean'
+          description?: string
+          enum?: string[]
+        }
+      }
+      required: string[]
+    }
   }
 }
 
@@ -244,17 +234,40 @@ export function getOpenAIToolFromUIUCTool(
 ): OpenAICompatibleTool[] {
   return tools.map((tool) => {
     return {
-      id: tool.name,
-      name: tool.name,
-      readableName: tool.readableName,
-      description: tool.description,
-      parameters: tool.parameters
-        ? {
-            type: 'object',
-            properties: tool.parameters.properties,
-            required: tool.parameters.required,
-          }
-        : undefined,
+      type: 'function',
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.parameters
+          ? {
+              type: 'object',
+              properties: Object.keys(tool.parameters.properties).reduce(
+                (acc, key) => {
+                  const param = tool.parameters?.properties[key]
+                  acc[key] = {
+                    type:
+                      param?.type === 'number'
+                        ? 'number'
+                        : param?.type === 'Boolean'
+                          ? 'Boolean'
+                          : 'string',
+                    description: param?.description,
+                    enum: param?.enum,
+                  }
+                  return acc
+                },
+                {} as {
+                  [key: string]: {
+                    type: 'string' | 'number' | 'Boolean'
+                    description?: string
+                    enum?: string[]
+                  }
+                },
+              ),
+              required: tool.parameters.required,
+            }
+          : undefined,
+      },
     }
   })
 }
