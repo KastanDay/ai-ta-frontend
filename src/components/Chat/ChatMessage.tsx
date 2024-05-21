@@ -115,7 +115,6 @@ export const ChatMessage: FC<Props> = memo(
         messageIsStreaming,
         isImg2TextLoading,
         isRouting,
-        routingResponse,
         isRunningTool,
         isRetrievalLoading,
       },
@@ -701,7 +700,7 @@ export const ChatMessage: FC<Props> = memo(
                             )}
 
                           {isRouting === false &&
-                            routingResponse &&
+                            message.tools &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
                                 1 ||
@@ -715,7 +714,7 @@ export const ChatMessage: FC<Props> = memo(
                                 }}
                               >
                                 <Accordion order={2}>
-                                  {routingResponse.map((response, index) => (
+                                  {message.tools.map((response, index) => (
                                     <Accordion.Item
                                       key={index}
                                       value={`Routing-${index}`}
@@ -732,7 +731,7 @@ export const ChatMessage: FC<Props> = memo(
                                       >
                                         Routing the request to{' '}
                                         <Badge color="grape" radius="md">
-                                          {response.toolName}
+                                          {response.readableName}
                                         </Badge>
                                         :
                                       </Accordion.Control>
@@ -742,7 +741,7 @@ export const ChatMessage: FC<Props> = memo(
                                         Arguments:{' '}
                                         <pre>
                                           {JSON.stringify(
-                                            response.arguments,
+                                            response.aiGeneratedArgumentValues,
                                             null,
                                             2,
                                           )}
@@ -754,8 +753,8 @@ export const ChatMessage: FC<Props> = memo(
                               </div>
                             )}
 
-                          {routingResponse?.some(
-                            (response) => response.isLoading,
+                          {message.tools?.some(
+                            (response) => response.output === undefined,
                           ) &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
@@ -769,9 +768,9 @@ export const ChatMessage: FC<Props> = memo(
                                   alignItems: 'center',
                                 }}
                               >
-                                {routingResponse.map(
+                                {message.tools.map(
                                   (response, index) =>
-                                    response.isLoading && (
+                                    response.output === undefined && (
                                       <Fragment key={index}>
                                         <p
                                           style={{
@@ -783,7 +782,7 @@ export const ChatMessage: FC<Props> = memo(
                                         >
                                           Running
                                           <Badge color="grape" radius="md">
-                                            {response.toolName}
+                                            {response.readableName}
                                           </Badge>
                                           ...
                                         </p>
@@ -807,12 +806,12 @@ export const ChatMessage: FC<Props> = memo(
                                 }}
                               >
                                 <Accordion order={2}>
-                                  {routingResponse?.map(
+                                  {message.tools?.map(
                                     (response, index) =>
-                                      !response.isLoading && (
+                                      response.output && (
                                         <Accordion.Item
                                           key={index}
-                                          value={response.toolName}
+                                          value={response.readableName}
                                           style={{ border: 0 }}
                                         >
                                           <Accordion.Control
@@ -832,7 +831,7 @@ export const ChatMessage: FC<Props> = memo(
                                               radius="md"
                                               size="md"
                                             >
-                                              {response.toolName}
+                                              {response.readableName}
                                             </Badge>
                                           </Accordion.Control>
                                           <Accordion.Panel
@@ -845,10 +844,14 @@ export const ChatMessage: FC<Props> = memo(
                                               }}
                                             >
                                               {(() => {
+                                                console.log(
+                                                  'response before parsing: ',
+                                                  response,
+                                                )
                                                 try {
                                                   const parsedResult =
                                                     JSON.parse(
-                                                      response.toolOutput as string,
+                                                      response.output as string,
                                                     )
                                                   if (
                                                     parsedResult &&
@@ -860,13 +863,13 @@ export const ChatMessage: FC<Props> = memo(
                                                       .replace(/\\r\\n/g, '\n')
                                                       .replace(/\\t/g, '\t')
                                                   }
-                                                  return response.toolOutput // Return the original result if data is not in the expected format
+                                                  return response.output // Return the original result if data is not in the expected format
                                                 } catch (error) {
                                                   console.error(
                                                     'Failed to parse tool output:',
                                                     error,
                                                   )
-                                                  return response.toolOutput // Return the original text 'as-is' if parsing fails
+                                                  return response.output // Return the original text 'as-is' if parsing fails
                                                 }
                                               })()}
                                             </pre>
