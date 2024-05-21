@@ -16,6 +16,8 @@ import {
 } from '@/types/chat'
 import { NextResponse } from 'next/server'
 import { decrypt, isEncrypted } from '~/utils/crypto'
+import { guidedRetrieval } from '~/app/api/chat/guidedRetrieval/guidedRetrieval'
+import { createOpenAI } from '@ai-sdk/openai';
 
 export const config = {
   runtime: 'edge',
@@ -287,28 +289,24 @@ export async function _buildQueryTopContext({
 
     console.log("Before Guided Retrieval");
 
-    // Call guidedRetrieval function
-    const guidedRetrievalResponse = await fetch('/api/chat/guidedRetrieval', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        documents: contexts,
-        prompt: userQuery,
-        openaiKey: openaiKey,
-      }),
-    });
-
-    console.log("After Guided Retrieval");
-
-    if (!guidedRetrievalResponse.ok) {
-      const errorData = await guidedRetrievalResponse.json();
-      console.error('Error in guided retrieval:', errorData.error);
-      return NextResponse.json({ error: 'Failed to process guided retrieval' }, { status: 500 });
+    let decryptedKey: string;
+    if (isEncrypted(openaiKey)) {
+      const signingKey = process.env.NEXT_PUBLIC_SIGNING_KEY;
+      if (!signingKey) {
+        console.error('Signing key is undefined.');
+        throw new Error('Server configuration error.');
+      }
+      decryptedKey = await decrypt(openaiKey, signingKey) || '';
+    } else {
+      decryptedKey = openaiKey;
     }
 
-    const { relevantDocuments } = await guidedRetrievalResponse.json();
+    const customOpenAI = createOpenAI({
+      apiKey: decryptedKey,
+    });
+
+    // Call guidedRetrieval function directly
+    const relevantDocuments = await guidedRetrieval(contexts, userQuery);
 
     console.log('Relevant Documents:', relevantDocuments);
 
