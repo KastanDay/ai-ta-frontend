@@ -97,7 +97,7 @@ export async function POST(req: Request) {
   console.log('Tools to be used: ', tools)
 
   const response = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo-0613', // hard code function calling model.
+    model: 'gpt-4o', // hard code function calling model
     messages: message_to_send,
     tools: tools,
     stream: false,

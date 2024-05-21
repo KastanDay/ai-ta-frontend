@@ -71,7 +71,12 @@ export default async function handleTools(
     if (uiucToolsToRun.length > 0) {
       // Tool calling in Parallel here!!
       const toolResultsPromises = uiucToolsToRun.map(async (tool) => {
-        tool.output = await callN8nFunction(tool, 'todo!') // TODO: Get API key
+        try {
+          tool.output = await callN8nFunction(tool, 'todo!') // TODO: Get API key
+        } catch (error) {
+          console.error(`Error calling tool: ${error}`)
+          tool.output = `Error running tool: ${error}`
+        }
         // update message with tool output, but don't add another tool.
         selectedConversation.messages[currentMessageIndex]!.tools!.find(
           (t) => t.readableName === tool.readableName,
@@ -95,7 +100,7 @@ export default async function handleTools(
 const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
   console.log('Calling n8n function with data: ', tool)
 
-  const response = await fetch(
+  const response: Response = await fetch(
     `https://flask-production-751b.up.railway.app/run_flow`,
     {
       method: 'POST',
@@ -112,7 +117,9 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
   )
   if (!response.ok) {
     console.error('Error calling n8n function: ', response)
-    throw new Error(`Error calling n8n function. Status: ${response.status}`)
+    throw new Error(
+      `Error calling n8n function. Status: ${response.status} ${response.statusText}`,
+    )
   }
 
   // Parse final answer from n8n workflow object
