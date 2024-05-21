@@ -4,15 +4,8 @@ import { Conversation, Message } from '~/types/chat'
 import { ActionType } from '@/hooks/useCreateReducer'
 import { HomeInitialState } from '~/pages/api/home/home.state'
 import { ChatCompletionMessageToolCall } from 'openai/resources/chat/completions'
-
-// TODO: move this to the backend so it's in the API!!
-
-export interface RoutingResponse {
-  toolName: string
-  arguments: JSON
-  isLoading: boolean
-  toolOutput: JSON
-}
+import { OpenAICompatibleTool } from '~/types/tools'
+import { UIUCTool } from '~/types/chat'
 
 export default async function handleTools(
   message: Message,
@@ -53,6 +46,7 @@ export default async function handleTools(
       )
     }
     const toolsResponse: ChatCompletionMessageToolCall[] = await response.json()
+    console.log('Response from openaiFunctionCall: ', toolsResponse)
 
     toolsResponse.forEach((tool) => {
       console.log('Tool call function name: ', tool.function.name)
@@ -60,6 +54,7 @@ export default async function handleTools(
     })
 
     homeDispatch({ field: 'isRouting', value: false })
+    //TODO: Change this to update selectedConversation
     homeDispatch({
       field: 'routingResponse',
       value: toolsResponse.map((tool) => ({
@@ -83,20 +78,13 @@ export default async function handleTools(
             toolOutput: toolResult,
           },
         })
+        const currToll: UIUCTool = availableTools.find(
+          (tool) => tool.name === tool.name,
+        ) as UIUCTool
+        currToll.output = toolResult
 
-        if (message.tools) {
-          message.tools.push({
-            toolResult: JSON.stringify(toolResult),
-            tool: availableTools.find((tool) => tool.name === tool.name),
-          })
-        } else {
-          message.tools = [
-            {
-              toolResult: JSON.stringify(toolResult),
-              tool: availableTools.find((tool) => tool.name === tool.name),
-            },
-          ]
-        }
+        message.tools = message.tools || []
+        message.tools.push(currToll)
       })
       const toolResults = await Promise.all(toolResultsPromises)
 
@@ -150,83 +138,6 @@ const callN8nFunction = async (function_call: any, n8n_api_key: string) => {
   // N8n final response: {Search result: 'No agriculture info available (hard coded testing response).'}
 
   return finalResponse
-}
-
-// conform to the OpenAI function calling API
-interface FormField {
-  fieldLabel: string
-  fieldType?: string
-  requiredField?: boolean
-}
-
-interface FormNodeParameter {
-  formFields: {
-    values: FormField[]
-  }
-  formDescription: string
-}
-
-interface Node {
-  id: string
-  name: string
-  parameters: FormNodeParameter
-  type: string
-}
-
-export interface N8nWorkflow {
-  id: string
-  name: string
-  type: string
-  active: boolean
-  nodes: Node[]
-  createdAt: string
-  updatedAt: string
-}
-
-interface Parameter {
-  type: 'string' | 'textarea' | 'number' | 'Date' | 'DropdownList' | 'Boolean'
-  description: string
-  enum?: string[]
-}
-
-export interface OpenAICompatibleTool {
-  type: 'function'
-  function: {
-    name: string
-    description: string
-    parameters?: {
-      type: 'object'
-      properties: {
-        [key: string]: {
-          type: 'string' | 'number' | 'Boolean'
-          description?: string
-          enum?: string[]
-        }
-      }
-      required: string[]
-    }
-  }
-}
-
-// TODO: Refine type here, use in chat.tsx
-// name: string
-// enabled: boolean
-// course_name: string
-// doc_count: number
-export interface UIUCTool {
-  id: string
-  name: string
-  readableName: string
-  description: string
-  parameters?: {
-    type: 'object'
-    properties: Record<string, Parameter>
-    required: string[]
-  }
-  courseName?: string
-  enabled?: boolean
-  createdAt?: string
-  updatedAt?: string
 }
 
 export function getOpenAIToolFromUIUCTool(

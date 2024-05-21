@@ -351,7 +351,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     for (const url of pestDetectionResponse) {
       const presignedUrl = await fetchPresignedUrl(url)
       if (presignedUrl) {
-        ; (message.content as Content[]).push({
+        ;(message.content as Content[]).push({
           type: 'tool_image_url',
           image_url: {
             url: presignedUrl,
@@ -486,12 +486,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ; (message.content as Content[])[imgDescIndex] = {
+          ;(message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ; (message.content as Content[]).push({
+          ;(message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -626,6 +626,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           imgDesc = newImgDesc
         }
 
+        // Retrieval Tool
         // Run context search, attach to Message object.
         await handleContextSearch(
           message,
@@ -655,6 +656,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           getOpenAIKey(courseMetadata),
           homeDispatch,
         )
+        // Update conversation from toolResult
         console.log('Tool result:', message.tools)
 
         const chatBody: ChatBody = {
@@ -930,7 +932,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
       handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
@@ -1023,14 +1025,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-      courseMetadata.example_questions.length > 0
+    courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-        'Make a bullet point list of key takeaways of the course.',
-        'What is [your favorite topic] and why is it worth learning about?',
-        'How can I effectively prepare for the upcoming exam?',
-        'How many assignments in the course?',
-      ]
+          'Make a bullet point list of key takeaways of the course.',
+          'What is [your favorite topic] and why is it worth learning about?',
+          'How can I effectively prepare for the upcoming exam?',
+          'How many assignments in the course?',
+        ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
