@@ -123,9 +123,9 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
   const finalNodeType = resultData.lastNodeExecuted
   // console.log('N8n final node type: ', finalNodeType)
   const finalResponse =
-    resultData.runData[finalNodeType][0].data.main[0][0].json
-  // console.log('N8n final response: ', finalResponse)
-  // N8n final response: {Search result: 'No agriculture info available (hard coded testing response).'}
+    resultData.runData[finalNodeType][0].data.main[0][0].json['data']
+
+  // console.log('Final response from n8n function: ', finalResponse)
 
   return finalResponse
 }
