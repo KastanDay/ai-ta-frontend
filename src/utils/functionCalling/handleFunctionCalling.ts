@@ -4,7 +4,7 @@ import { Conversation, Message } from '~/types/chat'
 import { ActionType } from '@/hooks/useCreateReducer'
 import { HomeInitialState } from '~/pages/api/home/home.state'
 import { ChatCompletionMessageToolCall } from 'openai/resources/chat/completions'
-import { OpenAICompatibleTool } from '~/types/tools'
+import { N8NParameter, N8nWorkflow, OpenAICompatibleTool } from '~/types/tools'
 import { UIUCTool } from '~/types/chat'
 
 export default async function handleTools(
@@ -45,56 +45,46 @@ export default async function handleTools(
         response,
       )
     }
-    const toolsResponse: ChatCompletionMessageToolCall[] = await response.json()
-    console.log('Response from openaiFunctionCall: ', toolsResponse)
-
-    toolsResponse.forEach((tool) => {
-      console.log('Tool call function name: ', tool.function.name)
-      console.log('Tool call function arguments: ', tool.function.arguments)
+    let openaiResponse: ChatCompletionMessageToolCall[] = await response.json()
+    console.log('OpenAI tools to run: ', openaiResponse)
+    // map tool into UIUCTool, parse arguments
+    const uiucToolsToRun = openaiResponse.map((openaiTool) => {
+      const uiucTool = availableTools.find(
+        (availableTool) => availableTool.name === openaiTool.function.name,
+      ) as UIUCTool
+      uiucTool.aiGeneratedArgumentValues = JSON.parse(
+        openaiTool.function.arguments,
+      )
+      return uiucTool
     })
+    console.log('UIUC tools to run: ', uiucToolsToRun)
 
+    // Update conversation with tools & arguments (for fast UI), then we'll actually call the tools below
     homeDispatch({ field: 'isRouting', value: false })
-    //TODO: Change this to update selectedConversation
+    message.tools = [...uiucToolsToRun]
+    selectedConversation.messages[currentMessageIndex] = message
     homeDispatch({
-      field: 'routingResponse',
-      value: toolsResponse.map((tool) => ({
-        toolName: tool.function.name.replace(/_/g, ' '),
-        arguments: tool.function.arguments,
-        isLoading: true,
-      })),
+      field: 'selectedConversation',
+      value: selectedConversation,
     })
 
-    // Tool calling in Parallel here!!
-    if (toolsResponse.length > 0) {
-      const toolResultsPromises = toolsResponse.map(async (tool) => {
-        const toolResult = await callN8nFunction(tool.function, 'todo!') // TODO: Get API key
-
-        homeDispatch({
-          field: 'routingResponse',
-          value: {
-            toolName: tool.function.name.replace(/_/g, ' '),
-            arguments: tool.function.arguments,
-            isLoading: false,
-            toolOutput: toolResult,
-          },
-        })
-        const currToll: UIUCTool = availableTools.find(
-          (tool) => tool.name === tool.name,
-        ) as UIUCTool
-        currToll.output = toolResult
-
-        message.tools = message.tools || []
-        message.tools.push(currToll)
+    if (uiucToolsToRun.length > 0) {
+      // Tool calling in Parallel here!!
+      const toolResultsPromises = uiucToolsToRun.map(async (tool) => {
+        tool.output = await callN8nFunction(tool, 'todo!') // TODO: Get API key
+        // update message with tool output, but don't add another tool.
+        selectedConversation.messages[currentMessageIndex]!.tools!.find(
+          (t) => t.readableName === tool.readableName,
+        )!.output = tool.output
       })
-      const toolResults = await Promise.all(toolResultsPromises)
+      await Promise.all(toolResultsPromises)
 
       selectedConversation.messages[currentMessageIndex] = message
       homeDispatch({
         field: 'selectedConversation',
         value: selectedConversation,
       })
-
-      return null // TODO: figure out proper return? Maybe nothing.
+      return null
     }
   } catch (error) {
     console.error('Error calling openaiFunctionCall: ', error)
@@ -102,8 +92,8 @@ export default async function handleTools(
 }
 
 // TODO: finalize this function calling
-const callN8nFunction = async (function_call: any, n8n_api_key: string) => {
-  console.log('Calling n8n function with data: ', function_call)
+const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
+  console.log('Calling n8n function with data: ', tool)
 
   const response = await fetch(
     `https://flask-production-751b.up.railway.app/run_flow`,
@@ -115,8 +105,8 @@ const callN8nFunction = async (function_call: any, n8n_api_key: string) => {
       body: JSON.stringify({
         api_key:
           'n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6',
-        name: function_call.readableName,
-        data: function_call.arguments,
+        name: tool.readableName,
+        data: tool.aiGeneratedArgumentValues,
       }),
     },
   )
@@ -127,14 +117,14 @@ const callN8nFunction = async (function_call: any, n8n_api_key: string) => {
 
   // Parse final answer from n8n workflow object
   const n8nResponse = await response.json()
-  console.log('N8n function response: ', n8nResponse)
+  // console.log('N8n function response: ', n8nResponse)
   // const resultData = data[0].data.resultData
   const resultData = n8nResponse.data.resultData
   const finalNodeType = resultData.lastNodeExecuted
-  console.log('N8n final node type: ', finalNodeType)
+  // console.log('N8n final node type: ', finalNodeType)
   const finalResponse =
     resultData.runData[finalNodeType][0].data.main[0][0].json
-  console.log('N8n final response: ', finalResponse)
+  // console.log('N8n final response: ', finalResponse)
   // N8n final response: {Search result: 'No agriculture info available (hard coded testing response).'}
 
   return finalResponse
@@ -149,12 +139,12 @@ export function getOpenAIToolFromUIUCTool(
       function: {
         name: tool.name,
         description: tool.description,
-        parameters: tool.parameters
+        parameters: tool.inputParameters
           ? {
               type: 'object',
-              properties: Object.keys(tool.parameters.properties).reduce(
+              properties: Object.keys(tool.inputParameters.properties).reduce(
                 (acc, key) => {
-                  const param = tool.parameters?.properties[key]
+                  const param = tool.inputParameters?.properties[key]
                   acc[key] = {
                     type:
                       param?.type === 'number'
@@ -175,7 +165,7 @@ export function getOpenAIToolFromUIUCTool(
                   }
                 },
               ),
-              required: tool.parameters.required,
+              required: tool.inputParameters.required,
             }
           : undefined,
       },
@@ -196,7 +186,7 @@ export function getUIUCToolFromN8n(workflows: N8nWorkflow[]): UIUCTool[] {
     )
     if (!formTriggerNode) continue
 
-    const properties: Record<string, Parameter> = {}
+    const properties: Record<string, N8NParameter> = {}
     const required: string[] = []
     let parameters = {}
 
@@ -230,7 +220,8 @@ export function getUIUCToolFromN8n(workflows: N8nWorkflow[]): UIUCTool[] {
       updatedAt: workflow.updatedAt,
       createdAt: workflow.createdAt,
       // @ts-ignore -- can't get the 'only add if non-zero' to work nicely. It's fine.
-      parameters: Object.keys(parameters).length > 0 ? parameters : undefined,
+      inputParameters:
+        Object.keys(parameters).length > 0 ? parameters : undefined,
     })
   }
 

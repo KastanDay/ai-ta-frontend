@@ -3,6 +3,7 @@ import OpenAI from 'openai'
 import type {
   ChatCompletionCreateParams,
   ChatCompletionMessageParam,
+  ChatCompletionMessageToolCall,
   ChatCompletionTool,
 } from 'openai/resources/chat'
 
@@ -110,7 +111,8 @@ export async function POST(req: Request) {
     return new Response('No response from OpenAI', { status: 500 })
   } else {
     console.log('In success case of endpoint :)')
-    const tools = response.choices[0]?.message.tool_calls
+    const tools = response.choices[0]?.message
+      .tool_calls as ChatCompletionMessageToolCall[]
     console.log('TOOLS PARSED OUT OF OPENAI: ', JSON.stringify(tools))
 
     // Response format, it's an array.

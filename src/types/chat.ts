@@ -25,20 +25,21 @@ export interface Message {
 
 export interface UIUCTool {
   id: string
-  name: string
-  readableName: string
+  name: string // Openai uses this
+  readableName: string // N8N uses this
   description: string
-  parameters?: {
+  inputParameters?: {
     type: 'object'
     properties: Record<string, N8NParameter>
     required: string[]
   }
+  aiGeneratedArgumentValues?: Record<string, string>
   courseName?: string
   enabled?: boolean
   createdAt?: string
   updatedAt?: string
   output?: string
-  loading?: boolean
+  // loading?: boolean // just use output: when output is null, it's loading
   contexts?: ContextWithMetadata[]
 }
 
