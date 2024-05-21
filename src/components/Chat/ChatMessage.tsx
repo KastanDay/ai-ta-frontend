@@ -20,7 +20,15 @@ import {
   IconTrash,
   IconUser,
 } from '@tabler/icons-react'
-import { FC, memo, useContext, useEffect, useRef, useState } from 'react'
+import {
+  FC,
+  Fragment,
+  memo,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 import { useTranslation } from 'next-i18next'
 import { updateConversation } from '@/utils/app/conversation'
@@ -419,10 +427,11 @@ export const ChatMessage: FC<Props> = memo(
 
     return (
       <div
-        className={`group md:px-4 ${message.role === 'assistant'
-          ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
-          : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
-          }`}
+        className={`group md:px-4 ${
+          message.role === 'assistant'
+            ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
+            : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
+        }`}
         style={{ overflowWrap: 'anywhere' }}
       >
         <div className="relative m-auto flex p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-5xl lg:px-0 xl:max-w-3xl">
@@ -557,10 +566,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isImg2TextLoading &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -584,10 +593,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isImg2TextLoading === false &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -612,10 +621,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isRetrievalLoading &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -639,10 +648,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isRetrievalLoading === false &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -667,10 +676,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isRouting &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -695,10 +704,10 @@ export const ChatMessage: FC<Props> = memo(
                             routingResponse &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -706,159 +715,169 @@ export const ChatMessage: FC<Props> = memo(
                                 }}
                               >
                                 <Accordion order={2}>
-                                  <Accordion.Item
-                                    value={'Routing'}
-                                    style={{ border: 0 }}
-                                  >
-                                    <Accordion.Control
-                                      className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                      style={{
-                                        marginRight: '10px',
-                                        fontWeight: 'bold',
-                                        textShadow: '0 0 10px',
-                                        color: '#9d4edd',
-                                      }}
+                                  {routingResponse.map((response, index) => (
+                                    <Accordion.Item
+                                      key={index}
+                                      value={`Routing-${index}`}
+                                      style={{ border: 0 }}
                                     >
-                                      Routing the request to{' '}
-                                      <Badge color="grape" radius="md">
-                                        {/* @ts-ignore -- idk */}
-                                        {routingResponse[0].toolName}
-                                      </Badge>
-                                      :
-                                    </Accordion.Control>
-                                    <Accordion.Panel
-                                      className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
-                                    >
-                                      Arguments:{' '}
-                                      <pre>
-                                        {/* @ts-ignore -- idk */}
-                                        {JSON.stringify(routingResponse[0].arguments,
-                                          null,
-                                          2,
-                                        )}
-                                      </pre>
-                                    </Accordion.Panel>
-                                  </Accordion.Item>
+                                      <Accordion.Control
+                                        className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                        style={{
+                                          marginRight: '10px',
+                                          fontWeight: 'bold',
+                                          textShadow: '0 0 10px',
+                                          color: '#9d4edd',
+                                        }}
+                                      >
+                                        Routing the request to{' '}
+                                        <Badge color="grape" radius="md">
+                                          {response.toolName}
+                                        </Badge>
+                                        :
+                                      </Accordion.Control>
+                                      <Accordion.Panel
+                                        className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
+                                      >
+                                        Arguments:{' '}
+                                        <pre>
+                                          {JSON.stringify(
+                                            response.arguments,
+                                            null,
+                                            2,
+                                          )}
+                                        </pre>
+                                      </Accordion.Panel>
+                                    </Accordion.Item>
+                                  ))}
                                 </Accordion>
                               </div>
                             )}
 
-                          {isRunningTool &&
+                          {routingResponse?.some(
+                            (response) => response.isLoading,
+                          ) &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
                                   alignItems: 'center',
                                 }}
                               >
-                                <p
-                                  style={{
-                                    marginRight: '10px',
-                                    fontWeight: 'bold',
-                                    textShadow: '0 0 10px',
-                                  }}
-                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                >
-                                  Running
-                                  <Badge color="grape" radius="md">
-                                    {routingResponse
-                                      ? routingResponse[0]?.toolName
-                                      : ''}
-                                  </Badge>
-                                  ...
-                                </p>
-                                <LoadingSpinner size="xs" />
-                              </div>
-                            )}
-
-                          {isRunningTool === false &&
-                            (messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              1 ||
-                              messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
-                              <>
-                                {/* <IconCheck size={25} /> */}
-                                <div
-                                  style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                  }}
-                                >
-                                  <Accordion order={2}>
-                                    {message?.tools?.map((tool, index) => (
-                                      <Accordion.Item
-                                        key={index}
-                                        value={tool.tool?.name as string}
-                                        style={{ border: 0 }}
-                                      >
-                                        <Accordion.Control
-                                          className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                {routingResponse.map(
+                                  (response, index) =>
+                                    response.isLoading && (
+                                      <Fragment key={index}>
+                                        <p
                                           style={{
                                             marginRight: '10px',
                                             fontWeight: 'bold',
                                             textShadow: '0 0 10px',
-                                            color: '#9d4edd',
-                                            display: 'flex',
-                                            alignItems: 'center',
                                           }}
+                                          className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
                                         >
-                                          Tool output from{' '}
-                                          <Badge
-                                            color="grape"
-                                            radius="md"
-                                            size="md"
-                                          >
-                                            {tool.tool?.readableName}
+                                          Running
+                                          <Badge color="grape" radius="md">
+                                            {response.toolName}
                                           </Badge>
-                                        </Accordion.Control>
-                                        <Accordion.Panel
-                                          className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
+                                          ...
+                                        </p>
+                                        <LoadingSpinner size="xs" />
+                                      </Fragment>
+                                    ),
+                                )}
+                              </div>
+                            )}
+
+                          {(messageIndex ===
+                            (selectedConversation?.messages.length ?? 0) - 1 ||
+                            messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
+                            <>
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <Accordion order={2}>
+                                  {routingResponse?.map(
+                                    (response, index) =>
+                                      !response.isLoading && (
+                                        <Accordion.Item
+                                          key={index}
+                                          value={response.toolName}
+                                          style={{ border: 0 }}
                                         >
-                                          <pre
+                                          <Accordion.Control
+                                            className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
                                             style={{
-                                              whiteSpace: 'pre-wrap',
-                                              wordWrap: 'break-word',
+                                              marginRight: '10px',
+                                              fontWeight: 'bold',
+                                              textShadow: '0 0 10px',
+                                              color: '#9d4edd',
+                                              display: 'flex',
+                                              alignItems: 'center',
                                             }}
                                           >
-                                            {(() => {
-                                              try {
-                                                const parsedResult = JSON.parse(
-                                                  tool.toolResult as string,
-                                                )
-                                                if (
-                                                  parsedResult &&
-                                                  parsedResult.data &&
-                                                  typeof parsedResult.data ===
-                                                  'string'
-                                                ) {
-                                                  return parsedResult.data
-                                                    .replace(/\\r\\n/g, '\n')
-                                                    .replace(/\\t/g, '\t')
+                                            Tool output from{' '}
+                                            <Badge
+                                              color="grape"
+                                              radius="md"
+                                              size="md"
+                                            >
+                                              {response.toolName}
+                                            </Badge>
+                                          </Accordion.Control>
+                                          <Accordion.Panel
+                                            className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
+                                          >
+                                            <pre
+                                              style={{
+                                                whiteSpace: 'pre-wrap',
+                                                wordWrap: 'break-word',
+                                              }}
+                                            >
+                                              {(() => {
+                                                try {
+                                                  const parsedResult =
+                                                    JSON.parse(
+                                                      response.toolOutput as string,
+                                                    )
+                                                  if (
+                                                    parsedResult &&
+                                                    parsedResult.data &&
+                                                    typeof parsedResult.data ===
+                                                      'string'
+                                                  ) {
+                                                    return parsedResult.data
+                                                      .replace(/\\r\\n/g, '\n')
+                                                      .replace(/\\t/g, '\t')
+                                                  }
+                                                  return response.toolOutput // Return the original result if data is not in the expected format
+                                                } catch (error) {
+                                                  console.error(
+                                                    'Failed to parse tool output:',
+                                                    error,
+                                                  )
+                                                  return response.toolOutput // Return the original text 'as-is' if parsing fails
                                                 }
-                                                return tool.toolResult // Return the original result if data is not in the expected format
-                                              } catch (error) {
-                                                console.error(
-                                                  'Failed to parse tool result:',
-                                                  error,
-                                                )
-                                                return tool.toolResult // Return the original text 'as-is' if parsing fails
-                                              }
-                                            })()}
-                                          </pre>
-                                        </Accordion.Panel>
-                                      </Accordion.Item>
-                                    ))}
-                                  </Accordion>
-                                </div>
-                              </>
-                            )}
+                                              })()}
+                                            </pre>
+                                          </Accordion.Panel>
+                                        </Accordion.Item>
+                                      ),
+                                  )}
+                                </Accordion>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </>
                     ) : (
@@ -868,8 +887,8 @@ export const ChatMessage: FC<Props> = memo(
                           (messageIndex ===
                             (selectedConversation?.messages.length ?? 0) - 1 ||
                             messageIndex ===
-                            (selectedConversation?.messages.length ?? 0) -
-                            2) && (
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
                             <div
                               style={{ display: 'flex', alignItems: 'center' }}
                             >
@@ -890,8 +909,8 @@ export const ChatMessage: FC<Props> = memo(
                           (messageIndex ===
                             (selectedConversation?.messages.length ?? 0) - 1 ||
                             messageIndex ===
-                            (selectedConversation?.messages.length ?? 0) -
-                            2) && (
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
                             <div
                               style={{ display: 'flex', alignItems: 'center' }}
                             >
@@ -1027,12 +1046,13 @@ export const ChatMessage: FC<Props> = memo(
                       },
                     }}
                   >
-                    {`${message.content}${messageIsStreaming &&
+                    {`${message.content}${
+                      messageIsStreaming &&
                       messageIndex ==
-                      (selectedConversation?.messages.length ?? 0) - 1
-                      ? '`▍`'
-                      : ''
-                      }`}
+                        (selectedConversation?.messages.length ?? 0) - 1
+                        ? '`▍`'
+                        : ''
+                    }`}
                   </MemoizedReactMarkdown>
                   {/* {message.contexts && message.contexts.length > 0 && (
                     <Group variant="row" spacing="xs">
