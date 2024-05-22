@@ -114,12 +114,12 @@ export const UserSettings = () => {
               >
                 Document Groups
               </Tabs.Tab>
-              {/* <Tabs.Tab
+              <Tabs.Tab
                 className={`${classes.tab} ${isSmallScreen ? 'px-2 text-xs' : 'text-md'} ${montserrat_paragraph.variable} font-montserratParagraph`}
                 value="tools"
               >
                 Tools
-              </Tabs.Tab> */}
+              </Tabs.Tab>
             </Tabs.List>
 
             <Divider ml={'sm'} orientation="vertical" />
@@ -158,7 +158,7 @@ export const UserSettings = () => {
             </Tabs.Panel>
 
             <Tabs.Panel value="tools" pt="xs">
-              {/* <ToolsItem /> */}
+              <ToolsItem />
               <Divider
                 className={classes.divider}
                 w={isSmallScreen ? '70%' : '90%'}
