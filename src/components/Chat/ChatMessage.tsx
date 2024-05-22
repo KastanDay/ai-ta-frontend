@@ -117,6 +117,7 @@ export const ChatMessage: FC<Props> = memo(
         isRouting,
         isRunningTool,
         isRetrievalLoading,
+        loading,
       },
       dispatch: homeDispatch,
     } = useContext(HomeContext)
@@ -827,7 +828,9 @@ export const ChatMessage: FC<Props> = memo(
                                           >
                                             Tool output from{' '}
                                             <Badge
-                                              color="grape"
+                                              color={
+                                                response.error ? 'red' : 'grape'
+                                              }
                                               radius="md"
                                               size="md"
                                             >
@@ -835,7 +838,7 @@ export const ChatMessage: FC<Props> = memo(
                                             </Badge>
                                           </Accordion.Control>
                                           <Accordion.Panel
-                                            className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
+                                            className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white ${response.error ? 'border-2 border-red-500' : ''}`}
                                           >
                                             <pre
                                               style={{
@@ -843,35 +846,13 @@ export const ChatMessage: FC<Props> = memo(
                                                 wordWrap: 'break-word',
                                               }}
                                             >
-                                              {(() => {
-                                                console.log(
-                                                  'response before parsing: ',
-                                                  response,
-                                                )
-                                                try {
-                                                  const parsedResult =
-                                                    JSON.parse(
-                                                      response.output as string,
-                                                    )
-                                                  if (
-                                                    parsedResult &&
-                                                    parsedResult.data &&
-                                                    typeof parsedResult.data ===
-                                                      'string'
-                                                  ) {
-                                                    return parsedResult.data
-                                                      .replace(/\\r\\n/g, '\n')
-                                                      .replace(/\\t/g, '\t')
-                                                  }
-                                                  return response.output // Return the original result if data is not in the expected format
-                                                } catch (error) {
-                                                  console.error(
-                                                    'Failed to parse tool output:',
-                                                    error,
-                                                  )
-                                                  return response.output // Return the original text 'as-is' if parsing fails
-                                                }
-                                              })()}
+                                              {response.error ? (
+                                                <span>
+                                                  Error: {response.error}
+                                                </span>
+                                              ) : (
+                                                response.output
+                                              )}
                                             </pre>
                                           </Accordion.Panel>
                                         </Accordion.Item>
@@ -881,6 +862,62 @@ export const ChatMessage: FC<Props> = memo(
                               </div>
                             </>
                           )}
+                          {(() => {
+                            if (
+                              messageIsStreaming === undefined ||
+                              !messageIsStreaming
+                            ) {
+                              console.log(
+                                'isRouting: ',
+                                isRouting,
+                                'isRetrievalLoading: ',
+                                isRetrievalLoading,
+                                'isImg2TextLoading: ',
+                                isImg2TextLoading,
+                                'messageIsStreaming: ',
+                                messageIsStreaming,
+                                'loading: ',
+                                loading,
+                              )
+                            }
+                            return null
+                          })()}
+                          {!isRouting &&
+                            !isRetrievalLoading &&
+                            !isImg2TextLoading &&
+                            loading &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) &&
+                            message.tools?.every(
+                              (tool) =>
+                                tool.output !== undefined ||
+                                tool.error !== undefined,
+                            ) && (
+                              <>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                  }}
+                                >
+                                  <p
+                                    style={{
+                                      marginRight: '10px',
+                                      fontWeight: 'bold',
+                                      textShadow: '0 0 10px',
+                                    }}
+                                    className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                  >
+                                    Generating final response:
+                                  </p>
+                                  <LoadingSpinner size="xs" />
+                                </div>
+                              </>
+                            )}
                         </div>
                       </>
                     ) : (
