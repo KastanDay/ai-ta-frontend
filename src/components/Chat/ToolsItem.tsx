@@ -14,7 +14,7 @@ export const ToolsItem = ({}) => {
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const [toolSearch, setToolSearch] = useState('')
 
-  // Logic to filter doc_groups based on the search query
+  // Logic to filter tools based on the search query
   const filteredTools = useMemo(() => {
     if (!tools) {
       return []
@@ -25,7 +25,7 @@ export const ToolsItem = ({}) => {
     )
   }, [tools, toolSearch])
 
-  // Handle doc_group search change
+  // Handle tool search change
   const handleToolSearchChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -35,7 +35,7 @@ export const ToolsItem = ({}) => {
   const handleToggleChecked = (id: string) => {
     // handleUpdateActions(id)
     homeDispatch({
-      field: 'documentGroups',
+      field: 'tools',
       value: tools.map((tool) =>
         tool.id === id ? { ...tool, checked: !tool.checked } : tool,
       ),
@@ -59,7 +59,7 @@ export const ToolsItem = ({}) => {
           <div className="flex flex-col items-center justify-center rounded-lg">
             <TextInput
               type="search"
-              placeholder="Search by Document Group"
+              placeholder="Search Tools"
               my="sm"
               radius="md"
               icon={<IconSearch size={isSmallScreen ? 15 : 20} />}
@@ -80,9 +80,7 @@ export const ToolsItem = ({}) => {
                 <tr
                   className={`${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`}
                 >
-                  <th style={{ width: '60%', wordWrap: 'break-word' }}>
-                    Document Group
-                  </th>
+                  <th style={{ width: '60%', wordWrap: 'break-word' }}>Tool</th>
                   <th
                     style={{
                       width: '40%',
@@ -125,7 +123,7 @@ export const ToolsItem = ({}) => {
                 {filteredTools.length === 0 && (
                   <tr>
                     <td colSpan={4}>
-                      <Text align="center">No document groups found</Text>
+                      <Text align="center">No tools found</Text>
                     </td>
                   </tr>
                 )}
