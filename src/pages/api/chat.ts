@@ -35,6 +35,13 @@ const handler = async (req: Request): Promise<NextResponse> => {
         courseMetadata,
       })
 
+    console.log(
+      'PROMPT TO BE SENT -- ',
+      userPrompt,
+      'system prompt:',
+      systemPrompt,
+    )
+
     const latestMessage: OpenAIChatMessage = {
       role: 'user',
       content: [
@@ -110,10 +117,10 @@ Priorities for building prompt w/ limited window:
 2. Last 1 or 2 convo history. At least the user message and the AI response. Key for follow-up questions.
 2. ✅ image description
 3. ✅ tool result
-4. query_topContext
+4. ✅ query_topContext
 5. image_topContext
 6. tool_topContext
-7. conversation history
+7. ✅ conversation history
 */
   let remainingTokenBudget = conversation.model.tokenLimit - 1500 // save space for images, OpenAI's handling, etc.
 
@@ -146,7 +153,7 @@ Priorities for building prompt w/ limited window:
 
   // TOOLS
   if (lastToolResult && remainingTokenBudget > 0) {
-    const toolMsg = `The user invoked an API (aka tool), and here's the tool response. Remember, use this (and cite it directly) when relevant: ${lastToolResult}`
+    const toolMsg = `The user invoked an API (aka tool), and here's the tool response. Remember, use this information when relevant in crafting your response. Cite it directly using an inline citation. Tool output: ${lastToolResult}`
     remainingTokenBudget -= encoding.encode(toolMsg).length
     if (remainingTokenBudget >= 0) {
       userPrompt += toolMsg
@@ -155,18 +162,25 @@ Priorities for building prompt w/ limited window:
   // Image description + user Query (added to prompt below)
   const userQuery = _buildUserQuery({ conversation })
 
+  // Keep room in budget for latest 2 convo messages
+  const tokensInLastTwoMessages = _getRecentConvoTokens({
+    conversation,
+    encoding,
+  })
+  console.log('Tokens in last two messages: ', tokensInLastTwoMessages)
+
+  remainingTokenBudget -= encoding.encode(
+    `\nFinally, please respond to the user's query: ${userQuery}`,
+  ).length
+
   // query_topContext
   const query_topContext = _buildQueryTopContext({
     conversation: conversation,
     encoding: encoding,
-    tokenLimit:
-      remainingTokenBudget -
-      encoding.encode(
-        `\nFinally, please respond to the user's query: ${userQuery}`,
-      ).length,
+    tokenLimit: remainingTokenBudget - tokensInLastTwoMessages, // keep room for convo history
   })
   if (query_topContext) {
-    const queryContextMsg = `Here's high quality passages from the user's documents. Use these, and cite them carefully in the format previously described, to construct your answer: ${query_topContext}`
+    const queryContextMsg = `\nHere's high quality passages from the user's documents. Use these, and cite them carefully in the format previously described, to construct your answer: ${query_topContext}`
     remainingTokenBudget -= encoding.encode(queryContextMsg).length
     userPrompt += queryContextMsg
   }
@@ -187,6 +201,30 @@ Priorities for building prompt w/ limited window:
     convoHistory,
     openAIKey: openaiKey as string,
   }
+}
+
+const _getRecentConvoTokens = ({
+  conversation,
+  encoding,
+}: {
+  conversation: Conversation
+  encoding: Tiktoken
+}): number => {
+  // TODO: This is not counting the last 2/4 messages properly. I think it only counts assistant messages, not user. Not sure.
+
+  return conversation.messages.slice(-4).reduce((acc, message) => {
+    let content: string
+    if (typeof message.content === 'string') {
+      content = message.content
+      console.log('Message content: ', content)
+    } else {
+      content = ''
+    }
+
+    console.log('Encoding content: ', content, encoding.encode(content).length)
+    const tokens = encoding.encode(content).length
+    return acc + tokens
+  }, 0)
 }
 
 const _buildUserQuery = ({

@@ -44,6 +44,8 @@ export default async function handleTools(
         'in HandleTools -- Error calling openaiFunctionCall: ',
         response,
       )
+      homeDispatch({ field: 'isRouting', value: false })
+      return
     }
     let openaiResponse: ChatCompletionMessageToolCall[] = await response.json()
     console.log('OpenAI tools to run: ', openaiResponse)
@@ -73,9 +75,12 @@ export default async function handleTools(
       const toolResultsPromises = uiucToolsToRun.map(async (tool) => {
         try {
           tool.output = await callN8nFunction(tool, 'todo!') // TODO: Get API key
-        } catch (error) {
-          console.error(`Error calling tool: ${error}`)
-          tool.error = `Error running tool: ${error}`
+        } catch (error: unknown) {
+          console.error(
+            `Error running tool: ${error instanceof Error ? error.message : error}`,
+          )
+          tool.error = `Error running tool: ${error instanceof Error ? error.message : error}`
+          tool.output = `Error running tool: ${error instanceof Error ? error.message : error}`
         }
         // update message with tool output, but don't add another tool.
         selectedConversation.messages[currentMessageIndex]!.tools!.find(
@@ -101,6 +106,9 @@ export default async function handleTools(
 const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
   console.log('Calling n8n function with data: ', tool)
 
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 15000)
+
   const response: Response = await fetch(
     `https://flask-production-751b.up.railway.app/run_flow`,
     {
@@ -114,8 +122,16 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
         name: tool.readableName,
         data: tool.aiGeneratedArgumentValues,
       }),
+      signal: controller.signal,
     },
-  )
+  ).catch((error) => {
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out after 15 seconds')
+    }
+    throw error
+  })
+
+  clearTimeout(timeoutId)
   if (!response.ok) {
     const errjson = await response.json()
     console.error('Error calling n8n function: ', errjson.error)
