@@ -87,6 +87,7 @@ export function ProjectFilesTable({
   const [currentError, setCurrentError] = useState('')
   const isSmallScreen = useMediaQuery('(max-width: 768px)')
   const isBetweenSmallAndMediumScreen = useMediaQuery('(max-width: 878px)')
+  const [showMultiSelect, setShowMultiSelect] = useState(false);
 
   const openModel = (open: boolean, error = '') => {
     setErrorModalOpened(open)
@@ -423,7 +424,6 @@ export function ProjectFilesTable({
       })
     )
   }
-  const [showMultiSelect, setShowMultiSelect] = useState(false);
 
   const items = [
     {
