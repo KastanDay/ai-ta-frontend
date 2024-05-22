@@ -33,7 +33,6 @@ const conversationToMessages = (
 }
 
 export async function POST(req: Request) {
-  console.log('In chat POST route...')
   const {
     conversation,
     tools,
@@ -47,9 +46,6 @@ export async function POST(req: Request) {
     imageDescription: string
     openaiKey: string
   } = await req.json()
-  // TODO MAKE USE OF IMAGE DESCRIPTION AND IMAGE URLS
-
-  console.log('OpenAI Key: ', openaiKey)
 
   let decryptedKey = openaiKey
   if (openaiKey && isEncrypted(openaiKey)) {
@@ -75,6 +71,7 @@ export async function POST(req: Request) {
     content: conversation.prompt,
   })
 
+  // MAKE USE OF IMAGE DESCRIPTION AND IMAGE URLS when selecting tools.
   if (imageUrls.length > 0 && imageDescription) {
     const imageInfo = `Image URL(s): ${imageUrls.join(', ')};\nImage Description: ${imageDescription}`
     if (message_to_send.length > 0) {
@@ -92,9 +89,8 @@ export async function POST(req: Request) {
     }
   }
 
-  console.log('Message to send: ', message_to_send)
-
-  console.log('Tools to be used: ', tools)
+  // console.log('Message to send: ', message_to_send)
+  // console.log('Tools to be used: ', tools)
 
   const response = await openai.chat.completions.create({
     model: 'gpt-4o', // hard code function calling model
@@ -102,18 +98,17 @@ export async function POST(req: Request) {
     tools: tools,
     stream: false,
   })
-  console.log('Response from OpenAI: ', JSON.stringify(response))
-  // Wrap the response in a Response object
-  // if (!response.choices || response.choices.length === 0 || !response.choices[0]?.message.tool_calls) {
-  if (false) {
-    // TODO: better error checking
+
+  if (
+    !response.choices ||
+    response.choices.length === 0 ||
+    !response.choices[0]?.message.tool_calls
+  ) {
     console.error('❌ ERROR --- No response from OpenAI!!')
     return new Response('No response from OpenAI', { status: 500 })
   } else {
-    console.log('In success case of endpoint :)')
     const tools = response.choices[0]?.message
       .tool_calls as ChatCompletionMessageToolCall[]
-    console.log('TOOLS PARSED OUT OF OPENAI: ', JSON.stringify(tools))
 
     // Response format, it's an array.
     // "tool_calls": [

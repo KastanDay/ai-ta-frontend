@@ -75,20 +75,21 @@ export default async function handleTools(
           tool.output = await callN8nFunction(tool, 'todo!') // TODO: Get API key
         } catch (error) {
           console.error(`Error calling tool: ${error}`)
-          tool.output = `Error running tool: ${error}`
+          tool.error = `Error running tool: ${error}`
         }
         // update message with tool output, but don't add another tool.
         selectedConversation.messages[currentMessageIndex]!.tools!.find(
           (t) => t.readableName === tool.readableName,
         )!.output = tool.output
+
+        selectedConversation.messages[currentMessageIndex] = message
+        homeDispatch({
+          field: 'selectedConversation',
+          value: selectedConversation,
+        })
       })
       await Promise.all(toolResultsPromises)
 
-      selectedConversation.messages[currentMessageIndex] = message
-      homeDispatch({
-        field: 'selectedConversation',
-        value: selectedConversation,
-      })
       return null
     }
   } catch (error) {
@@ -116,25 +117,27 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
     },
   )
   if (!response.ok) {
-    console.error('Error calling n8n function: ', response)
-    throw new Error(
-      `Error calling n8n function. Status: ${response.status} ${response.statusText}`,
-    )
+    const errjson = await response.json()
+    console.error('Error calling n8n function: ', errjson.error)
+    throw new Error(errjson.error)
   }
 
   // Parse final answer from n8n workflow object
   const n8nResponse = await response.json()
-  // console.log('N8n function response: ', n8nResponse)
-  // const resultData = data[0].data.resultData
   const resultData = n8nResponse.data.resultData
   const finalNodeType = resultData.lastNodeExecuted
-  // console.log('N8n final node type: ', finalNodeType)
-  const finalResponse =
-    resultData.runData[finalNodeType][0].data.main[0][0].json['data']
 
-  // console.log('Final response from n8n function: ', finalResponse)
+  // Check for N8N tool error, like invalid auth
+  if (resultData.runData[finalNodeType][0]['error']) {
+    console.error(
+      'N8N tool error: ',
+      resultData.runData[finalNodeType][0]['error'],
+    )
+    const err = resultData.runData[finalNodeType][0]['error']
+    throw new Error(err.message)
+  }
 
-  return finalResponse
+  return resultData.runData[finalNodeType][0].data.main[0][0].json['data']
 }
 
 export function getOpenAIToolFromUIUCTool(

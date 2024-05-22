@@ -39,7 +39,7 @@ export interface UIUCTool {
   createdAt?: string
   updatedAt?: string
   output?: string
-  // loading?: boolean // just use output: when output is null, it's loading
+  error?: string
   contexts?: ContextWithMetadata[]
 }
 
