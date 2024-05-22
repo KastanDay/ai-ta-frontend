@@ -27,6 +27,7 @@ import {
   IconTrash,
   IconX,
 } from '@tabler/icons-react'
+import Link from 'next/link'
 import { DataTable, DataTableSortStatus } from 'mantine-datatable'
 import { createRef, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
@@ -200,34 +201,36 @@ export function ProjectFilesTable({
   // ------------- Mutations -------------
 
   function handleDocumentGroupsChange(
-    record: any,
+    records: any[],
     newSelectedGroups: string[],
   ) {
-    const doc_groups = record.doc_groups ? record.doc_groups : []
+    records.forEach(record => {
+      const doc_groups = record.doc_groups ? record.doc_groups : []
 
-    const removedGroups = doc_groups.filter(
-      (group: any) => !newSelectedGroups.includes(group),
-    )
-    const appendedGroups = newSelectedGroups.filter(
-      (group) => !doc_groups.includes(group),
-    )
+      const removedGroups = doc_groups.filter(
+        (group: any) => !newSelectedGroups.includes(group),
+      )
+      const appendedGroups = newSelectedGroups.filter(
+        (group) => !doc_groups.includes(group),
+      )
 
-    if (removedGroups.length > 0) {
-      for (const removedGroup of removedGroups) {
-        removeFromDocGroup.mutate({
-          record,
-          removedGroup,
-        })
+      if (removedGroups.length > 0) {
+        for (const removedGroup of removedGroups) {
+          removeFromDocGroup.mutate({
+            record,
+            removedGroup,
+          })
+        }
       }
-    }
-    if (appendedGroups.length > 0) {
-      for (const appendedGroup of appendedGroups) {
-        appendToDocGroup.mutate({
-          record,
-          appendedGroup,
-        })
+      if (appendedGroups.length > 0) {
+        for (const appendedGroup of appendedGroups) {
+          appendToDocGroup.mutate({
+            record,
+            appendedGroup,
+          })
+        }
       }
-    }
+    });
   }
 
   const deleteDocumentMutation = useMutation(
@@ -420,10 +423,83 @@ export function ProjectFilesTable({
       })
     )
   }
+  const [showMultiSelect, setShowMultiSelect] = useState(false);
 
+  const items = [
+    {
+      name: (
+        <span
+          className={`${montserrat_heading.variable} font-montserratHeading`}
+        >
+          Document Groups
+        </span>
+      ),
+      // link: ``,  // multiselect dropdown
+
+    },
+  ];
   return (
     <>
       <GlobalStyle />
+      {selectedRecords.length > 0 && <Paper
+      // className={classes.dropdown}
+      // withBorder
+      // style={styles}
+      >
+        {items.map((item, index) => (
+          <button
+            key={index}
+            onClick={() => setShowMultiSelect(true)}
+            style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none' }}
+          >
+            {item.name}
+          </button>
+        ))}
+
+        {showMultiSelect && (
+          <MultiSelect
+            data={
+              documentGroups
+                ? documentGroups.map((doc_group) => ({
+                  value: doc_group.name || '',
+                  label: doc_group.name || '',
+                }))
+                : []
+            }
+            value={[]}
+            placeholder={
+              isLoadingDocumentGroups ? 'Loading...' : 'Select Group'
+            }
+            searchable={!isLoadingDocumentGroups}
+            nothingFound={
+              isLoadingDocumentGroups ? 'Loading...' : 'No Options'
+            }
+            creatable
+            getCreateLabel={(query) => `+ Create "${query}"`}
+            onCreate={(doc_group_name) => ({
+              value: doc_group_name,
+              label: doc_group_name,
+            })}
+            onChange={(newSelectedGroups) =>
+              handleDocumentGroupsChange(selectedRecords, newSelectedGroups)
+            }
+            disabled={isLoadingDocumentGroups}
+            sx={{ flex: 1, width: '100%' }}
+            classNames={{
+              value: 'tag-item self-center',
+            }}
+            styles={{
+              input: {
+                paddingTop: '12px',
+                paddingBottom: '12px',
+              },
+              value: {
+                marginTop: '2px',
+              },
+            }}
+          />
+        )}
+      </Paper>}
       <DataTable
         records={
           tabValue === 'failed'
@@ -710,7 +786,7 @@ export function ProjectFilesTable({
                         }
                       }}
                       onChange={(newSelectedGroups) =>
-                        handleDocumentGroupsChange(record, newSelectedGroups)
+                        handleDocumentGroupsChange([record], newSelectedGroups)
                       }
                       disabled={isLoadingDocumentGroups}
                       sx={{ flex: 1, width: '100%' }}
@@ -792,7 +868,7 @@ export function ProjectFilesTable({
       // idAccessor={(row: any) => (row.url ? row.url : row.s3_path)}
       />{' '}
       {/* End DataTable */}
-      <Paper
+      < Paper
         my="sm"
         py="sm"
         withBorder={false}
@@ -831,7 +907,7 @@ export function ProjectFilesTable({
               : 'Select records to delete'}
           </Button>
         </Center>
-      </Paper>
+      </Paper >
       <Modal
         opened={modalOpened}
         onClose={() => setModalOpened(false)}
