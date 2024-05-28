@@ -37,7 +37,7 @@ export const ToolsItem = ({}) => {
     homeDispatch({
       field: 'tools',
       value: tools.map((tool) =>
-        tool.id === id ? { ...tool, checked: !tool.checked } : tool,
+        tool.id === id ? { ...tool, checked: !tool.enabled } : tool,
       ),
     })
   }
@@ -112,7 +112,7 @@ export const ToolsItem = ({}) => {
                       }}
                     >
                       <Switch
-                        checked={tool_obj.checked}
+                        checked={tool_obj.enabled}
                         onChange={() => handleToggleChecked(tool_obj.id)}
                         color="grape"
                         size={isSmallScreen ? 'sm' : 'lg'}
