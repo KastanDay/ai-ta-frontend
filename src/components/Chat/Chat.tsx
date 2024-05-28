@@ -52,6 +52,7 @@ import {
   type Message,
   Content,
   Action,
+  UIUCTool,
 } from '@/types/chat'
 import { type Plugin } from '@/types/plugin'
 
@@ -88,7 +89,6 @@ import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
 import { fetchRoutingResponse } from '~/pages/api/UIUC-api/fetchRoutingResponse'
 import { fetchPestDetectionResponse } from '~/pages/api/UIUC-api/fetchPestDetectionResponse'
 import handleTools, {
-  UIUCTool,
   useFetchAllWorkflows,
 } from '~/utils/functionCalling/handleFunctionCalling'
 import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
@@ -423,10 +423,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         console.log('Routing response: ', response)
         homeDispatch({ field: 'isRouting', value: false })
         // TODO: Update pests routing response for list of {tool: string, arguments: string}
-        homeDispatch({
-          field: 'routingResponse',
-          value: JSON.stringify(response, null, 2),
-        })
+        // homeDispatch({
+        //   field: 'routingResponse',
+        //   value: JSON.stringify(response, null, 2),
+        // })
         // For future use, if we want to handle different types of routing responses for image content then we can add more cases here
         if ('Pests' === response) {
           await handlePestDetection(

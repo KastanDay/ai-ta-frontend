@@ -47,7 +47,8 @@ export default async function handleTools(
       homeDispatch({ field: 'isRouting', value: false })
       return
     }
-    let openaiResponse: ChatCompletionMessageToolCall[] = await response.json()
+    const openaiResponse: ChatCompletionMessageToolCall[] =
+      await response.json()
     console.log('OpenAI tools to run: ', openaiResponse)
     // map tool into UIUCTool, parse arguments
     const uiucToolsToRun = openaiResponse.map((openaiTool) => {

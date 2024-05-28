@@ -7,11 +7,6 @@ import { Title, Text, Switch } from '@mantine/core'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Montserrat } from 'next/font/google'
 import {
-  UIUCTool,
-  useFetchAllWorkflows,
-} from '~/pages/functionCalling/handleFunctionCalling'
-
-import {
   // IconArrowsSort,
   // IconCaretDown,
   // IconCaretUp,
@@ -21,6 +16,8 @@ import {
 import { DataTable, DataTableSortStatus } from 'mantine-datatable'
 import { LoadingSpinner } from './LoadingSpinner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { UIUCTool } from '~/types/chat'
+import { useFetchAllWorkflows } from '~/utils/functionCalling/handleFunctionCalling'
 
 const PAGE_SIZE = 20
 

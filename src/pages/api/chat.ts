@@ -389,7 +389,7 @@ const _getLastToolResult = async ({
   const toolResults = conversation.messages?.[
     conversation.messages.length - 1
   ]?.tools?.map((tool) => {
-    return `Tool: ${tool.tool?.name}\nOutput: ${tool.toolResult}`
+    return `Tool: ${tool?.name}\nOutput: ${tool.output}`
   })
   if (toolResults) {
     return toolResults.join('\n')
