@@ -32,7 +32,7 @@ import { DataTable, DataTableSortStatus } from 'mantine-datatable'
 import { createRef, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { notifications, showNotification } from '@mantine/notifications'
-import { createGlobalStyle } from 'styled-components'
+import styled, { createGlobalStyle } from 'styled-components'
 
 import { CourseDocument, DocumentGroup } from 'src/types/courseMaterials'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -57,6 +57,13 @@ const GlobalStyle = createGlobalStyle`
 .mantine-Pagination-control[data-active="true"] {
   background-color: blueviolet;
   color: white;
+}
+
+// trying to change the top position of the data display of multiselect, but it is unstable
+.mantine-1ibeiuk {
+  top: 60px !important;
+  // box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.7) !important; // Add shadow
+  // margin-top: 0 !important; // Remove space between bar section and data dropdown
 }
 
 `
@@ -111,6 +118,14 @@ export function ProjectFilesTable({
   const textRefs = useRef<{ [key: number]: React.RefObject<HTMLDivElement> }>(
     {},
   )
+  const multiSelectRef = useRef<HTMLDivElement>(null);
+  //   const MultiSelect = styled(MultiSelect)`
+  //   .mantine-MultiSelect-dropdown {
+  //     top: 4px !important;
+  //     // box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.7) !important; // Add shadow
+  //     // margin-top: 0 !important; // Remove space between bar section and data dropdown
+  //   }
+  // `;
 
   // ------------- Queries -------------
   const {
@@ -198,6 +213,26 @@ export function ProjectFilesTable({
       setOverflowStates(newOverflowStates)
     }
   }, [failedDocuments, tabValue])
+
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        multiSelectRef.current &&
+        event.target instanceof Node &&
+        !multiSelectRef.current.contains(event.target)
+      ) {
+        setShowMultiSelect(false);
+      }
+    }
+
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // ------------- Mutations -------------
 
@@ -425,19 +460,27 @@ export function ProjectFilesTable({
     )
   }
 
-  const items = [
-    {
-      name: (
-        <span
-          className={`${montserrat_heading.variable} font-montserratHeading`}
-        >
-          Document Groups
-        </span>
-      ),
-      // link: ``,  // multiselect dropdown
-
-    },
-  ];
+  // const items = [
+  //   {
+  //     name: (
+  //       <span
+  //         className={`${montserrat_heading.variable} font-montserratHeading`}
+  //       >
+  //         Document Groups
+  //       </span>
+  //     )
+  //   },
+  //   // link: ``,  // multiselect dropdown
+  //   {
+  //     name: (
+  //       <span
+  //         className={`${montserrat_heading.variable} font-montserratHeading`}
+  //       >
+  //         Delete Selected Document
+  //       </span>
+  //     ),
+  //   },
+  // ];
   return (
     <>
       <GlobalStyle />
@@ -446,60 +489,116 @@ export function ProjectFilesTable({
       // withBorder
       // style={styles}
       >
-        {items.map((item, index) => (
-          <button
-            key={index}
-            onClick={() => setShowMultiSelect(true)}
-            style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none' }}
-          >
-            {item.name}
-          </button>
-        ))}
+        <div style={{ display: 'flex', position: 'relative', alignItems: 'flex-start' }}>
 
-        {showMultiSelect && (
-          <MultiSelect
-            data={
-              documentGroups
-                ? documentGroups.map((doc_group) => ({
-                  value: doc_group.name || '',
-                  label: doc_group.name || '',
-                }))
-                : []
-            }
-            value={[]}
-            placeholder={
-              isLoadingDocumentGroups ? 'Loading...' : 'Select Group'
-            }
-            searchable={!isLoadingDocumentGroups}
-            nothingFound={
-              isLoadingDocumentGroups ? 'Loading...' : 'No Options'
-            }
-            creatable
-            getCreateLabel={(query) => `+ Create "${query}"`}
-            onCreate={(doc_group_name) => ({
-              value: doc_group_name,
-              label: doc_group_name,
-            })}
-            onChange={(newSelectedGroups) =>
-              handleDocumentGroupsChange(selectedRecords, newSelectedGroups)
-            }
-            disabled={isLoadingDocumentGroups}
-            sx={{ flex: 1, width: '100%' }}
-            classNames={{
-              value: 'tag-item self-center',
+          {/* {items.map((item, index) => ( */}
+          <Tooltip label="All selected documents will be added to the group">
+            <Button
+              // key={index}
+              onClick={() => setShowMultiSelect(true)}
+              className="bg-purple-600 bg-opacity-50 hover:bg-purple-600"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                // backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
+                border: 'none',
+                paddingRight: '10px',
+                paddingLeft: '10px',
+                transition: '0.3s',
+              }}
+            >
+              Document Groups
+            </Button>
+          </Tooltip>
+
+          {/* ))} */}
+          {/* <div style={{ position: 'relative' }}> */}
+
+          {showMultiSelect && (
+            <div ref={multiSelectRef} style={{ position: 'absolute', zIndex: 10 }}>
+
+              <MultiSelect
+                data={
+                  documentGroups
+                    ? documentGroups.map((doc_group) => ({
+                      value: doc_group.name || '',
+                      label: doc_group.name || '',
+                    }))
+                    : []
+                }
+                value={[]}
+                placeholder={
+                  isLoadingDocumentGroups ? 'Loading...' : 'Select Group'
+                }
+                searchable={!isLoadingDocumentGroups}
+                nothingFound={
+                  isLoadingDocumentGroups ? 'Loading...' : 'No Options'
+                }
+                creatable
+                getCreateLabel={(query) => `+ Create "${query}"`}
+                onCreate={(doc_group_name) => ({
+                  value: doc_group_name,
+                  label: doc_group_name,
+                })}
+                onChange={(newSelectedGroups) =>
+                  handleDocumentGroupsChange(selectedRecords, newSelectedGroups)
+                }
+                disabled={isLoadingDocumentGroups}
+                sx={{ flex: 1, width: '100%' }}
+                classNames={{
+                  value: 'tag-item self-center',
+                }}
+                styles={{
+                  input: {
+                    paddingTop: '12px',
+                    paddingBottom: '12px',
+                  },
+                  value: {
+                    marginTop: '2px',
+                  },
+                  dropdown: {
+                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.7)', // Add shadow
+                    marginTop: '0', // Remove space between bar section and data dropdown
+                  },
+                }}
+              />
+            </div>
+
+          )}
+          <Button
+            uppercase
+            leftIcon={<IconTrash size={16} />}
+            disabled={!selectedRecords.length}
+            onClick={() => {
+              if (selectedRecords.length > 100) {
+                showToast(
+                  theme,
+                  'Selection Limit Exceeded',
+                  'You have selected more than 100 documents. Please select less than or equal to 100 documents.',
+                  true,
+                );
+              } else {
+                setRecordsToDelete(selectedRecords);
+                setModalOpened(true);
+              }
             }}
-            styles={{
-              input: {
-                paddingTop: '12px',
-                paddingBottom: '12px',
-              },
-              value: {
-                marginTop: '2px',
-              },
+            style={{
+              backgroundColor: selectedRecords.length
+                ? '#8B0000'
+                : 'transparent',
+              // flex: 1
             }}
-          />
-        )}
-      </Paper>}
+          >
+            {selectedRecords.length
+              ? `Delete ${selectedRecords.length === 1
+                ? '1 selected record'
+                : `${selectedRecords.length} selected records`
+              }`
+              : 'Select records to delete'}
+          </Button>
+        </div>
+        {/* </div> */}
+      </Paper >}
       <DataTable
         records={
           tabValue === 'failed'
@@ -800,6 +899,9 @@ export function ProjectFilesTable({
                         },
                         value: {
                           marginTop: '2px',
+                        },
+                        dropdown: {
+                          boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.7)', // Add shadow
                         },
                       }}
                     />
