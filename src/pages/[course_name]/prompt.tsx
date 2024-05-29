@@ -115,15 +115,13 @@ const CourseMain: NextPage = () => {
     fetchCourseData()
   }, [router.isReady])
 
-  useEffect(() => {
-    let newApiKey
-    if (courseMetadata?.openai_api_key) {
-      newApiKey = courseMetadata.openai_api_key
-    } else {
-      newApiKey = process.env.VLADS_OPENAI_KEY
-    }
-    setApiKey(newApiKey)
-  }, [courseMetadata, process.env.VLADS_OPENAI_KEY])
+  // useEffect(() => {
+  //   let newApiKey
+  //   if (courseMetadata?.openai_api_key) {
+  //     newApiKey = courseMetadata.openai_api_key
+  //   }
+  //   setApiKey(newApiKey)
+  // }, [courseMetadata])
 
   useEffect(() => {
     // Just for testing
@@ -280,20 +278,13 @@ const CourseMain: NextPage = () => {
     reload: any,
     setMessages: any,
   ) => {
-    // let newApiKey;
-    // let the_key;
-    // if (courseMetadata?.openai_api_key) {
-    //   newApiKey = courseMetadata.openai_api_key;
-    //   the_key = newApiKey;
+    let newApiKey;
+    if (courseMetadata?.openai_api_key) {
+      newApiKey = courseMetadata.openai_api_key;
+    }
+    setApiKey(newApiKey);
 
-    // } else {
-    //   newApiKey = process.env.VLADS_OPENAI_KEY
-    //   the_key = newApiKey;
-
-    // }
-    // setApiKey(newApiKey);
-
-    // console.log('apikey set to', apiKey);
+    console.log('apikey set to', apiKey);
     e.preventDefault()
 
     const systemPrompt = `
@@ -564,12 +555,12 @@ const CourseMain: NextPage = () => {
                                 }}
                                 className={`relative m-1 text-white hover:border-indigo-600 md:mr-2 ${montserrat_paragraph.variable} font-montserratParagraph`}
                                 onMouseEnter={(e) =>
-                                  (e.currentTarget.style.background =
-                                    'linear-gradient(to right, #4f46e5, #2563eb, #6d28d9)')
+                                (e.currentTarget.style.background =
+                                  'linear-gradient(to right, #4f46e5, #2563eb, #6d28d9)')
                                 }
                                 onMouseLeave={(e) =>
-                                  (e.currentTarget.style.background =
-                                    'linear-gradient(to right, #6d28d9, #4f46e5, #2563eb)')
+                                (e.currentTarget.style.background =
+                                  'linear-gradient(to right, #6d28d9, #4f46e5, #2563eb)')
                                 }
                               >
                                 <IconSparkles stroke={1} />

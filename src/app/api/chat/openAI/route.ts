@@ -2,6 +2,7 @@ import OpenAI from 'openai'
 import { OpenAIStream, StreamingTextResponse } from 'ai'
 import { NextResponse } from 'next/server'
 import { decrypt } from '~/utils/crypto'
+import { api } from '~/utils/api'
 
 export const runtime = 'edge'
 
@@ -27,15 +28,15 @@ export async function POST(req: Request) {
     let apiKey = authHeader.substring(7)
     const { messages } = await req.json()
 
+    if (!apiKey || apiKey == 'undefined') {
+      apiKey = process.env.VLADS_OPENAI_KEY as string
+    }
     if (!apiKey.startsWith('sk')) {
       apiKey = (await decrypt(
         apiKey,
         process.env.NEXT_PUBLIC_SIGNING_KEY as string,
       )) as string
       console.log('apikey', apiKey)
-    }
-    if (!apiKey) {
-      apiKey = process.env.VLADS_OPENAI_KEY as string
     }
 
     const openai = new OpenAI({
