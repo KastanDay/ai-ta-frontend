@@ -6,6 +6,7 @@ import { HomeInitialState } from '~/pages/api/home/home.state'
 import { ChatCompletionMessageToolCall } from 'openai/resources/chat/completions'
 import { N8NParameter, N8nWorkflow, OpenAICompatibleTool } from '~/types/tools'
 import { UIUCTool } from '~/types/chat'
+import { uploadToS3 } from '../apiUtils'
 
 export default async function handleTools(
   message: Message,
@@ -75,13 +76,14 @@ export default async function handleTools(
       // Tool calling in Parallel here!!
       const toolResultsPromises = uiucToolsToRun.map(async (tool) => {
         try {
-          tool.output = await callN8nFunction(tool, 'todo!') // TODO: Get API key
+          const toolOutput = await callN8nFunction(tool, 'todo!') // TODO: Get API key
+          handleToolOutput(toolOutput, tool);
         } catch (error: unknown) {
           console.error(
             `Error running tool: ${error instanceof Error ? error.message : error}`,
           )
           tool.error = `Error running tool: ${error instanceof Error ? error.message : error}`
-          tool.output = `Error running tool: ${error instanceof Error ? error.message : error}`
+          tool.output = { text: `Error running tool: ${error instanceof Error ? error.message : error}` };
         }
         // update message with tool output, but don't add another tool.
         selectedConversation.messages[currentMessageIndex]!.tools!.find(
@@ -103,12 +105,50 @@ export default async function handleTools(
   }
 }
 
+const handleToolOutput = async (toolOutput: any, tool: UIUCTool) => {
+  // Handle case where toolOutput is a simple string
+  if (typeof toolOutput === 'string') {
+    tool.output = { text: toolOutput };
+  } 
+  // Handle case where toolOutput contains image URLs
+  else if (toolOutput.imageUrls && Array.isArray(toolOutput.imageUrls)) {
+    tool.output = { imageUrls: toolOutput.imageUrls };
+  } 
+  // Handle case where toolOutput is a single Blob object (binary data)
+  else if (toolOutput.data instanceof Blob) {
+    const s3Key = await uploadToS3(toolOutput.data, tool.name) as string;
+    tool.output = { s3Paths: [s3Key] };
+  } 
+  // Handle case where toolOutput is an array of Blob objects
+  else if (Array.isArray(toolOutput.data) && toolOutput.data.every((item: any) => item instanceof Blob)) {
+    const s3KeysPromises = toolOutput.data.map(async (blob: Blob) => {
+      const file = new File([blob], "filename", { type: blob.type, lastModified: Date.now() });
+      return uploadToS3(file, tool.name);
+    });
+    const s3Keys = await Promise.all(s3KeysPromises);
+    tool.output = { s3Paths: s3Keys };
+  } 
+  // Default case: directly assign toolOutput to tool.output
+  else {
+    tool.output = toolOutput;
+  }
+};
+
 // TODO: finalize this function calling
 const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
   console.log('Calling n8n function with data: ', tool)
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 15000)
+
+  const body = JSON.stringify({
+    api_key:
+      'n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6',
+    name: tool.readableName,
+    data: tool.aiGeneratedArgumentValues,
+  })
+
+  console.log('Calling n8n function with body: ', body)
 
   const response: Response = await fetch(
     `https://flask-production-751b.up.railway.app/run_flow`,
@@ -117,12 +157,7 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        api_key:
-          'n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6',
-        name: tool.readableName,
-        data: tool.aiGeneratedArgumentValues,
-      }),
+      body: body,
       signal: controller.signal,
     },
   ).catch((error) => {

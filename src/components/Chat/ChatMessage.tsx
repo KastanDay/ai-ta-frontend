@@ -206,8 +206,7 @@ export const ChatMessage: FC<Props> = memo(
           const updatedContent = await Promise.all(
             message.content.map(async (content) => {
               if (
-                (content.type === 'image_url' && content.image_url) ||
-                (content.type === 'tool_image_url' && content.image_url)
+                (content.type === 'image_url' && content.image_url)
               ) {
                 // console.log(
                 // 'Checking if image url is valid: ',
@@ -382,37 +381,42 @@ export const ChatMessage: FC<Props> = memo(
 
     async function checkIfUrlIsValid(url: string): Promise<boolean> {
       try {
-        dayjs.extend(utc)
-        const urlObject = new URL(url)
-        let creationDateString = urlObject.searchParams.get(
-          'X-Amz-Date',
-        ) as string
-
-        // Manually reformat the creationDateString to standard ISO 8601 format
-        creationDateString = creationDateString.replace(
-          /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
-          '$1-$2-$3T$4:$5:$6Z',
-        )
-
-        // Adjust the format in the dayjs.utc function if necessary
-        const creationDate = dayjs.utc(creationDateString, 'YYYYMMDDTHHmmss[Z]')
-
-        const expiresInSecs = Number(
-          urlObject.searchParams.get('X-Amz-Expires') as string,
-        )
-
-        const expiryDate = creationDate.add(expiresInSecs, 'second')
-        const isExpired = expiryDate.toDate() < new Date()
-
-        if (isExpired) {
-          console.log('URL is expired') // Keep this log if necessary for debugging
-          return false
+        const urlObject = new URL(url);
+    
+        // Check if the URL is an S3 presigned URL by looking for specific query parameters
+        const isS3Presigned = urlObject.searchParams.has('X-Amz-Signature');
+    
+        if (isS3Presigned) {
+          dayjs.extend(utc);
+          let creationDateString = urlObject.searchParams.get('X-Amz-Date') as string;
+    
+          // Manually reformat the creationDateString to standard ISO 8601 format
+          creationDateString = creationDateString.replace(
+            /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
+            '$1-$2-$3T$4:$5:$6Z',
+          );
+    
+          // Adjust the format in the dayjs.utc function if necessary
+          const creationDate = dayjs.utc(creationDateString, 'YYYYMMDDTHHmmss[Z]');
+    
+          const expiresInSecs = Number(urlObject.searchParams.get('X-Amz-Expires') as string);
+          const expiryDate = creationDate.add(expiresInSecs, 'second');
+          const isExpired = expiryDate.toDate() < new Date();
+    
+          if (isExpired) {
+            console.log('URL is expired'); // Keep this log if necessary for debugging
+            return false;
+          } else {
+            return true;
+          }
         } else {
-          return true
+          // For non-S3 URLs, perform a simple fetch to check availability
+          const response = await fetch(url, { method: 'HEAD' });
+          return response.ok; // true if status code is 200-299
         }
       } catch (error) {
-        console.error('Failed to validate URL', url, error)
-        return false
+        console.error('Failed to validate URL', url, error);
+        return false;
       }
     }
 
@@ -424,6 +428,29 @@ export const ChatMessage: FC<Props> = memo(
       }
       return path
     }
+
+    useEffect(() => {
+      if (message.tools && message.tools.length > 0) {
+        message.tools.forEach(tool => {
+          if (tool.output && tool.output.s3Paths) {
+            tool.output.s3Paths.forEach(s3Path => {
+            })
+          }
+          if (tool.output && tool.output.imageUrls) {
+            tool.output.imageUrls.map(async imageUrl => {
+              if (await checkIfUrlIsValid(imageUrl)) {
+                tool.output?.imageUrls?.push(imageUrl)
+              } else {
+                console.log('Image URL is expired')
+                const s3_path = extractPathFromUrl(imageUrl)
+                const presignedUrl = await getPresignedUrl(s3_path)
+                tool.output?.imageUrls?.push(presignedUrl)
+              }
+            })
+          }
+        })
+      }
+    }, [message.tools])
 
     return (
       <div
@@ -851,7 +878,14 @@ export const ChatMessage: FC<Props> = memo(
                                                   Error: {response.error}
                                                 </span>
                                               ) : (
-                                                response.output
+                                                <>
+                                                <div style={{ overflowX: 'auto', whiteSpace: 'nowrap' }}>
+                                                {response.output.imageUrls && response.output.imageUrls?.map((imageUrl, index) => (
+                                                  <img key={index} src={imageUrl} alt={`Tool output image ${index}`} style={{ display: 'inline', marginRight: '10px' }} />
+                                                ))}
+                                                </div>
+                                                {response.output.text}
+                                                </>
                                               )}
                                             </pre>
                                           </Accordion.Panel>
