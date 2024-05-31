@@ -28,35 +28,41 @@ export const fetchImageDescription = async (
   controller: AbortController,
 ): Promise<string> => {
   // Filter out the image content from the message
-  const imageContent = (message.content as Content[]).filter(
-    (content) =>
-      content.type === 'image_url' || content.type === 'tool_image_url',
-  )
+  // const messageContent = (message.content as Content[]).filter(
+  //   (content) =>
+  //     content.type === 'image_url' ||
+  //     content.type === 'text'
+  // )
 
-  // If there are no images, return an empty string
-  if (imageContent.length === 0) {
-    return ''
-  }
+  // // If there are no images, return an empty string
+  // if (messageContent.length === 0) {
+  //   return ''
+  // }
 
   updatedConversation.messages = [
     {
       ...message,
-      content: [
-        ...imageContent,
-        {
-          type: 'text',
-          text: `"Analyze and describe the given image, focusing solely on visible elements. Detail the image by:
-        - Identifying text (OCR information), objects, spatial relationships, colors, actions, annotations, and labels.
-        - Utilizing specific terminology relevant to the image's domain (e.g., medical, agricultural, technological).
-        - Categorizing the image and listing associated key terms.
-        - Summarizing with keywords or phrases reflecting the main themes based on the user query.
+      content: (message.content as Content[]).filter(
+        (content) =>
+          content.type === 'image_url' ||
+          content.type === 'text'
+      )
+      // content: [
+      //   ...imageContent,
+      //   {
+      //     type: 'text',
+      //     text: `"Analyze and describe the given image, focusing solely on visible elements. Detail the image by:
+      //   - Identifying text (OCR information), objects, spatial relationships, colors, actions, annotations, and labels.
+      //   - Utilizing specific terminology relevant to the image's domain (e.g., medical, agricultural, technological).
+      //   - Categorizing the image and listing associated key terms.
+      //   - Summarizing with keywords or phrases reflecting the main themes based on the user query.
         
-        Emphasize primary features before detailing secondary elements. For abstract or emotional content, infer the central message. Provide synonyms for technical terms where applicable. 
-        Ensure the description remains concise, precise and relevant for semantic retrieval, avoiding mention of non-present features. Don't be redundant or overly verbose as that may hurt the semantic retrieval."
-        
-        **Goal:** Create an accurate, focused description that enhances semantic document retrieval, using ONLY observable details in the form of keywords`,
-        },
-      ],
+      //   Emphasize primary features before detailing secondary elements. For abstract or emotional content, infer the central message. Provide synonyms for technical terms where applicable. 
+      //   Ensure the description remains concise, precise and relevant for semantic retrieval, avoiding mention of non-present features. Don't be redundant or overly verbose as that may hurt the semantic retrieval."
+      
+      //   **Goal:** Create an accurate, focused description that enhances semantic document retrieval, using ONLY observable details in the form of keywords`,
+      //   },
+      // ],
     },
   ]
   // Construct the body for the chat API request

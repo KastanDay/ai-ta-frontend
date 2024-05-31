@@ -83,7 +83,7 @@ export default async function handleTools(
             `Error running tool: ${error instanceof Error ? error.message : error}`,
           )
           tool.error = `Error running tool: ${error instanceof Error ? error.message : error}`
-          tool.output = { text: `Error running tool: ${error instanceof Error ? error.message : error}` };
+          // tool.output = { text: `Error running tool: ${error instanceof Error ? error.message : error}` };
         }
         // update message with tool output, but don't add another tool.
         selectedConversation.messages[currentMessageIndex]!.tools!.find(
@@ -120,14 +120,16 @@ const handleToolOutput = async (toolOutput: any, tool: UIUCTool) => {
     tool.output = { s3Paths: [s3Key] };
   } 
   // Handle case where toolOutput is an array of Blob objects
-  else if (Array.isArray(toolOutput.data) && toolOutput.data.every((item: any) => item instanceof Blob)) {
-    const s3KeysPromises = toolOutput.data.map(async (blob: Blob) => {
+  else if (Array.isArray(toolOutput) && toolOutput.every((item: any) => item instanceof Blob)) {
+    const s3KeysPromises = toolOutput.map(async (blob: Blob) => {
       const file = new File([blob], "filename", { type: blob.type, lastModified: Date.now() });
       return uploadToS3(file, tool.name);
     });
-    const s3Keys = await Promise.all(s3KeysPromises);
+    const s3Keys = await Promise.all(s3KeysPromises) as string[];
     tool.output = { s3Paths: s3Keys };
-  } 
+  } else if (tool.output && Array.isArray(toolOutput)) {
+    tool.output.data = toolOutput.reduce((acc, cur) => ({ ...acc, ...cur }), {});
+  }
   // Default case: directly assign toolOutput to tool.output
   else {
     tool.output = toolOutput;

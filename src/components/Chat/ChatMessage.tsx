@@ -569,8 +569,7 @@ export const ChatMessage: FC<Props> = memo(
                             {message.content
                               .filter(
                                 (item) =>
-                                  item.type === 'image_url' ||
-                                  item.type === 'tool_image_url',
+                                  item.type === 'image_url'
                               )
                               .map((content, index) => (
                                 <div
@@ -798,7 +797,7 @@ export const ChatMessage: FC<Props> = memo(
                               >
                                 {message.tools.map(
                                   (response, index) =>
-                                    response.output === undefined && (
+                                    response.output === undefined && response.error === undefined && (
                                       <Fragment key={index}>
                                         <p
                                           style={{
@@ -836,7 +835,7 @@ export const ChatMessage: FC<Props> = memo(
                                 <Accordion order={2}>
                                   {message.tools?.map(
                                     (response, index) =>
-                                      response.output && (
+                                      (response.output || response.error) && (
                                         <Accordion.Item
                                           key={index}
                                           value={response.readableName}
@@ -880,11 +879,11 @@ export const ChatMessage: FC<Props> = memo(
                                               ) : (
                                                 <>
                                                 <div style={{ overflowX: 'auto', whiteSpace: 'nowrap' }}>
-                                                {response.output.imageUrls && response.output.imageUrls?.map((imageUrl, index) => (
+                                                {response.output?.imageUrls && response.output?.imageUrls?.map((imageUrl, index) => (
                                                   <img key={index} src={imageUrl} alt={`Tool output image ${index}`} style={{ display: 'inline', marginRight: '10px' }} />
                                                 ))}
                                                 </div>
-                                                {response.output.text}
+                                                {response.output?.text}
                                                 </>
                                               )}
                                             </pre>

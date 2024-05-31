@@ -407,35 +407,35 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       )
       console.log('imageURLs:', imageUrls)
 
-      homeDispatch({ field: 'isRouting', value: true })
+      // homeDispatch({ field: 'isRouting', value: true })
 
       try {
         //Todo: Add a check to get a list of allowed tools for routing from the DB and use them in the prompt
         // Replace routing with function calling w/ tools.
-        const response = await fetchRoutingResponse(
-          message,
-          getCurrentPageName(),
-          endpoint,
-          updatedConversation,
-          getOpenAIKey(courseMetadata),
-          controller,
-        )
-        console.log('Routing response: ', response)
-        homeDispatch({ field: 'isRouting', value: false })
+        // const response = await fetchRoutingResponse(
+        //   message,
+        //   getCurrentPageName(),
+        //   endpoint,
+        //   updatedConversation,
+        //   getOpenAIKey(courseMetadata),
+        //   controller,
+        // )
+        // console.log('Routing response: ', response)
+        // homeDispatch({ field: 'isRouting', value: false })
         // TODO: Update pests routing response for list of {tool: string, arguments: string}
         // homeDispatch({
         //   field: 'routingResponse',
         //   value: JSON.stringify(response, null, 2),
         // })
         // For future use, if we want to handle different types of routing responses for image content then we can add more cases here
-        if ('Pests' === response) {
-          await handlePestDetection(
-            message,
-            imageContent,
-            updatedConversation,
-            currentMessageIndex,
-          )
-        }
+        // if ('Pests' === response) {
+        //   await handlePestDetection(
+        //     message,
+        //     imageContent,
+        //     updatedConversation,
+        //     currentMessageIndex,
+        //   )
+        // }
         const { updatedSearchQuery, imgDesc } = await handleImageContent(
           message,
           endpoint,
@@ -463,7 +463,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   ) => {
     const imageContent = (message.content as Content[]).filter(
       (content) =>
-        content.type === 'image_url' || content.type === 'tool_image_url',
+        content.type === 'image_url'
     )
     let imgDesc = ''
     if (imageContent.length > 0) {
