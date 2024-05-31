@@ -77,7 +77,7 @@ export default async function handleTools(
       const toolResultsPromises = uiucToolsToRun.map(async (tool) => {
         try {
           const toolOutput = await callN8nFunction(tool, 'todo!') // TODO: Get API key
-          handleToolOutput(toolOutput, tool);
+          handleToolOutput(toolOutput, tool)
         } catch (error: unknown) {
           console.error(
             `Error running tool: ${error instanceof Error ? error.message : error}`,
@@ -108,33 +108,39 @@ export default async function handleTools(
 const handleToolOutput = async (toolOutput: any, tool: UIUCTool) => {
   // Handle case where toolOutput is a simple string
   if (typeof toolOutput === 'string') {
-    tool.output = { text: toolOutput };
-  } 
+    tool.output = { text: toolOutput }
+  }
   // Handle case where toolOutput contains image URLs
   else if (toolOutput.imageUrls && Array.isArray(toolOutput.imageUrls)) {
-    tool.output = { imageUrls: toolOutput.imageUrls };
-  } 
+    tool.output = { imageUrls: toolOutput.imageUrls }
+  }
   // Handle case where toolOutput is a single Blob object (binary data)
   else if (toolOutput.data instanceof Blob) {
-    const s3Key = await uploadToS3(toolOutput.data, tool.name) as string;
-    tool.output = { s3Paths: [s3Key] };
-  } 
+    const s3Key = (await uploadToS3(toolOutput.data, tool.name)) as string
+    tool.output = { s3Paths: [s3Key] }
+  }
   // Handle case where toolOutput is an array of Blob objects
-  else if (Array.isArray(toolOutput) && toolOutput.every((item: any) => item instanceof Blob)) {
+  else if (
+    Array.isArray(toolOutput) &&
+    toolOutput.every((item: any) => item instanceof Blob)
+  ) {
     const s3KeysPromises = toolOutput.map(async (blob: Blob) => {
-      const file = new File([blob], "filename", { type: blob.type, lastModified: Date.now() });
-      return uploadToS3(file, tool.name);
-    });
-    const s3Keys = await Promise.all(s3KeysPromises) as string[];
-    tool.output = { s3Paths: s3Keys };
+      const file = new File([blob], 'filename', {
+        type: blob.type,
+        lastModified: Date.now(),
+      })
+      return uploadToS3(file, tool.name)
+    })
+    const s3Keys = (await Promise.all(s3KeysPromises)) as string[]
+    tool.output = { s3Paths: s3Keys }
   } else if (tool.output && Array.isArray(toolOutput)) {
-    tool.output.data = toolOutput.reduce((acc, cur) => ({ ...acc, ...cur }), {});
+    tool.output.data = toolOutput.reduce((acc, cur) => ({ ...acc, ...cur }), {})
   }
   // Default case: directly assign toolOutput to tool.output
   else {
-    tool.output = toolOutput;
+    tool.output = toolOutput
   }
-};
+}
 
 // TODO: finalize this function calling
 const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {

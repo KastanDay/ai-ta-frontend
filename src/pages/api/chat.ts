@@ -11,6 +11,7 @@ import {
   Content,
   ContextWithMetadata,
   Conversation,
+  Message,
   MessageType,
   OpenAIChatMessage,
   ToolOutput,
@@ -29,41 +30,46 @@ const handler = async (req: Request): Promise<NextResponse> => {
       (await req.json()) as ChatBody
 
     // Call buildPrompt
-    const { systemPrompt, userPrompt, convoHistory, openAIKey } =
-      await buildPrompt({
-        conversation,
-        rawOpenaiKey: key,
-        projectName: course_name,
-        courseMetadata,
-        isImage
-      })
+    // const { systemPrompt, userPrompt, convoHistory, openAIKey } =
+    //   await buildPrompt({
+    //     conversation,
+    //     rawOpenaiKey: key,
+    //     projectName: course_name,
+    //     courseMetadata,
+    //     isImage
+    //   })
 
-    console.log(
-      'PROMPT TO BE SENT -- ',
-      userPrompt,
-      'system prompt:',
-      systemPrompt,
-    )
+    const openAIKey = await parseOpenaiKey(key)
 
-    const latestMessage: OpenAIChatMessage = {
-      role: 'user',
-      content: [
-        {
-          type: 'text' as MessageType,
-          text: userPrompt,
-        },
-      ],
-    }
-    const messagesToSend = [latestMessage, ...convoHistory]
-    
-    console.log('Messages to send: ', messagesToSend)
+    // console.log(
+    //   'PROMPT TO BE SENT -- ',
+    //   userPrompt,
+    //   'system prompt:',
+    //   systemPrompt,
+    // )
+
+    // const latestMessage: OpenAIChatMessage = {
+    //   role: 'user',
+    //   content: [
+    //     {
+    //       type: 'text' as MessageType,
+    //       text: userPrompt,
+    //     },
+    //   ],
+    // }
+
+    // const messagesToSend = [latestMessage, ...convoHistory] // BUG: REPLACE (not append to) latest user message. RN we have dupliacates.
+
+    // console.log('Messages to send: ', messagesToSend)
 
     const apiStream = await OpenAIStream(
       conversation.model,
-      systemPrompt,
+      conversation.messages[conversation.messages.length - 1]!
+        .latestSystemMessage!,
       conversation.temperature,
       openAIKey,
-      messagesToSend,
+      // @ts-ignore -- I think the types are fine.
+      conversation.messages, // old:  messagesToSend
       stream,
     )
     if (stream) {
@@ -108,16 +114,19 @@ export const buildPrompt = async ({
   rawOpenaiKey,
   projectName,
   courseMetadata,
-  isImage
+  isImage,
 }: {
   conversation: Conversation
   rawOpenaiKey: string
   projectName: string
   courseMetadata: CourseMetadata | undefined
   isImage: boolean
-}): Promise<Prompts> => {
+  // }): Promise<Prompts> => {
+}): Promise<Conversation> => {
   /*
   System prompt -- defined by user. Then we add the citations instructions to it.
+
+  isImage -- means we're JUST generating an image description, not a final answer.
   
 Priorities for building prompt w/ limited window: 
 1. ✅ most recent user message
@@ -146,7 +155,7 @@ Priorities for building prompt w/ limited window:
   allPromises.push(_getSystemPrompt({ courseMetadata, conversation }))
   // ideally, run context search here -- parallelized. (tricky due to sending status updates homeDispatch)
   const [openaiKey, lastUserMessage, lastToolResult, userDefinedSystemPrompt] =
-    await Promise.all(allPromises) as [string, string, UIUCTool[], string]
+    (await Promise.all(allPromises)) as [string, string, UIUCTool[], string]
 
   // SYSTEM PROMPT
   let systemPrompt = ''
@@ -158,11 +167,6 @@ Priorities for building prompt w/ limited window:
     systemPrompt = getImageDescriptionSystemPrompt()
     remainingTokenBudget -= encoding.encode(systemPrompt).length
   }
-
-  // USER PROMPT
-  let userPrompt = ''
-  userPrompt += lastUserMessage
-  remainingTokenBudget -= encoding.encode(lastUserMessage || '').length
 
   // TOOLS
   // if (lastToolResult && remainingTokenBudget > 0) {
@@ -182,8 +186,13 @@ Priorities for building prompt w/ limited window:
   //     userPrompt += toolMsg
   //   }
   // }
+
+  // USER PROMPT
+  let userPrompt = ''
+  remainingTokenBudget -= encoding.encode(lastUserMessage).length
+
   // Tool output + user Query (added to prompt below)
-  const userQuery = isImage? '': _buildUserQuery({ conversation })
+  const userQuery = isImage ? '' : _buildUserQuery({ conversation })
 
   // Keep room in budget for latest 2 convo messages
   const tokensInLastTwoMessages = _getRecentConvoTokens({
@@ -203,7 +212,7 @@ Priorities for building prompt w/ limited window:
     tokenLimit: remainingTokenBudget - tokensInLastTwoMessages, // keep room for convo history
   })
   if (query_topContext) {
-    const queryContextMsg = `\nHere's high quality passages from the user's documents. Use these, and cite them carefully in the format previously described, to construct your answer: ${query_topContext}`
+    const queryContextMsg = `\nHere's high quality passages from the user's documents. Use these, and cite them carefully in the format previously described, to construct your answer:\n${query_topContext}`
     remainingTokenBudget -= encoding.encode(queryContextMsg).length
     userPrompt += queryContextMsg
   }
@@ -215,16 +224,25 @@ Priorities for building prompt w/ limited window:
     tokenLimit: remainingTokenBudget,
   })
 
-  userPrompt = `\nFinally, please respond to the user's query: ${userPrompt} ${userQuery}`
+  userPrompt += `\nFinally, please respond to the user's query: ${userQuery} ${userPrompt}`
 
   encoding.free() // keep this
 
-  return {
-    systemPrompt: systemPrompt as string,
-    userPrompt,
-    convoHistory,
-    openAIKey: openaiKey as string,
-  }
+  // conversation.messages = convoHistory // Necessary??
+  // latest user message
+  conversation.messages[
+    conversation.messages.length - 1
+  ]!.finalPromtEngineeredMessage = userPrompt
+  conversation.messages[conversation.messages.length - 1]!.latestSystemMessage =
+    systemPrompt
+  return conversation
+
+  // return {
+  //   systemPrompt: systemPrompt as string,
+  //   userPrompt,
+  //   convoHistory,
+  //   openAIKey: openaiKey as string,
+  // }
 }
 
 const _getRecentConvoTokens = ({
@@ -258,9 +276,8 @@ const _buildUserQuery = ({
 }): string => {
   // ! PROMPT STUFFING
   let userQuery: string = ''
-  const latestUserMessage = conversation.messages[
-    conversation.messages.length - 1
-  ]
+  const latestUserMessage =
+    conversation.messages[conversation.messages.length - 1]
   if (latestUserMessage?.content === 'string') {
     userQuery = latestUserMessage.content as string
   } else if (latestUserMessage?.tools) {
@@ -271,9 +288,14 @@ const _buildUserQuery = ({
       if (tool.output && tool.output.text) {
         toolOutput += `Tool: ${tool.name}\nOutput: ${tool.output.text}\n`
       } else if (tool.output && tool.output.imageUrls) {
-        toolOutput += `Tool: ${tool.name}\nOutput: Images were generated by this tool call and the generated image(s) is/are provided below`;
+        toolOutput += `Tool: ${tool.name}\nOutput: Images were generated by this tool call and the generated image(s) is/are provided below`
         // Add image urls to message content
-        (latestUserMessage.content as Content[]).push(...tool.output.imageUrls.map((imageUrl) => ({ type: 'image_url' as MessageType, image_url: { url: imageUrl } })));
+        ;(latestUserMessage.content as Content[]).push(
+          ...tool.output.imageUrls.map((imageUrl) => ({
+            type: 'image_url' as MessageType,
+            image_url: { url: imageUrl },
+          })),
+        )
       } else if (tool.output && tool.output.data) {
         toolOutput += `Tool: ${tool.name}\nOutput: ${JSON.stringify(tool.output.data)}\n`
       } else if (tool.error) {
@@ -281,9 +303,9 @@ const _buildUserQuery = ({
       }
       toolMsg += toolOutput
     })
-    userQuery += toolMsg += "\n\n"
+    userQuery += toolMsg += '\n\n'
     // userQuery += "User Query: " + ((latestUserMessage?.content as Content[])?.map((c) => c.text || '').join('\n') || '')
-  } 
+  }
   // console.log('Built userQuery: ', userQuery)
   return userQuery
 }
@@ -409,6 +431,7 @@ const _getSystemPrompt = async ({
   }
   return systemPrompt
 }
+
 const _getLastToolResult = async ({
   conversation,
 }: {
@@ -419,6 +442,7 @@ const _getLastToolResult = async ({
   ]?.tools as UIUCTool[]
   return toolResults
 }
+
 const _getLastUserMessage = async ({
   conversation,
 }: {

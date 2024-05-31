@@ -20,6 +20,8 @@ export interface Message {
   content: string | Content[]
   contexts?: ContextWithMetadata[]
   tools?: UIUCTool[]
+  latestSystemMessage?: string
+  finalPromtEngineeredMessage?: string // after all prompt enginering, to generate final response.
   responseTimeSec?: number
 }
 
@@ -38,20 +40,20 @@ export interface UIUCTool {
   enabled?: boolean
   createdAt?: string
   updatedAt?: string
-  output?: ToolOutput; // Use a unified output type
+  output?: ToolOutput // Use a unified output type
   error?: string
   contexts?: ContextWithMetadata[]
 }
 
 export type ToolOutput = {
-  text?: string; // For plain text outputs
-  imageUrls?: string[]; // For image URLs
-  s3Paths?: string[]; // For S3 paths of uploaded files
-  data?: Record<string, unknown>; // For any other structured data
-};
+  text?: string // For plain text outputs
+  imageUrls?: string[] // For image URLs
+  s3Paths?: string[] // For S3 paths of uploaded files
+  data?: Record<string, unknown> // For any other structured data
+}
 
 // tool_image_url is for images returned by tools
-export type MessageType = 'text' | 'image_url' | 'tool_image_url'
+export type MessageType = 'text' | 'image_url'
 
 export interface Content {
   type: MessageType

@@ -53,7 +53,7 @@ export const N8nWorkflowsTable = ({
     isSuccess: isSuccess,
     isError: isErrorTools,
     refetch: refetchWorkflows,
-  } = useFetchAllWorkflows(course_name, n8nApiKey, 10, 'true', true)
+  } = useFetchAllWorkflows(course_name, n8nApiKey, 20, 'true', true)
 
   const mutate_active_flows = useMutation({
     mutationFn: async ({ id, checked }: { id: string; checked: boolean }) => {

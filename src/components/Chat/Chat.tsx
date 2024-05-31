@@ -92,6 +92,7 @@ import handleTools, {
   useFetchAllWorkflows,
 } from '~/utils/functionCalling/handleFunctionCalling'
 import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
+import { buildPrompt } from '~/pages/api/chat'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -384,8 +385,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     controller: AbortController,
   ) => {
     const imageContent = (message.content as Content[]).filter(
-      (content) =>
-        content.type === 'image_url'
+      (content) => content.type === 'image_url',
     )
     let imgDesc = ''
     if (imageContent.length > 0) {
@@ -586,6 +586,21 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           stream: true,
           isImage: false,
         }
+
+        // src/pages/api/buildPrompt.ts
+        const buildPromptResponse = await fetch('/api/buildPrompt', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(chatBody),
+        })
+        chatBody.conversation = await buildPromptResponse.json()
+        updatedConversation = chatBody.conversation
+        // homeDispatch({
+        //   field: 'selectedConversation',
+        //   value: chatBody.conversation,
+        // })
 
         // Call the OpenAI API
         const response = await fetch(endpoint, {
