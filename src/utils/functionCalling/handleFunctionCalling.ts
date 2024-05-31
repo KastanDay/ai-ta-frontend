@@ -141,7 +141,7 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
   console.log('Calling n8n function with data: ', tool)
 
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 15000)
+  const timeoutId = setTimeout(() => controller.abort(), 25000)
 
   const body = JSON.stringify({
     api_key:
@@ -151,7 +151,7 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
   })
 
   console.log('Calling n8n function with body: ', body)
-
+  const timeStart = Date.now()
   const response: Response = await fetch(
     `https://flask-production-751b.up.railway.app/run_flow`,
     {
@@ -168,6 +168,8 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
     }
     throw error
   })
+  const timeEnd = Date.now()
+  console.log('Time taken for n8n function call: ', timeEnd - timeStart)
 
   clearTimeout(timeoutId)
   if (!response.ok) {
@@ -295,7 +297,7 @@ export function getUIUCToolFromN8n(workflows: N8nWorkflow[]): UIUCTool[] {
 export const useFetchAllWorkflows = (
   course_name?: string,
   api_key?: string,
-  limit = 10,
+  limit = 20,
   pagination = 'true',
   full_details = false,
 ) => {

@@ -197,7 +197,7 @@ Priorities for building prompt w/ limited window:
   ).length
 
   // query_topContext
-  const query_topContext = _buildQueryTopContext({
+  const query_topContext = isImage? null : _buildQueryTopContext({
     conversation: conversation,
     encoding: encoding,
     tokenLimit: remainingTokenBudget - tokensInLastTwoMessages, // keep room for convo history
