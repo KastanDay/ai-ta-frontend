@@ -19,6 +19,8 @@ import {
 } from '@/types/chat'
 import { NextResponse } from 'next/server'
 import { decrypt, isEncrypted } from '~/utils/crypto'
+import { guidedRetrieval } from '~/app/api/chat/guidedRetrieval/guidedRetrieval'
+import { createOpenAI } from '@ai-sdk/openai';
 
 export const config = {
   runtime: 'edge',
@@ -206,11 +208,14 @@ Priorities for building prompt w/ limited window:
   ).length
 
   // query_topContext
-  const query_topContext = isImage? null : _buildQueryTopContext({
+  const query_topContext = isImage? null : await _buildQueryTopContext({
     conversation: conversation,
     encoding: encoding,
     tokenLimit: remainingTokenBudget - tokensInLastTwoMessages, // keep room for convo history
-  })
+    openaiKey: openaiKey || '',
+    courseMetadata: courseMetadata,
+    userQuery: userQuery, // Pass userQuery here
+  });
   if (query_topContext) {
     const queryContextMsg = `\nHere's high quality passages from the user's documents. Use these, and cite them carefully in the format previously described, to construct your answer:\n${query_topContext}`
     remainingTokenBudget -= encoding.encode(queryContextMsg).length
@@ -275,7 +280,7 @@ const _buildUserQuery = ({
   conversation: Conversation
 }): string => {
   // ! PROMPT STUFFING
-  let userQuery: string = ''
+  let userQuery = ''
   const latestUserMessage =
     conversation.messages[conversation.messages.length - 1]
   if (latestUserMessage?.content === 'string') {
@@ -347,16 +352,22 @@ const _buildConvoHistory = ({
   return messagesToSend
 }
 
-export function _buildQueryTopContext({
+export async function _buildQueryTopContext({
   conversation,
   encoding,
   tokenLimit = 8000,
+  openaiKey,
+  userQuery, // Add this parameter
 }: {
   conversation: Conversation
   encoding: Tiktoken
   tokenLimit: number
+  openaiKey: string
+  courseMetadata: CourseMetadata | undefined
+  userQuery: string // Add this type
 }) {
   try {
+    console.log("In _buildQueryTopContext start")
     const contexts = conversation.messages[conversation.messages.length - 1]
       ?.contexts as ContextWithMetadata[]
 
@@ -364,9 +375,32 @@ export function _buildQueryTopContext({
       return undefined
     }
 
+    console.log("Before Guided Retrieval");
+
+    let decryptedKey: string;
+    if (isEncrypted(openaiKey)) {
+      const signingKey = process.env.NEXT_PUBLIC_SIGNING_KEY;
+      if (!signingKey) {
+        console.error('Signing key is undefined.');
+        throw new Error('Server configuration error.');
+      }
+      decryptedKey = await decrypt(openaiKey, signingKey) || '';
+    } else {
+      decryptedKey = openaiKey;
+    }
+
+    const customOpenAI = createOpenAI({
+      apiKey: decryptedKey,
+    });
+
+    // Call guidedRetrieval function directly
+    const relevantDocuments = await guidedRetrieval(contexts, userQuery);
+
+    console.log('Relevant Documents:', relevantDocuments);
+
     let tokenCounter = 0 // encoding.encode(system_prompt + searchQuery).length
-    const validDocs = []
-    for (const [index, d] of contexts.entries()) {
+    const validDocs: { index: number; d: ContextWithMetadata }[] = []
+    for (const [index, d] of relevantDocuments.entries()) {
       const docString = `---\n${index + 1}: ${d.readable_filename}${
         d.pagenumber ? ', page: ' + d.pagenumber : ''
       }\n${d.text}\n`
@@ -395,7 +429,7 @@ export function _buildQueryTopContext({
     // const stuffedPrompt =
     //   contextText + '\n\nNow please respond to my query: ' + searchQuery
     // const totalNumTokens = encoding.encode(stuffedPrompt).length
-    // console.log('contextText', contextText)
+    // console.log('guided retrieval contextText: \n', contextText)
     // console.log(
     // `Total number of tokens: ${totalNumTokens}. Number of docs: ${contexts.length}, number of valid docs: ${validDocs.length}`,
     // )
