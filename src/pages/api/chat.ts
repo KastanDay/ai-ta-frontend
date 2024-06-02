@@ -280,7 +280,7 @@ const _buildUserQuery = ({
   conversation: Conversation
 }): string => {
   // ! PROMPT STUFFING
-  let userQuery: string = ''
+  let userQuery = ''
   const latestUserMessage =
     conversation.messages[conversation.messages.length - 1]
   if (latestUserMessage?.content === 'string') {

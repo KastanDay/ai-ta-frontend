@@ -1,13 +1,14 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { createOpenAI } from '@ai-sdk/openai';
 import { decrypt, isEncrypted } from '~/utils/crypto';
 import { guidedRetrieval } from './guidedRetrieval';
 
-export default async function guidedRetrievalRoute(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(request: Request) {
   try {
-    const { documents, prompt, openaiKey } = req.body;
+    const { documents, prompt, openaiKey } = await request.json();
     if (!documents || !prompt || !openaiKey) {
-      return res.status(400).json({ error: 'Documents, prompt, or OpenAI key not provided.' });
+      return new Response(JSON.stringify({ error: 'Documents, prompt, or OpenAI key not provided.' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     let decryptedKey: string;
@@ -15,7 +16,10 @@ export default async function guidedRetrievalRoute(req: NextApiRequest, res: Nex
       const signingKey = process.env.NEXT_PUBLIC_SIGNING_KEY;
       if (!signingKey) {
         console.error('Signing key is undefined.');
-        return res.status(500).json({ error: 'Server configuration error.' });
+        return new Response(JSON.stringify({ error: 'Server configuration error.' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        });
       }
       decryptedKey = await decrypt(openaiKey, signingKey) || '';
     } else {
@@ -24,9 +28,15 @@ export default async function guidedRetrievalRoute(req: NextApiRequest, res: Nex
 
     const relevantDocuments = await guidedRetrieval(documents, prompt);
 
-    res.status(200).json({ relevantDocuments });
+    return new Response(JSON.stringify({ relevantDocuments }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     console.error('Error in guided retrieval:', error);
-    res.status(500).json({ error: 'Failed to process the guided retrieval.'  });
+    return new Response(JSON.stringify({ error: 'Failed to process the guided retrieval.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
