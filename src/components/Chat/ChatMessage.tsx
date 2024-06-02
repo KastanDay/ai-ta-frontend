@@ -20,7 +20,15 @@ import {
   IconTrash,
   IconUser,
 } from '@tabler/icons-react'
-import { FC, memo, useContext, useEffect, useRef, useState } from 'react'
+import {
+  FC,
+  Fragment,
+  memo,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 import { useTranslation } from 'next-i18next'
 import { updateConversation } from '@/utils/app/conversation'
@@ -107,9 +115,9 @@ export const ChatMessage: FC<Props> = memo(
         messageIsStreaming,
         isImg2TextLoading,
         isRouting,
-        routingResponse,
         isRunningTool,
         isRetrievalLoading,
+        loading,
       },
       dispatch: homeDispatch,
     } = useContext(HomeContext)
@@ -198,8 +206,7 @@ export const ChatMessage: FC<Props> = memo(
           const updatedContent = await Promise.all(
             message.content.map(async (content) => {
               if (
-                (content.type === 'image_url' && content.image_url) ||
-                (content.type === 'tool_image_url' && content.image_url)
+                (content.type === 'image_url' && content.image_url)
               ) {
                 // console.log(
                 // 'Checking if image url is valid: ',
@@ -374,37 +381,42 @@ export const ChatMessage: FC<Props> = memo(
 
     async function checkIfUrlIsValid(url: string): Promise<boolean> {
       try {
-        dayjs.extend(utc)
-        const urlObject = new URL(url)
-        let creationDateString = urlObject.searchParams.get(
-          'X-Amz-Date',
-        ) as string
-
-        // Manually reformat the creationDateString to standard ISO 8601 format
-        creationDateString = creationDateString.replace(
-          /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
-          '$1-$2-$3T$4:$5:$6Z',
-        )
-
-        // Adjust the format in the dayjs.utc function if necessary
-        const creationDate = dayjs.utc(creationDateString, 'YYYYMMDDTHHmmss[Z]')
-
-        const expiresInSecs = Number(
-          urlObject.searchParams.get('X-Amz-Expires') as string,
-        )
-
-        const expiryDate = creationDate.add(expiresInSecs, 'second')
-        const isExpired = expiryDate.toDate() < new Date()
-
-        if (isExpired) {
-          console.log('URL is expired') // Keep this log if necessary for debugging
-          return false
+        const urlObject = new URL(url);
+    
+        // Check if the URL is an S3 presigned URL by looking for specific query parameters
+        const isS3Presigned = urlObject.searchParams.has('X-Amz-Signature');
+    
+        if (isS3Presigned) {
+          dayjs.extend(utc);
+          let creationDateString = urlObject.searchParams.get('X-Amz-Date') as string;
+    
+          // Manually reformat the creationDateString to standard ISO 8601 format
+          creationDateString = creationDateString.replace(
+            /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
+            '$1-$2-$3T$4:$5:$6Z',
+          );
+    
+          // Adjust the format in the dayjs.utc function if necessary
+          const creationDate = dayjs.utc(creationDateString, 'YYYYMMDDTHHmmss[Z]');
+    
+          const expiresInSecs = Number(urlObject.searchParams.get('X-Amz-Expires') as string);
+          const expiryDate = creationDate.add(expiresInSecs, 'second');
+          const isExpired = expiryDate.toDate() < new Date();
+    
+          if (isExpired) {
+            console.log('URL is expired'); // Keep this log if necessary for debugging
+            return false;
+          } else {
+            return true;
+          }
         } else {
-          return true
+          // For non-S3 URLs, perform a simple fetch to check availability
+          const response = await fetch(url, { method: 'HEAD' });
+          return response.ok; // true if status code is 200-299
         }
       } catch (error) {
-        console.error('Failed to validate URL', url, error)
-        return false
+        console.error('Failed to validate URL', url, error);
+        return false;
       }
     }
 
@@ -417,12 +429,36 @@ export const ChatMessage: FC<Props> = memo(
       return path
     }
 
+    useEffect(() => {
+      if (message.tools && message.tools.length > 0) {
+        message.tools.forEach(tool => {
+          if (tool.output && tool.output.s3Paths) {
+            tool.output.s3Paths.forEach(s3Path => {
+            })
+          }
+          if (tool.output && tool.output.imageUrls) {
+            tool.output.imageUrls.map(async imageUrl => {
+              if (await checkIfUrlIsValid(imageUrl)) {
+                tool.output?.imageUrls?.push(imageUrl)
+              } else {
+                console.log('Image URL is expired')
+                const s3_path = extractPathFromUrl(imageUrl)
+                const presignedUrl = await getPresignedUrl(s3_path)
+                tool.output?.imageUrls?.push(presignedUrl)
+              }
+            })
+          }
+        })
+      }
+    }, [message.tools])
+
     return (
       <div
-        className={`group md:px-4 ${message.role === 'assistant'
-          ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
-          : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
-          }`}
+        className={`group md:px-4 ${
+          message.role === 'assistant'
+            ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
+            : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
+        }`}
         style={{ overflowWrap: 'anywhere' }}
       >
         <div className="relative m-auto flex p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-5xl lg:px-0 xl:max-w-3xl">
@@ -533,8 +569,7 @@ export const ChatMessage: FC<Props> = memo(
                             {message.content
                               .filter(
                                 (item) =>
-                                  item.type === 'image_url' ||
-                                  item.type === 'tool_image_url',
+                                  item.type === 'image_url'
                               )
                               .map((content, index) => (
                                 <div
@@ -557,10 +592,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isImg2TextLoading &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -584,10 +619,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isImg2TextLoading === false &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -612,10 +647,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isRetrievalLoading &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -639,10 +674,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isRetrievalLoading === false &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -667,10 +702,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isRouting &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -692,13 +727,13 @@ export const ChatMessage: FC<Props> = memo(
                             )}
 
                           {isRouting === false &&
-                            routingResponse &&
+                            message.tools &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
@@ -706,156 +741,213 @@ export const ChatMessage: FC<Props> = memo(
                                 }}
                               >
                                 <Accordion order={2}>
-                                  <Accordion.Item
-                                    value={'Routing'}
-                                    style={{ border: 0 }}
-                                  >
-                                    <Accordion.Control
-                                      className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                      style={{
-                                        marginRight: '10px',
-                                        fontWeight: 'bold',
-                                        textShadow: '0 0 10px',
-                                        color: '#9d4edd',
-                                      }}
+                                  {message.tools.map((response, index) => (
+                                    <Accordion.Item
+                                      key={index}
+                                      value={`Routing-${index}`}
+                                      style={{ border: 0 }}
                                     >
-                                      Routing the request to{' '}
-                                      <Badge color="grape" radius="md">
-                                        {/* @ts-ignore -- idk */}
-                                        {routingResponse[0].toolName}
-                                      </Badge>
-                                      :
-                                    </Accordion.Control>
-                                    <Accordion.Panel
-                                      className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
-                                    >
-                                      Arguments:{' '}
-                                      <pre>
-                                        {/* @ts-ignore -- idk */}
-                                        {JSON.stringify(routingResponse[0].arguments,
-                                          null,
-                                          2,
-                                        )}
-                                      </pre>
-                                    </Accordion.Panel>
-                                  </Accordion.Item>
+                                      <Accordion.Control
+                                        className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                        style={{
+                                          marginRight: '10px',
+                                          fontWeight: 'bold',
+                                          textShadow: '0 0 10px',
+                                          color: '#9d4edd',
+                                        }}
+                                      >
+                                        Routing the request to{' '}
+                                        <Badge color="grape" radius="md">
+                                          {response.readableName}
+                                        </Badge>
+                                        :
+                                      </Accordion.Control>
+                                      <Accordion.Panel
+                                        className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
+                                      >
+                                        Arguments:{' '}
+                                        <pre>
+                                          {JSON.stringify(
+                                            response.aiGeneratedArgumentValues,
+                                            null,
+                                            2,
+                                          )}
+                                        </pre>
+                                      </Accordion.Panel>
+                                    </Accordion.Item>
+                                  ))}
                                 </Accordion>
                               </div>
                             )}
 
-                          {isRunningTool &&
+                          {message.tools?.some(
+                            (response) => response.output === undefined,
+                          ) &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
                               <div
                                 style={{
                                   display: 'flex',
                                   alignItems: 'center',
                                 }}
                               >
-                                <p
-                                  style={{
-                                    marginRight: '10px',
-                                    fontWeight: 'bold',
-                                    textShadow: '0 0 10px',
-                                  }}
-                                  className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                >
-                                  Running
-                                  <Badge color="grape" radius="md">
-                                    {routingResponse
-                                      ? routingResponse[0]?.toolName
-                                      : ''}
-                                  </Badge>
-                                  ...
-                                </p>
-                                <LoadingSpinner size="xs" />
+                                {message.tools.map(
+                                  (response, index) =>
+                                    response.output === undefined && response.error === undefined && (
+                                      <Fragment key={index}>
+                                        <p
+                                          style={{
+                                            marginRight: '10px',
+                                            fontWeight: 'bold',
+                                            textShadow: '0 0 10px',
+                                          }}
+                                          className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                        >
+                                          Running
+                                          <Badge color="grape" radius="md">
+                                            {response.readableName}
+                                          </Badge>
+                                          ...
+                                        </p>
+                                        <LoadingSpinner size="xs" />
+                                      </Fragment>
+                                    ),
+                                )}
                               </div>
                             )}
 
-                          {isRunningTool === false &&
+                          {(messageIndex ===
+                            (selectedConversation?.messages.length ?? 0) - 1 ||
+                            messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
+                            <>
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <Accordion order={2}>
+                                  {message.tools?.map(
+                                    (response, index) =>
+                                      (response.output || response.error) && (
+                                        <Accordion.Item
+                                          key={index}
+                                          value={response.readableName}
+                                          style={{ border: 0 }}
+                                        >
+                                          <Accordion.Control
+                                            className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                            style={{
+                                              marginRight: '10px',
+                                              fontWeight: 'bold',
+                                              textShadow: '0 0 10px',
+                                              color: '#9d4edd',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                            }}
+                                          >
+                                            Tool output from{' '}
+                                            <Badge
+                                              color={
+                                                response.error ? 'red' : 'grape'
+                                              }
+                                              radius="md"
+                                              size="md"
+                                            >
+                                              {response.readableName}
+                                            </Badge>
+                                          </Accordion.Control>
+                                          <Accordion.Panel
+                                            className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white ${response.error ? 'border-2 border-red-500' : ''}`}
+                                          >
+                                            <pre
+                                              style={{
+                                                whiteSpace: 'pre-wrap',
+                                                wordWrap: 'break-word',
+                                              }}
+                                            >
+                                              {response.error ? (
+                                                <span>
+                                                  Error: {response.error}
+                                                </span>
+                                              ) : (
+                                                <>
+                                                <div style={{ overflowX: 'auto', whiteSpace: 'nowrap' }}>
+                                                {response.output?.imageUrls && response.output?.imageUrls?.map((imageUrl, index) => (
+                                                  <img key={index} src={imageUrl} alt={`Tool output image ${index}`} style={{ display: 'inline', marginRight: '10px' }} />
+                                                ))}
+                                                </div>
+                                                {response.output?.text}
+                                                </>
+                                              )}
+                                            </pre>
+                                          </Accordion.Panel>
+                                        </Accordion.Item>
+                                      ),
+                                  )}
+                                </Accordion>
+                              </div>
+                            </>
+                          )}
+                          {(() => {
+                            if (
+                              messageIsStreaming === undefined ||
+                              !messageIsStreaming
+                            ) {
+                              console.log(
+                                'isRouting: ',
+                                isRouting,
+                                'isRetrievalLoading: ',
+                                isRetrievalLoading,
+                                'isImg2TextLoading: ',
+                                isImg2TextLoading,
+                                'messageIsStreaming: ',
+                                messageIsStreaming,
+                                'loading: ',
+                                loading,
+                              )
+                            }
+                            return null
+                          })()}
+                          {!isRouting &&
+                            !isRetrievalLoading &&
+                            !isImg2TextLoading &&
+                            loading &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                              1 ||
+                                1 ||
                               messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                              2) && (
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) &&
+                            message.tools?.every(
+                              (tool) =>
+                                tool.output !== undefined ||
+                                tool.error !== undefined,
+                            ) && (
                               <>
-                                {/* <IconCheck size={25} /> */}
                                 <div
                                   style={{
                                     display: 'flex',
                                     alignItems: 'center',
                                   }}
                                 >
-                                  <Accordion order={2}>
-                                    {message?.tools?.map((tool, index) => (
-                                      <Accordion.Item
-                                        key={index}
-                                        value={tool.tool?.name as string}
-                                        style={{ border: 0 }}
-                                      >
-                                        <Accordion.Control
-                                          className={`rounded-lg ps-0 hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                          style={{
-                                            marginRight: '10px',
-                                            fontWeight: 'bold',
-                                            textShadow: '0 0 10px',
-                                            color: '#9d4edd',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                          }}
-                                        >
-                                          Tool output from{' '}
-                                          <Badge
-                                            color="grape"
-                                            radius="md"
-                                            size="md"
-                                          >
-                                            {tool.tool?.readableName}
-                                          </Badge>
-                                        </Accordion.Control>
-                                        <Accordion.Panel
-                                          className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
-                                        >
-                                          <pre
-                                            style={{
-                                              whiteSpace: 'pre-wrap',
-                                              wordWrap: 'break-word',
-                                            }}
-                                          >
-                                            {(() => {
-                                              try {
-                                                const parsedResult = JSON.parse(
-                                                  tool.toolResult as string,
-                                                )
-                                                if (
-                                                  parsedResult &&
-                                                  parsedResult.data &&
-                                                  typeof parsedResult.data ===
-                                                  'string'
-                                                ) {
-                                                  return parsedResult.data
-                                                    .replace(/\\r\\n/g, '\n')
-                                                    .replace(/\\t/g, '\t')
-                                                }
-                                                return tool.toolResult // Return the original result if data is not in the expected format
-                                              } catch (error) {
-                                                console.error(
-                                                  'Failed to parse tool result:',
-                                                  error,
-                                                )
-                                                return tool.toolResult // Return the original text 'as-is' if parsing fails
-                                              }
-                                            })()}
-                                          </pre>
-                                        </Accordion.Panel>
-                                      </Accordion.Item>
-                                    ))}
-                                  </Accordion>
+                                  <p
+                                    style={{
+                                      marginRight: '10px',
+                                      fontWeight: 'bold',
+                                      textShadow: '0 0 10px',
+                                    }}
+                                    className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                  >
+                                    Generating final response:
+                                  </p>
+                                  <LoadingSpinner size="xs" />
                                 </div>
                               </>
                             )}
@@ -868,8 +960,8 @@ export const ChatMessage: FC<Props> = memo(
                           (messageIndex ===
                             (selectedConversation?.messages.length ?? 0) - 1 ||
                             messageIndex ===
-                            (selectedConversation?.messages.length ?? 0) -
-                            2) && (
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
                             <div
                               style={{ display: 'flex', alignItems: 'center' }}
                             >
@@ -890,8 +982,8 @@ export const ChatMessage: FC<Props> = memo(
                           (messageIndex ===
                             (selectedConversation?.messages.length ?? 0) - 1 ||
                             messageIndex ===
-                            (selectedConversation?.messages.length ?? 0) -
-                            2) && (
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
                             <div
                               style={{ display: 'flex', alignItems: 'center' }}
                             >
@@ -1027,12 +1119,13 @@ export const ChatMessage: FC<Props> = memo(
                       },
                     }}
                   >
-                    {`${message.content}${messageIsStreaming &&
+                    {`${message.content}${
+                      messageIsStreaming &&
                       messageIndex ==
-                      (selectedConversation?.messages.length ?? 0) - 1
-                      ? '`▍`'
-                      : ''
-                      }`}
+                        (selectedConversation?.messages.length ?? 0) - 1
+                        ? '`▍`'
+                        : ''
+                    }`}
                   </MemoizedReactMarkdown>
                   {/* {message.contexts && message.contexts.length > 0 && (
                     <Group variant="row" spacing="xs">

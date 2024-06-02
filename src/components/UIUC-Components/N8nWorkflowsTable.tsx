@@ -7,11 +7,6 @@ import { Title, Text, Switch } from '@mantine/core'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Montserrat } from 'next/font/google'
 import {
-  UIUCTool,
-  useFetchAllWorkflows,
-} from '~/utils/functionCalling/handleFunctionCalling'
-
-import {
   // IconArrowsSort,
   // IconCaretDown,
   // IconCaretUp,
@@ -21,6 +16,8 @@ import {
 import { DataTable, DataTableSortStatus } from 'mantine-datatable'
 import { LoadingSpinner } from './LoadingSpinner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { UIUCTool } from '~/types/chat'
+import { useFetchAllWorkflows } from '~/utils/functionCalling/handleFunctionCalling'
 
 const PAGE_SIZE = 20
 
@@ -56,7 +53,7 @@ export const N8nWorkflowsTable = ({
     isSuccess: isSuccess,
     isError: isErrorTools,
     refetch: refetchWorkflows,
-  } = useFetchAllWorkflows(course_name, n8nApiKey, 10, 'true', true)
+  } = useFetchAllWorkflows(course_name, n8nApiKey, 20, 'true', true)
 
   const mutate_active_flows = useMutation({
     mutationFn: async ({ id, checked }: { id: string; checked: boolean }) => {
@@ -285,11 +282,11 @@ export const N8nWorkflowsTable = ({
         loadingText="Loading..."
         // 👇 uncomment the next line to display a custom text when no records were found
         noRecordsText="No records found"
-      // 👇 uncomment the next line to use a custom pagination text
-      // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
-      // 👇 uncomment the next lines to use custom pagination colors
-      // paginationActiveBackgroundColor="green"
-      // paginationActiveTextColor="#e6e348"
+        // 👇 uncomment the next line to use a custom pagination text
+        // paginationText={({ from, to, totalRecords }) => `Records ${from} - ${to} of ${totalRecords}`}
+        // 👇 uncomment the next lines to use custom pagination colors
+        // paginationActiveBackgroundColor="green"
+        // paginationActiveTextColor="#e6e348"
       />
     </>
   )

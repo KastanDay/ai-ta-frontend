@@ -23,9 +23,27 @@ export const updateConversation = (
 }
 
 export const saveConversation = (conversation: Conversation) => {
-  localStorage.setItem('selectedConversation', JSON.stringify(conversation))
+  try {
+    localStorage.setItem('selectedConversation', JSON.stringify(conversation))
+  } catch (e) {
+    console.error(
+      'Error saving conversation history. Clearing storage, then setting convo. Error:',
+      e,
+    )
+    localStorage.clear()
+    localStorage.setItem('selectedConversation', JSON.stringify(conversation))
+  }
 }
 
 export const saveConversations = (conversations: Conversation[]) => {
-  localStorage.setItem('conversationHistory', JSON.stringify(conversations))
+  try {
+    localStorage.setItem('conversationHistory', JSON.stringify(conversations))
+  } catch (e) {
+    console.error(
+      'Error saving conversation history. Clearing storage, then setting convo. Error:',
+      e,
+    )
+    localStorage.clear()
+    localStorage.setItem('conversationHistory', JSON.stringify(conversations))
+  }
 }

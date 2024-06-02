@@ -52,6 +52,7 @@ import {
   type Message,
   Content,
   Action,
+  UIUCTool,
 } from '@/types/chat'
 import { type Plugin } from '@/types/plugin'
 
@@ -88,10 +89,10 @@ import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
 import { fetchRoutingResponse } from '~/pages/api/UIUC-api/fetchRoutingResponse'
 import { fetchPestDetectionResponse } from '~/pages/api/UIUC-api/fetchPestDetectionResponse'
 import handleTools, {
-  UIUCTool,
   useFetchAllWorkflows,
 } from '~/utils/functionCalling/handleFunctionCalling'
 import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
+import { buildPrompt } from '~/pages/api/chat'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -335,58 +336,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
   }
 
-  const handlePestDetection = async (
-    message: Message,
-    imageContent: Content[],
-    updatedConversation: Conversation,
-    currentMessageIndex: number,
-  ) => {
-    homeDispatch({ field: 'isRunningTool', value: true })
-    // Call pest detection API to get the s3 paths of the annotated images
-    const pestDetectionResponse = await fetchPestDetectionResponse(
-      imageContent.map((content) => content.image_url?.url as string),
-    )
-    console.log('Pest detection response: ', pestDetectionResponse)
-    // Update the message content and append the annotated images to the message
-    for (const url of pestDetectionResponse) {
-      const presignedUrl = await fetchPresignedUrl(url)
-      if (presignedUrl) {
-        ; (message.content as Content[]).push({
-          type: 'tool_image_url',
-          image_url: {
-            url: presignedUrl,
-          },
-        })
-      }
-    }
-
-    updatedConversation.messages[currentMessageIndex] = message
-
-    homeDispatch({
-      field: 'selectedConversation',
-      value: updatedConversation,
-    })
-
-    const updatedConversations = updateConversations(updatedConversation)
-    if (!updatedConversations) {
-      throw new Error('Failed to update conversations')
-    }
-
-    homeDispatch({ field: 'conversations', value: updatedConversations })
-    saveConversations(updatedConversations)
-    // Assuming onImageUrlsUpdate is designed to handle the update
-    // onImageUrlsUpdate({
-    // ...message,
-    // content: message.content,
-    // }, updateConversations.length - 1);
-
-    console.log(
-      'Updated message content after pest detection and fetching presigned urls: ',
-      message.content,
-    )
-    homeDispatch({ field: 'isRunningTool', value: false })
-  }
-
   const handleRoutingForImageContent = async (
     message: Message,
     tools: UIUCTool[],
@@ -407,35 +356,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       )
       console.log('imageURLs:', imageUrls)
 
-      homeDispatch({ field: 'isRouting', value: true })
+      // homeDispatch({ field: 'isRouting', value: true })
 
       try {
-        //Todo: Add a check to get a list of allowed tools for routing from the DB and use them in the prompt
-        // Replace routing with function calling w/ tools.
-        const response = await fetchRoutingResponse(
-          message,
-          getCurrentPageName(),
-          endpoint,
-          updatedConversation,
-          getOpenAIKey(courseMetadata),
-          controller,
-        )
-        console.log('Routing response: ', response)
-        homeDispatch({ field: 'isRouting', value: false })
-        // TODO: Update pests routing response for list of {tool: string, arguments: string}
-        homeDispatch({
-          field: 'routingResponse',
-          value: JSON.stringify(response, null, 2),
-        })
-        // For future use, if we want to handle different types of routing responses for image content then we can add more cases here
-        if ('Pests' === response) {
-          await handlePestDetection(
-            message,
-            imageContent,
-            updatedConversation,
-            currentMessageIndex,
-          )
-        }
         const { updatedSearchQuery, imgDesc } = await handleImageContent(
           message,
           endpoint,
@@ -462,8 +385,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     controller: AbortController,
   ) => {
     const imageContent = (message.content as Content[]).filter(
-      (content) =>
-        content.type === 'image_url' || content.type === 'tool_image_url',
+      (content) => content.type === 'image_url',
     )
     let imgDesc = ''
     if (imageContent.length > 0) {
@@ -486,12 +408,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ; (message.content as Content[])[imgDescIndex] = {
+          ;(message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ; (message.content as Content[]).push({
+          ;(message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -570,11 +492,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       if (selectedConversation) {
         let updatedConversation: Conversation
         if (deleteCount) {
-          //Remove the images generated by one of the tools from the message when the user regenerates the message i.e. have content.type === 'tool_image_url'
-          message.content = (message.content as Content[]).filter(
-            (content) => content.type !== 'tool_image_url',
-          )
-          // TODO: check for function calling, remove that. So regenerate works.
+          // Remove tools from message to clear old tools
+          message.tools = []
 
           const updatedMessages = [...selectedConversation.messages]
           for (let i = 0; i < deleteCount; i++) {
@@ -626,6 +545,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           imgDesc = newImgDesc
         }
 
+        // Retrieval Tool
         // Run context search, attach to Message object.
         await handleContextSearch(
           message,
@@ -655,6 +575,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           getOpenAIKey(courseMetadata),
           homeDispatch,
         )
+        // Update conversation from toolResult
         console.log('Tool result:', message.tools)
 
         const chatBody: ChatBody = {
@@ -665,6 +586,21 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           stream: true,
           isImage: false,
         }
+
+        // src/pages/api/buildPrompt.ts
+        const buildPromptResponse = await fetch('/api/buildPrompt', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(chatBody),
+        })
+        chatBody.conversation = await buildPromptResponse.json()
+        updatedConversation = chatBody.conversation
+        // homeDispatch({
+        //   field: 'selectedConversation',
+        //   value: chatBody.conversation,
+        // })
 
         // Call the OpenAI API
         const response = await fetch(endpoint, {
@@ -930,7 +866,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
       handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
@@ -1023,14 +959,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-      courseMetadata.example_questions.length > 0
+    courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-        'Make a bullet point list of key takeaways of the course.',
-        'What is [your favorite topic] and why is it worth learning about?',
-        'How can I effectively prepare for the upcoming exam?',
-        'How many assignments in the course?',
-      ]
+          'Make a bullet point list of key takeaways of the course.',
+          'What is [your favorite topic] and why is it worth learning about?',
+          'How can I effectively prepare for the upcoming exam?',
+          'How many assignments in the course?',
+        ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {

@@ -3,13 +3,10 @@ import { Dispatch } from 'react'
 import { Conversation, Message } from '~/types/chat'
 import { ActionType } from '@/hooks/useCreateReducer'
 import { HomeInitialState } from '~/pages/api/home/home.state'
-
-// TODO: move this to the backend so it's in the API!!
-
-export interface RoutingResponse {
-  toolName: string
-  arguments: JSON
-}
+import { ChatCompletionMessageToolCall } from 'openai/resources/chat/completions'
+import { N8NParameter, N8nWorkflow, OpenAICompatibleTool } from '~/types/tools'
+import { UIUCTool } from '~/types/chat'
+import { uploadToS3 } from '../apiUtils'
 
 export default async function handleTools(
   message: Message,
@@ -44,199 +41,165 @@ export default async function handleTools(
       }),
     })
     if (!response.ok) {
-      // print error message
-      console.error('Error calling openaiFunctionCall: ', response)
-    }
-
-    if (response.body) {
-      const reader = response.body.getReader()
-      let { value: chunk, done: readerDone } = await reader.read()
-      chunk = chunk ? chunk : new Uint8Array()
-
-      const chunks = []
-      while (!readerDone) {
-        const segment = new TextDecoder().decode(chunk, { stream: true })
-        // console.log('Chunk from openaiFunctionCall: ', segment);
-        chunks.push(segment)
-        const result = await reader.read()
-        chunk = result.value
-        readerDone = result.done
-      }
-
-      // Parse function calling from OpenAI
-      const finalResponse = JSON.parse(chunks.join(''))
-      const { function_call } = finalResponse
-
-      // Parse the function arguments from JSON
-      if (function_call && function_call.arguments) {
-        const args = JSON.parse(function_call.arguments)
-        function_call.arguments = args
-      }
-
+      console.error(
+        'in HandleTools -- Error calling openaiFunctionCall: ',
+        response,
+      )
       homeDispatch({ field: 'isRouting', value: false })
-      // homeDispatch({ field: 'isPestDetectionLoading', value: false })
+      return
+    }
+    const openaiResponse: ChatCompletionMessageToolCall[] =
+      await response.json()
+    console.log('OpenAI tools to run: ', openaiResponse)
+    // map tool into UIUCTool, parse arguments
+    const uiucToolsToRun = openaiResponse.map((openaiTool) => {
+      const uiucTool = availableTools.find(
+        (availableTool) => availableTool.name === openaiTool.function.name,
+      ) as UIUCTool
+      uiucTool.aiGeneratedArgumentValues = JSON.parse(
+        openaiTool.function.arguments,
+      )
+      return uiucTool
+    })
+    console.log('UIUC tools to run: ', uiucToolsToRun)
 
-      // Add back the original name, for matching in N8N interface.
-      function_call.readableName = function_call.name.replace(/_/g, ' ')
-      console.log('Function call from openaiFunctionCall: ', function_call)
+    // Update conversation with tools & arguments (for fast UI), then we'll actually call the tools below
+    homeDispatch({ field: 'isRouting', value: false })
+    message.tools = [...uiucToolsToRun]
+    selectedConversation.messages[currentMessageIndex] = message
+    homeDispatch({
+      field: 'selectedConversation',
+      value: selectedConversation,
+    })
 
-      homeDispatch({
-        field: 'routingResponse',
-        // value: JSON.stringify(function_call, null, 2),
-        // value: `${function_call.readableName}\nArguments: ${JSON.stringify(function_call.arguments)}`,
-        value: [
-          {
-            toolName: function_call.readableName,
-            arguments: function_call.arguments,
-          },
-        ],
-      })
-
-      // Do tool calling here!!
-      if (function_call) {
-        homeDispatch({ field: 'isRunningTool', value: true })
-        const toolResult = await callN8nFunction(function_call, 'todo!') // TODO: Get API key
-
-        homeDispatch({ field: 'isRunningTool', value: false })
-
-        // Get UIUCTool from openAI function call name
-        const uiucTool = availableTools.find(
-          (tool) => tool.name === function_call.name,
-        )
-
-        // Add tool result to messages
-        if (message.tools) {
-          message.tools.push({
-            toolResult: JSON.stringify(toolResult),
-            tool: uiucTool,
-          })
-        } else {
-          message.tools = [
-            { toolResult: JSON.stringify(toolResult), tool: uiucTool },
-          ]
+    if (uiucToolsToRun.length > 0) {
+      // Tool calling in Parallel here!!
+      const toolResultsPromises = uiucToolsToRun.map(async (tool) => {
+        try {
+          const toolOutput = await callN8nFunction(tool, 'todo!') // TODO: Get API key
+          handleToolOutput(toolOutput, tool)
+        } catch (error: unknown) {
+          console.error(
+            `Error running tool: ${error instanceof Error ? error.message : error}`,
+          )
+          tool.error = `Error running tool: ${error instanceof Error ? error.message : error}`
+          // tool.output = { text: `Error running tool: ${error instanceof Error ? error.message : error}` };
         }
+        // update message with tool output, but don't add another tool.
+        selectedConversation.messages[currentMessageIndex]!.tools!.find(
+          (t) => t.readableName === tool.readableName,
+        )!.output = tool.output
+
         selectedConversation.messages[currentMessageIndex] = message
         homeDispatch({
           field: 'selectedConversation',
           value: selectedConversation,
         })
+      })
+      await Promise.all(toolResultsPromises)
 
-        return toolResult
-      }
-    } else {
-      console.debug('HandleTools routing response missing - No response body.')
+      return null
     }
   } catch (error) {
     console.error('Error calling openaiFunctionCall: ', error)
   }
 }
 
-// TODO: finalize this function calling
-const callN8nFunction = async (function_call: any, n8n_api_key: string) => {
-  console.log('Calling n8n function with data: ', function_call)
+const handleToolOutput = async (toolOutput: any, tool: UIUCTool) => {
+  // Handle case where toolOutput is a simple string
+  if (typeof toolOutput === 'string') {
+    tool.output = { text: toolOutput }
+  }
+  // Handle case where toolOutput contains image URLs
+  else if (toolOutput.imageUrls && Array.isArray(toolOutput.imageUrls)) {
+    tool.output = { imageUrls: toolOutput.imageUrls }
+  }
+  // Handle case where toolOutput is a single Blob object (binary data)
+  else if (toolOutput.data instanceof Blob) {
+    const s3Key = (await uploadToS3(toolOutput.data, tool.name)) as string
+    tool.output = { s3Paths: [s3Key] }
+  }
+  // Handle case where toolOutput is an array of Blob objects
+  else if (
+    Array.isArray(toolOutput) &&
+    toolOutput.every((item: any) => item instanceof Blob)
+  ) {
+    const s3KeysPromises = toolOutput.map(async (blob: Blob) => {
+      const file = new File([blob], 'filename', {
+        type: blob.type,
+        lastModified: Date.now(),
+      })
+      return uploadToS3(file, tool.name)
+    })
+    const s3Keys = (await Promise.all(s3KeysPromises)) as string[]
+    tool.output = { s3Paths: s3Keys }
+  } else if (tool.output && Array.isArray(toolOutput)) {
+    tool.output.data = toolOutput.reduce((acc, cur) => ({ ...acc, ...cur }), {})
+  }
+  // Default case: directly assign toolOutput to tool.output
+  else {
+    tool.output = toolOutput
+  }
+}
 
-  const response = await fetch(
+// TODO: finalize this function calling
+const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
+  console.log('Calling n8n function with data: ', tool)
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 25000)
+
+  const body = JSON.stringify({
+    api_key:
+      'n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6',
+    name: tool.readableName,
+    data: tool.aiGeneratedArgumentValues,
+  })
+
+  console.log('Calling n8n function with body: ', body)
+  const timeStart = Date.now()
+  const response: Response = await fetch(
     `https://flask-production-751b.up.railway.app/run_flow`,
     {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        api_key:
-          'n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6',
-        name: function_call.readableName,
-        data: function_call.arguments,
-      }),
+      body: body,
+      signal: controller.signal,
     },
-  )
+  ).catch((error) => {
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out after 15 seconds')
+    }
+    throw error
+  })
+  const timeEnd = Date.now()
+  console.log('Time taken for n8n function call: ', timeEnd - timeStart)
+
+  clearTimeout(timeoutId)
   if (!response.ok) {
-    console.error('Error calling n8n function: ', response)
-    throw new Error(`Error calling n8n function. Status: ${response.status}`)
+    const errjson = await response.json()
+    console.error('Error calling n8n function: ', errjson.error)
+    throw new Error(errjson.error)
   }
 
   // Parse final answer from n8n workflow object
   const n8nResponse = await response.json()
-  console.log('N8n function response: ', n8nResponse)
-  // const resultData = data[0].data.resultData
   const resultData = n8nResponse.data.resultData
   const finalNodeType = resultData.lastNodeExecuted
-  console.log('N8n final node type: ', finalNodeType)
-  const finalResponse =
-    resultData.runData[finalNodeType][0].data.main[0][0].json
-  console.log('N8n final response: ', finalResponse)
-  // N8n final response: {Search result: 'No agriculture info available (hard coded testing response).'}
 
-  return finalResponse
-}
-
-// conform to the OpenAI function calling API
-interface FormField {
-  fieldLabel: string
-  fieldType?: string
-  requiredField?: boolean
-}
-
-interface FormNodeParameter {
-  formFields: {
-    values: FormField[]
+  // Check for N8N tool error, like invalid auth
+  if (resultData.runData[finalNodeType][0]['error']) {
+    console.error(
+      'N8N tool error: ',
+      resultData.runData[finalNodeType][0]['error'],
+    )
+    const err = resultData.runData[finalNodeType][0]['error']
+    throw new Error(err.message)
   }
-  formDescription: string
-}
 
-interface Node {
-  id: string
-  name: string
-  parameters: FormNodeParameter
-  type: string
-}
-
-export interface N8nWorkflow {
-  id: string
-  name: string
-  type: string
-  active: boolean
-  nodes: Node[]
-  createdAt: string
-  updatedAt: string
-}
-
-interface Parameter {
-  type: 'string' | 'textarea' | 'number' | 'Date' | 'DropdownList'
-  description: string
-  enum?: string[]
-}
-
-export interface OpenAICompatibleTool {
-  name: string
-  readableName: string
-  description: string
-  parameters?: {
-    type: 'object'
-    properties: Record<string, Parameter>
-    required: string[]
-  }
-}
-
-// TODO: Refine type here, use in chat.tsx
-// name: string
-// enabled: boolean
-// course_name: string
-// doc_count: number
-export interface UIUCTool {
-  id: string
-  name: string
-  readableName: string
-  description: string
-  parameters?: {
-    type: 'object'
-    properties: Record<string, Parameter>
-    required: string[]
-  }
-  courseName?: string
-  enabled?: boolean
-  createdAt?: string
-  updatedAt?: string
+  return resultData.runData[finalNodeType][0].data.main[0][0].json['data']
 }
 
 export function getOpenAIToolFromUIUCTool(
@@ -244,17 +207,40 @@ export function getOpenAIToolFromUIUCTool(
 ): OpenAICompatibleTool[] {
   return tools.map((tool) => {
     return {
-      id: tool.name,
-      name: tool.name,
-      readableName: tool.readableName,
-      description: tool.description,
-      parameters: tool.parameters
-        ? {
-            type: 'object',
-            properties: tool.parameters.properties,
-            required: tool.parameters.required,
-          }
-        : undefined,
+      type: 'function',
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.inputParameters
+          ? {
+              type: 'object',
+              properties: Object.keys(tool.inputParameters.properties).reduce(
+                (acc, key) => {
+                  const param = tool.inputParameters?.properties[key]
+                  acc[key] = {
+                    type:
+                      param?.type === 'number'
+                        ? 'number'
+                        : param?.type === 'Boolean'
+                          ? 'Boolean'
+                          : 'string',
+                    description: param?.description,
+                    enum: param?.enum,
+                  }
+                  return acc
+                },
+                {} as {
+                  [key: string]: {
+                    type: 'string' | 'number' | 'Boolean'
+                    description?: string
+                    enum?: string[]
+                  }
+                },
+              ),
+              required: tool.inputParameters.required,
+            }
+          : undefined,
+      },
     }
   })
 }
@@ -272,7 +258,7 @@ export function getUIUCToolFromN8n(workflows: N8nWorkflow[]): UIUCTool[] {
     )
     if (!formTriggerNode) continue
 
-    const properties: Record<string, Parameter> = {}
+    const properties: Record<string, N8NParameter> = {}
     const required: string[] = []
     let parameters = {}
 
@@ -306,7 +292,8 @@ export function getUIUCToolFromN8n(workflows: N8nWorkflow[]): UIUCTool[] {
       updatedAt: workflow.updatedAt,
       createdAt: workflow.createdAt,
       // @ts-ignore -- can't get the 'only add if non-zero' to work nicely. It's fine.
-      parameters: Object.keys(parameters).length > 0 ? parameters : undefined,
+      inputParameters:
+        Object.keys(parameters).length > 0 ? parameters : undefined,
     })
   }
 
@@ -316,7 +303,7 @@ export function getUIUCToolFromN8n(workflows: N8nWorkflow[]): UIUCTool[] {
 export const useFetchAllWorkflows = (
   course_name?: string,
   api_key?: string,
-  limit = 10,
+  limit = 20,
   pagination = 'true',
   full_details = false,
 ) => {

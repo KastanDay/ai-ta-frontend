@@ -41,10 +41,10 @@ export const OpenAIStream = async (
   messages: OpenAIChatMessage[],
   stream: boolean,
 ) => {
-  console.debug('In OpenAIStream, model: ', model)
-  messages.forEach((message, index) => {
-    console.log(`Message ${index}:`, message.role, message.content)
-  })
+  // console.debug('In OpenAIStream, model: ', model)
+  // messages.forEach((message, index) => {
+  //   console.log(`Message ${index}:`, message.role, message.content)
+  // })
   let apiKey = key
   let apiType = OPENAI_API_TYPE
   let endpoint = OPENAI_API_HOST
@@ -55,10 +55,11 @@ export const OpenAIStream = async (
     )
     apiKey = decryptedText as string
     // console.log('Decrypted api key for openai chat: ', apiKey)
-    console.log('Decrypted api key for openai chat')
-  } else {
-    console.log('Using client key for openai chat: ', apiKey)
+    // console.log('Decrypted api key for openai chat')
   }
+  // else {
+  //   console.log('Using client key for openai chat: ', apiKey)
+  // }
 
   if (apiKey && !apiKey.startsWith('sk-')) {
     console.log('setting azure variables')

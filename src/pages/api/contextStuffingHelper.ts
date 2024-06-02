@@ -82,9 +82,9 @@ export async function getStuffedPrompt(
         d.pagenumber ? ', page: ' + d.pagenumber : ''
       }\n${d.text}\n`
       const numTokens = encoding.encode(docString).length
-      console.log(
-        `token_counter: ${tokenCounter}, num_tokens: ${numTokens}, token_limit: ${tokenLimit}`,
-      )
+      // console.log(
+      //   `token_counter: ${tokenCounter}, num_tokens: ${numTokens}, token_limit: ${tokenLimit}`,
+      // )
       if (tokenCounter + numTokens <= tokenLimit) {
         tokenCounter += numTokens
         validDocs.push({ index, d })

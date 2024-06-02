@@ -48,7 +48,6 @@ import { type CourseMetadata } from '~/types/courseMetadata'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
-import { RoutingResponse } from '~/utils/functionCalling/handleFunctionCalling'
 
 const Home = () => {
   const { t } = useTranslation('chat')
@@ -405,14 +404,14 @@ const Home = () => {
   }
 
   // Routing Response
-  const setRoutingResponse = (routingResponse: RoutingResponse) => {
-    dispatch({ field: 'routingResponse', value: routingResponse })
-  }
+  // const setRoutingResponse = (routingResponse: RoutingResponse) => {
+  //   dispatch({ field: 'routingResponse', value: routingResponse })
+  // }
 
   // Pest Detection
-  const setIsRunningTool = (isRunningTool: boolean) => {
-    dispatch({ field: 'isRunningTool', value: isRunningTool })
-  }
+  // const setIsRunningTool = (isRunningTool: boolean) => {
+  //   dispatch({ field: 'isRunningTool', value: isRunningTool })
+  // }
 
   // Retrieval
   const setIsRetrievalLoading = (isRetrievalLoading: boolean) => {
@@ -643,8 +642,8 @@ const Home = () => {
           handleUpdateConversation,
           setIsImg2TextLoading,
           setIsRouting,
-          setRoutingResponse,
-          setIsRunningTool,
+          // setRoutingResponse,
+          // setIsRunningTool,
           setIsRetrievalLoading,
           handleUpdateDocumentGroups,
           handleUpdateTools,

@@ -1,14 +1,9 @@
-import { Action, Conversation, Message } from '@/types/chat'
+import { Action, Conversation, Message, UIUCTool } from '@/types/chat'
 import { ErrorMessage } from '@/types/error'
 import { FolderInterface } from '@/types/folder'
 import { OpenAIModel, OpenAIModelID } from '@/types/openai'
 import { PluginKey } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
-import {
-  OpenAICompatibleTool,
-  RoutingResponse,
-  UIUCTool,
-} from '~/utils/functionCalling/handleFunctionCalling'
 
 export interface HomeInitialState {
   apiKey: string
@@ -37,7 +32,7 @@ export interface HomeInitialState {
   showModelSettings: boolean
   isImg2TextLoading: boolean
   isRouting: boolean | undefined
-  routingResponse: RoutingResponse[] | undefined
+  // routingResponse: RoutingResponse[] | undefined
   // isPestDetectionLoading: boolean | undefined
   isRunningTool: boolean | undefined
   isRetrievalLoading: boolean | undefined
@@ -71,7 +66,7 @@ export const initialState: HomeInitialState = {
   cooldown: 0,
   showModelSettings: false,
   isRouting: undefined,
-  routingResponse: undefined,
+  // routingResponse: undefined,
   isRunningTool: undefined,
   isRetrievalLoading: undefined,
   isImg2TextLoading: false,

@@ -124,4 +124,5 @@ export const VisionCapableModels: Set<OpenAIModelID> = new Set([
   OpenAIModelID.GPT_4_VISION,
   OpenAIModelID.GPT_4_2024_04_09, // Add other vision capable models here as needed
   OpenAIModelID.GPT_4_AZURE_04_09,
+  OpenAIModelID.GPT_4o,
 ])

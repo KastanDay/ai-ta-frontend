@@ -1,24 +1,59 @@
-import { UIUCTool } from '~/utils/functionCalling/handleFunctionCalling'
 import { OpenAIModel } from './openai'
 import { CourseMetadata } from './courseMetadata'
+import { N8NParameter } from './tools'
+
+export interface Conversation {
+  // NO KEY
+  id: string
+  name: string
+  messages: Message[]
+  model: OpenAIModel // ! consider allowing null models: | null
+  prompt: string
+  temperature: number
+  folderId: string | null
+  user_email?: string
+}
 
 export interface Message {
   // id: string;
   role: Role
   content: string | Content[]
   contexts?: ContextWithMetadata[]
-  tools?: ToolResult[]
+  tools?: UIUCTool[]
+  latestSystemMessage?: string
+  finalPromtEngineeredMessage?: string // after all prompt enginering, to generate final response.
   responseTimeSec?: number
 }
 
-export interface ToolResult {
-  tool?: UIUCTool
-  toolResult?: string
-  toolContexts?: ContextWithMetadata[]
+export interface UIUCTool {
+  id: string
+  name: string // Openai uses this
+  readableName: string // N8N uses this
+  description: string
+  inputParameters?: {
+    type: 'object'
+    properties: Record<string, N8NParameter>
+    required: string[]
+  }
+  aiGeneratedArgumentValues?: Record<string, string>
+  courseName?: string
+  enabled?: boolean
+  createdAt?: string
+  updatedAt?: string
+  output?: ToolOutput // Use a unified output type
+  error?: string
+  contexts?: ContextWithMetadata[]
+}
+
+export type ToolOutput = {
+  text?: string // For plain text outputs
+  imageUrls?: string[] // For image URLs
+  s3Paths?: string[] // For S3 paths of uploaded files
+  data?: Record<string, unknown> // For any other structured data
 }
 
 // tool_image_url is for images returned by tools
-export type MessageType = 'text' | 'image_url' | 'tool_image_url'
+export type MessageType = 'text' | 'image_url'
 
 export interface Content {
   type: MessageType
@@ -45,6 +80,7 @@ export interface ContextWithMetadata {
   base_url: string
 }
 
+// These are only internal
 export type Role = 'assistant' | 'user' | 'system'
 
 export interface ChatBody {
@@ -55,18 +91,6 @@ export interface ChatBody {
   isImage: boolean
   courseMetadata?: CourseMetadata
   // NO FOLDER ID
-}
-
-export interface Conversation {
-  // NO KEY
-  id: string
-  name: string
-  messages: Message[]
-  model: OpenAIModel // ! consider allowing null models: | null
-  prompt: string
-  temperature: number
-  folderId: string | null
-  user_email?: string
 }
 
 export interface ChatApiBody {
