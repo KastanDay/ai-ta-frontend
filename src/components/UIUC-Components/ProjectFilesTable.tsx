@@ -489,7 +489,7 @@ export function ProjectFilesTable({
       // withBorder
       // style={styles}
       >
-        <div style={{ display: 'flex', position: 'relative', alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', position: 'relative', alignItems: 'flex-start', background: 'black' }}>
 
           {/* {items.map((item, index) => ( */}
           <Tooltip label="All selected documents will be added to the group">
@@ -505,6 +505,8 @@ export function ProjectFilesTable({
                 paddingRight: '10px',
                 paddingLeft: '10px',
                 transition: '0.3s',
+                marginRight: '5px',
+                marginBottom: '7px',
               }}
             >
               Document Groups
