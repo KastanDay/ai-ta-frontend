@@ -13,7 +13,6 @@ import {
   IconBrain,
   IconCreditCard,
   IconAlertCircle,
-  IconSearch,
   // IconArrowUpRight,
   // IconFileTextAi,
   // IconX,
@@ -32,12 +31,7 @@ import {
 } from 'react'
 import {
   Button,
-  Group,
-  Switch,
   Text,
-  UnstyledButton,
-  createStyles,
-  rem,
 } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
@@ -51,7 +45,6 @@ import {
   type Conversation,
   type Message,
   Content,
-  Action,
   UIUCTool,
 } from '@/types/chat'
 import { type Plugin } from '@/types/plugin'
@@ -86,13 +79,10 @@ import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
 import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
-import { fetchRoutingResponse } from '~/pages/api/UIUC-api/fetchRoutingResponse'
-import { fetchPestDetectionResponse } from '~/pages/api/UIUC-api/fetchPestDetectionResponse'
 import handleTools, {
   useFetchAllWorkflows,
 } from '~/utils/functionCalling/handleFunctionCalling'
 import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
-import { buildPrompt } from '~/pages/api/chat'
 
 const montserrat_med = Montserrat({
   weight: '500',

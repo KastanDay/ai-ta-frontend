@@ -878,12 +878,20 @@ export const ChatMessage: FC<Props> = memo(
                                                 </span>
                                               ) : (
                                                 <>
-                                                <div style={{ overflowX: 'auto', whiteSpace: 'nowrap' }}>
-                                                {response.output?.imageUrls && response.output?.imageUrls?.map((imageUrl, index) => (
-                                                  <img key={index} src={imageUrl} alt={`Tool output image ${index}`} style={{ display: 'inline', marginRight: '10px' }} />
-                                                ))}
-                                                </div>
-                                                {response.output?.text}
+                                                  <div style={{ overflowX: 'auto', whiteSpace: 'nowrap' }}>
+                                                    {response.output?.imageUrls && response.output?.imageUrls.map((imageUrl, index) => (
+                                                      <div key={index} className={classes.imageContainerStyle}>
+                                                        <div className="overflow-hidden rounded-lg shadow-lg">
+                                                          <ImagePreview
+                                                            src={imageUrl}
+                                                            alt={`Tool output image ${index}`}
+                                                            className={classes.imageStyle}
+                                                          />
+                                                        </div>
+                                                      </div>
+                                                    ))}
+                                                  </div>
+                                                  {response.output?.text}
                                                 </>
                                               )}
                                             </pre>

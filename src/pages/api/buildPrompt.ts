@@ -27,7 +27,7 @@ export const config = {
 // A POST request endpoint that just calls buildPrompt and returns that as a json body.
 export default async (req: Request): Promise<NextResponse> => {
   try {
-    const { conversation, key, course_name, courseMetadata, isImage } =
+    const { conversation, key, course_name, courseMetadata } =
       (await req.json()) as ChatBody
 
     console.log('In build prompt fetch endpoint!!')
@@ -37,7 +37,6 @@ export default async (req: Request): Promise<NextResponse> => {
       rawOpenaiKey: key,
       projectName: course_name,
       courseMetadata,
-      isImage,
     })
 
     return new NextResponse(JSON.stringify(updatedConversation))

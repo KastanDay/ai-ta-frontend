@@ -118,7 +118,6 @@ export const buildPrompt = async ({
   rawOpenaiKey: string
   projectName: string
   courseMetadata: CourseMetadata | undefined
-  isImage: boolean
   // }): Promise<Prompts> => {
 }): Promise<Conversation> => {
   /*

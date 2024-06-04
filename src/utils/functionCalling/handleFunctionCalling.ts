@@ -111,12 +111,12 @@ const handleToolOutput = async (toolOutput: any, tool: UIUCTool) => {
     tool.output = { text: toolOutput }
   }
   // Handle case where toolOutput contains image URLs
-  else if (toolOutput.imageUrls && Array.isArray(toolOutput.imageUrls)) {
+  else if (toolOutput?.imageUrls && Array.isArray(toolOutput?.imageUrls)) {
     tool.output = { imageUrls: toolOutput.imageUrls }
   }
   // Handle case where toolOutput is a single Blob object (binary data)
-  else if (toolOutput.data instanceof Blob) {
-    const s3Key = (await uploadToS3(toolOutput.data, tool.name)) as string
+  else if (toolOutput?.data instanceof Blob) {
+    const s3Key = (await uploadToS3(toolOutput?.data, tool.name)) as string
     tool.output = { s3Paths: [s3Key] }
   }
   // Handle case where toolOutput is an array of Blob objects
