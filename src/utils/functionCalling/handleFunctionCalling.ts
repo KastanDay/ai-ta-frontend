@@ -187,6 +187,7 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
   // Parse final answer from n8n workflow object
   const n8nResponse = await response.json()
   const resultData = n8nResponse.data.resultData
+  console.debug('N8n results data: ', resultData)
   const finalNodeType = resultData.lastNodeExecuted
 
   // Check for N8N tool error, like invalid auth
@@ -199,7 +200,22 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
     throw new Error(err.message)
   }
 
-  return resultData.runData[finalNodeType][0].data.main[0][0].json['data']
+  // I used to have ['data'] at the end, but sometimes it's only 'response' not 'data'
+  if (!resultData.runData[finalNodeType][0].data.main[0][0].json) {
+    console.error('No data in N8N tool response')
+    throw new Error('No data in N8N tool response')
+  }
+  if (resultData.runData[finalNodeType][0].data.main[0][0].json['data']) {
+    return resultData.runData[finalNodeType][0].data.main[0][0].json['data']
+  } else if (
+    resultData.runData[finalNodeType][0].data.main[0][0].json['response']
+  ) {
+    return resultData.runData[finalNodeType][0].data.main[0][0].json['response']
+  } else {
+    return resultData.runData[finalNodeType][0].data.main[0][0].json
+  }
+  // Old:
+  // return resultData.runData[finalNodeType][0].data.main[0][0].json['data']
 }
 
 export function getOpenAIToolFromUIUCTool(
