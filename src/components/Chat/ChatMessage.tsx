@@ -430,27 +430,37 @@ export const ChatMessage: FC<Props> = memo(
     }
 
     useEffect(() => {
-      if (message.tools && message.tools.length > 0) {
-        message.tools.forEach(tool => {
-          if (tool.output && tool.output.s3Paths) {
-            tool.output.s3Paths.forEach(s3Path => {
-            })
+      const processTools = async () => {
+        if (message.tools && message.tools.length > 0) {
+          for (const tool of message.tools) {
+            if (tool.output && tool.output.s3Paths) {
+              const imageUrls = await Promise.all(
+                tool.output.s3Paths.map(async (s3Path) => {
+                  return getPresignedUrl(s3Path);
+                })
+              );
+              tool.output.imageUrls = tool.output.imageUrls ? [...tool.output.imageUrls, ...imageUrls] : imageUrls;
+            }
+            if (tool.output && tool.output.imageUrls) {
+              const validUrls = await Promise.all(
+                tool.output.imageUrls.map(async (imageUrl) => {
+                  const isValid = await checkIfUrlIsValid(imageUrl);
+                  if (!isValid) {
+                    console.log('Image URL is expired');
+                    const s3_path = extractPathFromUrl(imageUrl);
+                    return getPresignedUrl(s3_path);
+                  }
+                  return imageUrl;
+                })
+              );
+              tool.output.imageUrls = validUrls;
+            }
           }
-          if (tool.output && tool.output.imageUrls) {
-            tool.output.imageUrls.map(async imageUrl => {
-              if (await checkIfUrlIsValid(imageUrl)) {
-                tool.output?.imageUrls?.push(imageUrl)
-              } else {
-                console.log('Image URL is expired')
-                const s3_path = extractPathFromUrl(imageUrl)
-                const presignedUrl = await getPresignedUrl(s3_path)
-                tool.output?.imageUrls?.push(presignedUrl)
-              }
-            })
-          }
-        })
-      }
-    }, [message.tools])
+        }
+      };
+
+      processTools();
+    }, [message.tools]);
 
     return (
       <div
@@ -791,14 +801,19 @@ export const ChatMessage: FC<Props> = memo(
                                   2) && (
                               <div
                                 style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
+                                  display: 'block', 
                                 }}
                               >
                                 {message.tools.map(
                                   (response, index) =>
                                     response.output === undefined && response.error === undefined && (
-                                      <Fragment key={index}>
+                                      <div key={index} 
+                                        style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          marginBottom: '20px', 
+                                        }}
+                                      >
                                         <p
                                           style={{
                                             marginRight: '10px',
@@ -814,7 +829,7 @@ export const ChatMessage: FC<Props> = memo(
                                           ...
                                         </p>
                                         <LoadingSpinner size="xs" />
-                                      </Fragment>
+                                      </div>
                                     ),
                                 )}
                               </div>
@@ -891,7 +906,7 @@ export const ChatMessage: FC<Props> = memo(
                                                       </div>
                                                     ))}
                                                   </div>
-                                                  {response.output?.text}
+                                                  {response.output?.text ? response.output.text : JSON.stringify(response.output?.data, null, 2)}
                                                 </>
                                               )}
                                             </pre>

@@ -106,6 +106,7 @@ export default async function handleTools(
 }
 
 const handleToolOutput = async (toolOutput: any, tool: UIUCTool) => {
+  console.debug('Handling tool output: ', toolOutput)
   // Handle case where toolOutput is a simple string
   if (typeof toolOutput === 'string') {
     tool.output = { text: toolOutput }
@@ -138,7 +139,7 @@ const handleToolOutput = async (toolOutput: any, tool: UIUCTool) => {
   }
   // Default case: directly assign toolOutput to tool.output
   else {
-    tool.output = toolOutput
+    tool.output = { data: toolOutput }
   }
 }
 
@@ -202,9 +203,9 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
   }
 
   // I used to have ['data'] at the end, but sometimes it's only 'response' not 'data'
-  if (!resultData.runData[finalNodeType][0].data.main[0][0].json) {
-    console.error('No data in N8N tool response')
-    throw new Error('No data in N8N tool response')
+  if (!resultData.runData[finalNodeType][0].data || !resultData.runData[finalNodeType][0].data.main[0][0].json) {
+    console.error('Tool executed successfully, but we got an empty response!')
+    throw new Error('Tool executed successfully, but we got an empty response!')
   }
   if (resultData.runData[finalNodeType][0].data.main[0][0].json['data']) {
     return resultData.runData[finalNodeType][0].data.main[0][0].json['data']
