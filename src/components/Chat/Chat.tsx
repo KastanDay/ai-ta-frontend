@@ -339,7 +339,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const handleRoutingForImageContent = async (
     message: Message,
     tools: UIUCTool[],
-    endpoint: string,
     updatedConversation: Conversation,
     searchQuery: string,
     controller: AbortController,
@@ -361,7 +360,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       try {
         const { updatedSearchQuery, imgDesc } = await handleImageContent(
           message,
-          endpoint,
           updatedConversation,
           searchQuery,
           controller,
@@ -379,7 +377,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const handleImageContent = async (
     message: Message,
-    endpoint: string,
     updatedConversation: Conversation,
     searchQuery: string,
     controller: AbortController,
@@ -393,9 +390,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       try {
         imgDesc = await fetchImageDescription(
-          message,
           getCurrentPageName(),
-          endpoint,
           updatedConversation,
           getOpenAIKey(courseMetadata),
           controller,
@@ -535,7 +530,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             await handleRoutingForImageContent(
               message,
               tools,
-              endpoint,
               updatedConversation,
               searchQuery,
               controller,
@@ -584,7 +578,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           course_name: getCurrentPageName(),
           courseMetadata: courseMetadata,
           stream: true,
-          isImage: false,
         }
 
         // src/pages/api/buildPrompt.ts

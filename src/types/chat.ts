@@ -88,9 +88,14 @@ export interface ChatBody {
   key: string
   course_name: string
   stream: boolean
-  isImage: boolean
   courseMetadata?: CourseMetadata
   // NO FOLDER ID
+}
+
+export interface ImageBody {
+  conversation: Conversation
+  course_name: string
+  key: string
 }
 
 export interface ChatApiBody {

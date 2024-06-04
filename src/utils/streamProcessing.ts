@@ -470,7 +470,6 @@ export function constructChatBody(
     key: key,
     course_name: course_name,
     stream: stream,
-    isImage: false,
   }
 }
 
@@ -718,9 +717,7 @@ export async function handleImageContent(
 
   try {
     const imgDesc = await fetchImageDescription(
-      message,
       course_name,
-      endpoint,
       updatedConversation,
       key,
       controller,

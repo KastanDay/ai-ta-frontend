@@ -1,6 +1,6 @@
 // src/pages/api/UIUC-api/fetchImageDescription.ts
 
-import { ChatBody, Content, Conversation, Message } from '@/types/chat'
+import { ChatBody, Content, Conversation, ImageBody, Message } from '@/types/chat'
 
 export const config = {
   runtime: 'edge',
@@ -11,77 +11,33 @@ export const config = {
  * It constructs a request body with the necessary details and sends a POST request
  * to the specified endpoint. It handles errors and logs them for easier debugging.
  *
- * @param {Message} message - The message object containing potential image content.
  * @param {string} course_name - The name of the course for context.
- * @param {string} endpoint - The API endpoint to which the POST request is sent.
  * @param {Conversation} updatedConversation - The updated conversation object.
  * @param {string} apiKey - The API key for authorization.
  * @param {AbortController} controller - The controller to abort the fetch request if necessary.
  * @returns {Promise<string>} A promise that resolves to the image description.
  */
 export const fetchImageDescription = async (
-  message: Message,
   course_name: string,
-  endpoint: string,
   updatedConversation: Conversation,
   apiKey: string,
   controller: AbortController,
 ): Promise<string> => {
-  // Filter out the image content from the message
-  // const messageContent = (message.content as Content[]).filter(
-  //   (content) =>
-  //     content.type === 'image_url' ||
-  //     content.type === 'text'
-  // )
-
-  // // If there are no images, return an empty string
-  // if (messageContent.length === 0) {
-  //   return ''
-  // }
-
-  updatedConversation.messages = [
-    {
-      ...message,
-      content: (message.content as Content[]).filter(
-        (content) =>
-          content.type === 'image_url' ||
-          content.type === 'text'
-      )
-      // content: [
-      //   ...imageContent,
-      //   {
-      //     type: 'text',
-      //     text: `"Analyze and describe the given image, focusing solely on visible elements. Detail the image by:
-      //   - Identifying text (OCR information), objects, spatial relationships, colors, actions, annotations, and labels.
-      //   - Utilizing specific terminology relevant to the image's domain (e.g., medical, agricultural, technological).
-      //   - Categorizing the image and listing associated key terms.
-      //   - Summarizing with keywords or phrases reflecting the main themes based on the user query.
-        
-      //   Emphasize primary features before detailing secondary elements. For abstract or emotional content, infer the central message. Provide synonyms for technical terms where applicable. 
-      //   Ensure the description remains concise, precise and relevant for semantic retrieval, avoiding mention of non-present features. Don't be redundant or overly verbose as that may hurt the semantic retrieval."
-      
-      //   **Goal:** Create an accurate, focused description that enhances semantic document retrieval, using ONLY observable details in the form of keywords`,
-      //   },
-      // ],
-    },
-  ]
   // Construct the body for the chat API request
-  const chatBody: ChatBody = {
+  const imageBody: ImageBody = {
     conversation: updatedConversation,
     key: apiKey,
     course_name: course_name,
-    stream: false,
-    isImage: true,
   }
 
   try {
     // Send the POST request to the API endpoint
-    const response = await fetch(endpoint, {
+    const response = await fetch('/api/imageDescription', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(chatBody),
+      body: JSON.stringify(imageBody),
       signal: controller.signal,
     })
 
@@ -93,6 +49,7 @@ export const fetchImageDescription = async (
 
     // Parse the JSON response and return the image description
     const data = await response.json()
+    console.log('Image description data:', data)
     return data.choices[0].message.content || ''
   } catch (error) {
     // Log the error to the console and abort the fetch request

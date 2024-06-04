@@ -18,7 +18,7 @@ import {
   UIUCTool,
 } from '@/types/chat'
 import { NextResponse } from 'next/server'
-import { decrypt, isEncrypted } from '~/utils/crypto'
+import { parseOpenaiKey } from '~/utils/crypto'
 
 export const config = {
   runtime: 'edge',
@@ -26,7 +26,7 @@ export const config = {
 
 const handler = async (req: Request): Promise<NextResponse> => {
   try {
-    const { conversation, key, course_name, courseMetadata, stream, isImage } =
+    const { conversation, key, course_name, courseMetadata, stream } =
       (await req.json()) as ChatBody
 
     // Call buildPrompt
@@ -36,7 +36,6 @@ const handler = async (req: Request): Promise<NextResponse> => {
     //     rawOpenaiKey: key,
     //     projectName: course_name,
     //     courseMetadata,
-    //     isImage
     //   })
 
     const openAIKey = await parseOpenaiKey(key)
@@ -114,7 +113,6 @@ export const buildPrompt = async ({
   rawOpenaiKey,
   projectName,
   courseMetadata,
-  isImage,
 }: {
   conversation: Conversation
   rawOpenaiKey: string
@@ -158,15 +156,10 @@ Priorities for building prompt w/ limited window:
     (await Promise.all(allPromises)) as [string, string, UIUCTool[], string]
 
   // SYSTEM PROMPT
-  let systemPrompt = ''
-  if (!isImage) {
-    const systemPostPrompt = getSystemPostPrompt(projectName)
-    systemPrompt = userDefinedSystemPrompt + '\n\n' + systemPostPrompt
-    remainingTokenBudget -= encoding.encode(systemPrompt).length
-  } else {
-    systemPrompt = getImageDescriptionSystemPrompt()
-    remainingTokenBudget -= encoding.encode(systemPrompt).length
-  }
+  const systemPostPrompt = getSystemPostPrompt(projectName)
+  const systemPrompt = userDefinedSystemPrompt + '\n\n' + systemPostPrompt
+  remainingTokenBudget -= encoding.encode(systemPrompt).length
+  
 
   // TOOLS
   // if (lastToolResult && remainingTokenBudget > 0) {
@@ -192,7 +185,7 @@ Priorities for building prompt w/ limited window:
   remainingTokenBudget -= encoding.encode(lastUserMessage).length
 
   // Tool output + user Query (added to prompt below)
-  const userQuery = isImage ? '' : _buildUserQuery({ conversation })
+  const userQuery = _buildUserQuery({ conversation })
 
   // Keep room in budget for latest 2 convo messages
   const tokensInLastTwoMessages = _getRecentConvoTokens({
@@ -206,7 +199,7 @@ Priorities for building prompt w/ limited window:
   ).length
 
   // query_topContext
-  const query_topContext = isImage? null : _buildQueryTopContext({
+  const query_topContext = _buildQueryTopContext({
     conversation: conversation,
     encoding: encoding,
     tokenLimit: remainingTokenBudget - tokensInLastTwoMessages, // keep room for convo history
@@ -275,7 +268,7 @@ const _buildUserQuery = ({
   conversation: Conversation
 }): string => {
   // ! PROMPT STUFFING
-  let userQuery: string = ''
+  let userQuery = ''
   const latestUserMessage =
     conversation.messages[conversation.messages.length - 1]
   if (latestUserMessage?.content === 'string') {
@@ -463,32 +456,6 @@ const _getLastUserMessage = async ({
       .join('\n')
   }
   return most_recent_user_message
-}
-
-const parseOpenaiKey = async (openaiKey: string) => {
-  if (openaiKey && isEncrypted(openaiKey)) {
-    const decryptedText = await decrypt(
-      openaiKey,
-      process.env.NEXT_PUBLIC_SIGNING_KEY as string,
-    )
-    openaiKey = decryptedText as string
-  } else {
-    // console.log('Using client key for openai chat: ', apiKey)
-  }
-  return openaiKey
-}
-
-export function getImageDescriptionSystemPrompt() {
-  return `"Analyze and describe the given image with relevance to the user query, focusing solely on visible elements. Detail the image by:
-  - Identifying text (OCR information), objects, spatial relationships, colors, actions, annotations, and labels.
-  - Utilizing specific terminology relevant to the image's domain (e.g., medical, agricultural, technological).
-  - Categorizing the image and listing associated key terms.
-  - Summarizing with keywords or phrases reflecting the main themes based on the user query.
-  
-  Emphasize primary features before detailing secondary elements. For abstract or emotional content, infer the central message. Provide synonyms for technical terms where applicable. 
-  Ensure the description remains concise, precise and relevant for semantic retrieval, avoiding mention of non-present features. Don't be redundant or overly verbose as that may hurt the semantic retrieval."
-  
-  **Goal:** Create an accurate, focused description that enhances semantic document retrieval of the user query, using ONLY observable details in the form of keywords`
 }
 
 export function getSystemPostPrompt(course_name: string) {
