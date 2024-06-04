@@ -67,7 +67,14 @@ export async function POST(req: Request) {
   // const openai = new OpenAI({ apiKey: decryptedKey, baseURL: "https://gateway.ai.cloudflare.com/v1/74022ae0779bc80e94e2346e1720449d/uiucchat/openai" })
 
   // Auto-trace LLM calls w/ langsmith
-  const openai = wrapOpenAI(new OpenAI({ apiKey: decryptedKey }))
+  const openai = wrapOpenAI(new OpenAI({ apiKey: decryptedKey }), {
+    project_name: 'test-custom-logs',
+    metadata: {
+      user_email: conversation.user_email,
+      conversation_id: conversation.id,
+    },
+    name: 'tool-routing',
+  })
 
   // format into OpenAI message format
   const message_to_send: ChatCompletionMessageParam[] =
