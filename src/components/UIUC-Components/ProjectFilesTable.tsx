@@ -626,7 +626,7 @@ export function ProjectFilesTable({
         fetching={appendToDocGroup.isLoading || removeFromDocGroup.isLoading/* other loading states */}
         recordsPerPage={PAGE_SIZE}
         // customLoader={<LoadingSpinner />}
-        loaderColor="purple"
+        loaderColor='hsla(280, 100%, 70%, 1)'
         borderRadius="lg"
         withColumnBorders
         withBorder={true}
