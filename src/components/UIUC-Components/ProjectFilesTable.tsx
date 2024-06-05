@@ -199,6 +199,11 @@ export function ProjectFilesTable({
   } = useGetDocumentGroups(course_name)
 
   useEffect(() => {
+    console.log('isLoadingDocuments:', isLoadingDocuments);
+    console.log('isLoadingDocumentGroups:', isLoadingDocumentGroups);
+  }, [isLoadingDocuments, isLoadingDocumentGroups]);
+
+  useEffect(() => {
     if (tabValue === 'failed') {
       const newOverflowStates: { [key: number]: boolean } = {}
       Object.keys(textRefs.current).forEach((key) => {
@@ -509,7 +514,7 @@ export function ProjectFilesTable({
                 marginBottom: '7px',
               }}
             >
-              Document Groups
+              Add Document to Groups
             </Button>
           </Tooltip>
 
@@ -617,9 +622,11 @@ export function ProjectFilesTable({
         onPageChange={setPage}
         sortStatus={sortStatus}
         onSortStatusChange={setSortStatus}
-        fetching={isLoadingDocuments || isLoadingDocumentGroups}
+        // fetching={isLoadingDocuments || isLoadingDocumentGroups}
+        fetching={appendToDocGroup.isLoading || removeFromDocGroup.isLoading/* other loading states */}
         recordsPerPage={PAGE_SIZE}
-        customLoader={<LoadingSpinner />}
+        // customLoader={<LoadingSpinner />}
+        loaderColor="purple"
         borderRadius="lg"
         withColumnBorders
         withBorder={true}
@@ -972,46 +979,7 @@ export function ProjectFilesTable({
       // idAccessor={(row: any) => (row.url ? row.url : row.s3_path)}
       />{' '}
       {/* End DataTable */}
-      < Paper
-        my="sm"
-        py="sm"
-        withBorder={false}
-        radius={0}
-        style={{ backgroundColor: 'transparent' }}
-      >
-        <Center>
-          <Button
-            uppercase
-            leftIcon={<IconTrash size={16} />}
-            disabled={!selectedRecords.length}
-            onClick={() => {
-              if (selectedRecords.length > 100) {
-                showToast(
-                  theme,
-                  'Selection Limit Exceeded',
-                  'You have selected more than 100 documents. Please select less than or equal to 100 documents.',
-                  true,
-                );
-              } else {
-                setRecordsToDelete(selectedRecords);
-                setModalOpened(true);
-              }
-            }}
-            style={{
-              backgroundColor: selectedRecords.length
-                ? '#8B0000'
-                : 'transparent',
-            }}
-          >
-            {selectedRecords.length
-              ? `Delete ${selectedRecords.length === 1
-                ? '1 selected record'
-                : `${selectedRecords.length} selected records`
-              }`
-              : 'Select records to delete'}
-          </Button>
-        </Center>
-      </Paper >
+
       <Modal
         opened={modalOpened}
         onClose={() => setModalOpened(false)}

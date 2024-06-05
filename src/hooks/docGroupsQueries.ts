@@ -190,7 +190,12 @@ export function useAppendToDocGroup(
   queryClient: QueryClient,
   page: number,
 ) {
-  return useMutation({
+  // USAGE:
+  // removeFromDocGroup (course_name) -mutate(f
+  //
+  // record, removedGroup,
+  // })
+  const mutation = useMutation({
     mutationFn: async ({
       record,
       appendedGroup,
@@ -322,6 +327,11 @@ export function useAppendToDocGroup(
       queryClient.invalidateQueries(['documents', course_name])
     },
   })
+
+  return {
+    ...mutation,
+    isLoading: mutation.isLoading,
+  }
 }
 
 export function useRemoveFromDocGroup(
@@ -329,13 +339,7 @@ export function useRemoveFromDocGroup(
   queryClient: QueryClient,
   page: number,
 ) {
-  // USAGE:
-  // removeFromDocGroup(course_name).mutate({
-  //   record,
-  //   removedGroup,
-  // })
-
-  return useMutation(
+  const mutation = useMutation(
     async ({
       record,
       removedGroup,
@@ -436,6 +440,11 @@ export function useRemoveFromDocGroup(
       },
     },
   )
+
+  return {
+    ...mutation,
+    isLoading: mutation.isLoading,
+  }
 }
 
 export function useUpdateDocGroup(
