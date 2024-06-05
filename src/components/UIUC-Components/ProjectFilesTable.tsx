@@ -95,6 +95,8 @@ export function ProjectFilesTable({
   const isSmallScreen = useMediaQuery('(max-width: 768px)')
   const isBetweenSmallAndMediumScreen = useMediaQuery('(max-width: 878px)')
   const [showMultiSelect, setShowMultiSelect] = useState(false);
+  const [addedToGroups, setAddedToGroups] = useState(false);
+  const [deletedToGroups, setDeletedToGroups] = useState(false);
 
   const openModel = (open: boolean, error = '') => {
     setErrorModalOpened(open)
@@ -198,10 +200,6 @@ export function ProjectFilesTable({
     refetch: refetchDocumentGroups,
   } = useGetDocumentGroups(course_name)
 
-  useEffect(() => {
-    console.log('isLoadingDocuments:', isLoadingDocuments);
-    console.log('isLoadingDocumentGroups:', isLoadingDocumentGroups);
-  }, [isLoadingDocuments, isLoadingDocumentGroups]);
 
   useEffect(() => {
     if (tabValue === 'failed') {
@@ -238,6 +236,11 @@ export function ProjectFilesTable({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    setAddedToGroups(false);
+    setDeletedToGroups(false);
+  }, [documents]);
 
   // ------------- Mutations -------------
 
@@ -500,7 +503,9 @@ export function ProjectFilesTable({
           <Tooltip label="All selected documents will be added to the group">
             <Button
               // key={index}
-              onClick={() => setShowMultiSelect(true)}
+              onClick={() => {
+                setShowMultiSelect(true);
+              }}
               className="bg-purple-600 bg-opacity-50 hover:bg-purple-600"
               style={{
                 display: 'flex',
@@ -547,8 +552,10 @@ export function ProjectFilesTable({
                   value: doc_group_name,
                   label: doc_group_name,
                 })}
-                onChange={(newSelectedGroups) =>
+                onChange={(newSelectedGroups) => {
                   handleDocumentGroupsChange(selectedRecords, newSelectedGroups)
+                  setAddedToGroups(true)
+                }
                 }
                 disabled={isLoadingDocumentGroups}
                 sx={{ flex: 1, width: '100%' }}
@@ -622,8 +629,8 @@ export function ProjectFilesTable({
         onPageChange={setPage}
         sortStatus={sortStatus}
         onSortStatusChange={setSortStatus}
-        // fetching={isLoadingDocuments || isLoadingDocumentGroups}
-        fetching={appendToDocGroup.isLoading || removeFromDocGroup.isLoading/* other loading states */}
+        fetching={isLoadingDocuments || isLoadingDocumentGroups || appendToDocGroup.isLoading || removeFromDocGroup.isLoading || addedToGroups || deletedToGroups}
+        // fetching={appendToDocGroup.isLoading || removeFromDocGroup.isLoading/* other loading states */}
         recordsPerPage={PAGE_SIZE}
         // customLoader={<LoadingSpinner />}
         loaderColor='hsla(280, 100%, 70%, 1)'
@@ -1015,6 +1022,12 @@ export function ProjectFilesTable({
               deleteDocumentMutation.mutate(recordsToDelete)
               // await handleDelete(recordsToDelete)
               setRecordsToDelete([])
+              setDeletedToGroups(true)
+              const sleep = (ms: number) =>
+                new Promise((resolve) => setTimeout(resolve, ms))
+              console.debug('sleeping for 500ms')
+              await sleep(500)
+              refetchDocuments()
             }}
           >
             Delete
