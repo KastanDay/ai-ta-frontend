@@ -184,49 +184,23 @@ export const WebScrape = ({
         }
         await router.push(`/${courseName}/materials`)
       } else if (url.includes('canvas.illinois.edu/courses/')) {
-        const canvasCourseIdParts = url.split('canvas.illinois.edu/courses/')
-        const canvasCourseId = canvasCourseIdParts[1]?.split('/')[0]
-
-        try {
-          const response = await axios.get(
-            'https://flask-production-751b.up.railway.app/ingestCanvas',
-            {
-              params: {
-                course_id: canvasCourseId,
-                course_name: courseName,
-                files: selectedCanvasOptions.includes('files')
-                  ? 'true'
-                  : 'false',
-                pages: selectedCanvasOptions.includes('pages')
-                  ? 'true'
-                  : 'false',
-                modules: selectedCanvasOptions.includes('modules')
-                  ? 'true'
-                  : 'false',
-                syllabus: selectedCanvasOptions.includes('syllabus')
-                  ? 'true'
-                  : 'false',
-                assignments: selectedCanvasOptions.includes('assignments')
-                  ? 'true'
-                  : 'false',
-                discussions: selectedCanvasOptions.includes('discussions')
-                  ? 'true'
-                  : 'false',
-              },
-            },
-          )
-
-          if (response.data.outcome) {
-            console.log('Canvas content ingestion was successful!')
-            // Navigate to the course materials page or any other success behavior
-            await router.push(`/${courseName}/materials`)
-          } else {
-            console.error('Canvas content ingestion failed.')
-            // Handle the failure, maybe show a notification or alert to the user
-          }
-        } catch (error) {
-          console.error('Error while ingesting Canvas content:', error)
+        // TODO: Switch this to new canvas ingest endpoint (https://bb51x.apps.beam.cloud for canvas)
+        const response = await fetch('/api/UIUC-api/ingestCanvas', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            courseName: courseName,
+            canvas_url: url,
+            selectedCanvasOptions: selectedCanvasOptions,
+          }),
+        })
+        const data = await response.json()
+        if (data.error) {
+          throw new Error(data.error)
         }
+        console.log('Canvas content ingestion was successful!')
       } else {
         // Standard web scrape
         try {

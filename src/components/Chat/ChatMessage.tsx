@@ -467,10 +467,10 @@ export const ChatMessage: FC<Props> = memo(
                                 .trim()
                                 .startsWith('Image description:')
                             ) {
-                              console.log(
-                                'Image description found: ',
-                                content.text,
-                              )
+                              // console.log(
+                              //   'Image description found: ',
+                              //   content.text,
+                              // )
                               return (
                                 <Accordion
                                   variant="filled"
