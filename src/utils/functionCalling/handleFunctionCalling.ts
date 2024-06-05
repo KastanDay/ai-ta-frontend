@@ -172,7 +172,7 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
     },
   ).catch((error) => {
     if (error.name === 'AbortError') {
-      throw new Error('Request timed out after 15 seconds')
+      throw new Error('Request timed out after 15 seconds, try "Regenerate Response" button')
     }
     throw error
   })

@@ -610,6 +610,7 @@ export const ChatMessage: FC<Props> = memo(
                                 style={{
                                   display: 'flex',
                                   alignItems: 'center',
+                                  maxWidth: '70%',
                                 }}
                               >
                                 <p
@@ -637,6 +638,7 @@ export const ChatMessage: FC<Props> = memo(
                                 style={{
                                   display: 'flex',
                                   alignItems: 'center',
+                                  maxWidth: '70%',
                                 }}
                               >
                                 <p
@@ -665,6 +667,7 @@ export const ChatMessage: FC<Props> = memo(
                                 style={{
                                   display: 'flex',
                                   alignItems: 'center',
+                                  maxWidth: '70%',
                                 }}
                               >
                                 <p
@@ -692,6 +695,7 @@ export const ChatMessage: FC<Props> = memo(
                                 style={{
                                   display: 'flex',
                                   alignItems: 'center',
+                                  maxWidth: '70%',
                                 }}
                               >
                                 <p
@@ -720,6 +724,7 @@ export const ChatMessage: FC<Props> = memo(
                                 style={{
                                   display: 'flex',
                                   alignItems: 'center',
+                                  maxWidth: '70%',
                                 }}
                               >
                                 <p
@@ -748,6 +753,7 @@ export const ChatMessage: FC<Props> = memo(
                                 style={{
                                   display: 'flex',
                                   alignItems: 'center',
+                                  maxWidth: '70%',
                                 }}
                               >
                                 <Accordion order={2}>
@@ -774,15 +780,32 @@ export const ChatMessage: FC<Props> = memo(
                                       </Accordion.Control>
                                       <Accordion.Panel
                                         className={`${montserrat_paragraph.variable} rounded-lg bg-[#1d1f32] pt-2 font-montserratParagraph text-white`}
-                                      >
-                                        Arguments:{' '}
-                                        <pre>
-                                          {JSON.stringify(
-                                            response.aiGeneratedArgumentValues,
-                                            null,
-                                            2,
-                                          )}
-                                        </pre>
+                                      > Arguments : {' '}
+                                        {response.aiGeneratedArgumentValues?.image_urls ? (
+                                          <div>
+                                            <div className="flex overflow-x-auto">
+                                              {JSON.parse(response.aiGeneratedArgumentValues.image_urls).map((imageUrl: string, index: number) => (
+                                                <div key={index} className={classes.imageContainerStyle}>
+                                                  <div className="overflow-hidden rounded-lg shadow-lg">
+                                                    <ImagePreview
+                                                      src={imageUrl}
+                                                      alt={`Tool output image ${index}`}
+                                                      className={classes.imageStyle}
+                                                    />
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <pre>
+                                            {JSON.stringify(
+                                              response.aiGeneratedArgumentValues,
+                                              null,
+                                              2,
+                                            )}
+                                          </pre>
+                                        )}
                                       </Accordion.Panel>
                                     </Accordion.Item>
                                   ))}
@@ -822,7 +845,7 @@ export const ChatMessage: FC<Props> = memo(
                                           }}
                                           className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
                                         >
-                                          Running
+                                          Running {' '}
                                           <Badge color="grape" radius="md">
                                             {response.readableName}
                                           </Badge>
@@ -845,6 +868,7 @@ export const ChatMessage: FC<Props> = memo(
                                 style={{
                                   display: 'flex',
                                   alignItems: 'center',
+                                  maxWidth: '70%',
                                 }}
                               >
                                 <Accordion order={2}>
@@ -893,7 +917,7 @@ export const ChatMessage: FC<Props> = memo(
                                                 </span>
                                               ) : (
                                                 <>
-                                                  <div style={{ overflowX: 'auto', whiteSpace: 'nowrap' }}>
+                                                  <div style={{ display: 'flex', overflowX: 'auto', gap: '10px' }}>
                                                     {response.output?.imageUrls && response.output?.imageUrls.map((imageUrl, index) => (
                                                       <div key={index} className={classes.imageContainerStyle}>
                                                         <div className="overflow-hidden rounded-lg shadow-lg">
