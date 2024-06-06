@@ -520,7 +520,7 @@ export function ProjectFilesTable({
           <div style={{ display: 'flex', position: 'relative', alignItems: 'flex-start', background: 'black' }}>
 
             {/* {items.map((item, index) => ( */}
-            <Tooltip label="All selected documents will be added to the group">
+            <Tooltip label="All selected documents will be added to the group" position='top' withArrow>
               <Button
                 // key={index}
                 onClick={() => {
@@ -636,39 +636,39 @@ export function ProjectFilesTable({
           </div>
           {/* </div> */}
         </Paper >}
-        <Button // button to export materials
-          uppercase
-          leftIcon={<IconFileExport size={16} />}
-          // disabled={!selectedRecords.length}
-          onClick={() => {
-            // setRecordsToExport(selectedRecords)
-            setExportModalOpened(true)
-          }}
-          style={{
-            // backgroundColor: selectedRecords.length
-            //   ? 'purple'
-            //   : 'transparent',
-            backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
-            marginLeft: '5px',
-            marginBottom: '7px',
-          }}
-        >
-          {/* {selectedRecords.length
-              ? `Export ${selectedRecords.length === 1
-                ? '1 selected record'
-                : `${selectedRecords.length} selected records`
-              }`
-              : 'Select records to export'} */}
-          Export Documents & Embeddings
-        </Button>
         <Tooltip
           multiline
           width={280}
           withArrow
           transitionProps={{ duration: 200 }}
           label="Download the post-processed text and vector embeddings (OpenAI Ada-002) used by the LLM. The export format is JSON Lines (.JSONL). To minimize data transfer costs, exporting original files (PDFs, etc.) is only available for individual documents."
+          position="top"
         >
-          <IconInfoCircleFilled size={23} />
+          <Button // button to export materials
+            uppercase
+            leftIcon={<IconFileExport size={16} />}
+            // disabled={!selectedRecords.length}
+            onClick={() => {
+              // setRecordsToExport(selectedRecords)
+              setExportModalOpened(true)
+            }}
+            style={{
+              // backgroundColor: selectedRecords.length
+              //   ? 'purple'
+              //   : 'transparent',
+              backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
+              marginLeft: '5px',
+              marginBottom: '7px',
+            }}
+          >
+            {/* {selectedRecords.length
+                ? `Export ${selectedRecords.length === 1
+                  ? '1 selected record'
+                  : `${selectedRecords.length} selected records`
+                }`
+                : 'Select records to export'} */}
+            Export Documents & Embeddings
+          </Button>
         </Tooltip>
       </div>
       <DataTable
