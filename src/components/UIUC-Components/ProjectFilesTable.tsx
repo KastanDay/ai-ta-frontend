@@ -508,7 +508,10 @@ export function ProjectFilesTable({
   return (
     <>
       <GlobalStyle />
-      <div>
+      <div style={{
+        display: 'flex', alignItems: 'center',
+
+      }}>
         {selectedRecords.length > 0 && <Paper
         // className={classes.dropdown}
         // withBorder
@@ -527,7 +530,7 @@ export function ProjectFilesTable({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  // backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
+                  backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
                   border: 'none',
                   paddingRight: '10px',
                   paddingLeft: '10px',
@@ -646,8 +649,8 @@ export function ProjectFilesTable({
             //   ? 'purple'
             //   : 'transparent',
             backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
-            marginTop: '20px',
-            marginRight: '5px',
+            marginLeft: '5px',
+            marginBottom: '7px',
           }}
         >
           {/* {selectedRecords.length
