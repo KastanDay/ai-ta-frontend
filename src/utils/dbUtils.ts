@@ -61,29 +61,13 @@ export async function addDocumentsToDocGroup(
       )
       throw new Error(`Failed to add documents to doc group: ${error}`)
     }
+    return data
   } catch (error) {
     console.error('Error in addDocumentsToDocGroup:', error)
     throw error
   }
 }
-export async function appendDocGroup(
-  courseName: string,
-  doc: CourseDocument,
-  docGroup: string,
-) {
-  try {
-    if (!doc.doc_groups) {
-      doc.doc_groups = []
-    }
-    if (!doc.doc_groups.includes(docGroup)) {
-      doc.doc_groups.push(docGroup)
-    }
-    await addDocumentsToDocGroup(courseName, doc)
-  } catch (error) {
-    console.error('Error in appendDocGroup:', error)
-    throw error
-  }
-}
+
 export async function removeDocGroup(
   courseName: string,
   doc: CourseDocument,

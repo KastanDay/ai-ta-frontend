@@ -106,8 +106,7 @@ export function ProjectFilesTable({
   const isSmallScreen = useMediaQuery('(max-width: 768px)')
   const isBetweenSmallAndMediumScreen = useMediaQuery('(max-width: 878px)')
   const [showMultiSelect, setShowMultiSelect] = useState(false);
-  const [addedToGroups, setAddedToGroups] = useState(false);
-  const [deletedToGroups, setDeletedToGroups] = useState(false);
+  const [isDeletingDocuments, setIsDeletingDocuments] = useState(false);
   const [exportModalOpened, setExportModalOpened] = useState(false)
   const router = useRouter()
 
@@ -253,44 +252,45 @@ export function ProjectFilesTable({
     };
   }, []);
 
-  useEffect(() => {
-    setAddedToGroups(false);
-    setDeletedToGroups(false);
-  }, [documents]);
-
-  // ------------- Mutations -------------
-
-  function handleDocumentGroupsChange(
-    records: any[],
+  async function addDocumentsToDocGroups(
+    records: CourseDocument[],
     newSelectedGroups: string[],
   ) {
-    records.forEach(record => {
-      const doc_groups = record.doc_groups ? record.doc_groups : []
+    const addDocGroupPromises = records.map((record) =>
+      handleDocumentGroupsChange(record, [...newSelectedGroups, ...(record.doc_groups || [])]),
+    )
+    await Promise.all(addDocGroupPromises)
+  }
 
-      const removedGroups = doc_groups.filter(
-        (group: any) => !newSelectedGroups.includes(group),
-      )
-      const appendedGroups = newSelectedGroups.filter(
-        (group) => !doc_groups.includes(group),
-      )
+  async function handleDocumentGroupsChange(
+    record: CourseDocument,
+    newSelectedGroups: string[],
+  ) {
+    const doc_groups = record.doc_groups ? record.doc_groups : []
 
-      if (removedGroups.length > 0) {
-        for (const removedGroup of removedGroups) {
-          removeFromDocGroup.mutate({
-            record,
-            removedGroup,
-          })
-        }
+    const removedGroups = doc_groups.filter(
+      (group: any) => !newSelectedGroups.includes(group),
+    )
+    const appendedGroups = newSelectedGroups.filter(
+      (group) => !doc_groups.includes(group),
+    )
+
+    if (removedGroups.length > 0) {
+      for (const removedGroup of removedGroups) {
+        await removeFromDocGroup.mutate({
+          record,
+          removedGroup,
+        })
       }
-      if (appendedGroups.length > 0) {
-        for (const appendedGroup of appendedGroups) {
-          appendToDocGroup.mutate({
-            record,
-            appendedGroup,
-          })
-        }
+    }
+    if (appendedGroups.length > 0) {
+      for (const appendedGroup of appendedGroups) {
+        await appendToDocGroup.mutate({
+          record,
+          appendedGroup,
+        })
       }
-    });
+    }
   }
 
   const deleteDocumentMutation = useMutation(
@@ -549,54 +549,55 @@ export function ProjectFilesTable({
             {showMultiSelect && (
               <div ref={multiSelectRef} style={{ position: 'absolute', zIndex: 10 }}>
 
-                <MultiSelect
-                  data={
-                    documentGroups
-                      ? documentGroups.map((doc_group) => ({
-                        value: doc_group.name || '',
-                        label: doc_group.name || '',
-                      }))
-                      : []
-                  }
-                  value={[]}
-                  placeholder={
-                    isLoadingDocumentGroups ? 'Loading...' : 'Select Group'
-                  }
-                  searchable={!isLoadingDocumentGroups}
-                  nothingFound={
-                    isLoadingDocumentGroups ? 'Loading...' : 'No Options'
-                  }
-                  creatable
-                  getCreateLabel={(query) => `+ Create "${query}"`}
-                  onCreate={(doc_group_name) => ({
-                    value: doc_group_name,
-                    label: doc_group_name,
-                  })}
-                  onChange={(newSelectedGroups) => {
-                    handleDocumentGroupsChange(selectedRecords, newSelectedGroups)
-                    setAddedToGroups(true)
-                  }
-                  }
-                  disabled={isLoadingDocumentGroups}
-                  sx={{ flex: 1, width: '100%' }}
-                  classNames={{
-                    value: 'tag-item self-center',
-                  }}
-                  styles={{
-                    input: {
-                      paddingTop: '12px',
-                      paddingBottom: '12px',
-                    },
-                    value: {
-                      marginTop: '2px',
-                    },
-                    dropdown: {
-                      boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.7)', // Add shadow
-                      marginTop: '0', // Remove space between bar section and data dropdown
-                    },
-                  }}
-                />
-              </div>
+              <MultiSelect
+                data={
+                  documentGroups
+                    ? documentGroups.map((doc_group) => ({
+                      value: doc_group.name || '',
+                      label: doc_group.name || '',
+                    }))
+                    : []
+                }
+                value={[]}
+                placeholder={
+                  isLoadingDocumentGroups ? 'Loading...' : 'Select Group'
+                }
+                searchable={!isLoadingDocumentGroups}
+                nothingFound={
+                  isLoadingDocumentGroups ? 'Loading...' : 'No Options'
+                }
+                creatable
+                getCreateLabel={(query) => `+ Create "${query}"`}
+                onCreate={(doc_group_name) => ({
+                  value: doc_group_name,
+                  label: doc_group_name,
+                })}
+                onChange={async (newSelectedGroups) => {
+                  await addDocumentsToDocGroups(selectedRecords, newSelectedGroups);
+                  setShowMultiSelect(false);
+                  setSelectedRecords([]);
+                }
+                }
+                disabled={isLoadingDocumentGroups}
+                sx={{ flex: 1, width: '100%' }}
+                classNames={{
+                  value: 'tag-item self-center',
+                }}
+                styles={{
+                  input: {
+                    paddingTop: '12px',
+                    paddingBottom: '12px',
+                  },
+                  value: {
+                    marginTop: '2px',
+                  },
+                  dropdown: {
+                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.7)', // Add shadow
+                    marginTop: '0', // Remove space between bar section and data dropdown
+                  },
+                }}
+              />
+            </div>
 
             )}
             <Button
@@ -687,10 +688,10 @@ export function ProjectFilesTable({
         onPageChange={setPage}
         sortStatus={sortStatus}
         onSortStatusChange={setSortStatus}
-        fetching={isLoadingDocuments || isLoadingDocumentGroups || appendToDocGroup.isLoading || removeFromDocGroup.isLoading || addedToGroups || deletedToGroups}
+        fetching={isLoadingDocuments || isLoadingDocumentGroups || isDeletingDocuments || appendToDocGroup.isLoading || removeFromDocGroup.isLoading}
         // fetching={appendToDocGroup.isLoading || removeFromDocGroup.isLoading/* other loading states */}
         recordsPerPage={PAGE_SIZE}
-        // customLoader={<LoadingSpinner />}
+        customLoader={<LoadingSpinner />}
         loaderColor='hsla(280, 100%, 70%, 1)'
         borderRadius="lg"
         withColumnBorders
@@ -959,7 +960,7 @@ export function ProjectFilesTable({
                         }
                       }}
                       onChange={(newSelectedGroups) =>
-                        handleDocumentGroupsChange([record], newSelectedGroups)
+                        handleDocumentGroupsChange(record, newSelectedGroups)
                       }
                       disabled={isLoadingDocumentGroups}
                       sx={{ flex: 1, width: '100%' }}
@@ -1072,16 +1073,17 @@ export function ProjectFilesTable({
             className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
             onClick={async () => {
               setModalOpened(false)
+              setIsDeletingDocuments(true)
               console.debug('Deleting records:', recordsToDelete)
               deleteDocumentMutation.mutate(recordsToDelete)
               // await handleDelete(recordsToDelete)
               setRecordsToDelete([])
-              setDeletedToGroups(true)
               const sleep = (ms: number) =>
                 new Promise((resolve) => setTimeout(resolve, ms))
-              console.debug('sleeping for 500ms')
-              await sleep(500)
+              console.debug('sleeping for 1s before refetching')
+              await sleep(1000)
               refetchDocuments()
+              setIsDeletingDocuments(false)
             }}
           >
             Delete
