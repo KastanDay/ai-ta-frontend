@@ -84,7 +84,6 @@ const PAGE_SIZE = 100
 export function ProjectFilesTable({
   course_name,
   setFailedCount = (count: number) => { },
-  setFailedCount = (count: number) => { },
   tabValue,
 }: {
   course_name: string
@@ -509,127 +508,166 @@ export function ProjectFilesTable({
   return (
     <>
       <GlobalStyle />
-      {selectedRecords.length > 0 && <Paper
-      // className={classes.dropdown}
-      // withBorder
-      // style={styles}
-      >
-        <div style={{ display: 'flex', position: 'relative', alignItems: 'flex-start', background: 'black' }}>
+      <div>
+        {selectedRecords.length > 0 && <Paper
+        // className={classes.dropdown}
+        // withBorder
+        // style={styles}
+        >
+          <div style={{ display: 'flex', position: 'relative', alignItems: 'flex-start', background: 'black' }}>
 
-          {/* {items.map((item, index) => ( */}
-          <Tooltip label="All selected documents will be added to the group">
+            {/* {items.map((item, index) => ( */}
+            <Tooltip label="All selected documents will be added to the group">
+              <Button
+                // key={index}
+                onClick={() => {
+                  setShowMultiSelect(true);
+                }}
+                className="bg-purple-600 bg-opacity-50 hover:bg-purple-600"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  // backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
+                  border: 'none',
+                  paddingRight: '10px',
+                  paddingLeft: '10px',
+                  transition: '0.3s',
+                  marginRight: '5px',
+                  marginBottom: '7px',
+                }}
+              >
+                Add Document to Groups
+              </Button>
+            </Tooltip>
+
+            {/* ))} */}
+            {/* <div style={{ position: 'relative' }}> */}
+
+            {showMultiSelect && (
+              <div ref={multiSelectRef} style={{ position: 'absolute', zIndex: 10 }}>
+
+                <MultiSelect
+                  data={
+                    documentGroups
+                      ? documentGroups.map((doc_group) => ({
+                        value: doc_group.name || '',
+                        label: doc_group.name || '',
+                      }))
+                      : []
+                  }
+                  value={[]}
+                  placeholder={
+                    isLoadingDocumentGroups ? 'Loading...' : 'Select Group'
+                  }
+                  searchable={!isLoadingDocumentGroups}
+                  nothingFound={
+                    isLoadingDocumentGroups ? 'Loading...' : 'No Options'
+                  }
+                  creatable
+                  getCreateLabel={(query) => `+ Create "${query}"`}
+                  onCreate={(doc_group_name) => ({
+                    value: doc_group_name,
+                    label: doc_group_name,
+                  })}
+                  onChange={(newSelectedGroups) => {
+                    handleDocumentGroupsChange(selectedRecords, newSelectedGroups)
+                    setAddedToGroups(true)
+                  }
+                  }
+                  disabled={isLoadingDocumentGroups}
+                  sx={{ flex: 1, width: '100%' }}
+                  classNames={{
+                    value: 'tag-item self-center',
+                  }}
+                  styles={{
+                    input: {
+                      paddingTop: '12px',
+                      paddingBottom: '12px',
+                    },
+                    value: {
+                      marginTop: '2px',
+                    },
+                    dropdown: {
+                      boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.7)', // Add shadow
+                      marginTop: '0', // Remove space between bar section and data dropdown
+                    },
+                  }}
+                />
+              </div>
+
+            )}
             <Button
-              // key={index}
+              uppercase
+              leftIcon={<IconTrash size={16} />}
+              disabled={!selectedRecords.length}
               onClick={() => {
-                setShowMultiSelect(true);
+                if (selectedRecords.length > 100) {
+                  showToast(
+                    theme,
+                    'Selection Limit Exceeded',
+                    'You have selected more than 100 documents. Please select less than or equal to 100 documents.',
+                    true,
+                  );
+                } else {
+                  setRecordsToDelete(selectedRecords);
+                  setModalOpened(true);
+                }
               }}
-              className="bg-purple-600 bg-opacity-50 hover:bg-purple-600"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                // backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
-                border: 'none',
-                paddingRight: '10px',
-                paddingLeft: '10px',
-                transition: '0.3s',
-                marginRight: '5px',
-                marginBottom: '7px',
+                backgroundColor: selectedRecords.length
+                  ? '#8B0000'
+                  : 'transparent',
+                // flex: 1
               }}
             >
-              Add Document to Groups
+              {selectedRecords.length
+                ? `Delete ${selectedRecords.length === 1
+                  ? '1 selected record'
+                  : `${selectedRecords.length} selected records`
+                }`
+                : 'Select records to delete'}
             </Button>
-          </Tooltip>
+            {/* <Center> */}
 
-          {/* ))} */}
-          {/* <div style={{ position: 'relative' }}> */}
-
-          {showMultiSelect && (
-            <div ref={multiSelectRef} style={{ position: 'absolute', zIndex: 10 }}>
-
-              <MultiSelect
-                data={
-                  documentGroups
-                    ? documentGroups.map((doc_group) => ({
-                      value: doc_group.name || '',
-                      label: doc_group.name || '',
-                    }))
-                    : []
-                }
-                value={[]}
-                placeholder={
-                  isLoadingDocumentGroups ? 'Loading...' : 'Select Group'
-                }
-                searchable={!isLoadingDocumentGroups}
-                nothingFound={
-                  isLoadingDocumentGroups ? 'Loading...' : 'No Options'
-                }
-                creatable
-                getCreateLabel={(query) => `+ Create "${query}"`}
-                onCreate={(doc_group_name) => ({
-                  value: doc_group_name,
-                  label: doc_group_name,
-                })}
-                onChange={(newSelectedGroups) => {
-                  handleDocumentGroupsChange(selectedRecords, newSelectedGroups)
-                  setAddedToGroups(true)
-                }
-                }
-                disabled={isLoadingDocumentGroups}
-                sx={{ flex: 1, width: '100%' }}
-                classNames={{
-                  value: 'tag-item self-center',
-                }}
-                styles={{
-                  input: {
-                    paddingTop: '12px',
-                    paddingBottom: '12px',
-                  },
-                  value: {
-                    marginTop: '2px',
-                  },
-                  dropdown: {
-                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.7)', // Add shadow
-                    marginTop: '0', // Remove space between bar section and data dropdown
-                  },
-                }}
-              />
-            </div>
-
-          )}
-          <Button
-            uppercase
-            leftIcon={<IconTrash size={16} />}
-            disabled={!selectedRecords.length}
-            onClick={() => {
-              if (selectedRecords.length > 100) {
-                showToast(
-                  theme,
-                  'Selection Limit Exceeded',
-                  'You have selected more than 100 documents. Please select less than or equal to 100 documents.',
-                  true,
-                );
-              } else {
-                setRecordsToDelete(selectedRecords);
-                setModalOpened(true);
-              }
-            }}
-            style={{
-              backgroundColor: selectedRecords.length
-                ? '#8B0000'
-                : 'transparent',
-              // flex: 1
-            }}
-          >
-            {selectedRecords.length
-              ? `Delete ${selectedRecords.length === 1
+            {/* </Center> */}
+          </div>
+          {/* </div> */}
+        </Paper >}
+        <Button // button to export materials
+          uppercase
+          leftIcon={<IconFileExport size={16} />}
+          // disabled={!selectedRecords.length}
+          onClick={() => {
+            // setRecordsToExport(selectedRecords)
+            setExportModalOpened(true)
+          }}
+          style={{
+            // backgroundColor: selectedRecords.length
+            //   ? 'purple'
+            //   : 'transparent',
+            backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
+            marginTop: '20px',
+            marginRight: '5px',
+          }}
+        >
+          {/* {selectedRecords.length
+              ? `Export ${selectedRecords.length === 1
                 ? '1 selected record'
                 : `${selectedRecords.length} selected records`
               }`
-              : 'Select records to delete'}
-          </Button>
-        </div>
-        {/* </div> */}
-      </Paper >}
+              : 'Select records to export'} */}
+          Export Documents & Embeddings
+        </Button>
+        <Tooltip
+          multiline
+          width={280}
+          withArrow
+          transitionProps={{ duration: 200 }}
+          label="Download the post-processed text and vector embeddings (OpenAI Ada-002) used by the LLM. The export format is JSON Lines (.JSONL). To minimize data transfer costs, exporting original files (PDFs, etc.) is only available for individual documents."
+        >
+          <IconInfoCircleFilled size={23} />
+        </Tooltip>
+      </div>
       <DataTable
         records={
           tabValue === 'failed'
@@ -918,7 +956,7 @@ export function ProjectFilesTable({
                         }
                       }}
                       onChange={(newSelectedGroups) =>
-                        handleDocumentGroupsChange(record, newSelectedGroups)
+                        handleDocumentGroupsChange([record], newSelectedGroups)
                       }
                       disabled={isLoadingDocumentGroups}
                       sx={{ flex: 1, width: '100%' }}
@@ -1000,37 +1038,6 @@ export function ProjectFilesTable({
       // idAccessor={(row: any) => (row.url ? row.url : row.s3_path)}
       />{' '}
       {/* End DataTable */}
-      <Paper
-        my="sm"
-        py="sm"
-        withBorder={false}
-        radius={0}
-        style={{ backgroundColor: 'transparent' }}
-      >
-        <Center>
-          <Button
-            uppercase
-            leftIcon={<IconTrash size={16} />}
-            disabled={!selectedRecords.length}
-            onClick={() => {
-              setRecordsToDelete(selectedRecords)
-              setModalOpened(true)
-            }}
-            style={{
-              backgroundColor: selectedRecords.length
-                ? '#8B0000'
-                : 'transparent',
-            }}
-          >
-            {selectedRecords.length
-              ? `Delete ${selectedRecords.length === 1
-                ? '1 selected record'
-                : `${selectedRecords.length} selected records`
-              }`
-              : 'Select records to delete'}
-          </Button>
-        </Center>
-      </Paper>
       <Modal
         opened={modalOpened}
         onClose={() => setModalOpened(false)}
