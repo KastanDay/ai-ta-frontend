@@ -8,24 +8,16 @@ export interface OpenAIModel {
 }
 
 export enum OpenAIModelID {
-  GPT_3_5 = 'gpt-3.5-turbo',
-  GPT_3_5_16k = 'gpt-3.5-turbo-16k',
-  GPT_4 = 'gpt-4',
-  GPT_4_1106_PREVIEW = 'gpt-4-1106-preview',
-  GPT_4_0125_PREVIEW = 'gpt-4-0125-preview',
-  GPT_4_VISION = 'gpt-4-vision-preview',
-  GPT_4_2024_04_09 = 'gpt-4-turbo-2024-04-09',
-  GPT_4o = 'gpt-4o',
-  // GPT_4_32K = 'gpt-4-32k',
+  GPT_3_5 = 'gpt-3.5-turbo', // rolling model - currently points to gpt-3.5-turbo-0125
+  GPT_4 = 'gpt-4', // rolling model - currently points to gpt-4-0613
+  GPT_4_Turbo = 'gpt-4-turbo', // rolling model - currently points to gpt-4-turbo-2024-04-09
+  GPT_4o = 'gpt-4o', // rolling model - currently points to gpt-4o-2024-05-13
+
   // Azure -- ONLY GPT-4 supported for now... due to deployment param being env var...
   // This values are deployment names, not model names
-
   GPT_4_AZURE = 'gpt-4-128k',
   GPT_4_HACKATHON = 'gpt-4-hackathon',
   GPT_4_AZURE_04_09 = 'gpt-4-04-09',
-
-  // GPT_3_5_AZ = 'gpt-35-turbo',
-  // GPT_3_5_16k_AZURE = 'gpt-35-turbo-16k'
 }
 
 // in case the `DEFAULT_MODEL` environment variable is not set or set to an unsupported model
@@ -34,14 +26,8 @@ export const fallbackModelID = OpenAIModelID.GPT_4
 export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   [OpenAIModelID.GPT_3_5]: {
     id: OpenAIModelID.GPT_3_5,
-    name: 'GPT-3.5 (4k)',
-    maxLength: 12000,
-    tokenLimit: 4096,
-  },
-  [OpenAIModelID.GPT_3_5_16k]: {
-    id: OpenAIModelID.GPT_3_5_16k,
     name: 'GPT-3.5 (16k)',
-    maxLength: 49000,
+    maxLength: 12000,
     tokenLimit: 16385,
   },
   [OpenAIModelID.GPT_4]: {
@@ -50,50 +36,20 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
     maxLength: 24000,
     tokenLimit: 8192,
   },
-  [OpenAIModelID.GPT_4_1106_PREVIEW]: {
-    id: OpenAIModelID.GPT_4_1106_PREVIEW,
-    name: 'GPT-4 Turbo 1106 (128k)',
-    maxLength: 24000,
-    tokenLimit: 128000,
-  },
-  [OpenAIModelID.GPT_4_0125_PREVIEW]: {
-    id: OpenAIModelID.GPT_4_0125_PREVIEW,
-    name: 'GPT-4 Turbo 0125 (128k)',
-    maxLength: 24000,
-    tokenLimit: 128000,
-  },
-  [OpenAIModelID.GPT_4_2024_04_09]: {
-    id: OpenAIModelID.GPT_4_2024_04_09,
-    name: 'GPT-4 Turbo 0409 (128k)',
+  [OpenAIModelID.GPT_4_Turbo]: {
+    id: OpenAIModelID.GPT_4_Turbo,
+    name: 'GPT-4 Turbo (128k)',
     maxLength: 24000,
     tokenLimit: 128000,
   },
   [OpenAIModelID.GPT_4o]: {
     id: OpenAIModelID.GPT_4o,
-    name: 'GPT-4o (New for May 2024)',
+    name: 'GPT-4o (128k)',
     maxLength: 24000,
     tokenLimit: 128000,
   },
-  // ! Our hard-coded Azure implementation ONLY allows GPT-4, no other azure models on that deployment
 
-  // [OpenAIModelID.GPT_3_5_AZ]: {
-  //   id: OpenAIModelID.GPT_3_5_AZ,
-  //   name: 'GPT-3.5',
-  //   maxLength: 12000,
-  //   tokenLimit: 4096,
-  // },
-  // [OpenAIModelID.GPT_3_5_16k_AZURE]: {
-  //   id: OpenAIModelID.GPT_3_5_16k_AZURE,
-  //   name: 'GPT-3.5-16k (large context)',
-  //   maxLength: 49000,
-  //   tokenLimit: 16385,
-  // },
-  // [OpenAIModelID.GPT_4_32K]: {
-  //   id: OpenAIModelID.GPT_4_32K,
-  //   name: 'GPT-4-32K',
-  //   maxLength: 96000,
-  //   tokenLimit: 32768,
-  // },
+  // ! Our hard-coded Azure implementation ONLY allows GPT-4, no other azure models on that deployment
   [OpenAIModelID.GPT_4_AZURE]: {
     id: OpenAIModelID.GPT_4_AZURE,
     name: 'GPT-4 Turbo (128k)',
@@ -106,12 +62,6 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
     maxLength: 24000,
     tokenLimit: 128000,
   },
-  [OpenAIModelID.GPT_4_VISION]: {
-    id: OpenAIModelID.GPT_4_VISION,
-    name: 'GPT-4 Vision',
-    maxLength: 8000,
-    tokenLimit: 110000, // slightly less to account for possible images
-  },
   [OpenAIModelID.GPT_4_AZURE_04_09]: {
     id: OpenAIModelID.GPT_4_AZURE_04_09,
     name: 'GPT-4 Turbo 0409 (128k)',
@@ -121,8 +71,7 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
 }
 
 export const VisionCapableModels: Set<OpenAIModelID> = new Set([
-  OpenAIModelID.GPT_4_VISION,
-  OpenAIModelID.GPT_4_2024_04_09, // Add other vision capable models here as needed
+  OpenAIModelID.GPT_4_Turbo, // Add other vision capable models here as needed
   OpenAIModelID.GPT_4_AZURE_04_09,
   OpenAIModelID.GPT_4o,
 ])

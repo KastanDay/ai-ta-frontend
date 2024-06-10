@@ -157,10 +157,6 @@ export const Chatbar = () => {
       const lastConversation =
         updatedConversations[updatedConversations.length - 1]
       if (lastConversation) {
-        console.log(
-          'ARE WE updating the lastConversation here EVER??? USING lastConversation ',
-          lastConversation,
-        )
         homeDispatch({
           field: 'selectedConversation',
           value: lastConversation,
@@ -169,10 +165,6 @@ export const Chatbar = () => {
         saveConversation(lastConversation)
       }
     } else {
-      console.log(
-        'ARE WE CREATING NEW CONVOS HERE EVER??? USING DEFAULT MODEL ID ',
-        defaultModelId,
-      )
       defaultModelId &&
         homeDispatch({
           field: 'selectedConversation',
