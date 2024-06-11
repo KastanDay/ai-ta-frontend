@@ -111,6 +111,9 @@ const handleToolOutput = async (toolOutput: any, tool: UIUCTool) => {
   if (typeof toolOutput === 'string') {
     tool.output = { text: toolOutput }
   }
+  else if (typeof toolOutput === 'object') {
+    tool.output = { data: toolOutput }
+  }
   // Handle case where toolOutput contains image URLs
   else if (toolOutput?.imageUrls && Array.isArray(toolOutput?.imageUrls)) {
     tool.output = { imageUrls: toolOutput.imageUrls }
@@ -209,11 +212,12 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
   }
   if (resultData.runData[finalNodeType][0].data.main[0][0].json['data']) {
     return resultData.runData[finalNodeType][0].data.main[0][0].json['data']
-  } else if (
-    resultData.runData[finalNodeType][0].data.main[0][0].json['response']
-  ) {
-    return resultData.runData[finalNodeType][0].data.main[0][0].json['response']
+    // } else if (
+    //   resultData.runData[finalNodeType][0].data.main[0][0].json['response']
+    // ) {
+    //   return resultData.runData[finalNodeType][0].data.main[0][0].json['response']
   } else {
+    console.log("Just the json here: ", resultData.runData[finalNodeType][0].data.main[0][0].json)
     return resultData.runData[finalNodeType][0].data.main[0][0].json
   }
   // Old:
