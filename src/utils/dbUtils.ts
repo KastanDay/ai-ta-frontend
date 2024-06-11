@@ -40,33 +40,85 @@ export async function fetchDocumentGroups(courseName: string) {
     throw error
   }
 }
+// export async function addDocumentsToDocGroup(
+//   courseName: string,
+//   doc: CourseDocument,
+// ) {
+//   try {
+//     const { data, error } = await supabase.rpc('add_document_to_group', {
+//       p_course_name: courseName,
+//       p_s3_path: doc.s3_path,
+//       p_url: doc.url,
+//       p_readable_filename: doc.readable_filename,
+//       p_doc_groups: doc.doc_groups,
+//     })
+//     if (!data) {
+//       console.error(
+//         'Failed to add documents to doc group:',
+//         data,
+//         ' with error:',
+//         error,
+//       )
+//       throw new Error(`Failed to add documents to doc group: ${error}`)
+//     }
+//     return data
+//   } catch (error) {
+//     console.error('Error in addDocumentsToDocGroup:', error)
+//     throw error
+//   }
+// }
+
 export async function addDocumentsToDocGroup(
   courseName: string,
   doc: CourseDocument,
 ) {
   try {
-    const { data, error } = await supabase.rpc('add_document_to_group', {
-      p_course_name: courseName,
-      p_s3_path: doc.s3_path,
-      p_url: doc.url,
-      p_readable_filename: doc.readable_filename,
-      p_doc_groups: doc.doc_groups,
-    })
-    if (!data) {
-      console.error(
-        'Failed to add documents to doc group:',
-        data,
-        ' with error:',
-        error,
-      )
-      throw new Error(`Failed to add documents to doc group: ${error}`)
+    if (doc.url) {
+      // Workflow when doc.url is not null
+      const { data, error } = await supabase.rpc('add_document_to_group', {
+        p_course_name: courseName,
+        p_s3_path: doc.s3_path,
+        p_url: doc.url,
+        p_readable_filename: doc.readable_filename,
+        p_doc_groups: doc.doc_groups,
+      })
+      if (!data) {
+        console.error(
+          'Failed to add documents to doc group:',
+          data,
+          ' with error:',
+          error,
+        )
+        throw new Error(`Failed to add documents to doc group: ${error}`)
+      }
+      return data
+    } else {
+      // Workflow when doc.url is null
+      const { data, error } = await supabase.rpc('add_document_to_group_url', {
+        p_course_name: courseName,
+        p_s3_path: doc.s3_path,
+        p_url: doc.url,
+        p_readable_filename: doc.readable_filename,
+        p_doc_groups: doc.doc_groups,
+      })
+      console.log('in add_document_to_group_url')
+      if (!data) {
+        console.error(
+          'Failed to add documents to doc group URL:',
+          data,
+          ' with error:',
+          error,
+        )
+        throw new Error(`Failed to add documents to doc group URL: ${error}`)
+      }
+      return data
     }
-    return data
   } catch (error) {
     console.error('Error in addDocumentsToDocGroup:', error)
     throw error
   }
 }
+
 
 export async function removeDocGroup(
   courseName: string,
