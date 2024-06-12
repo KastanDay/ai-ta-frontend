@@ -110,8 +110,7 @@ const handleToolOutput = async (toolOutput: any, tool: UIUCTool) => {
   // Handle case where toolOutput is a simple string
   if (typeof toolOutput === 'string') {
     tool.output = { text: toolOutput }
-  }
-  else if (typeof toolOutput === 'object') {
+  } else if (typeof toolOutput === 'object') {
     tool.output = { data: toolOutput }
   }
   // Handle case where toolOutput contains image URLs
@@ -168,14 +167,16 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache'
+        'Cache-Control': 'no-cache',
       },
       body: body,
       signal: controller.signal,
     },
   ).catch((error) => {
     if (error.name === 'AbortError') {
-      throw new Error('Request timed out after 15 seconds, try "Regenerate Response" button')
+      throw new Error(
+        'Request timed out after 15 seconds, try "Regenerate Response" button',
+      )
     }
     throw error
   })
@@ -206,7 +207,10 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
   }
 
   // I used to have ['data'] at the end, but sometimes it's only 'response' not 'data'
-  if (!resultData.runData[finalNodeType][0].data || !resultData.runData[finalNodeType][0].data.main[0][0].json) {
+  if (
+    !resultData.runData[finalNodeType][0].data ||
+    !resultData.runData[finalNodeType][0].data.main[0][0].json
+  ) {
     console.error('Tool executed successfully, but we got an empty response!')
     throw new Error('Tool executed successfully, but we got an empty response!')
   }
@@ -217,7 +221,10 @@ const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
     // ) {
     //   return resultData.runData[finalNodeType][0].data.main[0][0].json['response']
   } else {
-    console.log("Just the json here: ", resultData.runData[finalNodeType][0].data.main[0][0].json)
+    console.log(
+      'Just the json here: ',
+      resultData.runData[finalNodeType][0].data.main[0][0].json,
+    )
     return resultData.runData[finalNodeType][0].data.main[0][0].json
   }
   // Old:
@@ -235,32 +242,32 @@ export function getOpenAIToolFromUIUCTool(
         description: tool.description,
         parameters: tool.inputParameters
           ? {
-            type: 'object',
-            properties: Object.keys(tool.inputParameters.properties).reduce(
-              (acc, key) => {
-                const param = tool.inputParameters?.properties[key]
-                acc[key] = {
-                  type:
-                    param?.type === 'number'
-                      ? 'number'
-                      : param?.type === 'Boolean'
-                        ? 'Boolean'
-                        : 'string',
-                  description: param?.description,
-                  enum: param?.enum,
-                }
-                return acc
-              },
-              {} as {
-                [key: string]: {
-                  type: 'string' | 'number' | 'Boolean'
-                  description?: string
-                  enum?: string[]
-                }
-              },
-            ),
-            required: tool.inputParameters.required,
-          }
+              type: 'object',
+              properties: Object.keys(tool.inputParameters.properties).reduce(
+                (acc, key) => {
+                  const param = tool.inputParameters?.properties[key]
+                  acc[key] = {
+                    type:
+                      param?.type === 'number'
+                        ? 'number'
+                        : param?.type === 'Boolean'
+                          ? 'Boolean'
+                          : 'string',
+                    description: param?.description,
+                    enum: param?.enum,
+                  }
+                  return acc
+                },
+                {} as {
+                  [key: string]: {
+                    type: 'string' | 'number' | 'Boolean'
+                    description?: string
+                    enum?: string[]
+                  }
+                },
+              ),
+              required: tool.inputParameters.required,
+            }
           : undefined,
       },
     }
@@ -308,7 +315,7 @@ export function getUIUCToolFromN8n(workflows: N8nWorkflow[]): UIUCTool[] {
 
     extractedObjects.push({
       id: workflow.id,
-      name: workflow.name.replace(/\s+/g, '_'),
+      name: workflow.name.replace(/[^a-zA-Z0-9_-]/g, '_'),
       readableName: workflow.name,
       description: formTriggerNode.parameters.formDescription,
       updatedAt: workflow.updatedAt,
