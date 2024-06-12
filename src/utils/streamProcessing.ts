@@ -9,7 +9,12 @@ import {
 import { CourseMetadata } from '~/types/courseMetadata'
 import { decrypt } from './crypto'
 import { OpenAIError } from './server'
-import { OpenAIModel, OpenAIModelID, OpenAIModels } from '~/types/openai'
+import {
+  OpenAIModel,
+  OpenAIModelID,
+  OpenAIModels,
+  VisionCapableModels,
+} from '~/types/openai'
 import { NextRequest, NextResponse } from 'next/server'
 import { replaceCitationLinks } from './citations'
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
@@ -403,8 +408,13 @@ export function validateRequestBody(body: ChatApiBody): void {
       Array.isArray(message.content) &&
       message.content.some((content) => content.type === 'image_url'),
   )
-  if (hasImageContent && body.model !== OpenAIModelID.GPT_4_VISION) {
-    throw new Error('Invalid model provided for image content')
+  if (
+    hasImageContent &&
+    !VisionCapableModels.has(body.model as OpenAIModelID)
+  ) {
+    throw new Error(
+      `The selected model '${body.model}'does not support vision capabilities. Use one of these: ${Array.from(VisionCapableModels).join(', ')}`,
+    )
   }
 
   // Additional validation for other fields can be added here if needed
