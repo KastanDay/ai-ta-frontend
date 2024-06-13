@@ -50,6 +50,7 @@ import { IconInfoCircleFilled } from '@tabler/icons-react'
 import { handleExport } from '~/pages/api/UIUC-api/exportAllDocuments'
 import { showToastOnUpdate } from './MakeQueryAnalysisPage'
 import { useRouter } from 'next/router'
+import { tabWidth } from 'prettier.config.cjs'
 
 
 // export const getCurrentPageName = () => {
@@ -136,6 +137,8 @@ export function ProjectFilesTable({
     {},
   )
   const multiSelectRef = useRef<HTMLDivElement>(null);
+  const [selectedDocGroups, setSelectedDocGroups] = useState<string[]>([]);
+
   //   const MultiSelect = styled(MultiSelect)`
   //   .mantine-MultiSelect-dropdown {
   //     top: 4px !important;
@@ -510,6 +513,7 @@ export function ProjectFilesTable({
       <GlobalStyle />
       <div style={{
         display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between',
 
       }}>
         {selectedRecords.length > 0 && <Paper
@@ -549,55 +553,89 @@ export function ProjectFilesTable({
             {showMultiSelect && (
               <div ref={multiSelectRef} style={{ position: 'absolute', zIndex: 10 }}>
 
-              <MultiSelect
-                data={
-                  documentGroups
-                    ? documentGroups.map((doc_group) => ({
-                      value: doc_group.name || '',
-                      label: doc_group.name || '',
-                    }))
-                    : []
-                }
-                value={[]}
-                placeholder={
-                  isLoadingDocumentGroups ? 'Loading...' : 'Select Group'
-                }
-                searchable={!isLoadingDocumentGroups}
-                nothingFound={
-                  isLoadingDocumentGroups ? 'Loading...' : 'No Options'
-                }
-                creatable
-                getCreateLabel={(query) => `+ Create "${query}"`}
-                onCreate={(doc_group_name) => ({
-                  value: doc_group_name,
-                  label: doc_group_name,
-                })}
-                onChange={async (newSelectedGroups) => {
-                  await addDocumentsToDocGroups(selectedRecords, newSelectedGroups);
-                  setShowMultiSelect(false);
-                  setSelectedRecords([]);
-                }
-                }
-                disabled={isLoadingDocumentGroups}
-                sx={{ flex: 1, width: '100%' }}
-                classNames={{
-                  value: 'tag-item self-center',
-                }}
-                styles={{
-                  input: {
-                    paddingTop: '12px',
-                    paddingBottom: '12px',
-                  },
-                  value: {
-                    marginTop: '2px',
-                  },
-                  dropdown: {
-                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.7)', // Add shadow
-                    marginTop: '0', // Remove space between bar section and data dropdown
-                  },
-                }}
-              />
-            </div>
+                <MultiSelect
+                  data={
+                    documentGroups
+                      ? documentGroups.map((doc_group) => ({
+                        value: doc_group.name || '',
+                        label: doc_group.name || '',
+                      }))
+                      : []
+                  }
+                  value={selectedDocGroups}
+                  placeholder={
+                    isLoadingDocumentGroups ? 'Loading...' : 'Select Group'
+                  }
+                  searchable={!isLoadingDocumentGroups}
+                  nothingFound={
+                    isLoadingDocumentGroups ? 'Loading...' : 'No Options'
+                  }
+                  creatable
+                  getCreateLabel={(query) => `+ Create "${query}"`}
+                  onCreate={(doc_group_name) => ({
+                    value: doc_group_name,
+                    label: doc_group_name,
+                  })}
+                  // onChange={async (newSelectedGroups) => {
+                  //   await addDocumentsToDocGroups(selectedRecords, newSelectedGroups);
+                  //   for (const record of selectedRecords) {
+                  //     // await handleDocumentGroupsChange(record, selectedDocGroups);
+                  //     for (const removedGroup of selectedDocGroups) {
+                  //       await removeFromDocGroup.mutate({
+                  //         record,
+                  //         removedGroup,
+                  //       })
+                  //     }
+
+                  //     setShowMultiSelect(false);
+                  //     setSelectedRecords([]);
+                  //   }
+                  // }}
+                  onChange={async (newSelectedGroups) => {
+                    await addDocumentsToDocGroups(selectedRecords, newSelectedGroups);
+                    // Through all the common docgorups newselectedgroups doesn't have the doc group that is in all the common docgroups
+                    const unselectedGroups: string[] = selectedDocGroups.filter(group => !newSelectedGroups.includes(group));
+                    // Remove the unselected groups from the selected records
+                    for (const record of selectedRecords) {
+                      for (const unselectedGroup of unselectedGroups) {
+                        await removeFromDocGroup.mutate({
+                          record,
+                          removedGroup: unselectedGroup,
+                        });
+                      }
+                    }
+
+                    // Update the selected document groups
+                    setSelectedDocGroups(newSelectedGroups);
+
+                    // Hide the multi-select and clear the selected records
+                    setShowMultiSelect(false);
+                    setSelectedRecords([]);
+                  }}
+                  disabled={isLoadingDocumentGroups}
+                  sx={{ flex: 1, width: '100%' }}
+                  classNames={{
+                    value: 'tag-item self-center',
+                  }}
+                  styles={{
+                    input: {
+                      paddingTop: '12px',
+                      paddingBottom: '12px',
+                      width: '250px',
+                    },
+                    value: {
+                      marginTop: '2px',
+                    },
+                    dropdown: {
+                      boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.7)', // Add shadow
+                      marginTop: '0', // Remove space between bar section and data dropdown
+                    },
+                    wrapper: {
+                      width: '100%',
+                    }
+                  }}
+                />
+              </div>
 
             )}
             <Button
@@ -637,40 +675,43 @@ export function ProjectFilesTable({
           </div>
           {/* </div> */}
         </Paper >}
-        <Tooltip
-          multiline
-          width={280}
-          withArrow
-          transitionProps={{ duration: 200 }}
-          label="Download the post-processed text and vector embeddings (OpenAI Ada-002) used by the LLM. The export format is JSON Lines (.JSONL). To minimize data transfer costs, exporting original files (PDFs, etc.) is only available for individual documents."
-          position="top"
-        >
-          <Button // button to export materials
-            uppercase
-            leftIcon={<IconFileExport size={16} />}
-            // disabled={!selectedRecords.length}
-            onClick={() => {
-              // setRecordsToExport(selectedRecords)
-              setExportModalOpened(true)
-            }}
-            style={{
-              // backgroundColor: selectedRecords.length
-              //   ? 'purple'
-              //   : 'transparent',
-              backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
-              marginLeft: '5px',
-              marginBottom: '7px',
-            }}
+        <div style={{ marginLeft: 'auto' }}> {/* Add this div */}
+
+          <Tooltip
+            multiline
+            width={280}
+            withArrow
+            transitionProps={{ duration: 200 }}
+            label="Download the post-processed text and vector embeddings (OpenAI Ada-002) used by the LLM. The export format is JSON Lines (.JSONL). To minimize data transfer costs, exporting original files (PDFs, etc.) is only available for individual documents."
+            position="top"
           >
-            {/* {selectedRecords.length
+            <Button // button to export materials
+              uppercase
+              leftIcon={<IconFileExport size={16} />}
+              // disabled={!selectedRecords.length}
+              onClick={() => {
+                // setRecordsToExport(selectedRecords)
+                setExportModalOpened(true)
+              }}
+              style={{
+                // backgroundColor: selectedRecords.length
+                //   ? 'purple'
+                //   : 'transparent',
+                backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
+                marginLeft: '5px',
+                marginBottom: '7px',
+              }}
+            >
+              {/* {selectedRecords.length
                 ? `Export ${selectedRecords.length === 1
                   ? '1 selected record'
                   : `${selectedRecords.length} selected records`
                 }`
                 : 'Select records to export'} */}
-            Export Documents & Embeddings
-          </Button>
-        </Tooltip>
+              Export All Documents & Embeddings
+            </Button>
+          </Tooltip>
+        </div>
       </div>
       <DataTable
         records={
@@ -958,9 +999,9 @@ export function ProjectFilesTable({
                           label: doc_group_name,
                         }
                       }}
-                      onChange={(newSelectedGroups) =>
-                        handleDocumentGroupsChange(record, newSelectedGroups)
-                      }
+                      onChange={(newSelectedGroups) => {
+                        handleDocumentGroupsChange(record, newSelectedGroups);
+                      }}
                       disabled={isLoadingDocumentGroups}
                       sx={{ flex: 1, width: '100%' }}
                       classNames={{
@@ -1033,8 +1074,17 @@ export function ProjectFilesTable({
           if (newSelectedRecords.length > 0) {
             setSelectedRecords(newSelectedRecords)
             console.debug('New selection:', newSelectedRecords)
+
+            // Use reduce to find the common document groups among all selected records
+            const commonDocGroups = newSelectedRecords.reduce((commonGroups, record) => {
+              return commonGroups.filter(group => record.doc_groups.includes(group));
+            }, (newSelectedRecords[0] as CourseDocument).doc_groups);
+
+            setSelectedDocGroups(commonDocGroups);
+            console.log(commonDocGroups)
           } else {
             setSelectedRecords([])
+            setSelectedDocGroups([])
           }
         }}
       // Accessor not necessary when documents have an `id` property
