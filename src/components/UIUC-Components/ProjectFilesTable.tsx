@@ -28,11 +28,12 @@ import {
   IconTrash,
   IconX,
 } from '@tabler/icons-react'
+import Link from 'next/link'
 import { DataTable, DataTableSortStatus } from 'mantine-datatable'
 import { createRef, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { notifications, showNotification } from '@mantine/notifications'
-import { createGlobalStyle } from 'styled-components'
+import styled, { createGlobalStyle } from 'styled-components'
 
 import { CourseDocument, DocumentGroup } from 'src/types/courseMaterials'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -49,6 +50,7 @@ import { IconInfoCircleFilled } from '@tabler/icons-react'
 import { handleExport } from '~/pages/api/UIUC-api/exportAllDocuments'
 import { showToastOnUpdate } from './MakeQueryAnalysisPage'
 import { useRouter } from 'next/router'
+import { tabWidth } from 'prettier.config.cjs'
 
 
 // export const getCurrentPageName = () => {
@@ -67,6 +69,13 @@ const GlobalStyle = createGlobalStyle`
 .mantine-Pagination-control[data-active="true"] {
   background-color: blueviolet;
   color: white;
+}
+
+// trying to change the top position of the data display of multiselect, but it is unstable
+.mantine-1ibeiuk {
+  top: 60px !important;
+  // box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.7) !important; // Add shadow
+  // margin-top: 0 !important; // Remove space between bar section and data dropdown
 }
 
 `
@@ -97,6 +106,8 @@ export function ProjectFilesTable({
   const [currentError, setCurrentError] = useState('')
   const isSmallScreen = useMediaQuery('(max-width: 768px)')
   const isBetweenSmallAndMediumScreen = useMediaQuery('(max-width: 878px)')
+  const [showMultiSelect, setShowMultiSelect] = useState(false);
+  const [isDeletingDocuments, setIsDeletingDocuments] = useState(false);
   const [exportModalOpened, setExportModalOpened] = useState(false)
   const router = useRouter()
 
@@ -125,6 +136,16 @@ export function ProjectFilesTable({
   const textRefs = useRef<{ [key: number]: React.RefObject<HTMLDivElement> }>(
     {},
   )
+  const multiSelectRef = useRef<HTMLDivElement>(null);
+  const [selectedDocGroups, setSelectedDocGroups] = useState<string[]>([]);
+
+  //   const MultiSelect = styled(MultiSelect)`
+  //   .mantine-MultiSelect-dropdown {
+  //     top: 4px !important;
+  //     // box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.7) !important; // Add shadow
+  //     // margin-top: 0 !important; // Remove space between bar section and data dropdown
+  //   }
+  // `;
 
   // ------------- Queries -------------
   const {
@@ -197,6 +218,7 @@ export function ProjectFilesTable({
     refetch: refetchDocumentGroups,
   } = useGetDocumentGroups(course_name)
 
+
   useEffect(() => {
     if (tabValue === 'failed') {
       const newOverflowStates: { [key: number]: boolean } = {}
@@ -213,10 +235,38 @@ export function ProjectFilesTable({
     }
   }, [failedDocuments, tabValue])
 
-  // ------------- Mutations -------------
 
-  function handleDocumentGroupsChange(
-    record: any,
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        multiSelectRef.current &&
+        event.target instanceof Node &&
+        !multiSelectRef.current.contains(event.target)
+      ) {
+        setShowMultiSelect(false);
+      }
+    }
+
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  async function addDocumentsToDocGroups(
+    records: CourseDocument[],
+    newSelectedGroups: string[],
+  ) {
+    const addDocGroupPromises = records.map((record) =>
+      handleDocumentGroupsChange(record, [...newSelectedGroups, ...(record.doc_groups || [])]),
+    )
+    await Promise.all(addDocGroupPromises)
+  }
+
+  async function handleDocumentGroupsChange(
+    record: CourseDocument,
     newSelectedGroups: string[],
   ) {
     const doc_groups = record.doc_groups ? record.doc_groups : []
@@ -230,7 +280,7 @@ export function ProjectFilesTable({
 
     if (removedGroups.length > 0) {
       for (const removedGroup of removedGroups) {
-        removeFromDocGroup.mutate({
+        await removeFromDocGroup.mutate({
           record,
           removedGroup,
         })
@@ -238,7 +288,7 @@ export function ProjectFilesTable({
     }
     if (appendedGroups.length > 0) {
       for (const appendedGroup of appendedGroups) {
-        appendToDocGroup.mutate({
+        await appendToDocGroup.mutate({
           record,
           appendedGroup,
         })
@@ -322,11 +372,13 @@ export function ProjectFilesTable({
             context.previousDocumentGroups,
           )
         }
-
-        showToastOnFileDeleted(theme, true)
+        showToast(theme,
+          'Error deleting file',
+          "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug.",
+          true,)
       },
       onSettled: async () => {
-        showToastOnFileDeleted(theme)
+        showToast(theme, 'Deleting file...', 'The file is being deleted in the background. Refresh the page to see the changes.', false)
         const sleep = (ms: number) =>
           new Promise((resolve) => setTimeout(resolve, ms))
         console.debug('sleeping for 500ms')
@@ -349,20 +401,60 @@ export function ProjectFilesTable({
     return errorStateForProjectFilesTable()
   }
 
-  const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
+  // const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
+  //   return (
+  //     // docs: https://mantine.dev/others/notifications/
+  //     notifications.show({
+  //       id: 'file-deleted-from-materials',
+  //       withCloseButton: true,
+  //       // onClose: () => console.debug('unmounted'),
+  //       // onOpen: () => console.debug('mounted'),
+  //       autoClose: 12000,
+  //       // position="top-center",
+  //       title: was_error ? 'Error deleting file' : 'Deleting file...',
+  //       message: was_error
+  //         ? "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug."
+  //         : 'The file is being deleted in the background. Refresh the page to see the changes.',
+  //       icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
+  //       styles: {
+  //         root: {
+  //           backgroundColor: theme.colors.nearlyWhite,
+  //           borderColor: was_error
+  //             ? theme.colors.errorBorder
+  //             : theme.colors.aiPurple,
+  //         },
+  //         title: {
+  //           color: theme.colors.nearlyBlack,
+  //         },
+  //         description: {
+  //           color: theme.colors.nearlyBlack,
+  //         },
+  //         closeButton: {
+  //           color: theme.colors.nearlyBlack,
+  //           '&:hover': {
+  //             backgroundColor: theme.colors.dark[1],
+  //           },
+  //         },
+  //         icon: {
+  //           backgroundColor: was_error
+  //             ? theme.colors.errorBackground
+  //             : theme.colors.successBackground,
+  //           padding: '4px',
+  //         },
+  //       },
+  //       loading: false,
+  //     })
+  //   )
+  // }
+
+  const showToast = (theme: MantineTheme, title: string, message: string, was_error = false) => {
     return (
-      // docs: https://mantine.dev/others/notifications/
       notifications.show({
         id: 'file-deleted-from-materials',
         withCloseButton: true,
-        // onClose: () => console.debug('unmounted'),
-        // onOpen: () => console.debug('mounted'),
         autoClose: 12000,
-        // position="top-center",
-        title: was_error ? 'Error deleting file' : 'Deleting file...',
-        message: was_error
-          ? "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug."
-          : 'The file is being deleted in the background. Refresh the page to see the changes.',
+        title: title,
+        message: message,
         icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
         styles: {
           root: {
@@ -395,9 +487,232 @@ export function ProjectFilesTable({
     )
   }
 
+  // const items = [
+  //   {
+  //     name: (
+  //       <span
+  //         className={`${montserrat_heading.variable} font-montserratHeading`}
+  //       >
+  //         Document Groups
+  //       </span>
+  //     )
+  //   },
+  //   // link: ``,  // multiselect dropdown
+  //   {
+  //     name: (
+  //       <span
+  //         className={`${montserrat_heading.variable} font-montserratHeading`}
+  //       >
+  //         Delete Selected Document
+  //       </span>
+  //     ),
+  //   },
+  // ];
   return (
     <>
       <GlobalStyle />
+      <div style={{
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between',
+
+      }}>
+        {selectedRecords.length > 0 && <Paper
+        // className={classes.dropdown}
+        // withBorder
+        // style={styles}
+        >
+          <div style={{ display: 'flex', position: 'relative', alignItems: 'flex-start', background: 'black' }}>
+
+            {/* {items.map((item, index) => ( */}
+            <Tooltip label="All selected documents will be added to the group" position='top' withArrow>
+              <Button
+                // key={index}
+                onClick={() => {
+                  setShowMultiSelect(true);
+                }}
+                className="bg-purple-600 bg-opacity-50 hover:bg-purple-600"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
+                  border: 'none',
+                  paddingRight: '10px',
+                  paddingLeft: '10px',
+                  transition: '0.3s',
+                  marginRight: '5px',
+                  marginBottom: '7px',
+                }}
+              >
+                Add Document to Groups
+              </Button>
+            </Tooltip>
+
+            {/* ))} */}
+            {/* <div style={{ position: 'relative' }}> */}
+
+            {showMultiSelect && (
+              <div ref={multiSelectRef} style={{ position: 'absolute', zIndex: 10 }}>
+
+                <MultiSelect
+                  data={
+                    documentGroups
+                      ? documentGroups.map((doc_group) => ({
+                        value: doc_group.name || '',
+                        label: doc_group.name || '',
+                      }))
+                      : []
+                  }
+                  value={selectedDocGroups}
+                  placeholder={
+                    isLoadingDocumentGroups ? 'Loading...' : 'Select Group'
+                  }
+                  searchable={!isLoadingDocumentGroups}
+                  nothingFound={
+                    isLoadingDocumentGroups ? 'Loading...' : 'No Options'
+                  }
+                  creatable
+                  getCreateLabel={(query) => `+ Create "${query}"`}
+                  onCreate={(doc_group_name) => ({
+                    value: doc_group_name,
+                    label: doc_group_name,
+                  })}
+                  // onChange={async (newSelectedGroups) => {
+                  //   await addDocumentsToDocGroups(selectedRecords, newSelectedGroups);
+                  //   for (const record of selectedRecords) {
+                  //     // await handleDocumentGroupsChange(record, selectedDocGroups);
+                  //     for (const removedGroup of selectedDocGroups) {
+                  //       await removeFromDocGroup.mutate({
+                  //         record,
+                  //         removedGroup,
+                  //       })
+                  //     }
+
+                  //     setShowMultiSelect(false);
+                  //     setSelectedRecords([]);
+                  //   }
+                  // }}
+                  onChange={async (newSelectedGroups) => {
+                    await addDocumentsToDocGroups(selectedRecords, newSelectedGroups);
+                    // Through all the common docgorups newselectedgroups doesn't have the doc group that is in all the common docgroups
+                    const unselectedGroups: string[] = selectedDocGroups.filter(group => !newSelectedGroups.includes(group));
+                    // Remove the unselected groups from the selected records
+                    for (const record of selectedRecords) {
+                      for (const unselectedGroup of unselectedGroups) {
+                        await removeFromDocGroup.mutate({
+                          record,
+                          removedGroup: unselectedGroup,
+                        });
+                      }
+                    }
+
+                    // Update the selected document groups
+                    setSelectedDocGroups(newSelectedGroups);
+
+                    // Hide the multi-select and clear the selected records
+                    setShowMultiSelect(false);
+                    setSelectedRecords([]);
+                  }}
+                  disabled={isLoadingDocumentGroups}
+                  sx={{ flex: 1, width: '100%' }}
+                  classNames={{
+                    value: 'tag-item self-center',
+                  }}
+                  styles={{
+                    input: {
+                      paddingTop: '12px',
+                      paddingBottom: '12px',
+                      width: '250px',
+                    },
+                    value: {
+                      marginTop: '2px',
+                    },
+                    dropdown: {
+                      boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.7)', // Add shadow
+                      marginTop: '0', // Remove space between bar section and data dropdown
+                    },
+                    wrapper: {
+                      width: '100%',
+                    }
+                  }}
+                />
+              </div>
+
+            )}
+            <Button
+              uppercase
+              leftIcon={<IconTrash size={16} />}
+              disabled={!selectedRecords.length}
+              onClick={() => {
+                if (selectedRecords.length > 100) {
+                  showToast(
+                    theme,
+                    'Selection Limit Exceeded',
+                    'You have selected more than 100 documents. Please select less than or equal to 100 documents.',
+                    true,
+                  );
+                } else {
+                  setRecordsToDelete(selectedRecords);
+                  setModalOpened(true);
+                }
+              }}
+              style={{
+                backgroundColor: selectedRecords.length
+                  ? '#8B0000'
+                  : 'transparent',
+                // flex: 1
+              }}
+            >
+              {selectedRecords.length
+                ? `Delete ${selectedRecords.length === 1
+                  ? '1 selected record'
+                  : `${selectedRecords.length} selected records`
+                }`
+                : 'Select records to delete'}
+            </Button>
+            {/* <Center> */}
+
+            {/* </Center> */}
+          </div>
+          {/* </div> */}
+        </Paper >}
+        <div style={{ marginLeft: 'auto' }}> {/* Add this div */}
+
+          <Tooltip
+            multiline
+            width={280}
+            withArrow
+            transitionProps={{ duration: 200 }}
+            label="Download the post-processed text and vector embeddings (OpenAI Ada-002) used by the LLM. The export format is JSON Lines (.JSONL). To minimize data transfer costs, exporting original files (PDFs, etc.) is only available for individual documents."
+            position="top"
+          >
+            <Button // button to export materials
+              uppercase
+              leftIcon={<IconFileExport size={16} />}
+              // disabled={!selectedRecords.length}
+              onClick={() => {
+                // setRecordsToExport(selectedRecords)
+                setExportModalOpened(true)
+              }}
+              style={{
+                // backgroundColor: selectedRecords.length
+                //   ? 'purple'
+                //   : 'transparent',
+                backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
+                marginLeft: '5px',
+                marginBottom: '7px',
+              }}
+            >
+              {/* {selectedRecords.length
+                ? `Export ${selectedRecords.length === 1
+                  ? '1 selected record'
+                  : `${selectedRecords.length} selected records`
+                }`
+                : 'Select records to export'} */}
+              Export All Documents & Embeddings
+            </Button>
+          </Tooltip>
+        </div>
+      </div>
       <DataTable
         records={
           tabValue === 'failed'
@@ -414,7 +729,8 @@ export function ProjectFilesTable({
         onPageChange={setPage}
         sortStatus={sortStatus}
         onSortStatusChange={setSortStatus}
-        fetching={isLoadingDocuments || isLoadingDocumentGroups}
+        fetching={isLoadingDocuments || isLoadingDocumentGroups || isDeletingDocuments || appendToDocGroup.isLoading || removeFromDocGroup.isLoading}
+        // fetching={appendToDocGroup.isLoading || removeFromDocGroup.isLoading/* other loading states */}
         recordsPerPage={PAGE_SIZE}
         customLoader={<LoadingSpinner />}
         borderRadius="lg"
@@ -683,9 +999,9 @@ export function ProjectFilesTable({
                           label: doc_group_name,
                         }
                       }}
-                      onChange={(newSelectedGroups) =>
-                        handleDocumentGroupsChange(record, newSelectedGroups)
-                      }
+                      onChange={(newSelectedGroups) => {
+                        handleDocumentGroupsChange(record, newSelectedGroups);
+                      }}
                       disabled={isLoadingDocumentGroups}
                       sx={{ flex: 1, width: '100%' }}
                       classNames={{
@@ -758,81 +1074,23 @@ export function ProjectFilesTable({
           if (newSelectedRecords.length > 0) {
             setSelectedRecords(newSelectedRecords)
             console.debug('New selection:', newSelectedRecords)
+
+            // Use reduce to find the common document groups among all selected records
+            const commonDocGroups = newSelectedRecords.reduce((commonGroups, record) => {
+              return commonGroups.filter(group => record.doc_groups.includes(group));
+            }, (newSelectedRecords[0] as CourseDocument).doc_groups);
+
+            setSelectedDocGroups(commonDocGroups);
+            console.log(commonDocGroups)
           } else {
             setSelectedRecords([])
+            setSelectedDocGroups([])
           }
         }}
       // Accessor not necessary when documents have an `id` property
       // idAccessor={(row: any) => (row.url ? row.url : row.s3_path)}
       />{' '}
       {/* End DataTable */}
-      <Paper
-        my="sm"
-        py="sm"
-        withBorder={false}
-        radius={0}
-        style={{ backgroundColor: 'transparent' }}
-      >
-        <Center>
-          <Button
-            uppercase
-            leftIcon={<IconTrash size={16} />}
-            disabled={!selectedRecords.length}
-            onClick={() => {
-              setRecordsToDelete(selectedRecords)
-              setModalOpened(true)
-            }}
-            style={{
-              backgroundColor: selectedRecords.length
-                ? '#8B0000'
-                : 'transparent',
-            }}
-          >
-            {selectedRecords.length
-              ? `Delete ${selectedRecords.length === 1
-                ? '1 selected record'
-                : `${selectedRecords.length} selected records`
-              }`
-              : 'Select records to delete'}
-          </Button>
-        </Center>
-        <Center>
-          <Button // button to export materials
-            uppercase
-            leftIcon={<IconFileExport size={16} />}
-            // disabled={!selectedRecords.length}
-            onClick={() => {
-              // setRecordsToExport(selectedRecords)
-              setExportModalOpened(true)
-            }}
-            style={{
-              // backgroundColor: selectedRecords.length
-              //   ? 'purple'
-              //   : 'transparent',
-              backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
-              marginTop: '20px',
-              marginRight: '5px',
-            }}
-          >
-            {/* {selectedRecords.length
-              ? `Export ${selectedRecords.length === 1
-                ? '1 selected record'
-                : `${selectedRecords.length} selected records`
-              }`
-              : 'Select records to export'} */}
-            Export Documents & Embeddings
-          </Button>
-          <Tooltip
-            multiline
-            width={280}
-            withArrow
-            transitionProps={{ duration: 200 }}
-            label="Download the post-processed text and vector embeddings (OpenAI Ada-002) used by the LLM. The export format is JSON Lines (.JSONL). To minimize data transfer costs, exporting original files (PDFs, etc.) is only available for individual documents."
-          >
-            <IconInfoCircleFilled size={23} />
-          </Tooltip>
-        </Center>
-      </Paper>
       <Modal
         opened={modalOpened}
         onClose={() => setModalOpened(false)}
@@ -864,10 +1122,17 @@ export function ProjectFilesTable({
             className="min-w-[3rem] -translate-x-1 transform rounded-s-md bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
             onClick={async () => {
               setModalOpened(false)
+              setIsDeletingDocuments(true)
               console.debug('Deleting records:', recordsToDelete)
               deleteDocumentMutation.mutate(recordsToDelete)
               // await handleDelete(recordsToDelete)
               setRecordsToDelete([])
+              const sleep = (ms: number) =>
+                new Promise((resolve) => setTimeout(resolve, ms))
+              console.debug('sleeping for 1s before refetching')
+              await sleep(1000)
+              refetchDocuments()
+              setIsDeletingDocuments(false)
             }}
           >
             Delete

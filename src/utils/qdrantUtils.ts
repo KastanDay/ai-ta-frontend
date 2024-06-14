@@ -66,8 +66,9 @@ export async function addDocumentsToDocGroupQdrant(
     // for (const document of searchResultBefore) {
     //   console.log("Payload:", document.payload);
     // }
+    // console.log('Filter used for adding doc to doc group: ', searchFilter, 'payload:', doc.doc_groups)
 
-    qdrant.setPayload(collection_name ? collection_name : '', {
+    const response = await qdrant.setPayload(collection_name ? collection_name : '', {
       payload: {
         doc_groups: doc.doc_groups,
       },
@@ -84,6 +85,8 @@ export async function addDocumentsToDocGroupQdrant(
     // for (const document of searchResultAfter) {
     //   console.log("Payload:", document.payload);
     // }
+    // console.log('Successfully added documents to doc group: ', response)
+    return response
   } catch (error) {
     console.error('Error in addDocumentsToDocGroup:', error)
 
