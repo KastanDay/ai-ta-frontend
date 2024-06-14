@@ -1,50 +1,58 @@
-import { NextResponse } from "next/server"
-import { ChatBody, Content, ImageBody, OpenAIChatMessage } from "~/types/chat"
-import { parseOpenaiKey } from "~/utils/crypto"
+import { NextResponse } from 'next/server'
+import { ChatBody, Content, ImageBody, OpenAIChatMessage } from '~/types/chat'
+import { parseOpenaiKey } from '~/utils/crypto'
 
 import { OpenAIError, OpenAIStream } from '@/utils/server'
 
 export const config = {
-	runtime: 'edge',
-	}
-	
-	const handler = async (req: Request): Promise<NextResponse> => {
-	try {
-		const { conversation, key, course_name } =
-		(await req.json()) as ImageBody
+  runtime: 'edge',
+}
 
-		const openAIKey = await parseOpenaiKey(key)
+const handler = async (req: Request): Promise<NextResponse> => {
+  try {
+    const { conversation, key, course_name } = (await req.json()) as ImageBody
 
-		const systemPrompt = getImageDescriptionSystemPrompt()
+    const openAIKey = await parseOpenaiKey(key)
 
-		const lastMessageContents = conversation.messages[conversation.messages.length - 1]?.content;
-		const contentArray: Content[] = Array.isArray(lastMessageContents) ? lastMessageContents : [{
-			type: 'text',
-			text: lastMessageContents as string
-		}];
+    const systemPrompt = getImageDescriptionSystemPrompt()
 
-		const messages: OpenAIChatMessage[] = [{
-			role: 'system',
-			content: [
-				{
-					type: 'text',
-					text: systemPrompt,
-				},
-			]
-		}, { role: 'user', content: [...contentArray]}]
-		console.log('Image Description message: ', messages)
+    const lastMessageContents =
+      conversation.messages[conversation.messages.length - 1]?.content
+    const contentArray: Content[] = Array.isArray(lastMessageContents)
+      ? lastMessageContents
+      : [
+          {
+            type: 'text',
+            text: lastMessageContents as string,
+          },
+        ]
 
-		const response = await OpenAIStream(
-			conversation.model, 
-			systemPrompt, 
-			conversation.temperature,
-			openAIKey,
-			messages,
-			false)
-			
-			return new NextResponse(JSON.stringify(response))
-	} catch (error) {
-		if (error instanceof OpenAIError) {
+    const messages: OpenAIChatMessage[] = [
+      {
+        role: 'system',
+        content: [
+          {
+            type: 'text',
+            text: systemPrompt,
+          },
+        ],
+      },
+      { role: 'user', content: [...contentArray] },
+    ]
+    console.log('Image Description message: ', messages)
+
+    const response = await OpenAIStream(
+      conversation.model,
+      systemPrompt,
+      conversation.temperature,
+      openAIKey,
+      messages,
+      false,
+    )
+
+    return new NextResponse(JSON.stringify(response))
+  } catch (error) {
+    if (error instanceof OpenAIError) {
       const { name, message } = error
       console.error('OpenAI Completion Error', message)
       const resp = NextResponse.json(
@@ -63,14 +71,13 @@ export const config = {
       console.log('Final Error resp: ', resp)
       return resp
     }
-	}
+  }
 }
 
 export default handler
-		
 
 export function getImageDescriptionSystemPrompt() {
-	return `"Analyze and describe the given image with relevance to the user query, focusing solely on visible elements. Detail the image by:
+  return `"Analyze and describe the given image with relevance to the user query, focusing solely on visible elements. Detail the image by:
 	- Identifying text (OCR information), objects, spatial relationships, colors, actions, annotations, and labels.
 	- Utilizing specific terminology relevant to the image's domain (e.g., medical, agricultural, technological).
 	- Categorizing the image and listing associated key terms.

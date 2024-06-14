@@ -701,7 +701,7 @@ export const ChatInput = ({
 
         <div
           ref={chatInputParentContainerRef}
-          className="absolute bottom-0 mx-20 flex w-[60%] flex-col self-center rounded-t-3xl border border-black/10 bg-[#070712] px-4 pb-8 pt-4 shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] sm:mx-4"
+          className="absolute bottom-0 mx-4 flex w-[80%] flex-col self-center rounded-t-3xl border border-black/10 bg-[#070712] px-4 pb-8 pt-4 shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] md:mx-20 md:w-[70%]"
         >
           {/* BUTTON 2: Image Icon and Input */}
           {selectedConversation?.model.id &&

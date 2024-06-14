@@ -29,10 +29,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import {
-  Button,
-  Text,
-} from '@mantine/core'
+import { Button, Text } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'

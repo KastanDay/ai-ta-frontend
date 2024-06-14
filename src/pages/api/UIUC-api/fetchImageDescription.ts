@@ -1,6 +1,12 @@
 // src/pages/api/UIUC-api/fetchImageDescription.ts
 
-import { ChatBody, Content, Conversation, ImageBody, Message } from '@/types/chat'
+import {
+  ChatBody,
+  Content,
+  Conversation,
+  ImageBody,
+  Message,
+} from '@/types/chat'
 
 export const config = {
   runtime: 'edge',

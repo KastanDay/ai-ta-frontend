@@ -80,7 +80,11 @@ const logConversationToSupabase = async (req: any, res: any) => {
         conversation.messages[conversation.messages.length - 1]?.content,
     },
     project_name: 'test-custom-logs',
-    metadata: { projectName: course_name, conversation_id: conversation.id, tools: conversation.messages[conversation.messages.length - 2]?.tools }, // "conversation_id" is a SPECIAL KEYWORD. CANNOT BE ALTERED: https://docs.smith.langchain.com/old/monitoring/faq/threads
+    metadata: {
+      projectName: course_name,
+      conversation_id: conversation.id,
+      tools: conversation.messages[conversation.messages.length - 2]?.tools,
+    }, // "conversation_id" is a SPECIAL KEYWORD. CANNOT BE ALTERED: https://docs.smith.langchain.com/old/monitoring/faq/threads
     // id: conversation.id, // DON'T USE - breaks the threading support
   })
 

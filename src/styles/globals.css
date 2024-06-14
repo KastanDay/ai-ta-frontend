@@ -432,6 +432,20 @@ a[data-footnote-backref] {
   list-style-type: none;
 }
 
+.codeBlock code:has(> span) {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+  overflow-wrap: anywhere !important;
+  /* background-color: 'white' !important; */
+  background: 'white' !important;
+}
+
+.codeBlock pre:has(> code) {
+  background-color: #101122 !important;
+}
+
 /* Style for individual list items */
 .linkMarkDown ol li:has(> button) {
   max-width: 150px;

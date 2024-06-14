@@ -68,7 +68,7 @@ export const parseOpenaiKey = async (openaiKey: string) => {
   if (openaiKey && isEncrypted(openaiKey)) {
     const decryptedText = await decrypt(
       openaiKey,
-      process.env.NEXT_PUBLIC_SIGNING_KEY as string
+      process.env.NEXT_PUBLIC_SIGNING_KEY as string,
     )
     openaiKey = decryptedText as string
   } else {
