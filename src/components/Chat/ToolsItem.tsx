@@ -21,7 +21,7 @@ export const ToolsItem = ({}) => {
     }
 
     return [...tools].filter((tool_obj) =>
-      tool_obj.name?.toLowerCase().includes(toolSearch?.toLowerCase()),
+      tool_obj.readableName?.toLowerCase().includes(toolSearch?.toLowerCase()),
     )
   }, [tools, toolSearch])
 
@@ -101,7 +101,7 @@ export const ToolsItem = ({}) => {
                       <Text
                         className={`${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`}
                       >
-                        {tool_obj.name}
+                        {tool_obj.readableName}
                       </Text>
                     </td>
                     <td
