@@ -19,7 +19,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { UIUCTool } from '~/types/chat'
 import { useFetchAllWorkflows } from '~/utils/functionCalling/handleFunctionCalling'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 25
 
 interface N8nWorkflowsTableProps {
   n8nApiKey: string
@@ -43,10 +43,7 @@ export const N8nWorkflowsTable = ({
 }: N8nWorkflowsTableProps) => {
   const [page, setPage] = useState(1)
   const queryClient = useQueryClient()
-  // const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
-  //   columnAccessor: 'created_at',
-  //   direction: 'desc',
-  // })
+
   const {
     data: records,
     isLoading: isLoadingRecords,
@@ -65,7 +62,6 @@ export const N8nWorkflowsTable = ({
       if (!response.ok) {
         throw new Error(data.error)
       }
-      // console.log('response:', await response.json())
 
       return data
     },
@@ -122,26 +118,12 @@ export const N8nWorkflowsTable = ({
   })
 
   useEffect(() => {
-    console.log('N8N records', records)
-  }, [records])
-
-  useEffect(() => {
     // Refetch if API key changes
     refetchWorkflows()
   }, [n8nApiKey])
 
-  console.debug('records before datatable:', records)
-
   const startIndex = (page - 1) * PAGE_SIZE
   const endIndex = startIndex + PAGE_SIZE
-
-  // Not the right way to implement pagination... have to do it at the API/Request level
-  // let currentRecords
-  // if (records && records.length !== 0) {
-  //   console.log('before the current', records)
-  //   currentRecords = (records as WorkflowRecord[]).slice(startIndex, endIndex)
-  // }
-  // console.log('currentRecords b4 data:', currentRecords)
 
   const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1000)
 
@@ -157,17 +139,6 @@ export const N8nWorkflowsTable = ({
   const dataTableStyle = {
     width: isWideScreen ? '65%' : '92%',
   }
-
-  // const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
-  //   columnAccessor: 'created_at',
-  //   direction: 'desc',
-  // })
-  // const [ordered, setOrder] = useState(sortBy(records, 'created_at'))
-
-  // useEffect(() => {
-  //   const data = sortBy(records, sortStatus.columnAccessor) as WorkflowRecord[]
-  //   setOrder(sortStatus.direction === 'desc' ? data.reverse() : data)
-  // }, [sortStatus])
 
   let currentRecords
   let sortedRecords
@@ -223,20 +194,13 @@ export const N8nWorkflowsTable = ({
           // { accessor: 'id', width: 175 },
           { accessor: 'name' },
           {
-            accessor: 'active',
+            accessor: 'enabled',
             width: 100,
             render: (record, index) => (
               <Switch
-                checked={!!record.enabled}
+                // @ts-ignore -- for some reason N8N returns "active" and we use "enabled" but I can't get them to agree
+                checked={!!record.active}
                 onChange={(event) => {
-                  // TODO: double check this...
-                  // setRecords((prevRecords) =>
-                  //   prevRecords.map((record, idx) =>
-                  //     idx === index
-                  //       ? { ...record, active: event.target.checked }
-                  //       : record,
-                  //   ),
-                  // )
                   mutate_active_flows.mutate({
                     id: record.id,
                     checked: event.target.checked,
@@ -245,13 +209,15 @@ export const N8nWorkflowsTable = ({
               />
             ),
           },
-          // {
-          //   accessor: 'tags',
-          //   width: 100,
-          //   render: (record, index) => {
-          //     return record.tags.map((tag) => tag.name).join(', ')
-          //   },
-          // },
+          {
+            accessor: 'tags',
+            width: 100,
+            render: (record, index) => {
+              return record.tags
+                ? record.tags.map((tag) => tag.name).join(', ')
+                : ''
+            },
+          },
           {
             accessor: 'createdAt',
             // textAlign: 'left',

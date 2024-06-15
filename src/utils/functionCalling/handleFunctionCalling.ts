@@ -338,6 +338,7 @@ export function getUIUCToolFromN8n(workflows: N8nWorkflow[]): UIUCTool[] {
       description: formTriggerNode.parameters.formDescription,
       updatedAt: workflow.updatedAt,
       createdAt: workflow.createdAt,
+      enabled: workflow.active,
       // @ts-ignore -- can't get the 'only add if non-zero' to work nicely. It's fine.
       inputParameters:
         Object.keys(parameters).length > 0 ? parameters : undefined,

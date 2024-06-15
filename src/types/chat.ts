@@ -42,6 +42,7 @@ export interface UIUCTool {
   updatedAt?: string
   output?: ToolOutput // Use a unified output type
   error?: string
+  tags?: { name: string }[]
   contexts?: ContextWithMetadata[]
 }
 
