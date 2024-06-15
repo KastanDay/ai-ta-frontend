@@ -145,7 +145,6 @@ export const OpenAIStream = async (
   }
 
   if (stream) {
-    console.log('Streaming response ')
     let isStreamClosed = false // Flag to track the state of the stream
     const apiStream = new ReadableStream({
       async start(controller) {
