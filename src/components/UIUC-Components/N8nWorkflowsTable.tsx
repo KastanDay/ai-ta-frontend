@@ -184,14 +184,14 @@ export const N8nWorkflowsTable = ({
 
   return (
     <>
-      <Title
+      {/* <Title
         order={3}
         // w={}
         // size={'xl'}
         className={`pb-3 pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
       >
         Your n8n tools
-      </Title>
+      </Title> */}
       <Text w={isWideScreen ? '65%' : '92%'} className="pb-2">
         These tools can be automatically invoked by the LLM to fetch additional
         data to answer user questions on the{' '}

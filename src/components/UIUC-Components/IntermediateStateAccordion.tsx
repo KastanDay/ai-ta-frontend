@@ -7,17 +7,23 @@ import { IconChevronDown } from '@tabler/icons-react'
 export const IntermediateStateAccordion = ({
   accordionKey,
   title,
+  chevron,
   isLoading,
   error,
   content,
+  disableChevronRotation,
+  defaultValue,
 }: {
   accordionKey: string
   title: React.ReactNode
+  chevron?: React.ReactNode
   isLoading: boolean
   error: boolean
   content: React.ReactNode
+  disableChevronRotation?: boolean
+  defaultValue?: string
 }) => {
-  // console.log('IntermediateStateAccordion, key:', accordionKey, 'isLoading:', isLoading, 'error:', error)
+  // console.log('IntermediateStateAccordion, key:', accordionKey, 'isLoading:', isLoading, 'error:', error, 'default value:', defaultValue)
   return (
     <div
       style={{
@@ -33,7 +39,17 @@ export const IntermediateStateAccordion = ({
         order={2}
         w={'100%'}
         m={'auto'}
-        chevron={isLoading ? <LoadingSpinner size="xs" /> : <IconChevronDown />}
+        chevron={
+          chevron ? (
+            chevron
+          ) : isLoading ? (
+            <LoadingSpinner size="xs" />
+          ) : (
+            <IconChevronDown />
+          )
+        }
+        disableChevronRotation={disableChevronRotation}
+        value={defaultValue !== undefined ? defaultValue : undefined}
       >
         <Accordion.Item
           key={accordionKey}

@@ -458,6 +458,7 @@ export const ChatMessage: FC<Props> = memo(
                   async (imageUrl: string) => {
                     const isValid = await checkIfUrlIsValid(imageUrl)
                     if (!isValid) {
+                      // This will only work for internal S3 URLs
                       console.log('Image URL is expired')
                       const s3_path = extractPathFromUrl(imageUrl)
                       return getPresignedUrl(s3_path)
