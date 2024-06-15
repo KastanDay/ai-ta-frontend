@@ -16,10 +16,9 @@ export default async function handleTools(
   selectedConversation: Conversation,
   currentMessageIndex: number,
   openaiKey: string,
+  projectName: string,
   homeDispatch: Dispatch<ActionType<HomeInitialState>>,
 ) {
-  // TODO: Use imageURLs and imageDescription to call the appropriate tool
-  console.log('Available tools in handleFunctionCalling: ', availableTools)
   try {
     homeDispatch({ field: 'isRouting', value: true })
 
@@ -76,7 +75,7 @@ export default async function handleTools(
       // Tool calling in Parallel here!!
       const toolResultsPromises = uiucToolsToRun.map(async (tool) => {
         try {
-          const toolOutput = await callN8nFunction(tool, 'todo!') // TODO: Get API key
+          const toolOutput = await callN8nFunction(tool, undefined, projectName)
           handleToolOutput(toolOutput, tool)
         } catch (error: unknown) {
           console.error(
@@ -145,16 +144,35 @@ const handleToolOutput = async (toolOutput: any, tool: UIUCTool) => {
   }
 }
 
-// TODO: finalize this function calling
-const callN8nFunction = async (tool: UIUCTool, n8n_api_key: string) => {
+const callN8nFunction = async (
+  tool: UIUCTool,
+  n8n_api_key: string | undefined,
+  projectName: string,
+) => {
   console.log('Calling n8n function with data: ', tool)
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 25000)
 
+  // get n8n api key per project
+  if (!n8n_api_key) {
+    const response = await fetch(
+      `/api/UIUC-api/tools/getN8nKeyFromProject?course_name=${projectName}`,
+      {
+        method: 'GET',
+      },
+    )
+    if (!response.ok) {
+      throw new Error('Network response was not ok')
+    }
+    n8n_api_key = await response.json()
+    console.log('⚠️ API Key from getN8nAPIKey: ', n8n_api_key)
+  }
+
+  // Run tool
   const body = JSON.stringify({
-    api_key:
-      'n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6',
+    api_key: n8n_api_key,
+    // 'n8n_api_e46b54038db2eb82e2b86f2f7f153a48141113113f38294022f495774612bb4319a4670e68e6d0e6',
     name: tool.readableName,
     data: tool.aiGeneratedArgumentValues,
   })

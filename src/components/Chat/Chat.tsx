@@ -1,24 +1,13 @@
 // src/components/Chat/Chat.tsx
 import {
-  // IconBrain,
-  // IconClearAll,
   IconArrowRight,
-  // IconCloudUpload,
   IconExternalLink,
-  // IconRobot,
-  // IconSettings,
   IconAlertTriangle,
   IconArrowLeft,
   IconLock,
   IconBrain,
   IconCreditCard,
   IconAlertCircle,
-  // IconArrowUpRight,
-  // IconFileTextAi,
-  // IconX,
-  // IconDownload,
-  // IconClearAll,
-  // IconSettings,
 } from '@tabler/icons-react'
 import {
   type MutableRefObject,
@@ -169,56 +158,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [spotlightQuery, setSpotlightQuery] = useState('')
-
-  // TODO: Update to new settings page, not spotlight...
-  // useEffect(() => {
-  //   if (isSuccessDocumentGroups) {
-  //     const documentGroupActions =
-  //       documentGroups?.map((docGroup, index) => ({
-  //         id: `docGroup-${index}`,
-  //         title: docGroup.name,
-  //         description: `Description for ${docGroup.name}`,
-  //         group: 'Document Groups',
-  //         checked: true,
-  //         onTrigger: () => console.log(`${docGroup.name} triggered`),
-  //       })) || []
-
-  //     console.log('documentGroupActions: ', documentGroupActions)
-  //     console.log('actions: ', [...documentGroupActions, ...actions])
-  //     setActions([...documentGroupActions, ...actions])
-  //   }
-  //   // console.log('actions: ', actions)
-  // }, [documentGroups, isSuccessDocumentGroups])
-
-  // TODO: Update to new settings page, not spotlight...
-  // useEffect(() => {
-  //   console.log('IsSuccessTools: ', isSuccessTools)
-  //   console.log('isErrorTools: ', isErrorTools)
-  //   console.log('toolLoadingError: ', toolLoadingError)
-  //   if (isSuccessTools) {
-  //     console.log('Tools in Chat.tsx: ', tools)
-  //     const toolsActions =
-  //       tools?.map((tool: OpenAICompatibleTool, index: number) => ({
-  //         id: `tool-${index}`,
-  //         title: tool.readableName,
-  //         description: tool.description,
-  //         group: 'Tools',
-  //         checked: true,
-  //         onTrigger: () => console.log(`${tool.readableName} triggered`),
-  //       })) || []
-
-  //     console.log('toolsActions: ', toolsActions)
-  //     console.log('actions: ', [...actions, ...toolsActions])
-  //     setActions([...actions, ...toolsActions])
-  //   } else if (isErrorTools) {
-  //     errorToast({
-  //       title: 'Error loading tools',
-  //       message:
-  //         toolLoadingError.message +
-  //         '.\nPlease refresh the page or try again later. Regular chat features may still work.',
-  //     })
-  //   }
-  // }, [tools, isSuccessTools, isErrorTools, toolLoadingError])
 
   const getOpenAIKey = (courseMetadata: CourseMetadata) => {
     const key =
@@ -461,15 +400,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     ) => {
       setCurrentMessage(message)
       resetMessageStates()
-      // New way with React Context API
-      // TODO: MOVE THIS INTO ChatMessage
-      // console.log('IN handleSend: ', message)
-      // setSearchQuery(message.content)
+
       let searchQuery = Array.isArray(message.content)
         ? message.content.map((content) => content.text).join(' ')
         : message.content
-
-      console.log('QUERY: ', searchQuery)
 
       if (selectedConversation) {
         let updatedConversation: Conversation
@@ -542,10 +476,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         const imageUrls = imageContent.map(
           (content) => content.image_url?.url as string,
         )
-        // console.log('Image URLs in main:', imageUrls)
-        // console.log('Message in main:', message)
 
-        // If tools are available, try using tools:
         const toolResult = await handleTools(
           message,
           tools,
@@ -554,6 +485,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           updatedConversation,
           currentMessageIndex,
           getOpenAIKey(courseMetadata),
+          getCurrentPageName(),
           homeDispatch,
         )
         // Update conversation from toolResult
@@ -762,7 +694,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
           try {
             saveConversation(updatedConversation)
-            // todo: add clerk user info to onMessagereceived for logging.
             if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
               const emails = extractEmailsFromClerk(clerk_obj.user)
               updatedConversation.user_email = emails[0]
@@ -942,10 +873,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-          'Make a bullet point list of key takeaways of the course.',
-          'What is [your favorite topic] and why is it worth learning about?',
-          'How can I effectively prepare for the upcoming exam?',
-          'How many assignments in the course?',
+          'Make a bullet point list of key takeaways from this project.',
+          'What are the best practices for [Activity or Process] in [Context or Field]?',
+          'Can you explain the concept of [Specific Concept] in simple terms?',
         ]
 
   // Add this function to create dividers with statements
