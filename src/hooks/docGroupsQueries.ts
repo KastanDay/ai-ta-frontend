@@ -177,6 +177,11 @@ export function useAppendToDocGroup(
   queryClient: QueryClient,
   page: number,
 ) {
+  // USAGE:
+  // removeFromDocGroup (course_name) -mutate(f
+  //
+  // record, removedGroup,
+  // })
   return useMutation({
     mutationFn: async ({
       record,

@@ -98,7 +98,7 @@ const MakeOldCoursePage = ({
               courseMetadata={metadata}
             />
 
-            <div className="flex w-[85%] flex-col items-center justify-center pb-8 pt-8">
+            <div className="flex w-[95%] flex-col items-center justify-center pb-8 pt-8 md:w-[90%] xl:w-[85%]">
               {metadata && (
                 <>
                   <Blockquote
@@ -172,7 +172,7 @@ const MakeOldCoursePage = ({
             </div>
             {/* Course files header/background */}
             <div
-              className="w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
+              className="w-[95%] items-start rounded-2xl shadow-md shadow-purple-600 md:w-[93%] xl:w-[85%]"
               style={{ zIndex: 1, background: '#15162c' }}
             >
               <Flex direction="row" justify="space-between">
@@ -199,12 +199,12 @@ const MakeOldCoursePage = ({
                 </div>
               </Flex>
             </div>
-            <div className="w-[85%] pb-8 pt-8">
+            <div className="w-[95%] pb-8 pt-8 md:w-[90%] xl:w-[85%]">
               <DocGroupsTable course_name={course_name} />
             </div>
 
             <div
-              className="w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
+              className="w-[95%] items-start rounded-2xl shadow-md shadow-purple-600 md:w-[93%] xl:w-[85%]"
               style={{ zIndex: 1, background: '#15162c' }}
             >
               <Flex direction="row" justify="space-between">
@@ -231,7 +231,7 @@ const MakeOldCoursePage = ({
                 </div>
               </Flex>
             </div>
-            <div className="flex w-[85%] max-w-full flex-col items-center justify-center pb-2 pt-8">
+            <div className="flex w-[96%] max-w-full flex-col items-center justify-center pb-2 pt-8 md:w-[90%] xl:w-[85%]">
               {metadata && (
                 <>
                   <Tabs
