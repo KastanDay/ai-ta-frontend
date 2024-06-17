@@ -479,7 +479,7 @@ const showIngestInProgressToast = (num_success_files: number) => {
     title: `Ingest in progress for ${num_success_files} file${
       num_success_files > 1 ? 's' : ''
     }.`,
-    message: `This is a background task. Refresh the page to see your files as they're processed. (A better upload experience is in the works for April 2024 🚀)`,
+    message: `This is a background task. Refresh the page to see your files as they're processed.`,
     color: 'green',
     radius: 'lg',
     icon: <IconFileUpload />,
