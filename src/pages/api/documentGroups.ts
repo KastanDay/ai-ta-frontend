@@ -5,7 +5,6 @@ import { CourseDocument } from 'src/types/courseMaterials'
 import { getAuth } from '@clerk/nextjs/server'
 import {
   addDocumentsToDocGroup,
-  appendDocGroup,
   fetchDocumentGroups,
   fetchEnabledDocGroups,
   removeDocGroup,
@@ -55,9 +54,19 @@ export default async function handler(
           doc_groups: doc.doc_groups,
         })
 
-        await addDocumentsToDocGroup(courseName, doc)
-        await addDocumentsToDocGroupQdrant(courseName, doc)
-        res.status(200).json({ success: true })
+        const sqlResponse = await addDocumentsToDocGroup(courseName, doc)
+        if (sqlResponse) {
+          const qdrantResponse = await addDocumentsToDocGroupQdrant(courseName, doc)
+          if (qdrantResponse && qdrantResponse.status === 'completed') {
+            res.status(200).json({ success: true })
+          } else {
+            // rollback the SQL operation
+            await removeDocGroup(courseName, doc, docGroup as string)
+            res.status(500).json({ success: false, error: 'An error occurred during Qdrant update' })
+          }
+        } else {
+          res.status(500).json({ success: false, error: 'An error occurred during database update' })
+        }
       } else if (action === 'appendDocGroup' && doc && docGroup) {
         console.log('Appending doc group:', docGroup, 'to doc:', doc)
 
@@ -76,17 +85,27 @@ export default async function handler(
           doc_groups: doc.doc_groups,
           doc_group: docGroup,
         })
-
-        await appendDocGroup(courseName, doc, docGroup)
-
+        
         if (!doc.doc_groups) {
           doc.doc_groups = []
         }
         if (!doc.doc_groups.includes(docGroup)) {
           doc.doc_groups.push(docGroup)
         }
-        await addDocumentsToDocGroupQdrant(courseName, doc)
-        res.status(200).json({ success: true })
+        
+        const sqlResponse = await addDocumentsToDocGroup(courseName, doc)
+        if (sqlResponse) {
+          const qdrantResponse = await addDocumentsToDocGroupQdrant(courseName, doc)
+          if (qdrantResponse && qdrantResponse.status === 'completed') {
+            res.status(200).json({ success: true })
+          } else {
+            // rollback the SQL operation
+            await removeDocGroup(courseName, doc, docGroup as string)
+            res.status(500).json({ success: false, error: 'An error occurred during Qdrant update, rolled back SQL changes' })
+          }
+        } else {
+          res.status(500).json({ success: false, error: 'An error occurred during SQL database update' })
+        }
       } else if (action === 'removeDocGroup' && doc && docGroup) {
         console.log('Removing doc group: ', docGroup, 'from doc: ', doc)
 
