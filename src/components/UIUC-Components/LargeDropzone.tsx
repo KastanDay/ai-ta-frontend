@@ -6,8 +6,10 @@ import {
   rem,
   Text,
   Title,
+  Paper,
   // useMantineTheme,
 } from '@mantine/core'
+
 import {
   IconAlertCircle,
   IconCheck,
@@ -52,6 +54,16 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
+export function Demo({ numFiles, totalFiles }) {
+  return (
+    <Paper shadow="lg" radius="lg" p="md" withBorder>
+      <Text>
+        {numFiles} out of {totalFiles} files have been uploaded.
+      </Text>
+    </Paper>
+  )
+}
+
 export function LargeDropzone({
   courseName,
   current_user_email,
@@ -69,10 +81,12 @@ export function LargeDropzone({
 }) {
   // upload-in-progress spinner control
   const [uploadInProgress, setUploadInProgress] = useState(false)
+  const [successfulUploads, setSuccessfulUploads] = useState(0)
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const { classes, theme } = useStyles()
   const openRef = useRef<() => void>(null)
+  const [files, setFiles] = useState<File[]>([])
 
   const refreshOrRedirect = async (redirect_to_gpt_4: boolean) => {
     if (is_new_course) {
@@ -143,6 +157,7 @@ export function LargeDropzone({
     if (!files) return
     files = files.filter((file) => file !== null)
 
+    setFiles(files)
     setUploadInProgress(true)
 
     if (is_new_course) {
@@ -174,7 +189,7 @@ export function LargeDropzone({
         // return { ok: Math.random() < 0.5, s3_path: filename }; // For testing
         try {
           await uploadToS3(file, uniqueFileName)
-
+          setSuccessfulUploads((prev) => prev + 1) // Increment successful uploads
           console.log(
             'Uploaded to s3. Now sending to ingest. Course name:',
             courseName,
@@ -356,33 +371,36 @@ export function LargeDropzone({
             </div>
           </Dropzone>
           {uploadInProgress && (
-            <div className="flex flex-col items-center justify-center ">
-              <Title
-                order={4}
-                style={{
-                  marginTop: 10,
-                  alignItems: 'center',
-                  color: '#B22222',
-                  justifyContent: 'center',
-                  textAlign: 'center',
-                }}
-              >
-                Do not navigate away until loading is complete <br></br> or
-                ingest will fail.
-              </Title>
-              <Title
-                order={4}
-                style={{
-                  marginTop: 5,
-                  alignItems: 'center',
-                  color: '#B22222',
-                  justifyContent: 'center',
-                  textAlign: 'center',
-                }}
-              >
-                The page will refresh when your AI Assistant is ready.
-              </Title>
-            </div>
+            <>
+              <Demo numFiles={successfulUploads} totalFiles={files.length} />
+              <div className="flex flex-col items-center justify-center ">
+                <Title
+                  order={4}
+                  style={{
+                    marginTop: 10,
+                    alignItems: 'center',
+                    color: '#B22222',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                  }}
+                >
+                  Do not navigate away until loading is complete <br></br> or
+                  ingest will fail.
+                </Title>
+                <Title
+                  order={4}
+                  style={{
+                    marginTop: 5,
+                    alignItems: 'center',
+                    color: '#B22222',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                  }}
+                >
+                  The page will refresh when your AI Assistant is ready.
+                </Title>
+              </div>
+            </>
           )}
         </div>
         {/* END LEFT COLUMN */}
@@ -458,7 +476,9 @@ const showIngestInProgressToast = (num_success_files: number) => {
     // onClose: () => console.log('unmounted'),
     // onOpen: () => console.log('mounted'),
     autoClose: 30000,
-    title: `Ingest in progress for ${num_success_files} file${num_success_files > 1 ? 's' : ''}.`,
+    title: `Ingest in progress for ${num_success_files} file${
+      num_success_files > 1 ? 's' : ''
+    }.`,
     message: `This is a background task. Refresh the page to see your files as they're processed. (A better upload experience is in the works for April 2024 🚀)`,
     color: 'green',
     radius: 'lg',
