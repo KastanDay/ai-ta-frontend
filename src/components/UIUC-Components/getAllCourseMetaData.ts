@@ -69,8 +69,8 @@ export const getAllCourseMetadata = async (): Promise<
 
   try {
     const all_course_metadata_raw = await kv.hgetall('course_metadatas')
-    console.log('Raw metadata')
-    console.log(all_course_metadata_raw)
+    // console.log('Raw metadata')
+    // console.log(all_course_metadata_raw)
 
     if (all_course_metadata_raw) {
       const all_course_metadata = Object.entries(all_course_metadata_raw)
