@@ -107,7 +107,6 @@ const CropwizardLicenses: NextPage = () => {
 export const CropwizardLicenseDisclaimer = () => {
   return (
     <>
-      <br></br>
       <span>
         <p>
           CropWizard&apos;s document corpus is{' '}
@@ -122,6 +121,7 @@ export const CropwizardLicenseDisclaimer = () => {
           </Link>
         </p>
       </span>
+      <br></br>
     </>
   )
 }
