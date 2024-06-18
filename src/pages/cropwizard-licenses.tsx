@@ -21,8 +21,8 @@ const CropwizardLicenses: NextPage = () => {
         <Text className="max-w-[600px]">
           The documents in CropWizard are collected from many different sources,
           and each document is subject to its respective license, including the
-          following. Any downstream use of CropWizard's results must respect the
-          license of the documents that were used.
+          following. Any downstream use of CropWizard&apos;s results must
+          respect the license of the documents that were used.
         </Text>
         <List className="pl-10">
           <List.Item>
@@ -110,7 +110,7 @@ export const CropwizardLicenseDisclaimer = () => {
       <br></br>
       <span>
         <p>
-          CropWizard's document corpus is{' '}
+          CropWizard&apos;s document corpus is{' '}
           <Link
             className="text-purple-600 hover:text-purple-800 active:text-purple-500"
             href="/cropwizard-licenses"
