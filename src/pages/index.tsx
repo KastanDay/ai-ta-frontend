@@ -268,7 +268,7 @@ function CourseCard() {
         "Using all of Clowder's documentation, this bot will answer questions and point you to the right docs and YouTube videos about Clowder.",
     },
     {
-      course_slug: 'cropwizard',
+      course_slug: 'cropwizard-1.5',
       imageSrc: '/media/hero_courses_banners/aifarms_wide_logo.png',
       title: 'Crop Wizard',
       badge: 'AIFARMS',

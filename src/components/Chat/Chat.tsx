@@ -86,6 +86,8 @@ import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
 import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
 import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
+import Link from 'next/link'
+import { CropwizardLicenseDisclaimer } from '~/pages/cropwizard-licenses'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -823,6 +825,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             className={`text-md mb-2 text-white ${montserrat_paragraph.variable} font-montserratParagraph`}
           >
             Start a conversation below or try the following examples
+            {getCurrentPageName() === 'cropwizard-1.5' && (
+              <CropwizardLicenseDisclaimer />
+            )}
           </h4>
           <div className="mt-4 flex flex-col items-start space-y-2 overflow-hidden">
             {statements.map((statement, index) => (

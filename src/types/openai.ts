@@ -7,6 +7,34 @@ export interface OpenAIModel {
   tokenLimit: number
 }
 
+// Ordered list of preferred model IDs -- the first available model will be used as default
+export const preferredModelIds = [
+  'gpt-4o',
+  'gpt-4-turbo-2024-04-09',
+  'gpt-4-128k',
+  'gpt-4-0125-preview',
+  'gpt-4-1106-preview',
+  'gpt-4-vision-preview',
+  'gpt-4',
+  'gpt-3.5-turbo-16k',
+  'gpt-3.5-turbo',
+]
+
+export const selectBestModel = (models: OpenAIModel[]): OpenAIModel => {
+  const defaultModelId = OpenAIModelID.GPT_4_VISION
+
+  // Find and return the first available preferred model
+  for (const preferredId of preferredModelIds) {
+    const model = models.find((m) => m.id === preferredId)
+    if (model) {
+      return model
+    }
+  }
+
+  // Fallback to the first model in the list or the default model
+  return models[0] || OpenAIModels[defaultModelId]
+}
+
 export enum OpenAIModelID {
   GPT_3_5 = 'gpt-3.5-turbo',
   GPT_3_5_16k = 'gpt-3.5-turbo-16k',
