@@ -1,3 +1,4 @@
+// task is to iterate through the models and find available models that can run on ollama
 import {
   OPENAI_API_HOST,
   OPENAI_API_TYPE,
@@ -7,6 +8,8 @@ import {
 
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
 import { decrypt, isEncrypted } from '~/utils/crypto'
+import { LLMProvider, LLMProviders } from '~/types/LLMProviderKeys'
+import { OllamaModel } from '~/types/OllamaProvider'
 
 export const config = {
   runtime: 'edge',
@@ -20,6 +23,21 @@ const handler = async (req: Request): Promise<Response> => {
     const { key } = (await req.json()) as {
       key: string
     }
+
+    //const { llmProviderKeys } = (await req.json()) as {
+    //  key: LLMProviderKeys
+    //}
+
+    // const ollamModels: OllamaModel = {name: "phi3", parameterSize: "7B"}
+    const ollamaProvider: LLMProvider = {provider: 'Ollama', enabled: true, baseUrl: 'tmp'}
+
+    const llmProviderKeys: LLMProviders = [ollamaProvider]
+
+    // Since ollama is available as a provider, query the models it has available. 
+
+    // Iterate over the providers, check if their key works. Return all available models... 
+    // each model provider should have at least `/chat` and `/models` endpoints
+
     apiKey = key ? key : (process.env.OPENAI_API_KEY as string)
     // Check if the key starts with 'sk-' (indicating it's not encrypted)
     if (key && isEncrypted(key)) {
@@ -35,6 +53,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (apiKey && !apiKey.startsWith('sk-')) {
       // console.log('setting azure variables')
+      // have to figure out what tyeps of keys fit with the users api key and see which ones are available is enabled flag.
+      // add in new stuff here to get beginning of new providers to check start name of each model
       apiType = 'azure'
       endpoint = process.env.AZURE_OPENAI_ENDPOINT || OPENAI_API_HOST
     }
