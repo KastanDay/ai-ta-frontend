@@ -46,7 +46,7 @@ export interface UIUCTool {
   contexts?: ContextWithMetadata[]
 }
 
-export type ToolOutput = {
+export interface ToolOutput {
   text?: string // For plain text outputs
   imageUrls?: string[] // For image URLs
   s3Paths?: string[] // For S3 paths of uploaded files
