@@ -187,7 +187,7 @@ const callN8nFunction = async (
     )
     const err = resultData.runData[finalNodeType][0]['error']
 
-    posthog.capture('tool_invoked', {
+    posthog.capture('tool_error', {
       course_name: projectName,
       readableToolName: tool.readableName,
       toolDescription: tool.description,
@@ -205,7 +205,7 @@ const callN8nFunction = async (
     !resultData.runData[finalNodeType][0].data ||
     !resultData.runData[finalNodeType][0].data.main[0][0].json
   ) {
-    posthog.capture('tool_invoked', {
+    posthog.capture('tool_error_empty_response', {
       course_name: projectName,
       readableToolName: tool.readableName,
       toolDescription: tool.description,
