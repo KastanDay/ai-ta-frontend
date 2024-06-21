@@ -1,11 +1,15 @@
-export interface LLMProviders {
-    providers: LLMProvider[]
+import { OllamaModel } from './OllamaProvider'
+import { OpenAIModel } from './openai'
+
+export enum ProviderNames {
+  Ollama = 'Ollama',
+  OpenAI = 'OpenAI',
 }
 
-// export interface Providers ['Ollama', 'OpenAI']
-
 export interface LLMProvider {
-    provider: string
-    enabled: boolean
-    baseUrl: string
+  provider: ProviderNames
+  enabled: boolean
+  baseUrl: string
+  apiKey?: string
+  models?: OllamaModel[] | OpenAIModel[]
 }

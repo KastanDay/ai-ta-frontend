@@ -8,8 +8,8 @@ import {
 
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
 import { decrypt, isEncrypted } from '~/utils/crypto'
-import { LLMProvider, LLMProviders } from '~/types/LLMProviderKeys'
-import { OllamaModel } from '~/types/OllamaProvider'
+import { LLMProvider, ProviderNames } from '~/types/LLMProviderKeys'
+import { getOllamaModels } from '~/utils/modelProviders/ollama'
 
 export const config = {
   runtime: 'edge',
@@ -24,18 +24,19 @@ const handler = async (req: Request): Promise<Response> => {
       key: string
     }
 
-    //const { llmProviderKeys } = (await req.json()) as {
-    //  key: LLMProviderKeys
-    //}
+    // Eventually we'll use this. For now, there's no API Key for Ollama
+    const ollamaProvider: LLMProvider = {
+      provider: ProviderNames.Ollama,
+      enabled: true,
+      baseUrl: 'tmp',
+    }
+    const llmProviderKeys: LLMProvider[] = [ollamaProvider]
 
-    // const ollamModels: OllamaModel = {name: "phi3", parameterSize: "7B"}
-    const ollamaProvider: LLMProvider = {provider: 'Ollama', enabled: true, baseUrl: 'tmp'}
+    // 1. Call An endpoint to check what Ollama models are available.
+    const ollamaModels = await getOllamaModels()
+    console.log('Ollama Models in models.ts: ', ollamaModels)
 
-    const llmProviderKeys: LLMProviders = [ollamaProvider]
-
-    // Since ollama is available as a provider, query the models it has available. 
-
-    // Iterate over the providers, check if their key works. Return all available models... 
+    // Iterate over the providers, check if their key works. Return all available models...
     // each model provider should have at least `/chat` and `/models` endpoints
 
     apiKey = key ? key : (process.env.OPENAI_API_KEY as string)
