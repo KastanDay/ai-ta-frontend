@@ -953,7 +953,7 @@ export const ChatMessage: FC<Props> = memo(
                           if (children[0] == '▍') {
                             return (
                               <span className="mt-1 animate-pulse cursor-default">
-                                ▍ Generating Final Response
+                                ▍
                               </span>
                             )
                           }
