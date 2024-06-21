@@ -317,30 +317,6 @@ const Home = () => {
     saveFolders(updatedFolders)
   }
 
-  const selectBestModel = (): OpenAIModel => {
-    const defaultModelId = OpenAIModelID.GPT_4o
-
-    // Ordered list of preferred model IDs -- the first available model will be used as default
-    const preferredModelIds = [
-      'gpt-4o',
-      'gpt-4-turbo',
-      'gpt-4-128k', // azure
-      'gpt-4',
-      'gpt-3.5-turbo',
-    ]
-
-    // Find and return the first available preferred model
-    for (const preferredId of preferredModelIds) {
-      const model = models.find((m) => m.id === preferredId)
-      if (model) {
-        return model
-      }
-    }
-
-    // Fallback to the first model in the list or the default model
-    return models[0] || OpenAIModels[defaultModelId]
-  }
-
   // CONVERSATION OPERATIONS  --------------------------------------------
 
   const handleNewConversation = () => {
