@@ -12,6 +12,7 @@ import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { Title } from '@mantine/core'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import MakeToolsPage from '~/components/UIUC-Components/N8NPage'
+import posthog from 'posthog-js'
 
 const montserrat = Montserrat({
   weight: '700',
@@ -52,6 +53,10 @@ const ToolsPage: NextPage = () => {
         setCourseData(courseData)
       }
       setIsLoading(false)
+
+      posthog.capture('tool_page_visited', {
+        course_name: course_name,
+      })
     }
     fetchCourseData()
   }, [router.isReady])

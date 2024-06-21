@@ -199,6 +199,8 @@ const callN8nFunction = async (
   }
 
   // -- PARSE TOOL OUTPUT --
+
+  // ERROR
   if (
     !resultData.runData[finalNodeType][0].data ||
     !resultData.runData[finalNodeType][0].data.main[0][0].json
@@ -218,6 +220,7 @@ const callN8nFunction = async (
 
   let toolOutput: ToolOutput
   if (resultData.runData[finalNodeType][0].data.main[0][0].json['data']) {
+    // JSON data output
     toolOutput = {
       data: resultData.runData[finalNodeType][0].data.main[0][0].json['data'],
     }
@@ -227,34 +230,24 @@ const callN8nFunction = async (
       .length === 1
   ) {
     // If there's ONLY 'response' key, return that
-    console.debug(
-      "There is ONLY 'response' key, return that...: ",
-      resultData.runData[finalNodeType][0].data.main[0][0].json['response'],
-    )
     toolOutput = {
       text: resultData.runData[finalNodeType][0].data.main[0][0].json[
         'response'
       ],
     }
-  } else if (
-    // Image outputs
-    resultData.runData[finalNodeType][0].data.main[0][0].json['image_urls']
-  ) {
-    console.debug(
-      'Image URLs here: ',
-      resultData.runData[finalNodeType][0].data.main[0][0].json['image_urls'],
-    )
-    toolOutput = {
-      imageUrls:
-        resultData.runData[finalNodeType][0].data.main[0][0].json['image_urls'],
-    }
   } else {
-    console.log(
-      'Just the json here: ',
-      resultData.runData[finalNodeType][0].data.main[0][0].json,
-    )
+    // Fallback to JSON output
     toolOutput = {
       data: resultData.runData[finalNodeType][0].data.main[0][0].json,
+    }
+  }
+
+  // Check for images, add that field (can be used in combination with all other outputs)
+  if (resultData.runData[finalNodeType][0].data.main[0][0].json['image_urls']) {
+    toolOutput = {
+      ...toolOutput,
+      imageUrls:
+        resultData.runData[finalNodeType][0].data.main[0][0].json['image_urls'],
     }
   }
 
