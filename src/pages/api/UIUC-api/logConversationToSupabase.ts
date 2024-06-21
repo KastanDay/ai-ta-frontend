@@ -79,7 +79,7 @@ const logConversationToSupabase = async (req: any, res: any) => {
       Assistant:
         conversation.messages[conversation.messages.length - 1]?.content,
     },
-    project_name: 'test-custom-logs',
+    project_name: 'uiuc-chat-production',
     metadata: {
       projectName: course_name,
       conversation_id: conversation.id,

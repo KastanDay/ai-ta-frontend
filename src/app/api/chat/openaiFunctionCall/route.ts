@@ -74,7 +74,7 @@ export async function POST(req: Request) {
 
   // Auto-trace LLM calls w/ langsmith
   const openai = wrapOpenAI(new OpenAI({ apiKey: decryptedKey }), {
-    project_name: 'test-custom-logs',
+    project_name: 'uiuc-chat-production',
     metadata: {
       user_email: conversation.user_email,
       conversation_id: conversation.id,
