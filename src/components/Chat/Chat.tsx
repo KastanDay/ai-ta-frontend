@@ -359,8 +359,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     if (getCurrentPageName() != 'gpt4') {
       homeDispatch({ field: 'isRetrievalLoading', value: true })
       // Extract text from all user messages in the conversation
-      const token_limit =
-        OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
+      // CHeck models from home context
+      const token_limit = selectedConversation.model.tokenLimit
+      // const token_limit =
+      //   OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
 
       // ! DISABLE MQR FOR NOW -- too unreliable
       // const useMQRetrieval = localStorage.getItem('UseMQRetrieval') === 'true'

@@ -1,7 +1,6 @@
 import { IconChevronDown, IconExternalLink } from '@tabler/icons-react'
 import { useContext } from 'react'
 import { useMediaQuery } from '@mantine/hooks'
-import { type OpenAIModel } from '@/types/openai'
 import HomeContext from '~/pages/api/home/home.context'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Input, Select, Title } from '@mantine/core'
@@ -33,7 +32,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       selectedConversation &&
         handleUpdateConversation(selectedConversation, {
           key: 'model',
-          value: model as OpenAIModel,
+          value: model,
         })
     }
 

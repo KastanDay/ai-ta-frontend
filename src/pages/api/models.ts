@@ -8,7 +8,7 @@ import {
 
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
 import { decrypt, isEncrypted } from '~/utils/crypto'
-import { LLMProvider, ProviderNames } from '~/types/LLMProviderKeys'
+import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
 import { getOllamaModels } from '~/utils/modelProviders/ollama'
 
 export const config = {
@@ -117,7 +117,6 @@ const handler = async (req: Request): Promise<Response> => {
             return {
               id: model.id,
               name: OpenAIModels[value].name,
-              maxLength: OpenAIModels[value].maxLength,
               tokenLimit: OpenAIModels[value].tokenLimit,
             }
           }
@@ -126,9 +125,13 @@ const handler = async (req: Request): Promise<Response> => {
       })
       .filter((model): model is OpenAIModel => model !== undefined)
 
-    // console.log('Final list of Models: ', models)
+    const finalModels = [...models, ...ollamaModels]
 
-    return new Response(JSON.stringify(models), { status: 200 })
+    console.log('OpenAI Models: ', models)
+    console.log('Ollama Models: ', ollamaModels)
+    console.log('FInal combined: ', finalModels)
+
+    return new Response(JSON.stringify(finalModels), { status: 200 })
   } catch (error) {
     console.error(error)
     return new Response('Error', { status: 500 })

@@ -3,7 +3,6 @@
 export interface OpenAIModel {
   id: string
   name: string
-  maxLength: number // maximum length of a message in characters... should deprecate
   tokenLimit: number
 }
 
@@ -27,25 +26,21 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   [OpenAIModelID.GPT_3_5]: {
     id: OpenAIModelID.GPT_3_5,
     name: 'GPT-3.5 (16k)',
-    maxLength: 12000,
     tokenLimit: 16385,
   },
   [OpenAIModelID.GPT_4]: {
     id: OpenAIModelID.GPT_4,
     name: 'GPT-4 (8k)',
-    maxLength: 24000,
     tokenLimit: 8192,
   },
   [OpenAIModelID.GPT_4_Turbo]: {
     id: OpenAIModelID.GPT_4_Turbo,
     name: 'GPT-4 Turbo (128k)',
-    maxLength: 24000,
     tokenLimit: 128000,
   },
   [OpenAIModelID.GPT_4o]: {
     id: OpenAIModelID.GPT_4o,
     name: 'GPT-4o (128k)',
-    maxLength: 24000,
     tokenLimit: 128000,
   },
 
@@ -53,19 +48,16 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   [OpenAIModelID.GPT_4_AZURE]: {
     id: OpenAIModelID.GPT_4_AZURE,
     name: 'GPT-4 Turbo (128k)',
-    maxLength: 24000,
     tokenLimit: 128000,
   },
   [OpenAIModelID.GPT_4_HACKATHON]: {
     id: OpenAIModelID.GPT_4_HACKATHON,
     name: 'GPT-4 Hackathon',
-    maxLength: 24000,
     tokenLimit: 128000,
   },
   [OpenAIModelID.GPT_4_AZURE_04_09]: {
     id: OpenAIModelID.GPT_4_AZURE_04_09,
     name: 'GPT-4 Turbo 0409 (128k)',
-    maxLength: 24000,
     tokenLimit: 128000,
   },
 }
