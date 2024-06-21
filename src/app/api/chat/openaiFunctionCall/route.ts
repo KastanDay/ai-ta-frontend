@@ -60,6 +60,12 @@ export async function POST(req: Request) {
     // console.log('models.ts Decrypted api key: ', apiKey)
   }
 
+  if (decryptedKey && !decryptedKey.startsWith('sk-')) {
+    // console.log('api key: ', decryptedKey)
+    // console.log('process.env.VLADS_OPENAI_KEY: ', process.env.VLADS_OPENAI_KEY)
+    decryptedKey = process.env.VLADS_OPENAI_KEY as string
+  }
+
   // Create an OpenAI API client (that's edge friendly!)
   // const openai = new OpenAI({ apiKey: decryptedKey })
 
