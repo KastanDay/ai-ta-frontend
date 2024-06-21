@@ -20,7 +20,7 @@ export const preferredModelIds = [
 ]
 
 export const selectBestModel = (models: OpenAIModel[]): OpenAIModel => {
-  const defaultModelId = OpenAIModelID.GPT_4_VISION
+  const defaultModelId = OpenAIModelID.GPT_4o
 
   // Find and return the first available preferred model
   for (const preferredId of preferredModelIds) {
