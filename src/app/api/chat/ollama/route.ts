@@ -1,4 +1,6 @@
 import { createOllama } from 'ollama-ai-provider'
+import { streamText } from 'ai'
+
 // import { OllamaModel } from '~/types/OllamaProvider'
 
 const ollama = createOllama({
@@ -14,12 +16,28 @@ export async function POST(req: Request) {
   */
   console.log('In ollama POST endpoint')
 
-  // const res = ollama.chat('llama3:70b-instruct', )//, numCtx=8192)
-  const model = ollama('llama3:70b-instruct')
-  model.doStream
+  const messages = [
+    {
+      role: 'user',
+      content: 'why is the sky blue?',
+    },
+  ]
 
-  // return new StreamingTextResponse(res.doStream)
-  // return res.doStream
+  const result = await streamText({
+    maxRetries: 5,
+    maxTokens: 512,
+    model: ollama('llama3:70b-instruct'),
+    prompt: 'Invent a new holiday and describe its traditions.',
+    temperature: 0.3,
+  })
+
+  for await (const textPart of result.textStream) {
+    process.stdout.write(textPart)
+  }
+
+  console.log()
+  console.log('Token usage:', await result.usage)
+  console.log('Finish reason:', await result.finishReason)
 }
 
 export async function GET() {
