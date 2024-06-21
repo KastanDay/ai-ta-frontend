@@ -29,9 +29,8 @@ import { type FolderInterface, type FolderType } from '@/types/folder'
 import {
   OpenAIModel,
   OpenAIModelID,
-  OpenAIModels,
-  fallbackModelID,
   VisionCapableModels,
+  selectBestModel,
 } from '@/types/openai'
 import { type Prompt } from '@/types/prompt'
 
@@ -91,7 +90,7 @@ const Home = () => {
 
   useEffect(() => {
     // Set model after we fetch available models
-    const model = selectBestModel()
+    const model = selectBestModel(models)
 
     dispatch({
       field: 'defaultModelId',
@@ -348,7 +347,7 @@ const Home = () => {
     const lastConversation = conversations[conversations.length - 1]
 
     // Determine the model to use for the new conversation
-    const model = selectBestModel()
+    const model = selectBestModel(models)
 
     const newConversation: Conversation = {
       id: uuidv4(),
@@ -599,7 +598,7 @@ const Home = () => {
       const lastConversation = conversations[conversations.length - 1]
       console.debug('Models available: ', models)
       // let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
-      const bestModel = selectBestModel()
+      const bestModel = selectBestModel(models)
       // if (!defaultModel) {
       //   defaultModel = OpenAIModels['gpt-4']
       // }

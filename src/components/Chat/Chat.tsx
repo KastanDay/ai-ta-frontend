@@ -69,6 +69,8 @@ import handleTools, {
   useFetchAllWorkflows,
 } from '~/utils/functionCalling/handleFunctionCalling'
 import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
+import Link from 'next/link'
+import { CropwizardLicenseDisclaimer } from '~/pages/cropwizard-licenses'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -893,6 +895,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           <h4
             className={`text-md mb-2 text-white ${montserrat_paragraph.variable} font-montserratParagraph`}
           >
+            {getCurrentPageName() === 'cropwizard-1.5' && (
+              <CropwizardLicenseDisclaimer />
+            )}
             Start a conversation below or try the following examples
           </h4>
           <div className="mt-4 flex flex-col items-start space-y-2 overflow-hidden">

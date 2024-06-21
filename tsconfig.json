@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es2017",
     "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "checkJs": true,
     "skipLibCheck": true,
@@ -19,7 +20,7 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"],
-      "@/*": ["./src/*"],
+      "@/*": ["./src/*"]
     },
     "plugins": [
       {
@@ -38,5 +39,5 @@
     "src/app/api/chat/openaiFunctionCall",
     ".next/types/**/*.ts",
   ],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules"]
 }
