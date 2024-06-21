@@ -58,7 +58,8 @@ const handler = async (req: Request): Promise<NextResponse> => {
     // }
 
     // const messagesToSend = [latestMessage, ...convoHistory] // BUG: REPLACE (not append to) latest user message. RN we have dupliacates.
-
+    // Strip internal messages to send to OpenAI
+    const messagesToSend = stripExtraFieldsFromMessages(conversation.messages)
     // console.log('Messages to send: ', messagesToSend)
 
     const apiStream = await OpenAIStream(
@@ -68,7 +69,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
       conversation.temperature,
       openAIKey,
       // @ts-ignore -- I think the types are fine.
-      conversation.messages, // old:  messagesToSend
+      messagesToSend, //old: conversation.messages
       stream,
     )
     if (stream) {
@@ -97,6 +98,17 @@ const handler = async (req: Request): Promise<NextResponse> => {
       return resp
     }
   }
+}
+
+const stripExtraFieldsFromMessages = (messages: Message[]): Message[] => {
+  return messages.map((message) => {
+    const strippedMessage = { ...message }
+    delete strippedMessage.finalPromtEngineeredMessage
+    delete strippedMessage.latestSystemMessage
+    delete strippedMessage.contexts
+    delete strippedMessage.tools
+    return strippedMessage
+  })
 }
 
 export default handler
