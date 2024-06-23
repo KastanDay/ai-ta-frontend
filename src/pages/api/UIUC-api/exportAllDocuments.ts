@@ -1,4 +1,7 @@
 import axios from 'axios'
+
+const flask_url = process.env.FLASK_URL
+
 interface ExportResult {
   message: string
   s3_path?: string
@@ -9,7 +12,7 @@ export const handleExport = async (
 ): Promise<ExportResult> => {
   try {
     const API_URL =
-      'https://flask-production-751b.up.railway.app/exportDocuments'
+      `${flask_url}/exportDocuments`
     const response = await axios.get(`${API_URL}?course_name=${course_name}`, {
       responseType: 'blob',
     })
