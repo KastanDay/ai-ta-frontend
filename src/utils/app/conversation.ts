@@ -39,10 +39,8 @@ export const saveConversation = (conversation: Conversation) => {
       )
       posthog.capture('local_storage_full', {
         course_name:
-          conversation.messages.length > 0 &&
-          conversation.messages[0].contexts.length > 0
-            ? conversation.messages[0].contexts[0].course_name
-            : 'Unknown Course',
+          conversation.messages?.[0]?.contexts?.[0]?.course_name ||
+          'Unknown Course',
         user_email: conversation.user_email,
         inSaveConversation: true,
       })
@@ -55,21 +53,17 @@ export const saveConversation = (conversation: Conversation) => {
 const clearSingleOldestConversation = () => {
   console.debug('CLEARING OLDEST CONVERSATIONS to free space in local storage.')
 
-  let existingConversations = JSON.parse(
+  const existingConversations = JSON.parse(
     localStorage.getItem('conversationHistory') || '[]',
   )
 
   // let existingConversations = JSON.parse(localStorage.getItem('conversationHistory') || '[]');
   while (existingConversations.length > 0) {
-    console.debug('INSIDE WHILE LOOP')
     existingConversations.shift() // Remove the oldest conversation
     try {
       localStorage.setItem(
         'conversationHistory',
         JSON.stringify(existingConversations),
-      )
-      console.debug(
-        'SUCCESSFULLY SAVED CONVERSATION HISTORY AFTER FREEING SPACE',
       )
       break // Exit loop if setItem succeeds
     } catch (error) {
@@ -89,17 +83,13 @@ export const saveConversations = (conversations: Conversation[]) => {
   } catch (e) {
     posthog.capture('local_storage_full', {
       course_name:
-        conversations.length > 0 &&
-        conversations[conversations.length - 1].messages.length > 0 &&
-        conversations[conversations.length - 1].messages[0].contexts.length > 0
-          ? conversations[conversations.length - 1].messages[0].contexts[0]
-              .course_name
-          : 'Unknown Course',
-      user_email: conversations[conversations.length - 1].user_email,
+        conversations?.slice(-1)[0]?.messages?.[0]?.contexts?.[0]
+          ?.course_name || 'Unknown Course',
+      user_email: conversations?.slice(-1)[0]?.user_email || 'Unknown Email',
       inSaveConversations: true,
     })
 
-    let existingConversations = JSON.parse(
+    const existingConversations = JSON.parse(
       localStorage.getItem('conversationHistory') || '[]',
     )
     while (
@@ -107,7 +97,6 @@ export const saveConversations = (conversations: Conversation[]) => {
       e instanceof DOMException &&
       e.code === 22
     ) {
-      console.debug('INSIDE WHILE LOOP')
       existingConversations.shift() // Remove the oldest conversation
       try {
         localStorage.setItem(
@@ -115,9 +104,6 @@ export const saveConversations = (conversations: Conversation[]) => {
           JSON.stringify(existingConversations),
         )
         e = null // Clear the error since space has been freed
-        console.debug(
-          'SUCCESSFULLY SAVED CONVERSATION HISTORY AFTER FREEING SPACE',
-        )
       } catch (error) {
         e = error // Update the error if it fails again
         continue // Try removing another conversation
