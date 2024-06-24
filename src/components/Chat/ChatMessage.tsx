@@ -559,6 +559,7 @@ export const ChatMessage: FC<Props> = memo(
                     {Array.isArray(message.content) ? (
                       <>
                         <div className="flex w-full flex-col items-start space-y-2">
+                          {/* User message text for all messages */}
                           {message.content.map((content, index) => {
                             if (content.type === 'text') {
                               if (
@@ -577,6 +578,7 @@ export const ChatMessage: FC<Props> = memo(
                               }
                             }
                           })}
+                          {/* Image previews for all messages */}
                           <div className="-m-1 flex w-full flex-wrap justify-start">
                             {message.content
                               .filter((item) => item.type === 'image_url')
@@ -598,15 +600,8 @@ export const ChatMessage: FC<Props> = memo(
                               ))}
                           </div>
 
-                          {(isImg2TextLoading ||
-                            (message.content.some(
-                              (content) =>
-                                content.type === 'text' &&
-                                content.text
-                                  ?.trim()
-                                  .startsWith('Image description:'),
-                            ) &&
-                              isImg2TextLoading === false)) &&
+                          {/* Image description loading state for last message */}
+                          {isImg2TextLoading &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
                                 1 ||
@@ -630,9 +625,44 @@ export const ChatMessage: FC<Props> = memo(
                               />
                             )}
 
-                          {(isRetrievalLoading === false ||
-                            isRetrievalLoading ||
-                            message.contexts) &&
+                          {/* Image description for all messages */}
+                          {message.content.some(
+                            (content) =>
+                              content.type === 'text' &&
+                              content.text
+                                ?.trim()
+                                .startsWith('Image description:'),
+                          ) && (
+                            <IntermediateStateAccordion
+                              accordionKey="imageDescription"
+                              title="Image Description:"
+                              isLoading={false}
+                              error={false}
+                              content={
+                                message.content.find(
+                                  (content) =>
+                                    content.type === 'text' &&
+                                    content.text
+                                      ?.trim()
+                                      .startsWith('Image description:'),
+                                )?.text ?? 'No image description found'
+                              }
+                            />
+                          )}
+
+                          {/* Retrieval results for all messages */}
+                          {message.contexts && message.contexts.length > 0 && (
+                            <IntermediateStateAccordion
+                              accordionKey="retrieval loading"
+                              title="Retrieving relevant documents:"
+                              isLoading={false}
+                              error={false}
+                              content={`Found ${message.contexts?.length} relevant documents!`}
+                            />
+                          )}
+
+                          {/* Retrieval loading state for last message */}
+                          {isRetrievalLoading &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
                                 1 ||
@@ -642,12 +672,13 @@ export const ChatMessage: FC<Props> = memo(
                               <IntermediateStateAccordion
                                 accordionKey="retrieval loading"
                                 title="Retrieving relevant documents:"
-                                isLoading={isRetrievalLoading || false}
+                                isLoading={isRetrievalLoading}
                                 error={false}
                                 content={`Found ${message.contexts?.length} relevant documents!`}
                               />
                             )}
 
+                          {/* Tool Routing loading state for last message */}
                           {isRouting &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
@@ -664,6 +695,7 @@ export const ChatMessage: FC<Props> = memo(
                               />
                             )}
 
+                          {/* Tool input arguments state for last message */}
                           {isRouting === false &&
                             message.tools &&
                             (messageIndex ===
@@ -751,6 +783,7 @@ export const ChatMessage: FC<Props> = memo(
                               </>
                             )}
 
+                          {/* Tool output states for last message */}
                           {(messageIndex ===
                             (selectedConversation?.messages.length ?? 0) - 1 ||
                             messageIndex ===
@@ -870,6 +903,8 @@ export const ChatMessage: FC<Props> = memo(
                                   style={{
                                     display: 'flex',
                                     alignItems: 'center',
+                                    marginLeft: '10px',
+                                    marginTop: '10px',
                                   }}
                                 >
                                   <p
@@ -878,7 +913,7 @@ export const ChatMessage: FC<Props> = memo(
                                       fontWeight: 'bold',
                                       textShadow: '0 0 10px',
                                     }}
-                                    className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                    className={`pulsate text-base ${montserrat_paragraph.variable} font-montserratParagraph`}
                                   >
                                     Generating final response:
                                   </p>
