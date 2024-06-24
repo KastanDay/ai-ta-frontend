@@ -412,6 +412,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         if (deleteCount) {
           // Remove tools from message to clear old tools
           message.tools = []
+          message.contexts = []
 
           const updatedMessages = [...selectedConversation.messages]
           for (let i = 0; i < deleteCount; i++) {
