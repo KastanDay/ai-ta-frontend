@@ -1,5 +1,4 @@
 import { type AppType } from 'next/app'
-import { type Session } from 'next-auth'
 import { MantineProvider } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
 import { Analytics } from '@vercel/analytics/react'
@@ -7,7 +6,7 @@ import { appWithTranslation } from 'next-i18next'
 import { ClerkProvider } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 
-import { api } from '~/utils/api'
+// import { api } from '~/utils/api'
 
 import '~/styles/globals.css'
 import Maintenance from '~/components/UIUC-Components/Maintenance'
@@ -36,10 +35,7 @@ if (typeof window !== 'undefined') {
   })
 }
 
-const MyApp: AppType<{ session: Session | null }> = ({
-  Component,
-  pageProps: { session, ...pageProps },
-}) => {
+const MyApp: AppType = ({ Component, pageProps: { ...pageProps } }) => {
   useReportWebVitals(((metric: NextWebVitalsMetric) => {
     console.log(metric)
   }) as any)
@@ -120,4 +116,4 @@ const MyApp: AppType<{ session: Session | null }> = ({
 
 // export default .withTRPC(MyApp)
 
-export default api.withTRPC(appWithTranslation(MyApp))
+export default appWithTranslation(MyApp)

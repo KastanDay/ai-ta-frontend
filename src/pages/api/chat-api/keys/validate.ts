@@ -31,13 +31,13 @@ export async function validateApiKeyAndRetrieveData(
     .eq('is_active', true)
     .single()) as { data: { user_id: string } | null; error: Error | null }
 
-  console.log('data', data)
+  // console.log('data', data)
 
   // Determine if the API key is valid based on the absence of errors and presence of data.
   const isValidApiKey = !error && data !== null
   let userObject = null
 
-  console.log('isValidApiKey', isValidApiKey)
+  // console.log('isValidApiKey', isValidApiKey)
   if (isValidApiKey) {
     try {
       // Retrieve the full Clerk user object using the user ID.
@@ -79,7 +79,7 @@ export async function validateApiKeyAndRetrieveData(
       throw userError
     }
   }
-  console.log('userObject', userObject, 'isValidApiKey', isValidApiKey)
+  // console.log('userObject', userObject, 'isValidApiKey', isValidApiKey)
   return { isValidApiKey, userObject }
 }
 

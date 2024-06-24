@@ -7,16 +7,28 @@ import {
   Paper,
   Collapse,
   Accordion,
+  Popover,
+  Button,
+  Badge,
 } from '@mantine/core'
 import {
   IconCheck,
+  IconChevronDown,
   IconCopy,
   IconEdit,
   IconRobot,
   IconTrash,
   IconUser,
 } from '@tabler/icons-react'
-import { FC, memo, useContext, useEffect, useRef, useState } from 'react'
+import {
+  FC,
+  Fragment,
+  memo,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 import { useTranslation } from 'next-i18next'
 import { updateConversation } from '@/utils/app/conversation'
@@ -35,7 +47,8 @@ import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
 import { fetchPresignedUrl } from '~/utils/apiUtils'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
-import { montserrat_paragraph } from 'fonts'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { IntermediateStateAccordion } from '../UIUC-Components/IntermediateStateAccordion'
 
 const useStyles = createStyles((theme) => ({
   imageContainerStyle: {
@@ -100,9 +113,12 @@ export const ChatMessage: FC<Props> = memo(
       state: {
         selectedConversation,
         conversations,
-        currentMessage,
         messageIsStreaming,
         isImg2TextLoading,
+        isRouting,
+        isRunningTool,
+        isRetrievalLoading,
+        loading,
       },
       dispatch: homeDispatch,
     } = useContext(HomeContext)
@@ -111,7 +127,7 @@ export const ChatMessage: FC<Props> = memo(
     const [isTyping, setIsTyping] = useState<boolean>(false)
     const [messageContent, setMessageContent] = useState<string>('')
 
-    const [imageUrls, setImageUrls] = useState<string[]>([])
+    const [imageUrls, setImageUrls] = useState<Set<string>>(new Set())
 
     const [messagedCopied, setMessageCopied] = useState(false)
 
@@ -119,8 +135,8 @@ export const ChatMessage: FC<Props> = memo(
 
     // SET TIMER for message writing (from gpt-4)
     const [timerVisible, setTimerVisible] = useState(false)
-
     const { classes } = useStyles() // for Accordion
+
     useEffect(() => {
       if (message.role === 'assistant') {
         if (
@@ -191,22 +207,34 @@ export const ChatMessage: FC<Props> = memo(
           const updatedContent = await Promise.all(
             message.content.map(async (content) => {
               if (content.type === 'image_url' && content.image_url) {
-                console.log(
-                  'Checking if image url is valid: ',
-                  content.image_url.url,
-                )
+                // console.log(
+                // 'Checking if image url is valid: ',
+                // content.image_url.url,
+                // )
                 isValid = await checkIfUrlIsValid(content.image_url.url)
                 if (isValid) {
-                  setImageUrls((prevUrls) => [
-                    ...prevUrls,
-                    content.image_url?.url as string,
-                  ])
+                  // console.log('Image url is valid: ', content.image_url.url)
+                  setImageUrls(
+                    (prevUrls) =>
+                      new Set([...prevUrls, content.image_url?.url as string]),
+                  )
+                  // setImageUrls((prevUrls) => [
+                  //   ...new Set([...prevUrls],
+                  //   content.image_url?.url as string,
+                  // ])
+                  // console.log('Set the image urls: ', imageUrls)
                   return content
                 } else {
                   const path = extractPathFromUrl(content.image_url.url)
-                  console.log('Fetching presigned url for: ', path)
+                  console.log(
+                    'Image url was invalid, fetching presigned url for: ',
+                    path,
+                  )
                   const presignedUrl = await getPresignedUrl(path)
-                  setImageUrls((prevUrls) => [...prevUrls, presignedUrl])
+                  setImageUrls(
+                    (prevUrls) => new Set([...prevUrls, presignedUrl]),
+                  )
+                  // console.log('Set the image urls: ', imageUrls)
                   return { ...content, image_url: { url: presignedUrl } }
                 }
               }
@@ -234,7 +262,7 @@ export const ChatMessage: FC<Props> = memo(
       if (message.role === 'user') {
         fetchUrl()
       }
-    }, [message.content, messageIndex])
+    }, [message.content, messageIndex, isRunningTool])
 
     const toggleEditing = () => {
       setIsEditing(!isEditing)
@@ -324,7 +352,9 @@ export const ChatMessage: FC<Props> = memo(
     }, [message.content])
 
     useEffect(() => {
-      setImageUrls([])
+      // console.log('Resetting image urls because message: ', message, 'selectedConversation: ', selectedConversation)
+      setImageUrls(new Set())
+      // console.log('Set the image urls: ', imageUrls)
     }, [message])
 
     useEffect(() => {
@@ -350,33 +380,45 @@ export const ChatMessage: FC<Props> = memo(
 
     async function checkIfUrlIsValid(url: string): Promise<boolean> {
       try {
-        dayjs.extend(utc)
         const urlObject = new URL(url)
-        let creationDateString = urlObject.searchParams.get(
-          'X-Amz-Date',
-        ) as string
 
-        // Manually reformat the creationDateString to standard ISO 8601 format
-        creationDateString = creationDateString.replace(
-          /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
-          '$1-$2-$3T$4:$5:$6Z',
-        )
+        // Check if the URL is an S3 presigned URL by looking for specific query parameters
+        const isS3Presigned = urlObject.searchParams.has('X-Amz-Signature')
 
-        // Adjust the format in the dayjs.utc function if necessary
-        const creationDate = dayjs.utc(creationDateString, 'YYYYMMDDTHHmmss[Z]')
+        if (isS3Presigned) {
+          dayjs.extend(utc)
+          let creationDateString = urlObject.searchParams.get(
+            'X-Amz-Date',
+          ) as string
 
-        const expiresInSecs = Number(
-          urlObject.searchParams.get('X-Amz-Expires') as string,
-        )
+          // Manually reformat the creationDateString to standard ISO 8601 format
+          creationDateString = creationDateString.replace(
+            /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
+            '$1-$2-$3T$4:$5:$6Z',
+          )
 
-        const expiryDate = creationDate.add(expiresInSecs, 'second')
-        const isExpired = expiryDate.toDate() < new Date()
+          // Adjust the format in the dayjs.utc function if necessary
+          const creationDate = dayjs.utc(
+            creationDateString,
+            'YYYYMMDDTHHmmss[Z]',
+          )
 
-        if (isExpired) {
-          console.log('URL is expired') // Keep this log if necessary for debugging
-          return false
+          const expiresInSecs = Number(
+            urlObject.searchParams.get('X-Amz-Expires') as string,
+          )
+          const expiryDate = creationDate.add(expiresInSecs, 'second')
+          const isExpired = expiryDate.toDate() < new Date()
+
+          if (isExpired) {
+            console.log('URL is expired') // Keep this log if necessary for debugging
+            return false
+          } else {
+            return true
+          }
         } else {
-          return true
+          // For non-S3 URLs, perform a simple fetch to check availability
+          const response = await fetch(url, { method: 'HEAD' })
+          return response.ok // true if status code is 200-299
         }
       } catch (error) {
         console.error('Failed to validate URL', url, error)
@@ -393,16 +435,72 @@ export const ChatMessage: FC<Props> = memo(
       return path
     }
 
+    useEffect(() => {
+      const processTools = async () => {
+        if (message.tools && message.tools.length > 0) {
+          for (const tool of message.tools) {
+            if (tool.output && tool.output.s3Paths) {
+              const imageUrls = await Promise.all(
+                tool.output.s3Paths.map(async (s3Path) => {
+                  return getPresignedUrl(s3Path)
+                }),
+              )
+              tool.output.imageUrls = tool.output.imageUrls
+                ? [...tool.output.imageUrls, ...imageUrls]
+                : imageUrls
+            }
+            if (
+              tool.aiGeneratedArgumentValues &&
+              tool.aiGeneratedArgumentValues?.image_urls
+            ) {
+              const validUrls = await Promise.all(
+                JSON.parse(tool.aiGeneratedArgumentValues.image_urls).map(
+                  async (imageUrl: string) => {
+                    const isValid = await checkIfUrlIsValid(imageUrl)
+                    if (!isValid) {
+                      // This will only work for internal S3 URLs
+                      console.log('Image URL is expired')
+                      const s3_path = extractPathFromUrl(imageUrl)
+                      return getPresignedUrl(s3_path)
+                    }
+                    return imageUrl
+                  },
+                ),
+              )
+              tool.aiGeneratedArgumentValues.image_urls =
+                JSON.stringify(validUrls)
+            }
+            if (tool.output && tool.output.imageUrls) {
+              const validUrls = await Promise.all(
+                tool.output.imageUrls.map(async (imageUrl) => {
+                  const isValid = await checkIfUrlIsValid(imageUrl)
+                  if (!isValid) {
+                    console.log('Image URL is expired')
+                    const s3_path = extractPathFromUrl(imageUrl)
+                    return getPresignedUrl(s3_path)
+                  }
+                  return imageUrl
+                }),
+              )
+              tool.output.imageUrls = validUrls
+            }
+          }
+        }
+      }
+
+      processTools()
+    }, [message.tools])
+
     return (
       <div
-        className={`group md:px-4 ${
+        className={`group md:px-6 ${
           message.role === 'assistant'
             ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
             : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
-        }`}
+        } max-w-[100%]`}
         style={{ overflowWrap: 'anywhere' }}
       >
-        <div className="relative m-auto flex p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-5xl lg:px-0 xl:max-w-3xl">
+        <div className="relative flex w-full px-2 py-4 text-base md:mx-[10%] md:max-w-[80%] md:gap-6 md:p-6 lg:mx-[15%] lg:max-w-[70%] lg:px-0">
           <div className="min-w-[40px] text-left">
             {message.role === 'assistant' ? (
               <>
@@ -414,9 +512,9 @@ export const ChatMessage: FC<Props> = memo(
             )}
           </div>
 
-          <div className="dark:prose-invert prose mt-[-2px] w-full">
+          <div className="dark:prose-invert prose mt-[-2px] flex w-full">
             {message.role === 'user' ? (
-              <div className="flex w-full">
+              <div className="flex w-full flex-row">
                 {isEditing ? (
                   <div className="flex w-full flex-col">
                     <textarea
@@ -457,58 +555,383 @@ export const ChatMessage: FC<Props> = memo(
                     </div>
                   </div>
                 ) : (
-                  <div className="dark:prose-invert prose flex-1 whitespace-pre-wrap">
+                  <div className="dark:prose-invert prose w-4/5 flex-1 whitespace-pre-wrap">
                     {Array.isArray(message.content) ? (
-                      <div className="flex flex-col items-start space-y-2">
-                        {message.content.map((content, index) => {
-                          if (content.type === 'text') {
+                      <>
+                        <div className="flex w-full flex-col items-start space-y-2">
+                          {/* User message text for all messages */}
+                          {message.content.map((content, index) => {
+                            if (content.type === 'text') {
+                              if (
+                                !(content.text as string)
+                                  .trim()
+                                  .startsWith('Image description:')
+                              ) {
+                                return (
+                                  <p
+                                    key={index}
+                                    className={`self-start text-base font-normal ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                  >
+                                    {content.text}
+                                  </p>
+                                )
+                              }
+                            }
+                          })}
+                          {/* Image previews for all messages */}
+                          <div className="-m-1 flex w-full flex-wrap justify-start">
+                            {message.content
+                              .filter((item) => item.type === 'image_url')
+                              .map((content, index) => (
+                                <div
+                                  key={index}
+                                  className={classes.imageContainerStyle}
+                                >
+                                  <div className="overflow-hidden rounded-lg shadow-lg">
+                                    <ImagePreview
+                                      src={
+                                        Array.from(imageUrls)[index] as string
+                                      }
+                                      alt="Chat message"
+                                      className={classes.imageStyle}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+
+                          {/* Image description loading state for last message */}
+                          {isImg2TextLoading &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
+                              <IntermediateStateAccordion
+                                accordionKey="imageDescription"
+                                title="Image Description:"
+                                isLoading={isImg2TextLoading}
+                                error={false}
+                                content={
+                                  message.content.find(
+                                    (content) =>
+                                      content.type === 'text' &&
+                                      content.text
+                                        ?.trim()
+                                        .startsWith('Image description:'),
+                                  )?.text ?? 'No image description found'
+                                }
+                              />
+                            )}
+
+                          {/* Image description for all messages */}
+                          {message.content.some(
+                            (content) =>
+                              content.type === 'text' &&
+                              content.text
+                                ?.trim()
+                                .startsWith('Image description:'),
+                          ) && (
+                            <IntermediateStateAccordion
+                              accordionKey="imageDescription"
+                              title="Image Description:"
+                              isLoading={false}
+                              error={false}
+                              content={
+                                message.content.find(
+                                  (content) =>
+                                    content.type === 'text' &&
+                                    content.text
+                                      ?.trim()
+                                      .startsWith('Image description:'),
+                                )?.text ?? 'No image description found'
+                              }
+                            />
+                          )}
+
+                          {/* Retrieval results for all messages */}
+                          {message.contexts && message.contexts.length > 0 && (
+                            <IntermediateStateAccordion
+                              accordionKey="retrieval loading"
+                              title="Retrieving relevant documents:"
+                              isLoading={false}
+                              error={false}
+                              content={`Found ${message.contexts?.length} relevant documents!`}
+                            />
+                          )}
+
+                          {/* Retrieval loading state for last message */}
+                          {isRetrievalLoading &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
+                              <IntermediateStateAccordion
+                                accordionKey="retrieval loading"
+                                title="Retrieving relevant documents:"
+                                isLoading={isRetrievalLoading}
+                                error={false}
+                                content={`Found ${message.contexts?.length} relevant documents!`}
+                              />
+                            )}
+
+                          {/* Tool Routing loading state for last message */}
+                          {isRouting &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
+                              <IntermediateStateAccordion
+                                accordionKey={`routing tools`}
+                                title={'Routing the request to relevant tools'}
+                                isLoading={isRouting}
+                                error={false}
+                                content={<></>}
+                              />
+                            )}
+
+                          {/* Tool input arguments state for last message */}
+                          {isRouting === false &&
+                            message.tools &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) && (
+                              <>
+                                {message.tools.map((response, index) => (
+                                  <IntermediateStateAccordion
+                                    key={`routing-${index}`}
+                                    accordionKey={`routing-${index}`}
+                                    title={
+                                      <>
+                                        Routing the request to{' '}
+                                        <Badge
+                                          color="grape"
+                                          radius="md"
+                                          size="sm"
+                                        >
+                                          {response.readableName}
+                                        </Badge>
+                                      </>
+                                    }
+                                    isLoading={isRouting}
+                                    error={false}
+                                    content={
+                                      <>
+                                        Arguments :{' '}
+                                        {response.aiGeneratedArgumentValues
+                                          ?.image_urls ? (
+                                          <div>
+                                            <div className="flex overflow-x-auto">
+                                              {JSON.parse(
+                                                response
+                                                  .aiGeneratedArgumentValues
+                                                  .image_urls,
+                                              ).length > 0 ? (
+                                                JSON.parse(
+                                                  response
+                                                    .aiGeneratedArgumentValues
+                                                    .image_urls,
+                                                ).map(
+                                                  (
+                                                    imageUrl: string,
+                                                    index: number,
+                                                  ) => (
+                                                    <div
+                                                      key={index}
+                                                      className={
+                                                        classes.imageContainerStyle
+                                                      }
+                                                    >
+                                                      <div className="overflow-hidden rounded-lg shadow-lg">
+                                                        <ImagePreview
+                                                          src={imageUrl}
+                                                          alt={`Tool image argument ${index}`}
+                                                          className={
+                                                            classes.imageStyle
+                                                          }
+                                                        />
+                                                      </div>
+                                                    </div>
+                                                  ),
+                                                )
+                                              ) : (
+                                                <p>No arguments provided</p>
+                                              )}
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <pre>
+                                            {JSON.stringify(
+                                              response.aiGeneratedArgumentValues,
+                                              null,
+                                              2,
+                                            )}
+                                          </pre>
+                                        )}
+                                      </>
+                                    }
+                                  />
+                                ))}
+                              </>
+                            )}
+
+                          {/* Tool output states for last message */}
+                          {(messageIndex ===
+                            (selectedConversation?.messages.length ?? 0) - 1 ||
+                            messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
+                            <>
+                              {message.tools?.map((response, index) => (
+                                <IntermediateStateAccordion
+                                  key={`tool-${index}`}
+                                  accordionKey={`tool-${index}`}
+                                  title={
+                                    <>
+                                      Tool output from{' '}
+                                      <Badge
+                                        color={response.error ? 'red' : 'grape'}
+                                        radius="md"
+                                        size="sm"
+                                      >
+                                        {response.readableName}
+                                      </Badge>
+                                    </>
+                                  }
+                                  isLoading={
+                                    response.output === undefined &&
+                                    response.error === undefined
+                                  }
+                                  error={response.error ? true : false}
+                                  content={
+                                    <>
+                                      {response.error ? (
+                                        <span>{response.error}</span>
+                                      ) : (
+                                        <>
+                                          <div
+                                            style={{
+                                              display: 'flex',
+                                              overflowX: 'auto',
+                                              gap: '10px',
+                                            }}
+                                          >
+                                            {response.output?.imageUrls &&
+                                              response.output?.imageUrls.map(
+                                                (imageUrl, index) => (
+                                                  <div
+                                                    key={index}
+                                                    className={
+                                                      classes.imageContainerStyle
+                                                    }
+                                                  >
+                                                    <div className="overflow-hidden rounded-lg shadow-lg">
+                                                      <ImagePreview
+                                                        src={imageUrl}
+                                                        alt={`Tool output image ${index}`}
+                                                        className={
+                                                          classes.imageStyle
+                                                        }
+                                                      />
+                                                    </div>
+                                                  </div>
+                                                ),
+                                              )}
+                                          </div>
+                                          <div>
+                                            {response.output?.text
+                                              ? response.output.text
+                                              : JSON.stringify(
+                                                  response.output?.data,
+                                                  null,
+                                                  2,
+                                                )}
+                                          </div>
+                                        </>
+                                      )}
+                                    </>
+                                  }
+                                />
+                              ))}
+                            </>
+                          )}
+                          {(() => {
                             if (
-                              (content.text as string)
-                                .trim()
-                                .startsWith('Image description:')
+                              messageIsStreaming === undefined ||
+                              !messageIsStreaming
                             ) {
-                              // console.log(
-                              //   'Image description found: ',
-                              //   content.text,
-                              // )
-                              return (
-                                <Accordion
-                                  variant="filled"
-                                  key={index}
-                                  className=" rounded-lg bg-[#2e026d] shadow-lg"
-                                >
-                                  <Accordion.Item value="imageDescription rounded-lg">
-                                    <Accordion.Control
-                                      className={`rounded-lg text-gray-200 hover:bg-purple-900 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                    >
-                                      This image description is used to find
-                                      relevant documents and provide intelligent
-                                      context for GPT-4 Vision.
-                                    </Accordion.Control>
-                                    <Accordion.Panel
-                                      className={`rounded-lg bg-[#1d1f32] p-4 text-gray-200 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                    >
-                                      {content.text}
-                                    </Accordion.Panel>
-                                  </Accordion.Item>
-                                </Accordion>
-                              )
-                            } else {
-                              return (
-                                <p
-                                  key={index}
-                                  className="self-start text-base font-medium"
-                                >
-                                  {content.text}
-                                </p>
+                              console.log(
+                                'isRouting: ',
+                                isRouting,
+                                'isRetrievalLoading: ',
+                                isRetrievalLoading,
+                                'isImg2TextLoading: ',
+                                isImg2TextLoading,
+                                'messageIsStreaming: ',
+                                messageIsStreaming,
+                                'loading: ',
+                                loading,
                               )
                             }
-                          }
-                        })}
-                        {isImg2TextLoading &&
-                          messageIndex ==
-                            (selectedConversation?.messages.length ?? 0) -
-                              1 && (
+                            return null
+                          })()}
+                          {!isRouting &&
+                            !isRetrievalLoading &&
+                            !isImg2TextLoading &&
+                            loading &&
+                            (messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                1 ||
+                              messageIndex ===
+                                (selectedConversation?.messages.length ?? 0) -
+                                  2) &&
+                            message.tools?.every(
+                              (tool) =>
+                                tool.output !== undefined ||
+                                tool.error !== undefined,
+                            ) && (
+                              <>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    marginLeft: '10px',
+                                    marginTop: '10px',
+                                  }}
+                                >
+                                  <p
+                                    style={{
+                                      marginRight: '10px',
+                                      fontWeight: 'bold',
+                                      textShadow: '0 0 10px',
+                                    }}
+                                    className={`pulsate text-base ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                  >
+                                    Generating final response:
+                                  </p>
+                                  <LoadingSpinner size="xs" />
+                                </div>
+                              </>
+                            )}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {message.content}
+                        {isRetrievalLoading &&
+                          (messageIndex ===
+                            (selectedConversation?.messages.length ?? 0) - 1 ||
+                            messageIndex ===
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) && (
                             <div
                               style={{ display: 'flex', alignItems: 'center' }}
                             >
@@ -518,40 +941,20 @@ export const ChatMessage: FC<Props> = memo(
                                   fontWeight: 'bold',
                                   textShadow: '0 0 10px',
                                 }}
-                                className=" pulsate"
+                                className={`pulsate ${montserrat_paragraph.variable} font-montserratParagraph`}
                               >
-                                Generating Image Description:
+                                Retrieving relevant documents:
                               </p>
                               <LoadingSpinner size="xs" />
                             </div>
                           )}
-                        <div className="-m-1 flex w-full flex-wrap justify-start">
-                          {message.content
-                            .filter((item) => item.type === 'image_url')
-                            .map((content, index) => (
-                              <div
-                                key={index}
-                                className={classes.imageContainerStyle}
-                              >
-                                <div className="overflow-hidden rounded-lg shadow-lg">
-                                  <ImagePreview
-                                    src={imageUrls[index] as string}
-                                    alt="Chat message"
-                                    className={classes.imageStyle}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    ) : (
-                      message.content
+                      </>
                     )}
                   </div>
                 )}
 
                 {!isEditing && (
-                  <div className="ml-1 flex flex-col items-center justify-end gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-start md:gap-1">
+                  <div className="mb-10 ml-1 flex w-1/5 flex-col items-end justify-start gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-end md:gap-1">
                     <button
                       className={`invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300 
                         ${Array.isArray(message.content) && message.content.some((content) => content.type === 'image_url') ? 'hidden' : ''}`}
@@ -572,7 +975,7 @@ export const ChatMessage: FC<Props> = memo(
               <div className="flex flex-row ">
                 <div className="w-full max-w-full flex-1 overflow-hidden">
                   <MemoizedReactMarkdown
-                    className="dark:prose-invert linkMarkDown supMarkdown prose flex-1 "
+                    className={`dark:prose-invert linkMarkDown supMarkdown codeBlock prose flex-1`}
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeMathjax]}
                     components={{
@@ -599,12 +1002,63 @@ export const ChatMessage: FC<Props> = memo(
                             key={Math.random()}
                             language={(match && match[1]) || ''}
                             value={String(children).replace(/\n$/, '')}
+                            style={{
+                              maxWidth: '100%',
+                              overflowX: 'auto',
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-all',
+                              overflowWrap: 'anywhere',
+                            }}
                             {...props}
                           />
                         ) : (
-                          <code className={className} {...props}>
+                          <code
+                            className={'codeBlock'}
+                            {...props}
+                            style={{
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-all',
+                              overflowWrap: 'anywhere',
+                            }}
+                          >
                             {children}
                           </code>
+                        )
+                      },
+                      p({ node, children }) {
+                        return (
+                          <p
+                            className={`text-base font-normal ${montserrat_paragraph.variable} pb-2 font-montserratParagraph`}
+                          >
+                            {children}
+                          </p>
+                        )
+                      },
+                      ul({ children }) {
+                        return (
+                          <ul
+                            className={`text-base font-normal ${montserrat_paragraph.variable} font-montserratParagraph`}
+                          >
+                            {children}
+                          </ul>
+                        )
+                      },
+                      ol({ children }) {
+                        return (
+                          <ol
+                            className={`text-base font-normal ${montserrat_paragraph.variable} ml-4 font-montserratParagraph lg:ml-6`}
+                          >
+                            {children}
+                          </ol>
+                        )
+                      },
+                      li({ children }) {
+                        return (
+                          <li
+                            className={`text-base font-normal ${montserrat_paragraph.variable} break-words font-montserratParagraph`}
+                          >
+                            {children}
+                          </li>
                         )
                       },
                       table({ children }) {
@@ -626,6 +1080,60 @@ export const ChatMessage: FC<Props> = memo(
                           <td className="break-words border border-black px-3 py-1 dark:border-white">
                             {children}
                           </td>
+                        )
+                      },
+                      h1({ node, children }) {
+                        return (
+                          <h1
+                            className={`text-4xl font-bold ${montserrat_heading.variable} font-montserratHeading`}
+                          >
+                            {children}
+                          </h1>
+                        )
+                      },
+                      h2({ node, children }) {
+                        return (
+                          <h2
+                            className={`text-3xl font-bold ${montserrat_heading.variable} font-montserratHeading`}
+                          >
+                            {children}
+                          </h2>
+                        )
+                      },
+                      h3({ node, children }) {
+                        return (
+                          <h3
+                            className={`text-2xl font-bold ${montserrat_heading.variable} font-montserratHeading`}
+                          >
+                            {children}
+                          </h3>
+                        )
+                      },
+                      h4({ node, children }) {
+                        return (
+                          <h4
+                            className={`text-lg font-bold ${montserrat_heading.variable} font-montserratHeading`}
+                          >
+                            {children}
+                          </h4>
+                        )
+                      },
+                      h5({ node, children }) {
+                        return (
+                          <h5
+                            className={`text-base font-bold ${montserrat_heading.variable} font-montserratHeading`}
+                          >
+                            {children}
+                          </h5>
+                        )
+                      },
+                      h6({ node, children }) {
+                        return (
+                          <h6
+                            className={`text-base font-bold ${montserrat_heading.variable} font-montserratHeading`}
+                          >
+                            {children}
+                          </h6>
                         )
                       },
                       a({ node, className, children, ...props }) {

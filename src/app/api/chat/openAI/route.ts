@@ -2,7 +2,6 @@ import OpenAI from 'openai'
 import { OpenAIStream, StreamingTextResponse } from 'ai'
 import { NextResponse } from 'next/server'
 import { decrypt } from '~/utils/crypto'
-import { api } from '~/utils/api'
 
 export const runtime = 'edge'
 

@@ -16,6 +16,7 @@ import {
   // Group,
 } from '@mantine/core'
 import {
+  ChartDots3,
   MessageChatbot,
   Folder,
   ReportAnalytics,
@@ -201,6 +202,17 @@ const Navbar = ({
         <span
           className={`${montserrat_heading.variable} font-montserratHeading`}
         >
+          Tools
+        </span>
+      ),
+      icon: <ChartDots3Icon />,
+      link: `/${getCurrentCourseName()}/tools`,
+    },
+    {
+      name: (
+        <span
+          className={`${montserrat_heading.variable} font-montserratHeading`}
+        >
           API
         </span>
       ),
@@ -357,6 +369,17 @@ export function KeyIcon() {
       strokeWidth={2}
       // color={isSelected ? 'hsl(280,100%,70%)' : 'white'}
       style={{ marginRight: '5px', marginLeft: '5px' }}
+    />
+  )
+}
+
+export function ChartDots3Icon() {
+  return (
+    <ChartDots3
+      size={20}
+      strokeWidth={2}
+      // color={'white'}
+      style={{ marginRight: '4px', marginLeft: '4px' }}
     />
   )
 }

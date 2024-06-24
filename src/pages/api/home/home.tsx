@@ -369,6 +369,26 @@ const Home = () => {
     dispatch({ field: 'isImg2TextLoading', value: isImg2TextLoading })
   }
 
+  // Routing
+  const setIsRouting = (isRouting: boolean) => {
+    dispatch({ field: 'isRouting', value: isRouting })
+  }
+
+  // Routing Response
+  // const setRoutingResponse = (routingResponse: RoutingResponse) => {
+  //   dispatch({ field: 'routingResponse', value: routingResponse })
+  // }
+
+  // Pest Detection
+  // const setIsRunningTool = (isRunningTool: boolean) => {
+  //   dispatch({ field: 'isRunningTool', value: isRunningTool })
+  // }
+
+  // Retrieval
+  const setIsRetrievalLoading = (isRetrievalLoading: boolean) => {
+    dispatch({ field: 'isRetrievalLoading', value: isRetrievalLoading })
+  }
+
   // Update actions for a prompt
   const handleUpdateDocumentGroups = (id: string) => {
     documentGroups.map((documentGroup) =>
@@ -380,9 +400,10 @@ const Home = () => {
   }
 
   // Update actions for a prompt
+  // Fetch n8nWorkflow instead of OpenAI Compatible tools.
   const handleUpdateTools = (id: string) => {
     tools.map((tool) =>
-      tool.id === id ? { ...tool, checked: !tool.checked } : tool,
+      tool.id === id ? { ...tool, checked: !tool.enabled } : tool,
     )
     dispatch({ field: 'tools', value: tools })
   }
@@ -591,6 +612,10 @@ const Home = () => {
           handleSelectConversation,
           handleUpdateConversation,
           setIsImg2TextLoading,
+          setIsRouting,
+          // setRoutingResponse,
+          // setIsRunningTool,
+          setIsRetrievalLoading,
           handleUpdateDocumentGroups,
           handleUpdateTools,
         }}
@@ -629,7 +654,7 @@ const Home = () => {
                 )}
               <Chatbar />
 
-              <div className="flex flex-1">
+              <div className="flex max-w-full flex-1">
                 {course_metadata && (
                   <Chat
                     stopConversationRef={stopConversationRef}

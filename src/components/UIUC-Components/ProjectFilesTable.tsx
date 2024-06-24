@@ -52,7 +52,6 @@ import { showToastOnUpdate } from './MakeQueryAnalysisPage'
 import { useRouter } from 'next/router'
 import { tabWidth } from 'prettier.config.cjs'
 
-
 // export const getCurrentPageName = () => {
 //   const router = useRouter()
 //   return router.asPath.slice(1).split('/')[0] as string
@@ -84,7 +83,7 @@ const PAGE_SIZE = 100
 
 export function ProjectFilesTable({
   course_name,
-  setFailedCount = (count: number) => { },
+  setFailedCount = (count: number) => {},
   tabValue,
 }: {
   course_name: string
@@ -106,8 +105,8 @@ export function ProjectFilesTable({
   const [currentError, setCurrentError] = useState('')
   const isSmallScreen = useMediaQuery('(max-width: 768px)')
   const isBetweenSmallAndMediumScreen = useMediaQuery('(max-width: 878px)')
-  const [showMultiSelect, setShowMultiSelect] = useState(false);
-  const [isDeletingDocuments, setIsDeletingDocuments] = useState(false);
+  const [showMultiSelect, setShowMultiSelect] = useState(false)
+  const [isDeletingDocuments, setIsDeletingDocuments] = useState(false)
   const [exportModalOpened, setExportModalOpened] = useState(false)
   const router = useRouter()
 
@@ -136,8 +135,8 @@ export function ProjectFilesTable({
   const textRefs = useRef<{ [key: number]: React.RefObject<HTMLDivElement> }>(
     {},
   )
-  const multiSelectRef = useRef<HTMLDivElement>(null);
-  const [selectedDocGroups, setSelectedDocGroups] = useState<string[]>([]);
+  const multiSelectRef = useRef<HTMLDivElement>(null)
+  const [selectedDocGroups, setSelectedDocGroups] = useState<string[]>([])
 
   //   const MultiSelect = styled(MultiSelect)`
   //   .mantine-MultiSelect-dropdown {
@@ -218,7 +217,6 @@ export function ProjectFilesTable({
     refetch: refetchDocumentGroups,
   } = useGetDocumentGroups(course_name)
 
-
   useEffect(() => {
     if (tabValue === 'failed') {
       const newOverflowStates: { [key: number]: boolean } = {}
@@ -235,7 +233,6 @@ export function ProjectFilesTable({
     }
   }, [failedDocuments, tabValue])
 
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -243,24 +240,27 @@ export function ProjectFilesTable({
         event.target instanceof Node &&
         !multiSelectRef.current.contains(event.target)
       ) {
-        setShowMultiSelect(false);
+        setShowMultiSelect(false)
       }
     }
 
     // Bind the event listener
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside)
     return () => {
       // Unbind the event listener on clean up
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   async function addDocumentsToDocGroups(
     records: CourseDocument[],
     newSelectedGroups: string[],
   ) {
     const addDocGroupPromises = records.map((record) =>
-      handleDocumentGroupsChange(record, [...newSelectedGroups, ...(record.doc_groups || [])]),
+      handleDocumentGroupsChange(record, [
+        ...newSelectedGroups,
+        ...(record.doc_groups || []),
+      ]),
     )
     await Promise.all(addDocGroupPromises)
   }
@@ -296,8 +296,8 @@ export function ProjectFilesTable({
     }
   }
 
-  const deleteDocumentMutation = useMutation(
-    async (recordsToDelete: CourseDocument[]) => {
+  const deleteDocumentMutation = useMutation({
+    mutationFn: async (recordsToDelete: CourseDocument[]) => {
       console.debug('Deleting records:', recordsToDelete)
       const API_URL = 'https://flask-production-751b.up.railway.app'
       const deletePromises = recordsToDelete.map((record) =>
@@ -312,83 +312,81 @@ export function ProjectFilesTable({
       await Promise.all(deletePromises)
       console.debug('Deleted records')
     },
-    {
-      onMutate: async (recordsToDelete) => {
-        console.debug('in onMutate')
-        await queryClient.cancelQueries(['documents', course_name])
+    onMutate: async (recordsToDelete) => {
+      console.debug('in onMutate')
+      await queryClient.cancelQueries({ queryKey: ['documents', course_name] })
 
-        const previousDocuments = queryClient.getQueryData<CourseDocument[]>([
-          'documents',
-          course_name,
-        ])
+      const previousDocuments = queryClient.getQueryData<CourseDocument[]>([
+        'documents',
+        course_name,
+      ])
 
-        const previousDocumentGroups = queryClient.getQueryData([
-          'documentGroups',
-          course_name,
-        ])
+      const previousDocumentGroups = queryClient.getQueryData([
+        'documentGroups',
+        course_name,
+      ])
 
-        queryClient.setQueryData<CourseDocument[]>(
-          ['documents', course_name],
-          (old = []) => {
-            return old.filter(
-              (doc) =>
-                !recordsToDelete.find(
-                  (record) =>
-                    (record.s3_path && record.s3_path === doc.s3_path) ||
-                    (record.url && record.url === doc.url),
-                ),
-            )
-          },
-        )
+      queryClient.setQueryData<CourseDocument[]>(
+        ['documents', course_name],
+        (old = []) => {
+          return old.filter(
+            (doc) =>
+              !recordsToDelete.find(
+                (record) =>
+                  (record.s3_path && record.s3_path === doc.s3_path) ||
+                  (record.url && record.url === doc.url),
+              ),
+          )
+        },
+      )
 
-        queryClient.setQueryData<DocumentGroup[]>(
-          ['documentGroups', course_name],
-          (old = []) => {
-            return old.map((doc_group) => {
-              recordsToDelete.forEach((record) => {
-                if (doc_group.name in record.doc_groups) {
-                  doc_group.doc_count -= 1
-                }
-              })
-              return doc_group
+      queryClient.setQueryData<DocumentGroup[]>(
+        ['documentGroups', course_name],
+        (old = []) => {
+          return old.map((doc_group) => {
+            recordsToDelete.forEach((record) => {
+              if (doc_group.name in record.doc_groups) {
+                doc_group.doc_count -= 1
+              }
             })
-          },
-        )
+            return doc_group
+          })
+        },
+      )
 
-        return { previousDocuments, previousDocumentGroups }
-      },
-      onError: (err, variables, context) => {
-        console.debug('Error deleting documents:', err)
-        if (context?.previousDocuments) {
-          queryClient.setQueryData(
-            ['documents', course_name],
-            context.previousDocuments,
-          )
-        }
-
-        if (context?.previousDocumentGroups) {
-          queryClient.setQueryData(
-            ['documentGroups', course_name],
-            context.previousDocumentGroups,
-          )
-        }
-        showToast(theme,
-          'Error deleting file',
-          "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug.",
-          true,)
-      },
-      onSettled: async () => {
-        showToast(theme, 'Deleting file...', 'The file is being deleted in the background. Refresh the page to see the changes.', false)
-        const sleep = (ms: number) =>
-          new Promise((resolve) => setTimeout(resolve, ms))
-        console.debug('sleeping for 500ms')
-        await sleep(500)
-        console.debug('Invalidating queries')
-        queryClient.invalidateQueries(['documents', course_name])
-        queryClient.invalidateQueries(['documentGroups', course_name])
-      },
+      return { previousDocuments, previousDocumentGroups }
     },
-  )
+    onError: (err, variables, context) => {
+      console.debug('Error deleting documents:', err)
+      if (context?.previousDocuments) {
+        queryClient.setQueryData(
+          ['documents', course_name],
+          context.previousDocuments,
+        )
+      }
+
+      if (context?.previousDocumentGroups) {
+        queryClient.setQueryData(
+          ['documentGroups', course_name],
+          context.previousDocumentGroups,
+        )
+      }
+
+      showToastOnFileDeleted(theme, true)
+    },
+    onSettled: async () => {
+      showToastOnFileDeleted(theme)
+      const sleep = (ms: number) =>
+        new Promise((resolve) => setTimeout(resolve, ms))
+      console.debug('sleeping for 500ms')
+      await sleep(500)
+      console.debug('Invalidating queries')
+      queryClient.invalidateQueries({ queryKey: ['documents', course_name] })
+      queryClient.invalidateQueries({
+        queryKey: ['documentGroups', course_name],
+      })
+    },
+  })
 
   if (isErrorDocuments) {
     showNotification({
@@ -401,60 +399,20 @@ export function ProjectFilesTable({
     return errorStateForProjectFilesTable()
   }
 
-  // const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
-  //   return (
-  //     // docs: https://mantine.dev/others/notifications/
-  //     notifications.show({
-  //       id: 'file-deleted-from-materials',
-  //       withCloseButton: true,
-  //       // onClose: () => console.debug('unmounted'),
-  //       // onOpen: () => console.debug('mounted'),
-  //       autoClose: 12000,
-  //       // position="top-center",
-  //       title: was_error ? 'Error deleting file' : 'Deleting file...',
-  //       message: was_error
-  //         ? "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug."
-  //         : 'The file is being deleted in the background. Refresh the page to see the changes.',
-  //       icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
-  //       styles: {
-  //         root: {
-  //           backgroundColor: theme.colors.nearlyWhite,
-  //           borderColor: was_error
-  //             ? theme.colors.errorBorder
-  //             : theme.colors.aiPurple,
-  //         },
-  //         title: {
-  //           color: theme.colors.nearlyBlack,
-  //         },
-  //         description: {
-  //           color: theme.colors.nearlyBlack,
-  //         },
-  //         closeButton: {
-  //           color: theme.colors.nearlyBlack,
-  //           '&:hover': {
-  //             backgroundColor: theme.colors.dark[1],
-  //           },
-  //         },
-  //         icon: {
-  //           backgroundColor: was_error
-  //             ? theme.colors.errorBackground
-  //             : theme.colors.successBackground,
-  //           padding: '4px',
-  //         },
-  //       },
-  //       loading: false,
-  //     })
-  //   )
-  // }
-
-  const showToast = (theme: MantineTheme, title: string, message: string, was_error = false) => {
+  const showToastOnFileDeleted = (theme: MantineTheme, was_error = false) => {
     return (
+      // docs: https://mantine.dev/others/notifications/
       notifications.show({
         id: 'file-deleted-from-materials',
         withCloseButton: true,
+        // onClose: () => console.debug('unmounted'),
+        // onOpen: () => console.debug('mounted'),
         autoClose: 12000,
-        title: title,
-        message: message,
+        // position="top-center",
+        title: was_error ? 'Error deleting file' : 'Deleting file...',
+        message: was_error
+          ? "An error occurred while deleting the file. Please try again and I'd be so grateful if you email kvday2@illinois.edu to report this bug."
+          : 'The file is being deleted in the background. Refresh the page to see the changes.',
         icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
         styles: {
           root: {
@@ -487,6 +445,49 @@ export function ProjectFilesTable({
     )
   }
 
+  const showToast = (
+    theme: MantineTheme,
+    title: string,
+    message: string,
+    was_error = false,
+  ) => {
+    return notifications.show({
+      id: 'file-deleted-from-materials',
+      withCloseButton: true,
+      autoClose: 12000,
+      title: title,
+      message: message,
+      icon: was_error ? <IconAlertTriangle /> : <IconCheck />,
+      styles: {
+        root: {
+          backgroundColor: theme.colors.nearlyWhite,
+          borderColor: was_error
+            ? theme.colors.errorBorder
+            : theme.colors.aiPurple,
+        },
+        title: {
+          color: theme.colors.nearlyBlack,
+        },
+        description: {
+          color: theme.colors.nearlyBlack,
+        },
+        closeButton: {
+          color: theme.colors.nearlyBlack,
+          '&:hover': {
+            backgroundColor: theme.colors.dark[1],
+          },
+        },
+        icon: {
+          backgroundColor: was_error
+            ? theme.colors.errorBackground
+            : theme.colors.successBackground,
+          padding: '4px',
+        },
+      },
+      loading: false,
+    })
+  }
+
   // const items = [
   //   {
   //     name: (
@@ -511,172 +512,195 @@ export function ProjectFilesTable({
   return (
     <>
       <GlobalStyle />
-      <div style={{
-        display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between',
-
-      }}>
-        {selectedRecords.length > 0 && <Paper
-        // className={classes.dropdown}
-        // withBorder
-        // style={styles}
-        >
-          <div style={{ display: 'flex', position: 'relative', alignItems: 'flex-start', background: 'black' }}>
-
-            {/* {items.map((item, index) => ( */}
-            <Tooltip label="All selected documents will be added to the group" position='top' withArrow>
-              <Button
-                // key={index}
-                onClick={() => {
-                  setShowMultiSelect(true);
-                }}
-                className="bg-purple-600 bg-opacity-50 hover:bg-purple-600"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
-                  border: 'none',
-                  paddingRight: '10px',
-                  paddingLeft: '10px',
-                  transition: '0.3s',
-                  marginRight: '5px',
-                  marginBottom: '7px',
-                }}
-              >
-                Add Document to Groups
-              </Button>
-            </Tooltip>
-
-            {/* ))} */}
-            {/* <div style={{ position: 'relative' }}> */}
-
-            {showMultiSelect && (
-              <div ref={multiSelectRef} style={{ position: 'absolute', zIndex: 10 }}>
-
-                <MultiSelect
-                  data={
-                    documentGroups
-                      ? documentGroups.map((doc_group) => ({
-                        value: doc_group.name || '',
-                        label: doc_group.name || '',
-                      }))
-                      : []
-                  }
-                  value={selectedDocGroups}
-                  placeholder={
-                    isLoadingDocumentGroups ? 'Loading...' : 'Select Group'
-                  }
-                  searchable={!isLoadingDocumentGroups}
-                  nothingFound={
-                    isLoadingDocumentGroups ? 'Loading...' : 'No Options'
-                  }
-                  creatable
-                  getCreateLabel={(query) => `+ Create "${query}"`}
-                  onCreate={(doc_group_name) => ({
-                    value: doc_group_name,
-                    label: doc_group_name,
-                  })}
-                  // onChange={async (newSelectedGroups) => {
-                  //   await addDocumentsToDocGroups(selectedRecords, newSelectedGroups);
-                  //   for (const record of selectedRecords) {
-                  //     // await handleDocumentGroupsChange(record, selectedDocGroups);
-                  //     for (const removedGroup of selectedDocGroups) {
-                  //       await removeFromDocGroup.mutate({
-                  //         record,
-                  //         removedGroup,
-                  //       })
-                  //     }
-
-                  //     setShowMultiSelect(false);
-                  //     setSelectedRecords([]);
-                  //   }
-                  // }}
-                  onChange={async (newSelectedGroups) => {
-                    await addDocumentsToDocGroups(selectedRecords, newSelectedGroups);
-                    // Through all the common docgorups newselectedgroups doesn't have the doc group that is in all the common docgroups
-                    const unselectedGroups: string[] = selectedDocGroups.filter(group => !newSelectedGroups.includes(group));
-                    // Remove the unselected groups from the selected records
-                    for (const record of selectedRecords) {
-                      for (const unselectedGroup of unselectedGroups) {
-                        await removeFromDocGroup.mutate({
-                          record,
-                          removedGroup: unselectedGroup,
-                        });
-                      }
-                    }
-
-                    // Update the selected document groups
-                    setSelectedDocGroups(newSelectedGroups);
-
-                    // Hide the multi-select and clear the selected records
-                    setShowMultiSelect(false);
-                    setSelectedRecords([]);
-                  }}
-                  disabled={isLoadingDocumentGroups}
-                  sx={{ flex: 1, width: '100%' }}
-                  classNames={{
-                    value: 'tag-item self-center',
-                  }}
-                  styles={{
-                    input: {
-                      paddingTop: '12px',
-                      paddingBottom: '12px',
-                      width: '250px',
-                    },
-                    value: {
-                      marginTop: '2px',
-                    },
-                    dropdown: {
-                      boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.7)', // Add shadow
-                      marginTop: '0', // Remove space between bar section and data dropdown
-                    },
-                    wrapper: {
-                      width: '100%',
-                    }
-                  }}
-                />
-              </div>
-
-            )}
-            <Button
-              uppercase
-              leftIcon={<IconTrash size={16} />}
-              disabled={!selectedRecords.length}
-              onClick={() => {
-                if (selectedRecords.length > 100) {
-                  showToast(
-                    theme,
-                    'Selection Limit Exceeded',
-                    'You have selected more than 100 documents. Please select less than or equal to 100 documents.',
-                    true,
-                  );
-                } else {
-                  setRecordsToDelete(selectedRecords);
-                  setModalOpened(true);
-                }
-              }}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        {selectedRecords.length > 0 && (
+          <Paper
+          // className={classes.dropdown}
+          // withBorder
+          // style={styles}
+          >
+            <div
               style={{
-                backgroundColor: selectedRecords.length
-                  ? '#8B0000'
-                  : 'transparent',
-                // flex: 1
+                display: 'flex',
+                position: 'relative',
+                alignItems: 'flex-start',
+                background: 'black',
               }}
             >
-              {selectedRecords.length
-                ? `Delete ${selectedRecords.length === 1
-                  ? '1 selected record'
-                  : `${selectedRecords.length} selected records`
-                }`
-                : 'Select records to delete'}
-            </Button>
-            {/* <Center> */}
+              {/* {items.map((item, index) => ( */}
+              <Tooltip
+                label="All selected documents will be added to the group"
+                position="top"
+                withArrow
+              >
+                <Button
+                  // key={index}
+                  onClick={() => {
+                    setShowMultiSelect(true)
+                  }}
+                  className="bg-purple-600 bg-opacity-50 hover:bg-purple-600"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    backgroundColor: 'hsla(280, 100%, 70%, 0.5)',
+                    border: 'none',
+                    paddingRight: '10px',
+                    paddingLeft: '10px',
+                    transition: '0.3s',
+                    marginRight: '5px',
+                    marginBottom: '7px',
+                  }}
+                >
+                  Add Document to Groups
+                </Button>
+              </Tooltip>
 
-            {/* </Center> */}
-          </div>
-          {/* </div> */}
-        </Paper >}
-        <div style={{ marginLeft: 'auto' }}> {/* Add this div */}
+              {/* ))} */}
+              {/* <div style={{ position: 'relative' }}> */}
 
+              {showMultiSelect && (
+                <div
+                  ref={multiSelectRef}
+                  style={{ position: 'absolute', zIndex: 10 }}
+                >
+                  <MultiSelect
+                    data={
+                      documentGroups
+                        ? documentGroups.map((doc_group) => ({
+                            value: doc_group.name || '',
+                            label: doc_group.name || '',
+                          }))
+                        : []
+                    }
+                    value={selectedDocGroups}
+                    placeholder={
+                      isLoadingDocumentGroups ? 'Loading...' : 'Select Group'
+                    }
+                    searchable={!isLoadingDocumentGroups}
+                    nothingFound={
+                      isLoadingDocumentGroups ? 'Loading...' : 'No Options'
+                    }
+                    creatable
+                    getCreateLabel={(query) => `+ Create "${query}"`}
+                    onCreate={(doc_group_name) => ({
+                      value: doc_group_name,
+                      label: doc_group_name,
+                    })}
+                    // onChange={async (newSelectedGroups) => {
+                    //   await addDocumentsToDocGroups(selectedRecords, newSelectedGroups);
+                    //   for (const record of selectedRecords) {
+                    //     // await handleDocumentGroupsChange(record, selectedDocGroups);
+                    //     for (const removedGroup of selectedDocGroups) {
+                    //       await removeFromDocGroup.mutate({
+                    //         record,
+                    //         removedGroup,
+                    //       })
+                    //     }
+
+                    //     setShowMultiSelect(false);
+                    //     setSelectedRecords([]);
+                    //   }
+                    // }}
+                    onChange={async (newSelectedGroups) => {
+                      await addDocumentsToDocGroups(
+                        selectedRecords,
+                        newSelectedGroups,
+                      )
+                      // Through all the common docgorups newselectedgroups doesn't have the doc group that is in all the common docgroups
+                      const unselectedGroups: string[] =
+                        selectedDocGroups.filter(
+                          (group) => !newSelectedGroups.includes(group),
+                        )
+                      // Remove the unselected groups from the selected records
+                      for (const record of selectedRecords) {
+                        for (const unselectedGroup of unselectedGroups) {
+                          await removeFromDocGroup.mutate({
+                            record,
+                            removedGroup: unselectedGroup,
+                          })
+                        }
+                      }
+
+                      // Update the selected document groups
+                      setSelectedDocGroups(newSelectedGroups)
+
+                      // Hide the multi-select and clear the selected records
+                      setShowMultiSelect(false)
+                      setSelectedRecords([])
+                    }}
+                    disabled={isLoadingDocumentGroups}
+                    sx={{ flex: 1, width: '100%' }}
+                    classNames={{
+                      value: 'tag-item self-center',
+                    }}
+                    styles={{
+                      input: {
+                        paddingTop: '12px',
+                        paddingBottom: '12px',
+                        width: '250px',
+                      },
+                      value: {
+                        marginTop: '2px',
+                      },
+                      dropdown: {
+                        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.7)', // Add shadow
+                        marginTop: '0', // Remove space between bar section and data dropdown
+                      },
+                      wrapper: {
+                        width: '100%',
+                      },
+                    }}
+                  />
+                </div>
+              )}
+              <Button
+                uppercase
+                leftIcon={<IconTrash size={16} />}
+                disabled={!selectedRecords.length}
+                onClick={() => {
+                  if (selectedRecords.length > 100) {
+                    showToast(
+                      theme,
+                      'Selection Limit Exceeded',
+                      'You have selected more than 100 documents. Please select less than or equal to 100 documents.',
+                      true,
+                    )
+                  } else {
+                    setRecordsToDelete(selectedRecords)
+                    setModalOpened(true)
+                  }
+                }}
+                style={{
+                  backgroundColor: selectedRecords.length
+                    ? '#8B0000'
+                    : 'transparent',
+                  // flex: 1
+                }}
+              >
+                {selectedRecords.length
+                  ? `Delete ${
+                      selectedRecords.length === 1
+                        ? '1 selected record'
+                        : `${selectedRecords.length} selected records`
+                    }`
+                  : 'Select records to delete'}
+              </Button>
+              {/* <Center> */}
+
+              {/* </Center> */}
+            </div>
+            {/* </div> */}
+          </Paper>
+        )}
+        <div style={{ marginLeft: 'auto' }}>
+          {' '}
+          {/* Add this div */}
           <Tooltip
             multiline
             width={280}
@@ -729,7 +753,13 @@ export function ProjectFilesTable({
         onPageChange={setPage}
         sortStatus={sortStatus}
         onSortStatusChange={setSortStatus}
-        fetching={isLoadingDocuments || isLoadingDocumentGroups || isDeletingDocuments || appendToDocGroup.isLoading || removeFromDocGroup.isLoading}
+        fetching={
+          isLoadingDocuments ||
+          isLoadingDocumentGroups ||
+          isDeletingDocuments ||
+          appendToDocGroup.isPending ||
+          removeFromDocGroup.isPending
+        }
         // fetching={appendToDocGroup.isLoading || removeFromDocGroup.isLoading/* other loading states */}
         recordsPerPage={PAGE_SIZE}
         customLoader={<LoadingSpinner />}
@@ -919,155 +949,155 @@ export function ProjectFilesTable({
           },
           ...(tabValue === 'failed'
             ? [
-              {
-                accessor: 'error',
-                title: 'Error',
-                width: 200,
-                render: ({ error }: { error: string }, index: number) => {
-                  // Ensure a ref exists for this row
-                  if (!textRefs.current[index]) {
-                    textRefs.current[index] = createRef()
-                  }
+                {
+                  accessor: 'error',
+                  title: 'Error',
+                  width: 200,
+                  render: ({ error }: { error: string }, index: number) => {
+                    // Ensure a ref exists for this row
+                    if (!textRefs.current[index]) {
+                      textRefs.current[index] = createRef()
+                    }
 
-                  return (
-                    <div>
-                      <Text
-                        ref={textRefs.current[index]}
-                        size="sm"
-                        style={{
-                          display: '-webkit-box',
-                          WebkitLineClamp: 3,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                          maxWidth: '100%',
-                        }}
-                      >
-                        {error}
-                      </Text>
-                      {overflowStates[index] && (
+                    return (
+                      <div>
                         <Text
+                          ref={textRefs.current[index]}
                           size="sm"
-                          color="grape"
-                          onClick={() => openModel(true, error)}
-                          className="rounded-md hover:underline"
                           style={{
-                            cursor: 'pointer',
-                            bottom: 0,
-                            textAlign: 'right',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            maxWidth: '100%',
                           }}
                         >
-                          Read more
+                          {error}
                         </Text>
-                      )}
-                    </div>
-                  )
+                        {overflowStates[index] && (
+                          <Text
+                            size="sm"
+                            color="grape"
+                            onClick={() => openModel(true, error)}
+                            className="rounded-md hover:underline"
+                            style={{
+                              cursor: 'pointer',
+                              bottom: 0,
+                              textAlign: 'right',
+                            }}
+                          >
+                            Read more
+                          </Text>
+                        )}
+                      </div>
+                    )
+                  },
                 },
-              },
-            ]
+              ]
             : [
-              {
-                accessor: 'doc_group',
-                title: 'Document Groups',
-                width: 200, // Increase this value to make the column wider
-                render: (record: CourseDocument) => (
-                  <Group position="apart" spacing="xs">
-                    <MultiSelect
-                      data={
-                        documentGroups
-                          ? [...documentGroups].map((doc_group) => ({
-                            value: doc_group.name || '',
-                            label: doc_group.name || '',
-                          }))
-                          : []
-                      }
-                      value={record.doc_groups ? record.doc_groups : []}
-                      placeholder={
-                        isLoadingDocumentGroups
-                          ? 'Loading...'
-                          : 'Select Group'
-                      }
-                      searchable={!isLoadingDocumentGroups}
-                      nothingFound={
-                        isLoadingDocumentGroups ? 'Loading...' : 'No Options'
-                      }
-                      creatable
-                      getCreateLabel={(query) => `+ Create "${query}"`}
-                      onCreate={(doc_group_name) => {
-                        // createDocumentGroup.mutate({ record, doc_group_name })
-                        return {
-                          value: doc_group_name,
-                          label: doc_group_name,
+                {
+                  accessor: 'doc_group',
+                  title: 'Document Groups',
+                  width: 200, // Increase this value to make the column wider
+                  render: (record: CourseDocument) => (
+                    <Group position="apart" spacing="xs">
+                      <MultiSelect
+                        data={
+                          documentGroups
+                            ? [...documentGroups].map((doc_group) => ({
+                                value: doc_group.name || '',
+                                label: doc_group.name || '',
+                              }))
+                            : []
                         }
-                      }}
-                      onChange={(newSelectedGroups) => {
-                        handleDocumentGroupsChange(record, newSelectedGroups);
-                      }}
-                      disabled={isLoadingDocumentGroups}
-                      sx={{ flex: 1, width: '100%' }}
-                      classNames={{
-                        value: 'tag-item self-center',
-                      }}
-                      styles={{
-                        input: {
-                          paddingTop: '12px',
-                          paddingBottom: '12px',
-                        },
-                        value: {
-                          marginTop: '2px',
-                        },
-                      }}
-                    />
-                  </Group>
-                ),
-              },
-            ]),
+                        value={record.doc_groups ? record.doc_groups : []}
+                        placeholder={
+                          isLoadingDocumentGroups
+                            ? 'Loading...'
+                            : 'Select Group'
+                        }
+                        searchable={!isLoadingDocumentGroups}
+                        nothingFound={
+                          isLoadingDocumentGroups ? 'Loading...' : 'No Options'
+                        }
+                        creatable
+                        getCreateLabel={(query) => `+ Create "${query}"`}
+                        onCreate={(doc_group_name) => {
+                          // createDocumentGroup.mutate({ record, doc_group_name })
+                          return {
+                            value: doc_group_name,
+                            label: doc_group_name,
+                          }
+                        }}
+                        onChange={(newSelectedGroups) => {
+                          handleDocumentGroupsChange(record, newSelectedGroups)
+                        }}
+                        disabled={isLoadingDocumentGroups}
+                        sx={{ flex: 1, width: '100%' }}
+                        classNames={{
+                          value: 'tag-item self-center',
+                        }}
+                        styles={{
+                          input: {
+                            paddingTop: '12px',
+                            paddingBottom: '12px',
+                          },
+                          value: {
+                            marginTop: '2px',
+                          },
+                        }}
+                      />
+                    </Group>
+                  ),
+                },
+              ]),
           ...(tabValue === 'failed'
             ? []
             : [
-              {
-                accessor: 'actions',
-                title: <Box mr={6}>Actions</Box>,
-                width: 75,
-                render: (materials: any, index: number) => {
-                  const openModal = async (action: string) => {
-                    let urlToOpen = materials.url
-                    if (!materials.url && materials.s3_path) {
-                      const presignedUrl = await fetchPresignedUrl(
-                        materials.s3_path,
-                      )
-                      urlToOpen = presignedUrl
+                {
+                  accessor: 'actions',
+                  title: <Box mr={6}>Actions</Box>,
+                  width: 75,
+                  render: (materials: any, index: number) => {
+                    const openModal = async (action: string) => {
+                      let urlToOpen = materials.url
+                      if (!materials.url && materials.s3_path) {
+                        const presignedUrl = await fetchPresignedUrl(
+                          materials.s3_path,
+                        )
+                        urlToOpen = presignedUrl
+                      }
+                      if (action === 'view' && urlToOpen) {
+                        window.open(urlToOpen, '_blank')
+                      } else if (action === 'delete') {
+                        setRecordsToDelete([materials])
+                        setModalOpened(true)
+                      }
                     }
-                    if (action === 'view' && urlToOpen) {
-                      window.open(urlToOpen, '_blank')
-                    } else if (action === 'delete') {
-                      setRecordsToDelete([materials])
-                      setModalOpened(true)
-                    }
-                  }
 
-                  return (
-                    <Group spacing="xs">
-                      <ActionIcon
-                        size="sm"
-                        variant="subtle"
-                        color="green"
-                        onClick={() => openModal('view')}
-                      >
-                        <IconEye size={16} />
-                      </ActionIcon>
-                      <ActionIcon
-                        size="sm"
-                        variant="subtle"
-                        color="red"
-                        onClick={() => openModal('delete')}
-                      >
-                        <IconTrash size={16} />
-                      </ActionIcon>
-                    </Group>
-                  )
+                    return (
+                      <Group spacing="xs">
+                        <ActionIcon
+                          size="sm"
+                          variant="subtle"
+                          color="green"
+                          onClick={() => openModal('view')}
+                        >
+                          <IconEye size={16} />
+                        </ActionIcon>
+                        <ActionIcon
+                          size="sm"
+                          variant="subtle"
+                          color="red"
+                          onClick={() => openModal('delete')}
+                        >
+                          <IconTrash size={16} />
+                        </ActionIcon>
+                      </Group>
+                    )
+                  },
                 },
-              },
-            ]),
+              ]),
         ]}
         selectedRecords={selectedRecords}
         onSelectedRecordsChange={(newSelectedRecords) => {
@@ -1076,19 +1106,24 @@ export function ProjectFilesTable({
             console.debug('New selection:', newSelectedRecords)
 
             // Use reduce to find the common document groups among all selected records
-            const commonDocGroups = newSelectedRecords.reduce((commonGroups, record) => {
-              return commonGroups.filter(group => record.doc_groups.includes(group));
-            }, (newSelectedRecords[0] as CourseDocument).doc_groups);
+            const commonDocGroups = newSelectedRecords.reduce(
+              (commonGroups, record) => {
+                return commonGroups.filter((group) =>
+                  record.doc_groups.includes(group),
+                )
+              },
+              (newSelectedRecords[0] as CourseDocument).doc_groups,
+            )
 
-            setSelectedDocGroups(commonDocGroups);
+            setSelectedDocGroups(commonDocGroups)
             console.log(commonDocGroups)
           } else {
             setSelectedRecords([])
             setSelectedDocGroups([])
           }
         }}
-      // Accessor not necessary when documents have an `id` property
-      // idAccessor={(row: any) => (row.url ? row.url : row.s3_path)}
+        // Accessor not necessary when documents have an `id` property
+        // idAccessor={(row: any) => (row.url ? row.url : row.s3_path)}
       />{' '}
       {/* End DataTable */}
       <Modal
@@ -1266,7 +1301,7 @@ function errorStateForProjectFilesTable() {
             radius="lg"
             src="https://assets.kastan.ai/this-is-fine.jpg"
             alt="No data found"
-          // style={{ filter: 'grayscale(1)' }}
+            // style={{ filter: 'grayscale(1)' }}
           />
           <Text c="dimmed" size="md">
             So.. please try again later.

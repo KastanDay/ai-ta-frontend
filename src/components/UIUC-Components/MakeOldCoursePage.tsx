@@ -81,13 +81,12 @@ const MakeOldCoursePage = ({
       <Navbar course_name={course_name} bannerUrl={bannerUrl} />
 
       <Head>
-        <title>{course_name}</title>
+        <title>{course_name} - Admin page - UIUC.chat</title>
         <meta
           name="description"
           content="The AI teaching assistant built for students at UIUC."
         />
         <link rel="icon" href="/favicon.ico" />
-        {/* <Header /> */}
       </Head>
       <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center">
         <div className="items-left flex w-full flex-col justify-center py-0">
@@ -226,7 +225,7 @@ const MakeOldCoursePage = ({
                     }}
                   >
                     {' '}
-                    Project Files
+                    Document Groups
                   </Title>
                 </div>
               </Flex>
