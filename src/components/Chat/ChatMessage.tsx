@@ -500,7 +500,7 @@ export const ChatMessage: FC<Props> = memo(
         } max-w-[100%]`}
         style={{ overflowWrap: 'anywhere' }}
       >
-        <div className="relative mx-[5%] flex w-full p-4 text-base md:mx-[10%] md:max-w-[80%] md:gap-6 md:py-6 lg:mx-[15%] lg:max-w-[70%] lg:px-0">
+        <div className="relative flex w-full px-2 py-4 text-base md:mx-[10%] md:max-w-[80%] md:gap-6 md:p-6 lg:mx-[15%] lg:max-w-[70%] lg:px-0">
           <div className="min-w-[40px] text-left">
             {message.role === 'assistant' ? (
               <>
@@ -512,7 +512,7 @@ export const ChatMessage: FC<Props> = memo(
             )}
           </div>
 
-          <div className="dark:prose-invert prose mt-[-2px] flex w-[85%] md:w-full">
+          <div className="dark:prose-invert prose mt-[-2px] flex w-full">
             {message.role === 'user' ? (
               <div className="flex w-full flex-row">
                 {isEditing ? (
@@ -569,7 +569,7 @@ export const ChatMessage: FC<Props> = memo(
                                 return (
                                   <p
                                     key={index}
-                                    className={`self-start text-xs font-normal md:text-base md:font-medium lg:text-lg ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                    className={`self-start text-base font-normal ${montserrat_paragraph.variable} font-montserratParagraph`}
                                   >
                                     {content.text}
                                   </p>
@@ -598,7 +598,15 @@ export const ChatMessage: FC<Props> = memo(
                               ))}
                           </div>
 
-                          {(isImg2TextLoading === false || isImg2TextLoading) &&
+                          {(isImg2TextLoading ||
+                            (message.content.some(
+                              (content) =>
+                                content.type === 'text' &&
+                                content.text
+                                  ?.trim()
+                                  .startsWith('Image description:'),
+                            ) &&
+                              isImg2TextLoading === false)) &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
                                 1 ||
@@ -611,31 +619,20 @@ export const ChatMessage: FC<Props> = memo(
                                 isLoading={isImg2TextLoading}
                                 error={false}
                                 content={
-                                  message.content
-                                    .filter(
-                                      (content) =>
-                                        content.type == 'text' &&
-                                        (content.text as string)
-                                          .trim()
-                                          .startsWith('Image description:'),
-                                    )
-                                    .find((content) => content.text)
-                                    ? message.content
-                                        .filter(
-                                          (content) =>
-                                            content.type == 'text' &&
-                                            (content.text as string)
-                                              .trim()
-                                              .startsWith('Image description:'),
-                                        )
-                                        .find((content) => content.text)?.text
-                                    : 'No image description found'
+                                  message.content.find(
+                                    (content) =>
+                                      content.type === 'text' &&
+                                      content.text
+                                        ?.trim()
+                                        .startsWith('Image description:'),
+                                  )?.text ?? 'No image description found'
                                 }
                               />
                             )}
 
                           {(isRetrievalLoading === false ||
-                            isRetrievalLoading) &&
+                            isRetrievalLoading ||
+                            message.contexts) &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
                                 1 ||
@@ -645,7 +642,7 @@ export const ChatMessage: FC<Props> = memo(
                               <IntermediateStateAccordion
                                 accordionKey="retrieval loading"
                                 title="Retrieving relevant documents:"
-                                isLoading={isRetrievalLoading}
+                                isLoading={isRetrievalLoading || false}
                                 error={false}
                                 content={`Found ${message.contexts?.length} relevant documents!`}
                               />
@@ -771,7 +768,6 @@ export const ChatMessage: FC<Props> = memo(
                                         color={response.error ? 'red' : 'grape'}
                                         radius="md"
                                         size="sm"
-                                        className={`md:ml-10`}
                                       >
                                         {response.readableName}
                                       </Badge>
@@ -997,7 +993,7 @@ export const ChatMessage: FC<Props> = memo(
                       p({ node, children }) {
                         return (
                           <p
-                            className={`text-xs font-normal md:text-base lg:text-lg ${montserrat_paragraph.variable} pb-2 font-montserratParagraph`}
+                            className={`text-base font-normal ${montserrat_paragraph.variable} pb-2 font-montserratParagraph`}
                           >
                             {children}
                           </p>
@@ -1006,7 +1002,7 @@ export const ChatMessage: FC<Props> = memo(
                       ul({ children }) {
                         return (
                           <ul
-                            className={`text-xs font-normal md:text-base lg:text-lg ${montserrat_paragraph.variable} font-montserratParagraph`}
+                            className={`text-base font-normal ${montserrat_paragraph.variable} font-montserratParagraph`}
                           >
                             {children}
                           </ul>
@@ -1015,7 +1011,7 @@ export const ChatMessage: FC<Props> = memo(
                       ol({ children }) {
                         return (
                           <ol
-                            className={`text-xs font-normal md:text-base lg:text-lg ${montserrat_paragraph.variable} ml-4 font-montserratParagraph lg:ml-6`}
+                            className={`text-base font-normal ${montserrat_paragraph.variable} ml-4 font-montserratParagraph lg:ml-6`}
                           >
                             {children}
                           </ol>
@@ -1024,7 +1020,7 @@ export const ChatMessage: FC<Props> = memo(
                       li({ children }) {
                         return (
                           <li
-                            className={` text-xs font-normal md:text-base lg:text-lg ${montserrat_paragraph.variable} break-words font-montserratParagraph`}
+                            className={`text-base font-normal ${montserrat_paragraph.variable} break-words font-montserratParagraph`}
                           >
                             {children}
                           </li>
@@ -1054,7 +1050,7 @@ export const ChatMessage: FC<Props> = memo(
                       h1({ node, children }) {
                         return (
                           <h1
-                            className={`text-lg font-bold md:text-3xl lg:text-5xl ${montserrat_heading.variable} font-montserratHeading`}
+                            className={`text-4xl font-bold ${montserrat_heading.variable} font-montserratHeading`}
                           >
                             {children}
                           </h1>
@@ -1063,7 +1059,7 @@ export const ChatMessage: FC<Props> = memo(
                       h2({ node, children }) {
                         return (
                           <h2
-                            className={`text-lg font-bold md:text-2xl lg:text-3xl ${montserrat_heading.variable} font-montserratHeading`}
+                            className={`text-3xl font-bold ${montserrat_heading.variable} font-montserratHeading`}
                           >
                             {children}
                           </h2>
@@ -1072,7 +1068,7 @@ export const ChatMessage: FC<Props> = memo(
                       h3({ node, children }) {
                         return (
                           <h3
-                            className={`text-lg font-bold md:text-xl lg:text-2xl ${montserrat_heading.variable} font-montserratHeading`}
+                            className={`text-2xl font-bold ${montserrat_heading.variable} font-montserratHeading`}
                           >
                             {children}
                           </h3>
@@ -1081,7 +1077,7 @@ export const ChatMessage: FC<Props> = memo(
                       h4({ node, children }) {
                         return (
                           <h4
-                            className={`text-sm font-bold lg:text-lg ${montserrat_heading.variable} font-montserratHeading`}
+                            className={`text-lg font-bold ${montserrat_heading.variable} font-montserratHeading`}
                           >
                             {children}
                           </h4>
@@ -1090,14 +1086,20 @@ export const ChatMessage: FC<Props> = memo(
                       h5({ node, children }) {
                         return (
                           <h5
-                            className={`lg:text-md text-xs font-bold ${montserrat_heading.variable} font-montserratHeading`}
+                            className={`text-base font-bold ${montserrat_heading.variable} font-montserratHeading`}
                           >
                             {children}
                           </h5>
                         )
                       },
                       h6({ node, children }) {
-                        return <h6 className="text-xs font-bold">{children}</h6>
+                        return (
+                          <h6
+                            className={`text-base font-bold ${montserrat_heading.variable} font-montserratHeading`}
+                          >
+                            {children}
+                          </h6>
+                        )
                       },
                       a({ node, className, children, ...props }) {
                         const { href, title } = props
