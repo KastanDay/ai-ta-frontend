@@ -62,20 +62,20 @@ export const IntermediateStateAccordion = ({
           }}
         >
           <Accordion.Control
-            className={`rounded-lg hover:bg-transparent ${montserrat_paragraph.variable} md:text-md text-xs/2 font-montserratParagraph text-xs md:text-sm md:font-bold lg:text-base`}
+            className={`rounded-lg hover:bg-transparent ${montserrat_paragraph.variable} font-montserratParagraph text-sm font-bold`}
             style={{
               // marginRight: '10px',
               textShadow: '0 0 10px',
               color: '#9d4edd',
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'left',
             }}
             disabled={isLoading}
           >
             {title}
           </Accordion.Control>
           <Accordion.Panel
-            className={`${montserrat_paragraph.variable} rounded-lg bg-[#101122] pt-2 font-montserratParagraph text-xs text-white md:text-sm ${error ? 'border-2 border-red-500' : ''}`}
+            className={`${montserrat_paragraph.variable} rounded-lg bg-[#101122] pt-2 font-montserratParagraph text-sm text-white ${error ? 'border-2 border-red-500' : ''}`}
           >
             <div style={{ position: 'relative' }}>
               <pre
