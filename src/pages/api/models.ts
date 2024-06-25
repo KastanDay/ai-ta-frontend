@@ -1,3 +1,4 @@
+// task is to iterate through the models and find available models that can run on ollama
 import {
   OPENAI_API_HOST,
   OPENAI_API_TYPE,
@@ -7,6 +8,8 @@ import {
 
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
 import { decrypt, isEncrypted } from '~/utils/crypto'
+import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
+import { getOllamaModels, runOllamaChat } from '~/utils/modelProviders/ollama'
 
 export const config = {
   runtime: 'edge',
@@ -20,6 +23,26 @@ const handler = async (req: Request): Promise<Response> => {
     const { key } = (await req.json()) as {
       key: string
     }
+
+    // Eventually we'll use this. For now, there's no API Key for Ollama
+    const ollamaProvider: LLMProvider = {
+      provider: ProviderNames.Ollama,
+      enabled: true,
+      baseUrl: 'tmp',
+    }
+    const llmProviderKeys: LLMProvider[] = [ollamaProvider]
+
+    // 1. Call An endpoint to check what Ollama models are available.
+    const ollamaModels = await getOllamaModels()
+    console.log('Ollama Models in models.ts: ', ollamaModels)
+
+    // Test chat function
+    const ret = await runOllamaChat()
+    console.log('Ollama chat test: ', ret)
+
+    // Iterate over the providers, check if their key works. Return all available models...
+    // each model provider should have at least `/chat` and `/models` endpoints
+
     apiKey = key ? key : (process.env.OPENAI_API_KEY as string)
     // Check if the key starts with 'sk-' (indicating it's not encrypted)
     if (key && isEncrypted(key)) {
@@ -35,6 +58,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (apiKey && !apiKey.startsWith('sk-')) {
       // console.log('setting azure variables')
+      // have to figure out what tyeps of keys fit with the users api key and see which ones are available is enabled flag.
+      // add in new stuff here to get beginning of new providers to check start name of each model
       apiType = 'azure'
       endpoint = process.env.AZURE_OPENAI_ENDPOINT || OPENAI_API_HOST
     }
@@ -96,7 +121,6 @@ const handler = async (req: Request): Promise<Response> => {
             return {
               id: model.id,
               name: OpenAIModels[value].name,
-              maxLength: OpenAIModels[value].maxLength,
               tokenLimit: OpenAIModels[value].tokenLimit,
             }
           }
@@ -105,9 +129,13 @@ const handler = async (req: Request): Promise<Response> => {
       })
       .filter((model): model is OpenAIModel => model !== undefined)
 
-    // console.log('Final list of Models: ', models)
+    const finalModels = [...models, ...ollamaModels]
 
-    return new Response(JSON.stringify(models), { status: 200 })
+    console.log('OpenAI Models: ', models)
+    console.log('Ollama Models: ', ollamaModels)
+    console.log('FInal combined: ', finalModels)
+
+    return new Response(JSON.stringify(finalModels), { status: 200 })
   } catch (error) {
     console.error(error)
     return new Response('Error', { status: 500 })
