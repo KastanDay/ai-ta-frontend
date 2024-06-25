@@ -38,6 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Test chat function
     const ret = await runOllamaChat()
+    console.log('Ollama chat test: ', ret)
 
     // Iterate over the providers, check if their key works. Return all available models...
     // each model provider should have at least `/chat` and `/models` endpoints
