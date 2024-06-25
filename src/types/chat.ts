@@ -54,7 +54,7 @@ export interface ToolOutput {
 }
 
 // tool_image_url is for images returned by tools
-export type MessageType = 'text' | 'image_url'
+export type MessageType = 'text' | 'image_url' | 'tool_image_url'
 
 export interface Content {
   type: MessageType

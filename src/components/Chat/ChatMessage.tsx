@@ -417,8 +417,8 @@ export const ChatMessage: FC<Props> = memo(
           }
         } else {
           // For non-S3 URLs, perform a simple fetch to check availability
-          const response = await fetch(url, { method: 'HEAD' })
-          return response.ok // true if status code is 200-299
+          const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' })
+          return response.type === 'opaque' // true if the fetch was successful, even though the response is opaque
         }
       } catch (error) {
         console.error('Failed to validate URL', url, error)

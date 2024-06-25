@@ -59,7 +59,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
 
     // const messagesToSend = [latestMessage, ...convoHistory] // BUG: REPLACE (not append to) latest user message. RN we have dupliacates.
     // Strip internal messages to send to OpenAI
-    const messagesToSend = stripExtraFieldsFromMessages(conversation.messages)
+    const messagesToSend = refactorMessagesForOpenAI(conversation.messages)
     // console.log('Messages to send: ', messagesToSend)
 
     const apiStream = await OpenAIStream(
@@ -100,13 +100,21 @@ const handler = async (req: Request): Promise<NextResponse> => {
   }
 }
 
-const stripExtraFieldsFromMessages = (messages: Message[]): Message[] => {
+const refactorMessagesForOpenAI = (messages: Message[]): Message[] => {
   return messages.map((message) => {
     const strippedMessage = { ...message }
     delete strippedMessage.finalPromtEngineeredMessage
     delete strippedMessage.latestSystemMessage
     delete strippedMessage.contexts
     delete strippedMessage.tools
+    if (Array.isArray(strippedMessage.content)) {
+      strippedMessage.content.map((content) => {
+        if (content.type === 'tool_image_url') {
+          content.type = 'image_url'
+        }
+        return content
+      })
+    }
     return strippedMessage
   })
 }
@@ -285,7 +293,7 @@ const _buildToolsOutputResults = ({
         // Add image urls to message content
         ;(latestUserMessage.content as Content[]).push(
           ...tool.output.imageUrls.map((imageUrl) => ({
-            type: 'image_url' as MessageType,
+            type: 'tool_image_url' as MessageType,
             image_url: { url: imageUrl },
           })),
         )

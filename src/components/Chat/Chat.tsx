@@ -414,6 +414,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           // Remove tools from message to clear old tools
           message.tools = []
           message.contexts = []
+          message.content = Array.isArray(message.content)
+            ? message.content.filter(
+                (content) => content.type !== 'tool_image_url',
+              )
+            : message.content
 
           const updatedMessages = [...selectedConversation.messages]
           for (let i = 0; i < deleteCount; i++) {
