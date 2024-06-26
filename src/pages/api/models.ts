@@ -10,7 +10,7 @@ import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
 import { decrypt, isEncrypted } from '~/utils/crypto'
 import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
 import { getOllamaModels, runOllamaChat } from '~/utils/modelProviders/ollama'
-
+import { getOpenAIModels} from '~/utils/modelProviders/openai'
 export const config = {
   runtime: 'edge',
 }
@@ -35,6 +35,13 @@ const handler = async (req: Request): Promise<Response> => {
     // 1. Call An endpoint to check what Ollama models are available.
     const ollamaModels = await getOllamaModels()
     console.log('Ollama Models in models.ts: ', ollamaModels)
+
+
+    //2. call an endpoint to check whcih openai modle available
+    console.log('check if it got out of ollama fetch to openai')
+    const openAIModels = await getOpenAIModels()
+    console.log('check if it fetched openai models')
+    console.log('OpenAi models.ts: ', openAIModels)
 
     // Test chat function
     const ret = await runOllamaChat()
