@@ -3,6 +3,15 @@ import {
   ChatCompletionMessageParam,
   CompletionUsage,
 } from '@mlc-ai/web-llm'
+import { ChatCompletionMessageParam } from 'openai/resources/chat'
+import { Message } from '~/types/chat'
+
+export interface WebllmModel {
+  id: string
+  name: string
+  parameterSize: string
+  tokenLimit: number
+}
 
 export default class ChatUI {
   private engine: MLCEngineInterface
@@ -91,35 +100,40 @@ export default class ChatUI {
 
   async loadModel() {
     console.log('staritng to load model')
-    // const selectedModel = 'Llama-3-8B-Instruct-q4f32_1-MLC'
-    const selectedModel = 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k'
+    const selectedModel = 'Llama-3-8B-Instruct-q4f32_1-MLC'
+    // const selectedModel = 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k'
     await this.engine.reload(selectedModel)
     console.log('done loading model')
   }
-  async runChatCompletion(messages: any) {
+  async runChatCompletion(messages: Message[]) {
     let curMessage = ''
     let usage: CompletionUsage | undefined = undefined
+    let messagesToSend: ChatCompletionMessageParam[]
+
+    console.log('Messages with tons of metadata', messages)
+    messagesToSend = messages.map((message: any) => {
+      if (typeof message.content === 'string') {
+        return {
+          role: message.role,
+          content: message.content,
+        }
+      }
+      return {
+        role: message.role,
+        content: message.content[0].text,
+      }
+    })
+    console.log('Messages to send', messagesToSend)
 
     const completion = await this.engine.chat.completions.create({
       stream: true,
-      messages: messages,
+      messages: messagesToSend,
       stream_options: { include_usage: true },
     })
-    console.log('iterating through completion chunks....')
+    console.log(
+      'Returning from WebLLM Chat Completion (at start of streaming)....',
+    )
     return completion
-    // for await (const chunk of completion) {
-    //   const curDelta = chunk.choices[0]?.delta.content
-    //   const done = chunk.choices[0]?.finish_reason
-    //   console.log("chunk", chunk)
-    //   if (curDelta) {
-    //     curMessage += curDelta
-    //   }
-    //   // messageUpdate('left', curMessage, false)
-    //   if (chunk.usage) {
-    //     usage = chunk.usage
-    //   }
-    // }
-    // return curMessage
   }
 
   /**

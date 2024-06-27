@@ -10,7 +10,8 @@ import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
 import { decrypt, isEncrypted } from '~/utils/crypto'
 import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
 import { getOllamaModels, runOllamaChat } from '~/utils/modelProviders/ollama'
-import { getOpenAIModels} from '~/utils/modelProviders/openai'
+import { getOpenAIModels } from '~/utils/modelProviders/openai'
+import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 export const config = {
   runtime: 'edge',
 }
@@ -35,7 +36,6 @@ const handler = async (req: Request): Promise<Response> => {
     // 1. Call An endpoint to check what Ollama models are available.
     const ollamaModels = await getOllamaModels()
     console.log('Ollama Models in models.ts: ', ollamaModels)
-
 
     //2. call an endpoint to check whcih openai modle available
     console.log('check if it got out of ollama fetch to openai')
@@ -136,7 +136,21 @@ const handler = async (req: Request): Promise<Response> => {
       })
       .filter((model): model is OpenAIModel => model !== undefined)
 
-    const finalModels = [...models, ...ollamaModels]
+    const webllmModel: WebllmModel[] = [
+      {
+        id: 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k',
+        name: 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k',
+        tokenLimit: 8192,
+        parameterSize: '1.1B',
+      },
+      {
+        id: 'Llama-3-8B-Instruct-q4f32_1-MLC',
+        name: 'Llama-3-8B-Instruct-q4f32_1-MLC',
+        tokenLimit: 8192,
+        parameterSize: '8B',
+      },
+    ]
+    const finalModels = [...models, ...ollamaModels, ...webllmModel]
 
     console.log('OpenAI Models: ', models)
     console.log('Ollama Models: ', ollamaModels)
