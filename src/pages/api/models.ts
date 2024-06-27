@@ -11,6 +11,8 @@ import { decrypt, isEncrypted } from '~/utils/crypto'
 export const config = {
   runtime: 'edge',
 }
+import * as webllm from "@mlc-ai/web-llm";
+
 import { CreateMLCEngine } from "@mlc-ai/web-llm";
 import { MLCEngine } from "@mlc-ai/web-llm";
 
