@@ -1,11 +1,39 @@
 import { NextPage } from 'next'
+import { useState } from 'react'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
+import ChatUI from '~/utils/modelProviders/WebLLM'
+import { MLCEngine } from '@mlc-ai/web-llm'
+import { set } from 'zod'
 // import { Card, Image, Text, Title, Badge, Button, Group } from '@mantine/core'
 
 const TermsAndConditionsPage: NextPage = () => {
+  const [chat_ui] = useState(new ChatUI(new MLCEngine()))
+  const messages = [
+    { role: 'system', content: 'You are a helpful AI assistant.' },
+    { role: 'user', content: 'Hello!' },
+  ]
+  const [messagesToShow, setMessagesToShow] = useState([])
+
+  const runChatCompletion = async () => {
+    const completion = await chat_ui.runChatCompletion(messages)
+    return completion
+  }
+
   return (
     <MainPageBackground>
-      <p style={{ whiteSpace: 'pre-line' }}>{terms_string}</p>
+      {/* <p style={{ whiteSpace: 'pre-line' }}>{terms_string}</p> */}
+
+      <button
+        className="chatui-btn"
+        onClick={() => {
+          runChatCompletion().then((result) => {
+            setMessagesToShow([...messagesToShow, result])
+          })
+        }}
+      >
+        Send
+      </button>
+      <p>{JSON.stringify(messagesToShow)}</p>
     </MainPageBackground>
   )
 }
