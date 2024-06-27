@@ -120,6 +120,7 @@ export default class ChatUI {
 
   async loadModel() {
     console.log('staritng to load model')
+    // TODO: don't hard-code this model name
     const selectedModel = 'Llama-3-8B-Instruct-q4f32_1-MLC'
     // const selectedModel = 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k'
     await this.engine.reload(selectedModel)
@@ -131,6 +132,9 @@ export default class ChatUI {
     let messagesToSend: ChatCompletionMessageParam[]
 
     console.log('Messages with tons of metadata', messages)
+
+    // TODO: we need smarter handling of messages... i think... 
+    // TODO: Maybe call build prompt here. 
     messagesToSend = messages.map((message: any) => {
       if (typeof message.content === 'string') {
         return {
