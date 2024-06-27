@@ -98,6 +98,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const [chat_ui] = useState(new ChatUI(new MLCEngine()))
   useEffect(() => {
+    // TODO: load the actual model the user selects... (we can hard-code for now to a single model)
+    // selectedConversation.model
     const loadModel = async () => {
       await chat_ui.loadModel()
     }
@@ -699,6 +701,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 ) {
                   // Call the replaceCitationLinks method and await its result
                   // const updatedContent = await replaceCitationLinks(text, lastMessage, citationLinkCache);
+
+                  // TODO: handle this properly with WebLLM
                   const updatedContent = await processChunkWithStateMachine(
                     chunkValue,
                     lastUserMessage,

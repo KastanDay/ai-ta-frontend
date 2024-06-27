@@ -13,6 +13,26 @@ export interface WebllmModel {
   tokenLimit: number
 }
 
+export enum WebLLMModelID {
+  Llama38BInstructQ4f321MLC = 'Llama-3-8B-Instruct-q4f32_1-MLC',
+  TinyLlama11BChatV04Q4f161MLC1k = 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k',
+}
+
+export const WebLLMModels: Record<WebLLMModelID, WebllmModel> = {
+  [WebLLMModelID.TinyLlama11BChatV04Q4f161MLC1k]: {
+    id: WebLLMModelID.TinyLlama11BChatV04Q4f161MLC1k,
+    name: 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k',
+    tokenLimit: 8192,
+    parameterSize: '1.1B',
+  },
+  [WebLLMModelID.Llama38BInstructQ4f321MLC]: {
+    id: WebLLMModelID.Llama38BInstructQ4f321MLC,
+    name: 'Llama-3-8B-Instruct-q4f32_1-MLC',
+    tokenLimit: 8192,
+    parameterSize: '8B',
+  },
+}
+
 export default class ChatUI {
   private engine: MLCEngineInterface
   private chatLoaded = false
