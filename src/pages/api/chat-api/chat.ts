@@ -24,6 +24,7 @@ import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '~/utils/app/const'
 import { v4 as uuidv4 } from 'uuid'
 import { getBaseUrl } from '~/utils/apiUtils'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
+import { buildPrompt } from '../chat'
 
 // Configuration for the runtime environment
 export const config = {
@@ -228,13 +229,37 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
   // Attach contexts to the last message
   attachContextsToLastMessage(lastMessage, contexts)
 
+  //Todo: Add handleTools here, skipping for now because edge functions will start timing out waiting for tool run to finish
+  // const toolResult = await handleTools(
+  //   message,
+  //   tools,
+  //   imageUrls,
+  //   imgDesc,
+  //   updatedConversation,
+  //   currentMessageIndex,
+  //   getOpenAIKey(courseMetadata),
+  //   getCurrentPageName(),
+  //   homeDispatch,
+  // )
+
   // Construct the chat body for the API request
   const chatBody: ChatBody = constructChatBody(
     conversation,
     key,
     course_name,
     stream,
+    courseMetadata,
   )
+
+  // Build the prompt
+  const buildPromptResponse = await buildPrompt({
+    conversation: chatBody.conversation,
+    rawOpenaiKey: chatBody.key,
+    projectName: chatBody.course_name,
+    courseMetadata: chatBody.courseMetadata,
+  })
+
+  chatBody.conversation = buildPromptResponse
 
   // Make the API request to the chat handler
   const baseUrl = getBaseUrl()

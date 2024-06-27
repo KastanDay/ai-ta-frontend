@@ -474,12 +474,14 @@ export function constructChatBody(
   key: string,
   course_name: string,
   stream: boolean,
+  courseMetadata?: CourseMetadata,
 ): ChatBody {
   return {
     conversation: conversation,
     key: key,
     course_name: course_name,
     stream: stream,
+    courseMetadata: courseMetadata,
   }
 }
 
