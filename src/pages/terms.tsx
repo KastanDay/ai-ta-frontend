@@ -23,17 +23,32 @@ const TermsAndConditionsPage: NextPage = () => {
 
     // const reader = completion.getReader()
     // let done = false
+    const iterator = completion[Symbol.asyncIterator]()
+
     let curMessage = ''
     let done = false
 
-    for await (const chunk of completion) {
-      const curDelta = chunk.choices[0]?.delta.content
-      if (curDelta) {
-        curMessage += curDelta
+    while (!done) {
+      const result = await iterator.next()
+      done = result.done!
+      if (!done) {
+        const chunk = result.value
+        const curDelta = chunk.choices[0]?.delta.content
+        if (curDelta) {
+          curMessage += curDelta
+        }
+        setMessagesToShow([...messagesToShow, curMessage])
       }
-      setMessagesToShow([...messagesToShow, curMessage])
     }
-    done = true
+
+    // for await (const chunk of completion) {
+    //   const curDelta = chunk.choices[0]?.delta.content
+    //   if (curDelta) {
+    //     curMessage += curDelta
+    //   }
+    //   setMessagesToShow([...messagesToShow, curMessage])
+    // }
+    // done = true
     // return completion
   }
 

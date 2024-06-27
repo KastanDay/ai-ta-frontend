@@ -605,6 +605,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           let done = false
           let isFirst = true
           let text = ''
+          let chunkValue
           let finalAssistantRespose = ''
           const citationLinkCache = new Map<number, string>()
           const stateMachineContext = { state: State.Normal, buffer: '' }
@@ -615,10 +616,26 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 done = true
                 break
               }
-              const { value, done: doneReading } = await reader.read()
-              done = doneReading
-              const chunkValue = decoder.decode(value)
-              text += chunkValue
+
+              // Handle routing between WebLLM & OpenAI
+              if (
+                selectedConversation.model.name ==
+                'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k'
+              ) {
+                // WebLLM models
+                // @ts-ignore - iterator for WebLLM `AsyncIterable<ChatCompletionChunk>`
+                const iterator = response[Symbol.asyncIterator]()
+                let result = await iterator.next()
+                done = result.done
+                chunkValue = result.value.choices[0]?.delta.content
+                text += chunkValue
+              } else {
+                // OpenAI models
+                const { value, done: doneReading } = await reader.read()
+                done = doneReading
+                chunkValue = decoder.decode(value)
+                text += chunkValue
+              }
 
               if (isFirst) {
                 // isFirst refers to the first chunk of data received from the API (happens once for each new message from API)
