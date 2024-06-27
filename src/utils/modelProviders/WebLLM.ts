@@ -6,6 +6,15 @@ import {
 import { ChatCompletionMessageParam } from 'openai/resources/chat'
 import { Message } from '~/types/chat'
 
+// TODO: finish this message interface. Write a converter between `Message` and `WebLLMMessage`
+export interface WebLLMMessage {
+  // No other fields allowed
+  role: string
+  content: string
+  // TOOLS?
+  // JSON mode?
+}
+
 export interface WebllmModel {
   id: string
   name: string
@@ -121,8 +130,8 @@ export default class ChatUI {
   async loadModel() {
     console.log('staritng to load model')
     // TODO: don't hard-code this model name
-    const selectedModel = 'Llama-3-8B-Instruct-q4f32_1-MLC'
-    // const selectedModel = 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k'
+    // const selectedModel = 'Llama-3-8B-Instruct-q4f32_1-MLC'
+    const selectedModel = 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k'
     await this.engine.reload(selectedModel)
     console.log('done loading model')
   }
@@ -133,8 +142,15 @@ export default class ChatUI {
 
     console.log('Messages with tons of metadata', messages)
 
-    // TODO: we need smarter handling of messages... i think... 
-    // TODO: Maybe call build prompt here. 
+    // TODO... we need to handle the messages better.
+    // System message
+    // User
+    // Assistant
+    // User
+    // Assistant...
+
+    // TODO: we need smarter handling of messages... i think...
+    // TODO: Maybe call build prompt here.
     messagesToSend = messages.map((message: any) => {
       if (typeof message.content === 'string') {
         return {

@@ -528,6 +528,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         })
         chatBody.conversation = await buildPromptResponse.json()
         updatedConversation = chatBody.conversation
+
+        console.log(
+          'Updated conversation (after build prompt):',
+          updatedConversation,
+        )
+
         // homeDispatch({
         //   field: 'selectedConversation',
         //   value: chatBody.conversation,
