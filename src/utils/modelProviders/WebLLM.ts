@@ -89,17 +89,37 @@ export default class ChatUI {
     this.chatLoaded = false
   }
 
-  async runChatCompletion(messages: any) {
-    const selectedModel = 'Llama-3-8B-Instruct-q4f32_1-MLC'
-    // const selectedModel = "TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k";
+  async loadModel() {
+    console.log('staritng to load model')
+    // const selectedModel = 'Llama-3-8B-Instruct-q4f32_1-MLC'
+    const selectedModel = 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k'
     await this.engine.reload(selectedModel)
+    console.log('done loading model')
+  }
+  async runChatCompletion(messages: any) {
+    let curMessage = ''
+    let usage: CompletionUsage | undefined = undefined
 
     const completion = await this.engine.chat.completions.create({
-      stream: false,
+      stream: true,
       messages: messages,
-      // stream_options: { include_usage: true },
+      stream_options: { include_usage: true },
     })
+    console.log('iterating through completion chunks....')
     return completion
+    // for await (const chunk of completion) {
+    //   const curDelta = chunk.choices[0]?.delta.content
+    //   const done = chunk.choices[0]?.finish_reason
+    //   console.log("chunk", chunk)
+    //   if (curDelta) {
+    //     curMessage += curDelta
+    //   }
+    //   // messageUpdate('left', curMessage, false)
+    //   if (chunk.usage) {
+    //     usage = chunk.usage
+    //   }
+    // }
+    // return curMessage
   }
 
   /**

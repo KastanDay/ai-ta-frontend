@@ -14,9 +14,27 @@ const TermsAndConditionsPage: NextPage = () => {
   ]
   const [messagesToShow, setMessagesToShow] = useState([])
 
+  const loadModel = async () => {
+    await chat_ui.loadModel()
+  }
+
   const runChatCompletion = async () => {
     const completion = await chat_ui.runChatCompletion(messages)
-    return completion
+
+    // const reader = completion.getReader()
+    // let done = false
+    let curMessage = ''
+    let done = false
+
+    for await (const chunk of completion) {
+      const curDelta = chunk.choices[0]?.delta.content
+      if (curDelta) {
+        curMessage += curDelta
+      }
+      setMessagesToShow([...messagesToShow, curMessage])
+    }
+    done = true
+    // return completion
   }
 
   return (
@@ -26,8 +44,18 @@ const TermsAndConditionsPage: NextPage = () => {
       <button
         className="chatui-btn"
         onClick={() => {
+          loadModel().then((result) => {
+            // setMessagesToShow([...messagesToShow, result])
+          })
+        }}
+      >
+        Load model
+      </button>
+      <button
+        className="chatui-btn"
+        onClick={() => {
           runChatCompletion().then((result) => {
-            setMessagesToShow([...messagesToShow, result])
+            // setMessagesToShow([...messagesToShow, result])
           })
         }}
       >
