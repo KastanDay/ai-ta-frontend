@@ -1,13 +1,16 @@
 // LargeDropzone.tsx
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import {
   createStyles,
   Group,
   rem,
   Text,
   Title,
+  Paper,
+  Progress,
   // useMantineTheme,
 } from '@mantine/core'
+
 import {
   IconAlertCircle,
   IconCheck,
@@ -17,6 +20,7 @@ import {
   IconProgress,
   IconX,
 } from '@tabler/icons-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Dropzone } from '@mantine/dropzone'
 import { useRouter } from 'next/router'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -52,6 +56,73 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
+export function Demo({ numFiles, totalFiles }) {
+  return (
+    <Paper shadow="lg" radius="lg" p="md" withBorder>
+      <Text>
+        {numFiles} out of {totalFiles} files have been uploaded.
+      </Text>
+    </Paper>
+  )
+}
+
+function DocumentsProgress({ courseName }) {
+  const [progress, setProgress] = useState(0)
+  const [hasDocuments, setHasDocuments] = useState(false) // State to track if there are documents
+  const [totalDocuments, setTotalDocuments] = useState(0) // State to track the total number of documents
+
+  useEffect(() => {
+    async function fetchData() {
+      const response = await fetch(
+        `/api/materialsTable/docsInProgress?course_name=${courseName}`,
+      )
+      const data = await response.json()
+      if (data && data.documents) {
+        // Example: calculate progress as a percentage of documents processed
+        if (data.documents.length > totalDocuments) {
+          setTotalDocuments(data.documents.length) // Set total documents from the initial API call
+          console.log('total documents:', data.documents.length)
+        }
+        console.log('documents:', data)
+        setHasDocuments(data.documents.length > 0)
+        console.log(
+          'document length:',
+          data.documents.length,
+          'total:',
+          totalDocuments,
+          (totalDocuments - data.documents.length) / totalDocuments,
+        )
+        setProgress(
+          ((totalDocuments - data.documents.length) / totalDocuments) * 100,
+        )
+      } else {
+        setHasDocuments(false)
+      }
+    }
+
+    const intervalId = setInterval(fetchData, 3000) // Fetch data every 3000 milliseconds (3 seconds)
+    return () => clearInterval(intervalId)
+  }, [courseName, totalDocuments])
+
+  if (!hasDocuments) {
+    return null
+  }
+
+  return (
+    <Paper shadow="lg" radius="lg" p="md" withBorder>
+      <Text>{totalDocuments} Ingesting into AI Database</Text>
+      <Progress
+        color="violet"
+        radius="md"
+        size="lg"
+        value={progress}
+        striped
+        animate
+      />
+    </Paper>
+  )
+}
+
 export function LargeDropzone({
   courseName,
   current_user_email,
@@ -69,10 +140,13 @@ export function LargeDropzone({
 }) {
   // upload-in-progress spinner control
   const [uploadInProgress, setUploadInProgress] = useState(false)
+  const [successfulUploads, setSuccessfulUploads] = useState(0)
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const { classes, theme } = useStyles()
   const openRef = useRef<() => void>(null)
+  const [files, setFiles] = useState<File[]>([])
+  const queryClient = useQueryClient()
 
   const refreshOrRedirect = async (redirect_to_gpt_4: boolean) => {
     if (is_new_course) {
@@ -143,6 +217,7 @@ export function LargeDropzone({
     if (!files) return
     files = files.filter((file) => file !== null)
 
+    setFiles(files)
     setUploadInProgress(true)
 
     if (is_new_course) {
@@ -174,7 +249,7 @@ export function LargeDropzone({
         // return { ok: Math.random() < 0.5, s3_path: filename }; // For testing
         try {
           await uploadToS3(file, uniqueFileName)
-
+          setSuccessfulUploads((prev) => prev + 1) // Increment successful uploads
           console.log(
             'Uploaded to s3. Now sending to ingest. Course name:',
             courseName,
@@ -202,6 +277,8 @@ export function LargeDropzone({
         }
       }),
     )
+
+    setSuccessfulUploads(0)
 
     interface IngestResult {
       ok: boolean
@@ -258,6 +335,7 @@ export function LargeDropzone({
   return (
     <>
       {/* START LEFT COLUMN */}
+
       <div
         style={{
           display: 'flex',
@@ -265,6 +343,7 @@ export function LargeDropzone({
           justifyContent: 'space-between',
         }}
       >
+        {courseName && <DocumentsProgress courseName={courseName} />}
         {/* <div className={classes.wrapper} style={{ maxWidth: '320px' }}> */}
         <div
           className={classes.wrapper}
@@ -356,33 +435,36 @@ export function LargeDropzone({
             </div>
           </Dropzone>
           {uploadInProgress && (
-            <div className="flex flex-col items-center justify-center ">
-              <Title
-                order={4}
-                style={{
-                  marginTop: 10,
-                  alignItems: 'center',
-                  color: '#B22222',
-                  justifyContent: 'center',
-                  textAlign: 'center',
-                }}
-              >
-                Do not navigate away until loading is complete <br></br> or
-                ingest will fail.
-              </Title>
-              <Title
-                order={4}
-                style={{
-                  marginTop: 5,
-                  alignItems: 'center',
-                  color: '#B22222',
-                  justifyContent: 'center',
-                  textAlign: 'center',
-                }}
-              >
-                The page will refresh when your AI Assistant is ready.
-              </Title>
-            </div>
+            <>
+              <Demo numFiles={successfulUploads} totalFiles={files.length} />
+              <div className="flex flex-col items-center justify-center ">
+                <Title
+                  order={4}
+                  style={{
+                    marginTop: 10,
+                    alignItems: 'center',
+                    color: '#B22222',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                  }}
+                >
+                  Do not navigate away until loading is complete <br></br> or
+                  ingest will fail.
+                </Title>
+                <Title
+                  order={4}
+                  style={{
+                    marginTop: 5,
+                    alignItems: 'center',
+                    color: '#B22222',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                  }}
+                >
+                  The page will refresh when your AI Assistant is ready.
+                </Title>
+              </div>
+            </>
           )}
         </div>
         {/* END LEFT COLUMN */}
@@ -458,8 +540,10 @@ const showIngestInProgressToast = (num_success_files: number) => {
     // onClose: () => console.log('unmounted'),
     // onOpen: () => console.log('mounted'),
     autoClose: 30000,
-    title: `Ingest in progress for ${num_success_files} file${num_success_files > 1 ? 's' : ''}.`,
-    message: `This is a background task. Refresh the page to see your files as they're processed. (A better upload experience is in the works for April 2024 🚀)`,
+    title: `Ingest in progress for ${num_success_files} file${
+      num_success_files > 1 ? 's' : ''
+    }.`,
+    message: `This is a background task. Refresh the page to see your files as they're processed.`,
     color: 'green',
     radius: 'lg',
     icon: <IconFileUpload />,
