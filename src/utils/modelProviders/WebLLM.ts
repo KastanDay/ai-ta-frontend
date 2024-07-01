@@ -50,7 +50,7 @@ export default class ChatUI {
   // all requests send to chat are sequentialized
   private chatRequestChain: Promise<void> = Promise.resolve()
   private chatHistory: ChatCompletionMessageParam[] = []
-
+  private modelLoading = false
   constructor(engine: MLCEngineInterface) {
     this.engine = engine
   }
@@ -127,14 +127,26 @@ export default class ChatUI {
     this.chatLoaded = false
   }
 
-  async loadModel() {
-    console.log('staritng to load model')
-    // TODO: don't hard-code this model name
-    // const selectedModel = 'Llama-3-8B-Instruct-q4f32_1-MLC'
-    const selectedModel = 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k'
-    await this.engine.reload(selectedModel)
-    console.log('done loading model')
+  async loadModel(selectedConversation: { model: { name: string } }) {
+    console.log('starting to load model')
+    this.modelLoading = true // Set loading state to true
+    const selectedModel = selectedConversation.model.name
+    try {
+      await this.engine.reload(selectedModel)
+      console.log('done loading model')
+    } catch (error) {
+      console.error('Error loading model:', error)
+    } finally {
+      this.modelLoading = false // Set loading state to false
+      console.log('model has been loaded modelLoading set to false')
+    }
   }
+  isModelLoading() {
+    console.log('ismodelloading,', this.modelLoading)
+    return this.modelLoading
+  }
+
+
   async runChatCompletion(messages: Message[]) {
     let curMessage = ''
     let usage: CompletionUsage | undefined = undefined
