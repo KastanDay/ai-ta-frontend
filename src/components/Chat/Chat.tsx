@@ -98,7 +98,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const [chat_ui] = useState(new ChatUI(new MLCEngine()))
 
-
   const [inputContent, setInputContent] = useState<string>('')
 
   const [enabledDocumentGroups, setEnabledDocumentGroups] = useState<string[]>(
@@ -351,12 +350,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ; (message.content as Content[])[imgDescIndex] = {
+          ;(message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ; (message.content as Content[]).push({
+          ;(message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -547,7 +546,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
         let response
         let reader
-        console.log("Selected model name:", selectedConversation.model.name);
+        console.log('Selected model name:', selectedConversation.model.name)
 
         if (
           ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some((prefix) =>
@@ -555,11 +554,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           )
         ) {
           // TODO: Call the WebLLM API
-          console.log("is model loading", chat_ui.isModelLoading())
+          console.log('is model loading', chat_ui.isModelLoading())
           if (!chat_ui.isModelLoading()) {
-            console.log("loaded model and initiate chat completions")
+            console.log('loaded model and initiate chat completions')
             response = await chat_ui.runChatCompletion(
-              chatBody.conversation.messages,
+              chatBody.conversation,
+              getCurrentPageName(),
             )
           }
         } else {
@@ -851,7 +851,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
       handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
@@ -944,13 +944,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-      courseMetadata.example_questions.length > 0
+    courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-        'Make a bullet point list of key takeaways from this project.',
-        'What are the best practices for [Activity or Process] in [Context or Field]?',
-        'Can you explain the concept of [Specific Concept] in simple terms?',
-      ]
+          'Make a bullet point list of key takeaways from this project.',
+          'What are the best practices for [Activity or Process] in [Context or Field]?',
+          'Can you explain the concept of [Specific Concept] in simple terms?',
+        ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {

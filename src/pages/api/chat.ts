@@ -122,12 +122,10 @@ interface Prompts {
 
 export const buildPrompt = async ({
   conversation,
-  rawOpenaiKey,
   projectName,
   courseMetadata,
 }: {
   conversation: Conversation
-  rawOpenaiKey: string
   projectName: string
   courseMetadata: CourseMetadata | undefined
   // }): Promise<Prompts> => {
@@ -158,12 +156,12 @@ Priorities for building prompt w/ limited window:
 
   // do these things in parallel -- await at end
   const allPromises = []
-  allPromises.push(parseOpenaiKey(rawOpenaiKey))
+  // allPromises.push(parseOpenaiKey(rawOpenaiKey))
   allPromises.push(_getLastUserTextInput({ conversation }))
   allPromises.push(_getLastToolResult({ conversation }))
   allPromises.push(_getSystemPrompt({ courseMetadata, conversation }))
   // ideally, run context search here -- parallelized. (tricky due to sending status updates homeDispatch)
-  const [openaiKey, lastUserTextInput, lastToolResult, finalSystemPrompt] =
+  const [lastUserTextInput, lastToolResult, finalSystemPrompt] =
     (await Promise.all(allPromises)) as [string, string, UIUCTool[], string]
 
   console.log('LATEST USER Text Input: ', lastUserTextInput)

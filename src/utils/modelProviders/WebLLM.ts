@@ -4,7 +4,9 @@ import {
   CompletionUsage,
 } from '@mlc-ai/web-llm'
 import { ChatCompletionMessageParam } from 'openai/resources/chat'
-import { Message } from '~/types/chat'
+import { buildPrompt } from '~/pages/api/chat'
+// import buildPrompt from '~/pages/api/chat'
+import { Conversation, Message } from '~/types/chat'
 
 // TODO: finish this message interface. Write a converter between `Message` and `WebLLMMessage`
 export interface WebLLMMessage {
@@ -146,13 +148,13 @@ export default class ChatUI {
     return this.modelLoading
   }
 
-
-  async runChatCompletion(messages: Message[]) {
+  async runChatCompletion(conversation: Conversation, projectName: string) {
+    // TODO: need the input to be the Conversation, not messages.
     let curMessage = ''
     let usage: CompletionUsage | undefined = undefined
-    let messagesToSend: ChatCompletionMessageParam[]
+    let messagesToSend: ChatCompletionMessageParam[] = []
 
-    console.log('Messages with tons of metadata', messages)
+    console.log('Messages with tons of metadata', conversation.messages)
 
     // TODO... we need to handle the messages better.
     // System message
@@ -161,21 +163,38 @@ export default class ChatUI {
     // User
     // Assistant...
 
-    // TODO: we need smarter handling of messages... i think...
-    // TODO: Maybe call build prompt here.
-    messagesToSend = messages.map((message: any) => {
+    // Call build prompt here.
+    const engineeredConvo = await buildPrompt({
+      conversation,
+      projectName,
+      courseMetadata: undefined,
+    })
+
+    // Then build the messagesToSend array.... update system message every time.
+    messagesToSend.push({
+      role: 'system',
+      content:
+        conversation.messages[conversation.messages.length - 1]
+          ?.latestSystemMessage!,
+    })
+
+    engineeredConvo.messages.forEach((message: any) => {
+      // TODO: Are we sending system message twice?
       if (typeof message.content === 'string') {
-        return {
+        messagesToSend.push({
           role: message.role,
           content: message.content,
-        }
-      }
-      return {
-        role: message.role,
-        content: message.content[0].text,
+        })
+      } else {
+        messagesToSend.push({
+          role: message.role,
+          content: message.content[0].text,
+        })
       }
     })
-    console.log('Messages to send', messagesToSend)
+    // TODO: last user message needs to be the engineered version, too.
+
+    console.log('CHECK ME Messages to send', messagesToSend)
 
     const completion = await this.engine.chat.completions.create({
       stream: true,
