@@ -164,11 +164,6 @@ export default class ChatUI {
     // Assistant...
 
     // Call build prompt here.
-    const engineeredConvo = await buildPrompt({
-      conversation,
-      projectName,
-      courseMetadata: undefined,
-    })
 
     // Then build the messagesToSend array.... update system message every time.
     messagesToSend.push({
@@ -177,8 +172,13 @@ export default class ChatUI {
         conversation.messages[conversation.messages.length - 1]
           ?.latestSystemMessage!,
     })
+    // Push everything except that last user message...
+    // Use the engineered version of the last user message.
 
-    engineeredConvo.messages.forEach((message: any) => {
+    conversation.messages.forEach((message: any, index: number) => {
+      // Skip the final iteration
+      if (index === conversation.messages.length - 1) return
+
       // TODO: Are we sending system message twice?
       if (typeof message.content === 'string') {
         messagesToSend.push({
@@ -192,7 +192,14 @@ export default class ChatUI {
         })
       }
     })
+
     // TODO: last user message needs to be the engineered version, too.
+    messagesToSend.push({
+      role: 'user',
+      content:
+        conversation.messages[conversation.messages.length - 1]
+          ?.finalPromtEngineeredMessage!,
+    })
 
     console.log('CHECK ME Messages to send', messagesToSend)
 
