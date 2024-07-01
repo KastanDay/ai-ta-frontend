@@ -16,6 +16,14 @@ const bundleAnalyzerConfig = {
 /** @type {import("next").NextConfig} */
 const config = {
   i18n: nextI18NextConfig.i18n,
+  webpack(config, { isServer, dev }) {
+    config.experiments = {
+      asyncWebAssembly: true,
+      layers: true,
+    }
+
+    return config
+  },
 
   /**
    * If you have `experimental: { appDir: true }` set, then you must comment the below `i18n` config
