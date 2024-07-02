@@ -4,6 +4,7 @@ import { OpenAIModel } from './openai'
 export enum ProviderNames {
   Ollama = 'Ollama',
   OpenAI = 'OpenAI',
+  Azure = 'Azure'
 }
 
 export type SupportedModels = OllamaModel[] | OpenAIModel[]
@@ -14,4 +15,7 @@ export interface LLMProvider {
   baseUrl: string
   apiKey?: string
   models?: SupportedModels
+  AzureEndpoint?: string
+  AzureDeployment?: string
+  
 }

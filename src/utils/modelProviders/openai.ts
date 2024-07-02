@@ -14,6 +14,8 @@ export const config = {
     runtime: 'edge',
 }
 
+
+
 /*
 export const runOpenAIChat = async () => {
   console.log('In OpenAiApi chat function')
@@ -78,13 +80,13 @@ export const runOpenAIChat = async () => {
 }
 */
 
-export const getOpenAIModels = async () => {
+export const getOpenAIModels = async (ollamaProvider: LLMProvider) => {
   console.log('in openai get models')
 
   const { OpenAI } = require("openai");
 
   const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: ollamaProvider.apiKey,
   });
   console.log('created openai client')
 
@@ -101,12 +103,20 @@ export const getOpenAIModels = async () => {
     }
 
     // Iterate through the models
-    const models = response.data;
-     for(var i in models) {
-      console.log(models[i]);
-    };
+    const openAIModels = response.data.map((model: any) => {
+      return {
+        id: model.id,
+        name: model.id, // Assuming model.id can be used as the name
+        tokenLimit: model.token_limit || 4096, // Adjust based on available properties
+      };
+    });
 
-    return models;
+    // Log each model for debugging
+    openAIModels.forEach((model:any) => {
+      console.log(model);
+    });
+
+    return openAIModels;
   } catch (error) {
     console.error('Error fetching models:', error);
   }

@@ -11,12 +11,15 @@ import { decrypt, isEncrypted } from '~/utils/crypto'
 import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
 import { getOllamaModels, runOllamaChat } from '~/utils/modelProviders/ollama'
 import { getOpenAIModels } from '~/utils/modelProviders/openai'
+import { getAzureModels } from '~/utils/modelProviders/azure'
+
 import { WebLLMModels, WebllmModel } from '~/utils/modelProviders/WebLLM'
 export const config = {
   runtime: 'edge',
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('in handler')
   let apiKey = ''
   let apiType = OPENAI_API_TYPE
   let endpoint = OPENAI_API_HOST
@@ -29,19 +32,44 @@ const handler = async (req: Request): Promise<Response> => {
     const ollamaProvider: LLMProvider = {
       provider: ProviderNames.Ollama,
       enabled: true,
-      baseUrl: 'tmp',
+      baseUrl: 'https://ollama.ncsa.ai/api/tags',
     }
-    const llmProviderKeys: LLMProvider[] = [ollamaProvider]
 
+    const OpenAIProvider: LLMProvider = {
+      provider: ProviderNames.OpenAI,
+      enabled: true,
+      apiKey:process.env.OPENAI_API_KEY,
+      baseUrl: 'https://ollama.ncsa.ai/api/tags',
+
+    }
+
+    const AzureProvider: LLMProvider = {
+      provider: ProviderNames.Azure,
+      enabled: true,
+      apiKey: apiKey,
+      baseUrl: '',
+      //models?: SupportedModels
+      //endpoint, deployment, and api key
+      
+    }
+
+    const llmProviderKeys: LLMProvider[] = [ollamaProvider, OpenAIProvider]
+    // I need input providers for all the models and then return of the list from each provider 
+    for(let i in llmProviderKeys) {
+
+    }
     // 1. Call An endpoint to check what Ollama models are available.
-    const ollamaModels = await getOllamaModels()
+    console.log('entering ollama')
+    const ollamaModels = await getOllamaModels(ollamaProvider)
     console.log('Ollama Models in models.ts: ', ollamaModels)
 
-    //2. call an endpoint to check whcih openai modle available
+    //2. call an endpoint to check which openai modle available
     console.log('check if it got out of ollama fetch to openai')
-    const openAIModels = await getOpenAIModels()
-    console.log('check if it fetched openai models')
+    const openAIModels = await getOpenAIModels(OpenAIProvider)
     console.log('OpenAi models.ts: ', openAIModels)
+    //3. call endpoint for azure 
+    console.log('check if azure models fetch')
+    const azureOpenaiModels = await getAzureModels(AzureProvider)
 
     // Test chat function
     const ret = await runOllamaChat()

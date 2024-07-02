@@ -18,7 +18,6 @@ export const config = {
 export interface AzureModel {
     id: string
     name: string
-    parameterSize: string
     tokenLimit: number
 }
 
@@ -86,25 +85,42 @@ export const runAzureChat = async () => {
 }
 */
 
-/*
-export const getAzureModels = async () => {
 
-   
-    const response = await fetch('https://ollama.ncsa.ai/api/tags')
-    if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
-    }
-    const data = await response.json()
+export const getAzureModels = async (AzureProvider: LLMProvider): Promise<AzureModel[]> => {
+  
+   // Ensure this is set in your environment
 
-    const ollamaModels: AzureModel[] = data.models.map((model: any) => {
+  if (!AzureProvider.AzureEndpoint || !AzureProvider.AzureDeployment) {
+    throw new Error('Azure OpenAI endpoint or API version is not set in environment variables');
+  }
+
+  const url = `${AzureProvider.AzureEndpoint}/openai/deployments?api-version=2024-02-01}`;
+
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      'api-key': '811d00e8396d417ba63175e6c4297d77',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  const azureModels: AzureModel[] = data.value.map((model: any) => {
     return {
-        id: model.name,
-        name: model.name,
-        parameterSize: model.details.parameter_size,
-        tokenLimit: 4096,
-    } as AzureModel
-    })
+      id: model.id,
+      name: model.properties.model,
+      tokenLimit: model.properties.maxTokens,
+      // Add any other relevant fields here
+    } as AzureModel;
+  });
+  console.log('Azure OpenAI models:', azureModels);
 
-    return ollamaModels
-}
-*/
+  return azureModels;
+};
+
+
+
