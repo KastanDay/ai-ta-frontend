@@ -14,10 +14,20 @@ import { getOpenAIModels } from '~/utils/modelProviders/openai'
 import { getAzureModels } from '~/utils/modelProviders/azure'
 
 import { WebLLMModels, WebllmModel } from '~/utils/modelProviders/WebLLM'
+import { ModelRecord, prebuiltAppConfig } from '~/utils/modelProviders/ConfigWebLLM'
 export const config = {
   runtime: 'edge',
 }
-// is this what gives me the json object lwt me print to find out
+export function convertToLocalModels(record: ModelRecord): WebllmModel {
+  return {
+    id: record.model_id,
+    name: record.model_id,
+    parameterSize: record.vram_required_MB ? `${record.vram_required_MB}MB` : 'Unknown',
+    tokenLimit: record.overrides?.context_window_size,
+  };
+}
+export const webLLMModels: WebllmModel[] = prebuiltAppConfig.model_list.map((model: ModelRecord) => convertToLocalModels(model));
+
 const handler = async (req: Request): Promise<Response> => {
   console.log('in handler')
   let apiKey = ''
@@ -40,8 +50,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     const OpenAIProvider: LLMProvider = {
       provider: ProviderNames.OpenAI,
-      enabled: true,  
-      apiKey:process.env.OPENAI_API_KEY,
+      enabled: true,
+      apiKey: process.env.OPENAI_API_KEY,
       baseUrl: 'https://ollama.ncsa.ai/api/tags',
 
     }
@@ -53,7 +63,7 @@ const handler = async (req: Request): Promise<Response> => {
       apiKey: apiKey,
 
       AzureKey =b1a402d721154a97a4eeaa61200eb93f,
-      
+
       AzureDeployment: 'gpt-35-turbo-16k',
 
 
@@ -61,15 +71,15 @@ const handler = async (req: Request): Promise<Response> => {
       //models?: SupportedModels
       //endpoint, deployment, and api key
       AzureEndpoint: 'https://uiuc-chat-canada-east.openai.azure.com/'
-      
+
     }
 
     const llmProviderKeys: LLMProvider[] = [ollamaProvider, OpenAIProvider]
     // I need input providers for all the models and then return of the list from each provider 
     // this is to print the mdoel type for all providers in provider keys just general test
     let totalModels: SupportedModels[] = []
-    for(const provider of llmProviderKeys) {
-      if(provider.provider == 'Ollama') {
+    for (const provider of llmProviderKeys) {
+      if (provider.provider == 'Ollama') {
         // 1. Call An endpoint to check what Ollama models are available.
         //console.log('entering ollama')
         const ollamaModels = await getOllamaModels(ollamaProvider)
@@ -77,14 +87,14 @@ const handler = async (req: Request): Promise<Response> => {
         //console.log('Ollama Models in models.ts: ', ollamaModels)
 
 
-      } 
-      else if(provider.provider == 'OpenAI') {
+      }
+      else if (provider.provider == 'OpenAI') {
         //2. call an endpoint to check which openai modle available
         //console.log('check if it got out of ollama fetch to openai')
         const openAIModels = await getOpenAIModels(OpenAIProvider)
         totalModels.push(openAIModels)
         //console.log('OpenAi models.ts: ', openAIModels)
-      } 
+      }
       else {
         continue
       }
@@ -115,10 +125,86 @@ const handler = async (req: Request): Promise<Response> => {
       apiKey = decryptedText as string
       // console.log('models.ts Decrypted api key: ', apiKey)
     }
-    console.log('models.ts Final openai key: ', apiKey)
-    // this is my attempt at simplifying what is belowby creating if statements for each model type
-  
-    return new Response(JSON.stringify(totalModels), { status: 200 })
+    // console.log('models.ts Final openai key: ', apiKey)
+
+    if (apiKey && !apiKey.startsWith('sk-')) {
+      // console.log('setting azure variables')
+      // have to figure out what tyeps of keys fit with the users api key and see which ones are available is enabled flag.
+      // add in new stuff here to get beginning of new providers to check start name of each model
+      apiType = 'azure'
+      endpoint = process.env.AZURE_OPENAI_ENDPOINT || OPENAI_API_HOST
+    }
+
+    if (!apiKey) {
+      return new Response('Warning: OpenAI Key was not found', { status: 400 })
+    }
+
+    let url = `${endpoint}/v1/models`
+    if (apiType === 'azure') {
+      url = `${endpoint}/openai/deployments?api-version=${OPENAI_API_VERSION}`
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiType === 'openai' && {
+          Authorization: `Bearer ${apiKey}`,
+        }),
+        ...(apiType === 'azure' && {
+          'api-key': `${apiKey}`,
+        }),
+        ...(apiType === 'openai' &&
+          OPENAI_ORGANIZATION && {
+          'OpenAI-Organization': OPENAI_ORGANIZATION,
+        }),
+      },
+    })
+
+    if (response.status === 401) {
+      return new Response(response.body, {
+        status: 500,
+        headers: response.headers,
+      })
+    } else if (response.status !== 200) {
+      console.error(
+        `OpenAI API returned an error ${response.status
+        }: ${await response.text()}`,
+      )
+      throw new Error('OpenAI API returned an error')
+    }
+
+    const json = await response.json()
+
+    const uniqueModels: string[] = Array.from(
+      new Set(json.data.map((model: any) => model.id)),
+    )
+
+    const models: OpenAIModel[] = uniqueModels
+      .map((modelId: string) => {
+        const model = json.data.find((m: any) => m.id === modelId)
+        if (!model) return undefined
+
+        for (const [key, value] of Object.entries(OpenAIModelID)) {
+          if (value === model.id) {
+            return {
+              id: model.id,
+              name: OpenAIModels[value].name,
+              tokenLimit: OpenAIModels[value].tokenLimit,
+            }
+          }
+        }
+        return undefined
+      })
+      .filter((model): model is OpenAIModel => model !== undefined)
+
+    const finalModels = [
+      ...models,
+      ...ollamaModels,
+      ...Object.values(WebLLMModels),
+    ]
+    console.log('Final combined model list:', finalModels)
+
+    return new Response(JSON.stringify(finalModels), { status: 200 })
   } catch (error) {
     console.error(error)
     return new Response('Error', { status: 500 })

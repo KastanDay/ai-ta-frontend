@@ -6,6 +6,87 @@ import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Input, Select, Title } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
+import { webLLMModels } from '~/pages/api/models'
+// import { webLLMModels } from 
+
+interface ModelDropdownProps {
+  title: string;
+  value: string | undefined;
+  onChange: (value: string) => void;
+  models: { id: string; name: string }[];
+  isSmallScreen: boolean;
+}
+
+const ModelDropdown: React.FC<ModelDropdownProps> = ({ title, value, onChange, models, isSmallScreen }) => (
+  <>
+    <Title
+      className={`px-4 pt-4 ${montserrat_heading.variable} rounded-lg bg-[#15162c] p-4 font-montserratHeading md:rounded-lg`}
+      color="white"
+      order={isSmallScreen ? 5 : 4}
+    >
+      {title}
+    </Title>
+
+    <div
+      tabIndex={0}
+      className="relative mt-4 flex w-full flex-col items-start px-4"
+    >
+      <Select
+        className={`menu z-[50] ${isSmallScreen ? 'w-[75%]' : 'w-[45%]'}`}
+        size={isSmallScreen ? 'sm' : 'md'}
+        value={value}
+        onChange={onChange}
+        data={models.map((model: any) => ({
+          value: model.id,
+          label: model.name,
+        }))}
+        rightSection={<IconChevronDown size="1rem" />}
+        rightSectionWidth={isSmallScreen ? 15 : 30}
+        classNames={{
+          item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
+          input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
+        }}
+        styles={(theme) => ({
+          rightSection: { pointerEvents: 'none' },
+          input: {
+            margin: '2px',
+            backgroundColor: 'rgb(107, 33, 168)',
+            border: 'none',
+            color: theme.white,
+            borderRadius: theme.radius.md,
+          },
+          dropdown: {
+            backgroundColor: '#1d1f33',
+            border: '1px solid rgba(42,42,120,1)',
+            borderRadius: theme.radius.md,
+            marginTop: '2px',
+            boxShadow: theme.shadows.xs,
+            maxWidth: '100%',
+            // zIndex: 200,
+          },
+          item: {
+            backgroundColor: '#1d1f33',
+            borderRadius: theme.radius.md,
+            margin: '2px',
+            '&[data-selected]': {
+              '&': {
+                backgroundColor: 'transparent',
+              },
+              '&:hover': {
+                backgroundColor: 'rgb(107, 33, 168)',
+                color: theme.white,
+              },
+            },
+            '&[data-hovered]': {
+              backgroundColor: 'rgb(107, 33, 168)',
+              color: theme.white,
+            },
+          },
+        })}
+      />
+    </div>
+  </>
+)
 
 export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
   (props, ref) => {
@@ -19,14 +100,12 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       console.debug('handleModelClick clicked:', modelId)
       console.debug('handleModelClick avail models: ', models)
 
-      // First try to use selectedconversation model, if not available, use default model
       const defaultModel =
         models.find(
           (model) =>
             model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4',
         ) || models[0]
       const model = models.find((model) => model.id === modelId) || defaultModel
-
       console.debug('handleModelClick SETTING IT TO: ', model)
 
       selectedConversation &&
@@ -43,87 +122,41 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       >
         <div>
           <div className="flex flex-col">
-            <Title
-              className={`px-4 pt-4 ${montserrat_heading.variable} rounded-lg bg-[#15162c] p-4 font-montserratHeading md:rounded-lg`}
-              color="white"
-              order={isSmallScreen ? 5 : 4}
+            <ModelDropdown
+              title="Model"
+              value={selectedConversation?.model.id || defaultModelId}
+              onChange={handleModelClick}
+              models={models}
+              isSmallScreen={isSmallScreen}
+            />
+            <ModelDropdown
+              title="Local Model"
+              value={selectedConversation?.model.id || defaultModelId}
+              onChange={(modelId) => {
+                const webLLMModel = models.find((model) => model.id === modelId && webLLMModels[modelId as keyof typeof webLLMModels]);
+                if (webLLMModel) {
+                  handleModelClick(modelId);
+                }
+              }}
+              models={Object.values(webLLMModels)}
+              isSmallScreen={isSmallScreen}
+            />
+            <Input.Description
+              className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
             >
-              Model
-            </Title>
-
-            <div
-              tabIndex={0}
-              className="relative mt-4 flex w-full flex-col items-start px-4"
-            >
-              <Select
-                className={`menu z-[50] ${isSmallScreen ? 'w-[75%]' : 'w-[45%]'}`}
-                size={isSmallScreen ? 'sm' : 'md'}
-                value={selectedConversation?.model.id || defaultModelId}
-                onChange={handleModelClick}
-                data={models.map((model) => ({
-                  value: model.id,
-                  label: model.name,
-                }))}
-                rightSection={<IconChevronDown size="1rem" />}
-                rightSectionWidth={isSmallScreen ? 15 : 30}
-                classNames={{
-                  item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
-                  input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
-                }}
-                styles={(theme) => ({
-                  rightSection: { pointerEvents: 'none' },
-                  input: {
-                    margin: '2px',
-                    backgroundColor: 'rgb(107, 33, 168)',
-                    border: 'none',
-                    color: theme.white,
-                    borderRadius: theme.radius.md,
-                  },
-                  dropdown: {
-                    backgroundColor: '#1d1f33',
-                    border: '1px solid rgba(42,42,120,1)',
-                    borderRadius: theme.radius.md,
-                    marginTop: '2px',
-                    boxShadow: theme.shadows.xs,
-                    maxWidth: '100%',
-                  },
-                  item: {
-                    backgroundColor: '#1d1f33',
-                    borderRadius: theme.radius.md,
-                    margin: '2px',
-                    '&[data-selected]': {
-                      '&': {
-                        backgroundColor: 'transparent',
-                      },
-                      '&:hover': {
-                        backgroundColor: 'rgb(107, 33, 168)',
-                        color: theme.white,
-                      },
-                    },
-                    '&[data-hovered]': {
-                      backgroundColor: 'rgb(107, 33, 168)',
-                      color: theme.white,
-                    },
-                  },
-                })}
-              />
-              <Input.Description
-                className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
+              <Link
+                href="https://platform.openai.com/docs/models"
+                target="_blank"
+                className="hover:underline"
               >
-                <Link
-                  href="https://platform.openai.com/docs/models"
-                  target="_blank"
-                  className="hover:underline"
-                >
-                  Read about each model{' '}
-                  <IconExternalLink
-                    size={15}
-                    style={{ position: 'relative', top: '2px' }}
-                    className={'mb-2 inline'}
-                  />
-                </Link>
-              </Input.Description>
-            </div>
+                Read about each model{' '}
+                <IconExternalLink
+                  size={15}
+                  style={{ position: 'relative', top: '2px' }}
+                  className={'mb-2 inline'}
+                />
+              </Link>
+            </Input.Description>
           </div>
         </div>
       </div>

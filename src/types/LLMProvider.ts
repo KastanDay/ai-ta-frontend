@@ -1,5 +1,6 @@
 import { OllamaModel } from '~/utils/modelProviders/ollama'
 import { OpenAIModel } from './openai'
+import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 
 export enum ProviderNames {
   Ollama = 'Ollama',
@@ -7,7 +8,7 @@ export enum ProviderNames {
   Azure = 'Azure'
 }
 
-export type SupportedModels = OllamaModel[] | OpenAIModel[]
+export type SupportedModels = OllamaModel[] | OpenAIModel[] | WebllmModel[]
 
 export interface LLMProvider {
   provider: ProviderNames
