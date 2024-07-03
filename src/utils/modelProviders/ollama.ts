@@ -56,6 +56,9 @@ export const runOllamaChat = async () => {
 }
 
 export const getOllamaModels = async (ollamaProvider: LLMProvider): Promise<OllamaModel[]> => {
+  if(!ollamaProvider.baseUrl) {
+    throw new Error(`Ollama baseurl not defined: ${ollamaProvider.baseUrl}`)
+  }
   const response = await fetch(ollamaProvider.baseUrl)
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)

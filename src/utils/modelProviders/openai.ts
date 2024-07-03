@@ -80,13 +80,13 @@ export const runOpenAIChat = async () => {
 }
 */
 
-export const getOpenAIModels = async (ollamaProvider: LLMProvider) => {
+export const getOpenAIModels = async (openAIProvider: LLMProvider) => {
   console.log('in openai get models')
 
   const { OpenAI } = require("openai");
 
   const client = new OpenAI({
-    apiKey: ollamaProvider.apiKey,
+    apiKey: openAIProvider.apiKey, // change to openai
   });
   console.log('created openai client')
 

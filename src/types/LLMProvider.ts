@@ -12,7 +12,7 @@ export type SupportedModels = OllamaModel[] | OpenAIModel[]
 export interface LLMProvider {
   provider: ProviderNames
   enabled: boolean
-  baseUrl: string
+  baseUrl?: string
   apiKey?: string
   models?: SupportedModels
   AzureEndpoint?: string

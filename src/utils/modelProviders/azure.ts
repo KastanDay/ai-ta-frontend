@@ -11,6 +11,8 @@ import { decrypt, isEncrypted } from '~/utils/crypto'
 import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
 import { getOllamaModels, runOllamaChat } from '~/utils/modelProviders/ollama'
 //import { VercelAISDK } from 'vercel-ai-sdk'
+
+import { openai } from '@ai-sdk/openai';
 export const config = {
     runtime: 'edge',
 }
@@ -20,28 +22,25 @@ export interface AzureModel {
     name: string
     tokenLimit: number
 }
+import { CoreMessage, streamText } from 'ai';
 
-/*
-export const runAzureChat = async () => {
-    console.log('In azure RunAzureChat function')
 
-    const ollama = createAzure({
-    // custom settings
-    baseURL: 'https://ollama.ncsa.ai/api',
-    })
+// active model will be passed in form front-end just hard-code for now
+// just make it a standard funciton for testing without post
 
-    console.log('Right before calling fetch')
-    const result = await generateText({
-    maxTokens: 50,
-    model: ollama('llama3:8b'),
-    prompt: 'Invent a new holiday and describe its traditions.',
-    })
-    console.log(
-    'generateText result: ---------------------------------------------',
-    )
-    console.log(result.text)
-    console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-    return result.text
+//export async function POST(req: Request) {
+export async function runAzure(messages, AzureProvider, activeModel) {
+  //const { messages, AzureProvider, activeModel }: { messages: CoreMessage[], AzureProvider: LLMProvider, activeModel: string } = await req.json();
+
+  const result = await streamText({
+    model: openai(activeModel), // replace with active model
+    system: 'You are a helpful assistant.',
+    messages,
+  });
+
+  return result.toAIStreamResponse();
+}
+
 
     // This should work, but we're getting JSON Parse errors.
     // const result = await streamText({
@@ -83,7 +82,7 @@ export const runAzureChat = async () => {
     // TODO: Check out the server example for how to handle streaming responses
     // https://sdk.vercel.ai/examples/next-app/chat/stream-chat-completion#server
 }
-*/
+
 
 
 export const getAzureModels = async (AzureProvider: LLMProvider): Promise<AzureModel[]> => {
