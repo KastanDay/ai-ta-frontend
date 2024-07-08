@@ -1,23 +1,50 @@
-import { IconChevronDown, IconExternalLink } from '@tabler/icons-react'
-import { useContext } from 'react'
+import { IconChevronDown, IconCircleCheck, IconExternalLink, IconLoader } from '@tabler/icons-react'
+import { forwardRef, useContext } from 'react'
 import { useMediaQuery } from '@mantine/hooks'
 import HomeContext from '~/pages/api/home/home.context'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
-import { Input, Select, Title } from '@mantine/core'
+import { Group, Input, Select, Title, Text } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
-import { webLLMModels } from '~/pages/api/models'
-// import { webLLMModels } from 
+import { webLLMModels, ollamaModels } from '~/pages/api/models'
+import { OllamaModel } from '~/utils/modelProviders/ollama'
+import { OpenAIModel, OpenAIModels } from '~/types/openai'
+import { WebllmModel } from '~/utils/modelProviders/WebLLM'
+import { Ollama } from 'ollama-ai-provider'
 
 interface ModelDropdownProps {
   title: string;
   value: string | undefined;
   onChange: (value: string) => void;
-  models: { id: string; name: string }[];
+  models: { id: string; name: string; isDownloaded?: boolean; downloadSize?: string }[];
   isSmallScreen: boolean;
+  isWebLLM?: boolean;
 }
 
-const ModelDropdown: React.FC<ModelDropdownProps> = ({ title, value, onChange, models, isSmallScreen }) => (
+interface ModelItemProps extends React.ComponentPropsWithoutRef<'div'> {
+  label: string;
+  downloadSize?: string;
+  isDownloaded?: boolean;
+}
+
+const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
+  ({ label, downloadSize, isDownloaded, ...others }: ModelItemProps, ref) => (
+    <div ref={ref} {...others}>
+      <Group noWrap>
+        <div>
+          <Text size="sm">{label}</Text>
+          {downloadSize && (
+            <Text size="xs" opacity={0.65}>
+              {downloadSize} {isDownloaded ? <IconCircleCheck size="1rem" /> : <IconLoader size="1rem" />}
+            </Text>
+          )}
+        </div>
+      </Group>
+    </div>
+  )
+);
+
+const ModelDropdown: React.FC<ModelDropdownProps> = ({ title, value, onChange, models, isSmallScreen, isWebLLM }) => (
   <>
     <Title
       className={`px-4 pt-4 ${montserrat_heading.variable} rounded-lg bg-[#15162c] p-4 font-montserratHeading md:rounded-lg`}
@@ -39,7 +66,10 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({ title, value, onChange, m
         data={models.map((model: any) => ({
           value: model.id,
           label: model.name,
+          downloadSize: model.downloadSize,
+          isDownloaded: model.isDownloaded,
         }))}
+        itemComponent={ModelItem}
         rightSection={<IconChevronDown size="1rem" />}
         rightSectionWidth={isSmallScreen ? 15 : 30}
         classNames={{
@@ -123,23 +153,31 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
         <div>
           <div className="flex flex-col">
             <ModelDropdown
-              title="Model"
+              title="OpenAI"
               value={selectedConversation?.model.id || defaultModelId}
               onChange={handleModelClick}
-              models={models}
+              models={Object.values(OpenAIModels)}
               isSmallScreen={isSmallScreen}
             />
             <ModelDropdown
-              title="Local Model"
+              title="Ollama"
               value={selectedConversation?.model.id || defaultModelId}
-              onChange={(modelId) => {
-                const webLLMModel = models.find((model) => model.id === modelId && webLLMModels[modelId as keyof typeof webLLMModels]);
-                if (webLLMModel) {
-                  handleModelClick(modelId);
-                }
-              }}
-              models={Object.values(webLLMModels)}
+              onChange={handleModelClick}
+              models={Object.values(ollamaModels)}
               isSmallScreen={isSmallScreen}
+            />
+            <ModelDropdown
+              title="Local in Browser LLMs"
+              value={selectedConversation?.model.id || defaultModelId}
+              onChange={handleModelClick}
+              models={Object.values(webLLMModels).map(model => ({
+                id: model.id,
+                name: model.name,
+                isDownloaded: model.isDownloaded,
+                downloadSize: model.downloadSize,
+              }))}
+              isSmallScreen={isSmallScreen}
+              isWebLLM={true}
             />
             <Input.Description
               className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}

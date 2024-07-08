@@ -13,8 +13,11 @@ import { getOllamaModels, runOllamaChat } from '~/utils/modelProviders/ollama'
 import { getOpenAIModels } from '~/utils/modelProviders/openai'
 import { getAzureModels } from '~/utils/modelProviders/azure'
 
-import { WebLLMModels, WebllmModel } from '~/utils/modelProviders/WebLLM'
+import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import { ModelRecord, prebuiltAppConfig } from '~/utils/modelProviders/ConfigWebLLM'
+import { OllamaModel } from '~/utils/modelProviders/ollama'
+import { CreateMLCEngine } from "@mlc-ai/web-llm";
+
 export const config = {
   runtime: 'edge',
 }
@@ -22,11 +25,14 @@ export function convertToLocalModels(record: ModelRecord): WebllmModel {
   return {
     id: record.model_id,
     name: record.model_id,
-    parameterSize: record.vram_required_MB ? `${record.vram_required_MB}MB` : 'Unknown',
+    parameterSize: 'Unknown',
     tokenLimit: record.overrides?.context_window_size,
+    downloadSize: record.vram_required_MB ? `${(record.vram_required_MB / 1024).toFixed(2)}GB` : 'unknown',
+    isDownloaded: false
   };
 }
 export const webLLMModels: WebllmModel[] = prebuiltAppConfig.model_list.map((model: ModelRecord) => convertToLocalModels(model));
+export let ollamaModels: OllamaModel[] = []
 
 const handler = async (req: Request): Promise<Response> => {
   console.log('in handler')
@@ -62,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
       enabled: true,
       apiKey: apiKey,
 
-      AzureKey =b1a402d721154a97a4eeaa61200eb93f,
+      // AzureKey: 'b1a402d721154a97a4eeaa61200eb93f',
 
       AzureDeployment: 'gpt-35-turbo-16k',
 
@@ -78,11 +84,13 @@ const handler = async (req: Request): Promise<Response> => {
     // I need input providers for all the models and then return of the list from each provider 
     // this is to print the mdoel type for all providers in provider keys just general test
     let totalModels: SupportedModels[] = []
+    // let ollamaModels: OllamaModel[] = []
     for (const provider of llmProviderKeys) {
       if (provider.provider == 'Ollama') {
         // 1. Call An endpoint to check what Ollama models are available.
         //console.log('entering ollama')
-        const ollamaModels = await getOllamaModels(ollamaProvider)
+        const fetchedOllamaModels = await getOllamaModels(ollamaProvider)
+        ollamaModels = fetchedOllamaModels // Update the exported variable
         totalModels.push(ollamaModels)
         //console.log('Ollama Models in models.ts: ', ollamaModels)
 
@@ -102,14 +110,15 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log('total models available', totalModels)
+    console.log('ollama models', ollamaModels)
 
     //3. call endpoint for azure 
     //console.log('check if azure models fetch')
     //const azureOpenaiModels = await getAzureModels(AzureProvider)
 
     // Test chat function
-    const ret = await runOllamaChat()
-    console.log('Ollama chat test: ', ret)
+    // const ret = await runOllamaChat()
+    // console.log('Ollama chat test: ', ret)
 
     // Iterate over the providers, check if their key works. Return all available models...
     // each model provider should have at least `/chat` and `/models` endpoints
@@ -200,7 +209,7 @@ const handler = async (req: Request): Promise<Response> => {
     const finalModels = [
       ...models,
       ...ollamaModels,
-      ...Object.values(WebLLMModels),
+      ...webLLMModels,
     ]
     console.log('Final combined model list:', finalModels)
 
