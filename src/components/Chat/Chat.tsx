@@ -551,256 +551,263 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         if (
           ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some((prefix) =>
             selectedConversation.model.name.startsWith(prefix),
+            // webLLMModels.some((model) => model.name === selectedConversation.model.name)
+
           )
         ) {
-          // TODO: Call the WebLLM API
           console.log('is model loading', chat_ui.isModelLoading())
           if (chat_ui.isModelLoading() == false) {
-            console.log('loaded model and initiate chat completions')
-            if ('isDownloaded' in selectedConversation.model) {
-              selectedConversation.model.isDownloaded = true
-              console.log('isDownloaded set to true')
-            }
             response = await chat_ui.runChatCompletion(
               chatBody.conversation,
               getCurrentPageName(),
             )
-          }
-        } else {
-          // Call the OpenAI API
-          response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            signal: controller.signal,
-            body: JSON.stringify(chatBody),
-          })
-          if (!response.ok) {
-            const final_response = await response.json()
-            homeDispatch({ field: 'loading', value: false })
-            homeDispatch({ field: 'messageIsStreaming', value: false })
-            // homeDispatch({ field: 'isRouting', value: undefined })
-            // homeDispatch({ field: 'isRunningTool', value: undefined })
-            // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
-            // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
-            notifications.show({
-              id: 'error-notification',
-              withCloseButton: true,
-              closeButtonProps: { color: 'red' },
-              onClose: () => console.log('error unmounted'),
-              onOpen: () => console.log('error mounted'),
-              autoClose: 12000,
-              title: (
-                <Text size={'lg'} className={`${montserrat_med.className}`}>
-                  {final_response.name}
-                </Text>
-              ),
-              message: (
-                <Text
-                  className={`${montserrat_med.className} text-neutral-200`}
-                >
-                  {final_response.message}
-                </Text>
-              ),
-              color: 'red',
-              radius: 'lg',
-              icon: <IconAlertCircle />,
-              className: 'my-notification-class',
-              style: {
-                backgroundColor: 'rgba(42,42,64,0.3)',
-                backdropFilter: 'blur(10px)',
-                borderLeft: '5px solid red',
-              },
-              withBorder: true,
-              loading: false,
-            })
-            return
-          }
-          const data = response.body
-          if (!data) {
-            homeDispatch({ field: 'loading', value: false })
-            homeDispatch({ field: 'messageIsStreaming', value: false })
-            // homeDispatch({ field: 'isRouting', value: undefined })
-            // homeDispatch({ field: 'isRunningTool', value: undefined })
-            // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
-            // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
-            return
-          }
-          if (!plugin) {
-            if (updatedConversation.messages.length === 1) {
-              const { content } = message
-              // Use only texts instead of content itself
-              const contentText = Array.isArray(content)
-                ? content.map((content) => content.text).join(' ')
-                : content
-              const customName =
-                contentText.length > 30
-                  ? contentText.substring(0, 30) + '...'
-                  : contentText
-              updatedConversation = {
-                ...updatedConversation,
-                name: customName,
-              }
-            }
-            homeDispatch({ field: 'loading', value: false })
-            // homeDispatch({ field: 'isRouting', value: undefined })
-            // homeDispatch({ field: 'isRunningTool', value: undefined })
-            // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
-            // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
-            reader = data.getReader()
-          }
-        }
-
-        const decoder = new TextDecoder()
-        let done = false
-        let isFirst = true
-        let text = ''
-        let chunkValue
-        let finalAssistantRespose = ''
-        const citationLinkCache = new Map<number, string>()
-        const stateMachineContext = { state: State.Normal, buffer: '' }
-        try {
-          while (!done) {
-            if (stopConversationRef.current === true) {
-              controller.abort()
-              done = true
-              break
-            }
-
-            // Handle routing between WebLLM & OpenAI
-            if (
-              ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some(
-                (prefix) => selectedConversation.model.name.startsWith(prefix),
-              )
-            ) {
-              // WebLLM models
-              // @ts-ignore - iterator for WebLLM `AsyncIterable<ChatCompletionChunk>`
-              const iterator = response[Symbol.asyncIterator]()
-              let result = await iterator.next()
-              done = result.done
-              chunkValue = result.value.choices[0]?.delta.content
-              text += chunkValue
-            } else {
-              // OpenAI models
-              const { value, done: doneReading } = await reader!.read()
-              done = doneReading
-              chunkValue = decoder.decode(value)
-              text += chunkValue
-            }
-
-            if (isFirst) {
-              // isFirst refers to the first chunk of data received from the API (happens once for each new message from API)
-              isFirst = false
-              const updatedMessages: Message[] = [
-                ...updatedConversation.messages,
-                {
-                  role: 'assistant',
-                  content: chunkValue,
-                },
-              ]
-              finalAssistantRespose += chunkValue
-              updatedConversation = {
-                ...updatedConversation,
-                messages: updatedMessages,
-              }
+            if ('isDownloaded' in selectedConversation.model) {
+              const updatedModel = { ...selectedConversation.model, isDownloaded: true }
+              console.log('update download status', selectedConversation.model.isDownloaded)
               homeDispatch({
                 field: 'selectedConversation',
-                value: updatedConversation,
+                value: {
+                  ...selectedConversation,
+                  model: updatedModel,
+                },
               })
-            } else {
-              if (updatedConversation.messages.length > 0) {
-                const lastMessageIndex = updatedConversation.messages.length - 1
-                const lastMessage =
-                  updatedConversation.messages[lastMessageIndex]
-                const lastUserMessage =
-                  updatedConversation.messages[lastMessageIndex - 1]
 
-                if (
-                  lastMessage &&
-                  lastUserMessage &&
-                  lastUserMessage.contexts
-                ) {
-                  // Call the replaceCitationLinks method and await its result
-                  // const updatedContent = await replaceCitationLinks(text, lastMessage, citationLinkCache);
+            }
+          } else {
+            // Call the OpenAI API
+            response = await fetch(endpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              signal: controller.signal,
+              body: JSON.stringify(chatBody),
+            })
+            if (!response.ok) {
+              const final_response = await response.json()
+              homeDispatch({ field: 'loading', value: false })
+              homeDispatch({ field: 'messageIsStreaming', value: false })
+              // homeDispatch({ field: 'isRouting', value: undefined })
+              // homeDispatch({ field: 'isRunningTool', value: undefined })
+              // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+              // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
+              notifications.show({
+                id: 'error-notification',
+                withCloseButton: true,
+                closeButtonProps: { color: 'red' },
+                onClose: () => console.log('error unmounted'),
+                onOpen: () => console.log('error mounted'),
+                autoClose: 12000,
+                title: (
+                  <Text size={'lg'} className={`${montserrat_med.className}`}>
+                    {final_response.name}
+                  </Text>
+                ),
+                message: (
+                  <Text
+                    className={`${montserrat_med.className} text-neutral-200`}
+                  >
+                    {final_response.message}
+                  </Text>
+                ),
+                color: 'red',
+                radius: 'lg',
+                icon: <IconAlertCircle />,
+                className: 'my-notification-class',
+                style: {
+                  backgroundColor: 'rgba(42,42,64,0.3)',
+                  backdropFilter: 'blur(10px)',
+                  borderLeft: '5px solid red',
+                },
+                withBorder: true,
+                loading: false,
+              })
+              return
+            }
+            const data = response.body
+            if (!data) {
+              homeDispatch({ field: 'loading', value: false })
+              homeDispatch({ field: 'messageIsStreaming', value: false })
+              // homeDispatch({ field: 'isRouting', value: undefined })
+              // homeDispatch({ field: 'isRunningTool', value: undefined })
+              // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+              // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
+              return
+            }
+            if (!plugin) {
+              if (updatedConversation.messages.length === 1) {
+                const { content } = message
+                // Use only texts instead of content itself
+                const contentText = Array.isArray(content)
+                  ? content.map((content) => content.text).join(' ')
+                  : content
+                const customName =
+                  contentText.length > 30
+                    ? contentText.substring(0, 30) + '...'
+                    : contentText
+                updatedConversation = {
+                  ...updatedConversation,
+                  name: customName,
+                }
+              }
+              homeDispatch({ field: 'loading', value: false })
+              // homeDispatch({ field: 'isRouting', value: undefined })
+              // homeDispatch({ field: 'isRunningTool', value: undefined })
+              // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+              // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
+              reader = data.getReader()
+            }
+          }
 
-                  // TODO: handle this properly with WebLLM
-                  const updatedContent = await processChunkWithStateMachine(
-                    chunkValue,
-                    lastUserMessage,
-                    stateMachineContext,
-                    citationLinkCache,
-                  )
+          const decoder = new TextDecoder()
+          let done = false
+          let isFirst = true
+          let text = ''
+          let chunkValue
+          let finalAssistantRespose = ''
+          const citationLinkCache = new Map<number, string>()
+          const stateMachineContext = { state: State.Normal, buffer: '' }
+          try {
+            while (!done) {
+              if (stopConversationRef.current === true) {
+                controller.abort()
+                done = true
+                break
+              }
 
-                  finalAssistantRespose += updatedContent
+              // Handle routing between WebLLM & OpenAI
+              if (
+                ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some(
+                  (prefix) => selectedConversation.model.name.startsWith(prefix),
+                )
+              ) {
+                // WebLLM models
+                // @ts-ignore - iterator for WebLLM `AsyncIterable<ChatCompletionChunk>`
+                const iterator = response[Symbol.asyncIterator]()
+                let result = await iterator.next()
+                done = result.done
+                chunkValue = result.value.choices[0]?.delta.content
+                text += chunkValue
+              } else {
+                // OpenAI models
+                const { value, done: doneReading } = await reader!.read()
+                done = doneReading
+                chunkValue = decoder.decode(value)
+                text += chunkValue
+              }
 
-                  // Update the last message with the new content
-                  const updatedMessages = updatedConversation.messages.map(
-                    (msg, index) =>
-                      index === lastMessageIndex
-                        ? { ...msg, content: finalAssistantRespose }
-                        : msg,
-                  )
+              if (isFirst) {
+                // isFirst refers to the first chunk of data received from the API (happens once for each new message from API)
+                isFirst = false
+                const updatedMessages: Message[] = [
+                  ...updatedConversation.messages,
+                  {
+                    role: 'assistant',
+                    content: chunkValue,
+                  },
+                ]
+                finalAssistantRespose += chunkValue
+                updatedConversation = {
+                  ...updatedConversation,
+                  messages: updatedMessages,
+                }
+                homeDispatch({
+                  field: 'selectedConversation',
+                  value: updatedConversation,
+                })
+              } else {
+                if (updatedConversation.messages.length > 0) {
+                  const lastMessageIndex = updatedConversation.messages.length - 1
+                  const lastMessage =
+                    updatedConversation.messages[lastMessageIndex]
+                  const lastUserMessage =
+                    updatedConversation.messages[lastMessageIndex - 1]
 
-                  // Update the conversation with the new messages
-                  updatedConversation = {
-                    ...updatedConversation,
-                    messages: updatedMessages,
+                  if (
+                    lastMessage &&
+                    lastUserMessage &&
+                    lastUserMessage.contexts
+                  ) {
+                    // Call the replaceCitationLinks method and await its result
+                    // const updatedContent = await replaceCitationLinks(text, lastMessage, citationLinkCache);
+
+                    // TODO: handle this properly with WebLLM
+                    const updatedContent = await processChunkWithStateMachine(
+                      chunkValue,
+                      lastUserMessage,
+                      stateMachineContext,
+                      citationLinkCache,
+                    )
+
+                    finalAssistantRespose += updatedContent
+
+                    // Update the last message with the new content
+                    const updatedMessages = updatedConversation.messages.map(
+                      (msg, index) =>
+                        index === lastMessageIndex
+                          ? { ...msg, content: finalAssistantRespose }
+                          : msg,
+                    )
+
+                    // Update the conversation with the new messages
+                    updatedConversation = {
+                      ...updatedConversation,
+                      messages: updatedMessages,
+                    }
+
+                    // Dispatch the updated conversation
+                    homeDispatch({
+                      field: 'selectedConversation',
+                      value: updatedConversation,
+                    })
                   }
-
-                  // Dispatch the updated conversation
-                  homeDispatch({
-                    field: 'selectedConversation',
-                    value: updatedConversation,
-                  })
                 }
               }
             }
-          }
-        } catch (error) {
-          console.error('Error reading from stream:', error)
-          homeDispatch({ field: 'loading', value: false })
-          homeDispatch({ field: 'messageIsStreaming', value: false })
-          return
-        }
-
-        if (!done) {
-          throw new Error('Stream ended prematurely')
-        }
-
-        try {
-          saveConversation(updatedConversation)
-          if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
-            const emails = extractEmailsFromClerk(clerk_obj.user)
-            updatedConversation.user_email = emails[0]
-            onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
-          } else {
-            onMessageReceived(updatedConversation)
+          } catch (error) {
+            console.error('Error reading from stream:', error)
+            homeDispatch({ field: 'loading', value: false })
+            homeDispatch({ field: 'messageIsStreaming', value: false })
+            return
           }
 
-          const updatedConversations: Conversation[] = conversations.map(
-            (conversation) => {
-              if (conversation.id === selectedConversation.id) {
-                return updatedConversation
-              }
-              return conversation
-            },
-          )
-          if (updatedConversations.length === 0) {
-            updatedConversations.push(updatedConversation)
+          if (!done) {
+            throw new Error('Stream ended prematurely')
           }
-          homeDispatch({
-            field: 'conversations',
-            value: updatedConversations,
-          })
-          // console.log('updatedConversations: ', updatedConversations)
-          saveConversations(updatedConversations)
-          homeDispatch({ field: 'messageIsStreaming', value: false })
-        } catch (error) {
-          console.error('An error occurred: ', error)
-          controller.abort()
+
+          try {
+            saveConversation(updatedConversation)
+            if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
+              const emails = extractEmailsFromClerk(clerk_obj.user)
+              updatedConversation.user_email = emails[0]
+              onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
+            } else {
+              onMessageReceived(updatedConversation)
+            }
+
+            const updatedConversations: Conversation[] = conversations.map(
+              (conversation) => {
+                if (conversation.id === selectedConversation.id) {
+                  return updatedConversation
+                }
+                return conversation
+              },
+            )
+            if (updatedConversations.length === 0) {
+              updatedConversations.push(updatedConversation)
+            }
+            homeDispatch({
+              field: 'conversations',
+              value: updatedConversations,
+            })
+            // console.log('updatedConversations: ', updatedConversations)
+            saveConversations(updatedConversations)
+            homeDispatch({ field: 'messageIsStreaming', value: false })
+          } catch (error) {
+            console.error('An error occurred: ', error)
+            controller.abort()
+          }
         }
-        // }
         //   else {
         //   // TODO: COME BACK AND FIX
         //   const { answer } = await response.json()

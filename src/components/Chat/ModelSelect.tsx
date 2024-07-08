@@ -1,4 +1,4 @@
-import { IconChevronDown, IconCircleCheck, IconExternalLink, IconLoader } from '@tabler/icons-react'
+import { IconChevronDown, IconCircleCheck, IconDownload, IconExternalLink, IconCircleDashed } from '@tabler/icons-react'
 import { forwardRef, useContext } from 'react'
 import { useMediaQuery } from '@mantine/hooks'
 import HomeContext from '~/pages/api/home/home.context'
@@ -25,21 +25,50 @@ interface ModelItemProps extends React.ComponentPropsWithoutRef<'div'> {
   label: string;
   downloadSize?: string;
   isDownloaded?: boolean;
+  modelId: string;
+  selectedModelId: string | undefined;
 }
 
 const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
-  ({ label, downloadSize, isDownloaded, ...others }: ModelItemProps, ref) => (
+  ({ label, downloadSize, isDownloaded, modelId, selectedModelId, ...others }: ModelItemProps, ref) => (
     <div ref={ref} {...others}>
+
       <Group noWrap>
+
         <div>
-          <Text size="sm">{label}</Text>
-          {downloadSize && (
-            <Text size="xs" opacity={0.65}>
-              {downloadSize} {isDownloaded ? <IconCircleCheck size="1rem" /> : <IconLoader size="1rem" />}
+
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {selectedModelId === modelId ? (
+              <IconCircleCheck stroke={2} />
+            ) : (
+              <IconCircleDashed stroke={2} />
+            )}
+            <Text size="sm" style={{ marginLeft: '8px' }}>
+              {label}
             </Text>
+
+          </div>
+          {downloadSize && (
+
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '4px' }}>
+              <Text size="xs" opacity={0.65}>
+                {downloadSize}
+              </Text>
+              {isDownloaded ? (
+                <IconCircleCheck size="1rem" style={{ marginLeft: '8px' }} />
+              ) : (
+                <IconDownload size="1rem" style={{ marginLeft: '8px' }} />
+              )}
+              <Text size="xs" opacity={0.65} style={{ marginLeft: '4px' }}>
+                {isDownloaded ? 'downloaded' : 'download'}
+              </Text>
+            </div>
           )}
+
         </div>
+
       </Group>
+
     </div>
   )
 );
@@ -68,6 +97,8 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({ title, value, onChange, m
           label: model.name,
           downloadSize: model.downloadSize,
           isDownloaded: model.isDownloaded,
+          modelId: model.id,
+          selectedModelId: value,
         }))}
         itemComponent={ModelItem}
         rightSection={<IconChevronDown size="1rem" />}
