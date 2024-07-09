@@ -112,6 +112,7 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({ title, value, onChange, m
             border: 'none',
             color: theme.white,
             borderRadius: theme.radius.md,
+            width: '20rem',
           },
           dropdown: {
             backgroundColor: '#1d1f33',
@@ -120,7 +121,8 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({ title, value, onChange, m
             marginTop: '2px',
             boxShadow: theme.shadows.xs,
             maxWidth: '100%',
-            zIndex: 200,
+            zIndex: 2000,
+            position: 'absolute',
           },
           item: {
             backgroundColor: '#1d1f33',
@@ -141,6 +143,8 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({ title, value, onChange, m
             },
           },
         })}
+        dropdownPosition="bottom"
+        withinPortal
       />
     </div>
   </>
@@ -187,6 +191,21 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               models={Object.values(OpenAIModels)}
               isSmallScreen={isSmallScreen}
             />
+            <Input.Description
+              className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
+            >
+              <Link
+                href="https://platform.openai.com/docs/models"
+                target="_blank"
+                className="hover:underline"
+              >
+                Read about each model{' '}
+                <IconExternalLink
+                  size={15}
+                  style={{ position: 'relative', top: '2px' }}
+                  className={'mb-2 inline'}
+                />
+              </Link></Input.Description>
             <ModelDropdown
               title="Ollama"
               value={selectedConversation?.model.id || defaultModelId}
@@ -210,22 +229,22 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
             <Input.Description
               className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
             >
-              <Link
-                href="https://platform.openai.com/docs/models"
-                target="_blank"
-                className="hover:underline"
-              >
-                Read about each model{' '}
+              Note: Please wait until the model is downloaded and start chatting with the model.<br />
+
+              <Link href={"https://webgpureport.org/"} className="hover:underline">
+                Your browser must support WebGPU, check compatibility by visiting
+                this page.
                 <IconExternalLink
                   size={15}
                   style={{ position: 'relative', top: '2px' }}
                   className={'mb-2 inline'}
                 />
               </Link>
+
             </Input.Description>
           </div>
         </div>
-      </div>
+      </div >
     )
   },
 )

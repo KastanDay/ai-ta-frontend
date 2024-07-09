@@ -3,7 +3,7 @@ import {
   ChatCompletionMessageParam,
   CompletionUsage,
 } from '@mlc-ai/web-llm'
-import { ChatCompletionMessageParam } from 'openai/resources/chat'
+// import { ChatCompletionMessageParam } from 'openai/resources/chat'
 import { buildPrompt } from '~/pages/api/chat'
 // import buildPrompt from '~/pages/api/chat'
 import { Conversation, Message } from '~/types/chat'
@@ -108,32 +108,25 @@ export default class ChatUI {
     this.requestInProgress = true
     messageUpdate('init', '', true)
 
-    // Check if the model is already being downloaded
-    const initProgressCallback = this.engine.getInitProgressCallback()
-    if (initProgressCallback) {
-      messageUpdate('info', 'Model is already being downloaded.', true)
+
+    const initProgressCallback = (report: { text: string }) => {
+      messageUpdate('init', report.text, false)
+    }
+    this.engine.setInitProgressCallback(initProgressCallback)
+
+    try {
+      const selectedModel = 'Llama-3-8B-Instruct-q4f32_1-MLC'
+      // const selectedModel = "TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k";
+      await this.engine.reload(selectedModel)
+    } catch (err: unknown) {
+      messageUpdate('error', 'Init error, ' + (err?.toString() ?? ''), true)
+      console.log(err)
+      await this.unloadChat()
       this.requestInProgress = false
       return
     }
-
-    // const initProgressCallback = (report: { text: string }) => {
-    //   messageUpdate('init', report.text, false)
-    // }
-    // this.engine.setInitProgressCallback(initProgressCallback)
-
-    // try {
-    //   const selectedModel = 'Llama-3-8B-Instruct-q4f32_1-MLC'
-    //   // const selectedModel = "TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k";
-    //   await this.engine.reload(selectedModel)
-    // } catch (err: unknown) {
-    //   messageUpdate('error', 'Init error, ' + (err?.toString() ?? ''), true)
-    //   console.log(err)
-    //   await this.unloadChat()
-    //   this.requestInProgress = false
-    //   return
-    // }
-    // this.requestInProgress = false
-    // this.chatLoaded = true
+    this.requestInProgress = false
+    this.chatLoaded = true
   }
 
   private async unloadChat() {
@@ -156,7 +149,6 @@ export default class ChatUI {
     }
   }
   isModelLoading() {
-    console.log('ismodelloading,', this.modelLoading)
     return this.modelLoading
   }
 

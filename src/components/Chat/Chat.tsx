@@ -187,6 +187,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         for (const model of webLLMModels) {
           const theCachedModel = await webllm.hasModelInCache(model.name, appConfig);
           if (theCachedModel) {
+            // TODO: why there are repeated models in array
             modelCached.push(model);
             console.log('model is cached:', model.name);
           }
