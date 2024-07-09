@@ -11,6 +11,7 @@ import { OllamaModel } from '~/utils/modelProviders/ollama'
 import { OpenAIModel, OpenAIModels } from '~/types/openai'
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import { Ollama } from 'ollama-ai-provider'
+import { modelCached } from './Chat';
 
 interface ModelDropdownProps {
   title: string;
@@ -30,47 +31,43 @@ interface ModelItemProps extends React.ComponentPropsWithoutRef<'div'> {
 }
 
 const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
-  ({ label, downloadSize, isDownloaded, modelId, selectedModelId, ...others }: ModelItemProps, ref) => (
-    <div ref={ref} {...others}>
+  ({ label, downloadSize, isDownloaded, modelId, selectedModelId, ...others }: ModelItemProps, ref) => {
+    const isModelCached = modelCached.some(model => model.id === modelId);
 
-      <Group noWrap>
-
-        <div>
-
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {selectedModelId === modelId ? (
-              <IconCircleCheck stroke={2} />
-            ) : (
-              <IconCircleDashed stroke={2} />
-            )}
-            <Text size="sm" style={{ marginLeft: '8px' }}>
-              {label}
-            </Text>
-
-          </div>
-          {downloadSize && (
-
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: '4px' }}>
-              <Text size="xs" opacity={0.65}>
-                {downloadSize}
-              </Text>
-              {isDownloaded ? (
-                <IconCircleCheck size="1rem" style={{ marginLeft: '8px' }} />
+    return (
+      <div ref={ref} {...others}>
+        <Group noWrap>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              {selectedModelId === modelId ? (
+                <IconCircleCheck stroke={2} />
               ) : (
-                <IconDownload size="1rem" style={{ marginLeft: '8px' }} />
+                <IconCircleDashed stroke={2} />
               )}
-              <Text size="xs" opacity={0.65} style={{ marginLeft: '4px' }}>
-                {isDownloaded ? 'downloaded' : 'download'}
+              <Text size="sm" style={{ marginLeft: '8px' }}>
+                {label}
               </Text>
             </div>
-          )}
-
-        </div>
-
-      </Group>
-
-    </div>
-  )
+            {downloadSize && (
+              <div style={{ display: 'flex', alignItems: 'center', marginTop: '4px' }}>
+                <Text size="xs" opacity={0.65}>
+                  {downloadSize}
+                </Text>
+                {isModelCached ? (
+                  <IconCircleCheck size="1rem" style={{ marginLeft: '8px' }} />
+                ) : (
+                  <IconDownload size="1rem" style={{ marginLeft: '8px' }} />
+                )}
+                <Text size="xs" opacity={0.65} style={{ marginLeft: '4px' }}>
+                  {isModelCached ? 'downloaded' : 'download'}
+                </Text>
+              </div>
+            )}
+          </div>
+        </Group>
+      </div>
+    );
+  }
 );
 
 const ModelDropdown: React.FC<ModelDropdownProps> = ({ title, value, onChange, models, isSmallScreen, isWebLLM }) => (
@@ -123,7 +120,7 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({ title, value, onChange, m
             marginTop: '2px',
             boxShadow: theme.shadows.xs,
             maxWidth: '100%',
-            // zIndex: 200,
+            zIndex: 200,
           },
           item: {
             backgroundColor: '#1d1f33',

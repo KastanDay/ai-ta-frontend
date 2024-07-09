@@ -74,6 +74,10 @@ import { CropwizardLicenseDisclaimer } from '~/pages/cropwizard-licenses'
 import Head from 'next/head'
 import ChatUI from '~/utils/modelProviders/WebLLM'
 import { MLCEngine } from '@mlc-ai/web-llm'
+import * as webllm from "@mlc-ai/web-llm";
+import { ModelRecord, prebuiltAppConfig } from '~/utils/modelProviders/ConfigWebLLM'
+import { WebllmModel } from '~/utils/modelProviders/WebLLM'
+import { webLLMModels } from '~/pages/api/models'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -85,7 +89,7 @@ const DEFAULT_DOCUMENT_GROUP = {
   name: 'All Documents', // This value can be stored in an env variable
   checked: true,
 }
-
+export let modelCached: WebllmModel[] = []
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
   const clerk_obj = useUser()
@@ -154,10 +158,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     handleUpdateConversation,
     dispatch: homeDispatch,
   } = useContext(HomeContext)
+  const appConfig = prebuiltAppConfig;
+  // CHANGE THIS TO SEE EFFECTS OF BOTH, CODE BELOW DO NOT NEED TO CHANGE
+  appConfig.useIndexedDBCache = true;
+
+  if (appConfig.useIndexedDBCache) {
+    console.log("Using IndexedDB Cache");
+  } else {
+    console.log("Using Cache API");
+  }
 
   useEffect(() => {
-    // TODO: load the actual model the user selects... (we can hard-code for now to a single model)
-    // selectedConversation.model
     const loadModel = async () => {
       if (selectedConversation && !chat_ui.isModelLoading()) {
         await chat_ui.loadModel(selectedConversation)
@@ -167,7 +178,27 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       }
     }
     loadModel()
-  }, [selectedConversation?.model.name])
+    const loadModelCache = async () => {
+      console.log('start loadingmodelcache');
+      const model = selectedConversation?.model;
+      if (model && 'name' in model && webLLMModels.some(m => m.name === model.name)) {
+        const selectedCachedModel = await webllm.hasModelInCache(selectedConversation.model.name, appConfig);
+        console.log('selectedModel:', selectedCachedModel);
+        for (const model of webLLMModels) {
+          const theCachedModel = await webllm.hasModelInCache(model.name, appConfig);
+          if (theCachedModel) {
+            modelCached.push(model);
+            console.log('model is cached:', model.name);
+          }
+          console.log("hasModelInCache: ", modelCached);
+        }
+      };
+    }
+    if (selectedConversation && webLLMModels.some(m => m.name === selectedConversation.model.name)) {
+      loadModelCache();
+    }
+
+  }, [selectedConversation?.model as WebllmModel])
 
   const [currentMessage, setCurrentMessage] = useState<Message>()
   const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true)
@@ -549,11 +580,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         console.log('Selected model name:', selectedConversation.model.name)
 
         if (
-          ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some((prefix) =>
-            selectedConversation.model.name.startsWith(prefix),
-            // webLLMModels.some((model) => model.name === selectedConversation.model.name)
-
-          )
+          // ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some((prefix) =>
+          //   selectedConversation.model.name.startsWith(prefix),
+          webLLMModels.some((model) => model.name === selectedConversation.model.name)
         ) {
           console.log('is model loading', chat_ui.isModelLoading())
           if (chat_ui.isModelLoading() == false) {
@@ -561,18 +590,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               chatBody.conversation,
               getCurrentPageName(),
             )
-            if ('isDownloaded' in selectedConversation.model) {
-              const updatedModel = { ...selectedConversation.model, isDownloaded: true }
-              console.log('update download status', selectedConversation.model.isDownloaded)
-              homeDispatch({
-                field: 'selectedConversation',
-                value: {
-                  ...selectedConversation,
-                  model: updatedModel,
-                },
-              })
-
-            }
           } else {
             // Call the OpenAI API
             response = await fetch(endpoint, {
@@ -677,9 +694,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
               // Handle routing between WebLLM & OpenAI
               if (
-                ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some(
-                  (prefix) => selectedConversation.model.name.startsWith(prefix),
-                )
+                // ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some(
+                //   (prefix) => selectedConversation.model.name.startsWith(prefix),
+                // )
+                webLLMModels.some((model) => model.name === selectedConversation.model.name)
               ) {
                 // WebLLM models
                 // @ts-ignore - iterator for WebLLM `AsyncIterable<ChatCompletionChunk>`
