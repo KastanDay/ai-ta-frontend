@@ -158,48 +158,58 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     handleUpdateConversation,
     dispatch: homeDispatch,
   } = useContext(HomeContext)
-  const appConfig = prebuiltAppConfig;
-  // CHANGE THIS TO SEE EFFECTS OF BOTH, CODE BELOW DO NOT NEED TO CHANGE
-  appConfig.useIndexedDBCache = true;
+  // const appConfig = prebuiltAppConfig;
+  // // CHANGE THIS TO SEE EFFECTS OF BOTH, CODE BELOW DO NOT NEED TO CHANGE
+  // appConfig.useIndexedDBCache = true;
 
-  if (appConfig.useIndexedDBCache) {
-    console.log("Using IndexedDB Cache");
-  } else {
-    console.log("Using Cache API");
-  }
+  // if (appConfig.useIndexedDBCache) {
+  //   console.log("Using IndexedDB Cache");
+  // } else {
+  //   console.log("Using Cache API");
+  // }
 
   useEffect(() => {
     const loadModel = async () => {
       if (selectedConversation && !chat_ui.isModelLoading()) {
-        await chat_ui.loadModel(selectedConversation)
-        if (!chat_ui.isModelLoading()) {
-          console.log('Model has finished loading')
-        }
+        // await chat_ui.loadModel(selectedConversation)
+        // if (!chat_ui.isModelLoading()) {
+        //   console.log('Model has finished loading')
+        // }
+        // const model = selectedConversation.model.id;
+        // const initProgressCallback = (initProgress: any) => {
+        //   console.log(initProgress);
+        // }
+        // const engine = await webllm.CreateMLCEngine(model,
+        //   { initProgressCallback: initProgressCallback },)
+        // console.log('engine', engine)
       }
     }
-    loadModel()
-    const loadModelCache = async () => {
-      console.log('start loadingmodelcache');
-      const model = selectedConversation?.model;
-      if (model && 'name' in model && webLLMModels.some(m => m.name === model.name)) {
-        const selectedCachedModel = await webllm.hasModelInCache(selectedConversation.model.name, appConfig);
-        console.log('selectedModel:', selectedCachedModel);
-        for (const model of webLLMModels) {
-          const theCachedModel = await webllm.hasModelInCache(model.name, appConfig);
-          if (theCachedModel) {
-            // TODO: why there are repeated models in array
-            modelCached.push(model);
-            console.log('model is cached:', model.name);
-          }
-          console.log("hasModelInCache: ", modelCached);
-        }
-      };
-    }
     if (selectedConversation && webLLMModels.some(m => m.name === selectedConversation.model.name)) {
-      loadModelCache();
-    }
 
-  }, [selectedConversation?.model as WebllmModel])
+      loadModel()
+    }
+    // const loadModelCache = async () => {
+    //   console.log('start loadingmodelcache');
+    //   const model = selectedConversation?.model;
+    //   if (model && 'name' in model && webLLMModels.some(m => m.name === model.name)) {
+    //     const selectedCachedModel = await webllm.hasModelInCache(selectedConversation.model.name, appConfig);
+    //     console.log('selectedModel:', selectedCachedModel);
+    //     for (const model of webLLMModels) {
+    //       const theCachedModel = await webllm.hasModelInCache(model.name, appConfig);
+    //       if (theCachedModel) {
+    //         // TODO: why there are repeated models in array
+    //         modelCached.push(model);
+    //         console.log('model is cached:', model.name);
+    //       }
+    //       console.log("hasModelInCache: ", modelCached);
+    //     }
+    //   };
+    // }
+    // if (selectedConversation && webLLMModels.some(m => m.name === selectedConversation.model.name)) {
+    //   loadModelCache();
+    // }
+
+  }, [selectedConversation?.model])
 
   const [currentMessage, setCurrentMessage] = useState<Message>()
   const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true)
