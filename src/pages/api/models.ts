@@ -17,7 +17,6 @@ import { WebLLMModels, WebllmModel } from '~/utils/modelProviders/WebLLM'
 export const config = {
   runtime: 'edge',
 }
-// is this what gives me the json object lwt me print to find out
 const handler = async (req: Request): Promise<Response> => {
   console.log('in handler')
   let apiKey = ''
@@ -45,65 +44,43 @@ const handler = async (req: Request): Promise<Response> => {
       baseUrl: 'https://ollama.ncsa.ai/api/tags',
 
     }
-    // next task is to add the proper providers to azure then from there
-    // add streaming to azure
     const AzureProvider: LLMProvider = {
       provider: ProviderNames.Azure,
       enabled: true,
-      apiKey: apiKey,
-
-      AzureKey =b1a402d721154a97a4eeaa61200eb93f,
-      
+      apiKey: 'b1a402d721154a97a4eeaa61200eb93f',   // this is the azure api key
       AzureDeployment: 'gpt-35-turbo-16k',
-
-
-      //baseUrl: '',
-      //models?: SupportedModels
-      //endpoint, deployment, and api key
       AzureEndpoint: 'https://uiuc-chat-canada-east.openai.azure.com/'
       
     }
 
-    const llmProviderKeys: LLMProvider[] = [ollamaProvider, OpenAIProvider]
-    // I need input providers for all the models and then return of the list from each provider 
-    // this is to print the mdoel type for all providers in provider keys just general test
+    const llmProviderKeys: LLMProvider[] = [ollamaProvider, OpenAIProvider] 
+    // iterates and collects all models for the givne provider keys
     let totalModels: SupportedModels[] = []
     for(const provider of llmProviderKeys) {
       if(provider.provider == 'Ollama') {
-        // 1. Call An endpoint to check what Ollama models are available.
-        //console.log('entering ollama')
         const ollamaModels = await getOllamaModels(ollamaProvider)
         totalModels.push(ollamaModels)
-        //console.log('Ollama Models in models.ts: ', ollamaModels)
-
-
       } 
       else if(provider.provider == 'OpenAI') {
-        //2. call an endpoint to check which openai modle available
-        //console.log('check if it got out of ollama fetch to openai')
         const openAIModels = await getOpenAIModels(OpenAIProvider)
         totalModels.push(openAIModels)
-        //console.log('OpenAi models.ts: ', openAIModels)
       } 
+      else if(provider.provider == 'Azure') {
+        const azureOpenaiModels = await getAzureModels(AzureProvider)
+        totalModels.push(azureOpenaiModels)
+      }
       else {
         continue
       }
 
     }
-
+    //print all models to terminal
     console.log('total models available', totalModels)
-
-    //3. call endpoint for azure 
-    //console.log('check if azure models fetch')
-    //const azureOpenaiModels = await getAzureModels(AzureProvider)
-
+  
     // Test chat function
-    const ret = await runOllamaChat()
-    console.log('Ollama chat test: ', ret)
+    //const ret = await runOllamaChat() still needs work fors stremaing
 
-    // Iterate over the providers, check if their key works. Return all available models...
-    // each model provider should have at least `/chat` and `/models` endpoints
-
+    // legacy code take a look
     apiKey = key ? key : (process.env.OPENAI_API_KEY as string)
     // Check if the key starts with 'sk-' (indicating it's not encrypted)
     if (key && isEncrypted(key)) {
@@ -113,11 +90,9 @@ const handler = async (req: Request): Promise<Response> => {
         process.env.NEXT_PUBLIC_SIGNING_KEY as string,
       )
       apiKey = decryptedText as string
-      // console.log('models.ts Decrypted api key: ', apiKey)
     }
     console.log('models.ts Final openai key: ', apiKey)
-    // this is my attempt at simplifying what is belowby creating if statements for each model type
-  
+    // return total models which compiles all valid models
     return new Response(JSON.stringify(totalModels), { status: 200 })
   } catch (error) {
     console.error(error)

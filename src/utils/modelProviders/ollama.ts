@@ -16,7 +16,6 @@ export const runOllamaChat = async () => {
   console.log('In ollama runOllamaChat function')
 
   const ollama = createOllama({
-    // custom settings
     baseURL: 'https://ollama.ncsa.ai/api',
   })
 
@@ -54,6 +53,7 @@ export const runOllamaChat = async () => {
   // TODO: Check out the server example for how to handle streaming responses
   // https://sdk.vercel.ai/examples/next-app/chat/stream-chat-completion#server
 }
+
 
 export const getOllamaModels = async (ollamaProvider: LLMProvider): Promise<OllamaModel[]> => {
   if(!ollamaProvider.baseUrl) {
