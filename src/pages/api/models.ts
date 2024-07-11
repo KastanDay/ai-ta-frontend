@@ -73,21 +73,15 @@ const handler = async (req: Request): Promise<Response> => {
     const llmProviderKeys: LLMProvider[] = [ollamaProvider, OpenAIProvider] 
     // iterates and collects all models for the givne provider keys
     let totalModels: SupportedModels[] = []
-    // let ollamaModels: OllamaModel[] = []
     for (const provider of llmProviderKeys) {
       if (provider.provider == 'Ollama') {
-        // 1. Call An endpoint to check what Ollama models are available.
-        //console.log('entering ollama')
         const fetchedOllamaModels = await getOllamaModels(ollamaProvider)
         ollamaModels = fetchedOllamaModels // Update the exported variable
         totalModels.push(ollamaModels)
-        //console.log('Ollama Models in models.ts: ', ollamaModels)
-
 
       }
       else if (provider.provider == 'OpenAI') {
         //2. call an endpoint to check which openai modle available
-        //console.log('check if it got out of ollama fetch to openai')
         const openAIModels = await getOpenAIModels(OpenAIProvider)
         totalModels.push(openAIModels)
       } 
