@@ -12,6 +12,7 @@ import { LLMProvider, ProviderNames, SupportedModels } from '~/types/LLMProvider
 import { getOllamaModels, runOllamaChat } from '~/utils/modelProviders/ollama'
 import { getOpenAIModels } from '~/utils/modelProviders/openai'
 import { getAzureModels } from '~/utils/modelProviders/azure'
+import { getAnthropicModels } from '~/utils/modelProviders/anthropic'
 
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import { ModelRecord, prebuiltAppConfig } from '~/utils/modelProviders/ConfigWebLLM'
@@ -70,7 +71,16 @@ const handler = async (req: Request): Promise<Response> => {
 
     }
 
-    const llmProviderKeys: LLMProvider[] = [ollamaProvider, OpenAIProvider] 
+    const AnthropicProvider: LLMProvider = {
+      provider: ProviderNames.Anthropic,
+      enabled: true,
+      //apiKey: 'b1a402d721154a97a4eeaa61200eb93f',   // this is the azure api key
+      AnthropicModel: 'claude-3-opus-20240229'
+      //AzureEndpoint: 'https://uiuc-chat-canada-east.openai.azure.com/'
+      
+    }
+
+    const llmProviderKeys: LLMProvider[] = [ollamaProvider, OpenAIProvider, AzureProvider, AnthropicProvider] 
     // iterates and collects all models for the givne provider keys
     let totalModels: SupportedModels[] = []
     for (const provider of llmProviderKeys) {
@@ -89,6 +99,10 @@ const handler = async (req: Request): Promise<Response> => {
         const azureOpenaiModels = await getAzureModels(AzureProvider)
         totalModels.push(azureOpenaiModels)
       }
+      else if(provider.provider == 'Anthropic'){
+        const AnthropicModels = await getAnthropicModels(AnthropicProvider)
+        totalModels.push(AnthropicModels)
+      }
       else {
         continue
       }
@@ -96,7 +110,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
     //print all models to terminal
     console.log('total models available', totalModels)
-  
+
     // Test chat function
     //const ret = await runOllamaChat() still needs work fors stremaing
 

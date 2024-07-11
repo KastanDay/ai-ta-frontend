@@ -47,6 +47,8 @@ export enum OpenAIModelID {
   GPT_4_AZURE_04_09 = 'gpt-4-04-09',
 }
 
+
+
 // in case the `DEFAULT_MODEL` environment variable is not set or set to an unsupported model
 export const fallbackModelID = OpenAIModelID.GPT_4
 

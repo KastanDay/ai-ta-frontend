@@ -1,14 +1,16 @@
 import { OllamaModel } from '~/utils/modelProviders/ollama'
 import { OpenAIModel } from './openai'
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
+import { AnthropicModel } from '~/utils/modelProviders/anthropic'
 
 export enum ProviderNames {
   Ollama = 'Ollama',
   OpenAI = 'OpenAI',
-  Azure = 'Azure'
+  Azure = 'Azure',
+  Anthropic = 'Anthropic'
 }
 
-export type SupportedModels = OllamaModel[] | OpenAIModel[] | WebllmModel[]
+export type SupportedModels = OllamaModel[] | OpenAIModel[] | WebllmModel[] | AnthropicModel[]
 
 export interface LLMProvider {
   provider: ProviderNames
@@ -18,5 +20,6 @@ export interface LLMProvider {
   models?: SupportedModels
   AzureEndpoint?: string
   AzureDeployment?: string
+  AnthropicModel?: string
   
 }

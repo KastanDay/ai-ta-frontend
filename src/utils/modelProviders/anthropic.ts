@@ -8,31 +8,50 @@ import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
 
 export interface AnthropicModel {
     id: string
-    model: string
-    //parameterSize: string
+    name: string
     tokenLimit: number
+}
+export enum AnthropicModelID {
+    Claude_3_5_Sonnet = 'claude-3-5-sonnet-20240620', // rolling model 
+    Claude_3_Opus = 'claude-3-opus-20240229', // rolling model 
+    Claude_3_Sonnet = 'claude-3-sonnet-20240229', // rolling model 
+    Claude_3_Haiku = 'claude-3-haiku-20240307', // rolling model 
+}
+export const AnthropicModels: Record<AnthropicModelID, AnthropicModel> = {
+    [AnthropicModelID.Claude_3_5_Sonnet]: {
+      id: AnthropicModelID.Claude_3_5_Sonnet,
+      name: 'claude-3-5-sonnet-20240620',
+      tokenLimit: 4096,
+    },
+    [AnthropicModelID.Claude_3_Opus]: {
+      id: AnthropicModelID.Claude_3_Opus,
+      name: 'claude-3-opus-20240229',
+      tokenLimit: 4096,
+    },
+    [AnthropicModelID.Claude_3_Sonnet]: {
+      id: AnthropicModelID.Claude_3_Sonnet,
+      name: 'claude-3-sonnet-20240229',
+      tokenLimit: 4096,
+    },
+    [AnthropicModelID.Claude_3_Haiku]: {
+      id: AnthropicModelID.Claude_3_Haiku,
+      name: 'claude-3-haiku-20240307',
+      tokenLimit: 4096,
+    }
 }
 
 
+export const getAnthropicModels = async (AnthropicProvider: LLMProvider): Promise<AnthropicModel[]>=> {
+    const AnthropicList: AnthropicModel[] = Object.values(AnthropicModels);
+    return AnthropicList;
+    
+}
+
 import Anthropic from '@anthropic-ai/sdk';
 
-const anthropic = new Anthropic({
-  apiKey: 'my_api_key', // defaults to process.env["ANTHROPIC_API_KEY"]
-});
 
-const msg = await anthropic.messages.create({
-  model: "claude-3-5-sonnet-20240620",
-  max_tokens: 1024,
-  messages: [{ role: "user", content: "Hello, Claude" }],
-});
-console.log(msg);
-
-
-
-
-const client = new Anthropic(); // gets API Key from environment variable ANTHROPIC_API_KEY
-
-export const runAzureChat = async() =>{
+export const runAnthropicChat = async (AnthropicProvider: LLMProvider) =>{
+  const client = new Anthropic(); // gets API Key from environment variable ANTHROPIC_API_KEY     
   const stream = client.messages
     .stream({
       messages: [
@@ -41,7 +60,7 @@ export const runAzureChat = async() =>{
           content: `Hey Claude! How can I recursively list all files in a directory in Rust?`,
         },
       ],
-      model: 'claude-3-opus-20240229',
+      model: AnthropicProvider.AnthropicModel!,
       max_tokens: 1024,
     })
     // Once a content block is fully streamed, this event will fire
