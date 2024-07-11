@@ -62,6 +62,14 @@ export function Demo({ numFiles, totalFiles }) {
       <Text>
         {numFiles} out of {totalFiles} files have been uploaded.
       </Text>
+      <Progress
+        color="blue"
+        radius="md"
+        size="lg"
+        value={(numFiles / totalFiles) * 100}
+        striped
+        animate
+      />
     </Paper>
   )
 }
@@ -70,6 +78,7 @@ function DocumentsProgress({ courseName }) {
   const [progress, setProgress] = useState(0)
   const [hasDocuments, setHasDocuments] = useState(false) // State to track if there are documents
   const [totalDocuments, setTotalDocuments] = useState(0) // State to track the total number of documents
+  const [dataLength, setDataLength] = useState(0)
 
   useEffect(() => {
     async function fetchData() {
@@ -83,6 +92,7 @@ function DocumentsProgress({ courseName }) {
           setTotalDocuments(data.documents.length) // Set total documents from the initial API call
           console.log('total documents:', data.documents.length)
         }
+        setDataLength(totalDocuments - data.documents.length)
         console.log('documents:', data)
         setHasDocuments(data.documents.length > 0)
         console.log(
@@ -110,7 +120,9 @@ function DocumentsProgress({ courseName }) {
 
   return (
     <Paper shadow="lg" radius="lg" p="md" withBorder>
-      <Text>{totalDocuments} Ingesting into AI Database</Text>
+      <Text>
+        {dataLength} out of {totalDocuments} Ingested into AI Database
+      </Text>
       <Progress
         color="violet"
         radius="md"
@@ -344,6 +356,9 @@ export function LargeDropzone({
         }}
       >
         {courseName && <DocumentsProgress courseName={courseName} />}
+        {uploadInProgress && (
+          <Demo numFiles={successfulUploads} totalFiles={files.length} />
+        )}
         {/* <div className={classes.wrapper} style={{ maxWidth: '320px' }}> */}
         <div
           className={classes.wrapper}
@@ -436,7 +451,6 @@ export function LargeDropzone({
           </Dropzone>
           {uploadInProgress && (
             <>
-              <Demo numFiles={successfulUploads} totalFiles={files.length} />
               <div className="flex flex-col items-center justify-center ">
                 <Title
                   order={4}
