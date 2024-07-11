@@ -1,13 +1,16 @@
 import { OpenAIModel } from './openai'
 import { CourseMetadata } from './courseMetadata'
 import { N8NParameter } from './tools'
+import { SupportedModels } from './LLMProvider'
+import { WebllmModel } from '~/utils/modelProviders/WebLLM'
+import { OllamaModel } from '~/utils/modelProviders/ollama'
 
 export interface Conversation {
   // NO KEY
   id: string
   name: string
   messages: Message[]
-  model: OpenAIModel // ! consider allowing null models: | null
+  model: OpenAIModel | OllamaModel | WebllmModel // ! consider allowing null models: | null
   prompt: string
   temperature: number
   folderId: string | null

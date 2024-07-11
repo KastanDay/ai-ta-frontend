@@ -3,7 +3,7 @@ import {
   ChatCompletionMessageParam,
   CompletionUsage,
 } from '@mlc-ai/web-llm'
-import { ChatCompletionMessageParam } from 'openai/resources/chat'
+// import { ChatCompletionMessageParam } from 'openai/resources/chat'
 import { buildPrompt } from '~/pages/api/chat'
 // import buildPrompt from '~/pages/api/chat'
 import { Conversation, Message } from '~/types/chat'
@@ -22,27 +22,29 @@ export interface WebllmModel {
   name: string
   parameterSize: string
   tokenLimit: number
+  downloadSize: string
+  isDownloaded: boolean
 }
 
-export enum WebLLMModelID {
-  Llama38BInstructQ4f321MLC = 'Llama-3-8B-Instruct-q4f32_1-MLC',
-  TinyLlama11BChatV04Q4f161MLC1k = 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k',
-}
+// export enum WebLLMModelID {
+//   Llama38BInstructQ4f321MLC = 'Llama-3-8B-Instruct-q4f32_1-MLC',
+//   TinyLlama11BChatV04Q4f161MLC1k = 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k',
+// }
 
-export const WebLLMModels: Record<WebLLMModelID, WebllmModel> = {
-  [WebLLMModelID.TinyLlama11BChatV04Q4f161MLC1k]: {
-    id: WebLLMModelID.TinyLlama11BChatV04Q4f161MLC1k,
-    name: 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k',
-    tokenLimit: 8192,
-    parameterSize: '1.1B',
-  },
-  [WebLLMModelID.Llama38BInstructQ4f321MLC]: {
-    id: WebLLMModelID.Llama38BInstructQ4f321MLC,
-    name: 'Llama-3-8B-Instruct-q4f32_1-MLC',
-    tokenLimit: 8192,
-    parameterSize: '8B',
-  },
-}
+// export const WebLLMModels: Record<WebLLMModelID, WebllmModel> = {
+//   [WebLLMModelID.TinyLlama11BChatV04Q4f161MLC1k]: {
+//     id: WebLLMModelID.TinyLlama11BChatV04Q4f161MLC1k,
+//     name: 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k',
+//     tokenLimit: 8192,
+//     parameterSize: '1.1B',
+//   },
+//   [WebLLMModelID.Llama38BInstructQ4f321MLC]: {
+//     id: WebLLMModelID.Llama38BInstructQ4f321MLC,
+//     name: 'Llama-3-8B-Instruct-q4f32_1-MLC',
+//     tokenLimit: 8192,
+//     parameterSize: '8B',
+//   },
+// }
 
 export default class ChatUI {
   private engine: MLCEngineInterface
@@ -98,12 +100,15 @@ export default class ChatUI {
     return this.chatRequestChain
   }
 
+
   async asyncInitChat(
     messageUpdate: (kind: string, text: string, append: boolean) => void,
   ) {
     if (this.chatLoaded) return
     this.requestInProgress = true
     messageUpdate('init', '', true)
+
+
     const initProgressCallback = (report: { text: string }) => {
       messageUpdate('init', report.text, false)
     }
@@ -144,7 +149,6 @@ export default class ChatUI {
     }
   }
   isModelLoading() {
-    console.log('ismodelloading,', this.modelLoading)
     return this.modelLoading
   }
 

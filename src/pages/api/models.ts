@@ -13,10 +13,27 @@ import { getOllamaModels, runOllamaChat } from '~/utils/modelProviders/ollama'
 import { getOpenAIModels } from '~/utils/modelProviders/openai'
 import { getAzureModels } from '~/utils/modelProviders/azure'
 
-import { WebLLMModels, WebllmModel } from '~/utils/modelProviders/WebLLM'
+import { WebllmModel } from '~/utils/modelProviders/WebLLM'
+import { ModelRecord, prebuiltAppConfig } from '~/utils/modelProviders/ConfigWebLLM'
+import { OllamaModel } from '~/utils/modelProviders/ollama'
+import { CreateMLCEngine } from "@mlc-ai/web-llm";
+
 export const config = {
   runtime: 'edge',
 }
+export function convertToLocalModels(record: ModelRecord): WebllmModel {
+  return {
+    id: record.model_id,
+    name: record.model_id,
+    parameterSize: 'Unknown',
+    tokenLimit: record.overrides?.context_window_size,
+    downloadSize: record.vram_required_MB ? `${(record.vram_required_MB / 1024).toFixed(2)}GB` : 'unknown',
+    isDownloaded: false
+  };
+}
+export const webLLMModels: WebllmModel[] = prebuiltAppConfig.model_list.map((model: ModelRecord) => convertToLocalModels(model));
+export let ollamaModels: OllamaModel[] = []
+
 const handler = async (req: Request): Promise<Response> => {
   console.log('in handler')
   let apiKey = ''
@@ -39,8 +56,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     const OpenAIProvider: LLMProvider = {
       provider: ProviderNames.OpenAI,
-      enabled: true,  
-      apiKey:process.env.OPENAI_API_KEY,
+      enabled: true,
+      apiKey: process.env.OPENAI_API_KEY,
       baseUrl: 'https://ollama.ncsa.ai/api/tags',
 
     }
@@ -50,18 +67,27 @@ const handler = async (req: Request): Promise<Response> => {
       apiKey: 'b1a402d721154a97a4eeaa61200eb93f',   // this is the azure api key
       AzureDeployment: 'gpt-35-turbo-16k',
       AzureEndpoint: 'https://uiuc-chat-canada-east.openai.azure.com/'
-      
+
     }
 
     const llmProviderKeys: LLMProvider[] = [ollamaProvider, OpenAIProvider] 
     // iterates and collects all models for the givne provider keys
     let totalModels: SupportedModels[] = []
-    for(const provider of llmProviderKeys) {
-      if(provider.provider == 'Ollama') {
-        const ollamaModels = await getOllamaModels(ollamaProvider)
+    // let ollamaModels: OllamaModel[] = []
+    for (const provider of llmProviderKeys) {
+      if (provider.provider == 'Ollama') {
+        // 1. Call An endpoint to check what Ollama models are available.
+        //console.log('entering ollama')
+        const fetchedOllamaModels = await getOllamaModels(ollamaProvider)
+        ollamaModels = fetchedOllamaModels // Update the exported variable
         totalModels.push(ollamaModels)
-      } 
-      else if(provider.provider == 'OpenAI') {
+        //console.log('Ollama Models in models.ts: ', ollamaModels)
+
+
+      }
+      else if (provider.provider == 'OpenAI') {
+        //2. call an endpoint to check which openai modle available
+        //console.log('check if it got out of ollama fetch to openai')
         const openAIModels = await getOpenAIModels(OpenAIProvider)
         totalModels.push(openAIModels)
       } 
