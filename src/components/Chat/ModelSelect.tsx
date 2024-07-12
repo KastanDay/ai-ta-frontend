@@ -1,4 +1,4 @@
-import { IconChevronDown, IconCircleCheck, IconDownload, IconExternalLink, IconCircleDashed } from '@tabler/icons-react'
+import { IconChevronDown, IconCircleCheck, IconDownload, IconExternalLink, IconCircleDashed, IconSparkles } from '@tabler/icons-react'
 import { forwardRef, useContext } from 'react'
 import { useMediaQuery } from '@mantine/hooks'
 import HomeContext from '~/pages/api/home/home.context'
@@ -8,16 +8,16 @@ import Link from 'next/link'
 import React from 'react'
 import { webLLMModels, ollamaModels } from '~/pages/api/models'
 import { OllamaModel } from '~/utils/modelProviders/ollama'
-import { OpenAIModel, OpenAIModels } from '~/types/openai'
+import { OpenAIModel, OpenAIModels, preferredModelIds } from '~/types/openai'
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import { Ollama } from 'ollama-ai-provider'
-import { modelCached } from './Chat';
+import { modelCached } from './UserSettings'
 
 interface ModelDropdownProps {
   title: string;
   value: string | undefined;
   onChange: (value: string) => void;
-  models: { id: string; name: string; isDownloaded?: boolean; downloadSize?: string }[];
+  models: { id: string; name: string; downloadSize?: string }[];
   isSmallScreen: boolean;
   isWebLLM?: boolean;
 }
@@ -33,6 +33,7 @@ interface ModelItemProps extends React.ComponentPropsWithoutRef<'div'> {
 const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
   ({ label, downloadSize, isDownloaded, modelId, selectedModelId, ...others }: ModelItemProps, ref) => {
     const isModelCached = modelCached.some(model => model.id === modelId);
+    const showSparkles = label === 'Llama-3-8B-Instruct-q4f32_1-MLC' || label === 'Llama-3-8B-Instruct-q4f16_1-MLC';
 
     return (
       <div ref={ref} {...others}>
@@ -61,6 +62,7 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
                 <Text size="xs" opacity={0.65} style={{ marginLeft: '4px' }}>
                   {isModelCached ? 'downloaded' : 'download'}
                 </Text>
+                {showSparkles && <IconSparkles size="1rem" style={{ marginLeft: '8px' }} />}
               </div>
             )}
           </div>
@@ -93,7 +95,6 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({ title, value, onChange, m
           value: model.id,
           label: model.name,
           downloadSize: model.downloadSize,
-          isDownloaded: model.isDownloaded,
           modelId: model.id,
           selectedModelId: value,
         }))}
@@ -173,7 +174,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       selectedConversation &&
         handleUpdateConversation(selectedConversation, {
           key: 'model',
-          value: model,
+          value: model as OpenAIModel,
         })
     }
 
@@ -188,7 +189,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               title="OpenAI"
               value={selectedConversation?.model.id || defaultModelId}
               onChange={handleModelClick}
-              models={Object.values(OpenAIModels)}
+              models={models.filter((model) => Object.values(OpenAIModels).some((openAIModel) => openAIModel.id === model.id))}
               isSmallScreen={isSmallScreen}
             />
             <Input.Description
@@ -210,7 +211,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               title="Ollama"
               value={selectedConversation?.model.id || defaultModelId}
               onChange={handleModelClick}
-              models={Object.values(ollamaModels)}
+              models={models.filter((model) => Object.values(ollamaModels).some((ollamaModels) => ollamaModels.id === model.id))}
               isSmallScreen={isSmallScreen}
             />
             <ModelDropdown
@@ -220,7 +221,6 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               models={Object.values(webLLMModels).map(model => ({
                 id: model.id,
                 name: model.name,
-                isDownloaded: model.isDownloaded,
                 downloadSize: model.downloadSize,
               }))}
               isSmallScreen={isSmallScreen}
@@ -229,8 +229,6 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
             <Input.Description
               className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
             >
-              Note: Please wait until the model is downloaded and start chatting with the model.<br />
-
               <Link href={"https://webgpureport.org/"} className="hover:underline">
                 Your browser must support WebGPU, check compatibility by visiting
                 this page.

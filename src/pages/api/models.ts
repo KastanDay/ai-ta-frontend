@@ -29,7 +29,6 @@ export function convertToLocalModels(record: ModelRecord): WebllmModel {
     parameterSize: 'Unknown',
     tokenLimit: record.overrides?.context_window_size,
     downloadSize: record.vram_required_MB ? `${(record.vram_required_MB / 1024).toFixed(2)}GB` : 'unknown',
-    isDownloaded: false
   };
 }
 export const webLLMModels: WebllmModel[] = prebuiltAppConfig.model_list.map((model: ModelRecord) => convertToLocalModels(model));
