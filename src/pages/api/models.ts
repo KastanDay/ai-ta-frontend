@@ -130,7 +130,7 @@ const handler = async (req: Request): Promise<Response> => {
       )
       apiKey = decryptedText as string
     }
-    console.log('models.ts Final openai key: ', apiKey)
+    //console.log('models.ts Final openai key: ', apiKey)
     // return total models which compiles all valid models
     return new Response(JSON.stringify(totalModels), { status: 200 })
   } catch (error) {
