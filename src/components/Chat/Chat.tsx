@@ -704,6 +704,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               }
 
               // Handle routing between WebLLM & OpenAI
+              // might need more stuff here on how to handle
               if (
                 // ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some(
                 //   (prefix) => selectedConversation.model.name.startsWith(prefix),

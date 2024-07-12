@@ -12,12 +12,14 @@ import { LLMProvider, ProviderNames, SupportedModels } from '~/types/LLMProvider
 import { getOllamaModels, runOllamaChat } from '~/utils/modelProviders/ollama'
 import { getOpenAIModels } from '~/utils/modelProviders/openai'
 import { getAzureModels } from '~/utils/modelProviders/azure'
-import { getAnthropicModels } from '~/utils/modelProviders/anthropic'
+import { getAnthropicModels, runAnthropicChat } from '~/utils/modelProviders/anthropic'
 
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import { ModelRecord, prebuiltAppConfig } from '~/utils/modelProviders/ConfigWebLLM'
 import { OllamaModel } from '~/utils/modelProviders/ollama'
 import { CreateMLCEngine } from "@mlc-ai/web-llm";
+import { ChevronsDownLeft } from 'tabler-icons-react'
+import { env } from 'process'
 
 export const config = {
   runtime: 'edge',
@@ -65,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
     const AzureProvider: LLMProvider = {
       provider: ProviderNames.Azure,
       enabled: true,
-      apiKey: 'b1a402d721154a97a4eeaa61200eb93f',   // this is the azure api key
+      apiKey: process.env.AZURE_API_KEY,   // this is the azure api key
       AzureDeployment: 'gpt-35-turbo-16k',
       AzureEndpoint: 'https://uiuc-chat-canada-east.openai.azure.com/'
 
@@ -74,7 +76,7 @@ const handler = async (req: Request): Promise<Response> => {
     const AnthropicProvider: LLMProvider = {
       provider: ProviderNames.Anthropic,
       enabled: true,
-      //apiKey: 'b1a402d721154a97a4eeaa61200eb93f',   // this is the azure api key
+      apiKey: process.env.ANTHROPIC_API_KEY,   // this is the anthropic api key
       AnthropicModel: 'claude-3-opus-20240229'
       //AzureEndpoint: 'https://uiuc-chat-canada-east.openai.azure.com/'
       
@@ -110,6 +112,10 @@ const handler = async (req: Request): Promise<Response> => {
     }
     //print all models to terminal
     console.log('total models available', totalModels)
+
+    // checking Anthropic chat function
+    console.log('entering Anthropic chat')
+    runAnthropicChat(AnthropicProvider)
 
     // Test chat function
     //const ret = await runOllamaChat() still needs work fors stremaing
