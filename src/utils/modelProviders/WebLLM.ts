@@ -23,7 +23,6 @@ export interface WebllmModel {
   parameterSize: string
   tokenLimit: number
   downloadSize: string
-  isDownloaded: boolean
 }
 
 // export enum WebLLMModelID {

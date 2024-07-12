@@ -55,32 +55,32 @@ export const prebuiltAppConfig: AppConfig = {
   useIndexedDBCache: false,
   model_list: [
     // Llama-3
-    {
-      model: "https://huggingface.co/mlc-ai/Llama-3-8B-Instruct-q4f32_1-MLC",
-      model_id: "Llama-3-8B-Instruct-q4f32_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/Llama-3-8B-Instruct-q4f32_1-ctx4k_cs1k-webgpu.wasm",
-      vram_required_MB: 5295.7,
-      low_resource_required: true,
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
-    {
-      model: "https://huggingface.co/mlc-ai/Llama-3-8B-Instruct-q4f16_1-MLC",
-      model_id: "Llama-3-8B-Instruct-q4f16_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/Llama-3-8B-Instruct-q4f16_1-ctx4k_cs1k-webgpu.wasm",
-      vram_required_MB: 4598.34,
-      low_resource_required: true,
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/Llama-3-8B-Instruct-q4f32_1-MLC",
+    //   model_id: "Llama-3-8B-Instruct-q4f32_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/Llama-3-8B-Instruct-q4f32_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 5295.7,
+    //   low_resource_required: true,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/Llama-3-8B-Instruct-q4f16_1-MLC",
+    //   model_id: "Llama-3-8B-Instruct-q4f16_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/Llama-3-8B-Instruct-q4f16_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 4598.34,
+    //   low_resource_required: true,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
     {
       model: "https://huggingface.co/mlc-ai/Llama-3-8B-Instruct-q4f32_1-MLC",
       model_id: "Llama-3-8B-Instruct-q4f32_1-MLC",
@@ -179,32 +179,32 @@ export const prebuiltAppConfig: AppConfig = {
         context_window_size: 4096,
       },
     },
-    {
-      model: "https://huggingface.co/mlc-ai/Phi-3-mini-4k-instruct-q4f16_1-MLC",
-      model_id: "Phi-3-mini-4k-instruct-q4f16_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/Phi-3-mini-4k-instruct-q4f16_1-ctx4k_cs1k-webgpu.wasm",
-      vram_required_MB: 2520.07,
-      low_resource_required: true,
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
-    {
-      model: "https://huggingface.co/mlc-ai/Phi-3-mini-4k-instruct-q4f32_1-MLC",
-      model_id: "Phi-3-mini-4k-instruct-q4f32_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/Phi-3-mini-4k-instruct-q4f32_1-ctx4k_cs1k-webgpu.wasm",
-      vram_required_MB: 3179.12,
-      low_resource_required: true,
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/Phi-3-mini-4k-instruct-q4f16_1-MLC",
+    //   model_id: "Phi-3-mini-4k-instruct-q4f16_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/Phi-3-mini-4k-instruct-q4f16_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 2520.07,
+    //   low_resource_required: true,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/Phi-3-mini-4k-instruct-q4f32_1-MLC",
+    //   model_id: "Phi-3-mini-4k-instruct-q4f32_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/Phi-3-mini-4k-instruct-q4f32_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 3179.12,
+    //   low_resource_required: true,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
     // Mistral variants
     {
       model:
@@ -330,35 +330,35 @@ export const prebuiltAppConfig: AppConfig = {
         context_window_size: 4096,
       },
     },
-    {
-      model: "https://huggingface.co/mlc-ai/gemma-2b-it-q4f16_1-MLC",
-      model_id: "gemma-2b-it-q4f16_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/gemma-2b-it-q4f16_1-ctx4k_cs1k-webgpu.wasm",
-      vram_required_MB: 1476.52,
-      low_resource_required: true,
-      buffer_size_required_bytes: 262144000,
-      required_features: ["shader-f16"],
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
-    {
-      model: "https://huggingface.co/mlc-ai/gemma-2b-it-q4f32_1-MLC",
-      model_id: "gemma-2b-it-q4f32_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/gemma-2b-it-q4f32_1-ctx4k_cs1k-webgpu.wasm",
-      vram_required_MB: 1750.66,
-      low_resource_required: true,
-      buffer_size_required_bytes: 262144000,
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/gemma-2b-it-q4f16_1-MLC",
+    //   model_id: "gemma-2b-it-q4f16_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/gemma-2b-it-q4f16_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 1476.52,
+    //   low_resource_required: true,
+    //   buffer_size_required_bytes: 262144000,
+    //   required_features: ["shader-f16"],
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/gemma-2b-it-q4f32_1-MLC",
+    //   model_id: "gemma-2b-it-q4f32_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/gemma-2b-it-q4f32_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 1750.66,
+    //   low_resource_required: true,
+    //   buffer_size_required_bytes: 262144000,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
     // Qwen-2
     // {
     //   model: "https://huggingface.co/mlc-ai/Qwen2-0.5B-Instruct-q4f16_1-MLC",
@@ -478,32 +478,32 @@ export const prebuiltAppConfig: AppConfig = {
         context_window_size: 4096,
       },
     },
-    {
-      model: "https://huggingface.co/mlc-ai/stablelm-2-zephyr-1_6b-q4f16_1-MLC",
-      model_id: "stablelm-2-zephyr-1_6b-q4f16_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/stablelm-2-zephyr-1_6b-q4f16_1-ctx4k_cs1k-webgpu.wasm",
-      vram_required_MB: 1511.66,
-      low_resource_required: true,
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
-    {
-      model: "https://huggingface.co/mlc-ai/stablelm-2-zephyr-1_6b-q4f32_1-MLC",
-      model_id: "stablelm-2-zephyr-1_6b-q4f32_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/stablelm-2-zephyr-1_6b-q4f32_1-ctx4k_cs1k-webgpu.wasm",
-      vram_required_MB: 1847.33,
-      low_resource_required: true,
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/stablelm-2-zephyr-1_6b-q4f16_1-MLC",
+    //   model_id: "stablelm-2-zephyr-1_6b-q4f16_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/stablelm-2-zephyr-1_6b-q4f16_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 1511.66,
+    //   low_resource_required: true,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/stablelm-2-zephyr-1_6b-q4f32_1-MLC",
+    //   model_id: "stablelm-2-zephyr-1_6b-q4f32_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/stablelm-2-zephyr-1_6b-q4f32_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 1847.33,
+    //   low_resource_required: true,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
     // RedPajama
     {
       model:
@@ -534,35 +534,35 @@ export const prebuiltAppConfig: AppConfig = {
         context_window_size: 2048,
       },
     },
-    {
-      model:
-        "https://huggingface.co/mlc-ai/RedPajama-INCITE-Chat-3B-v1-q4f16_1-MLC",
-      model_id: "RedPajama-INCITE-Chat-3B-v1-q4f16_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/RedPajama-INCITE-Chat-3B-v1-q4f16_1-ctx2k_cs1k-webgpu.wasm",
-      vram_required_MB: 2041.09,
-      low_resource_required: true,
-      required_features: ["shader-f16"],
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
-    {
-      model:
-        "https://huggingface.co/mlc-ai/RedPajama-INCITE-Chat-3B-v1-q4f32_1-MLC",
-      model_id: "RedPajama-INCITE-Chat-3B-v1-q4f32_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/RedPajama-INCITE-Chat-3B-v1-q4f32_1-ctx2k_cs1k-webgpu.wasm",
-      vram_required_MB: 2558.09,
-      low_resource_required: true,
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
+    // {
+    //   model:
+    //     "https://huggingface.co/mlc-ai/RedPajama-INCITE-Chat-3B-v1-q4f16_1-MLC",
+    //   model_id: "RedPajama-INCITE-Chat-3B-v1-q4f16_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/RedPajama-INCITE-Chat-3B-v1-q4f16_1-ctx2k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 2041.09,
+    //   low_resource_required: true,
+    //   required_features: ["shader-f16"],
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
+    // {
+    //   model:
+    //     "https://huggingface.co/mlc-ai/RedPajama-INCITE-Chat-3B-v1-q4f32_1-MLC",
+    //   model_id: "RedPajama-INCITE-Chat-3B-v1-q4f32_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/RedPajama-INCITE-Chat-3B-v1-q4f32_1-ctx2k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 2558.09,
+    //   low_resource_required: true,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
     // TinyLlama v1.0
     {
       model:
@@ -593,35 +593,35 @@ export const prebuiltAppConfig: AppConfig = {
         context_window_size: 2048,
       },
     },
-    {
-      model:
-        "https://huggingface.co/mlc-ai/TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC",
-      model_id: "TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/TinyLlama-1.1B-Chat-v1.0-q4f16_1-ctx2k_cs1k-webgpu.wasm",
-      vram_required_MB: 675.24,
-      low_resource_required: true,
-      required_features: ["shader-f16"],
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
-    {
-      model:
-        "https://huggingface.co/mlc-ai/TinyLlama-1.1B-Chat-v1.0-q4f32_1-MLC",
-      model_id: "TinyLlama-1.1B-Chat-v1.0-q4f32_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/TinyLlama-1.1B-Chat-v1.0-q4f32_1-ctx2k_cs1k-webgpu.wasm",
-      vram_required_MB: 795.98,
-      low_resource_required: true,
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
+    // {
+    //   model:
+    //     "https://huggingface.co/mlc-ai/TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC",
+    //   model_id: "TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/TinyLlama-1.1B-Chat-v1.0-q4f16_1-ctx2k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 675.24,
+    //   low_resource_required: true,
+    //   required_features: ["shader-f16"],
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
+    // {
+    //   model:
+    //     "https://huggingface.co/mlc-ai/TinyLlama-1.1B-Chat-v1.0-q4f32_1-MLC",
+    //   model_id: "TinyLlama-1.1B-Chat-v1.0-q4f32_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/TinyLlama-1.1B-Chat-v1.0-q4f32_1-ctx2k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 795.98,
+    //   low_resource_required: true,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
     // BELOW ARE MODELS OF OLDER VERSIONS OR NOT AS PRACTICAL
     // Llama-3 70B
     {
@@ -638,33 +638,33 @@ export const prebuiltAppConfig: AppConfig = {
       },
     },
     // Llama-2
-    {
-      model: "https://huggingface.co/mlc-ai/Llama-2-7b-chat-hf-q4f32_1-MLC",
-      model_id: "Llama-2-7b-chat-hf-q4f32_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/Llama-2-7b-chat-hf-q4f32_1-ctx4k_cs1k-webgpu.wasm",
-      vram_required_MB: 5284.01,
-      low_resource_required: false,
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
-    {
-      model: "https://huggingface.co/mlc-ai/Llama-2-7b-chat-hf-q4f16_1-MLC",
-      model_id: "Llama-2-7b-chat-hf-q4f16_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/Llama-2-7b-chat-hf-q4f16_1-ctx4k_cs1k-webgpu.wasm",
-      vram_required_MB: 4618.52,
-      low_resource_required: false,
-      required_features: ["shader-f16"],
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/Llama-2-7b-chat-hf-q4f32_1-MLC",
+    //   model_id: "Llama-2-7b-chat-hf-q4f32_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/Llama-2-7b-chat-hf-q4f32_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 5284.01,
+    //   low_resource_required: false,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/Llama-2-7b-chat-hf-q4f16_1-MLC",
+    //   model_id: "Llama-2-7b-chat-hf-q4f16_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/Llama-2-7b-chat-hf-q4f16_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 4618.52,
+    //   low_resource_required: false,
+    //   required_features: ["shader-f16"],
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
     {
       model: "https://huggingface.co/mlc-ai/Llama-2-7b-chat-hf-q4f32_1-MLC",
       model_id: "Llama-2-7b-chat-hf-q4f32_1-MLC",
@@ -734,33 +734,33 @@ export const prebuiltAppConfig: AppConfig = {
         context_window_size: 2048,
       },
     },
-    {
-      model: "https://huggingface.co/mlc-ai/phi-2-q4f16_1-MLC",
-      model_id: "phi-2-q4f16_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/phi-2-q4f16_1-ctx2k_cs1k-webgpu.wasm",
-      vram_required_MB: 2131.97,
-      low_resource_required: true,
-      required_features: ["shader-f16"],
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
-    {
-      model: "https://huggingface.co/mlc-ai/phi-2-q4f32_1-MLC",
-      model_id: "phi-2-q4f32_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/phi-2-q4f32_1-ctx2k_cs1k-webgpu.wasm",
-      vram_required_MB: 2740.48,
-      low_resource_required: true,
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/phi-2-q4f16_1-MLC",
+    //   model_id: "phi-2-q4f16_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/phi-2-q4f16_1-ctx2k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 2131.97,
+    //   low_resource_required: true,
+    //   required_features: ["shader-f16"],
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/phi-2-q4f32_1-MLC",
+    //   model_id: "phi-2-q4f32_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/phi-2-q4f32_1-ctx2k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 2740.48,
+    //   low_resource_required: true,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
     // Phi-1.5
     {
       model: "https://huggingface.co/mlc-ai/phi-1_5-q4f16_1-MLC",
@@ -789,33 +789,33 @@ export const prebuiltAppConfig: AppConfig = {
         context_window_size: 2048,
       },
     },
-    {
-      model: "https://huggingface.co/mlc-ai/phi-1_5-q4f16_1-MLC",
-      model_id: "phi-1_5-q4f16_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/phi-1_5-q4f16_1-ctx2k_cs1k-webgpu.wasm",
-      vram_required_MB: 1210.09,
-      low_resource_required: true,
-      required_features: ["shader-f16"],
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
-    {
-      model: "https://huggingface.co/mlc-ai/phi-1_5-q4f32_1-MLC",
-      model_id: "phi-1_5-q4f32_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/phi-1_5-q4f32_1-ctx2k_cs1k-webgpu.wasm",
-      vram_required_MB: 1682.09,
-      low_resource_required: true,
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/phi-1_5-q4f16_1-MLC",
+    //   model_id: "phi-1_5-q4f16_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/phi-1_5-q4f16_1-ctx2k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 1210.09,
+    //   low_resource_required: true,
+    //   required_features: ["shader-f16"],
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/phi-1_5-q4f32_1-MLC",
+    //   model_id: "phi-1_5-q4f32_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/phi-1_5-q4f32_1-ctx2k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 1682.09,
+    //   low_resource_required: true,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
     // TinyLlama v0.4
     {
       model:
@@ -846,34 +846,34 @@ export const prebuiltAppConfig: AppConfig = {
         context_window_size: 2048,
       },
     },
-    {
-      model:
-        "https://huggingface.co/mlc-ai/TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC",
-      model_id: "TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/TinyLlama-1.1B-Chat-v0.4-q4f16_1-ctx2k_cs1k-webgpu.wasm",
-      vram_required_MB: 675.24,
-      low_resource_required: true,
-      required_features: ["shader-f16"],
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
-    {
-      model:
-        "https://huggingface.co/mlc-ai/TinyLlama-1.1B-Chat-v0.4-q4f32_1-MLC",
-      model_id: "TinyLlama-1.1B-Chat-v0.4-q4f32_1-MLC-1k",
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        "/TinyLlama-1.1B-Chat-v0.4-q4f32_1-ctx2k_cs1k-webgpu.wasm",
-      vram_required_MB: 795.98,
-      low_resource_required: true,
-      overrides: {
-        context_window_size: 1024,
-      },
-    },
+    // {
+    //   model:
+    //     "https://huggingface.co/mlc-ai/TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC",
+    //   model_id: "TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/TinyLlama-1.1B-Chat-v0.4-q4f16_1-ctx2k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 675.24,
+    //   low_resource_required: true,
+    //   required_features: ["shader-f16"],
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
+    // {
+    //   model:
+    //     "https://huggingface.co/mlc-ai/TinyLlama-1.1B-Chat-v0.4-q4f32_1-MLC",
+    //   model_id: "TinyLlama-1.1B-Chat-v0.4-q4f32_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/TinyLlama-1.1B-Chat-v0.4-q4f32_1-ctx2k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 795.98,
+    //   low_resource_required: true,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
   ],
 };
