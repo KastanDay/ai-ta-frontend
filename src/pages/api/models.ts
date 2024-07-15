@@ -78,10 +78,10 @@ const handler = async (req: Request): Promise<Response> => {
       apiKey: process.env.ANTHROPIC_API_KEY,   // this is the anthropic api key
       AnthropicModel: 'claude-3-opus-20240229'
       //AzureEndpoint: 'https://uiuc-chat-canada-east.openai.azure.com/'
-      
+
     }
 
-    const llmProviderKeys: LLMProvider[] = [ollamaProvider, OpenAIProvider, AzureProvider, AnthropicProvider] 
+    const llmProviderKeys: LLMProvider[] = [ollamaProvider, OpenAIProvider, AzureProvider, AnthropicProvider]
     // iterates and collects all models for the givne provider keys
     let totalModels: SupportedModels[] = []
     for (const provider of llmProviderKeys) {
@@ -89,18 +89,17 @@ const handler = async (req: Request): Promise<Response> => {
         const fetchedOllamaModels = await getOllamaModels(ollamaProvider)
         ollamaModels = fetchedOllamaModels // Update the exported variable
         totalModels.push(ollamaModels)
-
       }
       else if (provider.provider == 'OpenAI') {
         //2. call an endpoint to check which openai modle available
         const openAIModels = await getOpenAIModels(OpenAIProvider)
         totalModels.push(openAIModels)
-      } 
-      else if(provider.provider == 'Azure') {
+      }
+      else if (provider.provider == 'Azure') {
         const azureOpenaiModels = await getAzureModels(AzureProvider)
         totalModels.push(azureOpenaiModels)
       }
-      else if(provider.provider == 'Anthropic'){
+      else if (provider.provider == 'Anthropic') {
         const AnthropicModels = await getAnthropicModels(AnthropicProvider)
         totalModels.push(AnthropicModels)
       }
@@ -122,6 +121,24 @@ const handler = async (req: Request): Promise<Response> => {
     // legacy code take a look
     apiKey = key ? key : (process.env.OPENAI_API_KEY as string)
     // Check if the key starts with 'sk-' (indicating it's not encrypted)
+    //     if (key && isEncrypted(key)) {
+    //       // Decrypt the key
+    //       const decryptedText = await decrypt(
+    //         key,
+    //         process.env.NEXT_PUBLIC_SIGNING_KEY as string,
+    //       )
+    //       apiKey = decryptedText as string
+    //     }
+    //     console.log('models.ts Final openai key: ', apiKey)
+    //     // return total models which compiles all valid models
+    //     return new Response(JSON.stringify(totalModels), { status: 200 })
+    //   } catch (error) {
+    //     console.error(error)
+    //     return new Response('Error', { status: 500 })
+    //   }
+    // }
+
+    // export default handler
     if (key && isEncrypted(key)) {
       // Decrypt the key
       const decryptedText = await decrypt(
@@ -129,6 +146,7 @@ const handler = async (req: Request): Promise<Response> => {
         process.env.NEXT_PUBLIC_SIGNING_KEY as string,
       )
       apiKey = decryptedText as string
+      // console.log('models.ts Decrypted api key: ', apiKey)
     }
     //console.log('models.ts Final openai key: ', apiKey)
     // return total models which compiles all valid models
@@ -138,5 +156,4 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response('Error', { status: 500 })
   }
 }
-
 export default handler
