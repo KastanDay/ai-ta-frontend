@@ -687,9 +687,20 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               const iterator = response[Symbol.asyncIterator]()
               let result = await iterator.next()
               done = result.done
+              if (done) {
+                console.log("if it is done")
+                controller.abort()
+                break
+              } else if (result.value == undefined) {
+                console.log("result value is undefined")
+                continue
+              } else if (result.value.choices[0]?.delta.content == undefined) {
+                console.log("chunk value undefined")
+                continue
+              }
               chunkValue = result.value.choices[0]?.delta.content
               text += chunkValue
-              console.log(chunkValue)
+
             } else {
               // OpenAI models
               const { value, done: doneReading } = await reader!.read()
