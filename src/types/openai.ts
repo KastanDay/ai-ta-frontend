@@ -1,5 +1,7 @@
 // import { OPENAI_API_TYPE } from '../utils/app/const'
 
+import { SupportedModelsObj } from '~/pages/api/models'
+
 export interface OpenAIModel {
   id: string
   name: string
@@ -19,19 +21,22 @@ export const preferredModelIds = [
   'gpt-3.5-turbo',
 ]
 
-export const selectBestModel = (models: OpenAIModel[]): OpenAIModel => {
+export const selectBestModel = (models: SupportedModelsObj): OpenAIModel => {
   const defaultModelId = OpenAIModelID.GPT_4o
+  if (!models || !models.OpenAI) {
+    return OpenAIModels[defaultModelId]
+  }
 
   // Find and return the first available preferred model
   for (const preferredId of preferredModelIds) {
-    const model = models.find((m) => m.id === preferredId)
+    const model = models.OpenAI.find((m) => m.id === preferredId)
     if (model) {
       return model
     }
   }
 
   // Fallback to the first model in the list or the default model
-  return models[0] || OpenAIModels[defaultModelId]
+  return models.OpenAI[0] || OpenAIModels[defaultModelId]
 }
 
 export enum OpenAIModelID {
@@ -46,8 +51,6 @@ export enum OpenAIModelID {
   GPT_4_HACKATHON = 'gpt-4-hackathon',
   GPT_4_AZURE_04_09 = 'gpt-4-04-09',
 }
-
-
 
 // in case the `DEFAULT_MODEL` environment variable is not set or set to an unsupported model
 export const fallbackModelID = OpenAIModelID.GPT_4

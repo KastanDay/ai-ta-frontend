@@ -65,6 +65,7 @@
     "next": "^13.5.6",
     "next-axiom": "^1.0.0-rc.1",
     "next-i18next": "^13.2.2",
+    "ollama": "^0.5.2",
     "ollama-ai-provider": "^0.7.0",
     "openai": "^4.42.0",
     "posthog-js": "^1.96.0",

@@ -30,6 +30,7 @@ import { OllamaModel } from '~/utils/modelProviders/ollama'
 import { CreateMLCEngine } from '@mlc-ai/web-llm'
 import { ChevronsDownLeft } from 'tabler-icons-react'
 import { env } from 'process'
+import { all } from 'axios'
 
 export const config = {
   runtime: 'edge',
@@ -52,7 +53,6 @@ export let ollamaModels: OllamaModel[] = []
 
 const handler = async (req: Request): Promise<Response> => {
   try {
-
     // TODO: MOVE THESE TO DB INPUTS
 
     // const { key } = (await req.json()) as {
@@ -115,7 +115,8 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    console.log('allSupportedModels', allSupportedModels)
+    // console.log('allSupportedModels', allSupportedModels)
+    console.log('Done loading models...')
 
     return new Response(JSON.stringify(allSupportedModels), { status: 200 })
   } catch (error) {
@@ -125,3 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
 }
 
 export default handler
+
+export interface SupportedModelsObj {
+  [providerName: string]: SupportedModels
+}
