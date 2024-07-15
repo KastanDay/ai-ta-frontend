@@ -213,8 +213,9 @@ const Home = () => {
       // Get models available to users
       try {
         if (!course_metadata || !key) return
-        const data = await getModels({ key: key })
-        // dispatch({ field: 'models', value: data })
+
+        console.log('Course name when fetching modes: ', course_name)
+        const data = await getModels({ projectName: course_name })
 
         let models = data as unknown as SupportedModelsObj
         console.log('Models from getModels: ', models)
@@ -224,33 +225,6 @@ const Home = () => {
           'course_metadata.disabled_models: ',
           course_metadata.disabled_models,
         )
-
-        // TODO: add this to models.tsx, filter out disabled OpenAI models.
-
-        // const models = data as OpenAIModel[]
-        // if (course_metadata.disabled_models) {
-        //   // Convert IDs to model objects
-        //   if (models.openai) {
-        //     const disabledModelObjects = course_metadata.disabled_models.map(
-        //       // // @ts-ignore -- this type cast is FINE!! UGH
-        //       (id) => models.openai.find((model) => model.id === id),
-        //     )
-        //     // Filter out disabled models
-        //     const validOpenAIModels = models.openai.filter(
-        //       (model) => !disabledModelObjects.includes(model),
-        //     )
-        //     models.openai = validOpenAIModels
-
-        //     console.log('Setting models in getModels (some are disabled): ', models)
-
-        //     dispatch({ field: 'models', value: models })
-        //   }
-
-        // } else {
-        //   // All models are enabled
-        //   console.log('Setting models in getModels (no disabled): ', models)
-        //   dispatch({ field: 'models', value: models })
-        // }
 
         console.log('at end of setOpenaiModels func')
       } catch (error) {

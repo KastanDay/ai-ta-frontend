@@ -53,12 +53,10 @@ export let ollamaModels: OllamaModel[] = []
 
 const handler = async (req: Request): Promise<Response> => {
   try {
+    const { projectName } = (await req.json()) as {
+      projectName: string
+    }
     // TODO: MOVE THESE TO DB INPUTS
-
-    // const { key } = (await req.json()) as {
-    //   key: string
-    // }
-    // Eventually we'll use this. For now, there's no API Key for Ollama
     const ollamaProvider: LLMProvider = {
       provider: ProviderNames.Ollama,
       enabled: true,
@@ -84,7 +82,6 @@ const handler = async (req: Request): Promise<Response> => {
       enabled: true,
       apiKey: process.env.ANTHROPIC_API_KEY, // this is the anthropic api key
       AnthropicModel: 'claude-3-opus-20240229',
-      //AzureEndpoint: 'https://uiuc-chat-canada-east.openai.azure.com/'
     }
 
     const llmProviderKeys: LLMProvider[] = [
@@ -102,7 +99,7 @@ const handler = async (req: Request): Promise<Response> => {
         ollamaModels = fetchedOllamaModels // Update the exported variable
         allSupportedModels[llmProvider.provider] = fetchedOllamaModels
       } else if (llmProvider.provider == ProviderNames.OpenAI) {
-        const openAIModels = await getOpenAIModels(OpenAIProvider)
+        const openAIModels = await getOpenAIModels(OpenAIProvider, projectName)
         allSupportedModels[llmProvider.provider] = openAIModels
       } else if (llmProvider.provider == ProviderNames.Azure) {
         const azureModels = await getAzureModels(AzureProvider)
