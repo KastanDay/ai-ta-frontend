@@ -695,15 +695,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               const iterator = response[Symbol.asyncIterator]()
               const result = await iterator.next()
               done = result.done
-              if (done) {
-                console.log('if it is done')
-                controller.abort()
-                break
-              } else if (result.value == undefined) {
-                console.log('result value is undefined')
-                continue
-              } else if (result.value.choices[0]?.delta.content == undefined) {
-                console.log('chunk value undefined')
+              if (
+                done ||
+                result.value == undefined ||
+                result.value.choices[0]?.delta.content == undefined
+              ) {
+                // exit early
                 continue
               }
               chunkValue = result.value.choices[0]?.delta.content
