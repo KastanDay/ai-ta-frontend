@@ -13,10 +13,9 @@ import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Group, Input, Select, Title, Text } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
-import { webLLMModels, ollamaModels } from '~/pages/api/models'
 import { OllamaModel } from '~/utils/modelProviders/ollama'
 import { OpenAIModel, OpenAIModels, preferredModelIds } from '~/types/openai'
-import { WebllmModel } from '~/utils/modelProviders/WebLLM'
+import { WebllmModel, webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { Ollama } from 'ollama-ai-provider'
 import { modelCached } from './UserSettings'
 
@@ -202,10 +201,17 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       const defaultModel =
         models.OpenAI!.find(
           (model) =>
-            model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4',
+            model.id === 'gpt-4-from-canada-east' ||
+            model.id === 'gpt-40-2024-05-13',
         ) || models[0]
+
       const model =
-        models.OpenAI!.find((model) => model.id === modelId) || defaultModel
+        Object.keys(models).reduce((foundModel: any, key: any) => {
+          console.log('key:', key, 'models[key]:', models[key])
+          return (
+            foundModel || models[key]!.find((model) => model.id === modelId)
+          )
+        }, undefined) || defaultModel
       console.debug('handleModelClick SETTING IT TO: ', model)
 
       selectedConversation &&

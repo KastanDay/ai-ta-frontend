@@ -8,6 +8,7 @@ export enum ProviderNames {
   OpenAI = 'OpenAI',
   Azure = 'Azure',
   Anthropic = 'Anthropic',
+  WebLLM = 'WebLLM',
 }
 
 export type SupportedModels =

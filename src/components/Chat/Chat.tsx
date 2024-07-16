@@ -72,7 +72,7 @@ import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
 import Link from 'next/link'
 import { CropwizardLicenseDisclaimer } from '~/pages/cropwizard-licenses'
 import Head from 'next/head'
-import ChatUI from '~/utils/modelProviders/WebLLM'
+import ChatUI, { webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { MLCEngine } from '@mlc-ai/web-llm'
 import * as webllm from '@mlc-ai/web-llm'
 import {
@@ -80,7 +80,6 @@ import {
   prebuiltAppConfig,
 } from '~/utils/modelProviders/ConfigWebLLM'
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
-import { webLLMModels } from '~/pages/api/models'
 
 const montserrat_med = Montserrat({
   weight: '500',

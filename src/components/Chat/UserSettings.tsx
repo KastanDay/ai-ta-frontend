@@ -11,9 +11,8 @@ import { ToolsItem } from './ToolsItem'
 import { ModelParams } from './ModelParams'
 import { useTranslation } from 'react-i18next'
 import { prebuiltAppConfig } from '~/utils/modelProviders/ConfigWebLLM'
-import { webLLMModels } from '~/pages/api/models'
 import * as webllm from '@mlc-ai/web-llm'
-import { WebllmModel } from '~/utils/modelProviders/WebLLM'
+import { WebllmModel, webLLMModels } from '~/utils/modelProviders/WebLLM'
 
 const useStyles = createStyles((theme) => ({
   modalContent: {

@@ -7,6 +7,8 @@ import {
 import { buildPrompt } from '~/pages/api/chat'
 // import buildPrompt from '~/pages/api/chat'
 import { Conversation, Message } from '~/types/chat'
+import { ModelRecord, prebuiltAppConfig } from './ConfigWebLLM'
+// import { ModelRecord, prebuiltAppConfig } from './ConfigWebLLM'
 
 // TODO: finish this message interface. Write a converter between `Message` and `WebLLMMessage`
 export interface WebLLMMessage {
@@ -283,3 +285,18 @@ export default class ChatUI {
     this.requestInProgress = false
   }
 }
+
+export function convertToLocalModels(record: ModelRecord): WebllmModel {
+  return {
+    id: record.model_id,
+    name: record.model_id,
+    parameterSize: 'Unknown',
+    tokenLimit: record.overrides!.context_window_size!,
+    downloadSize: record.vram_required_MB
+      ? `${(record.vram_required_MB / 1024).toFixed(2)}GB`
+      : 'unknown',
+  }
+}
+export const webLLMModels: WebllmModel[] = prebuiltAppConfig.model_list.map(
+  (model: ModelRecord) => convertToLocalModels(model),
+)

@@ -1,13 +1,3 @@
-// task is to iterate through the models and find available models that can run on ollama
-import {
-  OPENAI_API_HOST,
-  OPENAI_API_TYPE,
-  OPENAI_API_VERSION,
-  OPENAI_ORGANIZATION,
-} from '@/utils/app/const'
-
-import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
-import { decrypt, isEncrypted } from '~/utils/crypto'
 import {
   LLMProvider,
   ProviderNames,
@@ -16,40 +6,13 @@ import {
 import { getOllamaModels, runOllamaChat } from '~/utils/modelProviders/ollama'
 import { getOpenAIModels } from '~/utils/modelProviders/openai'
 import { getAzureModels } from '~/utils/modelProviders/azure'
-import {
-  getAnthropicModels,
-  runAnthropicChat,
-} from '~/utils/modelProviders/anthropic'
+import { getAnthropicModels } from '~/utils/modelProviders/anthropic'
 
-import { WebllmModel } from '~/utils/modelProviders/WebLLM'
-import {
-  ModelRecord,
-  prebuiltAppConfig,
-} from '~/utils/modelProviders/ConfigWebLLM'
-import { OllamaModel } from '~/utils/modelProviders/ollama'
-import { CreateMLCEngine } from '@mlc-ai/web-llm'
-import { ChevronsDownLeft } from 'tabler-icons-react'
-import { env } from 'process'
-import { all } from 'axios'
+import { webLLMModels } from '~/utils/modelProviders/WebLLM'
 
 export const config = {
   runtime: 'edge',
 }
-export function convertToLocalModels(record: ModelRecord): WebllmModel {
-  return {
-    id: record.model_id,
-    name: record.model_id,
-    parameterSize: 'Unknown',
-    tokenLimit: record.overrides!.context_window_size!,
-    downloadSize: record.vram_required_MB
-      ? `${(record.vram_required_MB / 1024).toFixed(2)}GB`
-      : 'unknown',
-  }
-}
-export const webLLMModels: WebllmModel[] = prebuiltAppConfig.model_list.map(
-  (model: ModelRecord) => convertToLocalModels(model),
-)
-export let ollamaModels: OllamaModel[] = []
 
 const handler = async (req: Request): Promise<Response> => {
   try {
@@ -84,31 +47,44 @@ const handler = async (req: Request): Promise<Response> => {
       AnthropicModel: 'claude-3-opus-20240229',
     }
 
+    const WebLLMProvider: LLMProvider = {
+      provider: ProviderNames.WebLLM,
+      enabled: true,
+    }
+
     const llmProviderKeys: LLMProvider[] = [
       ollamaProvider,
       OpenAIProvider,
       AzureProvider,
       AnthropicProvider,
+      WebLLMProvider,
     ]
     // END-TODO: MOVE THESE TO DB INPUTS
 
-    await runOllamaChat()
+    // await runOllamaChat()
 
     const allSupportedModels: { [providerName: string]: SupportedModels } = {}
     for (const llmProvider of llmProviderKeys) {
+      if (!llmProvider.enabled) {
+        continue
+      }
+
       if (llmProvider.provider == ProviderNames.Ollama) {
-        const fetchedOllamaModels = await getOllamaModels(ollamaProvider)
-        ollamaModels = fetchedOllamaModels // Update the exported variable
-        allSupportedModels[llmProvider.provider] = fetchedOllamaModels
+        allSupportedModels[llmProvider.provider] =
+          await getOllamaModels(ollamaProvider)
       } else if (llmProvider.provider == ProviderNames.OpenAI) {
-        const openAIModels = await getOpenAIModels(OpenAIProvider, projectName)
-        allSupportedModels[llmProvider.provider] = openAIModels
+        allSupportedModels[llmProvider.provider] = await getOpenAIModels(
+          OpenAIProvider,
+          projectName,
+        )
       } else if (llmProvider.provider == ProviderNames.Azure) {
-        const azureModels = await getAzureModels(AzureProvider)
-        allSupportedModels[llmProvider.provider] = azureModels
+        allSupportedModels[llmProvider.provider] =
+          await getAzureModels(AzureProvider)
       } else if (llmProvider.provider == ProviderNames.Anthropic) {
-        const anthropicModels = await getAnthropicModels(AnthropicProvider)
-        allSupportedModels[llmProvider.provider] = anthropicModels
+        allSupportedModels[llmProvider.provider] =
+          await getAnthropicModels(AnthropicProvider)
+      } else if (llmProvider.provider == ProviderNames.WebLLM) {
+        allSupportedModels[llmProvider.provider] = webLLMModels
       } else {
         continue
       }
