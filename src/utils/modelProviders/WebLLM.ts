@@ -99,14 +99,12 @@ export default class ChatUI {
     return this.chatRequestChain
   }
 
-
   async asyncInitChat(
     messageUpdate: (kind: string, text: string, append: boolean) => void,
   ) {
     if (this.chatLoaded) return
     this.requestInProgress = true
     messageUpdate('init', '', true)
-
 
     const initProgressCallback = (report: { text: string }) => {
       messageUpdate('init', report.text, false)
@@ -153,9 +151,9 @@ export default class ChatUI {
 
   async runChatCompletion(conversation: Conversation, projectName: string) {
     // TODO: need the input to be the Conversation, not messages.
-    let curMessage = ''
-    let usage: CompletionUsage | undefined = undefined
-    let messagesToSend: ChatCompletionMessageParam[] = []
+    // let curMessage = ''
+    // let usage: CompletionUsage | undefined = undefined
+    const messagesToSend: ChatCompletionMessageParam[] = []
 
     console.log('Messages with tons of metadata', conversation.messages)
 
@@ -169,12 +167,15 @@ export default class ChatUI {
     // Call build prompt here.
 
     // Then build the messagesToSend array.... update system message every time.
-    messagesToSend.push({
-      role: 'system',
-      content:
-        conversation.messages[conversation.messages.length - 1]
-          ?.latestSystemMessage!,
-    })
+    const latestSystemMessage =
+      conversation.messages[conversation.messages.length - 1]
+        ?.latestSystemMessage
+    if (latestSystemMessage) {
+      messagesToSend.push({
+        role: 'system',
+        content: latestSystemMessage,
+      })
+    }
     // Push everything except that last user message...
     // Use the engineered version of the last user message.
 
@@ -197,12 +198,17 @@ export default class ChatUI {
     })
 
     // TODO: last user message needs to be the engineered version, too.
-    messagesToSend.push({
-      role: 'user',
-      content:
-        conversation.messages[conversation.messages.length - 1]
-          ?.finalPromtEngineeredMessage!,
-    })
+    // Ensure the last message exists and has the required property before pushing to messagesToSend
+    const lastMessage = conversation.messages[conversation.messages.length - 1]
+    if (lastMessage && lastMessage.finalPromtEngineeredMessage) {
+      messagesToSend.push({
+        role: 'user',
+        content: lastMessage.finalPromtEngineeredMessage,
+      })
+    } else {
+      // Handle the case where the finalPromtEngineeredMessage is not available
+      console.error('Final prompt engineered message is missing')
+    }
 
     console.log('CHECK ME Messages to send', messagesToSend)
 

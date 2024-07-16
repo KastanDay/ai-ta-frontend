@@ -12,7 +12,7 @@ import { ModelParams } from './ModelParams'
 import { useTranslation } from 'react-i18next'
 import { prebuiltAppConfig } from '~/utils/modelProviders/ConfigWebLLM'
 import { webLLMModels } from '~/pages/api/models'
-import * as webllm from "@mlc-ai/web-llm";
+import * as webllm from '@mlc-ai/web-llm'
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 
 const useStyles = createStyles((theme) => ({
@@ -46,15 +46,15 @@ const useStyles = createStyles((theme) => ({
     margin: '8px 0',
   },
 }))
-export let modelCached: WebllmModel[] = []
+export const modelCached: WebllmModel[] = []
 
-const appConfig = prebuiltAppConfig;
+const appConfig = prebuiltAppConfig
 // CHANGE THIS TO SEE EFFECTS OF BOTH, CODE BELOW DO NOT NEED TO CHANGE
-appConfig.useIndexedDBCache = false;
+appConfig.useIndexedDBCache = false
 if (appConfig.useIndexedDBCache) {
-  console.log("Using IndexedDB Cache");
+  console.log('Using IndexedDB Cache')
 } else {
-  console.log("Using Cache API");
+  console.log('Using Cache API')
 }
 
 export const UserSettings = () => {
@@ -69,20 +69,29 @@ export const UserSettings = () => {
   const [opened, { open, close }] = useDisclosure(false)
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const loadModelCache = async () => {
-    console.log('start loadingmodelcache');
-    const model = selectedConversation?.model;
-    if (model && 'name' in model && webLLMModels.some(m => m.name === model.name)) {
+    console.log('start loadingmodelcache')
+    const model = selectedConversation?.model
+    if (
+      model &&
+      'name' in model &&
+      webLLMModels.some((m) => m.name === model.name)
+    ) {
       for (const model of webLLMModels) {
-        const theCachedModel = await webllm.hasModelInCache(model.name, appConfig);
+        const theCachedModel = await webllm.hasModelInCache(
+          model.name,
+          appConfig,
+        )
         if (theCachedModel) {
-          if (!modelCached.some(cachedModel => cachedModel.name === model.name)) {
-            modelCached.push(model);
+          if (
+            !modelCached.some((cachedModel) => cachedModel.name === model.name)
+          ) {
+            modelCached.push(model)
           }
-          console.log('model is cached:', model.name);
+          console.log('model is cached:', model.name)
         }
-        console.log("hasModelInCache: ", modelCached);
+        console.log('hasModelInCache: ', modelCached)
       }
-    };
+    }
   }
   // if (selectedConversation && webLLMModels.some(m => m.name === selectedConversation.model.name)) {
   //   loadModelCache();
@@ -90,7 +99,7 @@ export const UserSettings = () => {
   useEffect(() => {
     if (showModelSettings) {
       open()
-      loadModelCache();
+      loadModelCache()
     } else {
       close()
     }

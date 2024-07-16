@@ -74,8 +74,11 @@ import { CropwizardLicenseDisclaimer } from '~/pages/cropwizard-licenses'
 import Head from 'next/head'
 import ChatUI from '~/utils/modelProviders/WebLLM'
 import { MLCEngine } from '@mlc-ai/web-llm'
-import * as webllm from "@mlc-ai/web-llm";
-import { ModelRecord, prebuiltAppConfig } from '~/utils/modelProviders/ConfigWebLLM'
+import * as webllm from '@mlc-ai/web-llm'
+import {
+  ModelRecord,
+  prebuiltAppConfig,
+} from '~/utils/modelProviders/ConfigWebLLM'
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import { webLLMModels } from '~/pages/api/models'
 
@@ -89,7 +92,7 @@ const DEFAULT_DOCUMENT_GROUP = {
   name: 'All Documents', // This value can be stored in an env variable
   checked: true,
 }
-export let modelCached: WebllmModel[] = []
+export const modelCached: WebllmModel[] = []
 export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
   const clerk_obj = useUser()
@@ -168,11 +171,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }
       }
     }
-    if (selectedConversation && webLLMModels.some(m => m.name === selectedConversation.model.name)) {
-
+    if (
+      selectedConversation &&
+      webLLMModels.some((m) => m.name === selectedConversation.model.name)
+    ) {
       loadModel()
     }
-
   }, [selectedConversation?.model.name])
 
   const [currentMessage, setCurrentMessage] = useState<Message>()
@@ -356,12 +360,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ; (message.content as Content[])[imgDescIndex] = {
+          ;(message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ; (message.content as Content[]).push({
+          ;(message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -522,7 +526,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         console.log('Tool result:', message.tools)
 
         const chatBody: ChatBody = {
-          conversation: updatedConversation,
+          conversation: updatedConversation!,
           key: getOpenAIKey(courseMetadata),
           course_name: getCurrentPageName(),
           courseMetadata: courseMetadata,
@@ -538,7 +542,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           body: JSON.stringify(chatBody),
         })
         chatBody.conversation = await buildPromptResponse.json()
-        updatedConversation = chatBody.conversation
+        updatedConversation = chatBody.conversation!
 
         console.log(
           'Updated conversation (after build prompt):',
@@ -557,20 +561,23 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         if (
           // ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some((prefix) =>
           //   selectedConversation.model.name.startsWith(prefix),
-          webLLMModels.some((model) => model.name === selectedConversation.model.name)
+          webLLMModels.some(
+            (model) => model.name === selectedConversation.model.name,
+          )
         ) {
           console.log('is model loading', chat_ui.isModelLoading())
           if (chat_ui.isModelLoading() == false) {
             try {
               response = await chat_ui.runChatCompletion(
-                chatBody.conversation,
+                chatBody.conversation!,
                 getCurrentPageName(),
               )
             } catch (error) {
               errorToast({
                 title: 'Error running chat completion',
-                message: (error as Error).message || 'An unexpected error occurred',
-              });
+                message:
+                  (error as Error).message || 'An unexpected error occurred',
+              })
             }
           }
         } else {
@@ -680,27 +687,28 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               // ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some(
               //   (prefix) => selectedConversation.model.name.startsWith(prefix),
               // )
-              webLLMModels.some((model) => model.name === selectedConversation.model.name)
+              webLLMModels.some(
+                (model) => model.name === selectedConversation.model.name,
+              )
             ) {
               // WebLLM models
               // @ts-ignore - iterator for WebLLM `AsyncIterable<ChatCompletionChunk>`
               const iterator = response[Symbol.asyncIterator]()
-              let result = await iterator.next()
+              const result = await iterator.next()
               done = result.done
               if (done) {
-                console.log("if it is done")
+                console.log('if it is done')
                 controller.abort()
                 break
               } else if (result.value == undefined) {
-                console.log("result value is undefined")
+                console.log('result value is undefined')
                 continue
               } else if (result.value.choices[0]?.delta.content == undefined) {
-                console.log("chunk value undefined")
+                console.log('chunk value undefined')
                 continue
               }
               chunkValue = result.value.choices[0]?.delta.content
               text += chunkValue
-
             } else {
               // OpenAI models
               const { value, done: doneReading } = await reader!.read()
@@ -874,7 +882,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
       handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
@@ -967,13 +975,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-      courseMetadata.example_questions.length > 0
+    courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-        'Make a bullet point list of key takeaways from this project.',
-        'What are the best practices for [Activity or Process] in [Context or Field]?',
-        'Can you explain the concept of [Specific Concept] in simple terms?',
-      ]
+          'Make a bullet point list of key takeaways from this project.',
+          'What are the best practices for [Activity or Process] in [Context or Field]?',
+          'Can you explain the concept of [Specific Concept] in simple terms?',
+        ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {

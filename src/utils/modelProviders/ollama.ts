@@ -5,6 +5,10 @@ import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
 import { decrypt, isEncrypted } from '~/utils/crypto'
 import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
 
+// import ollama from 'ollama'
+// import ollama from 'ollama/browser'
+import { Ollama } from 'ollama'
+
 export interface OllamaModel {
   id: string
   name: string
@@ -13,6 +17,23 @@ export interface OllamaModel {
 }
 
 export const runOllamaChat = async () => {
+  console.log('Running ollama chat')
+
+  const ollama = new Ollama({ host: 'https://ollama.ncsa.ai/api' })
+
+  const message = { role: 'user', content: 'Why is the sky blue?' }
+  // ollama.configure({ baseUrl: 'https://ollama.ncsa.ai/api' })
+  const response = await ollama.chat({
+    model: 'llama3:8b-instruct',
+    messages: [message],
+    stream: true,
+  })
+  for await (const part of response) {
+    process.stdout.write(part.message.content)
+  }
+}
+
+export const runOllamaChatVercelSDK = async () => {
   console.log('In ollama runOllamaChat function')
 
   const ollama = createOllama({
@@ -20,7 +41,6 @@ export const runOllamaChat = async () => {
   })
 
   console.log('Right before calling fetch')
-
 
   // This should work, but we're getting JSON Parse errors.
   const result = await streamText({
@@ -43,7 +63,7 @@ export const runOllamaChat = async () => {
     system: 'You are a helpful chatbot.',
   })
 
-  console.log("after starting streamtext. Result:", result)
+  console.log('after starting streamtext. Result:', result)
 
   for await (const textPart of result.textStream) {
     console.log('OLLAMA TEXT PART:', textPart)
@@ -54,8 +74,9 @@ export const runOllamaChat = async () => {
   // https://sdk.vercel.ai/examples/next-app/chat/stream-chat-completion#server
 }
 
-
-export const getOllamaModels = async (ollamaProvider: LLMProvider): Promise<OllamaModel[]> => {
+export const getOllamaModels = async (
+  ollamaProvider: LLMProvider,
+): Promise<OllamaModel[]> => {
   if (!ollamaProvider.baseUrl) {
     throw new Error(`Ollama baseurl not defined: ${ollamaProvider.baseUrl}`)
   }

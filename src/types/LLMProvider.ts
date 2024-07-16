@@ -7,10 +7,21 @@ export enum ProviderNames {
   Ollama = 'Ollama',
   OpenAI = 'OpenAI',
   Azure = 'Azure',
-  Anthropic = 'Anthropic'
+  Anthropic = 'Anthropic',
 }
 
-export type SupportedModels = OllamaModel[] | OpenAIModel[] | WebllmModel[] | AnthropicModel[]
+export type SupportedModels =
+  | OllamaModel[]
+  | OpenAIModel[]
+  | WebllmModel[]
+  | AnthropicModel[]
+
+export interface GenericSupportedModel {
+  id: string
+  name: string
+  parameterSize?: string
+  tokenLimit: number
+}
 
 export interface LLMProvider {
   provider: ProviderNames
@@ -21,5 +32,4 @@ export interface LLMProvider {
   AzureEndpoint?: string
   AzureDeployment?: string
   AnthropicModel?: string
-  
 }

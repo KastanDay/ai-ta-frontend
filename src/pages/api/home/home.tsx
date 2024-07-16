@@ -217,7 +217,7 @@ const Home = () => {
         console.log('Course name when fetching modes: ', course_name)
         const data = await getModels({ projectName: course_name })
 
-        let models = data as unknown as SupportedModelsObj
+        const models = data as unknown as SupportedModelsObj
         console.log('Models from getModels: ', models)
         dispatch({ field: 'models', value: models })
 

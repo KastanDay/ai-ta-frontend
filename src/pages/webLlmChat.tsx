@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { MLCEngine } from '@mlc-ai/web-llm'
-import ChatUI from './api/webllm'
-// import ChatUI from "~/utils/chat_ui";
+import ChatUI from '~/utils/modelProviders/WebLLM'
 
 const ChatComponent = () => {
   const [messages, setMessages] = useState<{ kind: string; text: string }[]>([])

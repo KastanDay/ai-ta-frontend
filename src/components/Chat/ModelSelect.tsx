@@ -288,4 +288,5 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
   },
 )
 
+ModelItem.displayName = 'ModelItem'
 ModelSelect.displayName = 'ModelSelect'

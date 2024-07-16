@@ -40,7 +40,7 @@ export function convertToLocalModels(record: ModelRecord): WebllmModel {
     id: record.model_id,
     name: record.model_id,
     parameterSize: 'Unknown',
-    tokenLimit: record.overrides?.context_window_size,
+    tokenLimit: record.overrides!.context_window_size!,
     downloadSize: record.vram_required_MB
       ? `${(record.vram_required_MB / 1024).toFixed(2)}GB`
       : 'unknown',
@@ -92,7 +92,9 @@ const handler = async (req: Request): Promise<Response> => {
     ]
     // END-TODO: MOVE THESE TO DB INPUTS
 
-    let allSupportedModels: { [providerName: string]: SupportedModels } = {}
+    await runOllamaChat()
+
+    const allSupportedModels: { [providerName: string]: SupportedModels } = {}
     for (const llmProvider of llmProviderKeys) {
       if (llmProvider.provider == ProviderNames.Ollama) {
         const fetchedOllamaModels = await getOllamaModels(ollamaProvider)

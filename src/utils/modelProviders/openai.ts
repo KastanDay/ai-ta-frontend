@@ -2,6 +2,7 @@ import { kv } from '@vercel/kv'
 import { CourseMetadata } from '~/types/courseMetadata'
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
 import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
+import { OpenAI } from 'openai'
 
 export const config = {
   runtime: 'edge',
@@ -12,8 +13,6 @@ export const getOpenAIModels = async (
   projectName: string,
 ) => {
   console.log('in openai get models', projectName)
-
-  const { OpenAI } = require('openai')
 
   const client = new OpenAI({
     apiKey: openAIProvider.apiKey, // change to openai
@@ -38,13 +37,14 @@ export const getOpenAIModels = async (
         return {
           id: model.id,
           name: model.id, // Assuming model.id can be used as the name
-          tokenLimit: model.token_limit || 4096, // Adjust based on available properties
+          tokenLimit: model.token_limit, // TODO: hard code.
         }
       })
 
     return openAIModels
   } catch (error) {
     console.error('Error fetching models:', error)
+    return []
   }
 }
 
