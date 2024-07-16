@@ -80,6 +80,7 @@ import {
   prebuiltAppConfig,
 } from '~/utils/modelProviders/ConfigWebLLM'
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
+import home from '~/pages/api/home'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -176,7 +177,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     ) {
       loadModel()
     }
-  }, [selectedConversation?.model.name])
+  }, [selectedConversation?.model.name, chat_ui])
 
   const [currentMessage, setCurrentMessage] = useState<Message>()
   const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true)
@@ -359,12 +360,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ;(message.content as Content[])[imgDescIndex] = {
+          ; (message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ;(message.content as Content[]).push({
+          ; (message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -553,7 +554,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         //   value: chatBody.conversation,
         // })
 
-        let response
+        let response: AsyncIterable<webllm.ChatCompletionChunk> | Response | undefined
         let reader
         console.log('Selected model name:', selectedConversation.model.name)
 
@@ -589,48 +590,52 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             signal: controller.signal,
             body: JSON.stringify(chatBody),
           })
-          if (!response.ok) {
-            const final_response = await response.json()
-            homeDispatch({ field: 'loading', value: false })
-            homeDispatch({ field: 'messageIsStreaming', value: false })
-            // homeDispatch({ field: 'isRouting', value: undefined })
-            // homeDispatch({ field: 'isRunningTool', value: undefined })
-            // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
-            // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
-            notifications.show({
-              id: 'error-notification',
-              withCloseButton: true,
-              closeButtonProps: { color: 'red' },
-              onClose: () => console.log('error unmounted'),
-              onOpen: () => console.log('error mounted'),
-              autoClose: 12000,
-              title: (
-                <Text size={'lg'} className={`${montserrat_med.className}`}>
-                  {final_response.name}
-                </Text>
-              ),
-              message: (
-                <Text
-                  className={`${montserrat_med.className} text-neutral-200`}
-                >
-                  {final_response.message}
-                </Text>
-              ),
-              color: 'red',
-              radius: 'lg',
-              icon: <IconAlertCircle />,
-              className: 'my-notification-class',
-              style: {
-                backgroundColor: 'rgba(42,42,64,0.3)',
-                backdropFilter: 'blur(10px)',
-                borderLeft: '5px solid red',
-              },
-              withBorder: true,
-              loading: false,
-            })
-            return
-          }
-          const data = response.body
+        }
+        if (response instanceof Response && !response.ok) {
+          const final_response = await response.json()
+          homeDispatch({ field: 'loading', value: false })
+          homeDispatch({ field: 'messageIsStreaming', value: false })
+          // homeDispatch({ field: 'isRouting', value: undefined })
+          // homeDispatch({ field: 'isRunningTool', value: undefined })
+          // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+          // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
+          notifications.show({
+            id: 'error-notification',
+            withCloseButton: true,
+            closeButtonProps: { color: 'red' },
+            onClose: () => console.log('error unmounted'),
+            onOpen: () => console.log('error mounted'),
+            autoClose: 12000,
+            title: (
+              <Text size={'lg'} className={`${montserrat_med.className}`}>
+                {final_response.name}
+              </Text>
+            ),
+            message: (
+              <Text
+                className={`${montserrat_med.className} text-neutral-200`}
+              >
+                {final_response.message}
+              </Text>
+            ),
+            color: 'red',
+            radius: 'lg',
+            icon: <IconAlertCircle />,
+            className: 'my-notification-class',
+            style: {
+              backgroundColor: 'rgba(42,42,64,0.3)',
+              backdropFilter: 'blur(10px)',
+              borderLeft: '5px solid red',
+            },
+            withBorder: true,
+            loading: false,
+          })
+          return
+        }
+        let data;
+        // TODO: check the reponse data
+        if (response instanceof Response) {
+          data = response.body
           if (!data) {
             homeDispatch({ field: 'loading', value: false })
             homeDispatch({ field: 'messageIsStreaming', value: false })
@@ -640,223 +645,229 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
             return
           }
-          if (!plugin) {
-            if (updatedConversation.messages.length === 1) {
-              const { content } = message
-              // Use only texts instead of content itself
-              const contentText = Array.isArray(content)
-                ? content.map((content) => content.text).join(' ')
-                : content
-              const customName =
-                contentText.length > 30
-                  ? contentText.substring(0, 30) + '...'
-                  : contentText
-              updatedConversation = {
-                ...updatedConversation,
-                name: customName,
-              }
-            }
-            homeDispatch({ field: 'loading', value: false })
-            // homeDispatch({ field: 'isRouting', value: undefined })
-            // homeDispatch({ field: 'isRunningTool', value: undefined })
-            // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
-            // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
-            reader = data.getReader()
-          }
+          reader = data.getReader()
+
         }
-
-        const decoder = new TextDecoder()
-        let done = false
-        let isFirst = true
-        let text = ''
-        let chunkValue
-        let finalAssistantRespose = ''
-        const citationLinkCache = new Map<number, string>()
-        const stateMachineContext = { state: State.Normal, buffer: '' }
-        try {
-          while (!done) {
-            if (stopConversationRef.current === true) {
-              controller.abort()
-              done = true
-              break
+        if (!plugin) {
+          if (updatedConversation.messages.length === 1) {
+            const { content } = message
+            // Use only texts instead of content itself
+            const contentText = Array.isArray(content)
+              ? content.map((content) => content.text).join(' ')
+              : content
+            const customName =
+              contentText.length > 30
+                ? contentText.substring(0, 30) + '...'
+                : contentText
+            updatedConversation = {
+              ...updatedConversation,
+              name: customName,
             }
+          }
+          homeDispatch({ field: 'loading', value: false })
+          // homeDispatch({ field: 'isRouting', value: undefined })
+          // homeDispatch({ field: 'isRunningTool', value: undefined })
+          // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+          // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
 
-            // Handle routing between WebLLM & OpenAI
-            if (
-              // ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some(
-              //   (prefix) => selectedConversation.model.name.startsWith(prefix),
-              // )
-              webLLMModels.some(
-                (model) => model.name === selectedConversation.model.name,
-              )
-            ) {
-              // WebLLM models
-              // @ts-ignore - iterator for WebLLM `AsyncIterable<ChatCompletionChunk>`
-              const iterator = response[Symbol.asyncIterator]()
-              const result = await iterator.next()
-              done = result.done
-              if (
-                done ||
-                result.value == undefined ||
-                result.value.choices[0]?.delta.content == undefined
-              ) {
-                // exit early
-                continue
-              }
-              chunkValue = result.value.choices[0]?.delta.content
-              text += chunkValue
-            } else {
-              // OpenAI models
-              const { value, done: doneReading } = await reader!.read()
-              done = doneReading
-              chunkValue = decoder.decode(value)
-              text += chunkValue
-            }
 
-            if (isFirst) {
-              // isFirst refers to the first chunk of data received from the API (happens once for each new message from API)
-              isFirst = false
-              const updatedMessages: Message[] = [
-                ...updatedConversation.messages,
-                {
-                  role: 'assistant',
-                  content: chunkValue,
-                },
-              ]
-              finalAssistantRespose += chunkValue
-              updatedConversation = {
-                ...updatedConversation,
-                messages: updatedMessages,
+          const decoder = new TextDecoder()
+          let done = false
+          let isFirst = true
+          let text = ''
+          let chunkValue
+          let finalAssistantRespose = ''
+          const citationLinkCache = new Map<number, string>()
+          const stateMachineContext = { state: State.Normal, buffer: '' }
+          try {
+            while (!done && chat_ui.isModelLoading() == false) {
+              if (stopConversationRef.current === true) {
+                controller.abort()
+                done = true
+                break
               }
-              homeDispatch({
-                field: 'selectedConversation',
-                value: updatedConversation,
-              })
-            } else {
-              if (updatedConversation.messages.length > 0) {
-                const lastMessageIndex = updatedConversation.messages.length - 1
-                const lastMessage =
-                  updatedConversation.messages[lastMessageIndex]
-                const lastUserMessage =
-                  updatedConversation.messages[lastMessageIndex - 1]
+              if (response && 'next' in response) {
+
+                // Handle routing between WebLLM & OpenAI
+                // if (
+                //   // ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some(
+                //   //   (prefix) => selectedConversation.model.name.startsWith(prefix),
+                //   // )
+                //   webLLMModels.some(
+                //     (model) => model.name === selectedConversation.model.name,
+                //   )
+                // ) {
+                // WebLLM models
+                // @ts-ignore - iterator for WebLLM `AsyncIterable<ChatCompletionChunk>`
+                const iterator = response[Symbol.asyncIterator]()
+                const result = await iterator.next()
+                done = result.done
                 if (
-                  lastMessage &&
-                  lastUserMessage &&
-                  lastUserMessage.contexts
+                  done ||
+                  result.value == undefined ||
+                  result.value.choices[0]?.delta.content == undefined
                 ) {
-                  // Call the replaceCitationLinks method and await its result
-                  // const updatedContent = await replaceCitationLinks(text, lastMessage, citationLinkCache);
+                  // exit early
+                  continue
+                }
+                chunkValue = result.value.choices[0]?.delta.content
+                text += chunkValue
+              } else {
+                // OpenAI models
+                const { value, done: doneReading } = await reader!.read()
+                done = doneReading
+                chunkValue = decoder.decode(value)
+                text += chunkValue
+              }
 
-                  // TODO: handle this properly with WebLLM
-                  const updatedContent = await processChunkWithStateMachine(
-                    chunkValue,
-                    lastUserMessage,
-                    stateMachineContext,
-                    citationLinkCache,
-                  )
+              if (isFirst) {
+                // isFirst refers to the first chunk of data received from the API (happens once for each new message from API)
+                isFirst = false
+                const updatedMessages: Message[] = [
+                  ...updatedConversation.messages,
+                  {
+                    role: 'assistant',
+                    content: chunkValue,
+                  },
+                ]
+                finalAssistantRespose += chunkValue
+                updatedConversation = {
+                  ...updatedConversation,
+                  messages: updatedMessages,
+                }
+                homeDispatch({
+                  field: 'selectedConversation',
+                  value: updatedConversation,
+                })
+              } else {
+                if (updatedConversation.messages.length > 0) {
+                  const lastMessageIndex = updatedConversation.messages.length - 1
+                  const lastMessage =
+                    updatedConversation.messages[lastMessageIndex]
+                  const lastUserMessage =
+                    updatedConversation.messages[lastMessageIndex - 1]
+                  if (
+                    lastMessage &&
+                    lastUserMessage &&
+                    lastUserMessage.contexts
+                  ) {
+                    // Call the replaceCitationLinks method and await its result
+                    // const updatedContent = await replaceCitationLinks(text, lastMessage, citationLinkCache);
 
-                  finalAssistantRespose += updatedContent
+                    // TODO: handle this properly with WebLLM
+                    const updatedContent = await processChunkWithStateMachine(
+                      chunkValue,
+                      lastUserMessage,
+                      stateMachineContext,
+                      citationLinkCache,
+                    )
 
-                  // Update the last message with the new content
-                  const updatedMessages = updatedConversation.messages.map(
-                    (msg, index) =>
-                      index === lastMessageIndex
-                        ? { ...msg, content: finalAssistantRespose }
-                        : msg,
-                  )
+                    finalAssistantRespose += updatedContent
 
-                  // Update the conversation with the new messages
-                  updatedConversation = {
-                    ...updatedConversation,
-                    messages: updatedMessages,
+                    // Update the last message with the new content
+                    const updatedMessages = updatedConversation.messages.map(
+                      (msg, index) =>
+                        index === lastMessageIndex
+                          ? { ...msg, content: finalAssistantRespose }
+                          : msg,
+                    )
+
+                    // Update the conversation with the new messages
+                    updatedConversation = {
+                      ...updatedConversation,
+                      messages: updatedMessages,
+                    }
+
+                    // Dispatch the updated conversation
+                    homeDispatch({
+                      field: 'selectedConversation',
+                      value: updatedConversation,
+                    })
                   }
-
-                  // Dispatch the updated conversation
-                  homeDispatch({
-                    field: 'selectedConversation',
-                    value: updatedConversation,
-                  })
                 }
               }
             }
+          } catch (error) {
+            console.error('Error reading from stream:', error)
+            homeDispatch({ field: 'loading', value: false })
+            homeDispatch({ field: 'messageIsStreaming', value: false })
+            return
           }
-        } catch (error) {
-          console.error('Error reading from stream:', error)
-          homeDispatch({ field: 'loading', value: false })
-          homeDispatch({ field: 'messageIsStreaming', value: false })
-          return
+
+          if (!done) {
+            throw new Error('Stream ended prematurely')
+          }
+
+          try {
+            saveConversation(updatedConversation)
+            if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
+              const emails = extractEmailsFromClerk(clerk_obj.user)
+              updatedConversation.user_email = emails[0]
+              onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
+            } else {
+              onMessageReceived(updatedConversation)
+            }
+
+            const updatedConversations: Conversation[] = conversations.map(
+              (conversation) => {
+                if (conversation.id === selectedConversation.id) {
+                  return updatedConversation
+                }
+                return conversation
+              },
+            )
+            if (updatedConversations.length === 0) {
+              updatedConversations.push(updatedConversation)
+            }
+            homeDispatch({
+              field: 'conversations',
+              value: updatedConversations,
+            })
+            // console.log('updatedConversations: ', updatedConversations)
+            saveConversations(updatedConversations)
+            homeDispatch({ field: 'messageIsStreaming', value: false })
+          } catch (error) {
+            console.error('An error occurred: ', error)
+            controller.abort()
+          }
         }
-
-        if (!done) {
-          throw new Error('Stream ended prematurely')
-        }
-
-        try {
-          saveConversation(updatedConversation)
-          if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
-            const emails = extractEmailsFromClerk(clerk_obj.user)
-            updatedConversation.user_email = emails[0]
-            onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
-          } else {
-            onMessageReceived(updatedConversation)
+        else {
+          // TODO: COME BACK AND FIX
+          if (response instanceof Response) {
+            const { answer } = await response.json()
+            const updatedMessages: Message[] = [
+              ...updatedConversation.messages,
+              { role: 'assistant', content: answer, contexts: message.contexts },
+            ]
+            updatedConversation = {
+              ...updatedConversation,
+              messages: updatedMessages,
+            }
+            homeDispatch({
+              field: 'selectedConversation',
+              value: updatedConversation,
+            })
+            saveConversation(updatedConversation)
+            const updatedConversations: Conversation[] = conversations.map(
+              (conversation) => {
+                if (conversation.id === selectedConversation.id) {
+                  return updatedConversation
+                }
+                return conversation
+              },
+            )
+            if (updatedConversations.length === 0) {
+              updatedConversations.push(updatedConversation)
+            }
+            homeDispatch({ field: 'conversations', value: updatedConversations })
+            saveConversations(updatedConversations)
+            homeDispatch({ field: 'loading', value: false })
+            homeDispatch({ field: 'messageIsStreaming', value: false })
           }
 
-          const updatedConversations: Conversation[] = conversations.map(
-            (conversation) => {
-              if (conversation.id === selectedConversation.id) {
-                return updatedConversation
-              }
-              return conversation
-            },
-          )
-          if (updatedConversations.length === 0) {
-            updatedConversations.push(updatedConversation)
-          }
-          homeDispatch({
-            field: 'conversations',
-            value: updatedConversations,
-          })
-          // console.log('updatedConversations: ', updatedConversations)
-          saveConversations(updatedConversations)
-          homeDispatch({ field: 'messageIsStreaming', value: false })
-        } catch (error) {
-          console.error('An error occurred: ', error)
-          controller.abort()
         }
       }
-      //   else {
-      //     // TODO: COME BACK AND FIX
-      //     const { answer } = await response.json()
-      //     const updatedMessages: Message[] = [
-      //       ...updatedConversation.messages,
-      //       { role: 'assistant', content: answer, contexts: message.contexts },
-      //     ]
-      //     updatedConversation = {
-      //       ...updatedConversation,
-      //       messages: updatedMessages,
-      //     }
-      //     homeDispatch({
-      //       field: 'selectedConversation',
-      //       value: updatedConversation,
-      //     })
-      //     saveConversation(updatedConversation)
-      //     const updatedConversations: Conversation[] = conversations.map(
-      //       (conversation) => {
-      //         if (conversation.id === selectedConversation.id) {
-      //           return updatedConversation
-      //         }
-      //         return conversation
-      //       },
-      //     )
-      //     if (updatedConversations.length === 0) {
-      //       updatedConversations.push(updatedConversation)
-      //     }
-      //     homeDispatch({ field: 'conversations', value: updatedConversations })
-      //     saveConversations(updatedConversations)
-      //     homeDispatch({ field: 'loading', value: false })
-      //     homeDispatch({ field: 'messageIsStreaming', value: false })
-      //   }
-      // }
+
     },
     [
       apiKey,
@@ -864,6 +875,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       pluginKeys,
       selectedConversation,
       stopConversationRef,
+      chat_ui,
     ],
   )
 
@@ -878,7 +890,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
       handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
@@ -971,13 +983,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-    courseMetadata.example_questions.length > 0
+      courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-          'Make a bullet point list of key takeaways from this project.',
-          'What are the best practices for [Activity or Process] in [Context or Field]?',
-          'Can you explain the concept of [Specific Concept] in simple terms?',
-        ]
+        'Make a bullet point list of key takeaways from this project.',
+        'What are the best practices for [Activity or Process] in [Context or Field]?',
+        'Can you explain the concept of [Specific Concept] in simple terms?',
+      ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
