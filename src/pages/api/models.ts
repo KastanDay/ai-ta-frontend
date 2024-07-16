@@ -23,14 +23,14 @@ const handler = async (req: Request): Promise<Response> => {
     const ollamaProvider: LLMProvider = {
       provider: ProviderNames.Ollama,
       enabled: true,
-      baseUrl: 'https://ollama.ncsa.ai/api/tags',
+      baseUrl: 'https://ollama.ncsa.ai',
     }
 
     const OpenAIProvider: LLMProvider = {
       provider: ProviderNames.OpenAI,
       enabled: true,
       apiKey: process.env.OPENAI_API_KEY,
-      baseUrl: 'https://ollama.ncsa.ai/api/tags',
+      // baseUrl: 'https://ollama.ncsa.ai/api/tags',
     }
     const AzureProvider: LLMProvider = {
       provider: ProviderNames.Azure,
@@ -61,7 +61,7 @@ const handler = async (req: Request): Promise<Response> => {
     ]
     // END-TODO: MOVE THESE TO DB INPUTS
 
-    // await runOllamaChat()
+    await runOllamaChat(ollamaProvider)
 
     const allSupportedModels: { [providerName: string]: SupportedModels } = {}
     for (const llmProvider of llmProviderKeys) {

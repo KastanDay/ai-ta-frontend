@@ -1,5 +1,5 @@
 import { generateText, streamText } from 'ai'
-import { createOllama } from 'ollama-ai-provider'
+import { OllamaProvider, createOllama } from 'ollama-ai-provider'
 // import { openai } from '@ai-sdk/openai';
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
 import { decrypt, isEncrypted } from '~/utils/crypto'
@@ -8,6 +8,7 @@ import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
 // import ollama from 'ollama'
 // import ollama from 'ollama/browser'
 import { Ollama } from 'ollama'
+import { it } from 'node:test'
 
 export interface OllamaModel {
   id: string
@@ -16,21 +17,25 @@ export interface OllamaModel {
   tokenLimit: number
 }
 
-export const runOllamaChat = async () => {
+export const runOllamaChat = async (ollamaProvider: LLMProvider) => {
   console.log('Running ollama chat')
 
-  const ollama = new Ollama({ host: 'https://ollama.ncsa.ai/api' })
+  const ollama = new Ollama({ host: ollamaProvider.baseUrl })
 
-  const message = { role: 'user', content: 'Why is the sky blue?' }
-  // ollama.configure({ baseUrl: 'https://ollama.ncsa.ai/api' })
+  const messages = [{ role: 'user', content: 'Why is the sky blue?' }]
   const response = await ollama.chat({
-    model: 'llama3:8b-instruct',
-    messages: [message],
+    model: 'llama3:8b',
+    messages: messages,
     stream: true,
   })
-  for await (const part of response) {
-    process.stdout.write(part.message.content)
-  }
+
+  const iterator = response[Symbol.asyncIterator]()
+  return iterator
+  // let result = await iterator.next()
+  // while (!result.done) {
+  //   console.log(result.value.message.content)
+  //   result = await iterator.next()
+  // }
 }
 
 export const runOllamaChatVercelSDK = async () => {
@@ -80,7 +85,7 @@ export const getOllamaModels = async (
   if (!ollamaProvider.baseUrl) {
     throw new Error(`Ollama baseurl not defined: ${ollamaProvider.baseUrl}`)
   }
-  const response = await fetch(ollamaProvider.baseUrl)
+  const response = await fetch(ollamaProvider.baseUrl + '/api/tags')
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
   }
