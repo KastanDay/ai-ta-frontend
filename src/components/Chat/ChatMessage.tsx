@@ -610,7 +610,7 @@ export const ChatMessage: FC<Props> = memo(
                                   2) && (
                               <IntermediateStateAccordion
                                 accordionKey="imageDescription"
-                                title="Image Description:"
+                                title="Image Description"
                                 isLoading={isImg2TextLoading}
                                 error={false}
                                 content={
@@ -635,7 +635,7 @@ export const ChatMessage: FC<Props> = memo(
                           ) && (
                             <IntermediateStateAccordion
                               accordionKey="imageDescription"
-                              title="Image Description:"
+                              title="Image Description"
                               isLoading={false}
                               error={false}
                               content={
@@ -654,10 +654,10 @@ export const ChatMessage: FC<Props> = memo(
                           {message.contexts && message.contexts.length > 0 && (
                             <IntermediateStateAccordion
                               accordionKey="retrieval loading"
-                              title="Retrieving relevant documents:"
+                              title="Retrieved documents"
                               isLoading={false}
                               error={false}
-                              content={`Found ${message.contexts?.length} relevant documents!`}
+                              content={`Found ${message.contexts?.length} document chunks.`}
                             />
                           )}
 
@@ -671,10 +671,10 @@ export const ChatMessage: FC<Props> = memo(
                                   2) && (
                               <IntermediateStateAccordion
                                 accordionKey="retrieval loading"
-                                title="Retrieving relevant documents:"
+                                title="Retrieving documents"
                                 isLoading={isRetrievalLoading}
                                 error={false}
-                                content={`Found ${message.contexts?.length} relevant documents!`}
+                                content={`Found ${message.contexts?.length} document chunks.`}
                               />
                             )}
 
