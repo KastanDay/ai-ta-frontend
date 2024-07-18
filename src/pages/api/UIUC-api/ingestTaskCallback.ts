@@ -23,15 +23,23 @@ const handler = async (req: NextApiRequest) => {
     console.log('Task body (no parsing): ', req.body)
     let data
     try {
-      const datastr = await new Response(req.body).json()
-      data = JSON.parse(datastr)
+      const text = await new Response(req.body).text()
+      data = JSON.parse(text)
       console.log('Task body (in try): ', data)
+      const headerTxt = await new Response(req.headers).text()
+      data = JSON.parse(text)
     } catch (error) {
       data = req.body
-      console.log('Task body (in in catch): ', data)
+      console.log('Task body (in catch): ', data)
     }
     console.log('Task body: ', data)
-    console.log('Task headers: ', req.headers)
+    // console.log('Task headers: ', req.headers)
+
+    console.log('Task headers:')
+    for (const [key, value] of Object.entries(req.headers)) {
+      console.log(`Header - ${key}: ${value}`)
+    }
+
     // Data:  {
     //   success_ingest: 'courses/t/8885632f-b519-4610-b888-744aa4c2066d-6.pdf',
     //   failure_ingest: null
