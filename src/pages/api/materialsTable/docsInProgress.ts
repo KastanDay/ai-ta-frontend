@@ -1,4 +1,4 @@
-// src/pages/api/chat-api/keys/fetch.ts
+// src/pages/api/materialsTable/docsInProgress.ts
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/utils/supabaseClient'
@@ -8,10 +8,16 @@ export const config = {
   runtime: 'edge',
 }
 
-export default async function fetchKey(req: NextRequest, res: NextResponse) {
+export default async function docsInProgress(
+  req: NextRequest,
+  res: NextResponse,
+) {
   if (req.method !== 'GET') {
     return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
   }
+
+  const url = new URL(req.url)
+  const course_name = url.searchParams.get('course_name')
 
   const currUserId = await getAuth(req).userId
   if (!currUserId) {
@@ -20,28 +26,23 @@ export default async function fetchKey(req: NextRequest, res: NextResponse) {
 
   try {
     const { data, error } = await supabase
-      .from('api_keys')
-      .select('key')
-      .eq('user_id', currUserId)
-      .eq('is_active', true)
-
-    console.log('data', data)
+      .from('documents_in_progress')
+      .select('readable_filename')
+      .eq('course_name', course_name)
 
     if (error) {
       throw error
     }
 
     if (!data || data.length === 0) {
-      console.log('No API key found for user')
       return NextResponse.json({ apiKey: null }, { status: 200 })
     }
 
     if (data && data.length > 0) {
-      console.log('API key found for user')
-      return NextResponse.json({ apiKey: data[0]?.key }, { status: 200 })
+      return NextResponse.json({ documents: data }, { status: 200 })
     }
   } catch (error) {
-    console.error('Failed to fetch API key:', error)
+    console.error('Failed to fetch documents:', error)
     return NextResponse.json(
       { error: (error as Error).message },
       { status: 500 },

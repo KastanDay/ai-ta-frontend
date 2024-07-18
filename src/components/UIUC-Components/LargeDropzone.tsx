@@ -1,22 +1,25 @@
 // LargeDropzone.tsx
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import {
   createStyles,
   Group,
   rem,
   Text,
   Title,
+  Paper,
+  Progress,
   // useMantineTheme,
 } from '@mantine/core'
+
 import {
   IconAlertCircle,
   IconCheck,
   IconCloudUpload,
   IconDownload,
   IconFileUpload,
-  IconProgress,
   IconX,
 } from '@tabler/icons-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Dropzone } from '@mantine/dropzone'
 import { useRouter } from 'next/router'
 import { type CourseMetadata } from '~/types/courseMetadata'
@@ -52,6 +55,84 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
+export function UploadProgressBar({
+  numFiles,
+  totalFiles,
+}: {
+  numFiles: number
+  totalFiles: number
+}) {
+  return (
+    <Paper shadow="lg" radius="lg" p="md" withBorder>
+      <Text>
+        {numFiles} out of {totalFiles} files have been uploaded.
+      </Text>
+      <Progress
+        color="violet"
+        radius="md"
+        size="lg"
+        value={(numFiles / totalFiles) * 100}
+        striped
+        animate
+      />
+    </Paper>
+  )
+}
+
+function IngestProgressBar({ courseName }: { courseName: string }) {
+  const [progress, setProgress] = useState(0)
+  const [hasDocuments, setHasDocuments] = useState(false) // State to track if there are documents
+  const [totalDocuments, setTotalDocuments] = useState(0) // State to track the total number of documents
+  const [dataLength, setDataLength] = useState(0)
+
+  useEffect(() => {
+    async function fetchData() {
+      const response = await fetch(
+        `/api/materialsTable/docsInProgress?course_name=${courseName}`,
+      )
+      const data = await response.json()
+      if (data && data.documents) {
+        const newTotalDocuments = Math.max(
+          totalDocuments,
+          data.documents.length,
+        )
+        setTotalDocuments(newTotalDocuments) // Set total documents from the initial API call
+        setDataLength(newTotalDocuments - data.documents.length)
+        setHasDocuments(data.documents.length > 0)
+        setProgress(
+          ((newTotalDocuments - data.documents.length) / newTotalDocuments) *
+            100,
+        )
+      } else {
+        setHasDocuments(false)
+      }
+    }
+
+    const intervalId = setInterval(fetchData, 3000) // Fetch data every 3000 milliseconds (3 seconds)
+    return () => clearInterval(intervalId)
+  }, [courseName, totalDocuments])
+
+  if (!hasDocuments) {
+    return null
+  }
+
+  return (
+    <Paper shadow="lg" radius="lg" p="md" withBorder>
+      <Text>
+        {dataLength} out of {totalDocuments} ingested into AI Database
+      </Text>
+      <Progress
+        color="violet"
+        radius="md"
+        size="lg"
+        value={progress}
+        striped
+        animate
+      />
+    </Paper>
+  )
+}
+
 export function LargeDropzone({
   courseName,
   current_user_email,
@@ -69,10 +150,13 @@ export function LargeDropzone({
 }) {
   // upload-in-progress spinner control
   const [uploadInProgress, setUploadInProgress] = useState(false)
+  const [successfulUploads, setSuccessfulUploads] = useState(0)
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const { classes, theme } = useStyles()
   const openRef = useRef<() => void>(null)
+  const [files, setFiles] = useState<File[]>([])
+  const queryClient = useQueryClient()
 
   const refreshOrRedirect = async (redirect_to_gpt_4: boolean) => {
     if (is_new_course) {
@@ -132,8 +216,6 @@ export function LargeDropzone({
         method: 'POST',
         body: formData,
       })
-
-      console.log((uniqueFileName as string) + ' uploaded to S3 successfully!!')
     } catch (error) {
       console.error('Error uploading file:', error)
     }
@@ -143,6 +225,7 @@ export function LargeDropzone({
     if (!files) return
     files = files.filter((file) => file !== null)
 
+    setFiles(files)
     setUploadInProgress(true)
 
     if (is_new_course) {
@@ -162,7 +245,6 @@ export function LargeDropzone({
     // this does parallel (use for loop for sequential)
     const allSuccessOrFail = await Promise.all(
       files.map(async (file, index) => {
-        console.log('Index: ' + index)
         // Sanitize the filename and retain the extension
         const extension = file.name.slice(file.name.lastIndexOf('.'))
         const nameWithoutExtension = file.name
@@ -174,13 +256,7 @@ export function LargeDropzone({
         // return { ok: Math.random() < 0.5, s3_path: filename }; // For testing
         try {
           await uploadToS3(file, uniqueFileName)
-
-          console.log(
-            'Uploaded to s3. Now sending to ingest. Course name:',
-            courseName,
-            'Filename: ',
-            uniqueFileName,
-          )
+          setSuccessfulUploads((prev) => prev + 1) // Increment successful uploads
 
           const response = await fetch(`/api/UIUC-api/ingest`, {
             method: 'POST',
@@ -202,6 +278,8 @@ export function LargeDropzone({
         }
       }),
     )
+
+    setSuccessfulUploads(0)
 
     interface IngestResult {
       ok: boolean
@@ -258,6 +336,7 @@ export function LargeDropzone({
   return (
     <>
       {/* START LEFT COLUMN */}
+
       <div
         style={{
           display: 'flex',
@@ -265,6 +344,15 @@ export function LargeDropzone({
           justifyContent: 'space-between',
         }}
       >
+        {uploadInProgress && (
+          <UploadProgressBar
+            numFiles={successfulUploads}
+            totalFiles={files.length}
+          />
+        )}
+        <div className={courseName ? 'pt-3' : ''}>
+          {courseName && <IngestProgressBar courseName={courseName} />}
+        </div>
         {/* <div className={classes.wrapper} style={{ maxWidth: '320px' }}> */}
         <div
           className={classes.wrapper}
@@ -356,33 +444,23 @@ export function LargeDropzone({
             </div>
           </Dropzone>
           {uploadInProgress && (
-            <div className="flex flex-col items-center justify-center ">
-              <Title
-                order={4}
-                style={{
-                  marginTop: 10,
-                  alignItems: 'center',
-                  color: '#B22222',
-                  justifyContent: 'center',
-                  textAlign: 'center',
-                }}
-              >
-                Do not navigate away until loading is complete <br></br> or
-                ingest will fail.
-              </Title>
-              <Title
-                order={4}
-                style={{
-                  marginTop: 5,
-                  alignItems: 'center',
-                  color: '#B22222',
-                  justifyContent: 'center',
-                  textAlign: 'center',
-                }}
-              >
-                The page will refresh when your AI Assistant is ready.
-              </Title>
-            </div>
+            <>
+              <div className="flex flex-col items-center justify-center ">
+                <Title
+                  order={4}
+                  style={{
+                    marginTop: 10,
+                    alignItems: 'center',
+                    color: '#B22222',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                  }}
+                >
+                  Remain on this page until upload is complete <br></br> or
+                  ingest will fail.
+                </Title>
+              </div>
+            </>
           )}
         </div>
         {/* END LEFT COLUMN */}
@@ -458,8 +536,10 @@ const showIngestInProgressToast = (num_success_files: number) => {
     // onClose: () => console.log('unmounted'),
     // onOpen: () => console.log('mounted'),
     autoClose: 30000,
-    title: `Ingest in progress for ${num_success_files} file${num_success_files > 1 ? 's' : ''}.`,
-    message: `This is a background task. Refresh the page to see your files as they're processed. (A better upload experience is in the works for April 2024 🚀)`,
+    title: `Ingest in progress for ${num_success_files} file${
+      num_success_files > 1 ? 's' : ''
+    }.`,
+    message: `This is a background task. Refresh the page to see your files as they're processed.`,
     color: 'green',
     radius: 'lg',
     icon: <IconFileUpload />,
