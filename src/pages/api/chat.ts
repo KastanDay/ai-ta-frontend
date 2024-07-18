@@ -59,6 +59,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
 
     // const messagesToSend = [latestMessage, ...convoHistory] // BUG: REPLACE (not append to) latest user message. RN we have dupliacates.
     // Strip internal messages to send to OpenAI
+    // console.log('Messages to send before refactor:', conversation.messages)
     const messagesToSend = refactorMessagesForOpenAI(conversation.messages)
     // console.log('Messages to send: ', messagesToSend)
 
@@ -101,20 +102,51 @@ const handler = async (req: Request): Promise<NextResponse> => {
 }
 
 const refactorMessagesForOpenAI = (messages: Message[]): Message[] => {
-  return messages.map((message) => {
+  return messages.map((message, messageIndex) => {
     const strippedMessage = { ...message }
+    // When content is an array
+    if (Array.isArray(strippedMessage.content)) {
+      strippedMessage.content.map((content, contentIndex) => {
+        // Convert tool_image_url to image_url for OpenAI
+        if (content.type === 'tool_image_url') {
+          content.type = 'image_url'
+        }
+        // Add final prompt to last message
+        if (messageIndex === messages.length - 1) {
+          content.text = strippedMessage.finalPromtEngineeredMessage
+        }
+        // Add system prompt to message with role system
+        if (message.role === 'system') {
+          content.text = strippedMessage.latestSystemMessage
+        }
+        return content
+      })
+    } else {
+      // When content is a string
+      // Add final prompt to last message
+      if (messageIndex === messages.length - 1) {
+        if (strippedMessage.role === 'user') {
+          strippedMessage.content = [
+            {
+              type: 'text',
+              text: strippedMessage.finalPromtEngineeredMessage,
+            },
+          ]
+          // Add system prompt to message with role system
+        } else if (strippedMessage.role === 'system') {
+          strippedMessage.content = [
+            {
+              type: 'text',
+              text: strippedMessage.latestSystemMessage,
+            },
+          ]
+        }
+      }
+    }
     delete strippedMessage.finalPromtEngineeredMessage
     delete strippedMessage.latestSystemMessage
     delete strippedMessage.contexts
     delete strippedMessage.tools
-    if (Array.isArray(strippedMessage.content)) {
-      strippedMessage.content.map((content) => {
-        if (content.type === 'tool_image_url') {
-          content.type = 'image_url'
-        }
-        return content
-      })
-    }
     return strippedMessage
   })
 }
