@@ -11,6 +11,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const data = req.body
     console.log('Top Data:', data)
     console.log('Typeof Top Data:', typeof data)
+    console.log('x-beam-task-status:', req.headers['x-beam-task-status'])
 
     if (data.success_ingest) {
       console.log('In success ingest:', data)
@@ -29,8 +30,17 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     // OR:
     // Data: { error: 'Task timed out' }
 
+    // beam-task-status is SUCCESS (but ingest could have still failed)
+    if (data.success_ingest) {
+      console.debug('Ingest was SUCCESSFUL:', data)
+      const { data: record, error: delErr } = await supabase
+        .from('documents_in_progress')
+        .delete()
+        .eq('beam_task_id', req.headers['beam-task-id'])
+    }
     // If failure_ingest or Beam task is FAILED or TIMEOUT
-    if (
+    // TODO: make this ELSE (not else if)
+    else if (
       data.failure_ingest ||
       req.headers['x-beam-task-status'] === 'FAILED' ||
       req.headers['x-beam-task-status'] === 'TIMEOUT'
@@ -52,14 +62,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       await supabase.from('documents_failed').insert(record![0])
 
       return res.status(200).json({ message: 'Success' })
-    }
-    // beam-task-status is SUCCESS (but ingest could have still failed)
-    else if (data.success_ingest) {
-      console.debug('Ingest was SUCCESSFUL:', data)
-      const { data: record, error: delErr } = await supabase
-        .from('documents_in_progress')
-        .delete()
-        .eq('beam_task_id', req.headers['beam-task-id'])
     } else {
       console.error(`No success/failure ingest in Beam callback data: ${data}`)
     }
