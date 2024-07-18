@@ -9,6 +9,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(405).json({ error: '❌❌ Request method not allowed' })
     }
     const data = req.body
+    console.log('Top Data:', data)
+    console.log('Typeof Top Data:', typeof data)
+
+    if (data.success_ingest) {
+      console.log('In success ingest:', data)
+    }
+    if (data.failure_ingest) {
+      console.log('In failure ingest:', data)
+    }
+    if (data.failure_ingest && data.failure_ingest.error) {
+      console.log('In failure ingest && ERROR :', data)
+    }
 
     // Data:  {
     //   success_ingest: 'courses/t/8885632f-b519-4610-b888-744aa4c2066d-6.pdf',
@@ -23,7 +35,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       req.headers['x-beam-task-status'] === 'FAILED' ||
       req.headers['x-beam-task-status'] === 'TIMEOUT'
     ) {
-      console.log('in IF for Task FAILED or TIMEOUT')
+      console.log('Ingest Task failed or timed out. Data:', data)
       // Remove from in progress, add to failed
       const { data: record, error: delErr } = await supabase
         .from('documents_in_progress')
@@ -43,7 +55,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
     // beam-task-status is SUCCESS (but ingest could have still failed)
     else if (data.success_ingest) {
-      console.debug('IN SUCCESS INGEST ___:', data.success_ingest)
+      console.debug('Ingest was SUCCESSFUL:', data)
       const { data: record, error: delErr } = await supabase
         .from('documents_in_progress')
         .delete()
