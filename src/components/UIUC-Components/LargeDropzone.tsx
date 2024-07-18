@@ -56,7 +56,13 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-export function Demo({ numFiles, totalFiles }: { numFiles: number; totalFiles: number }) {
+export function UploadProgressBar({
+  numFiles,
+  totalFiles,
+}: {
+  numFiles: number
+  totalFiles: number
+}) {
   return (
     <Paper shadow="lg" radius="lg" p="md" withBorder>
       <Text>
@@ -74,7 +80,7 @@ export function Demo({ numFiles, totalFiles }: { numFiles: number; totalFiles: n
   )
 }
 
-function DocumentsProgress({ courseName }: { courseName: string }) {
+function IngestProgressBar({ courseName }: { courseName: string }) {
   const [progress, setProgress] = useState(0)
   const [hasDocuments, setHasDocuments] = useState(false) // State to track if there are documents
   const [totalDocuments, setTotalDocuments] = useState(0) // State to track the total number of documents
@@ -90,18 +96,9 @@ function DocumentsProgress({ courseName }: { courseName: string }) {
         // Example: calculate progress as a percentage of documents processed
         if (data.documents.length > totalDocuments) {
           setTotalDocuments(data.documents.length) // Set total documents from the initial API call
-          console.log('total documents:', data.documents.length)
         }
         setDataLength(totalDocuments - data.documents.length)
-        console.log('documents:', data)
         setHasDocuments(data.documents.length > 0)
-        console.log(
-          'document length:',
-          data.documents.length,
-          'total:',
-          totalDocuments,
-          (totalDocuments - data.documents.length) / totalDocuments,
-        )
         setProgress(
           ((totalDocuments - data.documents.length) / totalDocuments) * 100,
         )
@@ -218,8 +215,6 @@ export function LargeDropzone({
         method: 'POST',
         body: formData,
       })
-
-      console.log((uniqueFileName as string) + ' uploaded to S3 successfully!!')
     } catch (error) {
       console.error('Error uploading file:', error)
     }
@@ -249,7 +244,6 @@ export function LargeDropzone({
     // this does parallel (use for loop for sequential)
     const allSuccessOrFail = await Promise.all(
       files.map(async (file, index) => {
-        console.log('Index: ' + index)
         // Sanitize the filename and retain the extension
         const extension = file.name.slice(file.name.lastIndexOf('.'))
         const nameWithoutExtension = file.name
@@ -262,12 +256,6 @@ export function LargeDropzone({
         try {
           await uploadToS3(file, uniqueFileName)
           setSuccessfulUploads((prev) => prev + 1) // Increment successful uploads
-          console.log(
-            'Uploaded to s3. Now sending to ingest. Course name:',
-            courseName,
-            'Filename: ',
-            uniqueFileName,
-          )
 
           const response = await fetch(`/api/UIUC-api/ingest`, {
             method: 'POST',
@@ -355,9 +343,12 @@ export function LargeDropzone({
           justifyContent: 'space-between',
         }}
       >
-        {courseName && <DocumentsProgress courseName={courseName} />}
+        {courseName && <IngestProgressBar courseName={courseName} />}
         {uploadInProgress && (
-          <Demo numFiles={successfulUploads} totalFiles={files.length} />
+          <UploadProgressBar
+            numFiles={successfulUploads}
+            totalFiles={files.length}
+          />
         )}
         {/* <div className={classes.wrapper} style={{ maxWidth: '320px' }}> */}
         <div
@@ -554,8 +545,9 @@ const showIngestInProgressToast = (num_success_files: number) => {
     // onClose: () => console.log('unmounted'),
     // onOpen: () => console.log('mounted'),
     autoClose: 30000,
-    title: `Ingest in progress for ${num_success_files} file${num_success_files > 1 ? 's' : ''
-      }.`,
+    title: `Ingest in progress for ${num_success_files} file${
+      num_success_files > 1 ? 's' : ''
+    }.`,
     message: `This is a background task. Refresh the page to see your files as they're processed.`,
     color: 'green',
     radius: 'lg',
