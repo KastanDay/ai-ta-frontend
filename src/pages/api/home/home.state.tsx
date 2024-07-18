@@ -1,4 +1,4 @@
-import { Action, Conversation, Message } from '@/types/chat'
+import { Action, Conversation, Message, UIUCTool } from '@/types/chat'
 import { ErrorMessage } from '@/types/error'
 import { FolderInterface } from '@/types/folder'
 import { OpenAIModel, OpenAIModelID } from '@/types/openai'
@@ -31,8 +31,13 @@ export interface HomeInitialState {
   cooldown: number
   showModelSettings: boolean
   isImg2TextLoading: boolean
+  isRouting: boolean | undefined
+  // routingResponse: RoutingResponse[] | undefined
+  // isPestDetectionLoading: boolean | undefined
+  isRunningTool: boolean | undefined
+  isRetrievalLoading: boolean | undefined
   documentGroups: Action[]
-  tools: Action[]
+  tools: UIUCTool[]
 }
 
 export const initialState: HomeInitialState = {
@@ -60,6 +65,10 @@ export const initialState: HomeInitialState = {
   serverSidePluginKeysSet: false,
   cooldown: 0,
   showModelSettings: false,
+  isRouting: undefined,
+  // routingResponse: undefined,
+  isRunningTool: undefined,
+  isRetrievalLoading: undefined,
   isImg2TextLoading: false,
   documentGroups: [],
   tools: [],

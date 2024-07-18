@@ -64,3 +64,15 @@ export function isEncrypted(str: string) {
     base64Regex.test(parts[1] as string)
   )
 }
+export const parseOpenaiKey = async (openaiKey: string) => {
+  if (openaiKey && isEncrypted(openaiKey)) {
+    const decryptedText = await decrypt(
+      openaiKey,
+      process.env.NEXT_PUBLIC_SIGNING_KEY as string,
+    )
+    openaiKey = decryptedText as string
+  } else {
+    // console.log('Using client key for openai chat: ', apiKey)
+  }
+  return openaiKey
+}

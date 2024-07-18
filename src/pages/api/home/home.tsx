@@ -29,9 +29,8 @@ import { type FolderInterface, type FolderType } from '@/types/folder'
 import {
   OpenAIModel,
   OpenAIModelID,
-  OpenAIModels,
-  fallbackModelID,
   VisionCapableModels,
+  selectBestModel,
 } from '@/types/openai'
 import { type Prompt } from '@/types/prompt'
 
@@ -91,7 +90,7 @@ const Home = () => {
 
   useEffect(() => {
     // Set model after we fetch available models
-    const model = selectBestModel()
+    const model = selectBestModel(models)
 
     dispatch({
       field: 'defaultModelId',
@@ -318,41 +317,13 @@ const Home = () => {
     saveFolders(updatedFolders)
   }
 
-  const selectBestModel = (): OpenAIModel => {
-    const defaultModelId = OpenAIModelID.GPT_4_VISION
-
-    // Ordered list of preferred model IDs -- the first available model will be used as default
-    const preferredModelIds = [
-      'gpt-4o',
-      'gpt-4-turbo-2024-04-09',
-      'gpt-4-128k',
-      'gpt-4-0125-preview',
-      'gpt-4-1106-preview',
-      'gpt-4-vision-preview',
-      'gpt-4',
-      'gpt-3.5-turbo-16k',
-      'gpt-3.5-turbo',
-    ]
-
-    // Find and return the first available preferred model
-    for (const preferredId of preferredModelIds) {
-      const model = models.find((m) => m.id === preferredId)
-      if (model) {
-        return model
-      }
-    }
-
-    // Fallback to the first model in the list or the default model
-    return models[0] || OpenAIModels[defaultModelId]
-  }
-
   // CONVERSATION OPERATIONS  --------------------------------------------
 
   const handleNewConversation = () => {
     const lastConversation = conversations[conversations.length - 1]
 
     // Determine the model to use for the new conversation
-    const model = selectBestModel()
+    const model = selectBestModel(models)
 
     const newConversation: Conversation = {
       id: uuidv4(),
@@ -398,6 +369,26 @@ const Home = () => {
     dispatch({ field: 'isImg2TextLoading', value: isImg2TextLoading })
   }
 
+  // Routing
+  const setIsRouting = (isRouting: boolean) => {
+    dispatch({ field: 'isRouting', value: isRouting })
+  }
+
+  // Routing Response
+  // const setRoutingResponse = (routingResponse: RoutingResponse) => {
+  //   dispatch({ field: 'routingResponse', value: routingResponse })
+  // }
+
+  // Pest Detection
+  // const setIsRunningTool = (isRunningTool: boolean) => {
+  //   dispatch({ field: 'isRunningTool', value: isRunningTool })
+  // }
+
+  // Retrieval
+  const setIsRetrievalLoading = (isRetrievalLoading: boolean) => {
+    dispatch({ field: 'isRetrievalLoading', value: isRetrievalLoading })
+  }
+
   // Update actions for a prompt
   const handleUpdateDocumentGroups = (id: string) => {
     documentGroups.map((documentGroup) =>
@@ -409,9 +400,10 @@ const Home = () => {
   }
 
   // Update actions for a prompt
+  // Fetch n8nWorkflow instead of OpenAI Compatible tools.
   const handleUpdateTools = (id: string) => {
     tools.map((tool) =>
-      tool.id === id ? { ...tool, checked: !tool.checked } : tool,
+      tool.id === id ? { ...tool, checked: !tool.enabled } : tool,
     )
     dispatch({ field: 'tools', value: tools })
   }
@@ -582,7 +574,7 @@ const Home = () => {
       const lastConversation = conversations[conversations.length - 1]
       console.debug('Models available: ', models)
       // let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
-      const bestModel = selectBestModel()
+      const bestModel = selectBestModel(models)
       // if (!defaultModel) {
       //   defaultModel = OpenAIModels['gpt-4']
       // }
@@ -620,6 +612,10 @@ const Home = () => {
           handleSelectConversation,
           handleUpdateConversation,
           setIsImg2TextLoading,
+          setIsRouting,
+          // setRoutingResponse,
+          // setIsRunningTool,
+          setIsRetrievalLoading,
           handleUpdateDocumentGroups,
           handleUpdateTools,
         }}
@@ -646,7 +642,9 @@ const Home = () => {
 
             <div className="flex h-full w-full pt-[48px] sm:pt-0">
               {isDragging &&
-                (VisionCapableModels.has(selectedConversation?.model.id as OpenAIModelID)) && (
+                VisionCapableModels.has(
+                  selectedConversation?.model.id as OpenAIModelID,
+                ) && (
                   <div className="absolute inset-0 z-10 flex h-full w-full flex-col items-center justify-center bg-black opacity-75">
                     <GradientIconPhoto />
                     <span className="text-3xl font-extrabold text-white">
@@ -656,7 +654,7 @@ const Home = () => {
                 )}
               <Chatbar />
 
-              <div className="flex flex-1">
+              <div className="flex max-w-full flex-1">
                 {course_metadata && (
                   <Chat
                     stopConversationRef={stopConversationRef}

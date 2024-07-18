@@ -56,7 +56,7 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-export function Demo({ numFiles, totalFiles }) {
+export function Demo({ numFiles, totalFiles }: { numFiles: number; totalFiles: number }) {
   return (
     <Paper shadow="lg" radius="lg" p="md" withBorder>
       <Text>
@@ -74,7 +74,7 @@ export function Demo({ numFiles, totalFiles }) {
   )
 }
 
-function DocumentsProgress({ courseName }) {
+function DocumentsProgress({ courseName }: { courseName: string }) {
   const [progress, setProgress] = useState(0)
   const [hasDocuments, setHasDocuments] = useState(false) // State to track if there are documents
   const [totalDocuments, setTotalDocuments] = useState(0) // State to track the total number of documents
@@ -554,9 +554,8 @@ const showIngestInProgressToast = (num_success_files: number) => {
     // onClose: () => console.log('unmounted'),
     // onOpen: () => console.log('mounted'),
     autoClose: 30000,
-    title: `Ingest in progress for ${num_success_files} file${
-      num_success_files > 1 ? 's' : ''
-    }.`,
+    title: `Ingest in progress for ${num_success_files} file${num_success_files > 1 ? 's' : ''
+      }.`,
     message: `This is a background task. Refresh the page to see your files as they're processed.`,
     color: 'green',
     radius: 'lg',

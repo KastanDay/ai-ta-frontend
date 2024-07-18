@@ -21,6 +21,7 @@ import {
   MessageChatbot,
   Folder,
   ReportAnalytics,
+  ChartDots3,
   // Settings,
   MessageCode,
 } from 'tabler-icons-react'
@@ -746,6 +747,17 @@ export function ReportIcon() {
 export function SettingIcon() {
   return (
     <MessageCode
+      size={20}
+      strokeWidth={2}
+      // color={'white'}
+      style={{ marginRight: '4px', marginLeft: '4px' }}
+    />
+  )
+}
+
+export function ChartDots3Icon() {
+  return (
+    <ChartDots3
       size={20}
       strokeWidth={2}
       // color={'white'}

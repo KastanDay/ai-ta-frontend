@@ -81,13 +81,12 @@ const MakeOldCoursePage = ({
       <Navbar course_name={course_name} bannerUrl={bannerUrl} />
 
       <Head>
-        <title>{course_name}</title>
+        <title>{course_name} - Admin page - UIUC.chat</title>
         <meta
           name="description"
           content="The AI teaching assistant built for students at UIUC."
         />
         <link rel="icon" href="/favicon.ico" />
-        {/* <Header /> */}
       </Head>
       <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center">
         <div className="items-left flex w-full flex-col justify-center py-0">
@@ -98,79 +97,8 @@ const MakeOldCoursePage = ({
               courseMetadata={metadata}
             />
 
-            <div className="flex w-[95%] flex-col items-center justify-center pb-8 pt-8 md:w-[90%] xl:w-[85%]">
-              {metadata && (
-                <>
-                  <Blockquote
-                    color="blue"
-                    icon={<IconInfoCircle />}
-                    styles={{
-                      root: {
-                        background:
-                          'linear-gradient(to right, rgba(106, 13, 173), rgba(80, 0, 220), rgba(0, 100, 255))',
-                        // marginBottom: '20px',
-                        borderRadius: '10px',
-                        overflow: 'hidden',
-                      },
-                    }}
-                  >
-                    <Text
-                      size="lg"
-                      className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
-                    >
-                      {/* Introducing Document Groups */}
-                      Exciting News: Document Groups Are Here!{' '}
-                      <span style={{ fontSize: '22px' }}>🎉</span>
-                    </Text>
-                    <br></br>
-                    <Text
-                      className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
-                      size={'md'}
-                    >
-                      Document Groups help you find what you need faster.
-                      <br></br>
-                      You can:
-                    </Text>
-                    <List>
-                      <List.Item className="pl-4">
-                        <Text
-                          className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
-                          size={'md'}
-                        >
-                          Organize documents into clear, manageable categories
-                        </Text>
-                      </List.Item>
-                      <List.Item className="pl-4">
-                        <Text
-                          className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
-                          size={'md'}
-                        >
-                          Enable and disable Document Groups to control what
-                          your chatbot users see.
-                        </Text>
-                      </List.Item>
-                      <List.Item className="pl-4">
-                        <Text
-                          className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
-                          size={'md'}
-                        >
-                          Chat with subsets of your data using filters (coming
-                          soon to the /chat page)
-                        </Text>
-                      </List.Item>
-                    </List>
-                    <Text
-                      className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
-                      size={'md'}
-                    >
-                      Try it out and start navigating huge projects with ease
-                      and control <span style={{ fontSize: '22px' }}>🙌</span>
-                    </Text>
-                  </Blockquote>
-                </>
-              )}
-            </div>
-            {/* Course files header/background */}
+            {/* Document Groups header */}
+            <div className="pt-8" />
             <div
               className="w-[95%] items-start rounded-2xl shadow-md shadow-purple-600 md:w-[93%] xl:w-[85%]"
               style={{ zIndex: 1, background: '#15162c' }}
@@ -199,6 +127,87 @@ const MakeOldCoursePage = ({
                 </div>
               </Flex>
             </div>
+
+            {/* Announcement of Document Groups */}
+            <div className="flex w-full flex-col items-center justify-center pt-8">
+              {/* <div className="flex flex-col items-start justify-start pt-8 w-[95%] md:w-[90%] xl:w-[85%]"> */}
+              {metadata && (
+                <>
+                  <Blockquote
+                    color="blue"
+                    icon={<IconInfoCircle />}
+                    styles={{
+                      root: {
+                        background:
+                          'linear-gradient(to right, rgba(106, 13, 173), rgba(80, 0, 220), rgba(0, 100, 255))',
+                        borderRadius: '10px',
+                        overflow: 'hidden',
+                        // width: '100%', // Ensure full width of the parent
+                      },
+                    }}
+                  >
+                    <Text
+                      size="lg"
+                      className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                    >
+                      {/* Introducing Document Groups */}
+                      Document Groups can{' '}
+                      <strong>
+                        <em>enable and disable</em>
+                      </strong>{' '}
+                      content for your project{' '}
+                      <span style={{ fontSize: '22px' }}>🎉</span>
+                    </Text>
+                    <br></br>
+                    <Text
+                      className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                      size={'md'}
+                    >
+                      Find what you need faster.
+                      <br></br>
+                      You can:
+                    </Text>
+                    <List>
+                      <List.Item className="pl-4">
+                        <Text
+                          className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                          size={'md'}
+                        >
+                          <strong>Organize</strong> documents into clear,
+                          manageable categories
+                        </Text>
+                      </List.Item>
+                      <List.Item className="pl-4">
+                        <Text
+                          className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                          size={'md'}
+                        >
+                          <strong>Enable and disable</strong> Document Groups to
+                          control what your chatbot users see.
+                        </Text>
+                      </List.Item>
+                      <List.Item className="pl-4">
+                        <Text
+                          className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                          size={'md'}
+                        >
+                          <strong>Chat with subsets</strong> of your data using
+                          filters (via Settings on the Chat page)
+                        </Text>
+                      </List.Item>
+                    </List>
+                    <Text
+                      className={`label ${montserrat_paragraph.className} inline-block select-text p-0 text-neutral-200`}
+                      size={'md'}
+                    >
+                      Try it out and start navigating huge projects with ease
+                      and control <span style={{ fontSize: '22px' }}>🙌</span>
+                    </Text>
+                  </Blockquote>
+                </>
+              )}
+            </div>
+
             <div className="w-[95%] pb-8 pt-8 md:w-[90%] xl:w-[85%]">
               <DocGroupsTable course_name={course_name} />
             </div>

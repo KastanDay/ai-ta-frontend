@@ -1,25 +1,13 @@
 // src/components/Chat/Chat.tsx
 import {
-  // IconBrain,
-  // IconClearAll,
   IconArrowRight,
-  // IconCloudUpload,
   IconExternalLink,
-  // IconRobot,
-  // IconSettings,
   IconAlertTriangle,
   IconArrowLeft,
   IconLock,
   IconBrain,
   IconCreditCard,
   IconAlertCircle,
-  IconSearch,
-  // IconArrowUpRight,
-  // IconFileTextAi,
-  // IconX,
-  // IconDownload,
-  // IconClearAll,
-  // IconSettings,
 } from '@tabler/icons-react'
 import {
   type MutableRefObject,
@@ -30,15 +18,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import {
-  Button,
-  Group,
-  Switch,
-  Text,
-  UnstyledButton,
-  createStyles,
-  rem,
-} from '@mantine/core'
+import { Button, Text } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
@@ -51,7 +31,7 @@ import {
   type Conversation,
   type Message,
   Content,
-  Action,
+  UIUCTool,
 } from '@/types/chat'
 import { type Plugin } from '@/types/plugin'
 
@@ -85,7 +65,13 @@ import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
 import { State, processChunkWithStateMachine } from '~/utils/streamProcessing'
+import handleTools, {
+  useFetchAllWorkflows,
+} from '~/utils/functionCalling/handleFunctionCalling'
 import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
+import Link from 'next/link'
+import { CropwizardLicenseDisclaimer } from '~/pages/cropwizard-licenses'
+import Head from 'next/head'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -113,12 +99,22 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const [enabledDocumentGroups, setEnabledDocumentGroups] = useState<string[]>(
     [],
   )
+  const [enabledTools, setEnabledTools] = useState<string[]>([])
 
   const {
-    data: docGroups,
-    isSuccess,
-    isError,
+    data: documentGroupsHook,
+    isSuccess: isSuccessDocumentGroups,
+    // isError: isErrorDocumentGroups,
   } = useFetchEnabledDocGroups(getCurrentPageName())
+
+  const {
+    data: toolsHook,
+    isSuccess: isSuccessTools,
+    isLoading: isLoadingTools,
+    isError: isErrorTools,
+    error: toolLoadingError,
+    // refetch: refetchTools,
+  } = useFetchAllWorkflows(getCurrentPageName())
 
   useEffect(() => {
     if (
@@ -145,6 +141,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       prompts,
       showModelSettings,
       isImg2TextLoading,
+      isRouting,
+      isRunningTool, // TODO change to isFunctionCallLoading
+      isRetrievalLoading,
       documentGroups,
       tools,
     },
@@ -161,13 +160,22 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [spotlightQuery, setSpotlightQuery] = useState('')
 
+  const getOpenAIKey = (courseMetadata: CourseMetadata) => {
+    const key =
+      courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != ''
+        ? courseMetadata.openai_api_key
+        : apiKey
+    return key
+  }
+
+  // Document Groups
   useEffect(() => {
-    // console.log('isSuccess: ', isSuccess)
-    if (isSuccess) {
+    if (isSuccessDocumentGroups) {
       const documentGroupActions = [
         DEFAULT_DOCUMENT_GROUP,
-        ...(docGroups?.map((docGroup, index) => ({
+        ...(documentGroupsHook?.map((docGroup, index) => ({
           id: `DocGroup-${index}`,
           name: docGroup.name,
           checked: false,
@@ -175,37 +183,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         })) || []),
       ]
 
-      // console.log('documentGroupActions: ', documentGroupActions)
-
-      // const toolsActions = ['Tool 1', 'Tool 2', 'Tool 3'].map(
-      //   (tool, index) => ({
-      //     // const toolsActions = tools.map((tool, index) => ({
-      //     id: `tool-${index}`,
-      //     title: tool,
-      //     description: `Description for ${tool}`,
-      //     group: 'Tools',
-      //     checked: true,
-      //     onTrigger: () => console.log(`${tool} triggered`),
-      //   }),
-      // )
-
       homeDispatch({
         field: 'documentGroups',
         value: [...documentGroupActions],
       })
-      setEnabledDocumentGroups(
-        documentGroups
-          .filter((documentGroup) => documentGroup.checked)
-          .map((documentGroup) => documentGroup.name),
-      )
-
-      // homeDispatch({
-      //   field: 'tools',
-      //   value: [...toolsActions],
-      // })
-      // setEnabledTools(toolsActions.filter((tool) => tool.checked).map((tool) => tool.name))
     }
-  }, [docGroups, isSuccess])
+  }, [documentGroupsHook, isSuccessDocumentGroups])
 
   useEffect(() => {
     setEnabledDocumentGroups(
@@ -215,9 +198,28 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     )
   }, [documentGroups])
 
+  // TOOLS
   useEffect(() => {
-    console.log('enabledDocumentGroups: ', enabledDocumentGroups)
-  }, [enabledDocumentGroups])
+    if (isSuccessTools) {
+      homeDispatch({
+        field: 'tools',
+        value: [...toolsHook],
+      })
+    } else if (isErrorTools) {
+      errorToast({
+        title: 'Error loading tools',
+        message:
+          (toolLoadingError as Error).message +
+          '.\nPlease refresh the page or try again later. Regular chat features may still work.',
+      })
+    }
+  }, [toolsHook, isSuccessTools])
+
+  useEffect(() => {
+    setEnabledTools(
+      tools.filter((action) => action.enabled).map((action) => action.name),
+    )
+  }, [tools])
 
   const onMessageReceived = async (conversation: Conversation) => {
     // Log conversation to Supabase
@@ -263,9 +265,47 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     }
   }
 
+  const handleRoutingForImageContent = async (
+    message: Message,
+    tools: UIUCTool[],
+    updatedConversation: Conversation,
+    searchQuery: string,
+    controller: AbortController,
+    currentMessageIndex: number,
+  ) => {
+    const imageContent = (message.content as Content[]).filter(
+      (content) => content.type === 'image_url',
+    )
+
+    if (imageContent.length > 0) {
+      // console.log('imageContent:', imageContent)
+      const imageUrls = imageContent.map(
+        (content) => content.image_url?.url as string,
+      )
+      console.log('imageURLs:', imageUrls)
+
+      // homeDispatch({ field: 'isRouting', value: true })
+
+      try {
+        const { updatedSearchQuery, imgDesc } = await handleImageContent(
+          message,
+          updatedConversation,
+          searchQuery,
+          controller,
+        )
+        searchQuery = updatedSearchQuery
+        return { searchQuery, imgDesc }
+      } catch (error) {
+        console.error('Error in chat.tsx running handleImageContent():', error)
+        controller.abort()
+      }
+    }
+    const imgDesc = ''
+    return { searchQuery, imgDesc }
+  }
+
   const handleImageContent = async (
     message: Message,
-    endpoint: string,
     updatedConversation: Conversation,
     searchQuery: string,
     controller: AbortController,
@@ -273,28 +313,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     const imageContent = (message.content as Content[]).filter(
       (content) => content.type === 'image_url',
     )
-
-    // console.log("Image Content: ", imageContent)
-
+    let imgDesc = ''
     if (imageContent.length > 0) {
       homeDispatch({ field: 'isImg2TextLoading', value: true })
 
-      const key =
-        courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != ''
-          ? courseMetadata.openai_api_key
-          : apiKey
-
       try {
-        const imgDesc = await fetchImageDescription(
-          message,
+        imgDesc = await fetchImageDescription(
           getCurrentPageName(),
-          endpoint,
           updatedConversation,
-          key,
+          getOpenAIKey(courseMetadata),
           controller,
         )
-
-        searchQuery += ` Image description: ${imgDesc}`
 
         const imgDescIndex = (message.content as Content[]).findIndex(
           (content) =>
@@ -320,7 +349,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         homeDispatch({ field: 'isImg2TextLoading', value: false })
       }
     }
-    return searchQuery
+    const updatedSearchQuery = searchQuery
+    return { updatedSearchQuery, imgDesc }
   }
 
   const handleContextSearch = async (
@@ -330,6 +360,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     documentGroups: string[],
   ) => {
     if (getCurrentPageName() != 'gpt4') {
+      homeDispatch({ field: 'isRetrievalLoading', value: true })
       // Extract text from all user messages in the conversation
       const token_limit =
         OpenAIModels[selectedConversation?.model.id as OpenAIModelID].tokenLimit
@@ -348,9 +379,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         documentGroups,
       ).then((curr_contexts) => {
         message.contexts = curr_contexts as ContextWithMetadata[]
-        console.log('message.contexts: ', message.contexts)
+        // console.log('message.contexts: ', message.contexts)
       })
+      homeDispatch({ field: 'isRetrievalLoading', value: false })
     }
+  }
+
+  const resetMessageStates = () => {
+    homeDispatch({ field: 'isRouting', value: undefined })
+    homeDispatch({ field: 'isRunningTool', value: undefined })
+    homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+    homeDispatch({ field: 'isRetrievalLoading', value: undefined })
   }
 
   // THIS IS WHERE MESSAGES ARE SENT.
@@ -359,22 +398,28 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       message: Message,
       deleteCount = 0,
       plugin: Plugin | null = null,
+      tools: UIUCTool[],
       enabledDocumentGroups: string[],
     ) => {
       setCurrentMessage(message)
-      // New way with React Context API
-      // TODO: MOVE THIS INTO ChatMessage
-      // console.log('IN handleSend: ', message)
-      // setSearchQuery(message.content)
+      resetMessageStates()
+
       let searchQuery = Array.isArray(message.content)
         ? message.content.map((content) => content.text).join(' ')
         : message.content
 
-      // console.log("QUERY: ", searchQuery)
-
       if (selectedConversation) {
         let updatedConversation: Conversation
         if (deleteCount) {
+          // Remove tools from message to clear old tools
+          message.tools = []
+          message.contexts = []
+          message.content = Array.isArray(message.content)
+            ? message.content.filter(
+                (content) => content.type !== 'tool_image_url',
+              )
+            : message.content
+
           const updatedMessages = [...selectedConversation.messages]
           for (let i = 0; i < deleteCount; i++) {
             updatedMessages.pop()
@@ -393,8 +438,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           field: 'selectedConversation',
           value: updatedConversation,
         })
+        const currentMessageIndex = updatedConversation.messages.length - 1
         homeDispatch({ field: 'loading', value: true })
         homeDispatch({ field: 'messageIsStreaming', value: true })
+        // console.log("Current message index: ", currentMessageIndex)
 
         const endpoint = getEndpoint(plugin)
 
@@ -403,16 +450,26 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         // console.log("Made it to message image handling code in handleSend with message: ", message)
 
         // Run image to text conversion, attach to Message object.
+        let imgDesc = ''
         if (Array.isArray(message.content)) {
-          searchQuery = await handleImageContent(
-            message,
-            endpoint,
-            updatedConversation,
-            searchQuery,
-            controller,
-          )
+          // if (true) {
+          // Fetch current message index from updatedConversation
+          console.log('Running routing for image content', message.content)
+          // Run routing for image content, attach to Message object.
+          const { searchQuery: newSearchQuery, imgDesc: newImgDesc } =
+            await handleRoutingForImageContent(
+              message,
+              tools,
+              updatedConversation,
+              searchQuery,
+              controller,
+              currentMessageIndex,
+            )
+          searchQuery = newSearchQuery
+          imgDesc = newImgDesc
         }
 
+        // Retrieval Tool
         // Run context search, attach to Message object.
         await handleContextSearch(
           message,
@@ -421,52 +478,69 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           enabledDocumentGroups,
         )
 
+        // Get imageURLs -- better way/place to do this? Move into handleTools?
+        const imageContent = (message.content as Content[]).filter(
+          (content) => content.type === 'image_url',
+        )
+        const imageUrls = imageContent.map(
+          (content) => content.image_url?.url as string,
+        )
+
+        const toolResult = await handleTools(
+          message,
+          tools,
+          imageUrls,
+          imgDesc,
+          updatedConversation,
+          currentMessageIndex,
+          getOpenAIKey(courseMetadata),
+          getCurrentPageName(),
+          homeDispatch,
+        )
+        // Update conversation from toolResult
+        console.log('Tool result:', message.tools)
+
         const chatBody: ChatBody = {
-          model: updatedConversation.model,
-          messages: updatedConversation.messages,
-          key:
-            courseMetadata?.openai_api_key &&
-            courseMetadata?.openai_api_key != ''
-              ? courseMetadata.openai_api_key
-              : apiKey,
-          // prompt property is intentionally left undefined to avoid TypeScript errors
-          // and to meet the requirement of not passing any prompt.
-          prompt: '',
-          temperature: updatedConversation.temperature,
+          conversation: updatedConversation,
+          key: getOpenAIKey(courseMetadata),
           course_name: getCurrentPageName(),
+          courseMetadata: courseMetadata,
           stream: true,
-          isImage: false,
         }
 
-        let body
-        if (!plugin) {
-          body = JSON.stringify(chatBody)
-        } else {
-          body = JSON.stringify({
-            ...chatBody,
-            googleAPIKey: pluginKeys
-              .find((key) => key.pluginId === 'google-search')
-              ?.requiredKeys.find((key) => key.key === 'GOOGLE_API_KEY')?.value,
-            googleCSEId: pluginKeys
-              .find((key) => key.pluginId === 'google-search')
-              ?.requiredKeys.find((key) => key.key === 'GOOGLE_CSE_ID')?.value,
-          })
-        }
+        // src/pages/api/buildPrompt.ts
+        const buildPromptResponse = await fetch('/api/buildPrompt', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(chatBody),
+        })
+        chatBody.conversation = await buildPromptResponse.json()
+        updatedConversation = chatBody.conversation
+        // homeDispatch({
+        //   field: 'selectedConversation',
+        //   value: chatBody.conversation,
+        // })
 
-        // This is where we call the OpenAI API
+        // Call the OpenAI API
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           signal: controller.signal,
-          body,
+          body: JSON.stringify(chatBody),
         })
 
         if (!response.ok) {
           const final_response = await response.json()
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
+          // homeDispatch({ field: 'isRouting', value: undefined })
+          // homeDispatch({ field: 'isRunningTool', value: undefined })
+          // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+          // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
           notifications.show({
             id: 'error-notification',
             withCloseButton: true,
@@ -502,6 +576,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         if (!data) {
           homeDispatch({ field: 'loading', value: false })
           homeDispatch({ field: 'messageIsStreaming', value: false })
+          // homeDispatch({ field: 'isRouting', value: undefined })
+          // homeDispatch({ field: 'isRunningTool', value: undefined })
+          // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+          // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
           return
         }
         if (!plugin) {
@@ -521,6 +599,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             }
           }
           homeDispatch({ field: 'loading', value: false })
+          // homeDispatch({ field: 'isRouting', value: undefined })
+          // homeDispatch({ field: 'isRunningTool', value: undefined })
+          // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
+          // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
           const reader = data.getReader()
           const decoder = new TextDecoder()
           let done = false
@@ -621,7 +703,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
           try {
             saveConversation(updatedConversation)
-            // todo: add clerk user info to onMessagereceived for logging.
             if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
               const emails = extractEmailsFromClerk(clerk_obj.user)
               updatedConversation.user_email = emails[0]
@@ -708,7 +789,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
-      handleSend(currentMessage, 2, null, enabledDocumentGroups)
+      handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
     }
   }, [currentMessage, handleSend])
 
@@ -801,17 +882,16 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-          'Make a bullet point list of key takeaways of the course.',
-          'What is [your favorite topic] and why is it worth learning about?',
-          'How can I effectively prepare for the upcoming exam?',
-          'How many assignments in the course?',
+          'Make a bullet point list of key takeaways from this project.',
+          'What are the best practices for [Activity or Process] in [Context or Field]?',
+          'Can you explain the concept of [Specific Concept] in simple terms?',
         ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
     return (
       <div className="xs:mx-2 mt-4 max-w-3xl gap-3 px-4 last:mb-2 sm:mx-4 md:mx-auto lg:mx-auto ">
-        <div className="backdrop-filter-[blur(10px)] rounded-lg border border-2 border-[rgba(42,42,120,0.55)] bg-[rgba(42,42,64,0.4)] p-6">
+        <div className="backdrop-filter-[blur(10px)] rounded-lg border-2 border-[rgba(42,42,120,0.55)] bg-[rgba(42,42,64,0.4)] p-6">
           <Text
             className={`mb-2 text-lg text-white ${montserrat_heading.variable} font-montserratHeading`}
             style={{ whiteSpace: 'pre-wrap' }}
@@ -822,6 +902,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           <h4
             className={`text-md mb-2 text-white ${montserrat_paragraph.variable} font-montserratParagraph`}
           >
+            {getCurrentPageName() === 'cropwizard-1.5' && (
+              <CropwizardLicenseDisclaimer />
+            )}
             Start a conversation below or try the following examples
           </h4>
           <div className="mt-4 flex flex-col items-start space-y-2 overflow-hidden">
@@ -859,7 +942,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       return (
         <>
           {message.content.map((content, index) => {
-            if (content.type === 'image' && content.image_url) {
+            if (content.type === 'image_url' && content.image_url) {
               return (
                 <img
                   key={index}
@@ -923,142 +1006,246 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   )
 
   return (
-    <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
-      <div className="justify-center" style={{ height: '40px' }}>
-        <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
-      </div>
-      <div className="mt-10 flex-grow overflow-auto">
-        {!(apiKey || serverSideApiKeyIsSet) ? (
-          <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
-            <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
-              <div className="mb-2 flex flex-col items-center text-center">
-                <IconAlertTriangle
-                  size={'54'}
-                  className="mr-2 block text-orange-400 "
-                />
-                <div className="mt-4 text-left text-gray-100">
-                  {' '}
-                  {t(
-                    'Please set your OpenAI API key in the bottom left of the screen.',
-                  )}
-                  <div className="mt-2 font-normal">
-                    <Text size={'md'} className="text-gray-100">
-                      If you don&apos;t have a key yet, you can get one here:{' '}
-                      <a
-                        href="https://platform.openai.com/account/api-keys"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-purple-500 hover:underline"
-                      >
-                        OpenAI API key{' '}
-                        <IconExternalLink
-                          className="mr-2 inline-block"
-                          style={{ position: 'relative', top: '-3px' }}
-                        />
-                      </a>
-                    </Text>
-                    <Text size={'md'} className="pt-10 text-gray-400">
-                      <IconLock className="mr-2 inline-block" />
-                      This key will live securely encrypted in your
-                      browser&apos;s cache. It&apos;s all client-side so our
-                      servers never see it.
-                    </Text>
-                    <Text size={'md'} className="pt-10 text-gray-400">
-                      <IconBrain className="mr-2 inline-block" />
-                      GPT 3.5 is default. For GPT-4 access, either complete one
-                      billing cycle as an OpenAI API customer or pre-pay a
-                      minimum of $0.50. See
-                      <a
-                        className="text-purple-500 hover:underline"
-                        href="https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {' '}
-                        this documentation for details{' '}
-                        <IconExternalLink
-                          className="mr-2 inline-block"
-                          style={{ position: 'relative', top: '-3px' }}
-                        />
-                      </a>
-                    </Text>
-                    <Text size={'md'} className="pt-10 text-gray-400">
-                      <IconCreditCard className="mr-2 inline-block" />
-                      You only pay the standard OpenAI prices, per token read or
-                      generated by the model.
-                    </Text>
-                  </div>
-                </div>
-                <div className="absolute bottom-4 left-0 animate-ping flex-col place-items-start text-left">
-                  <IconArrowLeft
-                    size={'36'}
-                    className="transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
+    <>
+      <Head>
+        <title>{getCurrentPageName()} - UIUC.chat</title>
+        <meta
+          name="description"
+          content="The AI teaching assistant built for students at UIUC."
+        />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <div className="overflow-wrap relative flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#15162c]">
+        <div className="justify-center" style={{ height: '40px' }}>
+          <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
+        </div>
+        <div className="mt-10 flex-grow overflow-auto">
+          {!(apiKey || serverSideApiKeyIsSet) ? (
+            <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
+              <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
+                <div className="mb-2 flex flex-col items-center text-center">
+                  <IconAlertTriangle
+                    size={'54'}
+                    className="mr-2 block text-orange-400 "
                   />
+                  <div className="mt-4 text-left text-gray-100">
+                    {' '}
+                    {t(
+                      'Please set your OpenAI API key in the bottom left of the screen.',
+                    )}
+                    <div className="mt-2 font-normal">
+                      <Text size={'md'} className="text-gray-100">
+                        If you don&apos;t have a key yet, you can get one here:{' '}
+                        <a
+                          href="https://platform.openai.com/account/api-keys"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-purple-500 hover:underline"
+                        >
+                          OpenAI API key{' '}
+                          <IconExternalLink
+                            className="mr-2 inline-block"
+                            style={{ position: 'relative', top: '-3px' }}
+                          />
+                        </a>
+                      </Text>
+                      <Text size={'md'} className="pt-10 text-gray-400">
+                        <IconLock className="mr-2 inline-block" />
+                        This key will live securely encrypted in your
+                        browser&apos;s cache. It&apos;s all client-side so our
+                        servers never see it.
+                      </Text>
+                      <Text size={'md'} className="pt-10 text-gray-400">
+                        <IconBrain className="mr-2 inline-block" />
+                        GPT 3.5 is default. For GPT-4 access, either complete
+                        one billing cycle as an OpenAI API customer or pre-pay a
+                        minimum of $0.50. See
+                        <a
+                          className="text-purple-500 hover:underline"
+                          href="https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {' '}
+                          this documentation for details{' '}
+                          <IconExternalLink
+                            className="mr-2 inline-block"
+                            style={{ position: 'relative', top: '-3px' }}
+                          />
+                        </a>
+                      </Text>
+                      <Text size={'md'} className="pt-10 text-gray-400">
+                        <IconCreditCard className="mr-2 inline-block" />
+                        You only pay the standard OpenAI prices, per token read
+                        or generated by the model.
+                      </Text>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-4 left-0 animate-ping flex-col place-items-start text-left">
+                    <IconArrowLeft
+                      size={'36'}
+                      className="transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
+                    />
+                    <div className="mt-4 text-left text-gray-100">
+                      {' '}
+                      {t(
+                        'Please set your OpenAI API key in the bottom left of the screen.',
+                      )}
+                      <div className="mt-2 font-normal">
+                        <Text size={'md'} className="text-gray-100">
+                          If you don&apos;t have a key yet, you can get one
+                          here:{' '}
+                          <a
+                            href="https://platform.openai.com/account/api-keys"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-purple-500 hover:underline"
+                          >
+                            OpenAI API key{' '}
+                            <IconExternalLink
+                              className="mr-2 inline-block"
+                              style={{ position: 'relative', top: '-3px' }}
+                            />
+                          </a>
+                        </Text>
+                        <Text size={'md'} className="pt-10 text-gray-400">
+                          <IconLock className="mr-2 inline-block" />
+                          This key will live securely encrypted in your
+                          browser&apos;s cache. It&apos;s all client-side so our
+                          servers never see it.
+                        </Text>
+                        <Text size={'md'} className="pt-10 text-gray-400">
+                          <IconBrain className="mr-2 inline-block" />
+                          GPT 3.5 is default. For GPT-4 access, either complete
+                          one billing cycle as an OpenAI API customer or pre-pay
+                          a minimum of $0.50. See
+                          <a
+                            className="text-purple-500 hover:underline"
+                            href="https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4"
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {' '}
+                            this documentation for details{' '}
+                            <IconExternalLink
+                              className="mr-2 inline-block"
+                              style={{ position: 'relative', top: '-3px' }}
+                            />
+                          </a>
+                        </Text>
+                        <Text size={'md'} className="pt-10 text-gray-400">
+                          <IconCreditCard className="mr-2 inline-block" />
+                          You only pay the standard OpenAI prices, per token
+                          read or generated by the model.
+                        </Text>
+                      </div>
+                    </div>
+                    <div className="absolute bottom-4 left-0 ml-4 mt-4 animate-ping flex-col place-items-start text-left">
+                      <IconArrowLeft
+                        size={'36'}
+                        className="mr-2 transform text-purple-500 transition-transform duration-500 ease-in-out hover:-translate-x-1"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ) : modelError ? (
-          <ErrorMessageDiv error={modelError} />
-        ) : (
-          <>
-            <div
-              className="mt-4 max-h-full"
-              ref={chatContainerRef}
-              onScroll={handleScroll}
-            >
-              {selectedConversation?.messages.length === 0 ? (
-                <>
-                  <div className="mt-16">{renderIntroductoryStatements()}</div>
-                </>
-              ) : (
-                <>
-                  {selectedConversation?.messages.map((message, index) => (
-                    <MemoizedChatMessage
-                      key={index}
-                      message={message}
-                      contentRenderer={renderMessageContent}
-                      messageIndex={index}
-                      onEdit={(editedMessage) => {
-                        // setCurrentMessage(editedMessage)
-                        handleSend(
-                          editedMessage,
-                          selectedConversation?.messages.length - index,
-                          null,
-                          enabledDocumentGroups,
-                        )
-                      }}
-                      onImageUrlsUpdate={onImageUrlsUpdate}
+          ) : modelError ? (
+            <ErrorMessageDiv error={modelError} />
+          ) : (
+            <>
+              <div
+                className="mt-4 max-h-full"
+                ref={chatContainerRef}
+                onScroll={handleScroll}
+              >
+                {selectedConversation?.messages.length === 0 ? (
+                  <>
+                    <div className="mt-16">
+                      {renderIntroductoryStatements()}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {selectedConversation?.messages.map((message, index) => (
+                      <MemoizedChatMessage
+                        key={index}
+                        message={message}
+                        contentRenderer={renderMessageContent}
+                        messageIndex={index}
+                        onEdit={(editedMessage) => {
+                          // setCurrentMessage(editedMessage)
+                          handleSend(
+                            editedMessage,
+                            selectedConversation?.messages.length - index,
+                            null,
+                            tools,
+                            enabledDocumentGroups,
+                          )
+                        }}
+                        onImageUrlsUpdate={onImageUrlsUpdate}
+                      />
+                    ))}
+                    {loading && <ChatLoader />}
+                    <div
+                      className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
+                      ref={messagesEndRef}
                     />
-                  ))}
-                  {loading && <ChatLoader />}
-                  <div
-                    className="h-[162px] bg-gradient-to-t from-transparent to-[rgba(14,14,21,0.4)]"
-                    ref={messagesEndRef}
-                  />
-                </>
-              )}
-            </div>
-            {/* <div className="w-full max-w-[calc(100% - var(--sidebar-width))] mx-auto flex justify-center"> */}
-            <ChatInput
-              stopConversationRef={stopConversationRef}
-              textareaRef={textareaRef}
-              onSend={(message, plugin) => {
-                // setCurrentMessage(message)
-                handleSend(message, 0, plugin, enabledDocumentGroups)
-              }}
-              onScrollDownClick={handleScrollDown}
-              onRegenerate={handleRegenerate}
-              showScrollDownButton={showScrollDownButton}
-              inputContent={inputContent}
-              setInputContent={setInputContent}
-              courseName={getCurrentPageName()}
-            />
-            {/* </div> */}
-          </>
-        )}
+                  </>
+                )}
+              </div>
+              {/* <div className="w-full max-w-[calc(100% - var(--sidebar-width))] mx-auto flex justify-center"> */}
+              <ChatInput
+                stopConversationRef={stopConversationRef}
+                textareaRef={textareaRef}
+                onSend={(message, plugin) => {
+                  // setCurrentMessage(message)
+                  handleSend(message, 0, plugin, tools, enabledDocumentGroups)
+                }}
+                onScrollDownClick={handleScrollDown}
+                onRegenerate={handleRegenerate}
+                showScrollDownButton={showScrollDownButton}
+                inputContent={inputContent}
+                setInputContent={setInputContent}
+                courseName={getCurrentPageName()}
+              />
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
   Chat.displayName = 'Chat'
 })
+
+function errorToast({ title, message }: { title: string; message: string }) {
+  notifications.show({
+    id: 'error-notification-reused',
+    withCloseButton: true,
+    closeButtonProps: { color: 'red' },
+    onClose: () => console.log('error unmounted'),
+    onOpen: () => console.log('error mounted'),
+    autoClose: 12000,
+    title: (
+      <Text size={'lg'} className={`${montserrat_med.className}`}>
+        {title}
+      </Text>
+    ),
+    message: (
+      <Text className={`${montserrat_med.className} text-neutral-200`}>
+        {message}
+      </Text>
+    ),
+    color: 'red',
+    radius: 'lg',
+    icon: <IconAlertCircle />,
+    className: 'my-notification-class',
+    style: {
+      backgroundColor: 'rgba(42,42,64,0.3)',
+      backdropFilter: 'blur(10px)',
+      borderLeft: '5px solid red',
+    },
+    withBorder: true,
+    loading: false,
+  })
+}
