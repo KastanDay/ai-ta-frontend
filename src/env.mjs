@@ -17,8 +17,8 @@ export const env = createEnv({
     CLERK_SECRET_KEY: z.string().min(1),
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
     EDGE_CONFIG: z.string().min(1),
-    ANTHROPIC_API_KEY: z.string().min(1), // go from here 
-    AZURE_API_KEY: z.string().min(1),
+    // ANTHROPIC_API_KEY: z.string().min(1),
+    // AZURE_API_KEY: z.string().min(1),
     //AZURE_OPENAI_ENDPOINT: z.string().url(),
     // AZURE_OPENAI_ENGINE: z.string().min(1),
     NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1),
@@ -71,7 +71,7 @@ export const env = createEnv({
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     NEXT_PUBLIC_MAGIC_BELL_API: process.env.NEXT_PUBLIC_MAGIC_BELL_API,
     // api keys for models
-    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
-    AZURE_API_KEY: process.env.AZURE_API_KEY,
+    // ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    // AZURE_API_KEY: process.env.AZURE_API_KEY,
   },
 })

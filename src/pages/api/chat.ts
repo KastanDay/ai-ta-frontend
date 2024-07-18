@@ -29,33 +29,15 @@ const handler = async (req: Request): Promise<NextResponse> => {
     const { conversation, key, course_name, courseMetadata, stream } =
       (await req.json()) as ChatBody
 
-    // Call buildPrompt
-    // const { systemPrompt, userPrompt, convoHistory, openAIKey } =
-    //   await buildPrompt({
-    //     conversation,
-    //     rawOpenaiKey: key,
-    //     projectName: course_name,
-    //     courseMetadata,
-    //   })
-
     const openAIKey = await parseOpenaiKey(key)
 
-    // console.log(
-    //   'PROMPT TO BE SENT -- ',
-    //   userPrompt,
-    //   'system prompt:',
-    //   systemPrompt,
-    // )
-
-    // const latestMessage: OpenAIChatMessage = {
-    //   role: 'user',
-    //   content: [
-    //     {
-    //       type: 'text' as MessageType,
-    //       text: userPrompt,
-    //     },
-    //   ],
-    // }
+    if (!conversation) {
+      console.error('No conversation provided')
+      return new NextResponse(
+        JSON.stringify({ error: 'No conversation provided' }),
+        { status: 400 },
+      )
+    }
 
     // const messagesToSend = [latestMessage, ...convoHistory] // BUG: REPLACE (not append to) latest user message. RN we have dupliacates.
     // Strip internal messages to send to OpenAI
@@ -162,7 +144,7 @@ Priorities for building prompt w/ limited window:
   allPromises.push(_getSystemPrompt({ courseMetadata, conversation }))
   // ideally, run context search here -- parallelized. (tricky due to sending status updates homeDispatch)
   const [lastUserTextInput, lastToolResult, finalSystemPrompt] =
-    (await Promise.all(allPromises)) as [string, string, UIUCTool[], string]
+    (await Promise.all(allPromises)) as [string, UIUCTool[], string]
 
   console.log('LATEST USER Text Input: ', lastUserTextInput)
 

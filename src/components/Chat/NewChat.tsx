@@ -135,7 +135,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import toast from 'react-hot-toast'
 import { Button, Text, Title } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 

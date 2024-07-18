@@ -47,6 +47,7 @@ import { type CourseMetadata } from '~/types/courseMetadata'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
+import { SupportedModelsObj } from '../models'
 
 const Home = () => {
   const { t } = useTranslation('chat')
@@ -212,26 +213,20 @@ const Home = () => {
       // Get models available to users
       try {
         if (!course_metadata || !key) return
-        const data = await getModels({ key: key })
-        // dispatch({ field: 'models', value: data })
 
-        // @ts-ignore -- this type cast is FINE!! UGH
-        const models = data as OpenAIModel[]
-        if (course_metadata.disabled_models) {
-          // Convert IDs to model objects
-          const disabledModelObjects = course_metadata.disabled_models.map(
-            (id) => models.find((model) => model.id === id),
-          )
+        console.log('Course name when fetching modes: ', course_name)
+        const data = await getModels({ projectName: course_name })
 
-          // Filter out disabled models
-          const validModels = models.filter(
-            (model) => !disabledModelObjects.includes(model),
-          )
-          dispatch({ field: 'models', value: validModels })
-        } else {
-          // All models are enabled
-          dispatch({ field: 'models', value: data })
-        }
+        const models = data as unknown as SupportedModelsObj
+        console.log('Models from getModels: ', models)
+        dispatch({ field: 'models', value: models })
+
+        console.log(
+          'course_metadata.disabled_models: ',
+          course_metadata.disabled_models,
+        )
+
+        console.log('at end of setOpenaiModels func')
       } catch (error) {
         console.error('Error fetching models user has access to: ', error)
         dispatch({ field: 'modelError', value: getModelsError(error) })

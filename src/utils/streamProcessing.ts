@@ -58,6 +58,10 @@ export async function processChunkWithStateMachine(
   let { state, buffer } = stateMachineContext
   let processedChunk = ''
 
+  if (!chunk) {
+    return ''
+  }
+
   for (let i = 0; i < chunk.length; i++) {
     const char = chunk[i]!
     switch (state) {

@@ -60,7 +60,7 @@ interface Props {
   inputContent: string
   setInputContent: (content: string) => void
   courseName: string
-  chat_ui: ChatUI
+  chat_ui?: ChatUI
 }
 
 interface ProcessedImage {
@@ -147,8 +147,9 @@ export const ChatInput = ({
   )
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    // TODO: Update this to use tokens, instead of characters
     const value = e.target.value
-    const maxLength = selectedConversation?.model.maxLength
+    const maxLength = selectedConversation?.model.tokenLimit
 
     if (maxLength && value.length > maxLength) {
       alert(
@@ -183,10 +184,10 @@ export const ChatInput = ({
           imageUrls.length > 0
             ? imageUrls
             : await Promise.all(
-              imageFiles.map((file) =>
-                uploadImageAndGetUrl(file, courseName),
-              ),
-            )
+                imageFiles.map((file) =>
+                  uploadImageAndGetUrl(file, courseName),
+                ),
+              )
 
         // Construct image content for the message
         imageContent = imageUrlsToUse
@@ -594,8 +595,9 @@ export const ChatInput = ({
     if (textareaRef && textareaRef.current) {
       textareaRef.current.style.height = 'inherit'
       textareaRef.current.style.height = `${textareaRef.current?.scrollHeight}px`
-      textareaRef.current.style.overflow = `${textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
-        }`
+      textareaRef.current.style.overflow = `${
+        textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
+      }`
     }
   }, [content])
 
@@ -823,11 +825,12 @@ export const ChatInput = ({
             {/* Button 3: main input text area  */}
             <div
               className={`
-                ${VisionCapableModels.has(
-                selectedConversation?.model.id as OpenAIModelID,
-              )
-                  ? 'pl-8'
-                  : 'pl-1'
+                ${
+                  VisionCapableModels.has(
+                    selectedConversation?.model.id as OpenAIModelID,
+                  )
+                    ? 'pl-8'
+                    : 'pl-1'
                 }
                   `}
             >
@@ -905,7 +908,9 @@ export const ChatInput = ({
             tt={'capitalize'}
           >
             {selectedConversation?.model.name}
-            {selectedConversation?.model as WebllmModel && chat_ui.isModelLoading() && "  Please wait while the model is loading..."}
+            {(selectedConversation?.model as WebllmModel) &&
+              chat_ui?.isModelLoading() &&
+              '  Please wait while the model is loading...'}
           </Text>
         </div>
       </div>

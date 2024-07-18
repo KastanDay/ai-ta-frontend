@@ -7,76 +7,9 @@ import { set } from 'zod'
 // import { Card, Image, Text, Title, Badge, Button, Group } from '@mantine/core'
 
 const TermsAndConditionsPage: NextPage = () => {
-  const [chat_ui] = useState(new ChatUI(new MLCEngine()))
-  const messages = [
-    { role: 'system', content: 'You are a helpful AI assistant.' },
-    { role: 'user', content: 'Hello!' },
-  ]
-  const [messagesToShow, setMessagesToShow] = useState([])
-
-  const loadModel = async () => {
-    await chat_ui.loadModel()
-  }
-
-  const runChatCompletion = async () => {
-    const completion = await chat_ui.runChatCompletion(messages)
-
-    // const reader = completion.getReader()
-    // let done = false
-    const iterator = completion[Symbol.asyncIterator]()
-
-    let curMessage = ''
-    let done = false
-
-    while (!done) {
-      const result = await iterator.next()
-      done = result.done!
-      if (!done) {
-        const chunk = result.value
-        const curDelta = chunk.choices[0]?.delta.content
-        if (curDelta) {
-          curMessage += curDelta
-        }
-        setMessagesToShow([...messagesToShow, curMessage])
-      }
-    }
-
-    // for await (const chunk of completion) {
-    //   const curDelta = chunk.choices[0]?.delta.content
-    //   if (curDelta) {
-    //     curMessage += curDelta
-    //   }
-    //   setMessagesToShow([...messagesToShow, curMessage])
-    // }
-    // done = true
-    // return completion
-  }
-
   return (
     <MainPageBackground>
-      {/* <p style={{ whiteSpace: 'pre-line' }}>{terms_string}</p> */}
-
-      <button
-        className="chatui-btn"
-        onClick={() => {
-          loadModel().then((result) => {
-            // setMessagesToShow([...messagesToShow, result])
-          })
-        }}
-      >
-        Load model
-      </button>
-      <button
-        className="chatui-btn"
-        onClick={() => {
-          runChatCompletion().then((result) => {
-            // setMessagesToShow([...messagesToShow, result])
-          })
-        }}
-      >
-        Send
-      </button>
-      <p>{JSON.stringify(messagesToShow)}</p>
+      <p style={{ whiteSpace: 'pre-line' }}>{terms_string}</p>
     </MainPageBackground>
   )
 }

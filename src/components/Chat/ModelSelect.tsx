@@ -1,4 +1,11 @@
-import { IconChevronDown, IconCircleCheck, IconDownload, IconExternalLink, IconCircleDashed, IconSparkles } from '@tabler/icons-react'
+import {
+  IconChevronDown,
+  IconCircleCheck,
+  IconDownload,
+  IconExternalLink,
+  IconCircleDashed,
+  IconSparkles,
+} from '@tabler/icons-react'
 import { forwardRef, useContext } from 'react'
 import { useMediaQuery } from '@mantine/hooks'
 import HomeContext from '~/pages/api/home/home.context'
@@ -6,34 +13,45 @@ import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Group, Input, Select, Title, Text } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
-import { webLLMModels, ollamaModels } from '~/pages/api/models'
 import { OllamaModel } from '~/utils/modelProviders/ollama'
 import { OpenAIModel, OpenAIModels, preferredModelIds } from '~/types/openai'
-import { WebllmModel } from '~/utils/modelProviders/WebLLM'
+import { WebllmModel, webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { Ollama } from 'ollama-ai-provider'
 import { modelCached } from './UserSettings'
 
 interface ModelDropdownProps {
-  title: string;
-  value: string | undefined;
-  onChange: (value: string) => void;
-  models: { id: string; name: string; downloadSize?: string }[];
-  isSmallScreen: boolean;
-  isWebLLM?: boolean;
+  title: string
+  value: string | undefined
+  onChange: (value: string) => void
+  models: { id: string; name: string; downloadSize?: string }[]
+  isSmallScreen: boolean
+  isWebLLM?: boolean
 }
 
 interface ModelItemProps extends React.ComponentPropsWithoutRef<'div'> {
-  label: string;
-  downloadSize?: string;
-  isDownloaded?: boolean;
-  modelId: string;
-  selectedModelId: string | undefined;
+  label: string
+  downloadSize?: string
+  isDownloaded?: boolean
+  modelId: string
+  selectedModelId: string | undefined
 }
 
 const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
-  ({ label, downloadSize, isDownloaded, modelId, selectedModelId, ...others }: ModelItemProps, ref) => {
-    const isModelCached = modelCached.some(model => model.id === modelId);
-    const showSparkles = label === 'Llama-3-8B-Instruct-q4f32_1-MLC' || label === 'Llama-3-8B-Instruct-q4f16_1-MLC';
+  (
+    {
+      label,
+      downloadSize,
+      isDownloaded,
+      modelId,
+      selectedModelId,
+      ...others
+    }: ModelItemProps,
+    ref,
+  ) => {
+    const isModelCached = modelCached.some((model) => model.id === modelId)
+    const showSparkles =
+      label === 'Llama-3-8B-Instruct-q4f32_1-MLC' ||
+      label === 'Llama-3-8B-Instruct-q4f16_1-MLC'
 
     return (
       <div ref={ref} {...others}>
@@ -50,7 +68,13 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
               </Text>
             </div>
             {downloadSize && (
-              <div style={{ display: 'flex', alignItems: 'center', marginTop: '4px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginTop: '4px',
+                }}
+              >
                 <Text size="xs" opacity={0.65}>
                   {downloadSize}
                 </Text>
@@ -62,17 +86,26 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
                 <Text size="xs" opacity={0.65} style={{ marginLeft: '4px' }}>
                   {isModelCached ? 'downloaded' : 'download'}
                 </Text>
-                {showSparkles && <IconSparkles size="1rem" style={{ marginLeft: '8px' }} />}
+                {showSparkles && (
+                  <IconSparkles size="1rem" style={{ marginLeft: '8px' }} />
+                )}
               </div>
             )}
           </div>
         </Group>
       </div>
-    );
-  }
-);
+    )
+  },
+)
 
-const ModelDropdown: React.FC<ModelDropdownProps> = ({ title, value, onChange, models, isSmallScreen, isWebLLM }) => (
+const ModelDropdown: React.FC<ModelDropdownProps> = ({
+  title,
+  value,
+  onChange,
+  models,
+  isSmallScreen,
+  isWebLLM,
+}) => (
   <>
     <Title
       className={`px-4 pt-4 ${montserrat_heading.variable} rounded-lg bg-[#15162c] p-4 font-montserratHeading md:rounded-lg`}
@@ -159,16 +192,26 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
     } = useContext(HomeContext)
     const isSmallScreen = useMediaQuery('(max-width: 960px)')
 
+    console.log('Models in model select: ', models)
+
     const handleModelClick = (modelId: string) => {
       console.debug('handleModelClick clicked:', modelId)
       console.debug('handleModelClick avail models: ', models)
 
       const defaultModel =
-        models.find(
+        models.OpenAI!.find(
           (model) =>
-            model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4',
+            model.id === 'gpt-4-from-canada-east' ||
+            model.id === 'gpt-40-2024-05-13',
         ) || models[0]
-      const model = models.find((model) => model.id === modelId) || defaultModel
+
+      const model =
+        Object.keys(models).reduce((foundModel: any, key: any) => {
+          console.log('key:', key, 'models[key]:', models[key])
+          return (
+            foundModel || models[key]!.find((model) => model.id === modelId)
+          )
+        }, undefined) || defaultModel
       console.debug('handleModelClick SETTING IT TO: ', model)
 
       selectedConversation &&
@@ -189,7 +232,8 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               title="OpenAI"
               value={selectedConversation?.model.id || defaultModelId}
               onChange={handleModelClick}
-              models={models.filter((model) => Object.values(OpenAIModels).some((openAIModel) => openAIModel.id === model.id))}
+              // models={models.filter((model) => Object.values(OpenAIModels).some((openAIModel) => openAIModel.id === model.id))}
+              models={models.OpenAI || []}
               isSmallScreen={isSmallScreen}
             />
             <Input.Description
@@ -206,19 +250,20 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                   style={{ position: 'relative', top: '2px' }}
                   className={'mb-2 inline'}
                 />
-              </Link></Input.Description>
+              </Link>
+            </Input.Description>
             <ModelDropdown
               title="Ollama"
               value={selectedConversation?.model.id || defaultModelId}
               onChange={handleModelClick}
-              models={models.filter((model) => Object.values(ollamaModels).some((ollamaModels) => ollamaModels.id === model.id))}
+              models={models.Ollama || []}
               isSmallScreen={isSmallScreen}
             />
             <ModelDropdown
               title="Local in Browser LLMs"
               value={selectedConversation?.model.id || defaultModelId}
               onChange={handleModelClick}
-              models={Object.values(webLLMModels).map(model => ({
+              models={Object.values(webLLMModels).map((model) => ({
                 id: model.id,
                 name: model.name,
                 downloadSize: model.downloadSize,
@@ -229,22 +274,25 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
             <Input.Description
               className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
             >
-              <Link href={"https://webgpureport.org/"} className="hover:underline">
-                Your browser must support WebGPU, check compatibility by visiting
-                this page.
+              <Link
+                href={'https://webgpureport.org/'}
+                className="hover:underline"
+              >
+                Your browser must support WebGPU, check compatibility by
+                visiting this page.
                 <IconExternalLink
                   size={15}
                   style={{ position: 'relative', top: '2px' }}
                   className={'mb-2 inline'}
                 />
               </Link>
-
             </Input.Description>
           </div>
         </div>
-      </div >
+      </div>
     )
   },
 )
 
+ModelItem.displayName = 'ModelItem'
 ModelSelect.displayName = 'ModelSelect'

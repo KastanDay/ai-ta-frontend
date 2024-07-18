@@ -5,6 +5,7 @@ import { OpenAIModel, OpenAIModelID } from '@/types/openai'
 import { PluginKey } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
 import { SupportedModels } from '~/types/LLMProvider'
+import { SupportedModelsObj } from '../models'
 
 export interface HomeInitialState {
   apiKey: string
@@ -13,7 +14,7 @@ export interface HomeInitialState {
   lightMode: 'light' | 'dark'
   messageIsStreaming: boolean
   modelError: ErrorMessage | null
-  models: SupportedModels
+  models: SupportedModelsObj
   selectedModel: OpenAIModel | null
   folders: FolderInterface[]
   conversations: Conversation[]
@@ -48,7 +49,7 @@ export const initialState: HomeInitialState = {
   lightMode: 'dark',
   messageIsStreaming: false,
   modelError: null,
-  models: [],
+  models: {},
   selectedModel: null,
   folders: [],
   conversations: [],
