@@ -512,7 +512,7 @@ export const ChatMessage: FC<Props> = memo(
             )}
           </div>
 
-          <div className="dark:prose-invert prose mt-[-2px] flex w-full">
+          <div className="dark:prose-invert prose mt-[-2px] flex w-full max-w-full">
             {message.role === 'user' ? (
               <div className="flex w-full flex-row">
                 {isEditing ? (
@@ -972,7 +972,7 @@ export const ChatMessage: FC<Props> = memo(
                 )}
               </div>
             ) : (
-              <div className="flex flex-row ">
+              <div className="flex max-w-[90%] flex-row overflow-hidden">
                 <div className="w-full max-w-full flex-1 overflow-hidden">
                   <MemoizedReactMarkdown
                     className={`dark:prose-invert linkMarkDown supMarkdown codeBlock prose flex-1`}

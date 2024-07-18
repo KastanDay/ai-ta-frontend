@@ -654,7 +654,7 @@ const Home = () => {
                 )}
               <Chatbar />
 
-              <div className="flex max-w-full flex-1">
+              <div className="flex max-w-full flex-1 overflow-x-hidden">
                 {course_metadata && (
                   <Chat
                     stopConversationRef={stopConversationRef}

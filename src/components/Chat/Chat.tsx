@@ -1019,7 +1019,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         <div className="justify-center" style={{ height: '40px' }}>
           <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
         </div>
-        <div className="mt-10 flex-grow overflow-auto">
+        <div className="mt-10 max-w-full flex-grow overflow-y-auto overflow-x-hidden">
           {!(apiKey || serverSideApiKeyIsSet) ? (
             <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
               <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
