@@ -17,7 +17,6 @@ import {
   IconCloudUpload,
   IconDownload,
   IconFileUpload,
-  IconProgress,
   IconX,
 } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -69,7 +68,7 @@ export function UploadProgressBar({
         {numFiles} out of {totalFiles} files have been uploaded.
       </Text>
       <Progress
-        color="blue"
+        color="violet"
         radius="md"
         size="lg"
         value={(numFiles / totalFiles) * 100}
@@ -93,14 +92,16 @@ function IngestProgressBar({ courseName }: { courseName: string }) {
       )
       const data = await response.json()
       if (data && data.documents) {
-        // Example: calculate progress as a percentage of documents processed
-        if (data.documents.length > totalDocuments) {
-          setTotalDocuments(data.documents.length) // Set total documents from the initial API call
-        }
-        setDataLength(totalDocuments - data.documents.length)
+        const newTotalDocuments = Math.max(
+          totalDocuments,
+          data.documents.length,
+        )
+        setTotalDocuments(newTotalDocuments) // Set total documents from the initial API call
+        setDataLength(newTotalDocuments - data.documents.length)
         setHasDocuments(data.documents.length > 0)
         setProgress(
-          ((totalDocuments - data.documents.length) / totalDocuments) * 100,
+          ((newTotalDocuments - data.documents.length) / newTotalDocuments) *
+            100,
         )
       } else {
         setHasDocuments(false)
@@ -118,7 +119,7 @@ function IngestProgressBar({ courseName }: { courseName: string }) {
   return (
     <Paper shadow="lg" radius="lg" p="md" withBorder>
       <Text>
-        {dataLength} out of {totalDocuments} Ingested into AI Database
+        {dataLength} out of {totalDocuments} ingested into AI Database
       </Text>
       <Progress
         color="violet"
@@ -343,13 +344,15 @@ export function LargeDropzone({
           justifyContent: 'space-between',
         }}
       >
-        {courseName && <IngestProgressBar courseName={courseName} />}
         {uploadInProgress && (
           <UploadProgressBar
             numFiles={successfulUploads}
             totalFiles={files.length}
           />
         )}
+        <div className={courseName ? 'pt-3' : ''}>
+          {courseName && <IngestProgressBar courseName={courseName} />}
+        </div>
         {/* <div className={classes.wrapper} style={{ maxWidth: '320px' }}> */}
         <div
           className={classes.wrapper}
@@ -453,20 +456,8 @@ export function LargeDropzone({
                     textAlign: 'center',
                   }}
                 >
-                  Do not navigate away until loading is complete <br></br> or
+                  Remain on this page until upload is complete <br></br> or
                   ingest will fail.
-                </Title>
-                <Title
-                  order={4}
-                  style={{
-                    marginTop: 5,
-                    alignItems: 'center',
-                    color: '#B22222',
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                  }}
-                >
-                  The page will refresh when your AI Assistant is ready.
                 </Title>
               </div>
             </>

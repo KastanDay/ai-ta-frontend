@@ -14,7 +14,6 @@ export default async function fetchKey(req: NextRequest, res: NextResponse) {
   }
 
   const currUserId = await getAuth(req).userId
-  console.log('Fetching api key for: ', currUserId)
   if (!currUserId) {
     return NextResponse.json({ error: 'User ID is required' }, { status: 401 })
   }
