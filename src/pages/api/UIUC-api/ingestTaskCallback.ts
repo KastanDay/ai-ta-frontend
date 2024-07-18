@@ -20,8 +20,16 @@ const handler = async (req: NextApiRequest) => {
 
     // Assuming the body is a ReadableStream, we need to read it correctly.
     // First, we convert the stream into a Response object, then use .json() to parse it.
-    const datastr = await new Response(req.body).json()
-    const data = JSON.parse(datastr)
+    console.log('Task body (no parsing): ', req.body)
+    let data
+    try {
+      const datastr = await new Response(req.body).json()
+      data = JSON.parse(datastr)
+      console.log('Task body (in try): ', data)
+    } catch (error) {
+      data = req.body
+      console.log('Task body (in in catch): ', data)
+    }
     console.log('Task body: ', data)
     console.log('Task headers: ', req.headers)
     // Data:  {
