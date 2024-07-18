@@ -22,11 +22,43 @@ const handler = async (req: NextApiRequest) => {
     // First, we convert the stream into a Response object, then use .json() to parse it.
     const datastr = await new Response(req.body).json()
     const data = JSON.parse(datastr)
+    console.log('Task body: ', data)
+    console.log('Task headers: ', req.headers)
     // Data:  {
     //   success_ingest: 'courses/t/8885632f-b519-4610-b888-744aa4c2066d-6.pdf',
     //   failure_ingest: null
     // }
 
+    // If Beam task is FAILED or TIMEOUT (not success)
+    if (
+      req.headers['beam-task-status'] === 'FAILED' ||
+      req.headers['beam-task-status'] === 'TIMEOUT'
+    ) {
+      console.log('in IF for Task FAILED or TIMEOUT')
+      // Remove from in progress, add to failed
+      const { data, error: delErr } = await supabase
+        .from('documents_in_progress')
+        .delete()
+        .eq('beam_task_id', req.headers['beam-task-id'])
+        .select()
+      console.log('Result from delete from InProgress:', data)
+
+      // remove a few fields from data, the beam_task_id is not needed
+      delete data![0].beam_task_id
+      delete data![0].created_at
+
+      data![0].error = req.headers['beam-task-status']
+
+      console.log('Data to insert into failed:', data)
+
+      const { error: insertErr } = await supabase
+        .from('documents_failed')
+        .insert(data![0])
+
+      return NextResponse.json({ message: 'Success' }, { status: 200 })
+    }
+
+    // beam-task-status is SUCCESS (but ingest could have still failed)
     let s3_path_completed = ''
     if (data.success_ingest) {
       console.log('IN SUCCESS INGEST ___:', data.success_ingest)

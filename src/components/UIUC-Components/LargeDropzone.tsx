@@ -35,11 +35,6 @@ const useStyles = createStyles((theme) => ({
     // marginBottom: rem(10),
   },
 
-  dropzone: {
-    borderWidth: rem(1.5),
-    // paddingBottom: rem(20),
-  },
-
   icon: {
     color:
       theme.colorScheme === 'dark'
@@ -58,23 +53,41 @@ const useStyles = createStyles((theme) => ({
 export function UploadProgressBar({
   numFiles,
   totalFiles,
+  isComplete,
 }: {
   numFiles: number
   totalFiles: number
+  isComplete: boolean
 }) {
   return (
-    <Paper shadow="lg" radius="lg" p="md" withBorder>
-      <Text>
-        {numFiles} out of {totalFiles} files have been uploaded.
-      </Text>
-      <Progress
-        color="violet"
-        radius="md"
-        size="lg"
-        value={(numFiles / totalFiles) * 100}
-        striped
-        animate
-      />
+    <Paper
+      shadow="lg"
+      radius="md"
+      p="md"
+      withBorder
+      style={{
+        backgroundColor: '#25262b',
+        width: rem(330),
+        borderWidth: rem(1.5),
+        borderStyle: 'dashed',
+      }}
+    >
+      <Group position="left">
+        {isComplete ? <IconCheck size={rem(24)} color="green" /> : null}
+        <Text>
+          {numFiles} out of {totalFiles} uploaded.
+        </Text>
+      </Group>
+      {!isComplete && (
+        <Progress
+          color="violet"
+          radius="md"
+          size="lg"
+          value={(numFiles / totalFiles) * 100}
+          striped
+          animate
+        />
+      )}
     </Paper>
   )
 }
@@ -117,7 +130,18 @@ function IngestProgressBar({ courseName }: { courseName: string }) {
   }
 
   return (
-    <Paper shadow="lg" radius="lg" p="md" withBorder>
+    <Paper
+      shadow="lg"
+      radius="md"
+      p="md"
+      withBorder
+      style={{
+        borderWidth: rem(1.5),
+        backgroundColor: '#25262b',
+        width: rem(330),
+        borderStyle: 'dashed',
+      }}
+    >
       <Text>
         {dataLength} out of {totalDocuments} ingested into AI Database
       </Text>
@@ -150,6 +174,7 @@ export function LargeDropzone({
 }) {
   // upload-in-progress spinner control
   const [uploadInProgress, setUploadInProgress] = useState(false)
+  const [uploadComplete, setUploadComplete] = useState(false)
   const [successfulUploads, setSuccessfulUploads] = useState(0)
   const router = useRouter()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
@@ -226,7 +251,9 @@ export function LargeDropzone({
     files = files.filter((file) => file !== null)
 
     setFiles(files)
+    setSuccessfulUploads(0)
     setUploadInProgress(true)
+    setUploadComplete(false)
 
     if (is_new_course) {
       await callSetCourseMetadata(
@@ -279,7 +306,8 @@ export function LargeDropzone({
       }),
     )
 
-    setSuccessfulUploads(0)
+    setSuccessfulUploads(files.length)
+    setUploadComplete(true)
 
     interface IngestResult {
       ok: boolean
@@ -344,15 +372,6 @@ export function LargeDropzone({
           justifyContent: 'space-between',
         }}
       >
-        {uploadInProgress && (
-          <UploadProgressBar
-            numFiles={successfulUploads}
-            totalFiles={files.length}
-          />
-        )}
-        <div className={courseName ? 'pt-3' : ''}>
-          {courseName && <IngestProgressBar courseName={courseName} />}
-        </div>
         {/* <div className={classes.wrapper} style={{ maxWidth: '320px' }}> */}
         <div
           className={classes.wrapper}
@@ -365,6 +384,16 @@ export function LargeDropzone({
             paddingTop: rem(24),
           }}
         >
+          {(uploadInProgress || uploadComplete) && (
+            <UploadProgressBar
+              numFiles={successfulUploads}
+              totalFiles={files.length}
+              isComplete={uploadComplete}
+            />
+          )}
+          <div className={courseName ? 'pb-4 pt-3' : ''}>
+            {courseName && <IngestProgressBar courseName={courseName} />}
+          </div>
           <Dropzone
             openRef={openRef}
             style={{
@@ -381,7 +410,7 @@ export function LargeDropzone({
                 console.error('Error during file upload:', error)
               })
             }}
-            className={classes.dropzone}
+            className={'borderWidth: rem(1.5)'}
             radius="md"
             bg="#25262b"
             disabled={isDisabled}
