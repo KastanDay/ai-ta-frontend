@@ -10,6 +10,7 @@ export interface OpenAIModel {
 // Ordered list of preferred model IDs -- the first available model will be used as default
 export const preferredModelIds = [
   'gpt-4o',
+  'gpt-4o-mini',
   'gpt-4-turbo-2024-04-09',
   'gpt-4-128k',
   'gpt-4-0125-preview',
@@ -40,6 +41,7 @@ export enum OpenAIModelID {
   GPT_4 = 'gpt-4', // rolling model - currently points to gpt-4-0613
   GPT_4_Turbo = 'gpt-4-turbo', // rolling model - currently points to gpt-4-turbo-2024-04-09
   GPT_4o = 'gpt-4o', // rolling model - currently points to gpt-4o-2024-05-13
+  GPT_4o_mini = 'gpt-4o-mini', // rolling model - currently points to gpt-4o-2024-05-13
 
   // Azure -- ONLY GPT-4 supported for now... due to deployment param being env var...
   // This values are deployment names, not model names
@@ -55,25 +57,31 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   [OpenAIModelID.GPT_3_5]: {
     id: OpenAIModelID.GPT_3_5,
     name: 'GPT-3.5 (16k)',
-    maxLength: 12000,
+    maxLength: 16385,
     tokenLimit: 16385,
   },
   [OpenAIModelID.GPT_4]: {
     id: OpenAIModelID.GPT_4,
     name: 'GPT-4 (8k)',
-    maxLength: 24000,
+    maxLength: 8192,
     tokenLimit: 8192,
   },
   [OpenAIModelID.GPT_4_Turbo]: {
     id: OpenAIModelID.GPT_4_Turbo,
     name: 'GPT-4 Turbo (128k)',
-    maxLength: 24000,
+    maxLength: 128000,
     tokenLimit: 128000,
   },
   [OpenAIModelID.GPT_4o]: {
     id: OpenAIModelID.GPT_4o,
     name: 'GPT-4o (128k)',
-    maxLength: 24000,
+    maxLength: 128000,
+    tokenLimit: 128000,
+  },
+  [OpenAIModelID.GPT_4o_mini]: {
+    id: OpenAIModelID.GPT_4o_mini,
+    name: 'GPT-4o-mini (128k)',
+    maxLength: 128000,
     tokenLimit: 128000,
   },
 
@@ -81,19 +89,19 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   [OpenAIModelID.GPT_4_AZURE]: {
     id: OpenAIModelID.GPT_4_AZURE,
     name: 'GPT-4 Turbo (128k)',
-    maxLength: 24000,
+    maxLength: 128000,
     tokenLimit: 128000,
   },
   [OpenAIModelID.GPT_4_HACKATHON]: {
     id: OpenAIModelID.GPT_4_HACKATHON,
     name: 'GPT-4 Hackathon',
-    maxLength: 24000,
+    maxLength: 128000,
     tokenLimit: 128000,
   },
   [OpenAIModelID.GPT_4_AZURE_04_09]: {
     id: OpenAIModelID.GPT_4_AZURE_04_09,
     name: 'GPT-4 Turbo 0409 (128k)',
-    maxLength: 24000,
+    maxLength: 128000,
     tokenLimit: 128000,
   },
 }
@@ -102,4 +110,5 @@ export const VisionCapableModels: Set<OpenAIModelID> = new Set([
   OpenAIModelID.GPT_4_Turbo, // Add other vision capable models here as needed
   OpenAIModelID.GPT_4_AZURE_04_09,
   OpenAIModelID.GPT_4o,
+  OpenAIModelID.GPT_4o_mini,
 ])
