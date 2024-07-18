@@ -60,7 +60,9 @@ const handler = async (req: Request): Promise<NextResponse> => {
     // const messagesToSend = [latestMessage, ...convoHistory] // BUG: REPLACE (not append to) latest user message. RN we have dupliacates.
     // Strip internal messages to send to OpenAI
     // console.log('Messages to send before refactor:', conversation.messages)
-    const messagesToSend = refactorMessagesForOpenAI(conversation.messages)
+    const messagesToSend = convertConversationToOpenAIMessages(
+      conversation.messages,
+    )
     // console.log('Messages to send: ', messagesToSend)
 
     const apiStream = await OpenAIStream(
@@ -101,7 +103,9 @@ const handler = async (req: Request): Promise<NextResponse> => {
   }
 }
 
-const refactorMessagesForOpenAI = (messages: Message[]): Message[] => {
+const convertConversationToOpenAIMessages = (
+  messages: Message[],
+): Message[] => {
   return messages.map((message, messageIndex) => {
     const strippedMessage = { ...message }
     // When content is an array
@@ -114,10 +118,6 @@ const refactorMessagesForOpenAI = (messages: Message[]): Message[] => {
         // Add final prompt to last message
         if (messageIndex === messages.length - 1) {
           content.text = strippedMessage.finalPromtEngineeredMessage
-        }
-        // Add system prompt to message with role system
-        if (message.role === 'system') {
-          content.text = strippedMessage.latestSystemMessage
         }
         return content
       })
