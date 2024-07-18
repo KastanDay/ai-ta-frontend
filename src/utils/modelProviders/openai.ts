@@ -9,15 +9,22 @@ export const config = {
     runtime: 'edge',
 }
 
+const tokenLimMAp = new Map([
+  ['gpt-3.5-turbo-0125', 16385],
+  ['gpt-4-0613', 8192],
+  ['gpt-4-turbo-2024-04-09', 128000],
+  ['gpt-4o-2024-05-13', 128000]
+]);
+
 export const getOpenAIModels = async (openAIProvider: LLMProvider) => {
-  console.log('in openai get models')
+  //console.log('in openai get models')
 
   const { OpenAI } = require("openai");
 
   const client = new OpenAI({
     apiKey: openAIProvider.apiKey, // change to openai
   });
-  console.log('created openai client')
+  //console.log('created openai client')
 
   try {
     const response = await client.models.list();
@@ -32,7 +39,7 @@ export const getOpenAIModels = async (openAIProvider: LLMProvider) => {
       return {
         id: model.id,
         name: model.id, // Assuming model.id can be used as the name
-        tokenLimit: model.token_limit || 4096, // Adjust based on available properties
+        tokenLimit: tokenLimMAp.get(model.id) || 4096, // Adjust based on available properties
       };
     });
 

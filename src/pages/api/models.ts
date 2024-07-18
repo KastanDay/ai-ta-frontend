@@ -100,13 +100,16 @@ const handler = async (req: Request): Promise<Response> => {
       if (llmProvider.provider == ProviderNames.Ollama) {
         const fetchedOllamaModels = await getOllamaModels(ollamaProvider)
         ollamaModels = fetchedOllamaModels // Update the exported variable
-        allSupportedModels[llmProvider.provider] = fetchedOllamaModels
+        allSupportedModels[llmProvider.provider] = fetchedOllamaModels.filter(model =>
+          ['llama3:70b-instruct'].includes(model.name))
       } else if (llmProvider.provider == ProviderNames.OpenAI) {
         const openAIModels = await getOpenAIModels(OpenAIProvider)
-        allSupportedModels[llmProvider.provider] = openAIModels
+        allSupportedModels[llmProvider.provider] = openAIModels.filter(model =>
+          ['gpt-3.5-turbo-0125', 'gpt-4-0613', 'gpt-4-turbo-2024-04-09', 'gpt-4o-2024-05-13'].includes(model.name))
       } else if (llmProvider.provider == ProviderNames.Azure) {
         const azureModels = await getAzureModels(AzureProvider)
-        allSupportedModels[llmProvider.provider] = azureModels
+        allSupportedModels[llmProvider.provider] = azureModels.filter(model =>
+          ['gpt-35-turbo-0125', 'gpt-4o-2024-05-13', 'gpt-4-turbo-2024-04-09'].includes(model.name))
       } else if (llmProvider.provider == ProviderNames.Anthropic) {
         const anthropicModels = await getAnthropicModels(AnthropicProvider)
         allSupportedModels[llmProvider.provider] = anthropicModels
