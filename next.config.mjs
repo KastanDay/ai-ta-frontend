@@ -40,6 +40,11 @@ const config = {
       'images.unsplash.com',
       'github.com',
       'uiuc-chatbot.s3.us-east-1.amazonaws.com',
+      'images.squarespace-cdn.com',
+      'raw.githubusercontent.com',
+      'avatars.githubusercontent.com',
+      'anthropic.com',
+      'via.placeholder.com',
     ],
   },
   experimental: {

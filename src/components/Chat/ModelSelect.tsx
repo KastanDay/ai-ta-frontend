@@ -13,17 +13,29 @@ import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Group, Input, Select, Title, Text } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
-import { OllamaModel } from '~/utils/modelProviders/ollama'
 import { OpenAIModel, OpenAIModels, preferredModelIds } from '~/types/openai'
-import { WebllmModel, webLLMModels } from '~/utils/modelProviders/WebLLM'
-import { Ollama } from 'ollama-ai-provider'
+import { webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { modelCached } from './UserSettings'
+import Image from 'next/image'
+import { ProviderNames } from '~/types/LLMProvider'
+import { SelectItemProps } from '@mantine/core';
 
+const ValueComponent = ({ value, label, modelType }: SelectItemProps & { modelType: string }) => (
+  <div style={{ display: 'flex', alignItems: 'center' }}>
+    <Image src={getModelLogo(modelType)} alt={`${modelType} logo`} width={20} height={20} style={{ marginRight: '8px' }} />
+    <span>{label}</span>
+  </div>
+);
 interface ModelDropdownProps {
   title: string
   value: string | undefined
   onChange: (value: string) => void
-  models: { id: string; name: string; downloadSize?: string }[]
+  models: {
+    OpenAI?: { id: string; name: string; downloadSize?: string }[]
+    Ollama?: { id: string; name: string; downloadSize?: string }[]
+    WebLLM?: { id: string; name: string; downloadSize?: string }[]
+    Anthropic?: { id: string; name: string; downloadSize?: string }[]
+  }
   isSmallScreen: boolean
   isWebLLM?: boolean
 }
@@ -34,7 +46,23 @@ interface ModelItemProps extends React.ComponentPropsWithoutRef<'div'> {
   isDownloaded?: boolean
   modelId: string
   selectedModelId: string | undefined
+  modelType: string
 }
+
+const getModelLogo = (modelType: string) => {
+  switch (modelType) {
+    case ProviderNames.OpenAI:
+      return 'https://images.squarespace-cdn.com/content/v1/5a4908d949fc2b8e312bdf53/1676298536608-GQSN44SGOEHWCFSIZIGK/openai_icon.png?format=750w';
+    case ProviderNames.Ollama:
+      return 'https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/ollama.png';
+    case ProviderNames.WebLLM:
+      return 'https://avatars.githubusercontent.com/u/106173866?s=48&v=4';
+    case ProviderNames.Anthropic:
+      return 'https://www.anthropic.com/images/icons/safari-pinned-tab.svg';
+    default:
+      return 'https://via.placeholder.com/20'; // Fallback URL
+  }
+};
 
 const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
   (
@@ -44,6 +72,7 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
       isDownloaded,
       modelId,
       selectedModelId,
+      modelType,
       ...others
     }: ModelItemProps,
     ref,
@@ -58,11 +87,12 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
         <Group noWrap>
           <div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              {selectedModelId === modelId ? (
+              <Image src={getModelLogo(modelType)} alt={`${modelType} logo`} width={20} height={20} style={{ marginRight: '8px' }} />
+              {/* {selectedModelId === modelId ? (
                 <IconCircleCheck stroke={2} />
               ) : (
                 <IconCircleDashed stroke={2} />
-              )}
+              )} */}
               <Text size="sm" style={{ marginLeft: '8px' }}>
                 {label}
               </Text>
@@ -87,7 +117,12 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
                   {isModelCached ? 'downloaded' : 'download'}
                 </Text>
                 {showSparkles && (
-                  <IconSparkles size="1rem" style={{ marginLeft: '8px' }} />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <IconSparkles size="1rem" style={{ marginLeft: '8px' }} />
+                    <Text size="xs" opacity={0.65} style={{ marginLeft: '4px' }}>
+                      recommended
+                    </Text>
+                  </div>
                 )}
               </div>
             )}
@@ -105,85 +140,114 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
   models,
   isSmallScreen,
   isWebLLM,
-}) => (
-  <>
-    <Title
-      className={`px-4 pt-4 ${montserrat_heading.variable} rounded-lg bg-[#15162c] p-4 font-montserratHeading md:rounded-lg`}
-      color="white"
-      order={isSmallScreen ? 5 : 4}
-    >
-      {title}
-    </Title>
+}) => {
+  const allModels = [
+    ...(models.OpenAI || []).map((model) => ({ ...model, provider: ProviderNames.OpenAI })),
+    ...(models.Ollama || []).map((model) => ({ ...model, provider: ProviderNames.Ollama })),
+    ...(models.WebLLM || []).map((model) => ({ ...model, provider: ProviderNames.WebLLM })),
+    ...(models.Anthropic || []).map((model) => ({ ...model, provider: ProviderNames.Anthropic })),
+  ];
+  const selectedModel = allModels.find((model) => model.id === value);
 
-    <div
-      tabIndex={0}
-      className="relative mt-4 flex w-full flex-col items-start px-4"
-    >
-      <Select
-        className={`menu z-[50] ${isSmallScreen ? 'w-[75%]' : 'w-[45%]'}`}
-        size={isSmallScreen ? 'sm' : 'md'}
-        value={value}
-        onChange={onChange}
-        data={models.map((model: any) => ({
-          value: model.id,
-          label: model.name,
-          downloadSize: model.downloadSize,
-          modelId: model.id,
-          selectedModelId: value,
-        }))}
-        itemComponent={ModelItem}
-        rightSection={<IconChevronDown size="1rem" />}
-        rightSectionWidth={isSmallScreen ? 15 : 30}
-        classNames={{
-          item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
-          input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
-        }}
-        styles={(theme) => ({
-          rightSection: { pointerEvents: 'none' },
-          input: {
-            margin: '2px',
-            backgroundColor: 'rgb(107, 33, 168)',
-            border: 'none',
-            color: theme.white,
-            borderRadius: theme.radius.md,
-            width: '20rem',
-          },
-          dropdown: {
-            backgroundColor: '#1d1f33',
-            border: '1px solid rgba(42,42,120,1)',
-            borderRadius: theme.radius.md,
-            marginTop: '2px',
-            boxShadow: theme.shadows.xs,
-            maxWidth: '100%',
-            zIndex: 2000,
-            position: 'absolute',
-          },
-          item: {
-            backgroundColor: '#1d1f33',
-            borderRadius: theme.radius.md,
-            margin: '2px',
-            '&[data-selected]': {
-              '&': {
-                backgroundColor: 'transparent',
+  return (
+    <>
+      <Title
+        className={`px-4 pt-4 ${montserrat_heading.variable} rounded-lg bg-[#15162c] p-4 font-montserratHeading md:rounded-lg`}
+        color="white"
+        order={isSmallScreen ? 5 : 4}
+      >
+        Model
+      </Title>
+
+      <div
+        tabIndex={0}
+        className="relative mt-4 flex w-full flex-col items-start px-4"
+      >
+        <Select
+          className={`menu z-[50] ${isSmallScreen ? 'w-[75%]' : 'w-[45%]'}`}
+          size={isSmallScreen ? 'sm' : 'md'}
+          placeholder='Select a model'
+          searchable
+          value={value}
+          onChange={onChange}
+          data={allModels.map((model: any) => ({
+            value: model.id,
+            label: model.name,
+            downloadSize: model.downloadSize,
+            modelId: model.id,
+            selectedModelId: value,
+            modelType: model.provider,
+          }))}
+          itemComponent={ModelItem}
+          icon={<Image
+            src={getModelLogo(selectedModel!.provider)}
+            alt={`${selectedModel!.provider} logo`}
+            width={20}
+            height={20}
+            style={{ marginLeft: '4px' }}
+          />}
+          rightSection={<IconChevronDown size="1rem" />}
+          rightSectionWidth={isSmallScreen ? 15 : 30}
+          classNames={{
+            item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
+            input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
+          }}
+          styles={(theme) => ({
+            rightSection: { pointerEvents: 'none' },
+            input: {
+              margin: '2px',
+              backgroundColor: 'rgb(107, 33, 168)',
+              border: 'none',
+              color: theme.white,
+              borderRadius: theme.radius.md,
+              width: '22rem',
+              [`@media (max-width: 960px)`]: {
+                width: '17rem', // Smaller width for small screens
               },
-              '&:hover': {
+            },
+            dropdown: {
+              backgroundColor: '#1d1f33',
+              border: '1px solid rgba(42,42,120,1)',
+              borderRadius: theme.radius.md,
+              marginTop: '2px',
+              boxShadow: theme.shadows.xs,
+              maxWidth: '100%',
+              zIndex: 2000,
+              position: 'absolute',
+            },
+            item: {
+              backgroundColor: '#1d1f33',
+              borderRadius: theme.radius.md,
+              margin: '2px',
+              '&[data-selected]': {
+                '&': {
+                  backgroundColor: 'transparent',
+                },
+                '&:hover': {
+                  backgroundColor: 'rgb(107, 33, 168)',
+                  color: theme.white,
+                },
+              },
+              '&[data-hovered]': {
                 backgroundColor: 'rgb(107, 33, 168)',
                 color: theme.white,
               },
             },
-            '&[data-hovered]': {
-              backgroundColor: 'rgb(107, 33, 168)',
-              color: theme.white,
-            },
-          },
-        })}
-        dropdownPosition="bottom"
-        withinPortal
-      />
-    </div>
-  </>
-)
-
+          })}
+          dropdownPosition="bottom"
+          withinPortal
+        />
+      </div>
+    </>
+  );
+};
+const findProvider = (modelId: string, models: any) => {
+  if (models.OpenAI?.some((model: { id: string }) => model.id === modelId)) return ProviderNames.OpenAI;
+  if (models.Ollama?.some((model: { id: string }) => model.id === modelId)) return ProviderNames.Ollama;
+  if (models.WebLLM?.some((model: { id: string }) => model.id === modelId)) return ProviderNames.WebLLM;
+  if (models.Anthropic?.some((model: { id: string }) => model.id === modelId)) return ProviderNames.Anthropic;
+  return '';
+};
 export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
   (props, ref) => {
     const {
@@ -220,6 +284,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
           value: model as OpenAIModel,
         })
     }
+    const selectedModelProvider = findProvider(selectedConversation?.model.id || defaultModelId!, models);
 
     return (
       <div
@@ -229,11 +294,19 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
         <div>
           <div className="flex flex-col">
             <ModelDropdown
-              title="OpenAI"
+              title="Select Model"
               value={selectedConversation?.model.id || defaultModelId}
               onChange={handleModelClick}
-              // models={models.filter((model) => Object.values(OpenAIModels).some((openAIModel) => openAIModel.id === model.id))}
-              models={models.OpenAI || []}
+              models={{
+                OpenAI: models.OpenAI,
+                Ollama: models.Ollama,
+                WebLLM: Object.values(webLLMModels).map((model) => ({
+                  id: model.id,
+                  name: model.name,
+                  downloadSize: model.downloadSize,
+                })),
+                Anthropic: models.Anthropic,
+              }}
               isSmallScreen={isSmallScreen}
             />
             <Input.Description
@@ -252,25 +325,6 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 />
               </Link>
             </Input.Description>
-            <ModelDropdown
-              title="Ollama"
-              value={selectedConversation?.model.id || defaultModelId}
-              onChange={handleModelClick}
-              models={models.Ollama || []}
-              isSmallScreen={isSmallScreen}
-            />
-            <ModelDropdown
-              title="Local in Browser LLMs"
-              value={selectedConversation?.model.id || defaultModelId}
-              onChange={handleModelClick}
-              models={Object.values(webLLMModels).map((model) => ({
-                id: model.id,
-                name: model.name,
-                downloadSize: model.downloadSize,
-              }))}
-              isSmallScreen={isSmallScreen}
-              isWebLLM={true}
-            />
             <Input.Description
               className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
             >
