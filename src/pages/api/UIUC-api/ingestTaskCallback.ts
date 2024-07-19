@@ -8,9 +8,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       console.error('Request method not allowed')
       return res.status(405).json({ error: '❌❌ Request method not allowed' })
     }
-    const data = req.body
-    console.log('Top Data:', data)
-    console.log('Typeof Top Data:', typeof data)
+    let data
+    try {
+      data = JSON.parse(req.body)
+      console.log('Top Data:', data)
+      console.log('Typeof Top Data:', typeof data)
+    } catch (error) {
+      console.error('Error parsing JSON:', error)
+      return res.status(400).json({ error: 'Invalid JSON' })
+    }
     console.log('x-beam-task-status:', req.headers['x-beam-task-status'])
 
     if (data.success_ingest) {
