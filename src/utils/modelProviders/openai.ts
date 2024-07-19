@@ -3,10 +3,10 @@ import { createOllama } from 'ollama-ai-provider'
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
 import { decrypt, isEncrypted } from '~/utils/crypto'
 import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
-
+import { OpenAI } from "openai";
 
 export const config = {
-    runtime: 'edge',
+  runtime: 'edge',
 }
 
 const tokenLimMAp = new Map([
@@ -19,7 +19,7 @@ const tokenLimMAp = new Map([
 export const getOpenAIModels = async (openAIProvider: LLMProvider) => {
   console.log('in openai get models')
 
-  const { OpenAI } = require("openai");
+  // const { OpenAI } = require("openai");
 
   const client = new OpenAI({
     apiKey: openAIProvider.apiKey, // change to openai

@@ -61,7 +61,7 @@ const handler = async (req: Request): Promise<Response> => {
     ]
     // END-TODO: MOVE THESE TO DB INPUTS
 
-    await runOllamaChat(ollamaProvider)
+    // await runOllamaChat(ollamaProvider)
 
     const allSupportedModels: { [providerName: string]: SupportedModels } = {}
     for (const llmProvider of llmProviderKeys) {
@@ -76,7 +76,7 @@ const handler = async (req: Request): Promise<Response> => {
           ['llama3:70b-instruct'].includes(model.name))
       } else if (llmProvider.provider == ProviderNames.OpenAI) {
         const openAIModels = await getOpenAIModels(OpenAIProvider)
-        allSupportedModels[llmProvider.provider] = openAIModels.filter(model =>
+        allSupportedModels[llmProvider.provider] = openAIModels!.filter(model =>
           ['gpt-3.5-turbo-0125', 'gpt-4-0613', 'gpt-4-turbo-2024-04-09', 'gpt-4o-2024-05-13'].includes(model.name))
       } else if (llmProvider.provider == ProviderNames.Azure) {
         const azureModels = await getAzureModels(AzureProvider)
