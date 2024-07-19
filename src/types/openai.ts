@@ -21,6 +21,7 @@ export const preferredModelIds = [
   'gpt-3.5-turbo',
 ]
 
+
 export const selectBestModel = (models: SupportedModelsObj): OpenAIModel => {
   const defaultModelId = OpenAIModelID.GPT_4o
   if (!models || !models.OpenAI) {

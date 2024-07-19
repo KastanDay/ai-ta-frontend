@@ -40,11 +40,19 @@ export const getOpenAIModels = async (
     // TODO double check this works: filter out disabled models
     const openAIModels = response.data
       .filter((model: any) => !disabledModels.includes(model.id)) // Exclude disabled models
+      .filter(model => 
+        ['gpt-3.5-turbo-0125', 'gpt-4-0613', 'gpt-4-turbo-2024-04-09', 'gpt-4o-2024-05-13'].includes(model.id)
+      )
       .map((model: any) => {
+        const value = tokenLimMAp.get(model.id);
+        if (value === undefined) {
+          throw new Error('model token limit not found for model id', model.id);
+        }
         return {
           id: model.id,
           name: model.id, // Assuming model.id can be used as the name
-          tokenLimit: model.token_limit, // TODO: hard code.
+          tokenLimit: tokenLimMAp.get(model.id) || 4096, // TODO: hard code.
+          
         }
       })
 

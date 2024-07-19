@@ -75,9 +75,8 @@ const handler = async (req: Request): Promise<Response> => {
         allSupportedModels[llmProvider.provider] = fetchedOllamaModels.filter(model =>
           ['llama3:70b-instruct'].includes(model.name))
       } else if (llmProvider.provider == ProviderNames.OpenAI) {
-        const openAIModels = await getOpenAIModels(OpenAIProvider)
-        allSupportedModels[llmProvider.provider] = openAIModels.filter(model =>
-          ['gpt-3.5-turbo-0125', 'gpt-4-0613', 'gpt-4-turbo-2024-04-09', 'gpt-4o-2024-05-13'].includes(model.name))
+        const openAIModels = await getOpenAIModels(OpenAIProvider, projectName)
+        allSupportedModels[llmProvider.provider] = openAIModels
       } else if (llmProvider.provider == ProviderNames.Azure) {
         const azureModels = await getAzureModels(AzureProvider)
         allSupportedModels[llmProvider.provider] = azureModels

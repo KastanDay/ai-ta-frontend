@@ -86,6 +86,7 @@ export const getOllamaModels = async (
     throw new Error(`Ollama baseurl not defined: ${ollamaProvider.baseUrl}`)
   }
   const response = await fetch(ollamaProvider.baseUrl + '/api/tags')
+  
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
   }
@@ -99,6 +100,8 @@ export const getOllamaModels = async (
       tokenLimit: 4096,
     } as OllamaModel
   })
+  .filter(model => ['llama3:70b-instruct'].includes(model.name))
+
 
   return ollamaModels
 }
