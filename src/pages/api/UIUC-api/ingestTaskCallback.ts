@@ -11,22 +11,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     let data
     try {
       data = JSON.parse(req.body)
-      console.log('Top Data:', data)
-      console.log('Typeof Top Data:', typeof data)
     } catch (error) {
       console.error('Error parsing JSON:', error)
       return res.status(400).json({ error: 'Invalid JSON' })
-    }
-    console.log('x-beam-task-status:', req.headers['x-beam-task-status'])
-
-    if (data.success_ingest) {
-      console.log('In success ingest:', data)
-    }
-    if (data.failure_ingest) {
-      console.log('In failure ingest:', data)
-    }
-    if (data.failure_ingest && data.failure_ingest.error) {
-      console.log('In failure ingest && ERROR :', data)
     }
 
     // Data:  {
@@ -45,12 +32,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         .eq('beam_task_id', req.headers['beam-task-id'])
     }
     // If failure_ingest or Beam task is FAILED or TIMEOUT
-    // TODO: make this ELSE (not else if)
-    else if (
-      data.failure_ingest ||
-      req.headers['x-beam-task-status'] === 'FAILED' ||
-      req.headers['x-beam-task-status'] === 'TIMEOUT'
-    ) {
+    // assume failures if success is not explicity defined (above)
+    else {
+      //  if (
+      //   data.failure_ingest ||
+      //   req.headers['x-beam-task-status'] === 'FAILED' ||
+      //   req.headers['x-beam-task-status'] === 'TIMEOUT'
+      // )
       console.log('Ingest Task failed or timed out. Data:', data)
       // Remove from in progress, add to failed
       const { data: record, error: delErr } = await supabase
@@ -68,9 +56,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       await supabase.from('documents_failed').insert(record![0])
 
       return res.status(200).json({ message: 'Success' })
-    } else {
-      console.error(`No success/failure ingest in Beam callback data: ${data}`)
     }
+    // else {
+    //   console.error(`No success/failure ingest in Beam callback data: ${data}`)
+    // }
 
     return res.status(200).json({ message: 'Success' })
   } catch (error) {
