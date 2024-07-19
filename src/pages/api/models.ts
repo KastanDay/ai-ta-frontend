@@ -61,7 +61,7 @@ const handler = async (req: Request): Promise<Response> => {
     ]
     // END-TODO: MOVE THESE TO DB INPUTS
 
-    // await runOllamaChat(ollamaProvider)
+    await runOllamaChat(ollamaProvider)
 
     const allSupportedModels: { [providerName: string]: SupportedModels } = {}
     for (const llmProvider of llmProviderKeys) {

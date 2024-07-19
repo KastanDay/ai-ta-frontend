@@ -179,13 +179,15 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
             modelType: model.provider,
           }))}
           itemComponent={ModelItem}
-          icon={<Image
-            src={getModelLogo(selectedModel!.provider)}
-            alt={`${selectedModel!.provider} logo`}
-            width={20}
-            height={20}
-            style={{ marginLeft: '4px' }}
-          />}
+          icon={selectedModel ? (
+            <Image
+              src={getModelLogo(selectedModel.provider)}
+              alt={`${selectedModel.provider} logo`}
+              width={20}
+              height={20}
+              style={{ marginLeft: '4px' }}
+            />
+          ) : null}
           rightSection={<IconChevronDown size="1rem" />}
           rightSectionWidth={isSmallScreen ? 15 : 30}
           classNames={{
