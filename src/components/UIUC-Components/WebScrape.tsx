@@ -150,6 +150,27 @@ export const WebScrape = ({
   const handleSubmit = async () => {
     if (validateUrl(url)) {
       setLoadingSpinner(true)
+
+      if (is_new_course) {
+        // set course exists in new metadata endpoint
+        const response = await callSetCourseMetadata(courseName, {
+          course_owner: current_user_email,
+          // Don't set properties we don't know about. We'll just upsert and use the defaults.
+          course_admins: [],
+          approved_emails_list: [],
+          is_private: false,
+          banner_image_s3: undefined,
+          course_intro_message: undefined,
+          openai_api_key: undefined,
+          example_questions: undefined,
+          system_prompt: undefined,
+          disabled_models: undefined,
+        })
+        if (!response) {
+          throw new Error('Error while setting course metadata')
+        }
+      }
+
       let data = null
       // Make API call based on URL
       if (url.includes('coursera.org')) {
@@ -161,28 +182,6 @@ export const WebScrape = ({
         data = downloadMITCourse(url, courseName, 'local_dir') // no await -- do in background
 
         showToast()
-
-        if (is_new_course) {
-          // set course exists in new metadata endpoint
-          const response = await callSetCourseMetadata(courseName, {
-            course_owner: current_user_email,
-            // Don't set properties we don't know about. We'll just upsert and use the defaults.
-            course_admins: [],
-            approved_emails_list: [],
-            is_private: false,
-            banner_image_s3: undefined,
-            course_intro_message: undefined,
-            openai_api_key: undefined,
-            example_questions: undefined,
-            system_prompt: undefined,
-            disabled_models: undefined,
-          })
-
-          if (!response) {
-            throw new Error('Error while setting course metadata')
-          }
-        }
-        await router.push(`/${courseName}/materials`)
       } else if (url.includes('canvas.illinois.edu/courses/')) {
         // TODO: Switch this to new canvas ingest endpoint (https://bb51x.apps.beam.cloud for canvas)
         const response = await fetch('/api/UIUC-api/ingestCanvas', {
@@ -215,34 +214,16 @@ export const WebScrape = ({
         }
         // let ingest finalize things. It should be finished, but the DB is slow.
         await new Promise((resolve) => setTimeout(resolve, 8000))
-
-        if (is_new_course) {
-          // set course exists in fast course_metadatas KV db
-          const response = await callSetCourseMetadata(courseName, {
-            course_owner: current_user_email,
-            // Don't set properties we don't know about. We'll just upsert and use the defaults.
-            course_admins: [],
-            approved_emails_list: [],
-            is_private: false,
-            banner_image_s3: undefined,
-            course_intro_message: undefined,
-            openai_api_key: undefined,
-            example_questions: undefined,
-            system_prompt: undefined,
-            disabled_models: undefined,
-          })
-          if (!response) {
-            throw new Error('Error while setting course metadata')
-          }
-          await router.push(`/${courseName}/materials`)
-        }
       }
     } else {
       alert('Invalid URL (please include https://)')
     }
     setLoadingSpinner(false)
     setUrl('') // clear url
-    router.reload() // Refresh the page
+    if (is_new_course) {
+      await router.push(`/${courseName}/materials`)
+    }
+    // No need to refresh, our materials table auto-refreshes.
   }
 
   const [inputErrors, setInputErrors] = useState({
