@@ -199,6 +199,7 @@ export const WebScrape = ({
         if (data.error) {
           throw new Error(data.error)
         }
+        await new Promise((resolve) => setTimeout(resolve, 8000)) // wait a moment before redirecting
         console.log('Canvas content ingestion was successful!')
       } else {
         // Standard web scrape
