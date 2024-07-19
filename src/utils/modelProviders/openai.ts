@@ -2,7 +2,7 @@ import { kv } from '@vercel/kv'
 import { CourseMetadata } from '~/types/courseMetadata'
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
 import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
-import { OpenAI } from 'openai'
+import { OpenAI } from "openai";
 
 export const config = {
   runtime: 'edge',

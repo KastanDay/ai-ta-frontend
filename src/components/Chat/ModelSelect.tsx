@@ -142,10 +142,10 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
   isWebLLM,
 }) => {
   const allModels = [
-    ...(models.OpenAI || []).map((model) => ({ ...model, provider: ProviderNames.OpenAI })),
-    ...(models.Ollama || []).map((model) => ({ ...model, provider: ProviderNames.Ollama })),
-    ...(models.WebLLM || []).map((model) => ({ ...model, provider: ProviderNames.WebLLM })),
-    ...(models.Anthropic || []).map((model) => ({ ...model, provider: ProviderNames.Anthropic })),
+    ...(models.OpenAI || []).map((model) => ({ ...model, provider: ProviderNames.OpenAI, group: 'OpenAI' })),
+    ...(models.Ollama || []).map((model) => ({ ...model, provider: ProviderNames.Ollama, group: 'Ollama' })),
+    ...(models.WebLLM || []).map((model) => ({ ...model, provider: ProviderNames.WebLLM, group: 'WebLLM' })),
+    ...(models.Anthropic || []).map((model) => ({ ...model, provider: ProviderNames.Anthropic, group: 'Anthropic' })),
   ];
   const selectedModel = allModels.find((model) => model.id === value);
 
@@ -179,13 +179,15 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
             modelType: model.provider,
           }))}
           itemComponent={ModelItem}
-          icon={<Image
-            src={getModelLogo(selectedModel!.provider)}
-            alt={`${selectedModel!.provider} logo`}
-            width={20}
-            height={20}
-            style={{ marginLeft: '4px' }}
-          />}
+          icon={selectedModel ? (
+            <Image
+              src={getModelLogo(selectedModel.provider)}
+              alt={`${selectedModel.provider} logo`}
+              width={20}
+              height={20}
+              style={{ marginLeft: '4px' }}
+            />
+          ) : null}
           rightSection={<IconChevronDown size="1rem" />}
           rightSectionWidth={isSmallScreen ? 15 : 30}
           classNames={{
