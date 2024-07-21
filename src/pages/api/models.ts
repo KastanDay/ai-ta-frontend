@@ -72,8 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
       if (llmProvider.provider == ProviderNames.Ollama) {
         const fetchedOllamaModels = await getOllamaModels(ollamaProvider)
         const ollamaModels = fetchedOllamaModels // Update the exported variable
-        allSupportedModels[llmProvider.provider] = fetchedOllamaModels.filter(model =>
-          ['llama3:70b-instruct'].includes(model.name))
+        allSupportedModels[llmProvider.provider] = fetchedOllamaModels
       } else if (llmProvider.provider == ProviderNames.OpenAI) {
         const openAIModels = await getOpenAIModels(OpenAIProvider, projectName)
         allSupportedModels[llmProvider.provider] = openAIModels
