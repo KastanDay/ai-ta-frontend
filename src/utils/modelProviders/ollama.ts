@@ -86,21 +86,21 @@ export const getOllamaModels = async (
     throw new Error(`Ollama baseurl not defined: ${ollamaProvider.baseUrl}`)
   }
   const response = await fetch(ollamaProvider.baseUrl + '/api/tags')
-  
+
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
   }
   const data = await response.json()
 
-  const ollamaModels: OllamaModel[] = data.models.map((model: any) => {
+  const ollamaModels: OllamaModel[] = data.models.map((model: any): OllamaModel => {
     return {
       id: model.name,
       name: model.name,
       parameterSize: model.details.parameter_size,
       tokenLimit: 4096,
-    } as OllamaModel
+    }
   })
-  .filter(model => ['llama3:70b-instruct'].includes(model.name))
+    .filter((model: OllamaModel) => ['llama3:70b-instruct'].includes(model.name))
 
 
   return ollamaModels

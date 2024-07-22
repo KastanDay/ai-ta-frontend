@@ -144,7 +144,7 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
   const allModels = [
     ...(models.OpenAI || []).map((model) => ({ ...model, provider: ProviderNames.OpenAI, group: 'OpenAI' })),
     ...(models.Ollama || []).map((model) => ({ ...model, provider: ProviderNames.Ollama, group: 'Ollama' })),
-    ...(models.WebLLM || []).map((model) => ({ ...model, provider: ProviderNames.WebLLM, group: 'WebLLM' })),
+    ...(models.WebLLM || []).map((model) => ({ ...model, provider: ProviderNames.WebLLM, group: 'Local in Browser LLMs' })),
     ...(models.Anthropic || []).map((model) => ({ ...model, provider: ProviderNames.Anthropic, group: 'Anthropic' })),
   ];
   const selectedModel = allModels.find((model) => model.id === value);
