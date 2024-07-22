@@ -177,6 +177,7 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
             modelId: model.id,
             selectedModelId: value,
             modelType: model.provider,
+            group: model.group,
           }))}
           itemComponent={ModelItem}
           icon={selectedModel ? (
