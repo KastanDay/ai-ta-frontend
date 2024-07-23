@@ -121,7 +121,12 @@ const convertConversationToOpenAIMessages = (
           content.type = 'image_url'
         }
         // Add final prompt to last message
-        if (messageIndex === messages.length - 1) {
+        if (
+          content.type === 'text' &&
+          messageIndex === messages.length - 1 &&
+          !content.text?.startsWith('Image description:')
+        ) {
+          console.debug('Replacing the text: ', content.text)
           content.text = strippedMessage.finalPromtEngineeredMessage
         }
         return content
