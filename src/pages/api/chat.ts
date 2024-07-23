@@ -65,6 +65,11 @@ const handler = async (req: Request): Promise<NextResponse> => {
     )
     // console.log('Messages to send: ', messagesToSend)
 
+    console.log(
+      'System prompt: ',
+      conversation.messages[conversation.messages.length - 1]!
+        .latestSystemMessage,
+    )
     const apiStream = await OpenAIStream(
       conversation.model,
       conversation.messages[conversation.messages.length - 1]!
@@ -524,7 +529,9 @@ Insert an inline citation like this in your response:
 At the end of your response, list the document title with a clickable link, like this: 
 "1. [document_name](#)" if you're referencing the first document or
 "1. [document_name, page: 2](#)" if you're referencing page 2 of the first document.
-Nothing else should prefixxed or suffixed to the citation or document name. Consecutive citations should be separated by a comma.
+Nothing else should prefixxed or suffixed to the citation or document name. 
+
+Consecutive inline citations are ALWAYS discouraged, but if necessary, ALWAYS follow this example and separate them with a comma like this: "[1, page: 2], [2, page: 3] or [1], [2], [3]".
 
 Suppose a document name is shared with you along with the index and pageNumber below like "27: www.pdf, page: 2", "28: www.osd", "29: pdf.www, page 11\n15" where 27, 28, 29 are indices, www.pdf, www.osd, pdf.www are document_name, and 2, 11 are the pageNumbers and 15 is the content of the document, then inline citations and final list of cited documents should ALWAYS be in the following format:
 """
