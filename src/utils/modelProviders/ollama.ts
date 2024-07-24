@@ -121,7 +121,7 @@ export const getOllamaModels = async (
     }
     const data = await response.json()
     const ollamaModels: OllamaModel[] = data.models
-    .filter(model => ["llama3.1:70b"].includes(model.name))
+    .filter(model => model.name.includes("llama3.1:70b"))
     .map((model: any): OllamaModel => {
       const newName = ollamaNames.get(model.name);
       return {
@@ -131,9 +131,6 @@ export const getOllamaModels = async (
         tokenLimit: 4096,
       }
     })
-      .filter((model: OllamaModel) => ['llama3:70b-instruct'].includes(model.name))
-
-
     return ollamaModels
   } catch (error: any) {
     return { provider: ollamaProvider.provider, message: error.message || error.toString() }
