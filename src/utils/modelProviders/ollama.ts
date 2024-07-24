@@ -18,7 +18,7 @@ export interface OllamaModel {
 }
 
 const ollamaNames = new Map([
-  ["llama3:70b", 'Llama 3.1 70b'],
+  ["llama3.1:70b", 'Llama 3.1 70b'],
 ]);
 
 export const runOllamaChat = async (ollamaProvider: LLMProvider) => {
@@ -114,17 +114,19 @@ export const getOllamaModels = async (
       throw new Error(`Ollama baseurl not defined: ${ollamaProvider.baseUrl}`)
     }
 
-    const response = await fetch(ollamaProvider.baseUrl + '/api/tag')
+    const response = await fetch(ollamaProvider.baseUrl + '/api/tags')
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json()
-
-    const ollamaModels: OllamaModel[] = data.models.map((model: any): OllamaModel => {
+    const ollamaModels: OllamaModel[] = data.models
+    .filter(model => ["llama3.1:70b"].includes(model.name))
+    .map((model: any): OllamaModel => {
+      const newName = ollamaNames.get(model.name);
       return {
         id: model.name,
-        name: model.name,
+        name: newName? newName: model.name,
         parameterSize: model.details.parameter_size,
         tokenLimit: 4096,
       }
@@ -137,27 +139,4 @@ export const getOllamaModels = async (
     return { provider: ollamaProvider.provider, message: error.message || error.toString() }
 
   }
-  const response = await fetch(ollamaProvider.baseUrl + '/api/tags')
-  
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
-  }
-  const data = await response.json()
-  console.log("data.models", data.models)
-  console.log('end of datamodels')
-  const ollamaModels: OllamaModel[] = data.models
-  .filter(model => ["llama3:70b"].includes(model.model))
-  .map((model: any) => {
-    const newName = ollamaNames.get(model.name);
-    return {
-      id: newName? newName: model.name,
-      name: model.name,
-      parameterSize: model.details.parameter_size,
-      tokenLimit: 4096,
-    } as OllamaModel
-  })
-  
-
-
-  return ollamaModels
 }
