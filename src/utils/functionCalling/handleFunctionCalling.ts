@@ -243,9 +243,6 @@ const callN8nFunction = async (
   }
 
   // Check for images, add that field (can be used in combination with all other outputs)
-<<<<<<< HEAD
-  if (resultData.runData[finalNodeType][0].data.main[0][0].json['image_urls']) {
-=======
   if (
     resultData.runData[finalNodeType][0].data.main[0][0].json['image_urls'] &&
     Object.keys(resultData.runData[finalNodeType][0].data.main[0][0].json)
@@ -260,7 +257,6 @@ const callN8nFunction = async (
     resultData.runData[finalNodeType][0].data.main[0][0].json['image_urls']
   ) {
     // There's Image URLs AND other data. Keep both.
->>>>>>> main
     toolOutput = {
       ...toolOutput,
       imageUrls:

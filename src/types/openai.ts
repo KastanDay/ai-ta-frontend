@@ -17,10 +17,7 @@ export interface OpenAIModel {
 // Ordered list of preferred model IDs -- the first available model will be used as default
 export const preferredModelIds = [
   'gpt-4o',
-<<<<<<< HEAD
-=======
   'gpt-4o-mini',
->>>>>>> main
   'gpt-4-turbo-2024-04-09',
   'gpt-4-128k',
   'gpt-4-0125-preview',
@@ -31,7 +28,6 @@ export const preferredModelIds = [
   'gpt-3.5-turbo',
 ]
 
-<<<<<<< HEAD
 export const selectBestModel = (
   allLLMProviders: AllLLMProviders,
 ): GenericSupportedModel => {
@@ -57,21 +53,6 @@ export const selectBestModel = (
 
   // // Fallback to the first model in the list or the default model
   // return models.OpenAI[0] || OpenAIModels[defaultModelId]
-=======
-export const selectBestModel = (models: OpenAIModel[]): OpenAIModel => {
-  const defaultModelId = OpenAIModelID.GPT_4o
-
-  // Find and return the first available preferred model
-  for (const preferredId of preferredModelIds) {
-    const model = models.find((m) => m.id === preferredId)
-    if (model) {
-      return model
-    }
-  }
-
-  // Fallback to the first model in the list or the default model
-  return models[0] || OpenAIModels[defaultModelId]
->>>>>>> main
 }
 
 export enum OpenAIModelID {
@@ -95,43 +76,26 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   [OpenAIModelID.GPT_3_5]: {
     id: OpenAIModelID.GPT_3_5,
     name: 'GPT-3.5 (16k)',
-<<<<<<< HEAD
-=======
-    maxLength: 16385,
->>>>>>> main
     tokenLimit: 16385,
   },
   [OpenAIModelID.GPT_4]: {
     id: OpenAIModelID.GPT_4,
     name: 'GPT-4 (8k)',
-<<<<<<< HEAD
-=======
-    maxLength: 8192,
->>>>>>> main
     tokenLimit: 8192,
   },
   [OpenAIModelID.GPT_4_Turbo]: {
     id: OpenAIModelID.GPT_4_Turbo,
     name: 'GPT-4 Turbo (128k)',
-<<<<<<< HEAD
-=======
-    maxLength: 128000,
->>>>>>> main
     tokenLimit: 128000,
   },
   [OpenAIModelID.GPT_4o]: {
     id: OpenAIModelID.GPT_4o,
     name: 'GPT-4o (128k)',
-<<<<<<< HEAD
-=======
-    maxLength: 128000,
     tokenLimit: 128000,
   },
   [OpenAIModelID.GPT_4o_mini]: {
     id: OpenAIModelID.GPT_4o_mini,
     name: 'GPT-4o-mini (128k)',
-    maxLength: 128000,
->>>>>>> main
     tokenLimit: 128000,
   },
 
@@ -139,28 +103,16 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   [OpenAIModelID.GPT_4_AZURE]: {
     id: OpenAIModelID.GPT_4_AZURE,
     name: 'GPT-4 Turbo (128k)',
-<<<<<<< HEAD
-=======
-    maxLength: 128000,
->>>>>>> main
     tokenLimit: 128000,
   },
   [OpenAIModelID.GPT_4_HACKATHON]: {
     id: OpenAIModelID.GPT_4_HACKATHON,
     name: 'GPT-4 Hackathon',
-<<<<<<< HEAD
-=======
-    maxLength: 128000,
->>>>>>> main
     tokenLimit: 128000,
   },
   [OpenAIModelID.GPT_4_AZURE_04_09]: {
     id: OpenAIModelID.GPT_4_AZURE_04_09,
     name: 'GPT-4 Turbo 0409 (128k)',
-<<<<<<< HEAD
-=======
-    maxLength: 128000,
->>>>>>> main
     tokenLimit: 128000,
   },
 }
