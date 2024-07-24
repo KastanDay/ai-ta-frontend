@@ -57,9 +57,12 @@ export const getOpenAIModels = async (
         if (value === undefined) {
           throw new Error('model token limit not found for model id', model.id);
         }
+        console.log('model.id', model.id)
+        const newName = openAINames.get(model.id)
+        console.log('newName', newName)
         return {
           id: model.id,
-          name: model.id, // Assuming model.id can be used as the name
+          name: newName? newName:model.id, // Assuming model.id can be used as the name
           tokenLimit: tokenLimMAp.get(model.id) || 4096, // TODO: hard code.
 
         }
