@@ -3,7 +3,7 @@ import {
   ProviderNames,
   SupportedModels,
 } from '~/types/LLMProvider'
-import { getOllamaModels, runOllamaChat } from '~/utils/modelProviders/ollama'
+import { getOllamaModels, runOllamaChat, OllamaStream } from '~/utils/modelProviders/ollama'
 import { getOpenAIModels } from '~/utils/modelProviders/openai'
 import { getAzureModels } from '~/utils/modelProviders/azure'
 import { getAnthropicModels } from '~/utils/modelProviders/anthropic'
@@ -13,6 +13,9 @@ import { webLLMModels } from '~/utils/modelProviders/WebLLM'
 export const config = {
   runtime: 'edge',
 }
+
+
+
 
 const handler = async (req: Request): Promise<Response> => {
   try {
@@ -62,7 +65,7 @@ const handler = async (req: Request): Promise<Response> => {
     // END-TODO: MOVE THESE TO DB INPUTS
 
     await runOllamaChat(ollamaProvider)
-
+    console.log("loading all supported models")
     const allSupportedModels: { [providerName: string]: SupportedModels } = {}
     for (const llmProvider of llmProviderKeys) {
       if (!llmProvider.enabled) {
@@ -91,6 +94,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     // console.log('allSupportedModels', allSupportedModels)
     console.log('Done loading models...')
+
+    //let res = OllamaStream(ollamaProvider)
+
+    //console.log('ollamastream', res)
+    //console.log('finished')
 
     return new Response(JSON.stringify(allSupportedModels), { status: 200 })
   } catch (error) {

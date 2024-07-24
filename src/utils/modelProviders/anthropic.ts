@@ -25,22 +25,22 @@ export enum AnthropicModelID {
 export const AnthropicModels: Record<AnthropicModelID, AnthropicModel> = {
     [AnthropicModelID.Claude_3_5_Sonnet]: {
       id: AnthropicModelID.Claude_3_5_Sonnet,
-      name: 'claude-3-5-sonnet-20240620',
+      name: 'claude-3-5-sonnet',
       tokenLimit: 200000,
     },
     [AnthropicModelID.Claude_3_Opus]: {
       id: AnthropicModelID.Claude_3_Opus,
-      name: 'claude-3-opus-20240229',
+      name: 'claude-3-opus',
       tokenLimit: 200000,
     },
     [AnthropicModelID.Claude_3_Sonnet]: {
       id: AnthropicModelID.Claude_3_Sonnet,
-      name: 'claude-3-sonnet-20240229',
+      name: 'claude-3-sonnet',
       tokenLimit: 200000,
     },
     [AnthropicModelID.Claude_3_Haiku]: {
       id: AnthropicModelID.Claude_3_Haiku,
-      name: 'claude-3-haiku-20240307',
+      name: 'claude-3-haiku',
       tokenLimit: 200000,
     }
 }

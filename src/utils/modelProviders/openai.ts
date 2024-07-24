@@ -15,6 +15,15 @@ const tokenLimMAp = new Map([
   ['gpt-4o-2024-05-13', 128000]
 ]);
 
+
+const openAINames = new Map([
+  ['gpt-3.5-turbo-0125', 'gpt-3.5-turbo'],
+  ['gpt-4-0613', 'gpt-4'],
+  ['gpt-4-turbo-2024-04-09', 'gpt-4-turbo'],
+  ['gpt-4o-2024-05-13', 'gpt-4o'],
+
+]);
+
 export const getOpenAIModels = async (
   openAIProvider: LLMProvider,
   projectName: string,

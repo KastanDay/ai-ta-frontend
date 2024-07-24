@@ -1,5 +1,5 @@
 import { generateText, streamText } from 'ai'
-import { OllamaProvider, createOllama } from 'ollama-ai-provider'
+import { OllamaProvider, createOllama, ollama } from 'ollama-ai-provider'
 // import { openai } from '@ai-sdk/openai';
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
 import { decrypt, isEncrypted } from '~/utils/crypto'
@@ -16,6 +16,10 @@ export interface OllamaModel {
   parameterSize: string
   tokenLimit: number
 }
+
+const ollamaNames = new Map([
+  ["llama3:70b", 'Llama 3.1 70b'],
+]);
 
 export const runOllamaChat = async (ollamaProvider: LLMProvider) => {
   console.log('Running ollama chat')
@@ -36,6 +40,29 @@ export const runOllamaChat = async (ollamaProvider: LLMProvider) => {
   //   console.log(result.value.message.content)
   //   result = await iterator.next()
   // }
+}
+
+// newest attempt at streaming
+export const OllamaStream = async (ollamaProvider: LLMProvider) => {
+  const ollama = createOllama({
+    baseURL: 'https://ollama.ncsa.ai/api',
+  })
+  const result = await streamText({
+    model: ollama('llama3'),
+    onFinish({ finishReason, text, usage }) {
+      console.log()
+      console.log('onFinish')
+      console.log('Token usage:', usage)
+      console.log('Finish reason:', finishReason)
+      console.log('Text:', text)
+    },
+    prompt: 'Invent a new holiday and describe its traditions.',
+  })
+
+  for await (const textPart of result.textStream) {
+    process.stdout.write(textPart)
+  }
+
 }
 
 export const runOllamaChatVercelSDK = async () => {
@@ -91,16 +118,20 @@ export const getOllamaModels = async (
     throw new Error(`HTTP error! status: ${response.status}`)
   }
   const data = await response.json()
-
-  const ollamaModels: OllamaModel[] = data.models.map((model: any) => {
+  console.log("data.models", data.models)
+  console.log('end of datamodels')
+  const ollamaModels: OllamaModel[] = data.models
+  .filter(model => ["llama3:70b"].includes(model.model))
+  .map((model: any) => {
+    const newName = ollamaNames.get(model.name);
     return {
-      id: model.name,
+      id: newName? newName: model.name,
       name: model.name,
       parameterSize: model.details.parameter_size,
       tokenLimit: 4096,
     } as OllamaModel
   })
-  .filter(model => ['llama3:70b-instruct'].includes(model.name))
+  
 
 
   return ollamaModels
