@@ -209,6 +209,7 @@ const Home = () => {
       }
     }
 
+    // TODO: update to handle dictionary of models. Do toast popup for failures.
     const setOpenaiModel = async () => {
       // Get models available to users
       try {

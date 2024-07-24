@@ -108,32 +108,36 @@ export const runOllamaChatVercelSDK = async () => {
 
 export const getOllamaModels = async (
   ollamaProvider: LLMProvider,
-): Promise<OllamaModel[] | { provider: string, message: string }> => {
+): Promise<LLMProvider> => {
   try {
     if (!ollamaProvider.baseUrl) {
-      throw new Error(`Ollama baseurl not defined: ${ollamaProvider.baseUrl}`)
+      ollamaProvider.error = `Ollama baseurl not defined: ${ollamaProvider.baseUrl}`
+      return ollamaProvider
     }
 
     const response = await fetch(ollamaProvider.baseUrl + '/api/tags')
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      ollamaProvider.error = `HTTP error! status: ${response.status}`
+      return ollamaProvider
     }
     const data = await response.json()
     const ollamaModels: OllamaModel[] = data.models
-    .filter(model => model.name.includes("llama3.1:70b"))
-    .map((model: any): OllamaModel => {
-      const newName = ollamaNames.get(model.name);
-      return {
-        id: model.name,
-        name: newName? newName: model.name,
-        parameterSize: model.details.parameter_size,
-        tokenLimit: 4096,
-      }
-    })
-    return ollamaModels
+      // @ts-ignore - todo fix implicit any type
+      .filter(model => model.name.includes("llama3.1:70b"))
+      .map((model: any): OllamaModel => {
+        const newName = ollamaNames.get(model.name);
+        return {
+          id: model.name,
+          name: newName ? newName : model.name,
+          parameterSize: model.details.parameter_size,
+          tokenLimit: 4096,
+        }
+      })
+    ollamaProvider.models = ollamaModels
+    return ollamaProvider
   } catch (error: any) {
-    return { provider: ollamaProvider.provider, message: error.message || error.toString() }
-
+    ollamaProvider.error = error.message
+    return ollamaProvider
   }
 }

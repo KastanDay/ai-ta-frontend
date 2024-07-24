@@ -27,7 +27,7 @@ const openAINames = new Map([
 export const getOpenAIModels = async (
   openAIProvider: LLMProvider,
   projectName: string,
-) => {
+): Promise<LLMProvider> => {
   console.log('in openai get models', projectName)
 
   const client = new OpenAI({
@@ -39,7 +39,7 @@ export const getOpenAIModels = async (
     const response = await client.models.list()
 
     if (!response.data) {
-      throw new Error('Invalid OpenAI Model List response format')
+      openAIProvider.error = `Error fectching models from OpenAI, unexpected response format. Response: ${response}`
     }
 
     const disabledModels = await getDisabledOpenAIModels({ projectName })
@@ -65,11 +65,12 @@ export const getOpenAIModels = async (
         }
       })
 
-    return openAIModels
+    openAIProvider.models = openAIModels
+    return openAIProvider
   } catch (error: any) {
     console.error('Error fetching models:', error)
-    // return []
-    return { provider: openAIProvider.provider, message: error.message }
+    openAIProvider.error = error.message
+    return openAIProvider
   }
 }
 

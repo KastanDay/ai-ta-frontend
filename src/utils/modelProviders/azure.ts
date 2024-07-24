@@ -43,13 +43,12 @@ export async function runAzure(
 
 export const getAzureModels = async (
   AzureProvider: LLMProvider,
-): Promise<AzureModel[] | { provider: string, message: string }> => {
-  // Ensure this is set in your environment
+): Promise<LLMProvider> => {
   try {
     if (!AzureProvider.AzureEndpoint || !AzureProvider.AzureDeployment) {
-      throw new Error(
-        'Azure OpenAI endpoint or API version is not set in environment variables',
-      )
+      // TODO move away from env vars
+      AzureProvider.error = `Azure OpenAI endpoint or deployment is not set. Endpoint: ${AzureProvider.AzureEndpoint}, Deployment: ${AzureProvider.AzureDeployment}`
+      return AzureProvider
     }
 
     const url = `${AzureProvider.AzureEndpoint}/openai/models?api-version=2024-02-01`
@@ -62,7 +61,9 @@ export const getAzureModels = async (
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      AzureProvider.error = `Azure OpenAI failed to fetch models. HTTP error, status: ${response.status}`
+      return AzureProvider
+      throw new Error(``)
     }
 
     const data = await response.json()
@@ -76,9 +77,10 @@ export const getAzureModels = async (
       } as AzureModel
     })
     console.log('Azure OpenAI models:', azureModels)
-
-    return azureModels
+    AzureProvider.models = azureModels
+    return AzureProvider
   } catch (error: any) {
-    return { provider: AzureProvider.provider, message: error.message }
+    AzureProvider.error = error.message
+    return AzureProvider
   }
 }
