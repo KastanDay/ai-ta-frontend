@@ -43,39 +43,42 @@ export async function runAzure(
 
 export const getAzureModels = async (
   AzureProvider: LLMProvider,
-): Promise<AzureModel[]> => {
+): Promise<AzureModel[] | { provider: string, message: string }> => {
   // Ensure this is set in your environment
+  try {
+    if (!AzureProvider.AzureEndpoint || !AzureProvider.AzureDeployment) {
+      throw new Error(
+        'Azure OpenAI endpoint or API version is not set in environment variables',
+      )
+    }
 
-  if (!AzureProvider.AzureEndpoint || !AzureProvider.AzureDeployment) {
-    throw new Error(
-      'Azure OpenAI endpoint or API version is not set in environment variables',
-    )
+    const url = `${AzureProvider.AzureEndpoint}/openai/models?api-version=2024-02-01`
+
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        'api-key': AzureProvider.apiKey!,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('this is the data', data)
+    const azureModels: AzureModel[] = data.data.map((model: any) => {
+      return {
+        id: model.id,
+        name: model.id,
+        tokenLimit: 128000, // might need to change with smaller models add hardcode mapping model to token limit
+        // Add any other relevant fields here
+      } as AzureModel
+    })
+    console.log('Azure OpenAI models:', azureModels)
+
+    return azureModels
+  } catch (error: any) {
+    return { provider: AzureProvider.provider, message: error.message }
   }
-
-  const url = `${AzureProvider.AzureEndpoint}/openai/models?api-version=2024-02-01`
-
-  const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': AzureProvider.apiKey!,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
-  }
-
-  const data = await response.json()
-  console.log('this is the data', data)
-  const azureModels: AzureModel[] = data.data.map((model: any) => {
-    return {
-      id: model.id,
-      name: model.id,
-      tokenLimit: 128000, // might need to change with smaller models add hardcode mapping model to token limit
-      // Add any other relevant fields here
-    } as AzureModel
-  })
-  console.log('Azure OpenAI models:', azureModels)
-
-  return azureModels
 }

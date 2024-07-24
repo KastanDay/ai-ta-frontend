@@ -40,7 +40,7 @@ export const getOpenAIModels = async (
     // TODO double check this works: filter out disabled models
     const openAIModels = response.data
       .filter((model: any) => !disabledModels.includes(model.id)) // Exclude disabled models
-      .filter(model => 
+      .filter(model =>
         ['gpt-3.5-turbo-0125', 'gpt-4-0613', 'gpt-4-turbo-2024-04-09', 'gpt-4o-2024-05-13'].includes(model.id)
       )
       .map((model: any) => {
@@ -52,14 +52,15 @@ export const getOpenAIModels = async (
           id: model.id,
           name: model.id, // Assuming model.id can be used as the name
           tokenLimit: tokenLimMAp.get(model.id) || 4096, // TODO: hard code.
-          
+
         }
       })
 
     return openAIModels
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching models:', error)
-    return []
+    // return []
+    return { provider: openAIProvider.provider, message: error.message }
   }
 }
 

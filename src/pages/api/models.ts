@@ -9,11 +9,11 @@ import { getAzureModels } from '~/utils/modelProviders/azure'
 import { getAnthropicModels } from '~/utils/modelProviders/anthropic'
 
 import { webLLMModels } from '~/utils/modelProviders/WebLLM'
+import { errorToast } from '~/components/Chat/Chat'
 
 export const config = {
   runtime: 'edge',
 }
-
 const handler = async (req: Request): Promise<Response> => {
   try {
     const { projectName } = (await req.json()) as {
@@ -64,21 +64,41 @@ const handler = async (req: Request): Promise<Response> => {
     await runOllamaChat(ollamaProvider)
 
     const allSupportedModels: { [providerName: string]: SupportedModels } = {}
+    const errors: { provider: string, message: string }[] = []
     for (const llmProvider of llmProviderKeys) {
       if (!llmProvider.enabled) {
+        errors.push({
+          provider: llmProvider.provider,
+          message: `${llmProvider.provider} is not enabled. Please enter the provider key in the /materials page.`
+        })
         continue
       }
-
       if (llmProvider.provider == ProviderNames.Ollama) {
         const fetchedOllamaModels = await getOllamaModels(ollamaProvider)
         const ollamaModels = fetchedOllamaModels // Update the exported variable
-        allSupportedModels[llmProvider.provider] = fetchedOllamaModels
+        if ('provider' in fetchedOllamaModels) {
+          ollamaProvider.errorHandling = fetchedOllamaModels
+          errors.push(ollamaProvider.errorHandling)
+          console.log('ollama error', ollamaProvider.errorHandling)
+        } else {
+          allSupportedModels[llmProvider.provider] = fetchedOllamaModels
+        }
       } else if (llmProvider.provider == ProviderNames.OpenAI) {
         const openAIModels = await getOpenAIModels(OpenAIProvider, projectName)
-        allSupportedModels[llmProvider.provider] = openAIModels
+        if ('provider' in openAIModels) {
+          OpenAIProvider.errorHandling = openAIModels
+          errors.push(OpenAIProvider.errorHandling)
+        } else {
+          allSupportedModels[llmProvider.provider] = openAIModels
+        }
       } else if (llmProvider.provider == ProviderNames.Azure) {
         const azureModels = await getAzureModels(AzureProvider)
-        allSupportedModels[llmProvider.provider] = azureModels
+        if ('provider' in azureModels) {
+          AzureProvider.errorHandling = azureModels
+          errors.push(AzureProvider.errorHandling)
+        } else {
+          allSupportedModels[llmProvider.provider] = azureModels
+        }
       } else if (llmProvider.provider == ProviderNames.Anthropic) {
         allSupportedModels[llmProvider.provider] =
           await getAnthropicModels(AnthropicProvider)

@@ -33,4 +33,5 @@ export interface LLMProvider {
   AzureEndpoint?: string
   AzureDeployment?: string
   AnthropicModel?: string
+  errorHandling?: { provider: string, message: string }
 }
