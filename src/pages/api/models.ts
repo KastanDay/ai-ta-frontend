@@ -1,9 +1,14 @@
 import {
+  AllLLMProviders,
   LLMProvider,
   ProviderNames,
   SupportedModels,
 } from '~/types/LLMProvider'
-import { getOllamaModels, runOllamaChat, OllamaStream } from '~/utils/modelProviders/ollama'
+import {
+  getOllamaModels,
+  runOllamaChat,
+  OllamaStream,
+} from '~/utils/modelProviders/ollama'
 import { getOpenAIModels } from '~/utils/modelProviders/openai'
 import { getAzureModels } from '~/utils/modelProviders/azure'
 import { getAnthropicModels } from '~/utils/modelProviders/anthropic'
@@ -64,19 +69,24 @@ const handler = async (req: Request): Promise<Response> => {
     // END-TODO: MOVE THESE TO DB INPUTS
 
     await runOllamaChat(ollamaProvider)
-    console.log("loading all supported models")
+    console.log('loading all supported models')
     // const allSupportedModels: { [providerName: string]: SupportedModels } = {}
-    const allLLMProviders: Partial<{ [providerName in ProviderNames]: LLMProvider }> = {}
+    const allLLMProviders: { [key in ProviderNames]?: LLMProvider } = {}
     for (const llmProvider of llmProviderKeys) {
       if (!llmProvider.enabled) {
         continue
       }
       if (llmProvider.provider == ProviderNames.Ollama) {
-        allLLMProviders[llmProvider.provider] = await getOllamaModels(llmProvider)
+        allLLMProviders[llmProvider.provider] =
+          await getOllamaModels(llmProvider)
       } else if (llmProvider.provider == ProviderNames.OpenAI) {
-        allLLMProviders[llmProvider.provider] = await getOpenAIModels(llmProvider, projectName)
+        allLLMProviders[llmProvider.provider] = await getOpenAIModels(
+          llmProvider,
+          projectName,
+        )
       } else if (llmProvider.provider == ProviderNames.Azure) {
-        allLLMProviders[llmProvider.provider] = await getAzureModels(llmProvider)
+        allLLMProviders[llmProvider.provider] =
+          await getAzureModels(llmProvider)
       } else if (llmProvider.provider == ProviderNames.Anthropic) {
         allLLMProviders[llmProvider.provider] =
           await getAnthropicModels(llmProvider)
@@ -99,7 +109,3 @@ const handler = async (req: Request): Promise<Response> => {
 }
 
 export default handler
-
-export interface SupportedModelsObj {
-  [providerName: string]: SupportedModels
-}

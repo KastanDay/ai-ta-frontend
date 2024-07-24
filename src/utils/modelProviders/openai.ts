@@ -1,8 +1,8 @@
 import { kv } from '@vercel/kv'
 import { CourseMetadata } from '~/types/courseMetadata'
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
-import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
-import { OpenAI } from "openai";
+import { LLMProvider, OpenAIProvider, ProviderNames } from '~/types/LLMProvider'
+import { OpenAI } from 'openai'
 
 export const config = {
   runtime: 'edge',
@@ -12,20 +12,18 @@ const tokenLimMAp = new Map([
   ['gpt-3.5-turbo-0125', 16385],
   ['gpt-4-0613', 8192],
   ['gpt-4-turbo-2024-04-09', 128000],
-  ['gpt-4o-2024-05-13', 128000]
-]);
-
+  ['gpt-4o-2024-05-13', 128000],
+])
 
 const openAINames = new Map([
-  ['gpt-3.5-turbo-0125', 'gpt-3.5-turbo'],
-  ['gpt-4-0613', 'gpt-4'],
-  ['gpt-4-turbo-2024-04-09', 'gpt-4-turbo'],
-  ['gpt-4o-2024-05-13', 'gpt-4o'],
-
-]);
+  ['gpt-3.5-turbo-0125', 'GPT-3.5 Turbo'],
+  ['gpt-4-0613', 'GPT-4'],
+  ['gpt-4-turbo-2024-04-09', 'GPT-4 Turbo'],
+  ['gpt-4o-2024-05-13', 'GPT 4o'],
+])
 
 export const getOpenAIModels = async (
-  openAIProvider: LLMProvider,
+  openAIProvider: OpenAIProvider,
   projectName: string,
 ): Promise<LLMProvider> => {
   console.log('in openai get models', projectName)
@@ -49,13 +47,18 @@ export const getOpenAIModels = async (
     // TODO double check this works: filter out disabled models
     const openAIModels = response.data
       .filter((model: any) => !disabledModels.includes(model.id)) // Exclude disabled models
-      .filter(model =>
-        ['gpt-3.5-turbo-0125', 'gpt-4-0613', 'gpt-4-turbo-2024-04-09', 'gpt-4o-2024-05-13'].includes(model.id)
+      .filter((model) =>
+        [
+          'gpt-3.5-turbo-0125',
+          'gpt-4-0613',
+          'gpt-4-turbo-2024-04-09',
+          'gpt-4o-2024-05-13',
+        ].includes(model.id),
       )
       .map((model: any) => {
-        const value = tokenLimMAp.get(model.id);
+        const value = tokenLimMAp.get(model.id)
         if (value === undefined) {
-          throw new Error('model token limit not found for model id', model.id);
+          throw new Error('model token limit not found for model id', model.id)
         }
         console.log('model.id', model.id)
         const newName = openAINames.get(model.id)
