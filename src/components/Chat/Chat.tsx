@@ -81,6 +81,7 @@ import {
 } from '~/utils/modelProviders/ConfigWebLLM'
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import home from '~/pages/api/home'
+import { useChat } from 'ai/react'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -360,12 +361,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ; (message.content as Content[])[imgDescIndex] = {
+          ;(message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ; (message.content as Content[]).push({
+          ;(message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -554,7 +555,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         //   value: chatBody.conversation,
         // })
 
-        let response: AsyncIterable<webllm.ChatCompletionChunk> | Response | undefined
+        let response:
+          | AsyncIterable<webllm.ChatCompletionChunk>
+          | Response
+          | undefined
         let reader
         console.log('Selected model name:', selectedConversation.model.name)
 
@@ -565,6 +569,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             (model) => model.name === selectedConversation.model.name,
           )
         ) {
+          // Is WebLLM model
           console.log('is model loading', chat_ui.isModelLoading())
           if (chat_ui.isModelLoading() == false) {
             try {
@@ -580,6 +585,15 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               })
             }
           }
+        } else if (selectedConversation.model.name === 'llama3.1:70b') {
+          // Is Ollama model
+          response = await fetch('/api/chat/ollama', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ conversation: updatedConversation }),
+          })
         } else {
           // Call the OpenAI API
           response = await fetch(endpoint, {
@@ -591,6 +605,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             body: JSON.stringify(chatBody),
           })
         }
+
         if (response instanceof Response && !response.ok) {
           const final_response = await response.json()
           homeDispatch({ field: 'loading', value: false })
@@ -612,9 +627,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               </Text>
             ),
             message: (
-              <Text
-                className={`${montserrat_med.className} text-neutral-200`}
-              >
+              <Text className={`${montserrat_med.className} text-neutral-200`}>
                 {final_response.message}
               </Text>
             ),
@@ -632,7 +645,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           })
           return
         }
-        let data;
+
+        let data
         // TODO: check the reponse data
         if (response instanceof Response) {
           data = response.body
@@ -646,8 +660,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             return
           }
           reader = data.getReader()
-
         }
+
         if (!plugin) {
           if (updatedConversation.messages.length === 1) {
             const { content } = message
@@ -670,7 +684,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
           // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
 
-
           const decoder = new TextDecoder()
           let done = false
           let isFirst = true
@@ -687,7 +700,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 break
               }
               if (response && 'next' in response) {
-
                 // Handle routing between WebLLM & OpenAI
                 // if (
                 //   // ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some(
@@ -741,7 +753,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 })
               } else {
                 if (updatedConversation.messages.length > 0) {
-                  const lastMessageIndex = updatedConversation.messages.length - 1
+                  const lastMessageIndex =
+                    updatedConversation.messages.length - 1
                   const lastMessage =
                     updatedConversation.messages[lastMessageIndex]
                   const lastUserMessage =
@@ -830,14 +843,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             console.error('An error occurred: ', error)
             controller.abort()
           }
-        }
-        else {
+        } else {
           // TODO: COME BACK AND FIX
           if (response instanceof Response) {
             const { answer } = await response.json()
             const updatedMessages: Message[] = [
               ...updatedConversation.messages,
-              { role: 'assistant', content: answer, contexts: message.contexts },
+              {
+                role: 'assistant',
+                content: answer,
+                contexts: message.contexts,
+              },
             ]
             updatedConversation = {
               ...updatedConversation,
@@ -859,15 +875,16 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             if (updatedConversations.length === 0) {
               updatedConversations.push(updatedConversation)
             }
-            homeDispatch({ field: 'conversations', value: updatedConversations })
+            homeDispatch({
+              field: 'conversations',
+              value: updatedConversations,
+            })
             saveConversations(updatedConversations)
             homeDispatch({ field: 'loading', value: false })
             homeDispatch({ field: 'messageIsStreaming', value: false })
           }
-
         }
       }
-
     },
     [
       apiKey,
@@ -890,7 +907,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
       handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
@@ -983,13 +1000,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-      courseMetadata.example_questions.length > 0
+    courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-        'Make a bullet point list of key takeaways from this project.',
-        'What are the best practices for [Activity or Process] in [Context or Field]?',
-        'Can you explain the concept of [Specific Concept] in simple terms?',
-      ]
+          'Make a bullet point list of key takeaways from this project.',
+          'What are the best practices for [Activity or Process] in [Context or Field]?',
+          'Can you explain the concept of [Specific Concept] in simple terms?',
+        ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
@@ -1323,7 +1340,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   Chat.displayName = 'Chat'
 })
 
-export function errorToast({ title, message }: { title: string; message: string }) {
+export function errorToast({
+  title,
+  message,
+}: {
+  title: string
+  message: string
+}) {
   notifications.show({
     id: 'error-notification-reused',
     withCloseButton: true,

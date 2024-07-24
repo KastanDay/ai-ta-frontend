@@ -1,6 +1,10 @@
 // import { OPENAI_API_TYPE } from '../utils/app/const'
 
-import { AllLLMProviders } from './LLMProvider'
+import {
+  AllLLMProviders,
+  GenericSupportedModel,
+  SupportedModels,
+} from './LLMProvider'
 
 // import { SupportedModelsObj } from '~/pages/api/models'
 
@@ -25,8 +29,13 @@ export const preferredModelIds = [
 
 export const selectBestModel = (
   allLLMProviders: AllLLMProviders,
-): OpenAIModel => {
+): GenericSupportedModel => {
   // TODO: fix
+  return {
+    id: 'llama3.1:70b',
+    name: 'llama3.1:70b',
+    tokenLimit: 128000,
+  }
   const defaultModelId = OpenAIModelID.GPT_4o
   return OpenAIModels[defaultModelId]
   // if (!models || !models.OpenAI) {

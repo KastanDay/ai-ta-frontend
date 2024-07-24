@@ -26,12 +26,9 @@ export const getOpenAIModels = async (
   openAIProvider: OpenAIProvider,
   projectName: string,
 ): Promise<LLMProvider> => {
-  console.log('in openai get models', projectName)
-
   const client = new OpenAI({
-    apiKey: openAIProvider.apiKey, // change to openai
+    apiKey: openAIProvider.apiKey,
   })
-  console.log('created openai client')
 
   try {
     const response = await client.models.list()
@@ -41,7 +38,6 @@ export const getOpenAIModels = async (
     }
 
     const disabledModels = await getDisabledOpenAIModels({ projectName })
-    console.log('disabled models in OpenAI: ', disabledModels)
 
     // Iterate through the models
     // TODO double check this works: filter out disabled models

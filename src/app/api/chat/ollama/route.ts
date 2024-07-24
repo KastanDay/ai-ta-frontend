@@ -1,43 +1,95 @@
 import { createOllama } from 'ollama-ai-provider'
-import { streamText } from 'ai'
+import { CoreMessage, StreamingTextResponse, streamText } from 'ai'
+import { Conversation } from '~/types/chat'
+import { OllamaProvider } from '~/types/LLMProvider'
 
-// import { OllamaModel } from '~/types/OllamaProvider'
-
-const ollama = createOllama({
-  // custom settings
-  baseURL: 'https://ollama.ncsa.ai/api/chat',
-})
-
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export async function POST(req: Request) {
+  const {
+    conversation,
+    ollamaProvider,
+  }: {
+    conversation: Conversation
+    ollamaProvider: OllamaProvider
+  } = await req.json()
   /*
   Run Ollama chat, given a text string. Return a streaming response promise.
   */
-  console.log('In ollama POST endpoint')
-
-  const messages = [
-    {
-      role: 'user',
-      content: 'why is the sky blue?',
-    },
-  ]
-
-  const result = await streamText({
-    maxRetries: 5,
-    maxTokens: 512,
-    model: ollama('llama3:70b-instruct'),
-    prompt: 'Invent a new holiday and describe its traditions.',
-    temperature: 0.3,
+  const ollama = createOllama({
+    baseURL: `${process.env.OLLAMA_SERVER_URL}/api`,
+    // baseURL: `${ollamaProvider.baseUrl}/api`,
   })
 
-  for await (const textPart of result.textStream) {
-    process.stdout.write(textPart)
-  }
+  const result = await streamText({
+    model: ollama('llama3.1:70b'),
+    messages: convertConversatonToVercelAISDKv2(conversation), // TODO NEEDS WORK - clean messages from UIUC.chat to Ollama
+    temperature: conversation.temperature,
+    maxTokens: 4096, // output tokens
+  })
 
-  console.log()
-  console.log('Token usage:', await result.usage)
-  console.log('Finish reason:', await result.finishReason)
+  return new StreamingTextResponse(result.textStream, {})
+}
+
+function convertConversatonToVercelAISDK(conversation: Conversation) {
+  return conversation.messages.map((message, messageIndex) => {
+    const strippedMessage = { ...message }
+    // When content is an array
+    if (Array.isArray(strippedMessage.content)) {
+      strippedMessage.content.map((content, contentIndex) => {
+        // Convert tool_image_url to image_url for OpenAI
+        if (content.type === 'tool_image_url') {
+          content.type = 'image_url'
+        }
+        // Add final prompt to last message
+        if (messageIndex === conversation.messages.length - 1) {
+          content.text = strippedMessage.finalPromtEngineeredMessage
+        }
+        return content
+      })
+    } else {
+      // When content is a string
+      // Add final prompt to last message
+      if (messageIndex === conversation.messages.length - 1) {
+        if (strippedMessage.role === 'user') {
+          strippedMessage.content = [
+            {
+              type: 'text',
+              text: strippedMessage.finalPromtEngineeredMessage,
+            },
+          ]
+          // Add system prompt to message with role system
+        } else if (strippedMessage.role === 'system') {
+          strippedMessage.content = [
+            {
+              type: 'text',
+              text: strippedMessage.latestSystemMessage,
+            },
+          ]
+        }
+      }
+    }
+    delete strippedMessage.finalPromtEngineeredMessage
+    delete strippedMessage.latestSystemMessage
+    delete strippedMessage.contexts
+    delete strippedMessage.tools
+    return strippedMessage
+  })
+}
+
+function convertConversatonToVercelAISDKv2(
+  conversation: Conversation,
+): CoreMessage[] {
+  // NOT GOING TO BE PREFECT, PROBABLY DOESN'T HANDLE TOOLS PROPERLY.
+  return conversation.messages.map(
+    (message): CoreMessage => ({
+      role: message.role as 'user' | 'assistant' | 'system',
+      content:
+        typeof message.content === 'string'
+          ? message.content
+          : message.content[0]?.text ?? '',
+    }),
+  )
 }
 
 export async function GET() {

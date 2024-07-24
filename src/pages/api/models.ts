@@ -7,7 +7,7 @@ import {
 import {
   getOllamaModels,
   runOllamaChat,
-  OllamaStream,
+  ollamaStream,
 } from '~/utils/modelProviders/ollama'
 import { getOpenAIModels } from '~/utils/modelProviders/openai'
 import { getAzureModels } from '~/utils/modelProviders/azure'
@@ -68,9 +68,6 @@ const handler = async (req: Request): Promise<Response> => {
     ]
     // END-TODO: MOVE THESE TO DB INPUTS
 
-    await runOllamaChat(ollamaProvider)
-    console.log('loading all supported models')
-    // const allSupportedModels: { [providerName: string]: SupportedModels } = {}
     const allLLMProviders: { [key in ProviderNames]?: LLMProvider } = {}
     for (const llmProvider of llmProviderKeys) {
       if (!llmProvider.enabled) {
@@ -99,8 +96,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // console.log('allSupportedModels', allSupportedModels)
-    console.log('Done loading models...')
-
     return new Response(JSON.stringify(allLLMProviders), { status: 200 })
   } catch (error) {
     console.error(error)

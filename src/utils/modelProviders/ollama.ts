@@ -1,14 +1,7 @@
-import { generateText, streamText } from 'ai'
-import { OllamaProvider, createOllama, ollama } from 'ollama-ai-provider'
-// import { openai } from '@ai-sdk/openai';
-import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
-import { decrypt, isEncrypted } from '~/utils/crypto'
-import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
-
-// import ollama from 'ollama'
-// import ollama from 'ollama/browser'
+import { streamText } from 'ai'
+import { createOllama } from 'ollama-ai-provider'
 import { Ollama } from 'ollama'
-import { it } from 'node:test'
+import { LLMProvider } from '~/types/LLMProvider'
 
 export interface OllamaModel {
   id: string
@@ -17,9 +10,7 @@ export interface OllamaModel {
   tokenLimit: number
 }
 
-const ollamaNames = new Map([
-  ["llama3.1:70b", 'Llama 3.1 70b'],
-]);
+const ollamaNames = new Map([['llama3.1:70b', 'Llama 3.1 70b']])
 
 export const runOllamaChat = async (ollamaProvider: LLMProvider) => {
   console.log('Running ollama chat')
@@ -43,12 +34,12 @@ export const runOllamaChat = async (ollamaProvider: LLMProvider) => {
 }
 
 // newest attempt at streaming
-export const OllamaStream = async (ollamaProvider: LLMProvider) => {
+export const ollamaStream = async (ollamaProvider: LLMProvider) => {
   const ollama = createOllama({
     baseURL: 'https://ollama.ncsa.ai/api',
   })
   const result = await streamText({
-    model: ollama('llama3'),
+    model: ollama('llama3.1:70b'),
     onFinish({ finishReason, text, usage }) {
       console.log()
       console.log('onFinish')
@@ -60,9 +51,8 @@ export const OllamaStream = async (ollamaProvider: LLMProvider) => {
   })
 
   for await (const textPart of result.textStream) {
-    process.stdout.write(textPart)
+    console.log('OLLAMA TEXT PART:', textPart)
   }
-
 }
 
 export const runOllamaChatVercelSDK = async () => {
@@ -124,9 +114,9 @@ export const getOllamaModels = async (
     const data = await response.json()
     const ollamaModels: OllamaModel[] = data.models
       // @ts-ignore - todo fix implicit any type
-      .filter(model => model.name.includes("llama3.1:70b"))
+      .filter((model) => model.name.includes('llama3.1:70b'))
       .map((model: any): OllamaModel => {
-        const newName = ollamaNames.get(model.name);
+        const newName = ollamaNames.get(model.name)
         return {
           id: model.name,
           name: newName ? newName : model.name,

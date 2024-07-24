@@ -18,7 +18,7 @@ export interface HomeInitialState {
   messageIsStreaming: boolean
   modelError: ErrorMessage | null
   // models: SupportedModelsObj
-  llmProviders: LLMProvider[]
+  llmProviders: AllLLMProviders
   selectedModel: OpenAIModel | null
   folders: FolderInterface[]
   conversations: Conversation[]
@@ -54,7 +54,7 @@ export const initialState: HomeInitialState = {
   messageIsStreaming: false,
   modelError: null,
   // models: {},
-  llmProviders: [] as LLMProvider[],
+  llmProviders: {} as AllLLMProviders,
   selectedModel: null,
   folders: [],
   conversations: [],
