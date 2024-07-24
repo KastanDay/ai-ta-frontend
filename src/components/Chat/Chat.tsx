@@ -1323,7 +1323,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   Chat.displayName = 'Chat'
 })
 
-function errorToast({ title, message }: { title: string; message: string }) {
+export function errorToast({ title, message }: { title: string; message: string }) {
   notifications.show({
     id: 'error-notification-reused',
     withCloseButton: true,

@@ -144,8 +144,8 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
   const allModels = [
     ...(models.OpenAI || []).map((model) => ({ ...model, provider: ProviderNames.OpenAI, group: 'OpenAI' })),
     ...(models.Ollama || []).map((model) => ({ ...model, provider: ProviderNames.Ollama, group: 'Ollama' })),
-    ...(models.WebLLM || []).map((model) => ({ ...model, provider: ProviderNames.WebLLM, group: 'WebLLM' })),
     ...(models.Anthropic || []).map((model) => ({ ...model, provider: ProviderNames.Anthropic, group: 'Anthropic' })),
+    ...(models.WebLLM || []).map((model) => ({ ...model, provider: ProviderNames.WebLLM, group: 'Local in Browser LLMs' })),
   ];
   const selectedModel = allModels.find((model) => model.id === value);
 
@@ -177,8 +177,10 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
             modelId: model.id,
             selectedModelId: value,
             modelType: model.provider,
+            group: model.group,
           }))}
           itemComponent={ModelItem}
+          maxDropdownHeight={500}
           icon={selectedModel ? (
             <Image
               src={getModelLogo(selectedModel.provider)}
@@ -202,7 +204,7 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
               border: 'none',
               color: theme.white,
               borderRadius: theme.radius.md,
-              width: '22rem',
+              width: '24rem',
               [`@media (max-width: 960px)`]: {
                 width: '17rem', // Smaller width for small screens
               },
