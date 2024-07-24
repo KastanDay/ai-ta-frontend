@@ -87,9 +87,11 @@ export async function POST(req: Request) {
     conversationToMessages(conversation)
 
   // Add system message
+  const globalToolsSytemPromptPrefix =
+    "Don't make assumptions about what values to plug into functions. Ask for clarification if a user request is ambiguous. If you have ideas for suitable defaults, suggest that as an option to the user when asking for clarification.\n"
   message_to_send.unshift({
     role: 'system',
-    content: conversation.prompt,
+    content: globalToolsSytemPromptPrefix + conversation.prompt,
   })
 
   // MAKE USE OF IMAGE DESCRIPTION AND IMAGE URLS when selecting tools.

@@ -154,6 +154,7 @@ export function ProjectFilesTable({
     error: documentsError,
     refetch: refetchDocuments,
   } = useQuery({
+    refetchInterval: 10_000,
     queryKey: [
       'documents',
       course_name,
@@ -186,6 +187,7 @@ export function ProjectFilesTable({
     isError: isErrorFailedDocuments,
     error: failedDocumentsError,
   } = useQuery({
+    refetchInterval: 10_000,
     queryKey: [
       'failedDocuments',
       course_name,

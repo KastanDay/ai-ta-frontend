@@ -36,6 +36,7 @@ const config = {
   //   defaultLocale: 'en',
   // },
   images: {
+    unoptimized: true,
     domains: [
       'images.unsplash.com',
       'github.com',

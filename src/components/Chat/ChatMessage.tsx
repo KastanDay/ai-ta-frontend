@@ -417,8 +417,8 @@ export const ChatMessage: FC<Props> = memo(
           }
         } else {
           // For non-S3 URLs, perform a simple fetch to check availability
-          const response = await fetch(url, { method: 'HEAD' })
-          return response.ok // true if status code is 200-299
+          const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' })
+          return response.type === 'opaque' // true if the fetch was successful, even though the response is opaque
         }
       } catch (error) {
         console.error('Failed to validate URL', url, error)
@@ -493,11 +493,10 @@ export const ChatMessage: FC<Props> = memo(
 
     return (
       <div
-        className={`group md:px-6 ${
-          message.role === 'assistant'
+        className={`group md:px-6 ${message.role === 'assistant'
             ? 'border-b border-black/10 bg-gray-50/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#202134] dark:text-gray-100'
             : 'border-b border-black/10 bg-white/50 text-gray-800 dark:border-[rgba(42,42,120,0.50)] dark:bg-[#15162B] dark:text-gray-100'
-        } max-w-[100%]`}
+          } max-w-[100%]`}
         style={{ overflowWrap: 'anywhere' }}
       >
         <div className="relative flex w-full px-2 py-4 text-base md:mx-[10%] md:max-w-[80%] md:gap-6 md:p-6 lg:mx-[15%] lg:max-w-[70%] lg:px-0">
@@ -512,7 +511,7 @@ export const ChatMessage: FC<Props> = memo(
             )}
           </div>
 
-          <div className="dark:prose-invert prose mt-[-2px] flex w-full">
+          <div className="dark:prose-invert prose mt-[-2px] flex w-full max-w-full">
             {message.role === 'user' ? (
               <div className="flex w-full flex-row">
                 {isEditing ? (
@@ -604,13 +603,13 @@ export const ChatMessage: FC<Props> = memo(
                           {isImg2TextLoading &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                                1 ||
+                              1 ||
                               messageIndex ===
-                                (selectedConversation?.messages.length ?? 0) -
-                                  2) && (
+                              (selectedConversation?.messages.length ?? 0) -
+                              2) && (
                               <IntermediateStateAccordion
                                 accordionKey="imageDescription"
-                                title="Image Description:"
+                                title="Image Description"
                                 isLoading={isImg2TextLoading}
                                 error={false}
                                 content={
@@ -633,31 +632,31 @@ export const ChatMessage: FC<Props> = memo(
                                 ?.trim()
                                 .startsWith('Image description:'),
                           ) && (
-                            <IntermediateStateAccordion
-                              accordionKey="imageDescription"
-                              title="Image Description:"
-                              isLoading={false}
-                              error={false}
-                              content={
-                                message.content.find(
-                                  (content) =>
-                                    content.type === 'text' &&
-                                    content.text
-                                      ?.trim()
-                                      .startsWith('Image description:'),
-                                )?.text ?? 'No image description found'
-                              }
-                            />
-                          )}
+                              <IntermediateStateAccordion
+                                accordionKey="imageDescription"
+                                title="Image Description"
+                                isLoading={false}
+                                error={false}
+                                content={
+                                  message.content.find(
+                                    (content) =>
+                                      content.type === 'text' &&
+                                      content.text
+                                        ?.trim()
+                                        .startsWith('Image description:'),
+                                  )?.text ?? 'No image description found'
+                                }
+                              />
+                            )}
 
                           {/* Retrieval results for all messages */}
                           {message.contexts && message.contexts.length > 0 && (
                             <IntermediateStateAccordion
                               accordionKey="retrieval loading"
-                              title="Retrieving relevant documents:"
+                              title="Retrieved documents"
                               isLoading={false}
                               error={false}
-                              content={`Found ${message.contexts?.length} relevant documents!`}
+                              content={`Found ${message.contexts?.length} document chunks.`}
                             />
                           )}
 
@@ -665,16 +664,16 @@ export const ChatMessage: FC<Props> = memo(
                           {isRetrievalLoading &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                                1 ||
+                              1 ||
                               messageIndex ===
-                                (selectedConversation?.messages.length ?? 0) -
-                                  2) && (
+                              (selectedConversation?.messages.length ?? 0) -
+                              2) && (
                               <IntermediateStateAccordion
                                 accordionKey="retrieval loading"
-                                title="Retrieving relevant documents:"
+                                title="Retrieving documents"
                                 isLoading={isRetrievalLoading}
                                 error={false}
-                                content={`Found ${message.contexts?.length} relevant documents!`}
+                                content={`Found ${message.contexts?.length} document chunks.`}
                               />
                             )}
 
@@ -682,10 +681,10 @@ export const ChatMessage: FC<Props> = memo(
                           {isRouting &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                                1 ||
+                              1 ||
                               messageIndex ===
-                                (selectedConversation?.messages.length ?? 0) -
-                                  2) && (
+                              (selectedConversation?.messages.length ?? 0) -
+                              2) && (
                               <IntermediateStateAccordion
                                 accordionKey={`routing tools`}
                                 title={'Routing the request to relevant tools'}
@@ -700,10 +699,10 @@ export const ChatMessage: FC<Props> = memo(
                             message.tools &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                                1 ||
+                              1 ||
                               messageIndex ===
-                                (selectedConversation?.messages.length ?? 0) -
-                                  2) && (
+                              (selectedConversation?.messages.length ?? 0) -
+                              2) && (
                               <>
                                 {message.tools.map((response, index) => (
                                   <IntermediateStateAccordion
@@ -787,82 +786,82 @@ export const ChatMessage: FC<Props> = memo(
                           {(messageIndex ===
                             (selectedConversation?.messages.length ?? 0) - 1 ||
                             messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                                2) && (
-                            <>
-                              {message.tools?.map((response, index) => (
-                                <IntermediateStateAccordion
-                                  key={`tool-${index}`}
-                                  accordionKey={`tool-${index}`}
-                                  title={
-                                    <>
-                                      Tool output from{' '}
-                                      <Badge
-                                        color={response.error ? 'red' : 'grape'}
-                                        radius="md"
-                                        size="sm"
-                                      >
-                                        {response.readableName}
-                                      </Badge>
-                                    </>
-                                  }
-                                  isLoading={
-                                    response.output === undefined &&
-                                    response.error === undefined
-                                  }
-                                  error={response.error ? true : false}
-                                  content={
-                                    <>
-                                      {response.error ? (
-                                        <span>{response.error}</span>
-                                      ) : (
-                                        <>
-                                          <div
-                                            style={{
-                                              display: 'flex',
-                                              overflowX: 'auto',
-                                              gap: '10px',
-                                            }}
-                                          >
-                                            {response.output?.imageUrls &&
-                                              response.output?.imageUrls.map(
-                                                (imageUrl, index) => (
-                                                  <div
-                                                    key={index}
-                                                    className={
-                                                      classes.imageContainerStyle
-                                                    }
-                                                  >
-                                                    <div className="overflow-hidden rounded-lg shadow-lg">
-                                                      <ImagePreview
-                                                        src={imageUrl}
-                                                        alt={`Tool output image ${index}`}
-                                                        className={
-                                                          classes.imageStyle
-                                                        }
-                                                      />
+                            (selectedConversation?.messages.length ?? 0) -
+                            2) && (
+                              <>
+                                {message.tools?.map((response, index) => (
+                                  <IntermediateStateAccordion
+                                    key={`tool-${index}`}
+                                    accordionKey={`tool-${index}`}
+                                    title={
+                                      <>
+                                        Tool output from{' '}
+                                        <Badge
+                                          color={response.error ? 'red' : 'grape'}
+                                          radius="md"
+                                          size="sm"
+                                        >
+                                          {response.readableName}
+                                        </Badge>
+                                      </>
+                                    }
+                                    isLoading={
+                                      response.output === undefined &&
+                                      response.error === undefined
+                                    }
+                                    error={response.error ? true : false}
+                                    content={
+                                      <>
+                                        {response.error ? (
+                                          <span>{response.error}</span>
+                                        ) : (
+                                          <>
+                                            <div
+                                              style={{
+                                                display: 'flex',
+                                                overflowX: 'auto',
+                                                gap: '10px',
+                                              }}
+                                            >
+                                              {response.output?.imageUrls &&
+                                                response.output?.imageUrls.map(
+                                                  (imageUrl, index) => (
+                                                    <div
+                                                      key={index}
+                                                      className={
+                                                        classes.imageContainerStyle
+                                                      }
+                                                    >
+                                                      <div className="overflow-hidden rounded-lg shadow-lg">
+                                                        <ImagePreview
+                                                          src={imageUrl}
+                                                          alt={`Tool output image ${index}`}
+                                                          className={
+                                                            classes.imageStyle
+                                                          }
+                                                        />
+                                                      </div>
                                                     </div>
-                                                  </div>
-                                                ),
-                                              )}
-                                          </div>
-                                          <div>
-                                            {response.output?.text
-                                              ? response.output.text
-                                              : JSON.stringify(
+                                                  ),
+                                                )}
+                                            </div>
+                                            <div>
+                                              {response.output?.text
+                                                ? response.output.text
+                                                : JSON.stringify(
                                                   response.output?.data,
                                                   null,
                                                   2,
                                                 )}
-                                          </div>
-                                        </>
-                                      )}
-                                    </>
-                                  }
-                                />
-                              ))}
-                            </>
-                          )}
+                                            </div>
+                                          </>
+                                        )}
+                                      </>
+                                    }
+                                  />
+                                ))}
+                              </>
+                            )}
                           {(() => {
                             if (
                               messageIsStreaming === undefined ||
@@ -889,10 +888,10 @@ export const ChatMessage: FC<Props> = memo(
                             loading &&
                             (messageIndex ===
                               (selectedConversation?.messages.length ?? 0) -
-                                1 ||
+                              1 ||
                               messageIndex ===
-                                (selectedConversation?.messages.length ?? 0) -
-                                  2) &&
+                              (selectedConversation?.messages.length ?? 0) -
+                              2) &&
                             message.tools?.every(
                               (tool) =>
                                 tool.output !== undefined ||
@@ -930,8 +929,8 @@ export const ChatMessage: FC<Props> = memo(
                           (messageIndex ===
                             (selectedConversation?.messages.length ?? 0) - 1 ||
                             messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) -
-                                2) && (
+                            (selectedConversation?.messages.length ?? 0) -
+                            2) && (
                             <div
                               style={{ display: 'flex', alignItems: 'center' }}
                             >
@@ -972,7 +971,7 @@ export const ChatMessage: FC<Props> = memo(
                 )}
               </div>
             ) : (
-              <div className="flex flex-row ">
+              <div className="flex max-w-[90%] flex-row overflow-hidden">
                 <div className="w-full max-w-full flex-1 overflow-hidden">
                   <MemoizedReactMarkdown
                     className={`dark:prose-invert linkMarkDown supMarkdown codeBlock prose flex-1`}
@@ -1172,13 +1171,12 @@ export const ChatMessage: FC<Props> = memo(
                       },
                     }}
                   >
-                    {`${message.content}${
-                      messageIsStreaming &&
-                      messageIndex ==
+                    {`${message.content}${messageIsStreaming &&
+                        messageIndex ==
                         (selectedConversation?.messages.length ?? 0) - 1
                         ? '`▍`'
                         : ''
-                    }`}
+                      }`}
                   </MemoizedReactMarkdown>
                   {/* {message.contexts && message.contexts.length > 0 && (
                     <Group variant="row" spacing="xs">

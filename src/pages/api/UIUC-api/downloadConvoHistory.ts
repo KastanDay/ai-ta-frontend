@@ -36,7 +36,7 @@ export const downloadConversationHistory = async (
       const url = window.URL.createObjectURL(new Blob([response.data]))
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', courseName + '_conversation_history.zip')
+      link.setAttribute('download', courseName.substring(0, 10) + '-convos.zip')
       document.body.appendChild(link)
       link.click()
       return { message: 'Downloading now, check your downloads.' }

@@ -1,68 +1,71 @@
-import { NextApiRequest } from 'next'
-import { NextResponse } from 'next/server'
+import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase } from '~/utils/supabaseClient'
-import posthog from 'posthog-js'
-
-export const config = {
-  runtime: 'edge',
-}
 
 // The beam function handles sending to Success and Failure cases. We just handle removing from in-progress.
-const handler = async (req: NextApiRequest) => {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     if (req.method !== 'POST') {
       console.error('Request method not allowed')
-      return NextResponse.json(
-        { error: '❌❌ Request method not allowed' },
-        { status: 405 },
-      )
+      return res.status(405).json({ error: '❌❌ Request method not allowed' })
+    }
+    let data
+    try {
+      data = JSON.parse(req.body)
+    } catch (error) {
+      console.error('Error parsing JSON:', error)
+      return res.status(400).json({ error: 'Invalid JSON' })
     }
 
-    // Assuming the body is a ReadableStream, we need to read it correctly.
-    // First, we convert the stream into a Response object, then use .json() to parse it.
-    const datastr = await new Response(req.body).json()
-    const data = JSON.parse(datastr)
     // Data:  {
     //   success_ingest: 'courses/t/8885632f-b519-4610-b888-744aa4c2066d-6.pdf',
     //   failure_ingest: null
     // }
+    // OR:
+    // Data: { error: 'Task timed out' }
 
-    let s3_path_completed = ''
+    // beam-task-status is SUCCESS (but ingest could have still failed)
     if (data.success_ingest) {
-      console.log('IN SUCCESS INGEST ___:', data.success_ingest)
-      s3_path_completed = data.success_ingest
-    }
-    if (data.failure_ingest) {
-      s3_path_completed = data.failure_ingest.s3_path
-    }
-
-    // Remove from in progress
-    if (s3_path_completed) {
-      const { error } = await supabase
+      console.debug('Ingest was SUCCESSFUL:', data)
+      const { data: record, error: delErr } = await supabase
         .from('documents_in_progress')
         .delete()
-        .eq('s3_path', s3_path_completed)
-
-      console.log('Deleted from documents_in_progress: ', data.success_ingest)
-      if (error) {
-        console.error(
-          '❌❌ Supabase failed to delete from `documents_in_progress`:',
-          error,
-        )
-        posthog.capture('supabase_failure_delete_documents_in_progress', {
-          s3_path: s3_path_completed,
-          error: error.message,
-        })
-      }
-    } else {
-      console.error(`No success/failure ingest in Beam callback data: ${data}}`)
+        .eq('beam_task_id', req.headers['beam-task-id'])
     }
+    // If failure_ingest or Beam task is FAILED or TIMEOUT
+    // assume failures if success is not explicity defined (above)
+    else {
+      //  if (
+      //   data.failure_ingest ||
+      //   req.headers['x-beam-task-status'] === 'FAILED' ||
+      //   req.headers['x-beam-task-status'] === 'TIMEOUT'
+      // )
+      console.log('Ingest Task failed or timed out. Data:', data)
+      // Remove from in progress, add to failed
+      const { data: record, error: delErr } = await supabase
+        .from('documents_in_progress')
+        .delete()
+        .eq('beam_task_id', req.headers['beam-task-id'])
+        .select()
+      // remove a few fields from record, the beam_task_id is not needed
+      delete record![0].beam_task_id
+      delete record![0].created_at
 
-    return NextResponse.json({ message: 'Success' }, { status: 200 })
+      // Add error message, either specific one or "timeout" from Beam body.
+      record![0].error = data.failure_ingest.error || req.body.error
+
+      await supabase.from('documents_failed').insert(record![0])
+
+      return res.status(200).json({ message: 'Success' })
+    }
+    // else {
+    //   console.error(`No success/failure ingest in Beam callback data: ${data}`)
+    // }
+
+    return res.status(200).json({ message: 'Success' })
   } catch (error) {
     const err = `❌❌ -- Bottom of /ingestTaskCallback -- Internal Server Error during callback from Beam task completion: ${error}`
     console.error(err)
-    return NextResponse.json({ error: err }, { status: 500 })
+    return res.status(200).json({ error: err })
   }
 }
 export default handler

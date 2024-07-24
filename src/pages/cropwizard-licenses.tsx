@@ -109,7 +109,7 @@ export const CropwizardLicenseDisclaimer = () => {
     <>
       <span>
         <p>
-          CropWizard&apos;s document corpus is{' '}
+          CropWizard&apos;s document corpus is subject to{' '}
           <Link
             className="text-purple-600 hover:text-purple-800 active:text-purple-500"
             href="/cropwizard-licenses"
@@ -117,8 +117,39 @@ export const CropwizardLicenseDisclaimer = () => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            subject to licenses.
+            licenses
           </Link>
+          . Usage is subject to{' '}
+          <Link
+            className="text-purple-600 hover:text-purple-800 active:text-purple-500"
+            href="https://www.vpaa.uillinois.edu/resources/terms_of_use"
+            style={{ transition: 'color 0.2s' }}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            terms
+          </Link>
+          , a{' '}
+          <Link
+            className="text-purple-600 hover:text-purple-800 active:text-purple-500"
+            href="https://www.vpaa.uillinois.edu/resources/web_privacy"
+            style={{ transition: 'color 0.2s' }}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            privacy policy
+          </Link>
+          , and{' '}
+          <Link
+            className="text-purple-600 hover:text-purple-800 active:text-purple-500"
+            href="https://www.vpaa.uillinois.edu/digital_risk_management/generative_ai/"
+            style={{ transition: 'color 0.2s' }}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            generative AI policy
+          </Link>
+          . Sorry, the legal team made us say that.
         </p>
       </span>
       <br></br>

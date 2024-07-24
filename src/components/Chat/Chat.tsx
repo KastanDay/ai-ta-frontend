@@ -69,7 +69,6 @@ import handleTools, {
   useFetchAllWorkflows,
 } from '~/utils/functionCalling/handleFunctionCalling'
 import { useFetchEnabledDocGroups } from '~/hooks/docGroupsQueries'
-import Link from 'next/link'
 import { CropwizardLicenseDisclaimer } from '~/pages/cropwizard-licenses'
 import Head from 'next/head'
 import ChatUI, { webLLMModels } from '~/utils/modelProviders/WebLLM'
@@ -81,7 +80,6 @@ import {
 } from '~/utils/modelProviders/ConfigWebLLM'
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import home from '~/pages/api/home'
-import { useChat } from 'ai/react'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -143,7 +141,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     state: {
       selectedConversation,
       conversations,
-      models,
       apiKey,
       pluginKeys,
       serverSideApiKeyIsSet,
@@ -361,12 +358,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ;(message.content as Content[])[imgDescIndex] = {
+          ; (message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ;(message.content as Content[]).push({
+          ; (message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -445,6 +442,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           // Remove tools from message to clear old tools
           message.tools = []
           message.contexts = []
+          message.content = Array.isArray(message.content)
+            ? message.content.filter(
+              (content) => content.type !== 'tool_image_url',
+            )
+            : message.content
 
           const updatedMessages = [...selectedConversation.messages]
           for (let i = 0; i < deleteCount; i++) {
@@ -907,7 +909,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
       handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
@@ -1000,13 +1002,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-    courseMetadata.example_questions.length > 0
+      courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-          'Make a bullet point list of key takeaways from this project.',
-          'What are the best practices for [Activity or Process] in [Context or Field]?',
-          'Can you explain the concept of [Specific Concept] in simple terms?',
-        ]
+        'Make a bullet point list of key takeaways from this project.',
+        'What are the best practices for [Activity or Process] in [Context or Field]?',
+        'Can you explain the concept of [Specific Concept] in simple terms?',
+      ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
@@ -1140,7 +1142,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         <div className="justify-center" style={{ height: '40px' }}>
           <ChatNavbar bannerUrl={bannerUrl as string} isgpt4={true} />
         </div>
-        <div className="mt-10 flex-grow overflow-auto">
+        <div className="mt-10 max-w-full flex-grow overflow-y-auto overflow-x-hidden">
           {!(apiKey || serverSideApiKeyIsSet) ? (
             <div className="absolute inset-0 mt-20 flex flex-col items-center justify-center">
               <div className="backdrop-filter-[blur(10px)] rounded-box mx-auto max-w-4xl flex-col items-center border border-2 border-[rgba(255,165,0,0.8)] bg-[rgba(42,42,64,0.3)] p-10 text-2xl font-bold text-black dark:text-white">
