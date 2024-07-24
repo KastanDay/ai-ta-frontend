@@ -1,6 +1,8 @@
 // import { OPENAI_API_TYPE } from '../utils/app/const'
 
-import { SupportedModelsObj } from '~/pages/api/models'
+import { AllLLMProviders } from './LLMProvider'
+
+// import { SupportedModelsObj } from '~/pages/api/models'
 
 export interface OpenAIModel {
   id: string
@@ -21,23 +23,26 @@ export const preferredModelIds = [
   'gpt-3.5-turbo',
 ]
 
-
-export const selectBestModel = (models: SupportedModelsObj): OpenAIModel => {
+export const selectBestModel = (
+  allLLMProviders: AllLLMProviders,
+): OpenAIModel => {
+  // TODO: fix
   const defaultModelId = OpenAIModelID.GPT_4o
-  if (!models || !models.OpenAI) {
-    return OpenAIModels[defaultModelId]
-  }
+  return OpenAIModels[defaultModelId]
+  // if (!models || !models.OpenAI) {
+  //   return OpenAIModels[defaultModelId]
+  // }
 
-  // Find and return the first available preferred model
-  for (const preferredId of preferredModelIds) {
-    const model = models.OpenAI.find((m) => m.id === preferredId)
-    if (model) {
-      return model
-    }
-  }
+  // // Find and return the first available preferred model
+  // for (const preferredId of preferredModelIds) {
+  //   const model = models.OpenAI.find((m) => m.id === preferredId)
+  //   if (model) {
+  //     return model
+  //   }
+  // }
 
-  // Fallback to the first model in the list or the default model
-  return models.OpenAI[0] || OpenAIModels[defaultModelId]
+  // // Fallback to the first model in the list or the default model
+  // return models.OpenAI[0] || OpenAIModels[defaultModelId]
 }
 
 export enum OpenAIModelID {

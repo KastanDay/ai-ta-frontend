@@ -8,7 +8,7 @@ import {
 
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
 import { decrypt, isEncrypted } from '~/utils/crypto'
-import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
+import { AzureProvider, LLMProvider, ProviderNames } from '~/types/LLMProvider'
 import { getOllamaModels, runOllamaChat } from '~/utils/modelProviders/ollama'
 //import { VercelAISDK } from 'vercel-ai-sdk'
 
@@ -42,27 +42,27 @@ export async function runAzure(
 }
 
 export const getAzureModels = async (
-  AzureProvider: LLMProvider,
-): Promise<LLMProvider> => {
+  azureProvider: AzureProvider,
+): Promise<AzureProvider> => {
   try {
-    if (!AzureProvider.AzureEndpoint || !AzureProvider.AzureDeployment) {
+    if (!azureProvider.AzureEndpoint || !azureProvider.AzureDeployment) {
       // TODO move away from env vars
-      AzureProvider.error = `Azure OpenAI endpoint or deployment is not set. Endpoint: ${AzureProvider.AzureEndpoint}, Deployment: ${AzureProvider.AzureDeployment}`
-      return AzureProvider
+      azureProvider.error = `Azure OpenAI endpoint or deployment is not set. Endpoint: ${azureProvider.AzureEndpoint}, Deployment: ${azureProvider.AzureDeployment}`
+      return azureProvider
     }
 
-    const url = `${AzureProvider.AzureEndpoint}/openai/models?api-version=2024-02-01`
+    const url = `${azureProvider.AzureEndpoint}/openai/models?api-version=2024-02-01`
 
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
-        'api-key': AzureProvider.apiKey!,
+        'api-key': azureProvider.apiKey!,
       },
     })
 
     if (!response.ok) {
-      AzureProvider.error = `Azure OpenAI failed to fetch models. HTTP error, status: ${response.status}`
-      return AzureProvider
+      azureProvider.error = `Azure OpenAI failed to fetch models. HTTP error, status: ${response.status}`
+      return azureProvider
       throw new Error(``)
     }
 
@@ -77,10 +77,10 @@ export const getAzureModels = async (
       } as AzureModel
     })
     console.log('Azure OpenAI models:', azureModels)
-    AzureProvider.models = azureModels
-    return AzureProvider
+    azureProvider.models = azureModels
+    return azureProvider
   } catch (error: any) {
-    AzureProvider.error = error.message
-    return AzureProvider
+    azureProvider.error = error.message
+    return azureProvider
   }
 }
