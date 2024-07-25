@@ -253,8 +253,7 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
 
   // Build the prompt
   const buildPromptResponse = await buildPrompt({
-    conversation: chatBody.conversation,
-    rawOpenaiKey: chatBody.key,
+    conversation: chatBody.conversation!,
     projectName: chatBody.course_name,
     courseMetadata: chatBody.courseMetadata,
   })

@@ -67,7 +67,7 @@ export const runAnthropicChat = async (
         content: `Hey Claude! How can I recursively list all files in a directory in Rust?`,
       },
     ],
-    model: anthropicProvider.AnthropicModel!,
+    model: anthropicProvider.models![0]!.id, // hard-coded for now.
     max_tokens: 4096, // output tokens. Might increase to 8192 soon. https://docs.anthropic.com/en/docs/about-claude/models
   })
 

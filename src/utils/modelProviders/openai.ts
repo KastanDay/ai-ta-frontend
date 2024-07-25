@@ -1,7 +1,7 @@
 import { kv } from '@vercel/kv'
 import { CourseMetadata } from '~/types/courseMetadata'
-import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
-import { LLMProvider, OpenAIProvider, ProviderNames } from '~/types/LLMProvider'
+import { OpenAIModelID, OpenAIModels } from '@/types/openai'
+import { LLMProvider, OpenAIProvider } from '~/types/LLMProvider'
 import { OpenAI } from 'openai'
 
 export const config = {
@@ -25,7 +25,7 @@ const openAINames = new Map([
 export const getOpenAIModels = async (
   openAIProvider: OpenAIProvider,
   projectName: string,
-): Promise<LLMProvider> => {
+): Promise<OpenAIProvider> => {
   const client = new OpenAI({
     apiKey: openAIProvider.apiKey,
   })
@@ -43,15 +43,14 @@ export const getOpenAIModels = async (
     const openAIModels = response.data
       .filter((model: any) => !disabledModels.includes(model.id))
       .filter((model: any) => Object.values(OpenAIModelID).includes(model.id))
-
       .map((model: any) => {
         return {
           id: model.id,
           name: OpenAIModels[model.id as OpenAIModelID].name,
-          tokenLimit: OpenAIModels[model.id as OpenAIModelID].name,
+          tokenLimit: OpenAIModels[model.id as OpenAIModelID].tokenLimit,
         }
       })
-    // @ts-ignore idk why this is broken
+
     openAIProvider.models = openAIModels
     return openAIProvider
   } catch (error: any) {

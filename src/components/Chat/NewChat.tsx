@@ -213,7 +213,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     state: {
       selectedConversation,
       conversations,
-      models,
       apiKey,
       pluginKeys,
       serverSideApiKeyIsSet,

@@ -20,8 +20,8 @@ export type SupportedModels =
 export interface GenericSupportedModel {
   id: string
   name: string
-  parameterSize?: string
   tokenLimit: number
+  parameterSize?: string
 }
 
 export interface BaseLLMProvider {
@@ -49,7 +49,6 @@ export interface AzureProvider extends BaseLLMProvider {
 
 export interface AnthropicProvider extends BaseLLMProvider {
   provider: ProviderNames.Anthropic
-  AnthropicModel?: string
 }
 
 export interface WebLLMProvider extends BaseLLMProvider {
