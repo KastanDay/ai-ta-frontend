@@ -47,7 +47,7 @@ import { type CourseMetadata } from '~/types/courseMetadata'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
-import { SupportedModelsObj } from '../models'
+// import { SupportedModelsObj } from '../models'
 
 const Home = () => {
   const { t } = useTranslation('chat')
@@ -70,7 +70,7 @@ const Home = () => {
       selectedConversation,
       prompts,
       temperature,
-      models,
+      llmProviders,
       documentGroups,
       tools,
     },
@@ -91,7 +91,7 @@ const Home = () => {
 
   useEffect(() => {
     // Set model after we fetch available models
-    const model = selectBestModel(models)
+    const model = selectBestModel(llmProviders)
 
     dispatch({
       field: 'defaultModelId',
@@ -107,7 +107,7 @@ const Home = () => {
         value: convo_with_valid_model,
       })
     }
-  }, [models])
+  }, [llmProviders])
 
   useEffect(() => {
     if (!course_name && curr_route_path != '/gpt4') return
@@ -216,11 +216,12 @@ const Home = () => {
         if (!course_metadata || !key) return
 
         console.log('Course name when fetching modes: ', course_name)
-        const data = await getModels({ projectName: course_name })
+        const models = await getModels({ projectName: course_name })
 
-        const models = data as unknown as SupportedModelsObj
+        // const models = data as unknown as SupportedModelsObj
+        // const models = data
         console.log('Models from getModels: ', models)
-        dispatch({ field: 'models', value: models })
+        dispatch({ field: 'llmProviders', value: models })
 
         console.log(
           'course_metadata.disabled_models: ',
@@ -319,7 +320,7 @@ const Home = () => {
     const lastConversation = conversations[conversations.length - 1]
 
     // Determine the model to use for the new conversation
-    const model = selectBestModel(models)
+    const model = selectBestModel(llmProviders)
 
     const newConversation: Conversation = {
       id: uuidv4(),
@@ -568,9 +569,9 @@ const Home = () => {
       })
     } else {
       const lastConversation = conversations[conversations.length - 1]
-      console.debug('Models available: ', models)
+      console.debug('Models available: ', llmProviders)
       // let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
-      const bestModel = selectBestModel(models)
+      const bestModel = selectBestModel(llmProviders)
       // if (!defaultModel) {
       //   defaultModel = OpenAIModels['gpt-4']
       // }
@@ -589,7 +590,7 @@ const Home = () => {
       })
     }
     setIsInitialSetupDone(true)
-  }, [dispatch, models, conversations, isInitialSetupDone]) // ! serverSidePluginKeysSet, removed
+  }, [dispatch, llmProviders, conversations, isInitialSetupDone]) // ! serverSidePluginKeysSet, removed
   // }, [defaultModelId, dispatch, serverSidePluginKeysSet, models, conversations]) // original!
 
   if (isLoading) {

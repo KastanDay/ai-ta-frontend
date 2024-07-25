@@ -86,9 +86,9 @@ export const UserSettings = () => {
           ) {
             modelCached.push(model)
           }
-          console.log('model is cached:', model.name)
+          // console.log('model is cached:', model.name)
         }
-        console.log('hasModelInCache: ', modelCached)
+        // console.log('hasModelInCache: ', modelCached)
       }
     }
   }

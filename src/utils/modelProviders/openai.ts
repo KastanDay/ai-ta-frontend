@@ -40,33 +40,18 @@ export const getOpenAIModels = async (
     const disabledModels = await getDisabledOpenAIModels({ projectName })
 
     // Iterate through the models
-    // TODO double check this works: filter out disabled models
     const openAIModels = response.data
-      .filter((model: any) => !disabledModels.includes(model.id)) // Exclude disabled models
-      .filter((model) =>
-        [
-          'gpt-3.5-turbo-0125',
-          'gpt-4-0613',
-          'gpt-4-turbo-2024-04-09',
-          'gpt-4o-2024-05-13',
-        ].includes(model.id),
-      )
+      .filter((model: any) => !disabledModels.includes(model.id))
+      .filter((model: any) => Object.values(OpenAIModelID).includes(model.id))
+
       .map((model: any) => {
-        const value = tokenLimMAp.get(model.id)
-        if (value === undefined) {
-          throw new Error('model token limit not found for model id', model.id)
-        }
-        console.log('model.id', model.id)
-        const newName = openAINames.get(model.id)
-        console.log('newName', newName)
         return {
           id: model.id,
-          name: newName? newName:model.id, // Assuming model.id can be used as the name
-          tokenLimit: tokenLimMAp.get(model.id) || 4096, // TODO: hard code.
-
+          name: OpenAIModels[model.id as OpenAIModelID].name,
+          tokenLimit: OpenAIModels[model.id as OpenAIModelID].name,
         }
       })
-
+    // @ts-ignore idk why this is broken
     openAIProvider.models = openAIModels
     return openAIProvider
   } catch (error: any) {

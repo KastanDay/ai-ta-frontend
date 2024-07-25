@@ -13,11 +13,11 @@ import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Group, Input, Select, Title, Text } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
-import { OpenAIModel, OpenAIModels, preferredModelIds } from '~/types/openai'
+import { OpenAIModel, OpenAIModels, preferredModelIds, selectBestModel } from '~/types/openai'
 import { webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { modelCached } from './UserSettings'
 import Image from 'next/image'
-import { ProviderNames } from '~/types/LLMProvider'
+import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
 import { SelectItemProps } from '@mantine/core';
 
 const ValueComponent = ({ value, label, modelType }: SelectItemProps & { modelType: string }) => (
@@ -255,29 +255,29 @@ const findProvider = (modelId: string, models: any) => {
 export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
   (props, ref) => {
     const {
-      state: { selectedConversation, models, defaultModelId },
+      state: { selectedConversation, llmProviders, defaultModelId },
       handleUpdateConversation,
     } = useContext(HomeContext)
     const isSmallScreen = useMediaQuery('(max-width: 960px)')
-
-    console.log('Models in model select: ', models)
+    const defaultModel = selectBestModel(llmProviders).id
 
     const handleModelClick = (modelId: string) => {
       console.debug('handleModelClick clicked:', modelId)
-      console.debug('handleModelClick avail models: ', models)
+      console.debug('handleModelClick avail models: ', llmProviders)
 
-      const defaultModel =
-        models.OpenAI!.find(
-          (model) =>
-            model.id === 'gpt-4-from-canada-east' ||
-            model.id === 'gpt-40-2024-05-13',
-        ) || models[0]
+
+      const allModels = [
+        ...(llmProviders.OpenAI?.models || []),
+        ...(llmProviders.Ollama?.models || []),
+        ...(llmProviders.WebLLM?.models || []),
+        // ...(llmProviders.Anthropic?.models || [])
+      ];
 
       const model =
-        Object.keys(models).reduce((foundModel: any, key: any) => {
-          console.log('key:', key, 'models[key]:', models[key])
+        Object.keys(allModels).reduce((foundModel: any, key: any) => {
+          // console.log('key:', key, 'models[key]:', models[key])
           return (
-            foundModel || models[key]!.find((model) => model.id === modelId)
+            foundModel || allModels!.find((model) => model.id === modelId)
           )
         }, undefined) || defaultModel
       console.debug('handleModelClick SETTING IT TO: ', model)
@@ -288,7 +288,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
           value: model as OpenAIModel,
         })
     }
-    const selectedModelProvider = findProvider(selectedConversation?.model.id || defaultModelId!, models);
+    // const selectedModelProvider = findProvider(selectedConversation?.model.id || defaultModelId!, allModels);
 
     return (
       <div
@@ -302,14 +302,14 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               value={selectedConversation?.model.id || defaultModelId}
               onChange={handleModelClick}
               models={{
-                OpenAI: models.OpenAI,
-                Ollama: models.Ollama,
+                OpenAI: llmProviders.OpenAI?.models,
+                Ollama: llmProviders.Ollama?.models,
                 WebLLM: Object.values(webLLMModels).map((model) => ({
                   id: model.id,
                   name: model.name,
                   downloadSize: model.downloadSize,
                 })),
-                Anthropic: models.Anthropic,
+                // Anthropic: models.Anthropic,
               }}
               isSmallScreen={isSmallScreen}
             />
