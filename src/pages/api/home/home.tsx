@@ -209,26 +209,16 @@ const Home = () => {
       }
     }
 
-    // TODO: update to handle dictionary of models. Do toast popup for failures.
     const setOpenaiModel = async () => {
       // Get models available to users
       try {
         if (!course_metadata || !key) return
 
-        console.log('Course name when fetching modes: ', course_name)
-        const models = await getModels({ projectName: course_name })
-
-        // const models = data as unknown as SupportedModelsObj
-        // const models = data
-        console.log('Models from getModels: ', models)
+        const models = await getModels({
+          projectName: course_name,
+          OpenAIApiKey: key,
+        })
         dispatch({ field: 'llmProviders', value: models })
-
-        console.log(
-          'course_metadata.disabled_models: ',
-          course_metadata.disabled_models,
-        )
-
-        console.log('at end of setOpenaiModels func')
       } catch (error) {
         console.error('Error fetching models user has access to: ', error)
         dispatch({ field: 'modelError', value: getModelsError(error) })

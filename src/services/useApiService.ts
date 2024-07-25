@@ -4,6 +4,7 @@ import { useFetch } from '@/hooks/useFetch'
 
 export interface GetModelsRequestProps {
   projectName: string
+  OpenAIApiKey: string
 }
 
 const useApiService = () => {

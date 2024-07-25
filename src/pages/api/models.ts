@@ -1,29 +1,26 @@
-import {
-  AllLLMProviders,
-  LLMProvider,
-  ProviderNames,
-  SupportedModels,
-} from '~/types/LLMProvider'
-import {
-  getOllamaModels,
-  runOllamaChat,
-  ollamaStream,
-} from '~/utils/modelProviders/ollama'
+import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
+import { getOllamaModels } from '~/utils/modelProviders/ollama'
 import { getOpenAIModels } from '~/utils/modelProviders/openai'
 import { getAzureModels } from '~/utils/modelProviders/azure'
 import { getAnthropicModels } from '~/utils/modelProviders/anthropic'
-
 import { webLLMModels } from '~/utils/modelProviders/WebLLM'
-import { errorToast } from '~/components/Chat/Chat'
+import { parseOpenaiKey } from '~/utils/crypto'
 
 export const config = {
   runtime: 'edge',
 }
 const handler = async (req: Request): Promise<Response> => {
   try {
-    const { projectName } = (await req.json()) as {
+    const { projectName, OpenAIApiKey } = (await req.json()) as {
       projectName: string
+      OpenAIApiKey: string
     }
+
+    if (!projectName || !OpenAIApiKey) {
+      return new Response('Missing required fields', { status: 400 })
+    }
+    const apiKey = await parseOpenaiKey(OpenAIApiKey)
+
     // TODO: MOVE THESE TO DB INPUTS
     // const AzureProvider: LLMProvider = {
     //   provider: ProviderNames.Azure,
@@ -50,7 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
     const OpenAIProvider: LLMProvider = {
       provider: ProviderNames.OpenAI,
       enabled: true,
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: apiKey,
       // baseUrl: 'https://ollama.ncsa.ai/api/tags',
     }
 

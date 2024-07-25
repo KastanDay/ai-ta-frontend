@@ -774,7 +774,10 @@ const PrivateOrPublicCourse = ({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ key: apiKey }),
+        body: JSON.stringify({
+          OpenAIApiKey: apiKey,
+          projectName: course_name,
+        }),
       })
       if (res.ok) {
         const allAvailableModels = (await res.json()) as OpenAIModel[]
