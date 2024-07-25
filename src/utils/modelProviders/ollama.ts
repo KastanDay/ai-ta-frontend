@@ -1,6 +1,3 @@
-import { streamText } from 'ai'
-import { createOllama } from 'ollama-ai-provider'
-import { Ollama } from 'ollama'
 import { LLMProvider } from '~/types/LLMProvider'
 
 export interface OllamaModel {
@@ -11,90 +8,6 @@ export interface OllamaModel {
 }
 
 const ollamaNames = new Map([['llama3.1:70b', 'Llama 3.1 70b']])
-
-export const runOllamaChat = async (ollamaProvider: LLMProvider) => {
-  console.log('Running ollama chat')
-
-  const ollama = new Ollama({ host: ollamaProvider.baseUrl })
-
-  const messages = [{ role: 'user', content: 'Why is the sky blue?' }]
-  const response = await ollama.chat({
-    model: 'llama3:8b',
-    messages: messages,
-    stream: true,
-  })
-
-  const iterator = response[Symbol.asyncIterator]()
-  return iterator
-  // let result = await iterator.next()
-  // while (!result.done) {
-  //   console.log(result.value.message.content)
-  //   result = await iterator.next()
-  // }
-}
-
-// newest attempt at streaming
-export const ollamaStream = async (ollamaProvider: LLMProvider) => {
-  const ollama = createOllama({
-    baseURL: 'https://ollama.ncsa.ai/api',
-  })
-  const result = await streamText({
-    model: ollama('llama3.1:70b'),
-    onFinish({ finishReason, text, usage }) {
-      console.log()
-      console.log('onFinish')
-      console.log('Token usage:', usage)
-      console.log('Finish reason:', finishReason)
-      console.log('Text:', text)
-    },
-    prompt: 'Invent a new holiday and describe its traditions.',
-  })
-
-  for await (const textPart of result.textStream) {
-    console.log('OLLAMA TEXT PART:', textPart)
-  }
-}
-
-export const runOllamaChatVercelSDK = async () => {
-  console.log('In ollama runOllamaChat function')
-
-  const ollama = createOllama({
-    baseURL: 'https://ollama.ncsa.ai/api',
-  })
-
-  console.log('Right before calling fetch')
-
-  // This should work, but we're getting JSON Parse errors.
-  const result = await streamText({
-    maxTokens: 1024,
-    messages: [
-      {
-        content: 'Hello!',
-        role: 'user',
-      },
-      {
-        content: 'Hello! How can I help you today?',
-        role: 'assistant',
-      },
-      {
-        content: 'I need help with my computer.',
-        role: 'user',
-      },
-    ],
-    model: ollama('llama3'),
-    system: 'You are a helpful chatbot.',
-  })
-
-  console.log('after starting streamtext. Result:', result)
-
-  for await (const textPart of result.textStream) {
-    console.log('OLLAMA TEXT PART:', textPart)
-  }
-  return result
-
-  // TODO: Check out the server example for how to handle streaming responses
-  // https://sdk.vercel.ai/examples/next-app/chat/stream-chat-completion#server
-}
 
 export const getOllamaModels = async (
   ollamaProvider: LLMProvider,
@@ -131,3 +44,15 @@ export const getOllamaModels = async (
     return ollamaProvider
   }
 }
+
+// export const getOllamaModels = async (
+//   ollamaProvider: LLMProvider,
+// ): Promise<LLMProvider> => {
+
+//   const response = await fetch(`/api/chat/ollama?ollamaProvider=${encodeURIComponent(JSON.stringify(ollamaProvider))}`)
+//   if (!response.ok) {
+//     ollamaProvider.error = `HTTP error! status: ${response.status}, message: ${response.statusText}`
+//     return ollamaProvider
+//   }
+//   return await response.json()
+// }

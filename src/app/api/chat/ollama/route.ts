@@ -2,17 +2,15 @@ import { createOllama } from 'ollama-ai-provider'
 import { CoreMessage, StreamingTextResponse, streamText } from 'ai'
 import { Conversation } from '~/types/chat'
 import { OllamaProvider } from '~/types/LLMProvider'
+import { OllamaModel } from '~/utils/modelProviders/ollama'
 
-// export const runtime = 'edge'
+// export const runtime = 'edge' // Does NOT work
 export const dynamic = 'force-dynamic' // known bug with Vercel: https://sdk.vercel.ai/docs/troubleshooting/common-issues/streaming-not-working-on-vercel
-// import { unstable_noStore as noStore } from 'next/cache'
 
 export async function POST(req: Request) {
   /*
   Run Ollama chat, given a text string. Return a streaming response promise.
   */
-  console.log('In ollama chat streaming endpoint')
-  // noStore() // known bug with Vercel: https://sdk.vercel.ai/docs/troubleshooting/common-issues/streaming-not-working-on-vercel
   const {
     conversation,
     ollamaProvider,
@@ -23,10 +21,8 @@ export async function POST(req: Request) {
 
   const ollama = createOllama({
     baseURL: `${process.env.OLLAMA_SERVER_URL}/api`,
-    // baseURL: `${ollamaProvider.baseUrl}/api`,
+    // baseURL: `${ollamaProvider.baseUrl}/api`, // TODO use user-defiend base URL...
   })
-
-  console.log(`Ollama url: ${`${process.env.OLLAMA_SERVER_URL}/api`}`)
 
   const result = await streamText({
     model: ollama('llama3.1:70b'),
@@ -34,16 +30,13 @@ export async function POST(req: Request) {
     temperature: conversation.temperature,
     maxTokens: 4096, // output tokens
   })
+  return result.toTextStreamResponse()
 
-  console.log('Stream result:', result)
-
-  // Check if the result.textStream is a valid ReadableStream
-  if (!(result.textStream instanceof ReadableStream)) {
-    throw new Error('Invalid ReadableStream returned from streamText')
-  }
-
-  console.log('Right before return in ollama chat streaming')
-  return new StreamingTextResponse(result.textStream, {})
+  // // Check if the result.textStream is a valid ReadableStream
+  // if (!(result.textStream instanceof ReadableStream)) {
+  //   throw new Error('Invalid ReadableStream returned from streamText')
+  // }
+  // return new StreamingTextResponse(result.textStream, {})
 }
 
 function convertConversatonToVercelAISDK(conversation: Conversation) {
@@ -107,20 +100,67 @@ function convertConversatonToVercelAISDKv2(
   )
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   /*
+  NOT WORKING YET... need post endpoint
   req: Request
   Get all available models from Ollama 
   For ollama, use the endpoint GET /api/ps to see which models are "hot", save just the name and the parameter_size.
   */
-  console.log('In ollama GET endpoint')
-  const response = await fetch('https://ollama.ncsa.ai/api/ps')
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
+  const url = new URL(req.url)
+  const ollamaProvider = JSON.parse(
+    url.searchParams.get('ollamaProvider') || '{}',
+  ) as OllamaProvider
+
+  const ollamaNames = new Map([['llama3.1:70b', 'Llama 3.1 70b']])
+
+  try {
+    if (!ollamaProvider.baseUrl) {
+      ollamaProvider.error = `Ollama baseurl not defined: ${ollamaProvider.baseUrl}`
+      return ollamaProvider
+    }
+
+    const response = await fetch(ollamaProvider.baseUrl + '/api/tags')
+
+    if (!response.ok) {
+      ollamaProvider.error = `HTTP error! status: ${response.status}`
+      return ollamaProvider
+    }
+    const data = await response.json()
+    const ollamaModels: OllamaModel[] = data.models
+      // @ts-ignore - todo fix implicit any type
+      .filter((model) => model.name.includes('llama3.1:70b'))
+      .map((model: any): OllamaModel => {
+        const newName = ollamaNames.get(model.name)
+        return {
+          id: model.name,
+          name: newName ? newName : model.name,
+          parameterSize: model.details.parameter_size,
+          tokenLimit: 4096,
+        }
+      })
+    ollamaProvider.models = ollamaModels
+    if (ollamaProvider.models) {
+      return new Response(JSON.stringify(ollamaProvider.models), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    } else {
+      return new Response(JSON.stringify({ error: ollamaProvider.error }), {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    }
+  } catch (error: any) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
   }
-
-  // TODO: put these in the form of ollama models
-
-  const data = await response.json()
-  return data
 }
