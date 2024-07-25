@@ -4,6 +4,7 @@ import { Conversation } from '~/types/chat'
 import { OllamaProvider } from '~/types/LLMProvider'
 
 export const runtime = 'edge'
+export const dynamic = 'force-dynamic' // known bug with Vercel: https://sdk.vercel.ai/docs/troubleshooting/common-issues/streaming-not-working-on-vercel
 
 export async function POST(req: Request) {
   console.log('In ollama chat streaming endpoint')
