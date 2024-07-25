@@ -31,6 +31,13 @@ export async function POST(req: Request) {
     maxTokens: 4096, // output tokens
   })
 
+  console.log('Stream result:', result)
+
+  // Check if the result.textStream is a valid ReadableStream
+  if (!(result.textStream instanceof ReadableStream)) {
+    throw new Error('Invalid ReadableStream returned from streamText')
+  }
+
   console.log('Right before return in ollama chat streaming')
   return new StreamingTextResponse(result.textStream, {})
 }
