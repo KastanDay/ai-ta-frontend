@@ -216,7 +216,7 @@ const Home = () => {
 
         const models = await getModels({
           projectName: course_name,
-          OpenAIApiKey: key,
+          openAIApiKey: key,
         })
         dispatch({ field: 'llmProviders', value: models })
       } catch (error) {

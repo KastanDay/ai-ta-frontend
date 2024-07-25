@@ -34,7 +34,7 @@ export const selectBestModel = (
   // TODO: fix
   return {
     id: 'llama3.1:70b',
-    name: 'llama3.1:70b',
+    name: 'Llama 3.1 70b',
     tokenLimit: 128000,
   }
   const defaultModelId = OpenAIModelID.GPT_4o
