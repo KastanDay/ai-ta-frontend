@@ -11,15 +11,15 @@ export const config = {
 }
 const handler = async (req: Request): Promise<Response> => {
   try {
-    const { projectName, OpenAIApiKey } = (await req.json()) as {
+    const { projectName, openAIApiKey } = (await req.json()) as {
       projectName: string
-      OpenAIApiKey: string
+      openAIApiKey: string
     }
 
-    if (!projectName || !OpenAIApiKey) {
+    if (!projectName || !openAIApiKey) {
       return new Response('Missing required fields', { status: 400 })
     }
-    const apiKey = await parseOpenaiKey(OpenAIApiKey)
+    const apiKey = await parseOpenaiKey(openAIApiKey)
 
     // TODO: MOVE THESE TO DB INPUTS
     // const AzureProvider: LLMProvider = {

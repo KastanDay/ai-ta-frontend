@@ -4,7 +4,7 @@ import { useFetch } from '@/hooks/useFetch'
 
 export interface GetModelsRequestProps {
   projectName: string
-  OpenAIApiKey: string
+  openAIApiKey: string
 }
 
 const useApiService = () => {
@@ -29,11 +29,14 @@ const useApiService = () => {
   const getModels = useCallback(
     (params: GetModelsRequestProps, signal?: AbortSignal) => {
       return fetchService.post<GetModelsRequestProps>(`/api/models`, {
-        body: { projectName: params.projectName },
         headers: {
           'Content-Type': 'application/json',
         },
         signal,
+        body: {
+          projectName: params.projectName,
+          openAIApiKey: params.openAIApiKey,
+        },
       })
     },
     [fetchService],

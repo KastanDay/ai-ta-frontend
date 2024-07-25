@@ -350,7 +350,7 @@ export async function validateModelWithKey(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ OpenAIApiKey: apiKey, projectName }),
+      body: JSON.stringify({ openAIApiKey: apiKey, projectName }),
     })
 
     if (!response.ok) {

@@ -775,7 +775,7 @@ const PrivateOrPublicCourse = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          OpenAIApiKey: apiKey,
+          openAIApiKey: apiKey,
           projectName: course_name,
         }),
       })
