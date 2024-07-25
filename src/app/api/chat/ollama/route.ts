@@ -6,6 +6,7 @@ import { OllamaProvider } from '~/types/LLMProvider'
 export const runtime = 'edge'
 
 export async function POST(req: Request) {
+  console.log('In ollama chat streaming endpoint')
   const {
     conversation,
     ollamaProvider,
@@ -28,6 +29,7 @@ export async function POST(req: Request) {
     maxTokens: 4096, // output tokens
   })
 
+  console.log('Right before return in ollama chat streaming')
   return new StreamingTextResponse(result.textStream, {})
 }
 
