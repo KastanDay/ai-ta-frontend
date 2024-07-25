@@ -22,6 +22,8 @@ export async function POST(req: Request) {
     // baseURL: `${ollamaProvider.baseUrl}/api`,
   })
 
+  console.log(`Ollama url: ${`${process.env.OLLAMA_SERVER_URL}/api`}`)
+
   const result = await streamText({
     model: ollama('llama3.1:70b'),
     messages: convertConversatonToVercelAISDKv2(conversation), // TODO NEEDS WORK - clean messages from UIUC.chat to Ollama
