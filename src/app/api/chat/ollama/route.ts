@@ -3,16 +3,16 @@ import { CoreMessage, StreamingTextResponse, streamText } from 'ai'
 import { Conversation } from '~/types/chat'
 import { OllamaProvider } from '~/types/LLMProvider'
 
-export const runtime = 'edge'
+// export const runtime = 'edge'
 export const dynamic = 'force-dynamic' // known bug with Vercel: https://sdk.vercel.ai/docs/troubleshooting/common-issues/streaming-not-working-on-vercel
-import { unstable_noStore as noStore } from 'next/cache'
+// import { unstable_noStore as noStore } from 'next/cache'
 
 export async function POST(req: Request) {
   /*
   Run Ollama chat, given a text string. Return a streaming response promise.
   */
   console.log('In ollama chat streaming endpoint')
-  noStore() // known bug with Vercel: https://sdk.vercel.ai/docs/troubleshooting/common-issues/streaming-not-working-on-vercel
+  // noStore() // known bug with Vercel: https://sdk.vercel.ai/docs/troubleshooting/common-issues/streaming-not-working-on-vercel
   const {
     conversation,
     ollamaProvider,
