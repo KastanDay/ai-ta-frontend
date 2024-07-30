@@ -6,6 +6,7 @@ import { OllamaModel } from '~/utils/modelProviders/ollama'
 
 // export const runtime = 'edge' // Does NOT work
 export const dynamic = 'force-dynamic' // known bug with Vercel: https://sdk.vercel.ai/docs/troubleshooting/common-issues/streaming-not-working-on-vercel
+export const maxDuration = 60
 
 export async function POST(req: Request) {
   /*
@@ -24,80 +25,72 @@ export async function POST(req: Request) {
     // baseURL: `${ollamaProvider.baseUrl}/api`, // TODO use user-defiend base URL...
   })
 
+  // const new_messages = convertConversatonToVercelAISDKv3(conversation)
+  // console.log("conversation: ", conversation)
+  // console.log("new_messages below here")
+  // new_messages.forEach((message, index) => {
+  //   console.log(`Message ${index + 1}:`, message)
+  // })
+  // console.log("new_messages above here ^^^^^^^")
+
   const result = await streamText({
     model: ollama('llama3.1:70b'),
-    messages: convertConversatonToVercelAISDKv2(conversation), // TODO NEEDS WORK - clean messages from UIUC.chat to Ollama
+    messages: convertConversatonToVercelAISDKv3(conversation),
     temperature: conversation.temperature,
     maxTokens: 4096, // output tokens
   })
   return result.toTextStreamResponse()
-
-  // // Check if the result.textStream is a valid ReadableStream
-  // if (!(result.textStream instanceof ReadableStream)) {
-  //   throw new Error('Invalid ReadableStream returned from streamText')
-  // }
-  // return new StreamingTextResponse(result.textStream, {})
 }
 
-function convertConversatonToVercelAISDK(conversation: Conversation) {
-  return conversation.messages.map((message, messageIndex) => {
-    const strippedMessage = { ...message }
-    // When content is an array
-    if (Array.isArray(strippedMessage.content)) {
-      strippedMessage.content.map((content, contentIndex) => {
-        // Convert tool_image_url to image_url for OpenAI
-        if (content.type === 'tool_image_url') {
-          content.type = 'image_url'
-        }
-        // Add final prompt to last message
-        if (messageIndex === conversation.messages.length - 1) {
-          content.text = strippedMessage.finalPromtEngineeredMessage
-        }
-        return content
-      })
-    } else {
-      // When content is a string
-      // Add final prompt to last message
-      if (messageIndex === conversation.messages.length - 1) {
-        if (strippedMessage.role === 'user') {
-          strippedMessage.content = [
-            {
-              type: 'text',
-              text: strippedMessage.finalPromtEngineeredMessage,
-            },
-          ]
-          // Add system prompt to message with role system
-        } else if (strippedMessage.role === 'system') {
-          strippedMessage.content = [
-            {
-              type: 'text',
-              text: strippedMessage.latestSystemMessage,
-            },
-          ]
-        }
-      }
-    }
-    delete strippedMessage.finalPromtEngineeredMessage
-    delete strippedMessage.latestSystemMessage
-    delete strippedMessage.contexts
-    delete strippedMessage.tools
-    return strippedMessage
-  })
-}
-
-function convertConversatonToVercelAISDKv2(
+function convertConversatonToVercelAISDKv3(
   conversation: Conversation,
 ): CoreMessage[] {
-  // NOT GOING TO BE PREFECT, PROBABLY DOESN'T HANDLE TOOLS PROPERLY.
-  return conversation.messages.map(
-    (message): CoreMessage => ({
-      role: message.role as 'user' | 'assistant' | 'system',
-      content:
-        typeof message.content === 'string'
-          ? message.content
-          : message.content[0]?.text ?? '',
-    }),
+  const coreMessages: CoreMessage[] = []
+
+  // Add system message as the first message
+  const systemMessage = conversation.messages.findLast(
+    (msg) => msg.latestSystemMessage !== undefined,
   )
+  if (systemMessage) {
+    console.log(
+      'Found system message, latestSystemMessage: ',
+      systemMessage.latestSystemMessage,
+    )
+    coreMessages.push({
+      role: 'system',
+      content: systemMessage.latestSystemMessage || '',
+    })
+  }
+
+  // Convert other messages
+  conversation.messages.forEach((message, index) => {
+    if (message.role === 'system') return // Skip system message as it's already added
+
+    let content: string
+    if (index === conversation.messages.length - 1 && message.role === 'user') {
+      // Use finalPromtEngineeredMessage for the most recent user message
+      content = message.finalPromtEngineeredMessage || ''
+
+      // just for Llama 3.1 70b, remind it to use proper citation format.
+      content +=
+        '\n\nIf you use the <Potentially Relevant Documents> in your response, please remember cite your sources using the required formatting, e.g. "The grass is green. [29, page: 11]'
+    } else if (Array.isArray(message.content)) {
+      // Combine text content from array
+      content = message.content
+        .filter((c) => c.type === 'text')
+        .map((c) => c.text)
+        .join('\n')
+    } else {
+      content = message.content as string
+    }
+
+    coreMessages.push({
+      role: message.role as 'user' | 'assistant',
+      content: content,
+    })
+  })
+
+  return coreMessages
 }
 
 export async function GET(req: Request) {
