@@ -1,16 +1,4 @@
-// task is to iterate through the models and find available models that can run on ollama
-import {
-  OPENAI_API_HOST,
-  OPENAI_API_TYPE,
-  OPENAI_API_VERSION,
-  OPENAI_ORGANIZATION,
-} from '@/utils/app/const'
-
-import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai'
-import { decrypt, isEncrypted } from '~/utils/crypto'
-import { AzureProvider, LLMProvider, ProviderNames } from '~/types/LLMProvider'
-import { getOllamaModels, runOllamaChat } from '~/utils/modelProviders/ollama'
-//import { VercelAISDK } from 'vercel-ai-sdk'
+import { AzureProvider, LLMProvider } from '~/types/LLMProvider'
 
 import { openai } from '@ai-sdk/openai'
 export const config = {

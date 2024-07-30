@@ -109,51 +109,49 @@ export async function GET(req: Request) {
 
   try {
     if (!ollamaProvider.baseUrl) {
-      ollamaProvider.error = `Ollama baseurl not defined: ${ollamaProvider.baseUrl}`
-      return ollamaProvider
+      return new Response(
+        JSON.stringify({
+          error: `Ollama baseurl not defined: ${ollamaProvider.baseUrl}`,
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
     }
 
     const response = await fetch(ollamaProvider.baseUrl + '/api/tags')
 
     if (!response.ok) {
-      ollamaProvider.error = `HTTP error! status: ${response.status}`
-      return ollamaProvider
+      return new Response(
+        JSON.stringify({ error: `HTTP error! status: ${response.status}` }),
+        {
+          status: response.status,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
     }
+
     const data = await response.json()
     const ollamaModels: OllamaModel[] = data.models
-      // @ts-ignore - todo fix implicit any type
-      .filter((model) => model.name.includes('llama3.1:70b'))
-      .map((model: any): OllamaModel => {
-        const newName = ollamaNames.get(model.name)
-        return {
+      .filter((model: any) => model.name.includes('llama3.1:70b'))
+      .map(
+        (model: any): OllamaModel => ({
           id: model.name,
-          name: newName ? newName : model.name,
+          name: ollamaNames.get(model.name) || model.name,
           parameterSize: model.details.parameter_size,
           tokenLimit: 4096,
-        }
-      })
-    ollamaProvider.models = ollamaModels
-    if (ollamaProvider.models) {
-      return new Response(JSON.stringify(ollamaProvider.models), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-    } else {
-      return new Response(JSON.stringify({ error: ollamaProvider.error }), {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-    }
+        }),
+      )
+
+    return new Response(JSON.stringify(ollamaModels), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    })
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     })
   }
 }
