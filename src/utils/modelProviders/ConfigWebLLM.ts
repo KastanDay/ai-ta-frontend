@@ -47,9 +47,9 @@ export const functionCallingModelIds = [
   'Hermes-2-Pro-Mistral-7B-q4f16_1-MLC',
 ]
 
-export const recommendedModelIds = ['Llama 3.1 8B Instruct']
+export const recommendedModelIds = ['Llama 3.1 8b Instruct']
 
-export const warningLargeModelIds = ['Llama 3.1 70B Instruct']
+export const warningLargeModelIds = ['Llama 3.1 70b Instruct']
 
 /**
  * Default models and model library mapping to be used if unspecified.
@@ -62,7 +62,7 @@ export const prebuiltAppConfig: AppConfig = {
   model_list: [
     {
       model: 'https://huggingface.co/mlc-ai/Llama-3.1-8B-Instruct-q4f16_1-MLC',
-      model_id: 'Llama 3.1 8B Instruct',
+      model_id: 'Llama 3.1 8b Instruct',
       model_lib:
         modelLibURLPrefix +
         modelVersion +
@@ -75,7 +75,7 @@ export const prebuiltAppConfig: AppConfig = {
     },
     {
       model: 'https://huggingface.co/mlc-ai/Llama-3.1-70B-Instruct-q3f16_1-MLC',
-      model_id: 'Llama 3.1 70B Instruct',
+      model_id: 'Llama 3.1 70b Instruct',
       model_lib:
         modelLibURLPrefix +
         modelVersion +
@@ -230,7 +230,7 @@ export const prebuiltAppConfig: AppConfig = {
     {
       model:
         'https://huggingface.co/mlc-ai/Mistral-7B-Instruct-v0.3-q4f32_1-MLC',
-      model_id: 'Mistral 7B Instruct v0.3',
+      model_id: 'Mistral 7b Instruct v0.3',
       model_lib:
         modelLibURLPrefix +
         modelVersion +
@@ -245,7 +245,7 @@ export const prebuiltAppConfig: AppConfig = {
     // {
     //   model:
     //     'https://huggingface.co/mlc-ai/Mistral-7B-Instruct-v0.2-q4f16_1-MLC',
-    //   model_id: 'Mistral 7B Instruct v0.2',
+    //   model_id: 'Mistral 7b Instruct v0.2',
     //   model_lib:
     //     modelLibURLPrefix +
     //     modelVersion +
@@ -292,7 +292,7 @@ export const prebuiltAppConfig: AppConfig = {
     },
     {
       model: 'https://huggingface.co/mlc-ai/WizardMath-7B-V1.1-q4f16_1-MLC',
-      model_id: 'WizardMath 7B V1.1',
+      model_id: 'WizardMath 7b V1.1',
       model_lib:
         modelLibURLPrefix +
         modelVersion +
@@ -432,7 +432,7 @@ export const prebuiltAppConfig: AppConfig = {
     // },
     {
       model: 'https://huggingface.co/mlc-ai/Qwen2-7B-Instruct-q4f16_1-MLC',
-      model_id: 'Qwen2 (7b Instruct',
+      model_id: 'Qwen2 7b Instruct',
       model_lib:
         modelLibURLPrefix +
         modelVersion +
