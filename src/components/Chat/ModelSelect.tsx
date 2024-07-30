@@ -382,8 +382,9 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 href="https://platform.openai.com/docs/models"
                 target="_blank"
                 className="hover:underline"
+                rel="noopener noreferrer"
               >
-                Read about each model{' '}
+                OpenAI models details and pricing.{' '}
                 <IconExternalLink
                   size={15}
                   style={{ position: 'relative', top: '2px' }}
@@ -394,12 +395,16 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
             <Input.Description
               className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
             >
+              We support running some models in your web browser on your device.
+              That&apos;s 100% local, on-device AI. It even uses your GPU. For
+              this, your browser{' '}
               <Link
                 href={'https://webgpureport.org/'}
                 className="hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                Your browser must support WebGPU, check compatibility by
-                visiting this page.
+                must pass this compatability check for WebGPU.{' '}
                 <IconExternalLink
                   size={15}
                   style={{ position: 'relative', top: '2px' }}

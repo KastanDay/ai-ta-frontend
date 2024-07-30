@@ -9,17 +9,22 @@ import { parseOpenaiKey } from '~/utils/crypto'
 export const config = {
   runtime: 'edge',
 }
+
 const handler = async (req: Request): Promise<Response> => {
   try {
     const { projectName, openAIApiKey } = (await req.json()) as {
       projectName: string
-      openAIApiKey: string
+      openAIApiKey?: string
     }
 
-    if (!projectName || !openAIApiKey) {
-      return new Response('Missing required fields', { status: 400 })
+    if (!projectName) {
+      return new Response('Missing project name', { status: 400 })
     }
-    const apiKey = await parseOpenaiKey(openAIApiKey)
+
+    let apiKey: string | undefined
+    if (openAIApiKey) {
+      apiKey = await parseOpenaiKey(openAIApiKey)
+    }
 
     // TODO: MOVE THESE TO DB INPUTS
     // const AzureProvider: LLMProvider = {
@@ -63,6 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
       // AnthropicProvider,
     ]
     // END-TODO: MOVE THESE TO DB INPUTS
+    console.log('---------- at top of models endpoint')
 
     const allLLMProviders: { [key in ProviderNames]?: LLMProvider } = {}
     for (const llmProvider of llmProviderKeys) {
@@ -90,6 +96,8 @@ const handler = async (req: Request): Promise<Response> => {
         continue
       }
     }
+
+    console.log('allLLMProviders', allLLMProviders)
 
     // console.log('allSupportedModels', allSupportedModels)
     return new Response(JSON.stringify(allLLMProviders), { status: 200 })

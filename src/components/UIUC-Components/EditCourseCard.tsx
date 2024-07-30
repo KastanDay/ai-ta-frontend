@@ -781,10 +781,8 @@ const PrivateOrPublicCourse = ({
         }),
       })
       if (res.ok) {
+        // TODO: eventually support multipe LLM providers for disabling models.
         const allLLMProviders = (await res.json()) as AllLLMProviders
-
-        console.log('allLLMProviders --', allLLMProviders)
-        console.log('allLLMProviders -- openai', allLLMProviders.OpenAI)
 
         // set OpenAI modles or empty
         setModels(allLLMProviders.OpenAI?.models || [])
@@ -796,12 +794,6 @@ const PrivateOrPublicCourse = ({
             ),
           )
         }
-
-        // setSelectedModels(
-        //   allAvailableModels.filter(
-        //     (model) => !courseMetadata.disabled_models?.includes(model.id),
-        //   ),
-        // )
       } else {
         console.error(`Error fetching models: ${res.status}`)
       }
@@ -828,8 +820,6 @@ const PrivateOrPublicCourse = ({
         (model) => !mySelectedModels.includes(model),
       )
 
-      // console.log('being removed -- mySelectedModels', mySelectedModels)
-      // console.log('being removed -- myDisabledModels', myDisabledModels)
       setSelectedModels((prevModels) =>
         prevModels.filter((model) => model.id !== modelId),
       )
@@ -841,8 +831,6 @@ const PrivateOrPublicCourse = ({
         (model) => !mySelectedModels.includes(model),
       )
 
-      // console.log('being checked -- mySelectedModels', mySelectedModels)
-      // console.log('being checked -- myDisabledModels', myDisabledModels)
       if (model) {
         setSelectedModels((prevModels) => [...prevModels, model])
       }

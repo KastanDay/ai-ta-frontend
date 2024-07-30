@@ -47,7 +47,6 @@ import { type CourseMetadata } from '~/types/courseMetadata'
 import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
-// import { SupportedModelsObj } from '../models'
 
 const Home = () => {
   const { t } = useTranslation('chat')
@@ -212,11 +211,11 @@ const Home = () => {
     const setOpenaiModel = async () => {
       // Get models available to users
       try {
-        if (!course_metadata || !key) return
+        if (!course_metadata) return
 
         const models = await getModels({
           projectName: course_name,
-          openAIApiKey: key,
+          openAIApiKey: key || undefined,
         })
         dispatch({ field: 'llmProviders', value: models })
       } catch (error) {

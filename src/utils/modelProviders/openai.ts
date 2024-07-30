@@ -26,11 +26,16 @@ export const getOpenAIModels = async (
   openAIProvider: OpenAIProvider,
   projectName: string,
 ): Promise<OpenAIProvider> => {
-  const client = new OpenAI({
-    apiKey: openAIProvider.apiKey,
-  })
-
   try {
+    if (!openAIProvider.apiKey) {
+      openAIProvider.error = 'OpenAI API Key is not set'
+      return openAIProvider
+    }
+
+    const client = new OpenAI({
+      apiKey: openAIProvider.apiKey,
+    })
+
     const response = await client.models.list()
 
     if (!response.data) {

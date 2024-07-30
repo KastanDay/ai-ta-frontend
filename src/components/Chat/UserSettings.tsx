@@ -51,9 +51,9 @@ const appConfig = prebuiltAppConfig
 // CHANGE THIS TO SEE EFFECTS OF BOTH, CODE BELOW DO NOT NEED TO CHANGE
 appConfig.useIndexedDBCache = false
 if (appConfig.useIndexedDBCache) {
-  console.log('Using IndexedDB Cache')
+  console.debug('WebLLM: Using IndexedDB Cache')
 } else {
-  console.log('Using Cache API')
+  console.debug('WebLLM: Using Cache API')
 }
 
 export const UserSettings = () => {
@@ -105,17 +105,11 @@ export const UserSettings = () => {
   }, [showModelSettings, open, close, loadModelCache])
 
   const handleClose = () => {
-    console.log('Closing settings modal')
     homeDispatch({ field: 'showModelSettings', value: false })
   }
 
   return (
-    <Modal.Root
-      opened={opened}
-      onClose={handleClose}
-      centered
-      size={isSmallScreen ? '95%' : '60%'}
-    >
+    <Modal.Root opened={opened} onClose={handleClose} centered size={'800px'}>
       <Modal.Overlay style={{ width: '100%', color: '#1d1f33' }} />
       <Modal.Content
         className={`${classes.modalContent} ${isSmallScreen ? 'p-2' : 'p-4'} overflow-x-hidden md:rounded-lg`}

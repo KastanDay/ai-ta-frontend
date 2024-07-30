@@ -73,31 +73,31 @@ export const fallbackModelID = OpenAIModelID.GPT_4
 export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   [OpenAIModelID.GPT_3_5]: {
     id: OpenAIModelID.GPT_3_5,
-    name: 'GPT-3.5 (16k)',
+    name: 'GPT-3.5',
     tokenLimit: 16385,
     enabled: false,
   },
   [OpenAIModelID.GPT_4]: {
     id: OpenAIModelID.GPT_4,
-    name: 'GPT-4 (8k)',
+    name: 'GPT-4',
     tokenLimit: 8192,
     enabled: false,
   },
   [OpenAIModelID.GPT_4_Turbo]: {
     id: OpenAIModelID.GPT_4_Turbo,
-    name: 'GPT-4 Turbo (128k)',
+    name: 'GPT-4 Turbo',
     tokenLimit: 128000,
     enabled: false,
   },
   [OpenAIModelID.GPT_4o]: {
     id: OpenAIModelID.GPT_4o,
-    name: 'GPT-4o (128k)',
+    name: 'GPT-4o',
     tokenLimit: 128000,
     enabled: false,
   },
   [OpenAIModelID.GPT_4o_mini]: {
     id: OpenAIModelID.GPT_4o_mini,
-    name: 'GPT-4o-mini (128k)',
+    name: 'GPT-4o-mini',
     tokenLimit: 128000,
     enabled: false,
   },
@@ -105,7 +105,7 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   // ! Our hard-coded Azure implementation ONLY allows GPT-4, no other azure models on that deployment
   [OpenAIModelID.GPT_4_AZURE]: {
     id: OpenAIModelID.GPT_4_AZURE,
-    name: 'GPT-4 Turbo (128k)',
+    name: 'GPT-4 Turbo',
     tokenLimit: 128000,
     enabled: false,
   },
@@ -117,7 +117,7 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   },
   [OpenAIModelID.GPT_4_AZURE_04_09]: {
     id: OpenAIModelID.GPT_4_AZURE_04_09,
-    name: 'GPT-4 Turbo 0409 (128k)',
+    name: 'GPT-4 Turbo 0409',
     tokenLimit: 128000,
     enabled: false,
   },

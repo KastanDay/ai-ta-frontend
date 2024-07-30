@@ -22,7 +22,6 @@ export interface WebLLMMessage {
 export interface WebllmModel {
   id: string
   name: string
-  parameterSize: string
   tokenLimit: number
   downloadSize: string
   enabled: boolean
@@ -292,10 +291,9 @@ export function convertToLocalModels(record: ModelRecord): WebllmModel {
   return {
     id: record.model_id,
     name: record.model_id,
-    parameterSize: 'Unknown',
     tokenLimit: record.overrides!.context_window_size!,
     downloadSize: record.vram_required_MB
-      ? `${(record.vram_required_MB / 1024).toFixed(2)}GB`
+      ? `${(record.vram_required_MB / 1024).toFixed(1)}GB`
       : 'unknown',
     enabled: true, // hard-code all models to be enabled
   }
