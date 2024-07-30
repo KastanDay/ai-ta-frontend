@@ -43,6 +43,7 @@ import { callSetCourseMetadata, uploadToS3 } from '~/utils/apiUtils'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { notifications } from '@mantine/notifications'
 import SetExampleQuestions from './SetExampleQuestions'
+import { AllLLMProviders } from '~/types/LLMProvider'
 
 const montserrat_light = Montserrat({
   weight: '400',
@@ -780,14 +781,27 @@ const PrivateOrPublicCourse = ({
         }),
       })
       if (res.ok) {
-        const allAvailableModels = (await res.json()) as OpenAIModel[]
-        setModels(allAvailableModels)
+        const allLLMProviders = (await res.json()) as AllLLMProviders
 
-        setSelectedModels(
-          allAvailableModels.filter(
-            (model) => !courseMetadata.disabled_models?.includes(model.id),
-          ),
-        )
+        console.log('allLLMProviders --', allLLMProviders)
+        console.log('allLLMProviders -- openai', allLLMProviders.OpenAI)
+
+        // set OpenAI modles or empty
+        setModels(allLLMProviders.OpenAI?.models || [])
+
+        if (allLLMProviders.OpenAI?.models) {
+          setSelectedModels(
+            allLLMProviders.OpenAI.models.filter(
+              (model) => !courseMetadata.disabled_models?.includes(model.id),
+            ),
+          )
+        }
+
+        // setSelectedModels(
+        //   allAvailableModels.filter(
+        //     (model) => !courseMetadata.disabled_models?.includes(model.id),
+        //   ),
+        // )
       } else {
         console.error(`Error fetching models: ${res.status}`)
       }

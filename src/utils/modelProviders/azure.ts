@@ -1,6 +1,5 @@
-import { AzureProvider, LLMProvider } from '~/types/LLMProvider'
+import { AzureProvider } from '~/types/LLMProvider'
 
-import { openai } from '@ai-sdk/openai'
 export const config = {
   runtime: 'edge',
 }
@@ -9,24 +8,7 @@ export interface AzureModel {
   id: string
   name: string
   tokenLimit: number
-}
-import { CoreMessage, streamText } from 'ai'
-import { Message } from '~/types/chat'
-
-//azure streaming has already been created ignore this code and jsut use the model compilation code
-export async function runAzure(
-  messages: any,
-  AzureProvider: LLMProvider,
-  activeModel: any,
-) {
-  // TODO: fix the Messages type
-  const result = await streamText({
-    model: openai(activeModel), // replace with active model
-    system: 'You are a helpful assistant.',
-    messages,
-  })
-
-  return result.toAIStreamResponse()
+  enabled: boolean
 }
 
 export const getAzureModels = async (
@@ -34,7 +16,6 @@ export const getAzureModels = async (
 ): Promise<AzureProvider> => {
   try {
     if (!azureProvider.AzureEndpoint || !azureProvider.AzureDeployment) {
-      // TODO move away from env vars
       azureProvider.error = `Azure OpenAI endpoint or deployment is not set. Endpoint: ${azureProvider.AzureEndpoint}, Deployment: ${azureProvider.AzureDeployment}`
       return azureProvider
     }
@@ -51,7 +32,6 @@ export const getAzureModels = async (
     if (!response.ok) {
       azureProvider.error = `Azure OpenAI failed to fetch models. HTTP error, status: ${response.status}`
       return azureProvider
-      throw new Error(``)
     }
 
     const data = await response.json()
@@ -61,7 +41,7 @@ export const getAzureModels = async (
         id: model.id,
         name: model.id,
         tokenLimit: 128000, // might need to change with smaller models add hardcode mapping model to token limit
-        // Add any other relevant fields here
+        enabled: true,
       } as AzureModel
     })
     console.log('Azure OpenAI models:', azureModels)
@@ -72,3 +52,21 @@ export const getAzureModels = async (
     return azureProvider
   }
 }
+
+// Todo: move to a endpoint.
+// import { streamText } from 'ai'
+// azure streaming has already been created ignore this code and jsut use the model compilation code
+// export async function runAzure(
+//   messages: any,
+//   AzureProvider: LLMProvider,
+//   activeModel: any,
+// ) {
+//   // TODO: fix the Messages type
+//   const result = await streamText({
+//     model: openai(activeModel), // replace with active model
+//     system: 'You are a helpful assistant.',
+//     messages,
+//   })
+
+//   return result.toAIStreamResponse()
+// }

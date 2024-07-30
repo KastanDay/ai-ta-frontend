@@ -2,6 +2,7 @@ import { OllamaModel } from '~/utils/modelProviders/ollama'
 import { OpenAIModel } from './openai'
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import { AnthropicModel } from '~/utils/modelProviders/anthropic'
+import { AzureModel } from '~/utils/modelProviders/azure'
 
 export enum ProviderNames {
   Ollama = 'Ollama',
@@ -16,12 +17,14 @@ export type SupportedModels =
   | OpenAIModel[]
   | WebllmModel[]
   | AnthropicModel[]
+  | AzureModel[]
 
 export interface GenericSupportedModel {
   id: string
   name: string
   tokenLimit: number
   parameterSize?: string
+  enabled: boolean
 }
 
 export interface BaseLLMProvider {

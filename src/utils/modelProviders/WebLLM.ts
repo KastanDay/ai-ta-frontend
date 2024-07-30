@@ -25,6 +25,7 @@ export interface WebllmModel {
   parameterSize: string
   tokenLimit: number
   downloadSize: string
+  enabled: boolean
 }
 
 // export enum WebLLMModelID {
@@ -58,6 +59,7 @@ export default class ChatUI {
   private modelLoading = false
   constructor(engine: MLCEngineInterface) {
     this.engine = engine
+    this.engine.setAppConfig(prebuiltAppConfig) // us our internal config from utils/modelProviders/ConfigWebLLM.ts
   }
   /**
    * Push a task to the execution queue.
@@ -295,6 +297,7 @@ export function convertToLocalModels(record: ModelRecord): WebllmModel {
     downloadSize: record.vram_required_MB
       ? `${(record.vram_required_MB / 1024).toFixed(2)}GB`
       : 'unknown',
+    enabled: true, // hard-code all models to be enabled
   }
 }
 export const webLLMModels: WebllmModel[] = prebuiltAppConfig.model_list.map(

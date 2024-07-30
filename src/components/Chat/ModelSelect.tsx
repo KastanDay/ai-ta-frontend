@@ -5,6 +5,7 @@ import {
   IconExternalLink,
   IconCircleDashed,
   IconSparkles,
+  IconAlertTriangleFilled,
 } from '@tabler/icons-react'
 import { forwardRef, useContext } from 'react'
 import { useMediaQuery } from '@mantine/hooks'
@@ -13,19 +14,38 @@ import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Group, Input, Select, Title, Text } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
-import { OpenAIModel, OpenAIModels, preferredModelIds, selectBestModel } from '~/types/openai'
+import {
+  OpenAIModel,
+  OpenAIModels,
+  preferredModelIds,
+  selectBestModel,
+} from '~/types/openai'
 import { webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { modelCached } from './UserSettings'
 import Image from 'next/image'
 import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
-import { SelectItemProps } from '@mantine/core';
+import { SelectItemProps } from '@mantine/core'
+import {
+  recommendedModelIds,
+  warningLargeModelIds,
+} from '~/utils/modelProviders/ConfigWebLLM'
 
-const ValueComponent = ({ value, label, modelType }: SelectItemProps & { modelType: string }) => (
+const ValueComponent = ({
+  value,
+  label,
+  modelType,
+}: SelectItemProps & { modelType: string }) => (
   <div style={{ display: 'flex', alignItems: 'center' }}>
-    <Image src={getModelLogo(modelType)} alt={`${modelType} logo`} width={20} height={20} style={{ marginRight: '8px' }} />
+    <Image
+      src={getModelLogo(modelType)}
+      alt={`${modelType} logo`}
+      width={20}
+      height={20}
+      style={{ marginRight: '8px' }}
+    />
     <span>{label}</span>
   </div>
-);
+)
 interface ModelDropdownProps {
   title: string
   value: string | undefined
@@ -47,22 +67,23 @@ interface ModelItemProps extends React.ComponentPropsWithoutRef<'div'> {
   modelId: string
   selectedModelId: string | undefined
   modelType: string
+  vram_required_MB: number
 }
 
 const getModelLogo = (modelType: string) => {
   switch (modelType) {
     case ProviderNames.OpenAI:
-      return 'https://images.squarespace-cdn.com/content/v1/5a4908d949fc2b8e312bdf53/1676298536608-GQSN44SGOEHWCFSIZIGK/openai_icon.png?format=750w';
+      return 'https://images.squarespace-cdn.com/content/v1/5a4908d949fc2b8e312bdf53/1676298536608-GQSN44SGOEHWCFSIZIGK/openai_icon.png?format=750w'
     case ProviderNames.Ollama:
-      return 'https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/ollama.png';
+      return 'https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/ollama.png'
     case ProviderNames.WebLLM:
-      return 'https://avatars.githubusercontent.com/u/106173866?s=48&v=4';
+      return 'https://avatars.githubusercontent.com/u/106173866?s=48&v=4'
     case ProviderNames.Anthropic:
-      return 'https://www.anthropic.com/images/icons/safari-pinned-tab.svg';
+      return 'https://www.anthropic.com/images/icons/safari-pinned-tab.svg'
     default:
-      return 'https://via.placeholder.com/20'; // Fallback URL
+      throw new Error(`Unknown model type: ${modelType}`)
   }
-};
+}
 
 const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
   (
@@ -73,21 +94,27 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
       modelId,
       selectedModelId,
       modelType,
+      vram_required_MB,
       ...others
     }: ModelItemProps,
     ref,
   ) => {
     const isModelCached = modelCached.some((model) => model.id === modelId)
-    const showSparkles =
-      label === 'Llama-3-8B-Instruct-q4f32_1-MLC' ||
-      label === 'Llama-3-8B-Instruct-q4f16_1-MLC'
+    const showSparkles = recommendedModelIds.includes(label)
+    const showWarningLargeModel = warningLargeModelIds.includes(label)
 
     return (
       <div ref={ref} {...others}>
         <Group noWrap>
           <div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Image src={getModelLogo(modelType)} alt={`${modelType} logo`} width={20} height={20} style={{ marginRight: '8px' }} />
+              <Image
+                src={getModelLogo(modelType)}
+                alt={`${modelType} logo`}
+                width={20}
+                height={20}
+                style={{ marginRight: '8px', borderRadius: '4px' }}
+              />
               {/* {selectedModelId === modelId ? (
                 <IconCircleCheck stroke={2} />
               ) : (
@@ -119,8 +146,27 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
                 {showSparkles && (
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <IconSparkles size="1rem" style={{ marginLeft: '8px' }} />
-                    <Text size="xs" opacity={0.65} style={{ marginLeft: '4px' }}>
+                    <Text
+                      size="xs"
+                      opacity={0.65}
+                      style={{ marginLeft: '4px' }}
+                    >
                       recommended
+                    </Text>
+                  </div>
+                )}
+                {showWarningLargeModel && (
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <IconAlertTriangleFilled
+                      size="1rem"
+                      style={{ marginLeft: '8px' }}
+                    />
+                    <Text
+                      size="xs"
+                      opacity={0.65}
+                      style={{ marginLeft: '4px' }}
+                    >
+                      warning, requires large vRAM GPU
                     </Text>
                   </div>
                 )}
@@ -142,12 +188,28 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
   isWebLLM,
 }) => {
   const allModels = [
-    ...(models.OpenAI || []).map((model) => ({ ...model, provider: ProviderNames.OpenAI, group: 'OpenAI' })),
-    ...(models.Ollama || []).map((model) => ({ ...model, provider: ProviderNames.Ollama, group: 'Ollama' })),
-    ...(models.Anthropic || []).map((model) => ({ ...model, provider: ProviderNames.Anthropic, group: 'Anthropic' })),
-    ...(models.WebLLM || []).map((model) => ({ ...model, provider: ProviderNames.WebLLM, group: 'Local in Browser LLMs' })),
-  ];
-  const selectedModel = allModels.find((model) => model.id === value);
+    ...(models.OpenAI || []).map((model) => ({
+      ...model,
+      provider: ProviderNames.OpenAI,
+      group: 'OpenAI',
+    })),
+    ...(models.Ollama || []).map((model) => ({
+      ...model,
+      provider: ProviderNames.Ollama,
+      group: 'Ollama',
+    })),
+    ...(models.Anthropic || []).map((model) => ({
+      ...model,
+      provider: ProviderNames.Anthropic,
+      group: 'Anthropic',
+    })),
+    ...(models.WebLLM || []).map((model) => ({
+      ...model,
+      provider: ProviderNames.WebLLM,
+      group: 'Local in Browser LLMs',
+    })),
+  ]
+  const selectedModel = allModels.find((model) => model.id === value)
 
   return (
     <>
@@ -164,9 +226,9 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
         className="relative mt-4 flex w-full flex-col items-start px-4"
       >
         <Select
-          className={`menu z-[50] ${isSmallScreen ? 'w-[75%]' : 'w-[45%]'}`}
-          size={isSmallScreen ? 'sm' : 'md'}
-          placeholder='Select a model'
+          className="menu z-[50] w-full"
+          size="md"
+          placeholder="Select a model"
           searchable
           value={value}
           onChange={onChange}
@@ -178,36 +240,40 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
             selectedModelId: value,
             modelType: model.provider,
             group: model.group,
+            vram_required_MB: model.vram_required_MB,
           }))}
           itemComponent={ModelItem}
-          maxDropdownHeight={500}
-          icon={selectedModel ? (
-            <Image
-              src={getModelLogo(selectedModel.provider)}
-              alt={`${selectedModel.provider} logo`}
-              width={20}
-              height={20}
-              style={{ marginLeft: '4px' }}
-            />
-          ) : null}
+          maxDropdownHeight={600}
+          rightSectionWidth="auto"
+          icon={
+            selectedModel ? (
+              <Image
+                src={getModelLogo(selectedModel.provider)}
+                alt={`${selectedModel.provider} logo`}
+                width={20}
+                height={20}
+                style={{ marginLeft: '4px', borderRadius: '4px' }}
+              />
+            ) : null
+          }
           rightSection={<IconChevronDown size="1rem" />}
-          rightSectionWidth={isSmallScreen ? 15 : 30}
           classNames={{
+            root: 'w-full',
+            wrapper: 'w-full',
+            input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'} w-full`,
+            rightSection: 'pointer-events-none',
             item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
-            input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
           }}
           styles={(theme) => ({
-            rightSection: { pointerEvents: 'none' },
             input: {
-              margin: '2px',
               backgroundColor: 'rgb(107, 33, 168)',
               border: 'none',
-              color: theme.white,
-              borderRadius: theme.radius.md,
-              width: '24rem',
-              [`@media (max-width: 960px)`]: {
-                width: '17rem', // Smaller width for small screens
-              },
+              // color: theme.white,
+              // borderRadius: theme.radius.md,
+              // width: '24rem',
+              // [`@media (max-width: 960px)`]: {
+              //   width: '17rem', // Smaller width for small screens
+              // },
             },
             dropdown: {
               backgroundColor: '#1d1f33',
@@ -215,8 +281,8 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
               borderRadius: theme.radius.md,
               marginTop: '2px',
               boxShadow: theme.shadows.xs,
+              width: '100%',
               maxWidth: '100%',
-              zIndex: 2000,
               position: 'absolute',
             },
             item: {
@@ -243,15 +309,9 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
         />
       </div>
     </>
-  );
-};
-const findProvider = (modelId: string, models: any) => {
-  if (models.OpenAI?.some((model: { id: string }) => model.id === modelId)) return ProviderNames.OpenAI;
-  if (models.Ollama?.some((model: { id: string }) => model.id === modelId)) return ProviderNames.Ollama;
-  if (models.WebLLM?.some((model: { id: string }) => model.id === modelId)) return ProviderNames.WebLLM;
-  if (models.Anthropic?.some((model: { id: string }) => model.id === modelId)) return ProviderNames.Anthropic;
-  return '';
-};
+  )
+}
+
 export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
   (props, ref) => {
     const {
@@ -265,20 +325,18 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       console.debug('handleModelClick clicked:', modelId)
       console.debug('handleModelClick avail models: ', llmProviders)
 
-
       const allModels = [
         ...(llmProviders.OpenAI?.models || []),
         ...(llmProviders.Ollama?.models || []),
         ...(llmProviders.WebLLM?.models || []),
         // ...(llmProviders.Anthropic?.models || [])
-      ];
+      ].filter((model) => model.enabled)
+      console.log('allModels:', allModels)
 
       const model =
         Object.keys(allModels).reduce((foundModel: any, key: any) => {
           // console.log('key:', key, 'models[key]:', models[key])
-          return (
-            foundModel || allModels!.find((model) => model.id === modelId)
-          )
+          return foundModel || allModels!.find((model) => model.id === modelId)
         }, undefined) || defaultModel
       console.debug('handleModelClick SETTING IT TO: ', model)
 
@@ -288,7 +346,6 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
           value: model as OpenAIModel,
         })
     }
-    // const selectedModelProvider = findProvider(selectedConversation?.model.id || defaultModelId!, allModels);
 
     return (
       <div
@@ -302,8 +359,12 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               value={selectedConversation?.model.id || defaultModelId}
               onChange={handleModelClick}
               models={{
-                OpenAI: llmProviders.OpenAI?.models,
-                Ollama: llmProviders.Ollama?.models,
+                OpenAI: llmProviders.OpenAI?.models?.filter(
+                  (model) => model.enabled,
+                ),
+                Ollama: llmProviders.Ollama?.models?.filter(
+                  (model) => model.enabled,
+                ),
                 WebLLM: Object.values(webLLMModels).map((model) => ({
                   id: model.id,
                   name: model.name,

@@ -33,7 +33,7 @@
     "@mantine/nprogress": "^6.0.10",
     "@mantine/spotlight": "^6.0.10",
     "@mantine/tiptap": "^6.0.10",
-    "@mlc-ai/web-llm": "^0.2.46",
+    "@mlc-ai/web-llm": "^0.2.51",
     "@mozilla/readability": "^0.4.4",
     "@next-auth/prisma-adapter": "^1.0.5",
     "@prisma/client": "^4.11.0",

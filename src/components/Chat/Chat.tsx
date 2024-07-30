@@ -565,8 +565,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         console.log('Selected model:', selectedConversation.model)
 
         if (
-          // ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some((prefix) =>
-          //   selectedConversation.model.name.startsWith(prefix),
           webLLMModels.some(
             (model) => model.name === selectedConversation.model.name,
           )

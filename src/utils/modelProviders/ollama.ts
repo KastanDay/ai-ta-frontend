@@ -5,6 +5,7 @@ export interface OllamaModel {
   name: string
   parameterSize: string
   tokenLimit: number
+  enabled: boolean
 }
 
 const ollamaNames = new Map([['llama3.1:70b', 'Llama 3.1 70b']])
@@ -35,6 +36,7 @@ export const getOllamaModels = async (
           name: newName ? newName : model.name,
           parameterSize: model.details.parameter_size,
           tokenLimit: 4096,
+          enabled: true,
         }
       })
     ollamaProvider.models = ollamaModels

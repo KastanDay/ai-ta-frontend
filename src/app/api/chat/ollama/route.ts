@@ -141,6 +141,7 @@ export async function GET(req: Request) {
           name: ollamaNames.get(model.name) || model.name,
           parameterSize: model.details.parameter_size,
           tokenLimit: 4096,
+          enabled: true,
         }),
       )
 

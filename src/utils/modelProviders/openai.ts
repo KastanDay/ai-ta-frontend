@@ -41,13 +41,13 @@ export const getOpenAIModels = async (
 
     // Iterate through the models
     const openAIModels = response.data
-      .filter((model: any) => !disabledModels.includes(model.id))
       .filter((model: any) => Object.values(OpenAIModelID).includes(model.id))
       .map((model: any) => {
         return {
           id: model.id,
           name: OpenAIModels[model.id as OpenAIModelID].name,
           tokenLimit: OpenAIModels[model.id as OpenAIModelID].tokenLimit,
+          enabled: !disabledModels.includes(model.id),
         }
       })
 

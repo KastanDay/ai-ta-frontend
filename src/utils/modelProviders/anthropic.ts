@@ -16,6 +16,7 @@ export interface AnthropicModel {
   id: string
   name: string
   tokenLimit: number
+  enabled: boolean
 }
 // gave the id's for each anthropic model available
 export enum AnthropicModelID {
@@ -31,21 +32,25 @@ export const AnthropicModels: Record<AnthropicModelID, AnthropicModel> = {
     id: AnthropicModelID.Claude_3_5_Sonnet,
     name: 'claude-3-5-sonnet',
     tokenLimit: 200000,
+    enabled: true,
   },
   [AnthropicModelID.Claude_3_Opus]: {
     id: AnthropicModelID.Claude_3_Opus,
     name: 'claude-3-opus',
     tokenLimit: 200000,
+    enabled: true,
   },
   [AnthropicModelID.Claude_3_Sonnet]: {
     id: AnthropicModelID.Claude_3_Sonnet,
     name: 'claude-3-sonnet',
     tokenLimit: 200000,
+    enabled: false,
   },
   [AnthropicModelID.Claude_3_Haiku]: {
     id: AnthropicModelID.Claude_3_Haiku,
     name: 'claude-3-haiku',
     tokenLimit: 200000,
+    enabled: true,
   },
 }
 

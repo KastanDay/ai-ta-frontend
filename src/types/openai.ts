@@ -1,23 +1,20 @@
-// import { OPENAI_API_TYPE } from '../utils/app/const'
-
 import {
   AllLLMProviders,
   GenericSupportedModel,
   SupportedModels,
 } from './LLMProvider'
 
-// import { SupportedModelsObj } from '~/pages/api/models'
-
 export interface OpenAIModel {
   id: string
   name: string
   tokenLimit: number
+  enabled: boolean
 }
 
 // Ordered list of preferred model IDs -- the first available model will be used as default
 export const preferredModelIds = [
-  'gpt-4o',
   'gpt-4o-mini',
+  'gpt-4o',
   'gpt-4-turbo-2024-04-09',
   'gpt-4-128k',
   'gpt-4-0125-preview',
@@ -36,6 +33,7 @@ export const selectBestModel = (
     id: 'llama3.1:70b',
     name: 'Llama 3.1 70b',
     tokenLimit: 128000,
+    enabled: true,
   }
   const defaultModelId = OpenAIModelID.GPT_4o
   return OpenAIModels[defaultModelId]
@@ -77,26 +75,31 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
     id: OpenAIModelID.GPT_3_5,
     name: 'GPT-3.5 (16k)',
     tokenLimit: 16385,
+    enabled: false,
   },
   [OpenAIModelID.GPT_4]: {
     id: OpenAIModelID.GPT_4,
     name: 'GPT-4 (8k)',
     tokenLimit: 8192,
+    enabled: false,
   },
   [OpenAIModelID.GPT_4_Turbo]: {
     id: OpenAIModelID.GPT_4_Turbo,
     name: 'GPT-4 Turbo (128k)',
     tokenLimit: 128000,
+    enabled: false,
   },
   [OpenAIModelID.GPT_4o]: {
     id: OpenAIModelID.GPT_4o,
     name: 'GPT-4o (128k)',
     tokenLimit: 128000,
+    enabled: false,
   },
   [OpenAIModelID.GPT_4o_mini]: {
     id: OpenAIModelID.GPT_4o_mini,
     name: 'GPT-4o-mini (128k)',
     tokenLimit: 128000,
+    enabled: false,
   },
 
   // ! Our hard-coded Azure implementation ONLY allows GPT-4, no other azure models on that deployment
@@ -104,16 +107,19 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
     id: OpenAIModelID.GPT_4_AZURE,
     name: 'GPT-4 Turbo (128k)',
     tokenLimit: 128000,
+    enabled: false,
   },
   [OpenAIModelID.GPT_4_HACKATHON]: {
     id: OpenAIModelID.GPT_4_HACKATHON,
     name: 'GPT-4 Hackathon',
     tokenLimit: 128000,
+    enabled: false,
   },
   [OpenAIModelID.GPT_4_AZURE_04_09]: {
     id: OpenAIModelID.GPT_4_AZURE_04_09,
     name: 'GPT-4 Turbo 0409 (128k)',
     tokenLimit: 128000,
+    enabled: false,
   },
 }
 

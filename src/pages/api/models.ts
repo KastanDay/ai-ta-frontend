@@ -40,7 +40,7 @@ const handler = async (req: Request): Promise<Response> => {
     const ollamaProvider: LLMProvider = {
       provider: ProviderNames.Ollama,
       enabled: true,
-      baseUrl: 'https://ollama.ncsa.ai',
+      baseUrl: process.env.OLLAMA_SERVER_URL,
     }
 
     // TODO: update this to come from input.
@@ -48,7 +48,6 @@ const handler = async (req: Request): Promise<Response> => {
       provider: ProviderNames.OpenAI,
       enabled: true,
       apiKey: apiKey,
-      // baseUrl: 'https://ollama.ncsa.ai/api/tags',
     }
 
     const WebLLMProvider: LLMProvider = {
@@ -59,9 +58,9 @@ const handler = async (req: Request): Promise<Response> => {
     const llmProviderKeys: LLMProvider[] = [
       ollamaProvider,
       OpenAIProvider,
+      WebLLMProvider,
       // AzureProvider,
       // AnthropicProvider,
-      WebLLMProvider,
     ]
     // END-TODO: MOVE THESE TO DB INPUTS
 
