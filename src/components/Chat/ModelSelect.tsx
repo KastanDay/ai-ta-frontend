@@ -75,7 +75,8 @@ const getModelLogo = (modelType: string) => {
     case ProviderNames.OpenAI:
       return 'https://images.squarespace-cdn.com/content/v1/5a4908d949fc2b8e312bdf53/1676298536608-GQSN44SGOEHWCFSIZIGK/openai_icon.png?format=750w'
     case ProviderNames.Ollama:
-      return 'https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/ollama.png'
+      // return 'https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/ollama.png'
+      return 'https://assets.kastan.ai/UofI-logo.jpg'
     case ProviderNames.WebLLM:
       return 'https://avatars.githubusercontent.com/u/106173866?s=48&v=4'
     case ProviderNames.Anthropic:
@@ -196,7 +197,7 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
     ...(models.Ollama || []).map((model) => ({
       ...model,
       provider: ProviderNames.Ollama,
-      group: 'Ollama',
+      group: 'NCSA Hosted Models, 100% free',
     })),
     ...(models.Anthropic || []).map((model) => ({
       ...model,
@@ -206,7 +207,7 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
     ...(models.WebLLM || []).map((model) => ({
       ...model,
       provider: ProviderNames.WebLLM,
-      group: 'Local in Browser LLMs',
+      group: 'Local in Browser LLMs, runs on your device',
     })),
   ]
   const selectedModel = allModels.find((model) => model.id === value)

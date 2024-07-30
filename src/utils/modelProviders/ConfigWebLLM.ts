@@ -86,6 +86,19 @@ export const prebuiltAppConfig: AppConfig = {
         context_window_size: 4096,
       },
     },
+    {
+      model: 'https://huggingface.co/mlc-ai/Phi-3-mini-4k-instruct-q4f32_1-MLC',
+      model_id: 'Phi 3 Mini Instruct',
+      model_lib:
+        modelLibURLPrefix +
+        modelVersion +
+        '/Phi-3-mini-4k-instruct-q4f32_1-ctx4k_cs1k-webgpu.wasm',
+      vram_required_MB: 5483.12,
+      low_resource_required: false,
+      overrides: {
+        context_window_size: 4096,
+      },
+    },
     // {
     //   model: 'https://huggingface.co/mlc-ai/Llama-3-8B-Instruct-q4f32_1-MLC',
     //   model_id: 'Llama-3-8B-Instruct-q4f32_1-MLC',
@@ -113,20 +126,20 @@ export const prebuiltAppConfig: AppConfig = {
     //   },
     // },
     // Hermes-2 Pro
-    {
-      model:
-        'https://huggingface.co/mlc-ai/Hermes-2-Pro-Llama-3-8B-q4f16_1-MLC',
-      model_id: 'Hermes 2 Pro Llama 3 8B',
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        '/Llama-3-8B-Instruct-q4f16_1-ctx4k_cs1k-webgpu.wasm',
-      vram_required_MB: 4976.13,
-      low_resource_required: false,
-      overrides: {
-        context_window_size: 4096,
-      },
-    },
+    // {
+    //   model:
+    //     'https://huggingface.co/mlc-ai/Hermes-2-Pro-Llama-3-8B-q4f16_1-MLC',
+    //   model_id: 'Hermes 2 Pro Llama 3 8B',
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     '/Llama-3-8B-Instruct-q4f16_1-ctx4k_cs1k-webgpu.wasm',
+    //   vram_required_MB: 4976.13,
+    //   low_resource_required: false,
+    //   overrides: {
+    //     context_window_size: 4096,
+    //   },
+    // },
     {
       model:
         'https://huggingface.co/mlc-ai/Hermes-2-Pro-Llama-3-8B-q4f32_1-MLC',
@@ -171,19 +184,6 @@ export const prebuiltAppConfig: AppConfig = {
     //     context_window_size: 4096,
     //   },
     // },
-    {
-      model: 'https://huggingface.co/mlc-ai/Phi-3-mini-4k-instruct-q4f32_1-MLC',
-      model_id: 'Phi 3 mini 4k instruct',
-      model_lib:
-        modelLibURLPrefix +
-        modelVersion +
-        '/Phi-3-mini-4k-instruct-q4f32_1-ctx4k_cs1k-webgpu.wasm',
-      vram_required_MB: 5483.12,
-      low_resource_required: false,
-      overrides: {
-        context_window_size: 4096,
-      },
-    },
     // {
     //   model: "https://huggingface.co/mlc-ai/Phi-3-mini-4k-instruct-q4f16_1-MLC",
     //   model_id: "Phi-3-mini-4k-instruct-q4f16_1-MLC-1k",
@@ -709,6 +709,59 @@ export const prebuiltAppConfig: AppConfig = {
     //   required_features: ['shader-f16'],
     //   overrides: {
     //     context_window_size: 4096,
+    //   },
+    // },
+    // Phi3-mini-instruct
+    // {
+    //   model: "https://huggingface.co/mlc-ai/Phi-3-mini-4k-instruct-q4f16_1-MLC",
+    //   model_id: "Phi-3-mini-4k-instruct-q4f16_1-MLC",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/Phi-3-mini-4k-instruct-q4f16_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 3672.07,
+    //   low_resource_required: false,
+    //   overrides: {
+    //     context_window_size: 4096,
+    //   },
+    // },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/Phi-3-mini-4k-instruct-q4f32_1-MLC",
+    //   model_id: "Phi 3-mini 4k Instruct",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/Phi-3-mini-4k-instruct-q4f32_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 5483.12,
+    //   low_resource_required: false,
+    //   overrides: {
+    //     context_window_size: 4096,
+    //   },
+    // },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/Phi-3-mini-4k-instruct-q4f16_1-MLC",
+    //   model_id: "Phi-3-mini-4k-instruct-q4f16_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/Phi-3-mini-4k-instruct-q4f16_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 2520.07,
+    //   low_resource_required: true,
+    //   overrides: {
+    //     context_window_size: 1024,
+    //   },
+    // },
+    // {
+    //   model: "https://huggingface.co/mlc-ai/Phi-3-mini-4k-instruct-q4f32_1-MLC",
+    //   model_id: "Phi-3-mini-4k-instruct-q4f32_1-MLC-1k",
+    //   model_lib:
+    //     modelLibURLPrefix +
+    //     modelVersion +
+    //     "/Phi-3-mini-4k-instruct-q4f32_1-ctx4k_cs1k-webgpu.wasm",
+    //   vram_required_MB: 3179.12,
+    //   low_resource_required: true,
+    //   overrides: {
+    //     context_window_size: 1024,
     //   },
     // },
     // Phi-2
