@@ -377,9 +377,15 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               isSmallScreen={isSmallScreen}
             />
             <Title
-              className={`pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+              className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+              // variant="gradient"
+              // gradient={{ from: 'gold', to: 'white', deg: 170 }}
               variant="gradient"
-              gradient={{ from: 'gold', to: 'white', deg: 170 }}
+              gradient={{
+                from: 'hsl(280,100%,70%)',
+                to: 'white',
+                deg: 185,
+              }}
               order={4}
             >
               NCSA Hosted Models, 100% free
@@ -391,9 +397,15 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               The best free option is the Llama 3.1 70b model, hosted by NCSA.
             </Text>
             <Title
-              className={`pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+              className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+              // variant="gradient"
+              // gradient={{ from: 'gold', to: 'white', deg: 170 }}
               variant="gradient"
-              gradient={{ from: 'gold', to: 'white', deg: 170 }}
+              gradient={{
+                from: 'hsl(280,100%,70%)',
+                to: 'white',
+                deg: 185,
+              }}
               order={4}
             >
               OpenAI
@@ -444,9 +456,15 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               </Title>
             </div> */}
             <Title
-              className={`pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+              className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+              // variant="gradient"
+              // gradient={{ from: 'gold', to: 'white', deg: 170 }}
               variant="gradient"
-              gradient={{ from: 'gold', to: 'white', deg: 170 }}
+              gradient={{
+                from: 'hsl(280,100%,70%)',
+                to: 'white',
+                deg: 185,
+              }}
               order={4}
             >
               On-device LLMs
@@ -476,9 +494,15 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               available on this browser", it&apos;s not working.
             </Text>
             <Title
-              className={`pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+              className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+              // variant="gradient"
+              // gradient={{ from: 'gold', to: 'white', deg: 170 }}
               variant="gradient"
-              gradient={{ from: 'gold', to: 'white', deg: 170 }}
+              gradient={{
+                from: 'hsl(280,100%,70%)',
+                to: 'white',
+                deg: 185,
+              }}
               order={4}
             >
               Coming soon
