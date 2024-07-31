@@ -68,7 +68,6 @@ const handler = async (req: Request): Promise<Response> => {
       // AnthropicProvider,
     ]
     // END-TODO: MOVE THESE TO DB INPUTS
-    console.log('---------- at top of models endpoint')
 
     const allLLMProviders: { [key in ProviderNames]?: LLMProvider } = {}
     for (const llmProvider of llmProviderKeys) {
@@ -97,9 +96,6 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    console.log('allLLMProviders', allLLMProviders)
-
-    // console.log('allSupportedModels', allSupportedModels)
     return new Response(JSON.stringify(allLLMProviders), { status: 200 })
   } catch (error) {
     console.error(error)

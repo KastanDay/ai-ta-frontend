@@ -190,15 +190,15 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
   isWebLLM,
 }) => {
   const allModels = [
-    ...(models.OpenAI || []).map((model) => ({
-      ...model,
-      provider: ProviderNames.OpenAI,
-      group: 'OpenAI',
-    })),
     ...(models.Ollama || []).map((model) => ({
       ...model,
       provider: ProviderNames.Ollama,
       group: 'NCSA Hosted Models, 100% free',
+    })),
+    ...(models.OpenAI || []).map((model) => ({
+      ...model,
+      provider: ProviderNames.OpenAI,
+      group: 'OpenAI',
     })),
     ...(models.Anthropic || []).map((model) => ({
       ...model,
@@ -328,8 +328,8 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       console.debug('handleModelClick avail models: ', llmProviders)
 
       const allModels = [
-        ...(llmProviders.OpenAI?.models || []),
         ...(llmProviders.Ollama?.models || []),
+        ...(llmProviders.OpenAI?.models || []),
         ...(llmProviders.WebLLM?.models || []),
         // ...(llmProviders.Anthropic?.models || [])
       ].filter((model) => model.enabled)
@@ -361,10 +361,10 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               value={selectedConversation?.model.id || defaultModelId}
               onChange={handleModelClick}
               models={{
-                OpenAI: llmProviders.OpenAI?.models?.filter(
+                Ollama: llmProviders.Ollama?.models?.filter(
                   (model) => model.enabled,
                 ),
-                Ollama: llmProviders.Ollama?.models?.filter(
+                OpenAI: llmProviders.OpenAI?.models?.filter(
                   (model) => model.enabled,
                 ),
                 WebLLM: Object.values(webLLMModels).map((model) => ({
@@ -377,54 +377,90 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               isSmallScreen={isSmallScreen}
             />
             <Title
+              className={`pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+              variant="gradient"
+              gradient={{ from: 'gold', to: 'white', deg: 170 }}
               order={4}
-              className={`ms-4 pt-2 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
+            >
+              NCSA Hosted Models, 100% free
+            </Title>
+            <Text
+              size={'sm'}
+              className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
+            >
+              The best free option is the Llama 3.1 70b model, hosted by NCSA.
+            </Text>
+            <Title
+              className={`pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+              variant="gradient"
+              gradient={{ from: 'gold', to: 'white', deg: 170 }}
+              order={4}
             >
               OpenAI
             </Title>
             <Text
-              className={`ms-4 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
+              size={'sm'}
+              className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
             >
+              OpenAI{' '}
               <Link
                 href="https://platform.openai.com/docs/models"
                 target="_blank"
-                className="hover:underline"
                 rel="noopener noreferrer"
+                className="text-blue-500 visited:text-purple-600 hover:text-blue-700 hover:underline"
               >
-                OpenAI model details and pricing.{' '}
+                model details and pricing.{' '}
                 <IconExternalLink
                   size={15}
                   style={{ position: 'relative', top: '2px' }}
                   className={'mb-2 inline'}
                 />
-              </Link>
+              </Link>{' '}
+              An OpenAI API key is required, and you may face rate-limit issues
+              until you complete your first billing cycle.
             </Text>
-            <Title
-              order={4}
-              className={`ms-4 pt-2 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
+            {/* <div
+              className="w-[95%] items-start rounded-2xl shadow-md shadow-purple-600 md:w-[93%] xl:w-[85%]"
+              style={{ zIndex: 1, background: '#15162c' }}
             >
-              NCSA Hosted Models, 100% free
-            </Title>
-            <Text
-              className={`ms-4 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
-            >
-              The best free option is the Llama 3.1 70b model, hosted by NCSA.
-            </Text>
+
+              <Title
+                className={`${montserrat_heading.variable} font-montserratHeading`}
+                variant="gradient"
+                gradient={{
+                  from: 'hsl(280,100%,70%)',
+                  to: 'white',
+                  deg: 185,
+                }}
+                order={3}
+                p="xl"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                On-device LLMs
+              </Title>
+            </div> */}
             <Title
+              className={`pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+              variant="gradient"
+              gradient={{ from: 'gold', to: 'white', deg: 170 }}
               order={4}
-              className={`ms-4 pt-2 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
             >
               On-device LLMs
             </Title>
             <Text
-              className={`ms-4 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
+              size={'sm'}
+              className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
             >
               We support running some models in your web browser on your device.
               That&apos;s 100% local, on-device AI. It even uses your GPU. For
               this, your browser{' '}
               <Link
                 href={'https://webgpureport.org/'}
-                className="hover:underline"
+                className="text-blue-500 visited:text-purple-600 hover:text-blue-700 hover:underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -435,15 +471,21 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                   className={'mb-2 inline'}
                 />
               </Link>
+              <br />
+              If you see lots of text, it&apos;s working. If you see "webgpu not
+              available on this browser", it&apos;s not working.
             </Text>
             <Title
+              className={`pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+              variant="gradient"
+              gradient={{ from: 'gold', to: 'white', deg: 170 }}
               order={4}
-              className={`ms-4 pt-2 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
             >
               Coming soon
             </Title>
             <Text
-              className={`ms-4 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
+              size={'sm'}
+              className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
             >
               Anthropic, Google Gemini, Azure OpenAI, customizable OpenAI
               compaitble servers.
