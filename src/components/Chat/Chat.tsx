@@ -514,17 +514,20 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           (content) => content.image_url?.url as string,
         )
 
-        const toolResult = await handleTools(
-          message,
-          tools,
-          imageUrls,
-          imgDesc,
-          updatedConversation,
-          currentMessageIndex,
-          getOpenAIKey(courseMetadata),
-          getCurrentPageName(),
-          homeDispatch,
-        )
+        if (tools.length > 0) {
+          await handleTools(
+            message,
+            tools,
+            imageUrls,
+            imgDesc,
+            updatedConversation,
+            currentMessageIndex,
+            getOpenAIKey(courseMetadata),
+            getCurrentPageName(),
+            homeDispatch,
+          )
+        }
+
         // Update conversation from toolResult
         console.log('Tool result:', message.tools)
 
