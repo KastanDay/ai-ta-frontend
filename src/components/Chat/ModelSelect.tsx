@@ -76,7 +76,8 @@ const getModelLogo = (modelType: string) => {
       return 'https://images.squarespace-cdn.com/content/v1/5a4908d949fc2b8e312bdf53/1676298536608-GQSN44SGOEHWCFSIZIGK/openai_icon.png?format=750w'
     case ProviderNames.Ollama:
       // return 'https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/ollama.png'
-      return 'https://assets.kastan.ai/UofI-logo.jpg'
+      // return 'https://assets.kastan.ai/UofI-logo.jpg'
+      return 'https://assets.kastan.ai/UofI-logo-white.jpg'
     case ProviderNames.WebLLM:
       return 'https://avatars.githubusercontent.com/u/106173866?s=48&v=4'
     case ProviderNames.Anthropic:
@@ -375,8 +376,14 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               }}
               isSmallScreen={isSmallScreen}
             />
-            <Input.Description
-              className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
+            <Title
+              order={4}
+              className={`ms-4 pt-2 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
+            >
+              OpenAI
+            </Title>
+            <Text
+              className={`ms-4 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
             >
               <Link
                 href="https://platform.openai.com/docs/models"
@@ -384,16 +391,33 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 className="hover:underline"
                 rel="noopener noreferrer"
               >
-                OpenAI models details and pricing.{' '}
+                OpenAI model details and pricing.{' '}
                 <IconExternalLink
                   size={15}
                   style={{ position: 'relative', top: '2px' }}
                   className={'mb-2 inline'}
                 />
               </Link>
-            </Input.Description>
-            <Input.Description
-              className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
+            </Text>
+            <Title
+              order={4}
+              className={`ms-4 pt-2 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
+            >
+              NCSA Hosted Models, 100% free
+            </Title>
+            <Text
+              className={`ms-4 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
+            >
+              The best free option is the Llama 3.1 70b model, hosted by NCSA.
+            </Text>
+            <Title
+              order={4}
+              className={`ms-4 pt-2 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
+            >
+              On-device LLMs
+            </Title>
+            <Text
+              className={`ms-4 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
             >
               We support running some models in your web browser on your device.
               That&apos;s 100% local, on-device AI. It even uses your GPU. For
@@ -411,7 +435,19 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                   className={'mb-2 inline'}
                 />
               </Link>
-            </Input.Description>
+            </Text>
+            <Title
+              order={4}
+              className={`ms-4 pt-2 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
+            >
+              Coming soon
+            </Title>
+            <Text
+              className={`ms-4 text-gray-400 ${montserrat_heading.variable} font-montserratHeading`}
+            >
+              Anthropic, Google Gemini, Azure OpenAI, customizable OpenAI
+              compaitble servers.
+            </Text>
           </div>
         </div>
       </div>
