@@ -583,20 +583,23 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ) {
           // Is WebLLM model
           console.log('is model loading', chat_ui.isModelLoading())
-          if (chat_ui.isModelLoading() == false) {
-            try {
-              response = await chat_ui.runChatCompletion(
-                chatBody.conversation!,
-                getCurrentPageName(),
-              )
-            } catch (error) {
-              errorToast({
-                title: 'Error running chat completion',
-                message:
-                  (error as Error).message || 'An unexpected error occurred',
-              })
-            }
+          // if (chat_ui.isModelLoading() == false) {
+          while (chat_ui.isModelLoading() == true) {
+            await new Promise(resolve => setTimeout(resolve, 10));
           }
+          try {
+            response = await chat_ui.runChatCompletion(
+              chatBody.conversation!,
+              getCurrentPageName(),
+            )
+          } catch (error) {
+            errorToast({
+              title: 'Error running chat completion',
+              message:
+                (error as Error).message || 'An unexpected error occurred',
+            })
+          }
+          // }
         } else if (selectedConversation.model.id === 'llama3.1:70b') {
           console.log(
             "In Chat.tsx Ollama, selectedConversation.model.name === 'llama3.1:70b'",
@@ -708,7 +711,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           const citationLinkCache = new Map<number, string>()
           const stateMachineContext = { state: State.Normal, buffer: '' }
           try {
-            while (!done && chat_ui.isModelLoading() == false) {
+            while (!done) {
               if (stopConversationRef.current === true) {
                 controller.abort()
                 done = true
