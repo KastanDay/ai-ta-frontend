@@ -28,15 +28,24 @@ export const preferredModelIds = [
 export const selectBestModel = (
   allLLMProviders: AllLLMProviders,
 ): GenericSupportedModel => {
-  // TODO: fix
+  // Use GPT-4o-mini if available, otherwise fallback to Llama 3.1 70b
+
+  if (allLLMProviders.OpenAI && allLLMProviders.OpenAI.models!.length > 0) {
+    const gpt4oMini = allLLMProviders.OpenAI.models!.find(
+      (model) => model.id === 'gpt-4o-mini',
+    )
+    if (gpt4oMini) {
+      return gpt4oMini
+    }
+  }
   return {
     id: 'llama3.1:70b',
     name: 'Llama 3.1 70b',
     tokenLimit: 128000,
     enabled: true,
   }
-  const defaultModelId = OpenAIModelID.GPT_4o
-  return OpenAIModels[defaultModelId]
+  // const defaultModelId = OpenAIModelID.GPT_4o
+  // return OpenAIModels[defaultModelId]
   // if (!models || !models.OpenAI) {
   //   return OpenAIModels[defaultModelId]
   // }
