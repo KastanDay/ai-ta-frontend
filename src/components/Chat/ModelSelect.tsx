@@ -574,8 +574,8 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 />
               </Link>
               <br />
-              If you see lots of text, it&apos;s working. If you see "webgpu not
-              available on this browser", it&apos;s not working.
+              If you see lots of text, it&apos;s working. If you see &quot;webgpu not
+              available on this browser&quot;, it&apos;s not working.
             </Text>
             <Title
               className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
