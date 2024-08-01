@@ -470,7 +470,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 to: 'white',
                 deg: 185,
               }}
-              order={4}
+              order={5}
             >
               NCSA Hosted Models, 100% free
             </Title>
@@ -490,7 +490,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 to: 'white',
                 deg: 185,
               }}
-              order={4}
+              order={5}
             >
               OpenAI
             </Title>
@@ -549,7 +549,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 to: 'white',
                 deg: 185,
               }}
-              order={4}
+              order={5}
             >
               On-device LLMs
             </Title>
@@ -587,7 +587,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 to: 'white',
                 deg: 185,
               }}
-              order={4}
+              order={5}
             >
               Coming soon
             </Title>
