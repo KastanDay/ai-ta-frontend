@@ -7,7 +7,7 @@ import {
   IconSparkles,
   IconAlertTriangleFilled,
 } from '@tabler/icons-react'
-import { forwardRef, useContext } from 'react'
+import { forwardRef, useContext, useEffect, useState } from 'react'
 import { useMediaQuery } from '@mantine/hooks'
 import HomeContext from '~/pages/api/home/home.context'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
@@ -20,7 +20,7 @@ import {
   preferredModelIds,
   selectBestModel,
 } from '~/types/openai'
-import { webLLMModels } from '~/utils/modelProviders/WebLLM'
+import ChatUI, { webLLMModels, WebLLMLoadingState } from '~/utils/modelProviders/WebLLM'
 import { modelCached } from './UserSettings'
 import Image from 'next/image'
 import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
@@ -29,6 +29,8 @@ import {
   recommendedModelIds,
   warningLargeModelIds,
 } from '~/utils/modelProviders/ConfigWebLLM'
+import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
+import chat from '~/pages/api/chat-api/chat'
 
 const ValueComponent = ({
   value,
@@ -58,6 +60,8 @@ interface ModelDropdownProps {
   }
   isSmallScreen: boolean
   isWebLLM?: boolean
+  loadingModelId: string | null
+  chat_ui: ChatUI
 }
 
 interface ModelItemProps extends React.ComponentPropsWithoutRef<'div'> {
@@ -68,6 +72,7 @@ interface ModelItemProps extends React.ComponentPropsWithoutRef<'div'> {
   selectedModelId: string | undefined
   modelType: string
   vram_required_MB: number
+  chat_ui: ChatUI
 }
 
 const getModelLogo = (modelType: string) => {
@@ -86,8 +91,7 @@ const getModelLogo = (modelType: string) => {
       throw new Error(`Unknown model type: ${modelType}`)
   }
 }
-
-const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
+const ModelItem = forwardRef<HTMLDivElement, ModelItemProps & { loadingModelId: string | null, setLoadingModelId: (id: string | null) => void }>(
   (
     {
       label,
@@ -97,13 +101,54 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
       selectedModelId,
       modelType,
       vram_required_MB,
+      loadingModelId,
+      setLoadingModelId,
+      chat_ui,
       ...others
-    }: ModelItemProps,
+    }: ModelItemProps & { loadingModelId: string | null, setLoadingModelId: (id: string | null) => void },
     ref,
   ) => {
-    const isModelCached = modelCached.some((model) => model.id === modelId)
+    const [isModelCached, setIsModelCached] = useState(false)
     const showSparkles = recommendedModelIds.includes(label)
     const showWarningLargeModel = warningLargeModelIds.includes(label)
+    const { state, dispatch: homeDispatch } = useContext(HomeContext)
+    // const {
+    //   state: {
+    //     isLoadingWebLLMModelId,
+
+    //   },
+    //   handleUpdateConversation,
+    //   dispatch: homeDispatch,
+    // } = useContext(HomeContext)
+    useEffect(() => {
+      const checkModelCache = async () => {
+        // if (!chat_ui?.isModelLoading()) {
+        //   setLoadingModelId(null)
+        // }
+
+        const cached = modelCached.some((model) => model.id === modelId)
+        setIsModelCached(cached)
+        // if (cached && isLoading) {
+        //   const webLLMLoadingState = { id: modelId, isLoading: false }
+        //   // homeDispatch({
+        //   //   field: 'webLLMModelIdLoading',
+        //   //   value: WebLLMLoadingState,
+        //   // })
+        //   setLoadingModelId(null)
+        // }
+        //   console.log('model is loading', state.webLLMModelIdLoading)
+        //   if (state.webLLMModelIdLoading.isLoading) {
+        //     setLoadingModelId(modelId)
+        //     console.log('model id', modelId)
+        //     console.log('loading model id', loadingModelId)
+        //     console.log('model is loading', state.webLLMModelIdLoading.id)
+        //   } else if (!state.webLLMModelIdLoading.isLoading) {
+        //     setLoadingModelId(null)
+        //   }
+        // }
+      }
+      checkModelCache()
+    }, [modelId])
 
     return (
       <div ref={ref} {...others}>
@@ -137,14 +182,26 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
                 <Text size="xs" opacity={0.65}>
                   {downloadSize}
                 </Text>
-                {isModelCached ? (
-                  <IconCircleCheck size="1rem" style={{ marginLeft: '8px' }} />
+                {state.webLLMModelIdLoading.id == modelId && state.webLLMModelIdLoading.isLoading ? (
+                  <div style={{ marginLeft: '8px', display: 'flex', alignItems: 'center' }}>
+                    <LoadingSpinner size="0.5rem" />
+                    <Text size="s" style={{ marginLeft: '7px' }} className="text-purple-600">loading</Text>
+                  </div>
                 ) : (
-                  <IconDownload size="1rem" style={{ marginLeft: '8px' }} />
+                  <>
+                    {isModelCached || state.webLLMModelIdLoading.id == modelId && !state.webLLMModelIdLoading.isLoading ? (
+                      <>
+                        <IconCircleCheck size="1rem" style={{ marginLeft: '8px' }} className='text-purple-400' />
+                        {/* {isLoading && setLoadingModelId(null)} */}
+                      </>
+                    ) : (
+                      <IconDownload size="1rem" style={{ marginLeft: '8px' }} />
+                    )}
+                    <Text size="xs" opacity={isModelCached ? 1 : 0.65} style={{ marginLeft: '4px' }} className={isModelCached || state.webLLMModelIdLoading.id == modelId && !state.webLLMModelIdLoading.isLoading ? 'text-purple-400' : ''}>
+                      {isModelCached || state.webLLMModelIdLoading.id == modelId && !state.webLLMModelIdLoading.isLoading ? 'downloaded' : 'download'}
+                    </Text>
+                  </>
                 )}
-                <Text size="xs" opacity={0.65} style={{ marginLeft: '4px' }}>
-                  {isModelCached ? 'downloaded' : 'download'}
-                </Text>
                 {showSparkles && (
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <IconSparkles size="1rem" style={{ marginLeft: '8px' }} />
@@ -181,14 +238,18 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps>(
   },
 )
 
-const ModelDropdown: React.FC<ModelDropdownProps> = ({
+const ModelDropdown: React.FC<ModelDropdownProps & { setLoadingModelId: (id: string | null) => void, onChange: (modelId: string) => Promise<void> }> = ({
   title,
   value,
   onChange,
   models,
   isSmallScreen,
   isWebLLM,
+  loadingModelId,
+  setLoadingModelId,
+  chat_ui,
 }) => {
+  const { state, dispatch: homeDispatch } = useContext(HomeContext)
   const allModels = [
     ...(models.Ollama || []).map((model) => ({
       ...model,
@@ -233,7 +294,17 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
           placeholder="Select a model"
           searchable
           value={value}
-          onChange={onChange}
+          onChange={async (modelId) => {
+            if (state.webLLMModelIdLoading.isLoading) {
+              setLoadingModelId(modelId)
+              console.log('model id', modelId)
+              console.log('loading model id', loadingModelId)
+              console.log('model is loading', state.webLLMModelIdLoading.id)
+            } else if (!state.webLLMModelIdLoading.isLoading) {
+              setLoadingModelId(null)
+            }
+            await onChange(modelId!)
+          }}
           data={allModels.map((model: any) => ({
             value: model.id,
             label: model.name,
@@ -244,8 +315,8 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
             group: model.group,
             vram_required_MB: model.vram_required_MB,
           }))}
-          itemComponent={ModelItem}
-          maxDropdownHeight={600}
+          itemComponent={(props) => <ModelItem {...props} loadingModelId={loadingModelId} setLoadingModelId={setLoadingModelId} />}
+          maxDropdownHeight={480}
           rightSectionWidth="auto"
           icon={
             selectedModel ? (
@@ -315,13 +386,15 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
 }
 
 export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
-  (props, ref) => {
+  ({ chat_ui, props }, ref) => {
     const {
       state: { selectedConversation, llmProviders, defaultModelId },
       handleUpdateConversation,
+      dispatch: homeDispatch,
     } = useContext(HomeContext)
     const isSmallScreen = useMediaQuery('(max-width: 960px)')
     const defaultModel = selectBestModel(llmProviders).id
+    const [loadingModelId, setLoadingModelId] = useState<string | null>(null)
 
     const handleModelClick = (modelId: string) => {
       console.debug('handleModelClick clicked:', modelId)
@@ -333,7 +406,6 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
         ...(llmProviders.WebLLM?.models || []),
         // ...(llmProviders.Anthropic?.models || [])
       ].filter((model) => model.enabled)
-      console.log('allModels:', allModels)
 
       const model =
         Object.keys(allModels).reduce((foundModel: any, key: any) => {
@@ -347,6 +419,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
           key: 'model',
           value: model as OpenAIModel,
         })
+
     }
 
     return (
@@ -359,7 +432,15 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
             <ModelDropdown
               title="Select Model"
               value={selectedConversation?.model.id || defaultModelId}
-              onChange={handleModelClick}
+              onChange={
+                // async (modelId) => {
+                // // if (state.webLLMModelIdLoading) {
+                // //   setLoadingModelId(modelId)
+                // //   console.log('model is loading', state.webLLMModelIdLoading.id)
+                // // }
+                // await handleModelClick(modelId)
+                async (modelId) => { handleModelClick(modelId) }
+              }
               models={{
                 Ollama: llmProviders.Ollama?.models?.filter(
                   (model) => model.enabled,
@@ -375,6 +456,9 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 // Anthropic: models.Anthropic,
               }}
               isSmallScreen={isSmallScreen}
+              loadingModelId={loadingModelId}
+              setLoadingModelId={setLoadingModelId}
+              chat_ui={chat_ui}
             />
             <Title
               className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}

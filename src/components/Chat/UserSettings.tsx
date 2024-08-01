@@ -70,27 +70,27 @@ export const UserSettings = () => {
   const loadModelCache = async () => {
     console.log('start loadingmodelcache')
     const model = selectedConversation?.model
-    if (
-      model &&
-      'name' in model &&
-      webLLMModels.some((m) => m.name === model.name)
-    ) {
-      for (const model of webLLMModels) {
-        const theCachedModel = await webllm.hasModelInCache(
-          model.name,
-          appConfig,
-        )
-        if (theCachedModel) {
-          if (
-            !modelCached.some((cachedModel) => cachedModel.name === model.name)
-          ) {
-            modelCached.push(model)
-          }
-          // console.log('model is cached:', model.name)
+    // if (
+    //   model &&
+    //   'name' in model &&
+    //   webLLMModels.some((m) => m.name === model.name)
+    // ) {
+    for (const model of webLLMModels) {
+      const theCachedModel = await webllm.hasModelInCache(
+        model.name,
+        appConfig,
+      )
+      if (theCachedModel) {
+        if (
+          !modelCached.some((cachedModel) => cachedModel.name === model.name)
+        ) {
+          modelCached.push(model)
         }
-        // console.log('hasModelInCache: ', modelCached)
+        // console.log('model is cached:', model.name)
       }
+      console.log('hasModelInCache: ', modelCached)
     }
+    // }
   }
   // if (selectedConversation && webLLMModels.some(m => m.name === selectedConversation.model.name)) {
   //   loadModelCache();
@@ -98,6 +98,7 @@ export const UserSettings = () => {
   useEffect(() => {
     if (showModelSettings) {
       open()
+      console.log('model cached', modelCached)
       loadModelCache()
     } else {
       close()

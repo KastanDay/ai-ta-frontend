@@ -27,6 +27,11 @@ export interface WebllmModel {
   enabled: boolean
 }
 
+export interface WebLLMLoadingState {
+  id: string
+  isLoading: boolean
+}
+
 // export enum WebLLMModelID {
 //   Llama38BInstructQ4f321MLC = 'Llama-3-8B-Instruct-q4f32_1-MLC',
 //   TinyLlama11BChatV04Q4f161MLC1k = 'TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC-1k',

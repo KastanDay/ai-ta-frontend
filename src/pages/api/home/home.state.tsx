@@ -44,6 +44,7 @@ export interface HomeInitialState {
   isRetrievalLoading: boolean | undefined
   documentGroups: Action[]
   tools: UIUCTool[]
+  webLLMModelIdLoading: { id: string | undefined, isLoading: boolean | undefined }
 }
 
 export const initialState: HomeInitialState = {
@@ -79,4 +80,5 @@ export const initialState: HomeInitialState = {
   isImg2TextLoading: false,
   documentGroups: [],
   tools: [],
+  webLLMModelIdLoading: { id: undefined, isLoading: undefined },
 }

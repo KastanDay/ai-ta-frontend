@@ -155,6 +155,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       isRetrievalLoading,
       documentGroups,
       tools,
+      webLLMModelIdLoading,
     },
     handleUpdateConversation,
     dispatch: homeDispatch,
@@ -163,9 +164,17 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   useEffect(() => {
     const loadModel = async () => {
       if (selectedConversation && !chat_ui.isModelLoading()) {
+        homeDispatch({
+          field: 'webLLMModelIdLoading',
+          value: { id: selectedConversation.model.id, isLoading: true },
+        })
         await chat_ui.loadModel(selectedConversation)
         if (!chat_ui.isModelLoading()) {
           console.log('Model has finished loading')
+          homeDispatch({
+            field: 'webLLMModelIdLoading',
+            value: { id: selectedConversation.model.id, isLoading: false },
+          })
         }
       }
     }
@@ -358,12 +367,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         )
 
         if (imgDescIndex !== -1) {
-          ;(message.content as Content[])[imgDescIndex] = {
+          ; (message.content as Content[])[imgDescIndex] = {
             type: 'text',
             text: `Image description: ${imgDesc}`,
           }
         } else {
-          ;(message.content as Content[]).push({
+          ; (message.content as Content[]).push({
             type: 'text',
             text: `Image description: ${imgDesc}`,
           })
@@ -444,8 +453,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           message.contexts = []
           message.content = Array.isArray(message.content)
             ? message.content.filter(
-                (content) => content.type !== 'tool_image_url',
-              )
+              (content) => content.type !== 'tool_image_url',
+            )
             : message.content
 
           const updatedMessages = [...selectedConversation.messages]
@@ -913,7 +922,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
       handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
@@ -1006,13 +1015,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-    courseMetadata.example_questions.length > 0
+      courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-          'Make a bullet point list of key takeaways from this project.',
-          'What are the best practices for [Activity or Process] in [Context or Field]?',
-          'Can you explain the concept of [Specific Concept] in simple terms?',
-        ]
+        'Make a bullet point list of key takeaways from this project.',
+        'What are the best practices for [Activity or Process] in [Context or Field]?',
+        'Can you explain the concept of [Specific Concept] in simple terms?',
+      ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {
