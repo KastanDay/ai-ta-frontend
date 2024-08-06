@@ -1,7 +1,6 @@
 // src/pages/api/chat-api/stream.ts
 
 import { fetchContexts } from '../getContexts'
-import { OpenAIModelID, OpenAIModels } from '~/types/openai'
 import { ChatBody, Content, Conversation, Message } from '~/types/chat'
 import { fetchCourseMetadata } from '~/utils/apiUtils'
 import { validateApiKeyAndRetrieveData } from './keys/validate'
@@ -14,7 +13,8 @@ import {
   attachContextsToLastMessage,
   constructChatBody,
   constructSearchQuery,
-  determineAndValidateOpenAIKey,
+  determineAndValidateModel,
+  fetchKeyToUse,
   handleImageContent,
   handleNonStreamingResponse,
   handleStreamingResponse,
@@ -25,6 +25,11 @@ import { v4 as uuidv4 } from 'uuid'
 import { getBaseUrl } from '~/utils/apiUtils'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { buildPrompt } from '../chat'
+import {
+  fetchTools,
+  handleToolsServer,
+} from '~/utils/functionCalling/handleFunctionCalling'
+import { GenericSupportedModel } from '~/types/LLMProvider'
 
 // Configuration for the runtime environment
 export const config = {
@@ -56,7 +61,7 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
   const body = await req.json()
   try {
     // Validate the request body
-    validateRequestBody(body)
+    await validateRequestBody(body)
   } catch (error: any) {
     // Log the error and capture it with PostHog
     console.error('Invalid request body:', body, 'Error:', error.message)
@@ -123,12 +128,14 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
     )
   }
 
-  // Determine and validate the OpenAI key to use
-  let key: string
+  // Fetch the final key to use
+  const key = await fetchKeyToUse(openai_key, courseMetadata)
+
+  // // Determine and validate the model to use
+  let activeModel: GenericSupportedModel
   try {
-    key = await determineAndValidateOpenAIKey(
+    activeModel = await determineAndValidateModel(
       openai_key,
-      courseMetadata,
       model,
       course_name,
     )
@@ -174,15 +181,33 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
   // Get the last message in the conversation
   const lastMessage = messages[messages.length - 1] as Message
 
+  // Fetch tools
+  let availableTools
+  try {
+    availableTools = await fetchTools(
+      course_name!,
+      '',
+      20,
+      'true',
+      false,
+      getBaseUrl(),
+    )
+  } catch (error) {
+    console.error('Error fetching tools:', error)
+    return NextResponse.json({ error: 'Error fetching tools' }, { status: 500 })
+  }
+  console.log('Available tools: ', availableTools)
+
   // Construct the search query
   let searchQuery = constructSearchQuery(messages)
+  let imgDesc = ''
 
   // Construct the conversation object
   const conversation: Conversation = {
     id: uuidv4(),
     name: 'New Conversation',
     messages: messages,
-    model: OpenAIModels[model as OpenAIModelID],
+    model: activeModel,
     prompt:
       messages.filter((message) => message.role === 'system').length > 0
         ? (messages.filter((message) => message.role === 'system')[0]
@@ -202,23 +227,31 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
         (content) => content.type === 'image_url',
       )
     : []
+
+  const imageUrls = imageContent.map(
+    (content) => content.image_url?.url as string,
+  )
+
   if (imageContent.length > 0) {
-    searchQuery = await handleImageContent(
-      lastMessage,
-      course_name,
-      conversation,
-      searchQuery,
-      courseMetadata,
-      openai_key,
-      new AbortController(),
-    )
+    const { searchQuery: newSearchQuery, imgDesc: newImgDesc } =
+      await handleImageContent(
+        lastMessage,
+        course_name,
+        conversation,
+        searchQuery,
+        courseMetadata,
+        openai_key,
+        new AbortController(),
+      )
+    searchQuery = newSearchQuery
+    imgDesc = newImgDesc
   }
 
   // Fetch Contexts
   const contexts = await fetchContexts(
     course_name,
     searchQuery,
-    OpenAIModels[model as OpenAIModelID].tokenLimit,
+    activeModel.tokenLimit,
   )
 
   // Check if contexts were found
@@ -246,6 +279,20 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
   //   getCurrentPageName(),
   //   homeDispatch,
   // )
+  console.log('Tools start with openai_key:', key)
+  if (availableTools.length > 0) {
+    const tools = await handleToolsServer(
+      lastMessage,
+      availableTools, // You need to define availableTools somewhere in your code
+      imageUrls, // You need to define imageUrls somewhere in your code
+      imgDesc, // You need to define imageDescription somewhere in your code
+      conversation,
+      key,
+      course_name,
+      getBaseUrl(),
+    )
+  }
+  console.log('Tools complete, conversation:', conversation)
 
   // Construct the chat body for the API request
   const chatBody: ChatBody = constructChatBody(

@@ -8,7 +8,7 @@ export interface OllamaModel {
   enabled: boolean
 }
 
-const ollamaNames = new Map([['llama3.1:70b', 'Llama 3.1 70b']])
+export const ollamaNames = new Map([['llama3.1:70b', 'Llama 3.1 70b']])
 
 export const getOllamaModels = async (
   ollamaProvider: LLMProvider,

@@ -20,6 +20,14 @@ import { replaceCitationLinks } from './citations'
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
 import { getBaseUrl } from '~/utils/apiUtils'
 import posthog from 'posthog-js'
+import {
+  AllLLMProviders,
+  GenericSupportedModel,
+  LLMProvider,
+  ProviderNames,
+  SupportedModels,
+} from '~/types/LLMProvider'
+import { getOllamaModels, ollamaNames } from './modelProviders/ollama'
 
 export const config = {
   runtime: 'edge',
@@ -296,38 +304,52 @@ export async function processChunkWithStateMachine(
 }
 
 /**
+ * Fetches the OpenAI key to use for the request.
+ * @param {string | undefined} openai_key - The OpenAI key provided in the request.
+ * @param {CourseMetadata} courseMetadata - The course metadata containing the fallback OpenAI key.
+ * @returns {Promise<string>} The OpenAI key to use.
+ */
+export async function fetchKeyToUse(
+  openai_key: string | undefined,
+  courseMetadata: CourseMetadata,
+): Promise<string> {
+  return (
+    openai_key ||
+    ((await decrypt(
+      courseMetadata.openai_api_key as string,
+      process.env.NEXT_PUBLIC_SIGNING_KEY as string,
+    )) as string)
+  )
+}
+
+/**
  * Determines the OpenAI key to use and validates it by checking available models.
  * @param {string | undefined} openai_key - The OpenAI key provided in the request.
  * @param {CourseMetadata} courseMetadata - The course metadata containing the fallback OpenAI key.
  * @param {string} modelId - The model identifier to validate against the available models.
  * @returns {Promise<string>} The validated OpenAI key.
  */
-export async function determineAndValidateOpenAIKey(
-  openai_key: string | undefined,
-  courseMetadata: CourseMetadata,
+export async function determineAndValidateModel(
+  keyToUse: string,
   modelId: string,
   projectName: string,
-): Promise<string> {
-  const keyToUse =
-    openai_key ||
-    ((await decrypt(
-      courseMetadata.openai_api_key as string,
-      process.env.NEXT_PUBLIC_SIGNING_KEY as string,
-    )) as string)
-
-  if (keyToUse) {
-    const isModelAvailable = await validateModelWithKey(
-      keyToUse,
-      modelId,
-      projectName,
-    )
-    if (!isModelAvailable) {
-      throw new Error('Model not available on the key supplied')
-    }
-    return keyToUse
+): Promise<GenericSupportedModel> {
+  const availableModels = await fetchAvailableModels(
+    keyToUse,
+    modelId,
+    projectName,
+  )
+  // if (!isModelAvailable) {
+  //   throw new Error('Model not available on the key supplied')
+  // }
+  // Check if availableModels doesn't contain modelId then return error otherwise Return model to use
+  if (availableModels.find((model) => model.id === modelId)) {
+    return availableModels.find(
+      (model) => model.id === modelId,
+    ) as GenericSupportedModel
+  } else {
+    throw new Error('Model not available on the key supplied')
   }
-
-  throw new Error('No OpenAI key found. OpenAI key is required')
 }
 
 /**
@@ -336,11 +358,11 @@ export async function determineAndValidateOpenAIKey(
  * @param {string} modelId - The model identifier to check.
  * @returns {Promise<boolean>} A promise that resolves to a boolean indicating if the model is available.
  */
-export async function validateModelWithKey(
-  apiKey: string,
+export async function fetchAvailableModels(
+  apiKey: string | undefined,
   modelId: string,
   projectName: string,
-): Promise<boolean> {
+): Promise<SupportedModels> {
   // TODO: actually call the chat endpoint to see if models are working. Not /models
   try {
     const baseUrl = getBaseUrl()
@@ -362,8 +384,12 @@ export async function validateModelWithKey(
       )
     }
 
-    const models: OpenAIModel[] = await response.json()
-    return models.some((model) => model.id === modelId)
+    const modelsWithProviders = (await response.json()) as AllLLMProviders
+    const availableModels = Object.values(modelsWithProviders)
+      .flatMap((provider) => provider?.models || [])
+      .filter((model) => model.enabled)
+
+    return availableModels
   } catch (error) {
     console.error('Error validating model with key:', error)
     throw error
@@ -375,7 +401,7 @@ export async function validateModelWithKey(
  * Throws an error with a specific message when validation fails.
  * @param {ChatApiBody} body - The request body to validate.
  */
-export function validateRequestBody(body: ChatApiBody): void {
+export async function validateRequestBody(body: ChatApiBody): Promise<void> {
   // Check for required fields
   const requiredFields = ['model', 'messages', 'course_name', 'api_key']
   for (const field of requiredFields) {
@@ -383,8 +409,8 @@ export function validateRequestBody(body: ChatApiBody): void {
       throw new Error(`Missing required field: ${field}`)
     }
   }
-
-  if (typeof body.model !== 'string' || !(body.model in OpenAIModels)) {
+  // Ideally, we would validate the model against the available list of models here wihout validating the key or
+  if (typeof body.model !== 'string') {
     throw new Error('Invalid model provided')
   }
 
@@ -429,6 +455,7 @@ export function validateRequestBody(body: ChatApiBody): void {
   }
 
   // Additional validation for other fields can be added here if needed
+  console.log('Validation passed')
 }
 
 /**
@@ -737,9 +764,9 @@ export async function handleImageContent(
       : apiKey
   const endpoint = getBaseUrl() + '/api/chat'
   console.log('fetching image description for message: ', message)
-
+  let imgDesc = ''
   try {
-    const imgDesc = await fetchImageDescription(
+    imgDesc = await fetchImageDescription(
       course_name,
       updatedConversation,
       key,
@@ -770,5 +797,5 @@ export async function handleImageContent(
     controller.abort()
   }
   console.log('Returning search query with image description: ', searchQuery)
-  return searchQuery
+  return { searchQuery, imgDesc }
 }

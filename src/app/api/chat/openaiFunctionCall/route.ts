@@ -126,7 +126,10 @@ export async function POST(req: Request) {
     console.error('❌ ERROR --- No response from OpenAI!!')
     return new Response('No response from OpenAI', { status: 500 })
   } else if (!response.choices[0]?.message.tool_calls) {
-    return new Response('No tools invoked by OpenAI', { status: 204 })
+    return new Response(
+      JSON.stringify({ message: 'No tools invoked by OpenAI' }),
+      { status: 200 },
+    )
   } else {
     const tools = response.choices[0]?.message
       .tool_calls as ChatCompletionMessageToolCall[]
