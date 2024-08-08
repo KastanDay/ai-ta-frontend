@@ -50,6 +50,7 @@ export async function POST(req: Request) {
   } = await req.json()
 
   let decryptedKey = openaiKey
+  // console.log('Decrypted key before transform: ', decryptedKey)
   if (openaiKey && isEncrypted(openaiKey)) {
     // Decrypt the key
     const decryptedText = await decrypt(
@@ -65,6 +66,7 @@ export async function POST(req: Request) {
     // console.log('process.env.VLADS_OPENAI_KEY: ', process.env.VLADS_OPENAI_KEY)
     decryptedKey = process.env.VLADS_OPENAI_KEY as string
   }
+  // console.log('Decrypted key: ', decryptedKey)
 
   // Create an OpenAI API client (that's edge friendly!)
   // const openai = new OpenAI({ apiKey: decryptedKey })

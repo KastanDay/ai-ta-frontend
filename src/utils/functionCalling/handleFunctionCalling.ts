@@ -9,23 +9,23 @@ import { UIUCTool } from '~/types/chat'
 import type { ToolOutput } from '~/types/chat'
 import posthog from 'posthog-js'
 
-export async function handleToolsServer(
+export async function handleFunctionCall(
   message: Message,
   availableTools: UIUCTool[],
   imageUrls: string[],
   imageDescription: string,
   selectedConversation: Conversation,
   openaiKey: string,
-  projectName: string,
   base_url?: string,
-) {
+): Promise<UIUCTool[]> {
   try {
     // Convert UIUCTool to OpenAICompatibleTool
     const openAITools = getOpenAIToolFromUIUCTool(availableTools)
-    // console.log('OpenAI compatible tools (handle tools): ', openAITools)
     console.log('OpenAI compatible tools (handle tools): ', openaiKey)
-
-    const response = await fetch(`${base_url}/api/chat/openaiFunctionCall`, {
+    const url = base_url
+      ? `${base_url}/api/chat/openaiFunctionCall`
+      : '/api/chat/openaiFunctionCall'
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -41,14 +41,13 @@ export async function handleToolsServer(
 
     if (!response.ok) {
       console.error('Error calling openaiFunctionCall: ', response)
-      return
+      return []
     }
     const openaiFunctionCallResponse = await response.json()
-
-    //Todo: Is there a better way to handle this? Generic messages for errors? Enum for message and status?
+    console.log('OpenAI function call response: ', openaiFunctionCallResponse)
     if (openaiFunctionCallResponse.message === 'No tools invoked by OpenAI') {
       console.error('No tools invoked by OpenAI')
-      return
+      return []
     }
 
     const openaiResponse: ChatCompletionMessageToolCall[] =
@@ -71,8 +70,26 @@ export async function handleToolsServer(
       message
     console.log('UIUC tools to run: ', uiucToolsToRun)
 
+    return uiucToolsToRun
+  } catch (error) {
+    console.error(
+      'Error calling openaiFunctionCall from handleFunctionCall: ',
+      error,
+    )
+    return []
+  }
+}
+
+export async function handleToolCall(
+  uiucToolsToRun: UIUCTool[],
+  selectedConversation: Conversation,
+  projectName: string,
+  base_url?: string,
+): Promise<Conversation> {
+  try {
     if (uiucToolsToRun.length > 0) {
       // Tool calling in Parallel here!!
+      console.log('Running tools in parallel')
       const toolResultsPromises = uiucToolsToRun.map(async (tool) => {
         try {
           const toolOutput = await callN8nFunction(
@@ -93,9 +110,6 @@ export async function handleToolsServer(
           selectedConversation.messages.length - 1
         ]!.tools!.find((t) => t.readableName === tool.readableName)!.output =
           tool.output
-        selectedConversation.messages[
-          selectedConversation.messages.length - 1
-        ] = message
       })
       await Promise.all(toolResultsPromises)
     }
@@ -106,106 +120,46 @@ export async function handleToolsServer(
     )
     return selectedConversation
   } catch (error) {
-    console.error(
-      'Error calling openaiFunctionCall from handleToolsServer: ',
-      error,
-    )
+    console.error('Error running tools from handleToolCall: ', error)
+    throw error
   }
 }
 
-export default async function handleTools(
+export async function handleToolsServer(
   message: Message,
   availableTools: UIUCTool[],
   imageUrls: string[],
   imageDescription: string,
   selectedConversation: Conversation,
-  currentMessageIndex: number,
   openaiKey: string,
   projectName: string,
-  homeDispatch: Dispatch<ActionType<HomeInitialState>>,
-) {
+  base_url?: string,
+): Promise<Conversation> {
   try {
-    homeDispatch({ field: 'isRouting', value: true })
-
-    // Convert UIUCTool to OpenAICompatibleTool
-    const openAITools = getOpenAIToolFromUIUCTool(availableTools)
-    console.log('OpenAI compatible tools (handle tools): ', openAITools)
-
-    const response = await fetch('/api/chat/openaiFunctionCall', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        conversation: selectedConversation,
-        tools: openAITools,
-        imageUrls: imageUrls,
-        imageDescription: imageDescription,
-        openaiKey: openaiKey,
-      }),
-    })
-    if (!response.ok) {
-      console.error(
-        'in HandleTools -- Error calling openaiFunctionCall: ',
-        response,
-      )
-      homeDispatch({ field: 'isRouting', value: false })
-      return
-    }
-    const openaiResponse: ChatCompletionMessageToolCall[] =
-      await response.json()
-    console.log('OpenAI tools to run: ', openaiResponse)
-    // map tool into UIUCTool, parse arguments
-    const uiucToolsToRun = openaiResponse.map((openaiTool) => {
-      const uiucTool = availableTools.find(
-        (availableTool) => availableTool.name === openaiTool.function.name,
-      ) as UIUCTool
-      uiucTool.aiGeneratedArgumentValues = JSON.parse(
-        openaiTool.function.arguments,
-      )
-      return uiucTool
-    })
-    console.log('UIUC tools to run: ', uiucToolsToRun)
-
-    // Update conversation with tools & arguments (for fast UI), then we'll actually call the tools below
-    homeDispatch({ field: 'isRouting', value: false })
-    message.tools = [...uiucToolsToRun]
-    selectedConversation.messages[currentMessageIndex] = message
-    homeDispatch({
-      field: 'selectedConversation',
-      value: selectedConversation,
-    })
+    const uiucToolsToRun = await handleFunctionCall(
+      message,
+      availableTools,
+      imageUrls,
+      imageDescription,
+      selectedConversation,
+      openaiKey,
+      base_url,
+    )
 
     if (uiucToolsToRun.length > 0) {
-      // Tool calling in Parallel here!!
-      const toolResultsPromises = uiucToolsToRun.map(async (tool) => {
-        try {
-          const toolOutput = await callN8nFunction(tool, projectName, undefined)
-          tool.output = toolOutput
-        } catch (error: unknown) {
-          console.error(
-            `Error running tool: ${error instanceof Error ? error.message : error}`,
-          )
-          tool.error = `Error running tool: ${error instanceof Error ? error.message : error}`
-        }
-        // update message with tool output, but don't add another tool.
-        selectedConversation.messages[currentMessageIndex]!.tools!.find(
-          (t) => t.readableName === tool.readableName,
-        )!.output = tool.output
-
-        selectedConversation.messages[currentMessageIndex] = message
-        homeDispatch({
-          field: 'selectedConversation',
-          value: selectedConversation,
-        })
-      })
-      await Promise.all(toolResultsPromises)
-
-      return null
+      return await handleToolCall(
+        uiucToolsToRun,
+        selectedConversation,
+        projectName,
+        base_url,
+      )
     }
+
+    return selectedConversation
   } catch (error) {
-    console.error('Error calling openaiFunctionCall from handleTools: ', error)
+    console.error('Error in handleToolsServer: ', error)
   }
+  return selectedConversation
 }
 
 const callN8nFunction = async (

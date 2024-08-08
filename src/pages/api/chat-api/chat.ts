@@ -15,9 +15,11 @@ import {
   constructSearchQuery,
   determineAndValidateModel,
   fetchKeyToUse,
+  handleContextSearch,
   handleImageContent,
   handleNonStreamingResponse,
   handleStreamingResponse,
+  routeModelRequest,
   validateRequestBody,
 } from '~/utils/streamProcessing'
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '~/utils/app/const'
@@ -30,6 +32,7 @@ import {
   handleToolsServer,
 } from '~/utils/functionCalling/handleFunctionCalling'
 import { GenericSupportedModel } from '~/types/LLMProvider'
+import { fetchEnabledDocGroups } from '~/utils/dbUtils'
 
 // Configuration for the runtime environment
 export const config = {
@@ -198,6 +201,20 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
   }
   console.log('Available tools: ', availableTools)
 
+  // Fetch document groups
+  let doc_groups: string[] = []
+  try {
+    const enabledDocGroups = await fetchEnabledDocGroups(course_name!)
+    doc_groups = enabledDocGroups.map((group) => group.name)
+  } catch (error) {
+    console.error('Error fetching document groups:', error)
+    return NextResponse.json(
+      { error: 'Error fetching document groups' },
+      { status: 500 },
+    )
+  }
+
+  const controller = new AbortController()
   // Construct the search query
   let searchQuery = constructSearchQuery(messages)
   let imgDesc = ''
@@ -241,19 +258,22 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
         searchQuery,
         courseMetadata,
         openai_key,
-        new AbortController(),
+        controller,
       )
     searchQuery = newSearchQuery
     imgDesc = newImgDesc
   }
 
   // Fetch Contexts
-  const contexts = await fetchContexts(
+  const contexts = await handleContextSearch(
+    lastMessage,
     course_name,
+    conversation,
     searchQuery,
-    activeModel.tokenLimit,
+    doc_groups,
   )
 
+  // Do we need this?
   // Check if contexts were found
   if (contexts.length === 0) {
     console.error('No contexts found')
@@ -267,21 +287,11 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
   // Attach contexts to the last message
   attachContextsToLastMessage(lastMessage, contexts)
 
-  //Todo: Add handleTools here, skipping for now because edge functions will start timing out waiting for tool run to finish
-  // const toolResult = await handleTools(
-  //   message,
-  //   tools,
-  //   imageUrls,
-  //   imgDesc,
-  //   updatedConversation,
-  //   currentMessageIndex,
-  //   getOpenAIKey(courseMetadata),
-  //   getCurrentPageName(),
-  //   homeDispatch,
-  // )
+  // Handle tools
   console.log('Tools start with openai_key:', key)
+  let updatedConversation = conversation
   if (availableTools.length > 0) {
-    const tools = await handleToolsServer(
+    updatedConversation = await handleToolsServer(
       lastMessage,
       availableTools, // You need to define availableTools somewhere in your code
       imageUrls, // You need to define imageUrls somewhere in your code
@@ -315,13 +325,12 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
   // Make the API request to the chat handler
   const baseUrl = getBaseUrl()
   // console.log('baseUrl:', baseUrl);
-  const apiResponse: NextResponse = (await fetch(baseUrl + '/api/chat', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(chatBody),
-  })) as NextResponse
+  const apiResponse = await routeModelRequest(
+    conversation,
+    chatBody,
+    controller,
+    baseUrl,
+  )
 
   // Handle errors from the chat handler API
   if (!apiResponse.ok) {

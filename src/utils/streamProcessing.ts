@@ -28,6 +28,8 @@ import {
   SupportedModels,
 } from '~/types/LLMProvider'
 import { getOllamaModels, ollamaNames } from './modelProviders/ollama'
+import fetchMQRContexts from '~/pages/api/getContextsMQR'
+import fetchContexts from '~/pages/api/getContexts'
 
 export const config = {
   runtime: 'edge',
@@ -480,6 +482,31 @@ export function constructSearchQuery(messages: Message[]): string {
     .join('\n')
 }
 
+export const handleContextSearch = async (
+  message: Message,
+  courseName: string,
+  selectedConversation: Conversation,
+  searchQuery: string,
+  documentGroups: string[],
+): Promise<ContextWithMetadata[]> => {
+  if (courseName !== 'gpt4') {
+    const token_limit = selectedConversation.model.tokenLimit
+    const useMQRetrieval = false
+
+    const fetchContextsFunc = useMQRetrieval ? fetchMQRContexts : fetchContexts
+    const curr_contexts = await fetchContextsFunc(
+      courseName,
+      searchQuery,
+      token_limit,
+      documentGroups,
+    )
+
+    message.contexts = curr_contexts as ContextWithMetadata[]
+    return curr_contexts as ContextWithMetadata[]
+  }
+  return []
+}
+
 /**
  * Attaches contexts to the last message in the conversation.
  * @param {Message} lastMessage - The last message object in the conversation.
@@ -532,7 +559,7 @@ export function constructChatBody(
  * @returns {Promise<NextResponse>} A NextResponse object representing the streaming response.
  */
 export async function handleStreamingResponse(
-  apiResponse: NextResponse,
+  apiResponse: Response,
   conversation: Conversation,
   req: NextRequest,
   course_name: string,
@@ -661,7 +688,7 @@ async function processResponseData(
  * @returns {Promise<NextResponse>} A NextResponse object representing the JSON response.
  */
 export async function handleNonStreamingResponse(
-  apiResponse: NextResponse,
+  apiResponse: Response,
   conversation: Conversation,
   req: NextRequest,
   course_name: string,
@@ -762,7 +789,6 @@ export async function handleImageContent(
     courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != ''
       ? courseMetadata.openai_api_key
       : apiKey
-  const endpoint = getBaseUrl() + '/api/chat'
   console.log('fetching image description for message: ', message)
   let imgDesc = ''
   try {
@@ -798,4 +824,50 @@ export async function handleImageContent(
   }
   console.log('Returning search query with image description: ', searchQuery)
   return { searchQuery, imgDesc }
+}
+
+export const getOpenAIKey = (
+  courseMetadata: CourseMetadata,
+  userApiKey: string,
+) => {
+  const key =
+    courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != ''
+      ? courseMetadata.openai_api_key
+      : userApiKey
+  return key
+}
+
+export const routeModelRequest = async (
+  selectedConversation: Conversation,
+  chatBody: ChatBody,
+  controller: AbortController,
+  baseUrl?: string,
+): Promise<Response> => {
+  let response: Response
+  if (selectedConversation.model.id === 'llama3.1:70b') {
+    console.log(
+      "In streamProcessing.ts Ollama, selectedConversation.model.name === 'llama3.1:70b'",
+    )
+    const url = baseUrl ? `${baseUrl}/api/chat/ollama` : '/api/chat/ollama'
+    // Is Ollama model
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ conversation: selectedConversation }),
+    })
+  } else {
+    // Call the OpenAI API
+    const url = baseUrl ? `${baseUrl}/api/chat` : '/api/chat'
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+      body: JSON.stringify(chatBody),
+    })
+  }
+  return response
 }
