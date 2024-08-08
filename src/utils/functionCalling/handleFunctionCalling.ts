@@ -234,7 +234,6 @@ const callN8nFunction = async (
       )
     }
     n8n_api_key = await response.json()
-    console.debug('⚠️ API Key from getN8nAPIKey: ', n8n_api_key)
   }
 
   // Run tool
@@ -460,9 +459,6 @@ export function getUIUCToolFromN8n(workflows: N8nWorkflow[]): UIUCTool[] {
       })
     }
 
-    console.log('Extracted workflow: ', workflow)
-    console.log('Extracted workflow.createdAt: ', workflow.createdAt)
-
     extractedObjects.push({
       id: workflow.id,
       name: workflow.name.replace(/[^a-zA-Z0-9_-]/g, '_'),
@@ -503,14 +499,9 @@ export async function fetchTools(
       throw new Error('Network response was not ok')
     }
     api_key = await response.json()
-    console.log('⚠️ API Key from getN8nAPIKey: ', api_key)
   }
 
   const parsedPagination = pagination.toLowerCase() === 'true'
-
-  console.log('About to fetch workflows. Key:', api_key)
-
-  //! console.log("Railway url: ", process.env.RAILWAY_URL) // undefined !!!
 
   const response = await fetch(
     `https://flask-production-751b.up.railway.app/getworkflows?api_key=${api_key}&limit=${limit}&pagination=${parsedPagination}`,
@@ -524,7 +515,6 @@ export async function fetchTools(
   if (full_details) return workflows[0]
 
   const uiucTools = getUIUCToolFromN8n(workflows[0])
-  console.log('All uiuc tools: ', uiucTools)
   return uiucTools
 }
 
