@@ -4,7 +4,7 @@ import { Notifications } from '@mantine/notifications'
 import { Analytics } from '@vercel/analytics/react'
 import { appWithTranslation } from 'next-i18next'
 import { ClerkProvider, GoogleOneTap } from '@clerk/nextjs'
-import { dark } from '@clerk/themes'
+import { dark, shadesOfPurple } from '@clerk/themes'
 
 import '~/styles/globals.css'
 import Maintenance from '~/components/UIUC-Components/Maintenance'
@@ -58,7 +58,15 @@ const MyApp: AppType = ({ Component, pageProps: { ...pageProps } }) => {
       <PostHogProvider client={posthog}>
         <ClerkProvider
           appearance={{
+            // baseTheme: shadesOfPurple,
             baseTheme: dark,
+            variables: {
+              // colorPrimary: '#FFFFFF',
+              // colorText: '#FFFFFF',
+              colorNeutral: '#FFFFFF',
+              // colorTextSecondary: '#FFFFFF',
+              // colorTextOnPrimaryBackground: '#FFFFFF',
+            },
           }}
           {...pageProps}
         >
