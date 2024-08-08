@@ -23,7 +23,7 @@ const conversationToMessages = (
     const simpleMessage: ChatCompletionMessageParam = {
       role: message.role,
       content: Array.isArray(message.content)
-        ? message.content[0]?.text ?? ''
+        ? (message.content[0]?.text ?? '')
         : message.content,
     }
     transformedData.push(simpleMessage)

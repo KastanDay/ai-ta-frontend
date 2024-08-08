@@ -227,10 +227,10 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
     model: activeModel,
     prompt:
       messages.filter((message) => message.role === 'system').length > 0
-        ? (messages.filter((message) => message.role === 'system')[0]
+        ? ((messages.filter((message) => message.role === 'system')[0]
             ?.content as string) ??
           (messages.filter((message) => message.role === 'system')[0]
-            ?.content as string)
+            ?.content as string))
         : DEFAULT_SYSTEM_PROMPT,
     temperature: temperature || DEFAULT_TEMPERATURE,
     folderId: null,
