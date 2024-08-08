@@ -9,12 +9,7 @@ import {
 import { CourseMetadata } from '~/types/courseMetadata'
 import { decrypt } from './crypto'
 import { OpenAIError } from './server'
-import {
-  OpenAIModel,
-  OpenAIModelID,
-  OpenAIModels,
-  VisionCapableModels,
-} from '~/types/openai'
+import { OpenAIModelID } from '~/types/openai'
 import { NextRequest, NextResponse } from 'next/server'
 import { replaceCitationLinks } from './citations'
 import { fetchImageDescription } from '~/pages/api/UIUC-api/fetchImageDescription'
@@ -23,11 +18,9 @@ import posthog from 'posthog-js'
 import {
   AllLLMProviders,
   GenericSupportedModel,
-  LLMProvider,
-  ProviderNames,
   SupportedModels,
+  VisionCapableModels,
 } from '~/types/LLMProvider'
-import { getOllamaModels, ollamaNames } from './modelProviders/ollama'
 import fetchMQRContexts from '~/pages/api/getContextsMQR'
 import fetchContexts from '~/pages/api/getContexts'
 

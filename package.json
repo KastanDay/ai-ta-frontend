@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "infisical run --env=dev -- next dev",
     "lint": "next lint",
     "start": "next start",
     "format": "prettier --check --ignore-path .gitignore .",
@@ -17,7 +17,7 @@
     "@aws-sdk/client-s3": "^3.338.0",
     "@aws-sdk/s3-presigned-post": "^3.338.0",
     "@aws-sdk/s3-request-presigner": "^3.338.0",
-    "@clerk/nextjs": "^4.21.0",
+    "@clerk/nextjs": "^4.29.3",
     "@clerk/themes": "^1.7.5",
     "@dqbd/tiktoken": "^1.0.7",
     "@emotion/react": "^11.11.1",
@@ -86,6 +86,7 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^13.4.3",
+    "@trunkio/launcher": "^1.3.1",
     "@types/eslint": "^8.21.3",
     "@types/jsdom": "^21.1.1",
     "@types/node": "^18.16.13",
