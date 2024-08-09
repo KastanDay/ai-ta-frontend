@@ -20,7 +20,10 @@ import {
   preferredModelIds,
   selectBestModel,
 } from '~/types/openai'
-import ChatUI, { webLLMModels, WebLLMLoadingState } from '~/utils/modelProviders/WebLLM'
+import ChatUI, {
+  webLLMModels,
+  WebLLMLoadingState,
+} from '~/utils/modelProviders/WebLLM'
 import { modelCached } from './UserSettings'
 import Image from 'next/image'
 import { LLMProvider, ProviderNames } from '~/types/LLMProvider'
@@ -91,7 +94,13 @@ const getModelLogo = (modelType: string) => {
       throw new Error(`Unknown model type: ${modelType}`)
   }
 }
-const ModelItem = forwardRef<HTMLDivElement, ModelItemProps & { loadingModelId: string | null, setLoadingModelId: (id: string | null) => void }>(
+const ModelItem = forwardRef<
+  HTMLDivElement,
+  ModelItemProps & {
+    loadingModelId: string | null
+    setLoadingModelId: (id: string | null) => void
+  }
+>(
   (
     {
       label,
@@ -105,7 +114,10 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps & { loadingModelId: 
       setLoadingModelId,
       chat_ui,
       ...others
-    }: ModelItemProps & { loadingModelId: string | null, setLoadingModelId: (id: string | null) => void },
+    }: ModelItemProps & {
+      loadingModelId: string | null
+      setLoadingModelId: (id: string | null) => void
+    },
     ref,
   ) => {
     const [isModelCached, setIsModelCached] = useState(false)
@@ -182,23 +194,57 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps & { loadingModelId: 
                 <Text size="xs" opacity={0.65}>
                   {downloadSize}
                 </Text>
-                {state.webLLMModelIdLoading.id == modelId && state.webLLMModelIdLoading.isLoading ? (
-                  <div style={{ marginLeft: '8px', display: 'flex', alignItems: 'center' }}>
+                {state.webLLMModelIdLoading.id == modelId &&
+                state.webLLMModelIdLoading.isLoading ? (
+                  <div
+                    style={{
+                      marginLeft: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
                     <LoadingSpinner size="0.5rem" />
-                    <Text size="s" style={{ marginLeft: '7px' }} className="text-purple-600">loading</Text>
+                    <Text
+                      size="s"
+                      style={{ marginLeft: '7px' }}
+                      className="text-purple-600"
+                    >
+                      loading
+                    </Text>
                   </div>
                 ) : (
                   <>
-                    {isModelCached || state.webLLMModelIdLoading.id == modelId && !state.webLLMModelIdLoading.isLoading ? (
+                    {isModelCached ||
+                    (state.webLLMModelIdLoading.id == modelId &&
+                      !state.webLLMModelIdLoading.isLoading) ? (
                       <>
-                        <IconCircleCheck size="1rem" style={{ marginLeft: '8px' }} className='text-purple-400' />
+                        <IconCircleCheck
+                          size="1rem"
+                          style={{ marginLeft: '8px' }}
+                          className="text-purple-400"
+                        />
                         {/* {isLoading && setLoadingModelId(null)} */}
                       </>
                     ) : (
                       <IconDownload size="1rem" style={{ marginLeft: '8px' }} />
                     )}
-                    <Text size="xs" opacity={isModelCached ? 1 : 0.65} style={{ marginLeft: '4px' }} className={isModelCached || state.webLLMModelIdLoading.id == modelId && !state.webLLMModelIdLoading.isLoading ? 'text-purple-400' : ''}>
-                      {isModelCached || state.webLLMModelIdLoading.id == modelId && !state.webLLMModelIdLoading.isLoading ? 'downloaded' : 'download'}
+                    <Text
+                      size="xs"
+                      opacity={isModelCached ? 1 : 0.65}
+                      style={{ marginLeft: '4px' }}
+                      className={
+                        isModelCached ||
+                        (state.webLLMModelIdLoading.id == modelId &&
+                          !state.webLLMModelIdLoading.isLoading)
+                          ? 'text-purple-400'
+                          : ''
+                      }
+                    >
+                      {isModelCached ||
+                      (state.webLLMModelIdLoading.id == modelId &&
+                        !state.webLLMModelIdLoading.isLoading)
+                        ? 'downloaded'
+                        : 'download'}
                     </Text>
                   </>
                 )}
@@ -238,7 +284,12 @@ const ModelItem = forwardRef<HTMLDivElement, ModelItemProps & { loadingModelId: 
   },
 )
 
-const ModelDropdown: React.FC<ModelDropdownProps & { setLoadingModelId: (id: string | null) => void, onChange: (modelId: string) => Promise<void> }> = ({
+const ModelDropdown: React.FC<
+  ModelDropdownProps & {
+    setLoadingModelId: (id: string | null) => void
+    onChange: (modelId: string) => Promise<void>
+  }
+> = ({
   title,
   value,
   onChange,
@@ -315,7 +366,13 @@ const ModelDropdown: React.FC<ModelDropdownProps & { setLoadingModelId: (id: str
             group: model.group,
             vram_required_MB: model.vram_required_MB,
           }))}
-          itemComponent={(props) => <ModelItem {...props} loadingModelId={loadingModelId} setLoadingModelId={setLoadingModelId} />}
+          itemComponent={(props) => (
+            <ModelItem
+              {...props}
+              loadingModelId={loadingModelId}
+              setLoadingModelId={setLoadingModelId}
+            />
+          )}
           maxDropdownHeight={480}
           rightSectionWidth="auto"
           icon={
@@ -397,29 +454,21 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
     const [loadingModelId, setLoadingModelId] = useState<string | null>(null)
 
     const handleModelClick = (modelId: string) => {
-      console.debug('handleModelClick clicked:', modelId)
-      console.debug('handleModelClick avail models: ', llmProviders)
-
-      const allModels = [
-        ...(llmProviders.Ollama?.models || []),
-        ...(llmProviders.OpenAI?.models || []),
-        ...(llmProviders.WebLLM?.models || []),
-        // ...(llmProviders.Anthropic?.models || [])
-      ].filter((model) => model.enabled)
+      // Get list of models from all providers
+      const allModels = Object.values(llmProviders)
+        .flatMap((provider) => provider?.models || [])
+        .filter((model) => model.enabled)
 
       const model =
         Object.keys(allModels).reduce((foundModel: any, key: any) => {
-          // console.log('key:', key, 'models[key]:', models[key])
           return foundModel || allModels!.find((model) => model.id === modelId)
         }, undefined) || defaultModel
-      console.debug('handleModelClick SETTING IT TO: ', model)
 
       selectedConversation &&
         handleUpdateConversation(selectedConversation, {
           key: 'model',
           value: model as OpenAIModel,
         })
-
     }
 
     return (
@@ -439,7 +488,9 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 // //   console.log('model is loading', state.webLLMModelIdLoading.id)
                 // // }
                 // await handleModelClick(modelId)
-                async (modelId) => { handleModelClick(modelId) }
+                async (modelId) => {
+                  handleModelClick(modelId)
+                }
               }
               models={{
                 Ollama: llmProviders.Ollama?.models?.filter(
@@ -574,8 +625,9 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 />
               </Link>
               <br />
-              If you see lots of text, it&apos;s working. If you see &quot;webgpu not
-              available on this browser&quot;, it&apos;s not working.
+              If you see lots of text, it&apos;s working. If you see
+              &quot;webgpu not available on this browser&quot;, it&apos;s not
+              working.
             </Text>
             <Title
               className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}

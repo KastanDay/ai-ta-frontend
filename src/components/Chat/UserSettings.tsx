@@ -50,11 +50,11 @@ export const modelCached: WebllmModel[] = []
 const appConfig = prebuiltAppConfig
 // CHANGE THIS TO SEE EFFECTS OF BOTH, CODE BELOW DO NOT NEED TO CHANGE
 appConfig.useIndexedDBCache = false
-if (appConfig.useIndexedDBCache) {
-  console.debug('WebLLM: Using IndexedDB Cache')
-} else {
-  console.debug('WebLLM: Using Cache API')
-}
+// if (appConfig.useIndexedDBCache) {
+//   console.debug('WebLLM: Using IndexedDB Cache')
+// } else {
+//   console.debug('WebLLM: Using Cache API')
+// }
 
 export const UserSettings = () => {
   const {
@@ -68,33 +68,19 @@ export const UserSettings = () => {
   const [opened, { open, close }] = useDisclosure(false)
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const loadModelCache = async () => {
-    console.log('start loadingmodelcache')
-    const model = selectedConversation?.model
-    // if (
-    //   model &&
-    //   'name' in model &&
-    //   webLLMModels.some((m) => m.name === model.name)
-    // ) {
     for (const model of webLLMModels) {
-      const theCachedModel = await webllm.hasModelInCache(
-        model.name,
-        appConfig,
-      )
+      const theCachedModel = await webllm.hasModelInCache(model.name, appConfig)
       if (theCachedModel) {
         if (
           !modelCached.some((cachedModel) => cachedModel.name === model.name)
         ) {
           modelCached.push(model)
         }
-        // console.log('model is cached:', model.name)
       }
-      console.log('hasModelInCache: ', modelCached)
+      // console.log('hasModelInCache: ', modelCached)
     }
-    // }
   }
-  // if (selectedConversation && webLLMModels.some(m => m.name === selectedConversation.model.name)) {
-  //   loadModelCache();
-  // }
+
   useEffect(() => {
     if (showModelSettings) {
       open()
