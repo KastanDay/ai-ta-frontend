@@ -17,12 +17,15 @@ import { getBaseUrl } from '~/utils/apiUtils'
 import posthog from 'posthog-js'
 import {
   AllLLMProviders,
+  AllSupportedModels,
   GenericSupportedModel,
   SupportedModels,
   VisionCapableModels,
 } from '~/types/LLMProvider'
 import fetchMQRContexts from '~/pages/api/getContextsMQR'
 import fetchContexts from '~/pages/api/getContexts'
+import { OllamaModelIDs } from './modelProviders/ollama'
+import { webLLMModels } from './modelProviders/WebLLM'
 
 export const config = {
   runtime: 'edge',
@@ -334,16 +337,15 @@ export async function determineAndValidateModel(
     modelId,
     projectName,
   )
-  // if (!isModelAvailable) {
-  //   throw new Error('Model not available on the key supplied')
-  // }
   // Check if availableModels doesn't contain modelId then return error otherwise Return model to use
   if (availableModels.find((model) => model.id === modelId)) {
     return availableModels.find(
       (model) => model.id === modelId,
     ) as GenericSupportedModel
   } else {
-    throw new Error('Model not available on the key supplied')
+    throw new Error(
+      `Model '${modelId}' is not available given the provided API Key. Ensure that this model ID is correct, and that it is enabled in the UIUC.chat admin dashboard.`,
+    )
   }
 }
 
@@ -383,7 +385,6 @@ export async function fetchAvailableModels(
     const availableModels = Object.values(modelsWithProviders)
       .flatMap((provider) => provider?.models || [])
       .filter((model) => model.enabled)
-
     return availableModels
   } catch (error) {
     console.error('Error validating model with key:', error)
@@ -404,9 +405,18 @@ export async function validateRequestBody(body: ChatApiBody): Promise<void> {
       throw new Error(`Missing required field: ${field}`)
     }
   }
-  // Ideally, we would validate the model against the available list of models here wihout validating the key or
-  if (typeof body.model !== 'string') {
-    throw new Error('Invalid model provided')
+  // Validate against a static list of all supported models. Don't include the WebLLM since they run in the browser.
+  const apiSupportedModels = Array.from(AllSupportedModels).filter(
+    (model) => !webLLMModels.some((webLLMModel) => webLLMModel.id === model.id),
+  )
+  if (!apiSupportedModels.some((model) => model.id === body.model)) {
+    throw new Error(
+      `Invalid model provided '${body.model}'. Is not one of our supported models: ${Array.from(
+        apiSupportedModels,
+      )
+        .map((model) => model.id)
+        .join(', ')}`,
+    )
   }
 
   if (
@@ -415,7 +425,9 @@ export async function validateRequestBody(body: ChatApiBody): Promise<void> {
     body.messages.length === 0 ||
     !body.messages.some((message) => message.role === 'user')
   ) {
-    throw new Error('Invalid or empty messages provided')
+    throw new Error(
+      'Invalid or empty messages provided. Messages must contain at least one user message.',
+    )
   }
 
   if (
@@ -428,11 +440,13 @@ export async function validateRequestBody(body: ChatApiBody): Promise<void> {
   }
 
   if (typeof body.course_name !== 'string') {
-    throw new Error('Invalid course_name provided')
+    throw new Error(
+      "Invalid course_name provided. 'course_name' must be a string.",
+    )
   }
 
   if (body.stream && typeof body.stream !== 'boolean') {
-    throw new Error('Invalid stream provided')
+    throw new Error("Invalid stream provided. 'stream' must be a boolean.")
   }
 
   const hasImageContent = body.messages.some(
@@ -445,12 +459,12 @@ export async function validateRequestBody(body: ChatApiBody): Promise<void> {
     !VisionCapableModels.has(body.model as OpenAIModelID)
   ) {
     throw new Error(
-      `The selected model '${body.model}'does not support vision capabilities. Use one of these: ${Array.from(VisionCapableModels).join(', ')}`,
+      `The selected model '${body.model}'does not support vision capabilities.Use one of these: ${Array.from(VisionCapableModels).join(', ')}`,
     )
   }
 
   // Additional validation for other fields can be added here if needed
-  console.log('Validation passed')
+  console.debug('API body validation passed')
 }
 
 /**
@@ -729,7 +743,7 @@ export async function updateConversationInDatabase(
   // Log conversation to Supabase
   try {
     const response = await fetch(
-      `${getBaseUrl()}/api/UIUC-api/logConversationToSupabase`,
+      `${getBaseUrl()} / api / UIUC - api / logConversationToSupabase`,
       {
         method: 'POST',
         headers: {
@@ -836,12 +850,20 @@ export const routeModelRequest = async (
   controller: AbortController,
   baseUrl?: string,
 ): Promise<Response> => {
+  /*  Use this to call the LLM. It will call the appropriate endpoint based on the conversation.model.
+      🧠 ADD NEW LLM PROVIDERS HERE 🧠
+  */
   let response: Response
-  if (selectedConversation.model.id === 'llama3.1:70b') {
-    console.log(
-      "In streamProcessing.ts Ollama, selectedConversation.model.name === 'llama3.1:70b'",
+  if (
+    Object.values(OllamaModelIDs).includes(selectedConversation.model.id as any)
+  ) {
+    // Model is Ollama
+    console.debug(
+      `In streamProcessing.ts Ollama, selectedConversation.model.id === ${selectedConversation.model.id}`,
     )
-    const url = baseUrl ? `${baseUrl}/api/chat/ollama` : '/api/chat/ollama'
+    const url = baseUrl
+      ? `${baseUrl} / api / chat / ollama`
+      : '/api/chat/ollama'
     // Is Ollama model
     response = await fetch(url, {
       method: 'POST',
@@ -850,9 +872,11 @@ export const routeModelRequest = async (
       },
       body: JSON.stringify({ conversation: selectedConversation }),
     })
-  } else {
+  } else if (
+    Object.values(OpenAIModelID).includes(selectedConversation.model.id as any)
+  ) {
     // Call the OpenAI API
-    const url = baseUrl ? `${baseUrl}/api/chat` : '/api/chat'
+    const url = baseUrl ? `${baseUrl} / api / chat` : '/api/chat'
     response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -861,6 +885,10 @@ export const routeModelRequest = async (
       signal: controller.signal,
       body: JSON.stringify(chatBody),
     })
+  } else {
+    throw new Error(
+      `Model '${selectedConversation.model.name}' is not supported.`,
+    )
   }
   return response
 }

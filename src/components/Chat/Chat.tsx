@@ -456,7 +456,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             courseMetadata,
           )
           // Action 4: Build Prompt - Put everything together into a prompt
-          // // src/pages/api/buildPrompt.ts
           const buildPromptResponse = await fetch('/api/buildPrompt', {
             method: 'POST',
             headers: {
@@ -491,8 +490,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             )
           ) {
             // Is WebLLM model
-            console.log('is model loading', chat_ui.isModelLoading())
-            // if (chat_ui.isModelLoading() == false) {
+            console.debug('is model loading', chat_ui.isModelLoading())
             while (chat_ui.isModelLoading() == true) {
               await new Promise((resolve) => setTimeout(resolve, 10))
             }
@@ -508,7 +506,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   (error as Error).message || 'An unexpected error occurred',
               })
             }
-            // }
           } else {
             try {
               // Route to the specific model provider
@@ -531,55 +528,26 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             const final_response = await response.json()
             homeDispatch({ field: 'loading', value: false })
             homeDispatch({ field: 'messageIsStreaming', value: false })
-            // homeDispatch({ field: 'isRouting', value: undefined })
-            // homeDispatch({ field: 'isRunningTool', value: undefined })
-            // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
-            // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
-            notifications.show({
-              id: 'error-notification',
-              withCloseButton: true,
-              closeButtonProps: { color: 'red' },
-              onClose: () => console.log('error unmounted'),
-              onOpen: () => console.log('error mounted'),
-              autoClose: 12000,
-              title: (
-                <Text size={'lg'} className={`${montserrat_med.className}`}>
-                  {final_response.name}
-                </Text>
-              ),
-              message: (
-                <Text
-                  className={`${montserrat_med.className} text-neutral-200`}
-                >
-                  {final_response.message}
-                </Text>
-              ),
-              color: 'red',
-              radius: 'lg',
-              icon: <IconAlertCircle />,
-              className: 'my-notification-class',
-              style: {
-                backgroundColor: 'rgba(42,42,64,0.3)',
-                backdropFilter: 'blur(10px)',
-                borderLeft: '5px solid red',
-              },
-              withBorder: true,
-              loading: false,
+            console.error(
+              'Error calling the LLM:',
+              final_response.name,
+              final_response.message,
+            )
+            errorToast({
+              title: final_response.name,
+              message:
+                final_response.message ||
+                'There was an unexpected error calling the LLM. Try using a different model (via the Settings button in the header).',
             })
             return
           }
 
           let data
-          // TODO: check the reponse data
           if (response instanceof Response) {
             data = response.body
             if (!data) {
               homeDispatch({ field: 'loading', value: false })
               homeDispatch({ field: 'messageIsStreaming', value: false })
-              // homeDispatch({ field: 'isRouting', value: undefined })
-              // homeDispatch({ field: 'isRunningTool', value: undefined })
-              // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
-              // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
               return
             }
             reader = data.getReader()
@@ -602,10 +570,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               }
             }
             homeDispatch({ field: 'loading', value: false })
-            // homeDispatch({ field: 'isRouting', value: undefined })
-            // homeDispatch({ field: 'isRunningTool', value: undefined })
-            // homeDispatch({ field: 'isImg2TextLoading', value: undefined })
-            // homeDispatch({ field: 'isRetrievalLoading', value: undefined })
 
             const decoder = new TextDecoder()
             let done = false
@@ -616,6 +580,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             const citationLinkCache = new Map<number, string>()
             const stateMachineContext = { state: State.Normal, buffer: '' }
             try {
+              // Action 6: Stream the LLM response, based on model provider.
               while (!done) {
                 if (stopConversationRef.current === true) {
                   controller.abort()
@@ -623,20 +588,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   break
                 }
                 if (response && 'next' in response) {
-                  // Handle routing between WebLLM & OpenAI
-                  // if (
-                  //   // ['TinyLlama-1.1B', 'Llama-3-8B-Instruct-q4f32_1-MLC'].some(
-                  //   //   (prefix) => selectedConversation.model.name.startsWith(prefix),
-                  //   // )
-                  //   webLLMModels.some(
-                  //     (model) => model.name === selectedConversation.model.name,
-                  //   )
-                  // ) {
-                  // WebLLM models
-                  // @ts-ignore - iterator for WebLLM `AsyncIterable<ChatCompletionChunk>`
-                  const iterator = response[Symbol.asyncIterator]()
+                  // Run WebLLM models
+                  const iterator = (
+                    response as AsyncIterable<webllm.ChatCompletionChunk>
+                  )[Symbol.asyncIterator]()
                   const result = await iterator.next()
-                  done = result.done
+                  done = result.done ?? false
                   if (
                     done ||
                     result.value == undefined ||
@@ -648,7 +605,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   chunkValue = result.value.choices[0]?.delta.content
                   text += chunkValue
                 } else {
-                  // OpenAI models
+                  // OpenAI models & Vercel AI SDK models
                   const { value, done: doneReading } = await reader!.read()
                   done = doneReading
                   chunkValue = decoder.decode(value)
@@ -687,18 +644,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                       lastUserMessage &&
                       lastUserMessage.contexts
                     ) {
-                      // Call the replaceCitationLinks method and await its result
-                      // const updatedContent = await replaceCitationLinks(text, lastMessage, citationLinkCache);
-
-                      // TODO: handle this properly with WebLLM
-                      const updatedContent = await processChunkWithStateMachine(
-                        chunkValue,
-                        lastUserMessage,
-                        stateMachineContext,
-                        citationLinkCache,
-                      )
-
-                      finalAssistantRespose += updatedContent
+                      // Handle citations via state machine
+                      finalAssistantRespose +=
+                        await processChunkWithStateMachine(
+                          chunkValue,
+                          lastUserMessage,
+                          stateMachineContext,
+                          citationLinkCache,
+                        )
 
                       // Update the last message with the new content
                       const updatedMessages = updatedConversation.messages.map(
@@ -731,7 +684,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             }
 
             if (!done) {
-              throw new Error('Stream ended prematurely')
+              throw new Error('LLM response stream ended before it was done.')
             }
 
             try {
@@ -767,7 +720,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               controller.abort()
             }
           } else {
-            // TODO: COME BACK AND FIX
             if (response instanceof Response) {
               const { answer } = await response.json()
               const updatedMessages: Message[] = [

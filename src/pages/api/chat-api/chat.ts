@@ -1,6 +1,5 @@
 // src/pages/api/chat-api/stream.ts
 
-import { fetchContexts } from '../getContexts'
 import { ChatBody, Content, Conversation, Message } from '~/types/chat'
 import { fetchCourseMetadata } from '~/utils/apiUtils'
 import { validateApiKeyAndRetrieveData } from './keys/validate'
@@ -34,7 +33,6 @@ import {
 import { GenericSupportedModel } from '~/types/LLMProvider'
 import { fetchEnabledDocGroups } from '~/utils/dbUtils'
 
-// Configuration for the runtime environment
 export const config = {
   runtime: 'edge',
 }
@@ -109,7 +107,7 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
 
   const email = extractEmailsFromClerk(userObject as User)[0]
 
-  console.log('Received /chat request for: ', email)
+  console.debug('Received /chat request for: ', email)
 
   if (!isValidApiKey) {
     posthog.capture('stream_api_invalid_api_key', {

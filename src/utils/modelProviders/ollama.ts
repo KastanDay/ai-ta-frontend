@@ -8,14 +8,14 @@ export interface OllamaModel {
   enabled: boolean
 }
 
-export enum OllamaModelID {
+export enum OllamaModelIDs {
   // Use "official" IDs from the Ollama API. Human-readable names in 'OllamaModels' below.
   LLAMA31_70b = 'llama3.1:70b',
 }
 
-export const OllamaModels: Record<OllamaModelID, OllamaModel> = {
-  [OllamaModelID.LLAMA31_70b]: {
-    id: OllamaModelID.LLAMA31_70b,
+export const OllamaModels: Record<OllamaModelIDs, OllamaModel> = {
+  [OllamaModelIDs.LLAMA31_70b]: {
+    id: OllamaModelIDs.LLAMA31_70b,
     name: 'Llama 3.1 70b',
     parameterSize: '70b',
     tokenLimit: 128000,
@@ -41,10 +41,10 @@ export const getOllamaModels = async (
     const data = await response.json()
     const ollamaModels: OllamaModel[] = data.models
       .filter((model: any) =>
-        Object.values(OllamaModelID).includes(model.model),
+        Object.values(OllamaModelIDs).includes(model.model),
       )
       .map((model: any): OllamaModel => {
-        return OllamaModels[model.model as OllamaModelID]
+        return OllamaModels[model.model as OllamaModelIDs]
       })
 
     ollamaProvider.models = ollamaModels
