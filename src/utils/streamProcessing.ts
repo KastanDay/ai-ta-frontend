@@ -852,8 +852,20 @@ export const routeModelRequest = async (
   /*  Use this to call the LLM. It will call the appropriate endpoint based on the conversation.model.
       🧠 ADD NEW LLM PROVIDERS HERE 🧠
   */
-  let response: Response
   const selectedConversation = chatBody.conversation!
+
+  posthog.capture('LLM Invoked', {
+    distinct_id: selectedConversation.user_email
+      ? selectedConversation.user_email
+      : 'anonymous',
+    user_id: selectedConversation.user_email
+      ? selectedConversation.user_email
+      : 'anonymous',
+    conversation_id: selectedConversation.id,
+    model_id: selectedConversation.model.id,
+  })
+
+  let response: Response
   if (
     Object.values(OllamaModelIDs).includes(selectedConversation.model.id as any)
   ) {
