@@ -323,12 +323,7 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
   // Make the API request to the chat handler
   const baseUrl = getBaseUrl()
   // console.log('baseUrl:', baseUrl);
-  const apiResponse = await routeModelRequest(
-    conversation,
-    chatBody,
-    controller,
-    baseUrl,
-  )
+  const apiResponse = await routeModelRequest(chatBody, controller, baseUrl)
 
   // Handle errors from the chat handler API
   if (!apiResponse.ok) {
