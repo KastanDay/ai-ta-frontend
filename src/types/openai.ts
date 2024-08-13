@@ -30,35 +30,41 @@ export const selectBestModel = (
 ): GenericSupportedModel => {
   // Use GPT-4o-mini if available, otherwise fallback to Llama 3.1 70b
 
-  if (
-    allLLMProviders?.OpenAI?.models &&
-    allLLMProviders.OpenAI.models.length > 0
-  ) {
-    const gpt4oMini = allLLMProviders.OpenAI.models.find(
-      (model) => model.id === 'gpt-4o-mini',
-    )
-    if (gpt4oMini) {
-      return gpt4oMini
+  // Use the preferredModelIds, otherwise fallback to Llama 3.1 70b
+  const allModels = Object.values(allLLMProviders)
+    .flatMap((provider) => provider.models || [])
+    .filter((model) => model.enabled)
+
+  // Find and return the first available preferred model
+  for (const preferredId of preferredModelIds) {
+    const model = allModels.find((m) => m.id === preferredId)
+    if (model) {
+      return model
     }
   }
+
   return {
     id: 'llama3.1:70b',
     name: 'Llama 3.1 70b',
     tokenLimit: 128000,
     enabled: true,
   }
+
+  // if (
+  //   allLLMProviders?.OpenAI?.models &&
+  //   allLLMProviders.OpenAI.models.length > 0
+  // ) {
+  //   const gpt4oMini = allLLMProviders.OpenAI.models.find(
+  //     (model) => model.id === 'gpt-4o-mini',
+  //   )
+  //   if (gpt4oMini) {
+  //     return gpt4oMini
+  //   }
+  // }
   // const defaultModelId = OpenAIModelID.GPT_4o
   // return OpenAIModels[defaultModelId]
   // if (!models || !models.OpenAI) {
   //   return OpenAIModels[defaultModelId]
-  // }
-
-  // // Find and return the first available preferred model
-  // for (const preferredId of preferredModelIds) {
-  //   const model = models.OpenAI.find((m) => m.id === preferredId)
-  //   if (model) {
-  //     return model
-  //   }
   // }
 
   // // Fallback to the first model in the list or the default model
