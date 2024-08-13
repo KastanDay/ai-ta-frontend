@@ -468,7 +468,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
           console.log(
             'Updated conversation (after build prompt):',
-            updatedConversation,
+            chatBody.conversation,
           )
 
           homeDispatch({
@@ -482,11 +482,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             | Response
             | undefined
           let reader
-          console.log('Selected model:', selectedConversation.model)
+          console.debug('Selected model:', chatBody.conversation?.model)
 
           if (
             webLLMModels.some(
-              (model) => model.name === selectedConversation.model.name,
+              (model) => model.name === chatBody.conversation?.model.name,
             )
           ) {
             // Is WebLLM model
@@ -509,11 +509,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           } else {
             try {
               // Route to the specific model provider
-              response = await routeModelRequest(
-                selectedConversation,
-                chatBody,
-                controller,
-              )
+              response = await routeModelRequest(chatBody, controller)
             } catch (error) {
               console.error('Error routing to model provider:', error)
               errorToast({

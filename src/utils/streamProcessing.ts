@@ -845,7 +845,6 @@ export const getOpenAIKey = (
 }
 
 export const routeModelRequest = async (
-  selectedConversation: Conversation,
   chatBody: ChatBody,
   controller: AbortController,
   baseUrl?: string,
@@ -854,6 +853,7 @@ export const routeModelRequest = async (
       🧠 ADD NEW LLM PROVIDERS HERE 🧠
   */
   let response: Response
+  const selectedConversation = chatBody.conversation!
   if (
     Object.values(OllamaModelIDs).includes(selectedConversation.model.id as any)
   ) {
