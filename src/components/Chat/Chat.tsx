@@ -355,10 +355,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           field: 'selectedConversation',
           value: updatedConversation,
         })
-        const currentMessageIndex = updatedConversation.messages.length - 1
         homeDispatch({ field: 'loading', value: true })
         homeDispatch({ field: 'messageIsStreaming', value: true })
-        // console.log("Current message index: ", currentMessageIndex)
         const controller = new AbortController()
 
         const courseName = getCurrentPageName()
@@ -403,7 +401,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
         // Action 2: Context Retrieval: Vector Search
         homeDispatch({ field: 'isRetrievalLoading', value: true })
-        const contexts = await handleContextSearch(
+        await handleContextSearch(
           message,
           courseName,
           selectedConversation,
@@ -446,7 +444,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           } finally {
             homeDispatch({ field: 'isRunningTool', value: false })
           }
-          console.log('Tool result:', message.tools)
+          console.debug('Tool result:', message.tools)
 
           const chatBody: ChatBody = constructChatBody(
             updatedConversation,
@@ -466,7 +464,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           chatBody.conversation = await buildPromptResponse.json()
           updatedConversation = chatBody.conversation!
 
-          console.log(
+          console.debug(
             'Updated conversation (after build prompt):',
             chatBody.conversation,
           )
