@@ -86,7 +86,8 @@ const Home = () => {
 
   useEffect(() => {
     // Set model after we fetch available models
-    const model = selectBestModel(llmProviders)
+    if (!llmProviders || Object.keys(llmProviders).length === 0) return
+    const model = selectBestModel(llmProviders, selectedConversation)
 
     dispatch({
       field: 'defaultModelId',
@@ -305,7 +306,7 @@ const Home = () => {
     const lastConversation = conversations[conversations.length - 1]
 
     // Determine the model to use for the new conversation
-    const model = selectBestModel(llmProviders)
+    const model = selectBestModel(llmProviders, lastConversation)
 
     const newConversation: Conversation = {
       id: uuidv4(),
@@ -554,13 +555,8 @@ const Home = () => {
       })
     } else {
       const lastConversation = conversations[conversations.length - 1]
-      console.debug('Models available: ', llmProviders)
-      // let defaultModel = models.find(model => model.id === 'gpt-4-from-canada-east' || model.id === 'gpt-4') || models[0]
-      const bestModel = selectBestModel(llmProviders)
-      // if (!defaultModel) {
-      //   defaultModel = OpenAIModels['gpt-4']
-      // }
-      console.debug('Using model: ', bestModel)
+      if (!llmProviders || Object.keys(llmProviders).length === 0) return
+      const bestModel = selectBestModel(llmProviders, lastConversation)
       dispatch({
         field: 'selectedConversation',
         value: {

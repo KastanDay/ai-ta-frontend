@@ -450,7 +450,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       dispatch: homeDispatch,
     } = useContext(HomeContext)
     const isSmallScreen = useMediaQuery('(max-width: 960px)')
-    const defaultModel = selectBestModel(llmProviders).id
+    const defaultModel = selectBestModel(llmProviders, selectedConversation).id
     const [loadingModelId, setLoadingModelId] = useState<string | null>(null)
 
     const handleModelClick = (modelId: string) => {
