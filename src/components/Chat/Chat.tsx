@@ -424,27 +424,25 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               getOpenAIKey(courseMetadata, apiKey),
             )
             homeDispatch({ field: 'isRouting', value: false })
-            console.debug('Going to run the tools:', uiucToolsToRun)
             if (uiucToolsToRun.length > 0) {
               homeDispatch({ field: 'isRunningTool', value: true })
               // Run the tools
-              return await handleToolCall(
+              await handleToolCall(
                 uiucToolsToRun,
-                selectedConversation,
+                updatedConversation,
                 courseName,
               )
             }
+
             homeDispatch({ field: 'isRunningTool', value: false })
           } catch (error) {
             console.error(
               'Error in chat.tsx running handleFunctionCall():',
               error,
             )
-            // controller.abort()
           } finally {
             homeDispatch({ field: 'isRunningTool', value: false })
           }
-          console.debug('Tool result:', message.tools)
 
           const chatBody: ChatBody = constructChatBody(
             updatedConversation,
@@ -464,11 +462,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           chatBody.conversation = await buildPromptResponse.json()
           updatedConversation = chatBody.conversation!
 
-          console.debug(
-            'Updated conversation (after build prompt):',
-            chatBody.conversation,
-          )
-
           homeDispatch({
             field: 'selectedConversation',
             value: chatBody.conversation,
@@ -480,7 +473,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             | Response
             | undefined
           let reader
-          console.debug('Selected model:', chatBody.conversation?.model)
 
           if (
             webLLMModels.some(
@@ -488,7 +480,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             )
           ) {
             // Is WebLLM model
-            console.debug('is model loading', chat_ui.isModelLoading())
             while (chat_ui.isModelLoading() == true) {
               await new Promise((resolve) => setTimeout(resolve, 10))
             }

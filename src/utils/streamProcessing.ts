@@ -870,9 +870,6 @@ export const routeModelRequest = async (
     Object.values(OllamaModelIDs).includes(selectedConversation.model.id as any)
   ) {
     // Model is Ollama
-    console.debug(
-      `In streamProcessing.ts Ollama, selectedConversation.model.id === ${selectedConversation.model.id}`,
-    )
     const url = baseUrl
       ? `${baseUrl} / api / chat / ollama`
       : '/api/chat/ollama'

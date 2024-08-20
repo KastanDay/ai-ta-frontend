@@ -85,7 +85,7 @@ export async function handleToolCall(
   selectedConversation: Conversation,
   projectName: string,
   base_url?: string,
-): Promise<Conversation> {
+) {
   try {
     if (uiucToolsToRun.length > 0) {
       // Tool calling in Parallel here!!
@@ -98,18 +98,21 @@ export async function handleToolCall(
             undefined,
             base_url,
           )
-          tool.output = toolOutput
+          // Add success output: update message with tool output, but don't add another tool.
+          // ✅ TOOL SUCCEEDED
+          selectedConversation.messages[
+            selectedConversation.messages.length - 1
+          ]!.tools!.find((t) => t.readableName === tool.readableName)!.output =
+            toolOutput
         } catch (error: unknown) {
-          console.error(
-            `Error running tool: ${error instanceof Error ? error.message : error}`,
-          )
-          tool.error = `Error running tool: ${error instanceof Error ? error.message : error}`
+          // ❌ TOOL ERRORED
+          console.error(`Error running tool: ${error}`)
+          // Add error output
+          selectedConversation.messages[
+            selectedConversation.messages.length - 1
+          ]!.tools!.find((t) => t.readableName === tool.readableName)!.error =
+            `Error running tool: ${error}`
         }
-        // update message with tool output, but don't add another tool.
-        selectedConversation.messages[
-          selectedConversation.messages.length - 1
-        ]!.tools!.find((t) => t.readableName === tool.readableName)!.output =
-          tool.output
       })
       await Promise.all(toolResultsPromises)
     }
@@ -118,7 +121,7 @@ export async function handleToolCall(
       selectedConversation.messages[selectedConversation.messages.length - 1]!
         .tools,
     )
-    return selectedConversation
+    // return selectedConversation
   } catch (error) {
     console.error('Error running tools from handleToolCall: ', error)
     throw error
@@ -168,10 +171,8 @@ const callN8nFunction = async (
   n8n_api_key: string | undefined,
   base_url?: string,
 ): Promise<ToolOutput> => {
-  console.debug('Calling n8n function with data: ', tool)
-
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 20000)
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
 
   // get n8n api key per project
   if (!n8n_api_key) {
@@ -197,7 +198,6 @@ const callN8nFunction = async (
     data: tool.aiGeneratedArgumentValues,
   })
 
-  console.debug('Calling n8n function with body: ', body)
   const timeStart = Date.now()
   const response: Response = await fetch(
     `https://flask-production-751b.up.railway.app/run_flow`,
@@ -213,7 +213,7 @@ const callN8nFunction = async (
   ).catch((error) => {
     if (error.name === 'AbortError') {
       throw new Error(
-        'Request timed out after 15 seconds, try "Regenerate Response" button',
+        'Request timed out after 30 seconds, try "Regenerate Response" button',
       )
     }
     throw error
@@ -238,12 +238,10 @@ const callN8nFunction = async (
   console.debug('N8n results data: ', resultData)
   const finalNodeType = resultData.lastNodeExecuted
 
-  // Check for N8N tool error, like invalid auth
+  // If N8N tool error ❌
   if (resultData.runData[finalNodeType][0]['error']) {
-    console.error(
-      'N8N tool error: ',
-      resultData.runData[finalNodeType][0]['error'],
-    )
+    const formatted_err_message = `${resultData.runData[finalNodeType][0]['error']['message']}. ${resultData.runData[finalNodeType][0]['error']['description']}`
+    console.error('N8N tool error: ', formatted_err_message)
     const err = resultData.runData[finalNodeType][0]['error']
 
     posthog.capture('tool_error', {
@@ -254,12 +252,12 @@ const callN8nFunction = async (
       toolInputs: tool.inputParameters,
       toolError: err,
     })
-    throw new Error(err.message)
+    throw new Error(formatted_err_message)
   }
 
   // -- PARSE TOOL OUTPUT --
 
-  // ERROR
+  // ERROR ❌
   if (
     !resultData.runData[finalNodeType][0].data ||
     !resultData.runData[finalNodeType][0].data.main[0][0].json

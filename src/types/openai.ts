@@ -43,7 +43,6 @@ export const selectBestModel = (
   ) {
     const conversationModel = allModels.find((m) => m.id === convo.model.id)
     if (conversationModel) {
-      console.log('returning Conversation Model: ', conversationModel)
       return conversationModel
     }
   }
