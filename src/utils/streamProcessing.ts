@@ -345,7 +345,7 @@ export async function determineAndValidateModel(
   } else {
     // ❌ Model unavailable, tell them the available ones
     throw new Error(
-      `The requested model '${modelId}' is not available in this project. It has likely been restricted by the project's admins. Enable this model on the /materials page of the project to use it. These models are available to use: ${Array.from(
+      `The requested model '${modelId}' is not available in this project. It has likely been restricted by the project's admins. You can enable this model on the admin page here: https://uiuc.chat/${projectName}/materials. These models are available to use: ${Array.from(
         availableModels,
       )
         .map((model) => model.id)
