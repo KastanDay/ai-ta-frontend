@@ -385,6 +385,7 @@ export async function fetchAvailableModels(
     const availableModels = Object.values(modelsWithProviders)
       .flatMap((provider) => provider?.models || [])
       .filter((model) => model.enabled)
+    console.log('AVAILABLE MODELS: ', availableModels)
     return availableModels
   } catch (error) {
     console.error('Error validating model with key:', error)
@@ -459,7 +460,7 @@ export async function validateRequestBody(body: ChatApiBody): Promise<void> {
     !VisionCapableModels.has(body.model as OpenAIModelID)
   ) {
     throw new Error(
-      `The selected model '${body.model}'does not support vision capabilities.Use one of these: ${Array.from(VisionCapableModels).join(', ')}`,
+      `The selected model '${body.model}' does not support vision capabilities. Use one of these: ${Array.from(VisionCapableModels).join(', ')}`,
     )
   }
 
