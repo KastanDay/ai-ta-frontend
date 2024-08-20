@@ -135,11 +135,7 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
   // // Determine and validate the model to use
   let activeModel: GenericSupportedModel
   try {
-    activeModel = await determineAndValidateModel(
-      openai_key,
-      model,
-      course_name,
-    )
+    activeModel = await determineAndValidateModel(key, model, course_name)
   } catch (error) {
     return NextResponse.json(
       { error: (error as Error).message },

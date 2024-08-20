@@ -743,7 +743,7 @@ export async function updateConversationInDatabase(
   // Log conversation to Supabase
   try {
     const response = await fetch(
-      `${getBaseUrl()} / api / UIUC - api / logConversationToSupabase`,
+      `${getBaseUrl()}/api/UIUC-api/logConversationToSupabase`,
       {
         method: 'POST',
         headers: {
@@ -870,9 +870,7 @@ export const routeModelRequest = async (
     Object.values(OllamaModelIDs).includes(selectedConversation.model.id as any)
   ) {
     // Model is Ollama
-    const url = baseUrl
-      ? `${baseUrl} / api / chat / ollama`
-      : '/api/chat/ollama'
+    const url = baseUrl ? `${baseUrl}/api/chat/ollama` : '/api/chat/ollama'
     // Is Ollama model
     response = await fetch(url, {
       method: 'POST',
@@ -885,7 +883,7 @@ export const routeModelRequest = async (
     Object.values(OpenAIModelID).includes(selectedConversation.model.id as any)
   ) {
     // Call the OpenAI API
-    const url = baseUrl ? `${baseUrl} / api / chat` : '/api/chat'
+    const url = baseUrl ? `${baseUrl}/api/chat` : '/api/chat'
     response = await fetch(url, {
       method: 'POST',
       headers: {
