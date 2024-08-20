@@ -343,8 +343,13 @@ export async function determineAndValidateModel(
       (model) => model.id === modelId,
     ) as GenericSupportedModel
   } else {
+    // ❌ Model unavailable, tell them the available ones
     throw new Error(
-      `Model '${modelId}' is not available given the provided API Key. Ensure that this model ID is correct, and that it is enabled in the UIUC.chat admin dashboard.`,
+      `The requested model '${modelId}' is not available in this project. It has likely been restricted by the project's admins. Enable this model on the /materials page of the project to use it. These models are available to use: ${Array.from(
+        availableModels,
+      )
+        .map((model) => model.id)
+        .join(', ')}`,
     )
   }
 }
