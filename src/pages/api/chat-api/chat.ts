@@ -33,8 +33,6 @@ import {
 import { GenericSupportedModel } from '~/types/LLMProvider'
 import { fetchEnabledDocGroups } from '~/utils/dbUtils'
 
-export const runtime = 'edge'
-
 export const maxDuration = 60
 /**
  * The chat API endpoint for handling chat requests and streaming/non streaming responses.
