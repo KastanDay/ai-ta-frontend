@@ -150,7 +150,7 @@ export async function handleToolsServer(
     )
 
     if (uiucToolsToRun.length > 0) {
-      return await handleToolCall(
+      await handleToolCall(
         uiucToolsToRun,
         selectedConversation,
         projectName,
