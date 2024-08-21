@@ -344,10 +344,20 @@ export async function determineAndValidateModel(
     ) as GenericSupportedModel
   } else {
     // ❌ Model unavailable, tell them the available ones
+
+    // Filter out WebLLM models, those are
+    // const apiSupportedModels = Array.from(availableModels).filter(
+    //   (model) => !webLLMModels.some((webLLMModel) => webLLMModel.id === model.id),
+    // )
     throw new Error(
       `The requested model '${modelId}' is not available in this project. It has likely been restricted by the project's admins. You can enable this model on the admin page here: https://uiuc.chat/${projectName}/materials. These models are available to use: ${Array.from(
         availableModels,
       )
+        // Filter out WebLLM models, those are In-Web-Browser only (not in API)
+        .filter(
+          (model) =>
+            !webLLMModels.some((webLLMModel) => webLLMModel.id === model.id),
+        )
         .map((model) => model.id)
         .join(', ')}`,
     )
