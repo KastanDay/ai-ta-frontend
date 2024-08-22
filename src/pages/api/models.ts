@@ -31,13 +31,13 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // TODO: MOVE THESE TO DB INPUTS
-    // const AzureProvider: LLMProvider = {
-    //   provider: ProviderNames.Azure,
-    //   enabled: true,
-    //   apiKey: process.env.AZURE_API_KEY, // this is the azure api key
-    //   AzureDeployment: 'gpt-35-turbo-16k',
-    //   AzureEndpoint: 'https://uiuc-chat-canada-east.openai.azure.com/',
-    // }
+    const AzureProvider: LLMProvider = {
+      provider: ProviderNames.Azure,
+      enabled: true,
+      apiKey: undefined, // this is the azure api key
+      AzureDeployment: 'gpt-35-turbo-16k',
+      AzureEndpoint: 'https://uiuc-chat-canada-east.openai.azure.com/',
+    }
 
     // const AnthropicProvider: LLMProvider = {
     //   provider: ProviderNames.Anthropic,
@@ -68,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
       ollamaProvider,
       OpenAIProvider,
       WebLLMProvider,
-      // AzureProvider,
+      AzureProvider,
       // AnthropicProvider,
     ]
     // END-TODO: MOVE THESE TO DB INPUTS
@@ -99,6 +99,8 @@ const handler = async (req: Request): Promise<Response> => {
         continue
       }
     }
+
+    console.log('this is the allLLMProviders', allLLMProviders.Azure)
 
     return new Response(JSON.stringify(allLLMProviders), { status: 200 })
   } catch (error) {
