@@ -66,30 +66,34 @@ export interface BaseLLMProvider {
   enabled: boolean
   baseUrl?: string
   apiKey?: string
-  models?: AnySupportedModel[]
   error?: string
 }
 
 export interface OllamaProvider extends BaseLLMProvider {
   provider: ProviderNames.Ollama
+  models?: OllamaModel[]
 }
 
 export interface OpenAIProvider extends BaseLLMProvider {
   provider: ProviderNames.OpenAI
+  models?: OpenAIModel[]
 }
 
 export interface AzureProvider extends BaseLLMProvider {
   provider: ProviderNames.Azure
   AzureEndpoint?: string
   AzureDeployment?: string
+  models?: AzureModel[]
 }
 
 export interface AnthropicProvider extends BaseLLMProvider {
   provider: ProviderNames.Anthropic
+  models?: AnthropicModel[]
 }
 
 export interface WebLLMProvider extends BaseLLMProvider {
   provider: ProviderNames.WebLLM
+  models?: WebllmModel[]
 }
 
 export type LLMProvider =

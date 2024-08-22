@@ -30,8 +30,6 @@ export default function APIKeyInputForm() {
   const { data: initialProviders, isLoading } =
     useGetProjectLLMProviders(course_name)
 
-  console.log('initialProviders', JSON.stringify(initialProviders, null, 2))
-
   const mutation = useSetProjectLLMProviders(
     course_name,
     queryClient,
@@ -54,8 +52,21 @@ export default function APIKeyInputForm() {
   if (isLoading) {
     return <Text>Loading...</Text>
   }
-
+  console.log('initialProviders', JSON.stringify(initialProviders, null, 2))
   console.log('form', JSON.stringify(form, null, 2))
+
+  const defaultModelOptions = Object.entries(initialProviders || {}).flatMap(
+    ([providerName, provider]) =>
+      provider.models?.map((model) => ({
+        value: `${providerName}:${model.id}`,
+        label: `${providerName} - ${model.name}`,
+      })) || [],
+  )
+  console.log('defaultModelOptions', defaultModelOptions)
+  console.log(
+    'providers from FORM',
+    Object.values(form.getFieldValue('providers')),
+  )
 
   return (
     <Card
@@ -122,15 +133,7 @@ export default function APIKeyInputForm() {
                       <Select
                         value={field.state.value}
                         onChange={(value) => field.handleChange(value || '')}
-                        data={Object.values(
-                          form.getFieldValue('providers'),
-                        ).flatMap(
-                          (provider: LLMProvider) =>
-                            provider.models?.map((model) => ({
-                              value: `${provider.provider}:${model.id}`,
-                              label: `${provider.provider} - ${model.name}`,
-                            })) || [],
-                        )}
+                        data={defaultModelOptions}
                         styles={(theme) => ({
                           input: {
                             backgroundColor: '#2d2d3d',

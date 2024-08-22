@@ -64,7 +64,9 @@ const CourseMain: NextPage = () => {
 
   return (
     <>
-      <APIKeyInputForm />
+      <MainPageBackground>
+        <APIKeyInputForm />
+      </MainPageBackground>
     </>
   )
 }
