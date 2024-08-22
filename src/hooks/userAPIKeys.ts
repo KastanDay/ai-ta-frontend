@@ -1,8 +1,7 @@
 import { QueryClient, useMutation, useQuery } from '@tanstack/react-query'
 import { kv } from '@vercel/kv'
-import { CourseDocument, DocumentGroup } from '~/types/courseMaterials'
 import { CourseMetadata } from '~/types/courseMetadata'
-import { LLMProvider } from '~/types/LLMProvider'
+import { AllLLMProviders, LLMProvider } from '~/types/LLMProvider'
 
 export function useGetProjectLLMProviders(course_name: string) {
   // USAGE:
@@ -14,7 +13,6 @@ export function useGetProjectLLMProviders(course_name: string) {
   // } = useGetProjectLLMProviders(course_name)
 
   return useQuery({
-    // Marry this to a user or to a course?
     queryKey: ['projectLLMProviders'],
     queryFn: async () => {
       const response = await fetch('/api/models', {
@@ -32,7 +30,7 @@ export function useGetProjectLLMProviders(course_name: string) {
       }
 
       const data = await response.json()
-      return Object.values(data) as LLMProvider[]
+      return data as AllLLMProviders
     },
   })
 }
@@ -40,7 +38,7 @@ export function useGetProjectLLMProviders(course_name: string) {
 export function useSetProjectLLMProviders(
   course_name: string,
   queryClient: QueryClient,
-  llmProviders: LLMProvider[],
+  llmProviders: AllLLMProviders,
 ) {
   return useMutation({
     mutationFn: async () => {

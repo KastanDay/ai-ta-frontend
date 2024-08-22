@@ -6,7 +6,7 @@ import {
   useGetProjectLLMProviders,
   useSetProjectLLMProviders,
 } from '~/hooks/userAPIKeys'
-import { LLMProvider } from '~/types/LLMProvider'
+import { AllLLMProviders, LLMProvider } from '~/types/LLMProvider'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -25,7 +25,7 @@ function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
 
 export default function APIKeyInputForm() {
   const queryClient = useQueryClient()
-  const course_name = 'your_course_name_here' // TODO Replace with actual course name
+  const course_name = 'test-video-ingest-22' // TODO Replace with actual course name
 
   const { data: initialProviders, isLoading } =
     useGetProjectLLMProviders(course_name)
@@ -35,12 +35,12 @@ export default function APIKeyInputForm() {
   const mutation = useSetProjectLLMProviders(
     course_name,
     queryClient,
-    initialProviders || [],
+    initialProviders || {},
   )
 
   const form = useForm({
     defaultValues: {
-      providers: initialProviders || [],
+      providers: initialProviders || {},
       defaultModel: '',
       temperature: 0.1,
     },
@@ -117,13 +117,14 @@ export default function APIKeyInputForm() {
                   <Text size="sm" weight={500} mb={4}>
                     Default Model
                   </Text>
-                  <form.Field
-                    name="defaultModel"
-                    children={(field) => (
+                  <form.Field name="defaultModel">
+                    {(field) => (
                       <Select
                         value={field.state.value}
-                        onChange={(value) => field.handleChange(value)}
-                        data={form.getFieldValue('providers').flatMap(
+                        onChange={(value) => field.handleChange(value || '')}
+                        data={Object.values(
+                          form.getFieldValue('providers'),
+                        ).flatMap(
                           (provider: LLMProvider) =>
                             provider.models?.map((model) => ({
                               value: `${provider.provider}:${model.id}`,
@@ -148,15 +149,14 @@ export default function APIKeyInputForm() {
                         })}
                       />
                     )}
-                  />
+                  </form.Field>
                 </div>
                 <div>
                   <Text size="sm" weight={500} mb={4}>
                     Temperature: {form.getFieldValue('temperature')}
                   </Text>
-                  <form.Field
-                    name="temperature"
-                    children={(field) => (
+                  <form.Field name="temperature">
+                    {(field) => (
                       <Slider
                         value={field.state.value}
                         onChange={(value) => field.handleChange(value)}
@@ -175,7 +175,7 @@ export default function APIKeyInputForm() {
                         })}
                       />
                     )}
-                  />
+                  </form.Field>
                   <Text size="xs" color="dimmed" mt={4}>
                     Higher values will make the output more random, while lower
                     values will make it more focused and deterministic.
@@ -196,9 +196,9 @@ export default function APIKeyInputForm() {
                 <form.Field name="providers">
                   {(field) => (
                     <>
-                      {field.state.value.map(
-                        (provider: LLMProvider, index: number) => (
-                          <div key={provider.provider}>
+                      {Object.entries(field.state.value as AllLLMProviders).map(
+                        ([key, provider]) => (
+                          <div key={key}>
                             <div
                               style={{
                                 display: 'flex',
@@ -210,9 +210,8 @@ export default function APIKeyInputForm() {
                               <Text size="sm" weight={500}>
                                 {provider.provider}
                               </Text>
-                              <form.Field
-                                name={`providers.${index}.enabled`}
-                                children={(field) => (
+                              <form.Field name={`providers.${key}.enabled`}>
+                                {(field) => (
                                   <Switch
                                     checked={field.state.value}
                                     onChange={(event) =>
@@ -229,14 +228,13 @@ export default function APIKeyInputForm() {
                                     })}
                                   />
                                 )}
-                              />
+                              </form.Field>
                             </div>
                             {provider.enabled && (
                               <>
                                 {provider.provider === 'OpenAI' && (
-                                  <form.Field
-                                    name={`providers.${index}.apiKey`}
-                                    children={(field) => (
+                                  <form.Field name={`providers.${key}.apiKey`}>
+                                    {(field) => (
                                       <>
                                         <input
                                           placeholder="OpenAI API Key"
@@ -256,13 +254,14 @@ export default function APIKeyInputForm() {
                                         <FieldInfo field={field} />
                                       </>
                                     )}
-                                  />
+                                  </form.Field>
                                 )}
                                 {provider.provider === 'Azure' && (
                                   <>
                                     <form.Field
-                                      name={`providers.${index}.AzureEndpoint`}
-                                      children={(field) => (
+                                      name={`providers.${key}.AzureEndpoint`}
+                                    >
+                                      {(field) => (
                                         <>
                                           <input
                                             placeholder="Azure Endpoint"
@@ -283,10 +282,11 @@ export default function APIKeyInputForm() {
                                           <FieldInfo field={field} />
                                         </>
                                       )}
-                                    />
+                                    </form.Field>
                                     <form.Field
-                                      name={`providers.${index}.AzureDeployment`}
-                                      children={(field) => (
+                                      name={`providers.${key}.AzureDeployment`}
+                                    >
+                                      {(field) => (
                                         <>
                                           <input
                                             placeholder="Azure Deployment"
@@ -307,13 +307,12 @@ export default function APIKeyInputForm() {
                                           <FieldInfo field={field} />
                                         </>
                                       )}
-                                    />
+                                    </form.Field>
                                   </>
                                 )}
                                 {provider.provider === 'Ollama' && (
-                                  <form.Field
-                                    name={`providers.${index}.baseUrl`}
-                                    children={(field) => (
+                                  <form.Field name={`providers.${key}.baseUrl`}>
+                                    {(field) => (
                                       <>
                                         <input
                                           placeholder="Ollama Base URL"
@@ -334,7 +333,7 @@ export default function APIKeyInputForm() {
                                         <FieldInfo field={field} />
                                       </>
                                     )}
-                                  />
+                                  </form.Field>
                                 )}
                                 {provider.error && (
                                   <Text size="xs" color="red" mt={4}>
@@ -354,7 +353,8 @@ export default function APIKeyInputForm() {
           </Tabs>
           <form.Subscribe
             selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
+          >
+            {([canSubmit, isSubmitting]) => (
               <Button
                 type="submit"
                 fullWidth
@@ -368,7 +368,7 @@ export default function APIKeyInputForm() {
                 {isSubmitting ? '...' : 'Save Changes'}
               </Button>
             )}
-          />
+          </form.Subscribe>
         </form>
       </form>
     </Card>

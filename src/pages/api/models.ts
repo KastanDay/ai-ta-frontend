@@ -1,4 +1,5 @@
 import {
+  AllLLMProviders,
   AllSupportedModels,
   LLMProvider,
   ProviderNames,
@@ -9,12 +10,15 @@ import { getAzureModels } from '~/utils/modelProviders/azure'
 import { getAnthropicModels } from '~/utils/modelProviders/anthropic'
 import { webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { parseOpenaiKey } from '~/utils/crypto'
+import { NextRequest, NextResponse } from 'next/server'
 
 export const config = {
   runtime: 'edge',
 }
 
-const handler = async (req: Request): Promise<Response> => {
+const handler = async (
+  req: NextRequest,
+): Promise<NextResponse<AllLLMProviders | { error: string }>> => {
   try {
     const { projectName, openAIApiKey } = (await req.json()) as {
       projectName: string
@@ -22,7 +26,10 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (!projectName) {
-      return new Response('Missing project name', { status: 400 })
+      return NextResponse.json(
+        { error: 'Missing project name' },
+        { status: 400 },
+      )
     }
 
     let apiKey: string | undefined
@@ -100,10 +107,12 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    return new Response(JSON.stringify(allLLMProviders), { status: 200 })
+    return NextResponse.json(allLLMProviders as AllLLMProviders, {
+      status: 200,
+    })
   } catch (error) {
     console.error(error)
-    return new Response('Error', { status: 500 })
+    return NextResponse.json({ error: JSON.stringify(error) }, { status: 500 })
   }
 }
 
