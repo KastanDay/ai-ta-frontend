@@ -446,6 +446,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               const updatedMessages: Message[] = [
                 ...updatedConversation.messages,
                 {
+                  id: message.id,
                   role: 'assistant',
                   content: chunkValue,
                   contexts: message.contexts,
@@ -485,7 +486,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           // todo: add clerk user info to onMessagereceived for logging.
           if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
             const emails = extractEmailsFromClerk(clerk_obj.user)
-            updatedConversation.user_email = emails[0]
+            updatedConversation.userEmail = emails[0]
             onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
           } else {
             onMessageReceived(updatedConversation)
@@ -509,7 +510,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           const { answer } = await response.json()
           const updatedMessages: Message[] = [
             ...updatedConversation.messages,
-            { role: 'assistant', content: answer, contexts: message.contexts },
+            {
+              id: message.id,
+              role: 'assistant',
+              content: answer,
+              contexts: message.contexts,
+            },
           ]
           updatedConversation = {
             ...updatedConversation,

@@ -12,9 +12,12 @@ import {
 import { Button, Text } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
-import { saveConversation, saveConversations } from '@/utils/app/conversation'
+import {
+  saveConversations,
+  saveConversationToServer,
+} from '@/utils/app/conversation'
 import { throttle } from '@/utils/data/throttle'
-
+import { v4 as uuidv4 } from 'uuid'
 import {
   type ChatBody,
   type Conversation,
@@ -525,6 +528,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             const contentText = Array.isArray(content)
               ? content.map((content) => content.text).join(' ')
               : content
+
+            // This is where we can customize the name of the conversation
             const customName =
               contentText.length > 30
                 ? contentText.substring(0, 30) + '...'
@@ -583,6 +588,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 const updatedMessages: Message[] = [
                   ...updatedConversation.messages,
                   {
+                    id: uuidv4(),
                     role: 'assistant',
                     content: chunkValue,
                   },
@@ -652,14 +658,23 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           }
 
           try {
-            saveConversation(updatedConversation)
+            // saveConversation(updatedConversation)
             if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
               const emails = extractEmailsFromClerk(clerk_obj.user)
-              updatedConversation.user_email = emails[0]
+              updatedConversation.userEmail = emails[0]
               onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
             } else {
               onMessageReceived(updatedConversation)
             }
+
+            await saveConversationToServer(updatedConversation).catch(
+              (error) => {
+                console.error(
+                  'Error saving updated conversation to server:',
+                  error,
+                )
+              },
+            )
 
             const updatedConversations: Conversation[] = conversations.map(
               (conversation) => {
@@ -677,7 +692,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               value: updatedConversations,
             })
             // console.log('updatedConversations: ', updatedConversations)
-            saveConversations(updatedConversations)
+            // saveConversations(updatedConversations)
             homeDispatch({ field: 'messageIsStreaming', value: false })
           } catch (error) {
             console.error('An error occurred: ', error)
@@ -689,6 +704,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             const updatedMessages: Message[] = [
               ...updatedConversation.messages,
               {
+                id: uuidv4(),
                 role: 'assistant',
                 content: answer,
                 contexts: message.contexts,
@@ -702,7 +718,21 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               field: 'selectedConversation',
               value: updatedConversation,
             })
-            saveConversation(updatedConversation)
+            handleUpdateConversation(updatedConversation, {
+              key: 'messages',
+              value: updatedMessages,
+            })
+
+            // await saveConversationToServer(updatedConversation).catch(
+            //   (error) => {
+            //     console.error(
+            //       'Error saving updated conversation to server:',
+            //       error,
+            //     )
+            //   },
+            // )
+            // Do we need this?
+            // saveConversation(updatedConversation)
             const updatedConversations: Conversation[] = conversations.map(
               (conversation) => {
                 if (conversation.id === selectedConversation.id) {

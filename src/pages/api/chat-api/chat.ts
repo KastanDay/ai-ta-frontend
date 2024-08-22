@@ -227,7 +227,7 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
         : DEFAULT_SYSTEM_PROMPT,
     temperature: temperature || DEFAULT_TEMPERATURE,
     folderId: null,
-    user_email: email,
+    userEmail: email,
   }
 
   // Handle image content if it exists

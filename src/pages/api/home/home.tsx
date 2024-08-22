@@ -17,9 +17,10 @@ import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const'
 import {
   saveConversation,
   saveConversations,
+  saveConversationToServer,
   updateConversation,
 } from '@/utils/app/conversation'
-import { saveFolders } from '@/utils/app/folders'
+import { saveFolders, saveFolderToServer } from '@/utils/app/folders'
 import { savePrompts } from '@/utils/app/prompts'
 import { getSettings } from '@/utils/app/settings'
 
@@ -43,6 +44,7 @@ import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
 import { selectBestModel, VisionCapableModels } from '~/types/LLMProvider'
 import { OpenAIModelID } from '~/utils/modelProviders/openai'
+import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 
 const Home = () => {
   const { t } = useTranslation('chat')
@@ -142,6 +144,8 @@ const Home = () => {
   }, [selectedConversation, conversations])
 
   const clerk_user_outer = useUser()
+  const [user_email, setUserEmail] = useState<string | undefined>(undefined)
+  // console.log('clerk_user_email: ', user_email)
 
   useEffect(() => {
     if (!clerk_user_outer.isLoaded || isCourseMetadataLoading) {
@@ -164,6 +168,8 @@ const Home = () => {
         console.log('Course does not exist, redirecting to materials page')
         router.push(`/${course_name}/materials`)
       }
+      setUserEmail(extractEmailsFromClerk(clerk_user_outer.user)[0])
+      console.log('setting user email: ', user_email)
     }
   }, [clerk_user_outer.isLoaded, isCourseMetadataLoading])
   // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
@@ -227,15 +233,6 @@ const Home = () => {
 
   // FOLDER OPERATIONS  --------------------------------------------
 
-  const handleSelectConversation = (conversation: Conversation) => {
-    dispatch({
-      field: 'selectedConversation',
-      value: conversation,
-    })
-
-    saveConversation(conversation)
-  }
-
   const handleCreateFolder = (name: string, type: FolderType) => {
     const newFolder: FolderInterface = {
       id: uuidv4(),
@@ -246,13 +243,21 @@ const Home = () => {
     const updatedFolders = [...folders, newFolder]
 
     dispatch({ field: 'folders', value: updatedFolders })
-    saveFolders(updatedFolders)
+    // saveFolders(updatedFolders)
+    if (user_email == undefined) {
+      console.error('user_email is undefined')
+      return
+    }
+    saveFolderToServer(newFolder, user_email).catch((error) => {
+      console.error('Error saving folder to server:', error)
+    })
   }
 
   const handleDeleteFolder = (folderId: string) => {
     const updatedFolders = folders.filter((f) => f.id !== folderId)
     dispatch({ field: 'folders', value: updatedFolders })
-    saveFolders(updatedFolders)
+    // saveFolders(updatedFolders)
+    //Todo: add delete folder from server
 
     const updatedConversations: Conversation[] = conversations.map((c) => {
       if (c.folderId === folderId) {
@@ -291,16 +296,61 @@ const Home = () => {
           name,
         }
       }
-
       return f
     })
 
+    const updatedFolder = updatedFolders.find((f) => f.id === folderId)
+
+    if (!updatedFolder) {
+      console.error('Folder not found')
+      return
+    }
+
     dispatch({ field: 'folders', value: updatedFolders })
 
-    saveFolders(updatedFolders)
+    if (user_email == undefined) {
+      console.error('user_email is undefined')
+      return
+    }
+
+    saveFolderToServer(updatedFolder, user_email).catch((error) => {
+      console.error('Error saving folder to server:', error)
+    })
+  }
+
+  const fetchFolders = async (conversations: Conversation[]) => {
+    let fetchedFolders = []
+    try {
+      const foldersResonse = await fetch(
+        `/api/folder?user_email=${user_email}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+
+      if (!foldersResonse.ok) {
+        throw new Error('Error fetching folders')
+      }
+      fetchedFolders = await foldersResonse.json()
+      console.log('foldersResonse: ', fetchedFolders)
+    } catch (error) {
+      console.error('Error fetching folders:', error)
+    }
+    dispatch({ field: 'folders', value: fetchedFolders })
   }
 
   // CONVERSATION OPERATIONS  --------------------------------------------
+  const handleSelectConversation = async (conversation: Conversation) => {
+    dispatch({
+      field: 'selectedConversation',
+      value: conversation,
+    })
+    localStorage.setItem('selectedConversation', JSON.stringify(conversation))
+    // await saveConversationToServer(conversation)
+  }
 
   const handleNewConversation = () => {
     const lastConversation = conversations[conversations.length - 1]
@@ -316,6 +366,8 @@ const Home = () => {
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
+      userEmail: user_email,
+      projectName: course_name,
     }
 
     const updatedConversations = [...conversations, newConversation]
@@ -323,8 +375,11 @@ const Home = () => {
     dispatch({ field: 'selectedConversation', value: newConversation })
     dispatch({ field: 'conversations', value: updatedConversations })
 
-    saveConversation(newConversation)
-    saveConversations(updatedConversations)
+    // saveConversation(newConversation)
+    // saveConversations(updatedConversations)
+    // saveConversationToServer(newConversation).catch((error) => {
+    //   console.error('Error saving updated conversation to server:', error)
+    // })
 
     dispatch({ field: 'loading', value: false })
   }
@@ -345,6 +400,35 @@ const Home = () => {
 
     dispatch({ field: 'selectedConversation', value: single })
     dispatch({ field: 'conversations', value: all })
+  }
+
+  const fetchConversationHistory = async () => {
+    try {
+      const response = await fetch(
+        `/api/conversation?user_email=${user_email}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+
+      if (!response.ok) {
+        throw new Error('Error fetching conversation history')
+      }
+
+      const conversationHistory = await response.json()
+
+      const cleanedConversationHistory =
+        cleanConversationHistory(conversationHistory)
+
+      console.log('cleanedConversationHistory: ', cleanedConversationHistory)
+      dispatch({ field: 'conversations', value: cleanedConversationHistory })
+      return cleanedConversationHistory
+    } catch (error) {
+      console.error('Error fetching conversation history:', error)
+    }
   }
 
   // Image to Text
@@ -495,83 +579,94 @@ const Home = () => {
   // ON LOAD --------------------------------------------
 
   useEffect(() => {
-    if (isInitialSetupDone) return
-    const settings = getSettings()
-    if (settings.theme) {
-      dispatch({
-        field: 'lightMode',
-        value: settings.theme,
-      })
+    const initialSetup = async () => {
+      console.log('user_email: ', user_email)
+      if (isInitialSetupDone) return
+      console.log('isInitialSetupDone: ', isInitialSetupDone)
+
+      const settings = getSettings()
+      if (settings.theme) {
+        dispatch({
+          field: 'lightMode',
+          value: settings.theme,
+        })
+      }
+
+      if (window.innerWidth < 640) {
+        dispatch({ field: 'showChatbar', value: false })
+        dispatch({ field: 'showPromptbar', value: false })
+      }
+
+      const showChatbar = localStorage.getItem('showChatbar')
+      if (showChatbar) {
+        dispatch({ field: 'showChatbar', value: showChatbar === 'true' })
+      }
+
+      const showPromptbar = localStorage.getItem('showPromptbar')
+      if (showPromptbar) {
+        dispatch({ field: 'showPromptbar', value: showPromptbar === 'true' })
+      }
+
+      const prompts = localStorage.getItem('prompts')
+      if (prompts) {
+        dispatch({ field: 'prompts', value: JSON.parse(prompts) })
+      }
+
+      const selectedConversation = localStorage.getItem('selectedConversation')
+      if (selectedConversation) {
+        const parsedSelectedConversation: Conversation =
+          JSON.parse(selectedConversation)
+        const cleanedSelectedConversation = cleanSelectedConversation(
+          parsedSelectedConversation,
+        )
+
+        dispatch({
+          field: 'selectedConversation',
+          value: cleanedSelectedConversation,
+        })
+      } else {
+        const lastConversation = conversations[conversations.length - 1]
+        if (!llmProviders || Object.keys(llmProviders).length === 0) return
+        const bestModel = selectBestModel(llmProviders, lastConversation)
+        dispatch({
+          field: 'selectedConversation',
+          value: {
+            id: uuidv4(),
+            name: t('New Conversation'),
+            messages: [],
+            model: bestModel,
+            prompt: DEFAULT_SYSTEM_PROMPT,
+            temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
+            folderId: null,
+            userEmail: user_email,
+            projectName: course_name,
+          },
+        })
+      }
+      setIsInitialSetupDone(true)
     }
 
-    if (window.innerWidth < 640) {
-      dispatch({ field: 'showChatbar', value: false })
-      dispatch({ field: 'showPromptbar', value: false })
+    const fetchUserData = async () => {
+      if (user_email) {
+        console.log('fetching conversation history')
+        const conversationHistory = await fetchConversationHistory()
+        if (
+          conversationHistory &&
+          conversationHistory.filter(
+            (conversation) => conversation.folderId != null,
+          ).length > 0
+        ) {
+          fetchFolders(conversationHistory)
+        }
+      }
     }
 
-    const showChatbar = localStorage.getItem('showChatbar')
-    if (showChatbar) {
-      dispatch({ field: 'showChatbar', value: showChatbar === 'true' })
+    if (!isInitialSetupDone) {
+      initialSetup()
     }
 
-    const showPromptbar = localStorage.getItem('showPromptbar')
-    if (showPromptbar) {
-      dispatch({ field: 'showPromptbar', value: showPromptbar === 'true' })
-    }
-
-    const folders = localStorage.getItem('folders')
-    if (folders) {
-      dispatch({ field: 'folders', value: JSON.parse(folders) })
-    }
-
-    const prompts = localStorage.getItem('prompts')
-    if (prompts) {
-      dispatch({ field: 'prompts', value: JSON.parse(prompts) })
-    }
-
-    const conversationHistory = localStorage.getItem('conversationHistory')
-    if (conversationHistory) {
-      const parsedConversationHistory: Conversation[] =
-        JSON.parse(conversationHistory)
-      const cleanedConversationHistory = cleanConversationHistory(
-        parsedConversationHistory,
-      )
-
-      dispatch({ field: 'conversations', value: cleanedConversationHistory })
-    }
-
-    const selectedConversation = localStorage.getItem('selectedConversation')
-    // console.log('selectedConversation in localStorage', selectedConversation)
-    if (selectedConversation) {
-      const parsedSelectedConversation: Conversation =
-        JSON.parse(selectedConversation)
-      const cleanedSelectedConversation = cleanSelectedConversation(
-        parsedSelectedConversation,
-      )
-
-      dispatch({
-        field: 'selectedConversation',
-        value: cleanedSelectedConversation,
-      })
-    } else {
-      const lastConversation = conversations[conversations.length - 1]
-      if (!llmProviders || Object.keys(llmProviders).length === 0) return
-      const bestModel = selectBestModel(llmProviders, lastConversation)
-      dispatch({
-        field: 'selectedConversation',
-        value: {
-          id: uuidv4(),
-          name: t('New Conversation'),
-          messages: [],
-          model: bestModel,
-          prompt: DEFAULT_SYSTEM_PROMPT,
-          temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
-          folderId: null,
-        },
-      })
-    }
-    setIsInitialSetupDone(true)
-  }, [dispatch, llmProviders, conversations, isInitialSetupDone]) // ! serverSidePluginKeysSet, removed
+    fetchUserData()
+  }, [dispatch, llmProviders, isInitialSetupDone, user_email]) // ! serverSidePluginKeysSet, removed
   // }, [defaultModelId, dispatch, serverSidePluginKeysSet, models, conversations]) // original!
 
   if (isLoading) {

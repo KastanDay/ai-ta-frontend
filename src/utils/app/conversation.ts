@@ -14,8 +14,10 @@ export const updateConversation = (
     return c
   })
 
-  saveConversation(updatedConversation)
-  saveConversations(updatedConversations)
+  // Save conversations to server instead of local storage
+  saveConversationToServer(updatedConversation).catch((error) => {
+    console.error('Error saving updated conversation to server:', error)
+  })
 
   return {
     single: updatedConversation,
@@ -41,7 +43,7 @@ export const saveConversation = (conversation: Conversation) => {
         course_name:
           conversation.messages?.[0]?.contexts?.[0]?.course_name ||
           'Unknown Course',
-        user_email: conversation.user_email,
+        user_email: conversation.userEmail,
         inSaveConversation: true,
       })
 
@@ -85,7 +87,7 @@ export const saveConversations = (conversations: Conversation[]) => {
       course_name:
         conversations?.slice(-1)[0]?.messages?.[0]?.contexts?.[0]
           ?.course_name || 'Unknown Course',
-      user_email: conversations?.slice(-1)[0]?.user_email || 'Unknown Email',
+      user_email: conversations?.slice(-1)[0]?.userEmail || 'Unknown Email',
       inSaveConversations: true,
     })
 
@@ -133,3 +135,22 @@ export const saveConversations = (conversations: Conversation[]) => {
 //     localStorage.setItem('conversationHistory', JSON.stringify(conversations))
 //   }
 // }
+
+export const saveConversationToServer = async (conversation: Conversation) => {
+  try {
+    console.log('Saving conversation to server:', conversation)
+    const response = await fetch('/api/conversation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ conversation }),
+    })
+
+    if (!response.ok) {
+      throw new Error('Error saving conversation')
+    }
+  } catch (error) {
+    console.error('Error saving conversation:', error)
+  }
+}

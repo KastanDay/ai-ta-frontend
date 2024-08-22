@@ -7,7 +7,11 @@ import { useTranslation } from 'next-i18next'
 import { useCreateReducer } from '@/hooks/useCreateReducer'
 
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const'
-import { saveConversation, saveConversations } from '@/utils/app/conversation'
+import {
+  saveConversation,
+  saveConversations,
+  saveConversationToServer,
+} from '@/utils/app/conversation'
 import { saveFolders } from '@/utils/app/folders'
 import { exportData, importData } from '@/utils/app/importExport'
 
@@ -151,7 +155,7 @@ export const Chatbar = () => {
 
     homeDispatch({ field: 'conversations', value: updatedConversations })
     chatDispatch({ field: 'searchTerm', value: '' })
-    saveConversations(updatedConversations)
+    // saveConversations(updatedConversations)
 
     if (updatedConversations.length > 0) {
       const lastConversation =
@@ -162,7 +166,10 @@ export const Chatbar = () => {
           value: lastConversation,
         })
 
-        saveConversation(lastConversation)
+        // saveConversation(lastConversation)
+        saveConversationToServer(lastConversation).catch((error) => {
+          console.error('Error saving updated conversation to server:', error)
+        })
       }
     } else {
       defaultModelId &&
@@ -207,8 +214,8 @@ export const Chatbar = () => {
         (context) => context['course_name '] === currentCourseName,
       )
       const searchTermMatch =
-        conversation.messages[0]?.contexts?.[0]?.['course_name ']
-          .toLocaleLowerCase()
+        conversation.projectName
+          ?.toLocaleLowerCase()
           .includes(searchTerm.toLowerCase()) ||
         conversation.messages.some((message) => {
           if (typeof message.content === 'string') {
@@ -234,6 +241,9 @@ export const Chatbar = () => {
       field: 'filteredConversations',
       value: filteredConversations,
     })
+    console.log('Search term in chatbar:', searchTerm)
+    console.log('Conversation history in chatbar:', conversations)
+    console.log('Filtered conversations:', filteredConversations)
   }, [searchTerm, conversations, showCurrentCourseOnly])
 
   return (

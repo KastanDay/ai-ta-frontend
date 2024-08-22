@@ -29,6 +29,8 @@ export const ChatFolders = ({ searchTerm }: Props) => {
   }
 
   const ChatFolders = (currentFolder: FolderInterface) => {
+    console.log('currentFolder: ', currentFolder)
+    console.log('conversations in current folder:', conversations)
     return (
       conversations &&
       conversations
@@ -44,7 +46,7 @@ export const ChatFolders = ({ searchTerm }: Props) => {
         })
     )
   }
-
+  console.log('folders: ', folders)
   return (
     <div className="flex w-full flex-col pt-2">
       {folders
