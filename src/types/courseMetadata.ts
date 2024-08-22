@@ -1,5 +1,7 @@
 // all values are email addresses
 
+import { LLMProvider } from './LLMProvider'
+
 // courseMetadata.ts
 export interface CourseMetadata {
   is_private: boolean
@@ -12,6 +14,7 @@ export interface CourseMetadata {
   openai_api_key: string | undefined
   system_prompt: string | undefined
   disabled_models: string[] | undefined
+  llmProviders: LLMProvider[]
 }
 
 export interface CourseMetadataOptionalForUpsert {

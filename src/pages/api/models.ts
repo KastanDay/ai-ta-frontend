@@ -100,8 +100,6 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    console.log('this is the allLLMProviders', allLLMProviders.Azure)
-
     return new Response(JSON.stringify(allLLMProviders), { status: 200 })
   } catch (error) {
     console.error(error)
