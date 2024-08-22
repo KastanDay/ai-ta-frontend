@@ -193,161 +193,220 @@ export default function APIKeyInputForm() {
                   gap: 16,
                 }}
               >
-                <form.Field name="providers">
-                  {(field) => (
-                    <>
-                      {Object.entries(field.state.value as AllLLMProviders).map(
-                        ([key, provider]) => (
-                          <div key={key}>
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                marginBottom: 8,
-                              }}
-                            >
-                              <Text size="sm" weight={500}>
-                                {provider.provider}
-                              </Text>
-                              <form.Field name={`providers.${key}.enabled`}>
-                                {(field) => (
-                                  <Switch
-                                    checked={field.state.value}
-                                    onChange={(event) =>
-                                      field.handleChange(
-                                        event.currentTarget.checked,
-                                      )
-                                    }
-                                    styles={(theme) => ({
-                                      track: {
-                                        backgroundColor: field.state.value
-                                          ? theme.colors.blue[6]
-                                          : theme.colors.gray[5],
-                                      },
-                                    })}
-                                  />
-                                )}
-                              </form.Field>
-                            </div>
-                            {provider.enabled && (
-                              <>
-                                {provider.provider === 'OpenAI' && (
-                                  <form.Field name={`providers.${key}.apiKey`}>
-                                    {(field) => (
-                                      <>
-                                        <input
-                                          placeholder="OpenAI API Key"
-                                          value={field.state.value}
-                                          onChange={(e) =>
-                                            field.handleChange(e.target.value)
-                                          }
-                                          style={{
-                                            backgroundColor: '#2d2d3d',
-                                            borderColor: '#4a4a5e',
-                                            color: 'white',
-                                            padding: '8px',
-                                            borderRadius: '4px',
-                                            width: '100%',
-                                          }}
-                                        />
-                                        <FieldInfo field={field} />
-                                      </>
-                                    )}
-                                  </form.Field>
-                                )}
-                                {provider.provider === 'Azure' && (
-                                  <>
-                                    <form.Field
-                                      name={`providers.${key}.AzureEndpoint`}
-                                    >
-                                      {(field) => (
-                                        <>
-                                          <input
-                                            placeholder="Azure Endpoint"
-                                            value={field.state.value}
-                                            onChange={(e) =>
-                                              field.handleChange(e.target.value)
-                                            }
-                                            style={{
-                                              backgroundColor: '#2d2d3d',
-                                              borderColor: '#4a4a5e',
-                                              color: 'white',
-                                              padding: '8px',
-                                              borderRadius: '4px',
-                                              width: '100%',
-                                              marginTop: '8px',
-                                            }}
-                                          />
-                                          <FieldInfo field={field} />
-                                        </>
-                                      )}
-                                    </form.Field>
-                                    <form.Field
-                                      name={`providers.${key}.AzureDeployment`}
-                                    >
-                                      {(field) => (
-                                        <>
-                                          <input
-                                            placeholder="Azure Deployment"
-                                            value={field.state.value}
-                                            onChange={(e) =>
-                                              field.handleChange(e.target.value)
-                                            }
-                                            style={{
-                                              backgroundColor: '#2d2d3d',
-                                              borderColor: '#4a4a5e',
-                                              color: 'white',
-                                              padding: '8px',
-                                              borderRadius: '4px',
-                                              width: '100%',
-                                              marginTop: '8px',
-                                            }}
-                                          />
-                                          <FieldInfo field={field} />
-                                        </>
-                                      )}
-                                    </form.Field>
-                                  </>
-                                )}
-                                {provider.provider === 'Ollama' && (
-                                  <form.Field name={`providers.${key}.baseUrl`}>
-                                    {(field) => (
-                                      <>
-                                        <input
-                                          placeholder="Ollama Base URL"
-                                          value={field.state.value}
-                                          onChange={(e) =>
-                                            field.handleChange(e.target.value)
-                                          }
-                                          style={{
-                                            backgroundColor: '#2d2d3d',
-                                            borderColor: '#4a4a5e',
-                                            color: 'white',
-                                            padding: '8px',
-                                            borderRadius: '4px',
-                                            width: '100%',
-                                            marginTop: '8px',
-                                          }}
-                                        />
-                                        <FieldInfo field={field} />
-                                      </>
-                                    )}
-                                  </form.Field>
-                                )}
-                                {provider.error && (
-                                  <Text size="xs" color="red" mt={4}>
-                                    {provider.error}
-                                  </Text>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        ),
+                {/* Ollama Provider */}
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text size="sm" weight={500}>
+                      Ollama
+                    </Text>
+                    <form.Field name="providers.Ollama.enabled">
+                      {(field) => (
+                        <Switch
+                          checked={field.state.value}
+                          onChange={(event) =>
+                            field.handleChange(event.currentTarget.checked)
+                          }
+                          styles={(theme) => ({
+                            track: {
+                              backgroundColor: field.state.value
+                                ? theme.colors.blue[6]
+                                : theme.colors.gray[5],
+                            },
+                          })}
+                        />
                       )}
-                    </>
-                  )}
-                </form.Field>
+                    </form.Field>
+                  </div>
+                  <form.Field name="providers.Ollama.baseUrl">
+                    {(field) => (
+                      <>
+                        <input
+                          placeholder="Ollama Base URL"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          style={{
+                            backgroundColor: '#2d2d3d',
+                            borderColor: '#4a4a5e',
+                            color: 'white',
+                            padding: '8px',
+                            borderRadius: '4px',
+                            width: '100%',
+                            marginTop: '8px',
+                          }}
+                        />
+                        <FieldInfo field={field} />
+                      </>
+                    )}
+                  </form.Field>
+                </div>
+
+                {/* OpenAI Provider */}
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text size="sm" weight={500}>
+                      OpenAI
+                    </Text>
+                    <form.Field name="providers.OpenAI.enabled">
+                      {(field) => (
+                        <Switch
+                          checked={field.state.value}
+                          onChange={(event) =>
+                            field.handleChange(event.currentTarget.checked)
+                          }
+                          styles={(theme) => ({
+                            track: {
+                              backgroundColor: field.state.value
+                                ? theme.colors.blue[6]
+                                : theme.colors.gray[5],
+                            },
+                          })}
+                        />
+                      )}
+                    </form.Field>
+                  </div>
+                  <form.Field name="providers.OpenAI.apiKey">
+                    {(field) => (
+                      <>
+                        <input
+                          placeholder="OpenAI API Key"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          style={{
+                            backgroundColor: '#2d2d3d',
+                            borderColor: '#4a4a5e',
+                            color: 'white',
+                            padding: '8px',
+                            borderRadius: '4px',
+                            width: '100%',
+                          }}
+                        />
+                        <FieldInfo field={field} />
+                      </>
+                    )}
+                  </form.Field>
+                </div>
+
+                {/* WebLLM Provider */}
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text size="sm" weight={500}>
+                      WebLLM
+                    </Text>
+                    <form.Field name="providers.WebLLM.enabled">
+                      {(field) => (
+                        <Switch
+                          checked={field.state.value}
+                          onChange={(event) =>
+                            field.handleChange(event.currentTarget.checked)
+                          }
+                          styles={(theme) => ({
+                            track: {
+                              backgroundColor: field.state.value
+                                ? theme.colors.blue[6]
+                                : theme.colors.gray[5],
+                            },
+                          })}
+                        />
+                      )}
+                    </form.Field>
+                  </div>
+                </div>
+
+                {/* Azure Provider */}
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text size="sm" weight={500}>
+                      Azure
+                    </Text>
+                    <form.Field name="providers.Azure.enabled">
+                      {(field) => (
+                        <Switch
+                          checked={field.state.value}
+                          onChange={(event) =>
+                            field.handleChange(event.currentTarget.checked)
+                          }
+                          styles={(theme) => ({
+                            track: {
+                              backgroundColor: field.state.value
+                                ? theme.colors.blue[6]
+                                : theme.colors.gray[5],
+                            },
+                          })}
+                        />
+                      )}
+                    </form.Field>
+                  </div>
+                  <form.Field name="providers.Azure.AzureEndpoint">
+                    {(field) => (
+                      <>
+                        <input
+                          placeholder="Azure Endpoint"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          style={{
+                            backgroundColor: '#2d2d3d',
+                            borderColor: '#4a4a5e',
+                            color: 'white',
+                            padding: '8px',
+                            borderRadius: '4px',
+                            width: '100%',
+                            marginTop: '8px',
+                          }}
+                        />
+                        <FieldInfo field={field} />
+                      </>
+                    )}
+                  </form.Field>
+                  <form.Field name="providers.Azure.AzureDeployment">
+                    {(field) => (
+                      <>
+                        <input
+                          placeholder="Azure Deployment"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          style={{
+                            backgroundColor: '#2d2d3d',
+                            borderColor: '#4a4a5e',
+                            color: 'white',
+                            padding: '8px',
+                            borderRadius: '4px',
+                            width: '100%',
+                            marginTop: '8px',
+                          }}
+                        />
+                        <FieldInfo field={field} />
+                      </>
+                    )}
+                  </form.Field>
+                </div>
               </div>
             </Tabs.Panel>
           </Tabs>
@@ -359,11 +418,11 @@ export default function APIKeyInputForm() {
                 type="submit"
                 fullWidth
                 disabled={!canSubmit}
-                style={{
+                sx={(theme) => ({
                   marginTop: 16,
                   backgroundColor: '#9333ea',
                   '&:hover': { backgroundColor: '#7e22ce' },
-                }}
+                })}
               >
                 {isSubmitting ? '...' : 'Save Changes'}
               </Button>

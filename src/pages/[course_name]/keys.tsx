@@ -15,7 +15,7 @@ const CourseMain: NextPage = () => {
   const router = useRouter()
   const [courseName, setCourseName] = useState<string | null>(null)
   const { user, isLoaded, isSignedIn } = useUser()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isFetchingCourseMetadata, setIsFetchingCourseMetadata] = useState(true)
 
   const getCurrentPageName = () => {
     return router.query.course_name as string
@@ -34,13 +34,13 @@ const CourseMain: NextPage = () => {
         return
       }
       setCourseName(local_course_name)
-      setIsLoading(false)
+      setIsFetchingCourseMetadata(false)
     }
     fetchCourseData()
   }, [router.isReady])
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!isLoaded || isLoading || courseName == null) {
+  if (!isLoaded || isFetchingCourseMetadata || courseName == null) {
     return (
       <MainPageBackground>
         <LoadingSpinner />
