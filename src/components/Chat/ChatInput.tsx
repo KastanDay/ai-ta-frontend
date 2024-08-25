@@ -48,6 +48,7 @@ import ChatUI, {
 } from '~/utils/modelProviders/WebLLM'
 import { VisionCapableModels } from '~/types/LLMProvider'
 import { OpenAIModelID } from '~/utils/modelProviders/openai'
+import { ModelSelect } from './ModelSelect'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -116,6 +117,28 @@ export const ChatInput = ({
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
+  const [showModelSelect, setShowModelSelect] = useState(false)
+  const modelSelectContainerRef = useRef<HTMLDivElement | null>(null)
+
+  const handleTextClick = () => {
+    setShowModelSelect((prev) => !prev)
+  }
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      modelSelectContainerRef.current &&
+      !modelSelectContainerRef.current.contains(event.target as Node)
+    ) {
+      setShowModelSelect(false)
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [modelSelectContainerRef])
 
   const removeButtonStyle: CSSProperties = {
     position: 'absolute',
@@ -188,10 +211,10 @@ export const ChatInput = ({
           imageUrls.length > 0
             ? imageUrls
             : await Promise.all(
-                imageFiles.map((file) =>
-                  uploadImageAndGetUrl(file, courseName),
-                ),
-              )
+              imageFiles.map((file) =>
+                uploadImageAndGetUrl(file, courseName),
+              ),
+            )
 
         // Construct image content for the message
         imageContent = imageUrlsToUse
@@ -599,9 +622,8 @@ export const ChatInput = ({
     if (textareaRef && textareaRef.current) {
       textareaRef.current.style.height = 'inherit'
       textareaRef.current.style.height = `${textareaRef.current?.scrollHeight}px`
-      textareaRef.current.style.overflow = `${
-        textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
-      }`
+      textareaRef.current.style.overflow = `${textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
+        }`
     }
   }, [content])
 
@@ -829,12 +851,11 @@ export const ChatInput = ({
             {/* Button 3: main input text area  */}
             <div
               className={`
-                ${
-                  VisionCapableModels.has(
-                    selectedConversation?.model.id as OpenAIModelID,
-                  )
-                    ? 'pl-8'
-                    : 'pl-1'
+                ${VisionCapableModels.has(
+                selectedConversation?.model.id as OpenAIModelID,
+              )
+                  ? 'pl-8'
+                  : 'pl-1'
                 }
                   `}
             >
@@ -908,8 +929,10 @@ export const ChatInput = ({
 
           <Text
             size={isSmallScreen ? '10px' : 'xs'}
-            className={`font-montserratHeading ${montserrat_heading.variable} pointer-events-none absolute bottom-2 left-6 mr-6 break-words text-neutral-400`}
+            className={`font-montserratHeading ${montserrat_heading.variable} absolute bottom-2 left-5 break-words text-neutral-400 rounded-full p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200`}
             tt={'capitalize'}
+            onClick={handleTextClick}
+            style={{ cursor: 'pointer' }}
           >
             {selectedConversation?.model.name}
             {selectedConversation?.model &&
@@ -920,6 +943,12 @@ export const ChatInput = ({
               '  Please wait while the model is loading...'}
             {/* webLLMModels.some((m) => m.name === model.name) */}
           </Text>
+          {showModelSelect && (
+            <div ref={modelSelectContainerRef}
+              className="absolute bottom-12 left-0 right-0 bg-[#1d1f33] p-4 rounded-lg z-50 shadow-lg">
+              <ModelSelect chat_ui={chat_ui} />
+            </div>
+          )}
         </div>
       </div>
     </div>
