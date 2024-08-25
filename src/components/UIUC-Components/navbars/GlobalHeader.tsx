@@ -5,7 +5,7 @@ import {
   UserButton,
   useUser,
 } from '@clerk/nextjs'
-import { IconFile } from '@tabler/icons-react'
+import { IconClipboardText, IconFile } from '@tabler/icons-react'
 import MagicBell, {
   FloatingNotificationInbox,
 } from '@magicbell/magicbell-react'
@@ -13,18 +13,18 @@ import MagicBell, {
 export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
   const headerStyle = isNavbar
     ? {
-        backgroundColor: '#15162c',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        padding: '0.2em 0.2em',
-        paddingRight: '0.3em',
-      }
+      backgroundColor: '#15162c',
+      display: 'flex',
+      justifyContent: 'flex-end',
+      padding: '0.2em 0.2em',
+      paddingRight: '0.3em',
+    }
     : {
-        backgroundColor: '#2e026d',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        padding: '1em',
-      }
+      backgroundColor: '#2e026d',
+      display: 'flex',
+      justifyContent: 'flex-end',
+      padding: '1em',
+    }
 
   const clerk_obj = useUser()
   const posthog = usePostHog()
@@ -113,17 +113,17 @@ export function LandingPageHeader({
   const { classes, theme } = useStyles()
   const headerStyle = forGeneralPurposeNotLandingpage
     ? {
-        backgroundColor: '#2e026d',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        padding: '2em 2em',
-      }
+      backgroundColor: '#2e026d',
+      display: 'flex',
+      justifyContent: 'flex-end',
+      padding: '2em 2em',
+    }
     : {
-        backgroundColor: '#2e026d',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        padding: '1em',
-      }
+      backgroundColor: '#2e026d',
+      display: 'flex',
+      justifyContent: 'flex-end',
+      padding: '1em',
+    }
 
   const items = [
     // Header links
@@ -138,6 +138,17 @@ export function LandingPageHeader({
       icon: <FileIcon />,
       link: `/new`,
     },
+    {
+      name: (
+        <span
+          className={`${montserrat_heading.variable} font-montserratHeading`}
+        >
+          Documentation
+        </span>
+      ),
+      icon: <IconClipboardTexts />,
+      link: 'https://docs.uiuc.chat/',
+    }
   ]
 
   const clerk_obj = useUser()
@@ -244,6 +255,11 @@ export function LandingPageHeader({
 
 export function FileIcon() {
   return <IconFile size={20} strokeWidth={2} style={{ marginRight: '5px' }} />
+}
+
+
+export function IconClipboardTexts() {
+  return <IconClipboardText size={20} strokeWidth={2} style={{ marginRight: '5px' }} />
 }
 
 const HEADER_HEIGHT = rem(84)
