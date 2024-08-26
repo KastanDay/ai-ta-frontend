@@ -946,7 +946,7 @@ export const ChatInput = ({
           {showModelSelect && (
             <div ref={modelSelectContainerRef}
               className="absolute bottom-12 left-0 right-0 bg-[#1d1f33] p-4 rounded-lg z-50 shadow-lg">
-              <ModelSelect chat_ui={chat_ui} />
+              <ModelSelect maxDropdownHeight={370} />
             </div>
           )}
         </div>
