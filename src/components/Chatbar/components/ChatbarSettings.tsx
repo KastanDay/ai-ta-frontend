@@ -12,7 +12,7 @@ import { Key } from '../../Settings/Key'
 import { SidebarButton } from '../../Sidebar/SidebarButton'
 import ChatbarContext from '../Chatbar.context'
 import { ClearConversations } from './ClearConversations'
-import { PluginKeys } from './PluginKeys'
+// import { PluginKeys } from './PluginKeys'
 
 export const ChatbarSettings = () => {
   const { t } = useTranslation('sidebar')
@@ -54,7 +54,7 @@ export const ChatbarSettings = () => {
         <Key apiKey={apiKey} onApiKeyChange={handleApiKeyChange} />
       ) : null}
 
-      {!serverSidePluginKeysSet ? <PluginKeys /> : null}
+      {/* {!serverSidePluginKeysSet ? <PluginKeys /> : null} */}
 
       {/* Deprecate settings button for now... */}
       {/* <SidebarButton
