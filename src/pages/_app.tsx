@@ -19,6 +19,7 @@ import { PostHogProvider } from 'posthog-js/react'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 // Check that PostHog is client-side (used to handle Next.js SSR)
 if (typeof window !== 'undefined') {
@@ -72,6 +73,7 @@ const MyApp: AppType = ({ Component, pageProps: { ...pageProps } }) => {
         >
           <GoogleOneTap />
           <QueryClientProvider client={queryClient}>
+            <ReactQueryDevtools initialIsOpen={false} />
             <MantineProvider
               withGlobalStyles
               withNormalizeCSS

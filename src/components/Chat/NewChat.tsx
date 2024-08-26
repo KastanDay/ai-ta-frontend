@@ -140,7 +140,7 @@ import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
 import {
-  saveConversation,
+  saveConversationToLocalStorage,
   saveConversations,
   updateConversation,
 } from '@/utils/app/conversation'
@@ -482,7 +482,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               })
             }
           }
-          saveConversation(updatedConversation)
+          saveConversationToLocalStorage(updatedConversation)
           // todo: add clerk user info to onMessagereceived for logging.
           if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
             const emails = extractEmailsFromClerk(clerk_obj.user)
@@ -525,7 +525,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             field: 'selectedConversation',
             value: updatedConversation,
           })
-          saveConversation(updatedConversation)
+          saveConversationToLocalStorage(updatedConversation)
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {

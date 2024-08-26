@@ -1,9 +1,25 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase } from '@/utils/supabaseClient'
-import { FolderInterface } from '@/types/folder'
+import { FolderInterface, FolderWithConversation } from '@/types/folder'
 import { Database } from 'database.types'
+import { convertDBToChatConversation, DBConversation } from './conversation'
 
 type Folder = Database['public']['Tables']['folders']['Row']
+
+export function convertDBFolderToChatFolder(
+  dbFolder: Folder,
+  dbConversations: any[],
+): FolderWithConversation {
+  return {
+    id: dbFolder.id,
+    name: dbFolder.name,
+    type: dbFolder.type as 'chat' | 'prompt',
+    conversations: (dbConversations || []).map((conv) => {
+      const convMessages = conv.messages
+      return convertDBToChatConversation(conv, convMessages)
+    }),
+  }
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -19,8 +35,10 @@ export default async function handler(
 
   switch (method) {
     case 'POST':
-      const { folder, email }: { folder: FolderInterface; email: string } =
-        req.body
+      const {
+        folder,
+        email,
+      }: { folder: FolderWithConversation; email: string } = req.body
       //   Convert folder to DB type
       const dbFolder: Folder = {
         id: folder.id,
@@ -54,24 +72,99 @@ export default async function handler(
 
         const { data, error } = await supabase
           .from('folders')
-          .select('*')
+          .select(
+            `
+            *,
+            conversations (
+              id,
+              name,
+              model,
+              prompt,
+              temperature,
+              folder_id,
+              user_email,
+              project_name,
+              messages (
+                id,
+                role,
+                content,
+                contexts,
+                tools,
+                latest_system_message,
+                final_prompt_engineered_message,
+                response_time_sec,
+                conversation_id,
+                created_at
+              )
+            )
+          `,
+          )
           .eq('user_email', user_email)
           .order('created_at', { ascending: false })
 
         if (error) throw error
+        // console.log('Fetched conversations before conversion in /folder:', data)
 
-        const folderResponse: FolderInterface[] = data.map(
-          (folder: Folder) => ({
-            id: folder.id,
-            name: folder.name,
-            type: folder.type as 'chat' | 'prompt',
-          }),
-        )
-        res.status(200).json(folderResponse)
+        const fetchedFolders = (data || []).map((folder) => {
+          const conversations = folder.conversations || []
+          return convertDBFolderToChatFolder(folder, conversations)
+        })
+
+        // const { data, error } = await supabase
+        //   .from('folders')
+        //   .select('*, conversations(*, messages(*))')
+        //   .eq('user_email', user_email)
+
+        if (error) throw error
+
+        // const folderResponse: FolderInterface[] = data.map(
+        //   (folder: Folder) => ({
+        //     id: folder.id,
+        //     name: folder.name,
+        //     type: folder.type as 'chat' | 'prompt',
+        //   }),
+        // )
+        res.status(200).json(fetchedFolders)
       } catch (error) {
         res.status(500).json({ error: 'Error fetching folders' })
+        console.error('Error fetching folders:', error)
       }
       break
+    case 'DELETE':
+      const { deletedFolder } = req.body as {
+        deletedFolder: FolderWithConversation
+      }
+      try {
+        // Delete folder
+        const { data, error } = await supabase
+          .from('folders')
+          .delete()
+          .eq('id', deletedFolder.id)
+        if (error) throw error
+
+        if (deletedFolder.type === 'chat') {
+          // Remove folder_id from conversations
+          const { data: convData, error: convError } = await supabase
+            .from('conversations')
+            .update({ folder_id: null })
+            .eq('folder_id', deletedFolder.id)
+
+          if (convError) throw convError
+        } else if (deletedFolder.type === 'prompt') {
+          // Remove folder_id from prompts
+          const { data: promptData, error: promptError } = await supabase
+            .from('prompts')
+            .update({ folder_id: null })
+            .eq('folder_id', deletedFolder.id)
+
+          if (promptError) throw promptError
+        }
+
+        res.status(200).json({ message: 'Folder deleted successfully' })
+      } catch (error) {
+        res.status(500).json({ error: 'Error deleting folder' })
+        console.error('Error deleting folder:', error)
+      }
 
     default:
       res.setHeader('Allow', ['GET', 'POST'])

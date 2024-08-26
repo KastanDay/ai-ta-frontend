@@ -287,12 +287,12 @@ export const ChatMessage: FC<Props> = memo(
         messages,
       }
 
-      const { single, all } = updateConversation(
-        updatedConversation,
-        conversations,
-      )
-      homeDispatch({ field: 'selectedConversation', value: single })
-      homeDispatch({ field: 'conversations', value: all })
+      // const { single, all } = updateConversation(
+      //   updatedConversation,
+      //   conversations,
+      // )
+      // homeDispatch({ field: 'selectedConversation', value: single })
+      // homeDispatch({ field: 'conversations', value: all })
     }
 
     const handlePressEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

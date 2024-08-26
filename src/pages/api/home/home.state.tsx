@@ -1,6 +1,6 @@
 import { Action, Conversation, Message, UIUCTool } from '@/types/chat'
 import { ErrorMessage } from '@/types/error'
-import { FolderInterface } from '@/types/folder'
+import { FolderInterface, FolderWithConversation } from '@/types/folder'
 import { OpenAIModelID } from '~/utils/modelProviders/openai'
 import { PluginKey } from '@/types/plugin'
 import { Prompt } from '@/types/prompt'
@@ -15,7 +15,7 @@ export interface HomeInitialState {
   modelError: ErrorMessage | null
   llmProviders: AllLLMProviders
   selectedModel: AnySupportedModel | null
-  folders: FolderInterface[]
+  folders: FolderWithConversation[]
   conversations: Conversation[]
   selectedConversation: Conversation | undefined
   currentMessage: Message | undefined

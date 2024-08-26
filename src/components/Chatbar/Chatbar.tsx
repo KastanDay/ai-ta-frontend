@@ -7,18 +7,12 @@ import { useTranslation } from 'next-i18next'
 import { useCreateReducer } from '@/hooks/useCreateReducer'
 
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const'
-import {
-  saveConversation,
-  saveConversations,
-  saveConversationToServer,
-} from '@/utils/app/conversation'
-import { saveFolders } from '@/utils/app/folders'
+// import { saveFoldersInLocalStorage } from '@/utils/app/folders'
 import { exportData, importData } from '@/utils/app/importExport'
 
 import { Conversation } from '@/types/chat'
 import { LatestExportFormat, SupportedExportFormats } from '@/types/export'
 import { OpenAIModels } from '~/utils/modelProviders/openai'
-import { PluginKey } from '@/types/plugin'
 
 import HomeContext from '~/pages/api/home/home.context'
 
@@ -33,7 +27,9 @@ import { ChatbarInitialState, initialState } from './Chatbar.state'
 import { v4 as uuidv4 } from 'uuid'
 import router from 'next/router'
 
-import { ContextWithMetadata } from '@/types/chat'
+import { useQueryClient } from '@tanstack/react-query'
+import { useUser } from '@clerk/nextjs'
+import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 
 export const Chatbar = () => {
   const { t } = useTranslation('sidebar')
@@ -57,6 +53,10 @@ export const Chatbar = () => {
     dispatch: chatDispatch,
   } = chatBarContextValue
 
+  const queryClient = useQueryClient()
+  const user = useUser()
+  const user_email = extractEmailsFromClerk(user.user)[0]
+
   const handleApiKeyChange = useCallback(
     (apiKey: string) => {
       homeDispatch({ field: 'apiKey', value: apiKey })
@@ -66,44 +66,44 @@ export const Chatbar = () => {
     [homeDispatch],
   )
 
-  const handlePluginKeyChange = (pluginKey: PluginKey) => {
-    if (pluginKeys.some((key) => key.pluginId === pluginKey.pluginId)) {
-      const updatedPluginKeys = pluginKeys.map((key) => {
-        if (key.pluginId === pluginKey.pluginId) {
-          return pluginKey
-        }
+  // const handlePluginKeyChange = (pluginKey: PluginKey) => {
+  //   if (pluginKeys.some((key) => key.pluginId === pluginKey.pluginId)) {
+  //     const updatedPluginKeys = pluginKeys.map((key) => {
+  //       if (key.pluginId === pluginKey.pluginId) {
+  //         return pluginKey
+  //       }
 
-        return key
-      })
+  //       return key
+  //     })
 
-      homeDispatch({ field: 'pluginKeys', value: updatedPluginKeys })
+  //     homeDispatch({ field: 'pluginKeys', value: updatedPluginKeys })
 
-      localStorage.setItem('pluginKeys', JSON.stringify(updatedPluginKeys))
-    } else {
-      homeDispatch({ field: 'pluginKeys', value: [...pluginKeys, pluginKey] })
+  //     localStorage.setItem('pluginKeys', JSON.stringify(updatedPluginKeys))
+  //   } else {
+  //     homeDispatch({ field: 'pluginKeys', value: [...pluginKeys, pluginKey] })
 
-      localStorage.setItem(
-        'pluginKeys',
-        JSON.stringify([...pluginKeys, pluginKey]),
-      )
-    }
-  }
+  //     localStorage.setItem(
+  //       'pluginKeys',
+  //       JSON.stringify([...pluginKeys, pluginKey]),
+  //     )
+  //   }
+  // }
 
-  const handleClearPluginKey = (pluginKey: PluginKey) => {
-    const updatedPluginKeys = pluginKeys.filter(
-      (key) => key.pluginId !== pluginKey.pluginId,
-    )
+  // const handleClearPluginKey = (pluginKey: PluginKey) => {
+  //   const updatedPluginKeys = pluginKeys.filter(
+  //     (key) => key.pluginId !== pluginKey.pluginId,
+  //   )
 
-    if (updatedPluginKeys.length === 0) {
-      homeDispatch({ field: 'pluginKeys', value: [] })
-      localStorage.removeItem('pluginKeys')
-      return
-    }
+  //   if (updatedPluginKeys.length === 0) {
+  //     homeDispatch({ field: 'pluginKeys', value: [] })
+  //     localStorage.removeItem('pluginKeys')
+  //     return
+  //   }
 
-    homeDispatch({ field: 'pluginKeys', value: updatedPluginKeys })
+  //   homeDispatch({ field: 'pluginKeys', value: updatedPluginKeys })
 
-    localStorage.setItem('pluginKeys', JSON.stringify(updatedPluginKeys))
-  }
+  //   localStorage.setItem('pluginKeys', JSON.stringify(updatedPluginKeys))
+  // }
 
   const handleExportData = () => {
     exportData()
@@ -122,6 +122,7 @@ export const Chatbar = () => {
     window.location.reload()
   }
 
+  // Todo: Implement handle*Conversations with sql database instead of local storage
   const handleClearConversations = () => {
     defaultModelId &&
       homeDispatch({
@@ -145,7 +146,7 @@ export const Chatbar = () => {
     const updatedFolders = folders.filter((f) => f.type !== 'chat')
 
     homeDispatch({ field: 'folders', value: updatedFolders })
-    saveFolders(updatedFolders)
+    // saveFoldersInLocalStorage(updatedFolders)
   }
 
   const handleDeleteConversation = (conversation: Conversation) => {
@@ -167,9 +168,10 @@ export const Chatbar = () => {
         })
 
         // saveConversation(lastConversation)
-        saveConversationToServer(lastConversation).catch((error) => {
-          console.error('Error saving updated conversation to server:', error)
-        })
+        // saveConversationToServer(lastConversation).catch((error) => {
+        //   console.error('Error saving updated conversation to server:', error)
+        // })
+        // Add delete conversation mutation here
       }
     } else {
       defaultModelId &&
@@ -210,9 +212,10 @@ export const Chatbar = () => {
     const currentCourseName = router.asPath.split('/')[1]
 
     const filterBySearchTermOrCourse = (conversation: Conversation) => {
-      const courseMatch = conversation.messages[0]?.contexts?.some(
-        (context) => context['course_name '] === currentCourseName,
-      )
+      // console.log('Current course name:', currentCourseName)
+      // console.log('Conversation project name:', conversation.projectName)
+      // console.log('Conversation messages:', conversation.messages)
+      const courseMatch = conversation.projectName === currentCourseName
       const searchTermMatch =
         conversation.projectName
           ?.toLocaleLowerCase()
@@ -233,8 +236,10 @@ export const Chatbar = () => {
         (showCurrentCourseOnly ? courseMatch : true) && searchTermMatch
       return isMatch
     }
-
-    const filteredConversations = conversations.filter(
+    const allConversations = conversations.concat(
+      folders.flatMap((folder) => folder.conversations || []),
+    )
+    const filteredConversations = allConversations.filter(
       filterBySearchTermOrCourse,
     )
     chatDispatch({
@@ -244,7 +249,7 @@ export const Chatbar = () => {
     console.log('Search term in chatbar:', searchTerm)
     console.log('Conversation history in chatbar:', conversations)
     console.log('Filtered conversations:', filteredConversations)
-  }, [searchTerm, conversations, showCurrentCourseOnly])
+  }, [searchTerm, conversations, showCurrentCourseOnly, folders])
 
   return (
     <ChatbarContext.Provider
@@ -254,8 +259,6 @@ export const Chatbar = () => {
         handleClearConversations,
         handleImportConversations,
         handleExportData,
-        handlePluginKeyChange,
-        handleClearPluginKey,
         handleApiKeyChange,
       }}
     >

@@ -9,25 +9,12 @@ import { useCreateReducer } from '@/hooks/useCreateReducer'
 import useErrorService from '@/services/errorService'
 import useApiService from '@/services/useApiService'
 
-import {
-  cleanConversationHistory,
-  cleanSelectedConversation,
-} from '@/utils/app/clean'
+import { cleanSelectedConversation } from '@/utils/app/clean'
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const'
-import {
-  saveConversation,
-  saveConversations,
-  saveConversationToServer,
-  updateConversation,
-} from '@/utils/app/conversation'
-import { saveFolders, saveFolderToServer } from '@/utils/app/folders'
-import { savePrompts } from '@/utils/app/prompts'
 import { getSettings } from '@/utils/app/settings'
 
 import { type Conversation } from '@/types/chat'
 import { type KeyValuePair } from '@/types/data'
-import { type FolderInterface, type FolderType } from '@/types/folder'
-import { type Prompt } from '@/types/prompt'
 
 import { Chat } from '@/components/Chat/Chat'
 import { Chatbar } from '@/components/Chatbar/Chatbar'
@@ -45,15 +32,85 @@ import { useRouter } from 'next/router'
 import { selectBestModel, VisionCapableModels } from '~/types/LLMProvider'
 import { OpenAIModelID } from '~/utils/modelProviders/openai'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
+import {
+  useDeleteFolder,
+  useFetchFolders,
+  useUpdateFolder,
+} from '~/hooks/folderQueries'
+import {
+  useFetchConversationHistory,
+  // useUpdateConversation,
+} from '~/hooks/conversationQueries'
+import { FolderType, FolderWithConversation } from '~/types/folder'
+import { useQueryClient } from '@tanstack/react-query'
+import { useCreateFolder } from '~/hooks/folderQueries'
+import { updateConversation } from '~/utils/app/conversation'
 
 const Home = () => {
+  // Router
+  const router = useRouter()
+
+  // Constants
+  const course_name = router.query.course_name as string
+  const curr_route_path = router.asPath as string
+
+  // States
+  const [isInitialSetupDone, setIsInitialSetupDone] = useState(false)
+  const [isCourseMetadataLoading, setIsCourseMetadataLoading] = useState(true)
+  const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
+    null,
+  )
+  const [isLoading, setIsLoading] = useState<boolean>(true) // Add a new state for loading
+  // Make a new conversation if the current one isn't empty
+  const [hasMadeNewConvoAlready, setHasMadeNewConvoAlready] = useState(false)
+  const clerk_user_outer = useUser()
+  const { user, isLoaded, isSignedIn } = clerk_user_outer
+  const user_email = extractEmailsFromClerk(user)[0]
+  // const [user_email, setUserEmail] = useState<string | null>(null)
+
+  // Hooks
   const { t } = useTranslation('chat')
   const { getModels } = useApiService()
   const { getModelsError } = useErrorService()
-  const [isLoading, setIsLoading] = useState<boolean>(true) // Add a new state for loading
+  const queryClient = useQueryClient()
+  const queryCache = queryClient.getQueryCache()
+  // const updateConversationMutation = useUpdateConversation(
+  //   user_email as string,
+  //   queryClient,
+  // )
+  const createFolderMutation = useCreateFolder(
+    user_email as string,
+    queryClient,
+  )
+  const updateFolderMutation = useUpdateFolder(
+    user_email as string,
+    queryClient,
+  )
+  const deleteFolderMutation = useDeleteFolder(
+    user_email as string,
+    queryClient,
+  )
+  const conversationKey = ['conversationHistory', user_email]
+  const {
+    data: conversationHistory,
+    isFetched: isConversationHistoryFetched,
+    isLoading: isLoadingConversationHistory,
+    error: errorConversationHistory,
+    refetch: refetchConversationHistory,
+  } = useFetchConversationHistory(user_email)
 
+  const {
+    data: foldersData,
+    isFetched: isFoldersFetched,
+    isLoading: isLoadingFolders,
+    error: errorFolders,
+    refetch: refetchFolders,
+  } = useFetchFolders(user_email as string)
+
+  const stopConversationRef = useRef<boolean>(false)
   const serverSidePluginKeysSet = true
 
+  // Context with initial state
   const contextValue = useCreateReducer<HomeInitialState>({
     initialState,
   })
@@ -74,18 +131,7 @@ const Home = () => {
     dispatch,
   } = contextValue
 
-  const stopConversationRef = useRef<boolean>(false)
-
-  const router = useRouter()
-  const course_name = router.query.course_name as string
-  const curr_route_path = router.asPath as string
-
-  const [isInitialSetupDone, setIsInitialSetupDone] = useState(false)
-  const [isCourseMetadataLoading, setIsCourseMetadataLoading] = useState(true)
-  const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
-    null,
-  )
-
+  // Use effects for setting up the course metadata and models depending on the course/project
   useEffect(() => {
     // Set model after we fetch available models
     if (!llmProviders || Object.keys(llmProviders).length === 0) return
@@ -130,23 +176,8 @@ const Home = () => {
     courseMetadata()
   }, [course_name])
 
-  const [hasMadeNewConvoAlready, setHasMadeNewConvoAlready] = useState(false)
-  useEffect(() => {
-    // console.log("In useEffect for selectedConversation, home.tsx, selectedConversation: ", selectedConversation)
-    // ALWAYS make a new convo if current one isn't empty
-    if (!selectedConversation) return
-    if (hasMadeNewConvoAlready) return
-    setHasMadeNewConvoAlready(true)
-
-    if (selectedConversation?.messages.length > 0) {
-      handleNewConversation()
-    }
-  }, [selectedConversation, conversations])
-
-  const clerk_user_outer = useUser()
-  const [user_email, setUserEmail] = useState<string | undefined>(undefined)
   // console.log('clerk_user_email: ', user_email)
-
+  // ------------------- 👇 MOST BASIC AUTH CHECK 👇 -------------------
   useEffect(() => {
     if (!clerk_user_outer.isLoaded || isCourseMetadataLoading) {
       return
@@ -168,11 +199,15 @@ const Home = () => {
         console.log('Course does not exist, redirecting to materials page')
         router.push(`/${course_name}/materials`)
       }
-      setUserEmail(extractEmailsFromClerk(clerk_user_outer.user)[0])
+      console.log(
+        'Changing user email to: ',
+        extractEmailsFromClerk(clerk_user_outer.user)[0],
+      )
+      // This will not work because setUserEmail is async
+      // setUserEmail(extractEmailsFromClerk(clerk_user_outer.user)[0] as string)
       console.log('setting user email: ', user_email)
     }
   }, [clerk_user_outer.isLoaded, isCourseMetadataLoading])
-  // ------------------- 👆 MOST BASIC AUTH CHECK 👆 -------------------
 
   // ---- Set OpenAI API Key (either course-wide or from storage) ----
   useEffect(() => {
@@ -231,116 +266,184 @@ const Home = () => {
     setIsLoading(false)
   }, [course_metadata, apiKey])
 
-  // FOLDER OPERATIONS  --------------------------------------------
+  // ---- Set up conversations and folders ----
+  useEffect(() => {
+    // console.log("In useEffect for selectedConversation, home.tsx, selectedConversation: ", selectedConversation)
+    // ALWAYS make a new convo if current one isn't empty
+    if (!selectedConversation) return
+    if (hasMadeNewConvoAlready) return
+    setHasMadeNewConvoAlready(true)
 
+    if (selectedConversation?.messages.length > 0) {
+      handleNewConversation()
+    }
+  }, [selectedConversation, conversations])
+
+  useEffect(() => {
+    console.log('queryCache CHANGED!!!: ', queryCache)
+    console.log('queryClient: ', queryClient)
+    console.log('conversationHistory: ', conversationHistory)
+  }, [queryCache])
+
+  useEffect(() => {
+    async function fetchData() {
+      const key = ['conversationHistory', user_email]
+      const queryData = queryClient.getQueryData<Conversation[]>(key)
+      const queryStatus = queryClient.getQueryState(key)
+      console.log(
+        'queryData: ',
+        queryData,
+        ' for key: ',
+        key,
+        ' type: ',
+        typeof queryData,
+        ' queryStatus: ',
+        queryStatus,
+      )
+    }
+
+    if (isConversationHistoryFetched && !isLoadingConversationHistory) {
+      fetchData()
+      console.log('conversationHistory: ', conversationHistory)
+      dispatch({ field: 'conversations', value: conversationHistory })
+      // Should we save the conversation history to local storage? This usually exceeds the limit.
+      // localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory))
+    }
+  }, [conversationHistory])
+
+  useEffect(() => {
+    if (isFoldersFetched && !isLoadingFolders) {
+      console.log('foldersData: ', foldersData)
+      dispatch({ field: 'folders', value: foldersData })
+      // localStorage.setItem('folders', JSON.stringify(foldersData))
+    }
+  }, [foldersData])
+
+  // FOLDER OPERATIONS  --------------------------------------------
   const handleCreateFolder = (name: string, type: FolderType) => {
-    const newFolder: FolderInterface = {
+    if (user_email == undefined) {
+      console.error('user_email is undefined')
+      return
+    }
+
+    const newFolder: FolderWithConversation = {
       id: uuidv4(),
       name,
       type,
     }
 
-    const updatedFolders = [...folders, newFolder]
-
-    dispatch({ field: 'folders', value: updatedFolders })
-    // saveFolders(updatedFolders)
-    if (user_email == undefined) {
-      console.error('user_email is undefined')
-      return
-    }
-    saveFolderToServer(newFolder, user_email).catch((error) => {
-      console.error('Error saving folder to server:', error)
-    })
+    createFolderMutation.mutate(newFolder)
   }
 
   const handleDeleteFolder = (folderId: string) => {
-    const updatedFolders = folders.filter((f) => f.id !== folderId)
-    dispatch({ field: 'folders', value: updatedFolders })
-    // saveFolders(updatedFolders)
-    //Todo: add delete folder from server
+    if (user_email == undefined) {
+      console.error('user_email is undefined')
+      return
+    }
+    const deletedFolder = folders.find(
+      (f) => f.id === folderId,
+    ) as FolderWithConversation
 
-    const updatedConversations: Conversation[] = conversations.map((c) => {
-      if (c.folderId === folderId) {
-        return {
-          ...c,
-          folderId: null,
-        }
-      }
-
-      return c
-    })
-
-    dispatch({ field: 'conversations', value: updatedConversations })
-    saveConversations(updatedConversations)
-
-    const updatedPrompts: Prompt[] = prompts.map((p) => {
-      if (p.folderId === folderId) {
-        return {
-          ...p,
-          folderId: null,
-        }
-      }
-
-      return p
-    })
-
-    dispatch({ field: 'prompts', value: updatedPrompts })
-    savePrompts(updatedPrompts)
+    deleteFolderMutation.mutate(deletedFolder)
   }
 
   const handleUpdateFolder = (folderId: string, name: string) => {
-    const updatedFolders = folders.map((f) => {
-      if (f.id === folderId) {
-        return {
-          ...f,
-          name,
-        }
-      }
-      return f
-    })
-
-    const updatedFolder = updatedFolders.find((f) => f.id === folderId)
-
-    if (!updatedFolder) {
-      console.error('Folder not found')
-      return
-    }
-
-    dispatch({ field: 'folders', value: updatedFolders })
-
     if (user_email == undefined) {
       console.error('user_email is undefined')
       return
     }
 
-    saveFolderToServer(updatedFolder, user_email).catch((error) => {
-      console.error('Error saving folder to server:', error)
-    })
-  }
+    const updatedFolder = folders.find(
+      (f) => f.id === folderId,
+    ) as FolderWithConversation
+    updatedFolder.name = name
 
-  const fetchFolders = async (conversations: Conversation[]) => {
-    let fetchedFolders = []
-    try {
-      const foldersResonse = await fetch(
-        `/api/folder?user_email=${user_email}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      )
-
-      if (!foldersResonse.ok) {
-        throw new Error('Error fetching folders')
-      }
-      fetchedFolders = await foldersResonse.json()
-      console.log('foldersResonse: ', fetchedFolders)
-    } catch (error) {
-      console.error('Error fetching folders:', error)
-    }
-    dispatch({ field: 'folders', value: fetchedFolders })
+    updateFolderMutation.mutate(updatedFolder)
   }
+  // const handleCreateFolder = (name: string, type: FolderType) => {
+  //   const newFolder: FolderInterface = {
+  //     id: uuidv4(),
+  //     name,
+  //     type,
+  //   }
+
+  //   const updatedFolders = [...folders, newFolder]
+
+  //   dispatch({ field: 'folders', value: updatedFolders })
+  //   // saveFolders(updatedFolders)
+  //   if (user_email == undefined) {
+  //     console.error('user_email is undefined')
+  //     return
+  //   }
+  //   saveFolderToServer(newFolder, user_email).catch((error) => {
+  //     console.error('Error saving folder to server:', error)
+  //   })
+  // }
+
+  // const handleDeleteFolder = (folderId: string) => {
+  //   const updatedFolders = folders.filter((f) => f.id !== folderId)
+  //   dispatch({ field: 'folders', value: updatedFolders })
+  //   // saveFolders(updatedFolders)
+  //   //Todo: add delete folder from server
+
+  //   const updatedConversations: Conversation[] = conversations.map((c) => {
+  //     if (c.folderId === folderId) {
+  //       return {
+  //         ...c,
+  //         folderId: null,
+  //       }
+  //     }
+
+  //     return c
+  //   })
+
+  //   dispatch({ field: 'conversations', value: updatedConversations })
+  //   saveConversations(updatedConversations)
+
+  //   const updatedPrompts: Prompt[] = prompts.map((p) => {
+  //     if (p.folderId === folderId) {
+  //       return {
+  //         ...p,
+  //         folderId: null,
+  //       }
+  //     }
+
+  //     return p
+  //   })
+
+  //   dispatch({ field: 'prompts', value: updatedPrompts })
+  //   savePrompts(updatedPrompts)
+  // }
+
+  // const handleUpdateFolder = (folderId: string, name: string) => {
+  //   const updatedFolders = folders.map((f) => {
+  //     if (f.id === folderId) {
+  //       return {
+  //         ...f,
+  //         name,
+  //       }
+  //     }
+  //     return f
+  //   })
+
+  //   const updatedFolder = updatedFolders.find((f) => f.id === folderId)
+
+  //   if (!updatedFolder) {
+  //     console.error('Folder not found')
+  //     return
+  //   }
+
+  //   dispatch({ field: 'folders', value: updatedFolders })
+
+  //   if (user_email == undefined) {
+  //     console.error('user_email is undefined')
+  //     return
+  //   }
+
+  //   saveFolderToServer(updatedFolder, user_email).catch((error) => {
+  //     console.error('Error saving folder to server:', error)
+  //   })
+  // }
 
   // CONVERSATION OPERATIONS  --------------------------------------------
   const handleSelectConversation = async (conversation: Conversation) => {
@@ -353,6 +456,7 @@ const Home = () => {
   }
 
   const handleNewConversation = () => {
+    // if (selectedConversation?.messages.length === 0) return
     const lastConversation = conversations[conversations.length - 1]
 
     // Determine the model to use for the new conversation
@@ -366,7 +470,7 @@ const Home = () => {
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
-      userEmail: user_email,
+      userEmail: user_email || undefined,
       projectName: course_name,
     }
 
@@ -384,52 +488,72 @@ const Home = () => {
     dispatch({ field: 'loading', value: false })
   }
 
+  // This will ONLY update the local storage and not the server
   const handleUpdateConversation = (
     conversation: Conversation,
     data: KeyValuePair,
   ) => {
-    const updatedConversation = {
+    // If there is data that means only update selectedConversation and local storage, irrespective of user email
+    // If there is no data, update the selectedConversation, local storage if user email is not set, and selectedConversation, local storage and server if user email is set
+
+    let updatedConversation = conversation
+    console.log('updating conversation with data: ', data)
+    updatedConversation = {
       ...conversation,
       [data.key]: data.value,
     }
 
-    const { single, all } = updateConversation(
-      updatedConversation,
-      conversations,
-    )
+    console.log('updating conversation in local storage: ', updatedConversation)
+    // localStorage.setItem(
+    //   'selectedConversation',
+    //   JSON.stringify(updatedConversation),
+    // )
 
-    dispatch({ field: 'selectedConversation', value: single })
-    dispatch({ field: 'conversations', value: all })
-  }
+    dispatch({ field: 'selectedConversation', value: updatedConversation })
 
-  const fetchConversationHistory = async () => {
-    try {
-      const response = await fetch(
-        `/api/conversation?user_email=${user_email}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      )
-
-      if (!response.ok) {
-        throw new Error('Error fetching conversation history')
+    const updatedConversations = conversations.map((c) => {
+      if (c.id === updatedConversation.id) {
+        return updatedConversation
       }
 
-      const conversationHistory = await response.json()
+      return c
+    })
+    dispatch({ field: 'conversations', value: updatedConversations })
+    localStorage.setItem(
+      'conversationHistory',
+      JSON.stringify(updatedConversations),
+    )
 
-      const cleanedConversationHistory =
-        cleanConversationHistory(conversationHistory)
+    // if (data) {
+    //   updatedConversation = {
+    //     ...conversation,
+    //     [data.key]: data.value,
+    //   }
 
-      console.log('cleanedConversationHistory: ', cleanedConversationHistory)
-      dispatch({ field: 'conversations', value: cleanedConversationHistory })
-      return cleanedConversationHistory
-    } catch (error) {
-      console.error('Error fetching conversation history:', error)
-    }
+    //   localStorage.setItem(
+    //     'selectedConversation',
+    //     JSON.stringify(updatedConversation),
+    //   )
+    //   const updatedConversations = conversations.map((c) => {
+    //     if (c.id === updatedConversation.id) {
+    //       return updatedConversation
+    //     }
+    //   }
+    //   )
+    //   localStorage.setItem('conversations', JSON.stringify(updatedConversations))
+    //   dispatch({ field: 'conversations', value: updatedConversations })
+    // } else if() {
+
+    // }
+    // This was a HUGE DISCOVERY
+    // REACT QUERY MUTATIONS ARE SOMEHOW RESETTING THE STATE OF THE CONVERSATION QUERY! Is this because is in the react context action?
+    // const updateConversationMutation = useUpdateConversation(user_email, queryClient)
+    // updateConversationMutation.mutate(updatedConversation)
+    updateConversation(updatedConversation)
+    // dispatch({ field: 'selectedConversation', value: updatedConversation })
   }
+
+  // Other context actions --------------------------------------------
 
   // Image to Text
   const setIsImg2TextLoading = (isImg2TextLoading: boolean) => {
@@ -504,7 +628,7 @@ const Home = () => {
     </svg>
   )
 
-  // EFFECTS  --------------------------------------------
+  // EFFECTS for file drag and drop --------------------------------------------
   useEffect(() => {
     const handleDocumentDragOver = (e: DragEvent) => {
       e.preventDefault()
@@ -580,10 +704,9 @@ const Home = () => {
 
   useEffect(() => {
     const initialSetup = async () => {
-      console.log('user_email: ', user_email)
-      if (isInitialSetupDone) return
+      // console.log('user_email: ', user_email)
       console.log('isInitialSetupDone: ', isInitialSetupDone)
-
+      if (isInitialSetupDone) return
       const settings = getSettings()
       if (settings.theme) {
         dispatch({
@@ -625,48 +748,16 @@ const Home = () => {
           value: cleanedSelectedConversation,
         })
       } else {
-        const lastConversation = conversations[conversations.length - 1]
         if (!llmProviders || Object.keys(llmProviders).length === 0) return
-        const bestModel = selectBestModel(llmProviders, lastConversation)
-        dispatch({
-          field: 'selectedConversation',
-          value: {
-            id: uuidv4(),
-            name: t('New Conversation'),
-            messages: [],
-            model: bestModel,
-            prompt: DEFAULT_SYSTEM_PROMPT,
-            temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
-            folderId: null,
-            userEmail: user_email,
-            projectName: course_name,
-          },
-        })
+        handleNewConversation()
       }
       setIsInitialSetupDone(true)
-    }
-
-    const fetchUserData = async () => {
-      if (user_email) {
-        console.log('fetching conversation history')
-        const conversationHistory = await fetchConversationHistory()
-        if (
-          conversationHistory &&
-          conversationHistory.filter(
-            (conversation) => conversation.folderId != null,
-          ).length > 0
-        ) {
-          fetchFolders(conversationHistory)
-        }
-      }
     }
 
     if (!isInitialSetupDone) {
       initialSetup()
     }
-
-    fetchUserData()
-  }, [dispatch, llmProviders, isInitialSetupDone, user_email]) // ! serverSidePluginKeysSet, removed
+  }, [dispatch, llmProviders, user_email]) // ! serverSidePluginKeysSet, removed
   // }, [defaultModelId, dispatch, serverSidePluginKeysSet, models, conversations]) // original!
 
   if (isLoading) {

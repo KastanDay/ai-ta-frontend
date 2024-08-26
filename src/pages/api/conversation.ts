@@ -12,8 +12,16 @@ import { Database } from 'database.types'
 import { v4 as uuidv4 } from 'uuid'
 import { AllSupportedModels, GenericSupportedModel } from '~/types/LLMProvider'
 
-type DBConversation = Database['public']['Tables']['conversations']['Row']
-type DBMessage = Database['public']['Tables']['messages']['Row']
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '5mb',
+    },
+  },
+}
+export type DBConversation =
+  Database['public']['Tables']['conversations']['Row']
+export type DBMessage = Database['public']['Tables']['messages']['Row']
 
 export function convertChatToDBConversation(
   chatConversation: ChatConversation,
@@ -47,16 +55,16 @@ export function convertDBToChatConversation(
     userEmail: dbConversation.user_email || undefined,
     projectName: dbConversation.project_name,
     folderId: dbConversation.folder_id,
-    messages: dbMessages.map((msg) => ({
+    messages: (dbMessages || []).map((msg) => ({
       id: msg.id,
       role: msg.role as Role,
       content: msg.content as string | Content[],
       contexts: msg.contexts as ContextWithMetadata[] | [],
       tools: msg.tools as UIUCTool[] | [],
-      latestSystemMessage: msg.latest_system_message as string,
+      latestSystemMessage: (msg.latest_system_message as string) || undefined,
       finalPromtEngineeredMessage:
-        msg.final_prompt_engineered_message as string,
-      responseTimeSec: msg.response_time_sec as number,
+        (msg.final_prompt_engineered_message as string) || undefined,
+      responseTimeSec: (msg.response_time_sec as number) || undefined,
     })),
   }
 }
@@ -165,20 +173,31 @@ export default async function handler(
             `,
           )
           .eq('user_email', user_email)
+          .is('folder_id', null)
           .order('updated_at', { ascending: false })
           .limit(10)
+        if (error) {
+          console.error(
+            'Error fetching conversation history in sql query:',
+            error,
+          )
+          throw error
+        }
+        // console.log(
+        //   'Fetched conversations before conversion in /conversation:',
+        //   data,
+        // )
 
-        if (error) throw error
-        console.log('Fetched conversations before conversion:', data)
-
-        const fetchedConversations = data.map((conv) => {
-          const convMessages = conv.messages
+        const fetchedConversations = (data || []).map((conv) => {
+          // console.log('Fetched conversation:', conv)
+          const convMessages = conv.messages || []
           return convertDBToChatConversation(conv, convMessages)
         })
         console.log('Fetched conversations:', fetchedConversations)
         res.status(200).json(fetchedConversations)
       } catch (error) {
         res.status(500).json({ error: 'Error fetching conversation history' })
+        console.error('Error fetching conversation history:', error)
       }
       break
 

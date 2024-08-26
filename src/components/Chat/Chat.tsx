@@ -12,10 +12,7 @@ import {
 import { Button, Text } from '@mantine/core'
 import { useTranslation } from 'next-i18next'
 
-import {
-  saveConversations,
-  saveConversationToServer,
-} from '@/utils/app/conversation'
+import { saveConversations } from '@/utils/app/conversation'
 import { throttle } from '@/utils/data/throttle'
 import { v4 as uuidv4 } from 'uuid'
 import {
@@ -71,6 +68,8 @@ import { MLCEngine } from '@mlc-ai/web-llm'
 import * as webllm from '@mlc-ai/web-llm'
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import { handleImageContent } from '~/utils/streamProcessing'
+import { useQueryClient } from '@tanstack/react-query'
+// import { useUpdateConversation } from '~/hooks/conversationQueries'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -87,12 +86,20 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const { t } = useTranslation('chat')
   const clerk_obj = useUser()
   const router = useRouter()
+  const queryClient = useQueryClient()
+  // const
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
   const getCurrentPageName = () => {
     // /CS-125/materials --> CS-125
     return router.asPath.slice(1).split('/')[0] as string
   }
+  const user_email = extractEmailsFromClerk(clerk_obj.user)[0]
+  // const [user_email, setUserEmail] = useState<string | undefined>(undefined)
 
+  // const updateConversationMutation = useUpdateConversation(
+  //   user_email as string,
+  //   queryClient,
+  // )
   const [chat_ui] = useState(new ChatUI(new MLCEngine()))
 
   const [inputContent, setInputContent] = useState<string>('')
@@ -127,6 +134,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       })
     }
   }, [courseMetadata])
+
+  useEffect(() => {
+    if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
+      const emails = extractEmailsFromClerk(clerk_obj.user)
+      // setUserEmail(emails[0] as string)
+      selectedConversation!.userEmail = emails[0] as string
+    }
+  }, [clerk_obj.isSignedIn])
 
   const {
     state: {
@@ -186,6 +201,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  // const createConversationMutation = useCreateConversation(queryClient)
+  // const updateConversationMutation = useUpdateConversation(
+  // user_email,
+  // queryClient,
+  // )
 
   // Document Groups
   useEffect(() => {
@@ -330,11 +350,50 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             ...selectedConversation,
             messages: [...selectedConversation.messages, message],
           }
+          console.log(
+            'updatedConversation before name:',
+            updatedConversation,
+            updatedConversation.messages.length,
+          )
+          // Update the name of the conversation if it's the first message
+          if (updatedConversation.messages.length === 1) {
+            const { content } = message
+            // Use only texts instead of content itself
+            const contentText = Array.isArray(content)
+              ? content.map((content) => content.text).join(' ')
+              : content
+
+            // This is where we can customize the name of the conversation
+            const customName =
+              contentText.length > 30
+                ? contentText.substring(0, 30) + '...'
+                : contentText
+
+            updatedConversation = {
+              ...updatedConversation,
+              name: customName,
+            }
+            console.log('updatedConversation after name:', updatedConversation)
+          }
         }
-        homeDispatch({
-          field: 'selectedConversation',
-          value: updatedConversation,
+        // homeDispatch({
+        //   field: 'selectedConversation',
+        //   value: updatedConversation,
+        // })
+        // Update the conversation in the server
+        // if (!user_email) {
+        // saveConversationToLocalStorage(updatedConversation)
+        // } else {
+
+        handleUpdateConversation(updatedConversation, {
+          key: 'messages',
+          value: updatedConversation.messages,
         })
+        console.log('updatedConversation before mutation:', updatedConversation)
+        // updateConversationMutation.mutate(updatedConversation)
+        // createConversationMutation.mutate(updatedConversation)
+        console.log('updatedConversation after mutation:', updatedConversation)
+        // }
         homeDispatch({ field: 'loading', value: true })
         homeDispatch({ field: 'messageIsStreaming', value: true })
         const controller = new AbortController()
@@ -522,23 +581,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         }
 
         if (!plugin) {
-          if (updatedConversation.messages.length === 1) {
-            const { content } = message
-            // Use only texts instead of content itself
-            const contentText = Array.isArray(content)
-              ? content.map((content) => content.text).join(' ')
-              : content
-
-            // This is where we can customize the name of the conversation
-            const customName =
-              contentText.length > 30
-                ? contentText.substring(0, 30) + '...'
-                : contentText
-            updatedConversation = {
-              ...updatedConversation,
-              name: customName,
-            }
-          }
           homeDispatch({ field: 'loading', value: false })
 
           const decoder = new TextDecoder()
@@ -658,39 +700,46 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           }
 
           try {
+            // This is after the response is done streaming
             // saveConversation(updatedConversation)
-            if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
-              const emails = extractEmailsFromClerk(clerk_obj.user)
-              updatedConversation.userEmail = emails[0]
-              onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
-            } else {
-              onMessageReceived(updatedConversation)
-            }
-
-            await saveConversationToServer(updatedConversation).catch(
-              (error) => {
-                console.error(
-                  'Error saving updated conversation to server:',
-                  error,
-                )
-              },
-            )
-
-            const updatedConversations: Conversation[] = conversations.map(
-              (conversation) => {
-                if (conversation.id === selectedConversation.id) {
-                  return updatedConversation
-                }
-                return conversation
-              },
-            )
-            if (updatedConversations.length === 0) {
-              updatedConversations.push(updatedConversation)
-            }
-            homeDispatch({
-              field: 'conversations',
-              value: updatedConversations,
+            handleUpdateConversation(updatedConversation, {
+              key: 'messages',
+              value: updatedConversation.messages,
             })
+            // updateConversationMutation.mutate(updatedConversation)
+
+            onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
+
+            // } else {
+            //   onMessageReceived(updatedConversation)
+            // }
+
+            // Save the conversation to the server
+
+            // await saveConversationToServer(updatedConversation).catch(
+            //   (error) => {
+            //     console.error(
+            //       'Error saving updated conversation to server:',
+            //       error,
+            //     )
+            //   },
+            // )
+
+            // const updatedConversations: Conversation[] = conversations.map(
+            //   (conversation) => {
+            //     if (conversation.id === selectedConversation.id) {
+            //       return updatedConversation
+            //     }
+            //     return conversation
+            //   },
+            // )
+            // if (updatedConversations.length === 0) {
+            //   updatedConversations.push(updatedConversation)
+            // }
+            // homeDispatch({
+            //   field: 'conversations',
+            //   value: updatedConversations,
+            // })
             // console.log('updatedConversations: ', updatedConversations)
             // saveConversations(updatedConversations)
             homeDispatch({ field: 'messageIsStreaming', value: false })
@@ -718,10 +767,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               field: 'selectedConversation',
               value: updatedConversation,
             })
-            handleUpdateConversation(updatedConversation, {
-              key: 'messages',
-              value: updatedMessages,
-            })
+            // This is after the response is done streaming for plugins
+
+            // handleUpdateConversation(updatedConversation, {
+            //   key: 'messages',
+            //   value: updatedMessages,
+            // })
 
             // await saveConversationToServer(updatedConversation).catch(
             //   (error) => {
@@ -821,6 +872,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       confirm(t<string>('Are you sure you want to clear all messages?')) &&
       selectedConversation
     ) {
+      // Clear all messages, not used
       handleUpdateConversation(selectedConversation, {
         key: 'messages',
         value: [],

@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import { FolderInterface } from '@/types/folder'
+import { FolderInterface, FolderWithConversation } from '@/types/folder'
 
 import HomeContext from '~/pages/api/home/home.context'
 
@@ -19,6 +19,7 @@ export const ChatFolders = ({ searchTerm }: Props) => {
   } = useContext(HomeContext)
 
   const handleDrop = (e: any, folder: FolderInterface) => {
+    console.log('drop triggered: ', e)
     if (e.dataTransfer) {
       const conversation = JSON.parse(e.dataTransfer.getData('conversation'))
       handleUpdateConversation(conversation, {
@@ -28,23 +29,31 @@ export const ChatFolders = ({ searchTerm }: Props) => {
     }
   }
 
-  const ChatFolders = (currentFolder: FolderInterface) => {
+  const ChatFolders = (currentFolder: FolderWithConversation) => {
     console.log('currentFolder: ', currentFolder)
-    console.log('conversations in current folder:', conversations)
-    return (
-      conversations &&
-      conversations
-        .filter((conversation) => conversation.folderId)
-        .map((conversation, index) => {
-          if (conversation.folderId === currentFolder.id) {
-            return (
-              <div key={index} className="ml-5 gap-2 border-l pl-2">
-                <ConversationComponent conversation={conversation} />
-              </div>
-            )
-          }
-        })
-    )
+    console.log('conversations in current folder:', currentFolder.conversations)
+    return (currentFolder.conversations || []).map((conversation, index) => {
+      return (
+        <div key={index} className="ml-5 gap-2 border-l pl-2">
+          <ConversationComponent conversation={conversation} />
+        </div>
+      )
+    })
+
+    // return (
+    //   conversations &&
+    //   conversations
+    //     .filter((conversation) => conversation.folderId)
+    //     .map((conversation, index) => {
+    //       if (conversation.folderId === currentFolder.id) {
+    //         return (
+    //           <div key={index} className="ml-5 gap-2 border-l pl-2">
+    //             <ConversationComponent conversation={conversation} />
+    //           </div>
+    //         )
+    //       }
+    //     })
+    // )
   }
   console.log('folders: ', folders)
   return (

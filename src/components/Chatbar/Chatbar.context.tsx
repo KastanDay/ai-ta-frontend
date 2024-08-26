@@ -15,8 +15,6 @@ export interface ChatbarContextProps {
   handleClearConversations: () => void
   handleExportData: () => void
   handleImportConversations: (data: SupportedExportFormats) => void
-  handlePluginKeyChange: (pluginKey: PluginKey) => void
-  handleClearPluginKey: (pluginKey: PluginKey) => void
   handleApiKeyChange: (apiKey: string) => void
 }
 

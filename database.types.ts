@@ -73,7 +73,15 @@ export type Database = {
           updated_at?: string
           user_email?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: 'conversations_folder_id_fkey'
+            columns: ['folder_id']
+            isOneToOne: false
+            referencedRelation: 'folders'
+            referencedColumns: ['id']
+          },
+        ]
       }
       course_names: {
         Row: {
