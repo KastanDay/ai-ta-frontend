@@ -97,7 +97,7 @@ const Home = () => {
     isLoading: isLoadingConversationHistory,
     error: errorConversationHistory,
     refetch: refetchConversationHistory,
-  } = useFetchConversationHistory(user_email)
+  } = useFetchConversationHistory(user_email as string)
 
   const {
     data: foldersData,

@@ -10,12 +10,12 @@ import {
 // import { useQueryClient } from 'react-query'
 // const queryClient = useQueryClient()
 
-export function useFetchConversationHistory(user_email: string | undefined) {
-  console.log('useFetchConversationHistory with user_email: ', user_email)
+export function useFetchConversationHistory(user_email: string) {
+  // console.log('useFetchConversationHistory with user_email: ', user_email)
   return useQuery({
     queryKey: ['conversationHistory', user_email],
     queryFn: () => (user_email ? fetchConversationHistory(user_email) : []),
-    enabled: !!user_email,
+    // enabled: !!user_email,
     // refetchInterval: 200_000,
   })
 }

@@ -51,7 +51,7 @@ const MyApp: AppType = ({ Component, pageProps: { ...pageProps } }) => {
   const [showDevtools, setShowDevtools] = useState(false)
 
   useEffect(() => {
-    // @ts-expect-error
+    // @ts-expect-error: toggleDevtools is not defined on window
     window.toggleDevtools = () => setShowDevtools((old) => !old)
   }, [])
 
