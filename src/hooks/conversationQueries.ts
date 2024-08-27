@@ -15,7 +15,7 @@ export function useFetchConversationHistory(user_email: string) {
   return useQuery({
     queryKey: ['conversationHistory', user_email],
     queryFn: () => (user_email ? fetchConversationHistory(user_email) : []),
-    // enabled: !!user_email,
+    enabled: !!user_email,
     // refetchInterval: 200_000,
   })
 }
