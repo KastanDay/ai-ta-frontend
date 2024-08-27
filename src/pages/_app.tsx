@@ -48,12 +48,29 @@ const MyApp: AppType = ({ Component, pageProps: { ...pageProps } }) => {
       }),
     ),
   )
-  const [showDevtools, setShowDevtools] = useState(false)
+  const [showDevtools, setShowDevtools] = useState(() => {
+    return localStorage.getItem('reactQueryDevtoolsOpen') === 'true'
+  })
 
   useEffect(() => {
     // @ts-expect-error: toggleDevtools is not defined on window
-    window.toggleDevtools = () => setShowDevtools((old) => !old)
+    window.toggleDevtools = () => {
+      setShowDevtools((prev) => {
+        const newValue = !prev
+        localStorage.setItem(
+          'reactQueryDevtoolsOpen',
+          newValue ? 'true' : 'false',
+        )
+        return newValue
+      })
+    }
   }, [])
+  useEffect(() => {
+    localStorage.setItem(
+      'reactQueryDevtoolsOpen',
+      showDevtools ? 'true' : 'false',
+    )
+  }, [showDevtools])
 
   useEffect(() => {
     // Track page views in PostHog
