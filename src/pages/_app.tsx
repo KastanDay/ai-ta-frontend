@@ -86,7 +86,7 @@ const MyApp: AppType = ({ Component, pageProps: { ...pageProps } }) => {
         >
           <GoogleOneTap />
           <QueryClientProvider client={queryClient}>
-            <ReactQueryDevtools initialIsOpen={false} />
+            <ReactQueryDevtools initialIsOpen />
             {showDevtools && (
               <Suspense fallback={null}>
                 <ReactQueryDevtoolsProduction />
