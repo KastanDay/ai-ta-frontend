@@ -10,7 +10,7 @@ import {
   MantineTheme,
 } from '@mantine/core'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useForm, FieldApi } from '@tanstack/react-form'
+import { useForm, FieldApi, FieldMeta } from '@tanstack/react-form'
 import {
   useGetProjectDefaultModel,
   useGetProjectLLMProviders,
@@ -42,6 +42,8 @@ function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
     </>
   )
 }
+
+type FieldMetaWithVisibility = FieldMeta & { isVisible?: boolean }
 
 const loadingTextLLMProviders: AllLLMProviders = {
   Ollama: {
@@ -163,10 +165,11 @@ export default function APIKeyInputForm() {
       }}
     >
       <Text size="xl" weight={700} mb="xs">
-        Settings
+        Defaults
       </Text>
       <Text size="sm" color="dimmed" mb="md">
-        Manage your LLM providers and API keys
+        Select a default model for your project. Users can still change it, but
+        all new conversations will start with this LLM active.
       </Text>
       <form
         onSubmit={(e) => {
@@ -237,6 +240,17 @@ export default function APIKeyInputForm() {
             <Text size="xs" color="dimmed" mt={4}>
               Higher values will make the output more random, while lower values
               will make it more focused and deterministic.
+            </Text>
+          </div>
+
+          <div>
+            {/* This div keeps the spacing tighter */}
+            <Text size="xl" weight={700} mb="xs">
+              LLM Providers
+            </Text>
+            <Text size="sm" color="dimmed" mb="md">
+              Enter your API keys for each provider. The best free option is the
+              Llama 3.1 70b model, hosted by NCSA. It's 100% free to use.
             </Text>
           </div>
 
@@ -347,42 +361,6 @@ export default function APIKeyInputForm() {
             </form.Field>
           </div>
 
-          {/* WebLLM Provider */}
-          <div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 8,
-              }}
-            >
-              <Text size="sm" weight={500}>
-                WebLLM
-              </Text>
-              <form.Field name="providers.WebLLM.enabled">
-                {(field) => (
-                  <Switch
-                    checked={field.state.value}
-                    onChange={(event) =>
-                      field.handleChange(event.currentTarget.checked)
-                    }
-                    styles={(theme) => ({
-                      track: {
-                        backgroundColor: field.state.value
-                          ? theme.colors.blue[6]
-                          : theme.colors.gray[5],
-                      },
-                    })}
-                  />
-                )}
-              </form.Field>
-            </div>
-            <Text size="xs" color="dimmed" mt={4}>
-              No key needed, this runs in your browser.{' '}
-            </Text>
-          </div>
-
           {/* Azure Provider */}
           <div>
             <div
@@ -477,6 +455,140 @@ export default function APIKeyInputForm() {
                 </>
               )}
             </form.Field>
+          </div>
+
+          {/* Anthropic Provider */}
+          <div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 8,
+              }}
+            >
+              <Text size="sm" weight={500}>
+                Anthropic
+              </Text>
+              <form.Field name="providers.Anthropic.enabled">
+                {(field) => (
+                  <Switch
+                    checked={field.state.value}
+                    onChange={(event) =>
+                      field.handleChange(event.currentTarget.checked)
+                    }
+                    styles={(theme) => ({
+                      track: {
+                        backgroundColor: field.state.value
+                          ? theme.colors.blue[6]
+                          : theme.colors.gray[5],
+                      },
+                    })}
+                  />
+                )}
+              </form.Field>
+            </div>
+            <form.Field name="providers.Anthropic.apiKey">
+              {(field) => {
+                const fieldWithVisibility = field as FieldApi<
+                  any,
+                  any,
+                  any,
+                  any
+                > & { state: { meta: FieldMetaWithVisibility } }
+                if (fieldWithVisibility.state.meta.isVisible === undefined) {
+                  fieldWithVisibility.setMeta({
+                    ...fieldWithVisibility.state.meta,
+                    isVisible: false,
+                  })
+                }
+
+                return (
+                  <>
+                    <div style={{ position: 'relative', width: '100%' }}>
+                      <input
+                        type={
+                          fieldWithVisibility.state.meta.isVisible
+                            ? 'text'
+                            : 'password'
+                        }
+                        placeholder="Anthropic API Key"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        style={{
+                          backgroundColor: '#2d2d3d',
+                          borderColor: '#4a4a5e',
+                          color: 'white',
+                          padding: '8px',
+                          borderRadius: '4px',
+                          width: '100%',
+                          paddingRight: '70px', // Add space for the button
+                        }}
+                      />
+                      <Button
+                        onClick={() =>
+                          fieldWithVisibility.setMeta((prev) => ({
+                            ...prev,
+                            isVisible: !prev.isVisible,
+                          }))
+                        }
+                        style={{
+                          position: 'absolute',
+                          right: '8px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          zIndex: 1, // Ensure button is above input
+                        }}
+                      >
+                        {fieldWithVisibility.state.meta.isVisible
+                          ? 'Hide'
+                          : 'Show'}
+                      </Button>
+                    </div>
+                    <FieldInfo field={field} />
+                  </>
+                )
+              }}
+            </form.Field>
+          </div>
+
+          {/* WebLLM Provider */}
+          <div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 8,
+              }}
+            >
+              <Text size="sm" weight={500}>
+                WebLLM
+              </Text>
+              <form.Field name="providers.WebLLM.enabled">
+                {(field) => (
+                  <Switch
+                    checked={field.state.value}
+                    onChange={(event) =>
+                      field.handleChange(event.currentTarget.checked)
+                    }
+                    styles={(theme) => ({
+                      track: {
+                        backgroundColor: field.state.value
+                          ? theme.colors.blue[6]
+                          : theme.colors.gray[5],
+                      },
+                    })}
+                  />
+                )}
+              </form.Field>
+            </div>
+            <Text size="xs" color="dimmed" mt={4}>
+              No key needed, this runs in your browser.{' '}
+            </Text>
           </div>
         </div>
 

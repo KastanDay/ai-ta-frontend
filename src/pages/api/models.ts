@@ -47,12 +47,12 @@ const handler = async (
       AzureEndpoint: process.env.TMP_ENDPOINT,
     }
 
-    // const AnthropicProvider: LLMProvider = {
-    //   provider: ProviderNames.Anthropic,
-    //   enabled: true,
-    //   apiKey: process.env.ANTHROPIC_API_KEY, // this is the anthropic api key
-    //   AnthropicModel: 'claude-3-opus-20240229',
-    // }
+    const AnthropicProvider: LLMProvider = {
+      provider: ProviderNames.Anthropic,
+      enabled: true,
+      apiKey: process.env.TMP_ANTHROPIC_API_KEY, // this is the anthropic api key
+    }
+    console.log('AnthropicProvider', AnthropicProvider)
 
     const ollamaProvider: LLMProvider = {
       provider: ProviderNames.Ollama,
@@ -60,7 +60,6 @@ const handler = async (
       baseUrl: process.env.OLLAMA_SERVER_URL,
     }
 
-    // TODO: update this to come from input.
     const OpenAIProvider: LLMProvider = {
       provider: ProviderNames.OpenAI,
       enabled: true,
@@ -77,7 +76,7 @@ const handler = async (
       OpenAIProvider,
       WebLLMProvider,
       AzureProvider,
-      // AnthropicProvider,
+      AnthropicProvider,
     ]
     // END-TODO: MOVE THESE TO DB INPUTS
 
