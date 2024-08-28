@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Button,
   Text,
@@ -24,7 +24,12 @@ import {
 import upsertCourseMetadataReactQuery from '~/pages/api/UIUC-api/upsertCourseMetadataReactQuery'
 import { errorToast } from '~/components/Chat/Chat'
 import { notifications } from '@mantine/notifications'
-import { IconAlertCircle, IconCheck } from '@tabler/icons-react'
+import {
+  IconAlertCircle,
+  IconCheck,
+  IconEye,
+  IconEyeOff,
+} from '@tabler/icons-react'
 import { title } from 'process'
 import { GetCurrentPageName } from '../CanViewOnlyCourse'
 
@@ -40,6 +45,51 @@ function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
         <Text size="xs">Validating...</Text>
       ) : null}
     </>
+  )
+}
+
+const APIKeyInput = ({
+  field,
+  placeholder,
+}: {
+  field: FieldApi<any, any, any, any>
+  placeholder: string
+}) => {
+  const [isVisible, setIsVisible] = useState(false)
+
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      <input
+        type={isVisible ? 'text' : 'password'}
+        placeholder={placeholder}
+        value={field.state.value}
+        onChange={(e) => field.handleChange(e.target.value)}
+        style={{
+          backgroundColor: '#2d2d3d',
+          borderColor: '#4a4a5e',
+          color: 'white',
+          padding: '8px',
+          borderRadius: '4px',
+          width: '100%',
+          paddingRight: '70px',
+        }}
+      />
+      <Button
+        onClick={() => setIsVisible(!isVisible)}
+        style={{
+          position: 'absolute',
+          right: '8px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          zIndex: 1,
+        }}
+      >
+        {isVisible ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+      </Button>
+    </div>
   )
 }
 
@@ -342,19 +392,7 @@ export default function APIKeyInputForm() {
             <form.Field name="providers.OpenAI.apiKey">
               {(field) => (
                 <>
-                  <input
-                    placeholder="OpenAI API Key"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    style={{
-                      backgroundColor: '#2d2d3d',
-                      borderColor: '#4a4a5e',
-                      color: 'white',
-                      padding: '8px',
-                      borderRadius: '4px',
-                      width: '100%',
-                    }}
-                  />
+                  <APIKeyInput field={field} placeholder="OpenAI API Key" />
                   <FieldInfo field={field} />
                 </>
               )}
@@ -434,23 +472,11 @@ export default function APIKeyInputForm() {
                 </>
               )}
             </form.Field>
+            <div className="pt-2" />
             <form.Field name="providers.Azure.apiKey">
               {(field) => (
                 <>
-                  <input
-                    placeholder="Azure API Key"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    style={{
-                      backgroundColor: '#2d2d3d',
-                      borderColor: '#4a4a5e',
-                      color: 'white',
-                      padding: '8px',
-                      borderRadius: '4px',
-                      width: '100%',
-                      marginTop: '8px',
-                    }}
-                  />
+                  <APIKeyInput field={field} placeholder="Azure API Key" />
                   <FieldInfo field={field} />
                 </>
               )}
@@ -489,69 +515,12 @@ export default function APIKeyInputForm() {
               </form.Field>
             </div>
             <form.Field name="providers.Anthropic.apiKey">
-              {(field) => {
-                const fieldWithVisibility = field as FieldApi<
-                  any,
-                  any,
-                  any,
-                  any
-                > & { state: { meta: FieldMetaWithVisibility } }
-                if (fieldWithVisibility.state.meta.isVisible === undefined) {
-                  fieldWithVisibility.setMeta({
-                    ...fieldWithVisibility.state.meta,
-                    isVisible: false,
-                  })
-                }
-
-                return (
-                  <>
-                    <div style={{ position: 'relative', width: '100%' }}>
-                      <input
-                        type={
-                          fieldWithVisibility.state.meta.isVisible
-                            ? 'text'
-                            : 'password'
-                        }
-                        placeholder="Anthropic API Key"
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        style={{
-                          backgroundColor: '#2d2d3d',
-                          borderColor: '#4a4a5e',
-                          color: 'white',
-                          padding: '8px',
-                          borderRadius: '4px',
-                          width: '100%',
-                          paddingRight: '70px', // Add space for the button
-                        }}
-                      />
-                      <Button
-                        onClick={() =>
-                          fieldWithVisibility.setMeta((prev) => ({
-                            ...prev,
-                            isVisible: !prev.isVisible,
-                          }))
-                        }
-                        style={{
-                          position: 'absolute',
-                          right: '8px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          zIndex: 1, // Ensure button is above input
-                        }}
-                      >
-                        {fieldWithVisibility.state.meta.isVisible
-                          ? 'Hide'
-                          : 'Show'}
-                      </Button>
-                    </div>
-                    <FieldInfo field={field} />
-                  </>
-                )
-              }}
+              {(field) => (
+                <>
+                  <APIKeyInput field={field} placeholder="Anthropic API Key" />
+                  <FieldInfo field={field} />
+                </>
+              )}
             </form.Field>
           </div>
 
