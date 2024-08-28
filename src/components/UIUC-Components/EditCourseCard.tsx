@@ -208,7 +208,7 @@ const EditCourseCard = ({
     }
 
     if (inputValue === '' && courseMetadata?.openai_api_key !== '') {
-      ;(courseMetadata as CourseMetadata).openai_api_key = inputValue
+      ; (courseMetadata as CourseMetadata).openai_api_key = inputValue
       console.log('Removing api key')
       setApiKey(inputValue)
       await callSetCourseMetadata(course_name, courseMetadata as CourseMetadata)
@@ -318,23 +318,56 @@ const EditCourseCard = ({
             </Title>
             {is_new_course && (
               <>
-                <input
-                  type="text"
+                <Input
+                  // icon={icon}
+                  // className={`mt-4 w-[80%] min-w-[20rem] disabled:bg-purple-200 lg:w-[75%]`}
+                  styles={{
+                    input: {
+                      backgroundColor: '#1A1B1E',
+                      paddingRight: '6rem', // Adjust right padding to prevent text from hiding behind the button
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      // borderColor: isCourseAvailable && courseName != '' ? 'green' : 'red',
+                      color: isCourseAvailable && courseName != '' ? 'green' : 'red',
+                      '&:focus-within': {
+                        borderColor: isCourseAvailable && courseName !== '' ? 'green' : 'red',
+                      },
+                    }
+                  }}
                   placeholder="Project name"
+                  radius={'xl'}
+                  type="text"
                   value={courseName}
-                  onChange={(e) =>
-                    setCourseName(e.target.value.replaceAll(' ', '-'))
-                  }
-                  autoFocus
+                  size={'lg'}
                   disabled={!is_new_course}
-                  className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${
-                                  isCourseAvailable && courseName != ''
-                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                                    : 'border-red-800 text-red-600 focus:border-red-800'
-                                } ${
-                                  montserrat_paragraph.variable
-                                } font-montserratParagraph`}
+                  onChange={(e) => setCourseName(e.target.value.replaceAll(' ', '-'))}
+                  autoFocus
+                  className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                  //               className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
+                  // ${isCourseAvailable && courseName != ''
+                  //                   ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                  //                   : 'border-red-800 text-red-600 focus:border-red-800'
+                  //                 } ${montserrat_paragraph.variable} font-montserratParagraph`}
+                  rightSection={
+                    <Button
+                      onClick={(e) => {
+                        // e.preventDefault()
+                        // if (validateInputs() && validateUrl(url)) {
+                        //   handleSubmit()
+                        // }
+                      }}
+                      size="md"
+                      radius={'xl'}
+                      className={`rounded-s-md ${isCourseAvailable && courseName !== '' ? 'bg-purple-800' : 'border-purple-800'}
+                       overflow-ellipsis text-ellipsis p-2 ${isCourseAvailable && courseName !== '' ? 'text-white' : 'text-gray-500'}
+                        min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
+                      w={`${isSmallScreen ? 'auto' : 'auto'}`}
+                    >
+                      Create
+                    </Button>
+                  }
+                  rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
                 />
                 <Title
                   order={4}
@@ -1006,7 +1039,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                // style={{ textDecoration: 'underline' }}
+              // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
@@ -1018,9 +1051,8 @@ const PrivateOrPublicCourse = ({
 
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${
-            isPrivate ? 'private' : 'public'
-          }. Click to change.`}
+          label={`Course is ${isPrivate ? 'private' : 'public'
+            }. Click to change.`}
           wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
@@ -1093,7 +1125,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                // style={{ textDecoration: 'underline' }}
+              // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
