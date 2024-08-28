@@ -41,9 +41,10 @@ const handler = async (
     const AzureProvider: LLMProvider = {
       provider: ProviderNames.Azure,
       enabled: true,
-      apiKey: undefined, // this is the azure api key
-      AzureDeployment: 'gpt-35-turbo-16k',
-      AzureEndpoint: 'https://uiuc-chat-canada-east.openai.azure.com/',
+      // TODO: COME FROM DB/INPUT not env
+      apiKey: process.env.TMP_AZURE_KEY,
+      AzureDeployment: process.env.TMP_DEPLOYMENT,
+      AzureEndpoint: process.env.TMP_ENDPOINT,
     }
 
     // const AnthropicProvider: LLMProvider = {

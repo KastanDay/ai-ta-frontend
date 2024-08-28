@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import {
   Button,
   Text,
@@ -61,7 +61,7 @@ const loadingTextLLMProviders: AllLLMProviders = {
     provider: ProviderNames.Azure,
     enabled: false,
     AzureEndpoint: 'Loading...',
-    AzureDeployment: '',
+    AzureDeployment: 'Loading...',
     apiKey: 'Loading...',
   },
   Anthropic: {
@@ -72,57 +72,70 @@ const loadingTextLLMProviders: AllLLMProviders = {
 }
 
 export default function APIKeyInputForm() {
-  const queryClient = useQueryClient()
   const course_name = GetCurrentPageName()
 
-  // const [defaultModel, setDefaultModel] = React.useState<string>(defaultModel || 'Loading...');
-  // const [defaultTemp, setDefaultTemp] = React.useState<number>(llmProviders?.defaultTemp || 0.7);
-
-  const { data: llmProviders, isLoading } =
-    useGetProjectLLMProviders(course_name)
-
-  // TODO: handle errors!!
+  // ------------ <TANSTACK QUERIES> ------------
+  const queryClient = useQueryClient()
   const {
-    data,
+    data: llmProviders,
+    isLoading: isLoadingLLMProviders,
+    isError: isErrorLLMProviders,
+  } = useGetProjectLLMProviders(course_name)
+
+  const {
+    data: defaultModelData,
     isLoading: isLoadingDefaultModel,
     isError: isErrorDefaultModel,
   } = useGetProjectDefaultModel(course_name)
-  const defaultModel = data?.defaultModel ?? 'gpt-4o-mini'
-  const defaultTemp = data?.defaultTemp ?? 0.1
-  if (isErrorDefaultModel) {
-    showConfirmationToast({
-      title: 'Error',
-      message: 'Failed to fetch default model',
-      isError: true,
-    })
-  }
+  const defaultModel = defaultModelData?.defaultModel ?? '' // don't default... stay undefined
+  const defaultTemp = defaultModelData?.defaultTemp ?? 0.1 // default to 0.1
+
+  useEffect(() => {
+    // handle errors
+    if (isErrorDefaultModel) {
+      showConfirmationToast({
+        title: 'Error',
+        message:
+          'Failed to fetch default model. Our database must be having a bad day. Please refresh or try again later.',
+        isError: true,
+      })
+    }
+  }, [isErrorDefaultModel])
+
+  useEffect(() => {
+    // handle errors
+    if (isErrorLLMProviders) {
+      showConfirmationToast({
+        title: 'Error',
+        message:
+          'Failed your api keys. Our database must be having a bad day. Please refresh or try again later.',
+        isError: true,
+      })
+    }
+  }, [isErrorLLMProviders])
 
   const mutation = useSetProjectLLMProviders(queryClient)
+  // ------------ </TANSTACK QUERIES> ------------
 
   const form = useForm({
     defaultValues: {
       providers: llmProviders || loadingTextLLMProviders,
-      defaultModel: defaultModel || 'Loading...', // TODO: return this from /models endpoint
-      defaultTemperature: defaultTemp || NaN, // TODO: return this from /models endpoint
+      defaultModel: defaultModel || 'Loading...',
+      defaultTemperature: defaultTemp || NaN,
     },
     onSubmit: async ({ value }) => {
-      console.log('Submitting', value)
+      console.log('onSubmit here: ', value)
       await mutation.mutateAsync({
         course_name,
         queryClient,
         llmProviders: value.providers,
-        defaultModelID: value.defaultModel,
+        defaultModelID: value.defaultModel.toString(),
         defaultTemperature: value.defaultTemperature.toString(),
       })
     },
   })
 
-  // if (isLoading) {
-  //   // TODO replace with nice skeleton loader
-  //   return <Text>Loading...</Text>
-  // }
-  console.log('initialProviders', JSON.stringify(llmProviders, null, 2))
-  // console.log('form', JSON.stringify(form, null, 2))
+  console.log('llmProviders', JSON.stringify(llmProviders, null, 2))
 
   const defaultModelOptions = Object.entries(llmProviders || {}).flatMap(
     ([providerName, provider]) =>

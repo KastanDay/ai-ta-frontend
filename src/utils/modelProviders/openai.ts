@@ -2,6 +2,7 @@ import { kv } from '@vercel/kv'
 import { CourseMetadata } from '~/types/courseMetadata'
 import { OpenAIProvider } from '~/types/LLMProvider'
 import { OpenAI } from 'openai'
+import { parseOpenaiKey } from '../crypto'
 
 export const config = {
   runtime: 'edge',
@@ -86,7 +87,18 @@ export const getOpenAIModels = async (
   projectName: string,
 ): Promise<OpenAIProvider> => {
   try {
+    // Priority #1: use passed in key
+    // Priority #2: use the key from the course metadata
+    const { disabledModels, openaiAPIKey } = await getDisabledOpenAIModels({
+      projectName,
+    })
+
     if (!openAIProvider.apiKey) {
+      // TODO: check this doesn't leak keys to client side on /chat page
+      openAIProvider.apiKey = openaiAPIKey
+    }
+
+    if (!openAIProvider.apiKey || openAIProvider.apiKey === undefined) {
       openAIProvider.error = 'OpenAI API Key is not set'
       return openAIProvider
     }
@@ -100,8 +112,6 @@ export const getOpenAIModels = async (
     if (!response.data) {
       openAIProvider.error = `Error fetching models from OpenAI, unexpected response format. Response: ${response}`
     }
-
-    const disabledModels = await getDisabledOpenAIModels({ projectName })
 
     // Iterate through the models
     const openAIModels = response.data
@@ -124,11 +134,16 @@ export const getOpenAIModels = async (
   }
 }
 
+type DisabledOpenAIModels = {
+  disabledModels: string[]
+  openaiAPIKey: string | undefined
+}
+
 const getDisabledOpenAIModels = async ({
   projectName,
 }: {
   projectName: string
-}): Promise<string[]> => {
+}): Promise<DisabledOpenAIModels> => {
   /* 
   returns just the model IDs.
   */
@@ -138,11 +153,19 @@ const getDisabledOpenAIModels = async ({
     projectName,
   )) as CourseMetadata
 
+  let apiKey: string | undefined = undefined
+  if (course_metadata.openai_api_key) {
+    apiKey = await parseOpenaiKey(course_metadata.openai_api_key)
+  }
+
   if (course_metadata && course_metadata.disabled_models) {
     // returns just the model IDs
-    return course_metadata.disabled_models
+    return {
+      disabledModels: course_metadata.disabled_models,
+      openaiAPIKey: apiKey,
+    }
   } else {
     // All models are enabled
-    return []
+    return { disabledModels: [], openaiAPIKey: apiKey }
   }
 }
