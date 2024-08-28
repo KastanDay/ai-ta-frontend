@@ -1,12 +1,32 @@
 import React from 'react'
-import { Button, Text, Switch, Select, Tabs, Card, Slider } from '@mantine/core'
-import { useQueryClient } from '@tanstack/react-query'
+import {
+  Button,
+  Text,
+  Switch,
+  Select,
+  Tabs,
+  Card,
+  Slider,
+  MantineTheme,
+} from '@mantine/core'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm, FieldApi } from '@tanstack/react-form'
 import {
+  useGetProjectDefaultModel,
   useGetProjectLLMProviders,
   useSetProjectLLMProviders,
-} from '~/hooks/userAPIKeys'
-import { AllLLMProviders, LLMProvider } from '~/types/LLMProvider'
+} from '~/hooks/useProjectAPIKeys'
+import {
+  AllLLMProviders,
+  LLMProvider,
+  ProviderNames,
+} from '~/types/LLMProvider'
+import upsertCourseMetadataReactQuery from '~/pages/api/UIUC-api/upsertCourseMetadataReactQuery'
+import { errorToast } from '~/components/Chat/Chat'
+import { notifications } from '@mantine/notifications'
+import { IconAlertCircle, IconCheck } from '@tabler/icons-react'
+import { title } from 'process'
+import { GetCurrentPageName } from '../CanViewOnlyCourse'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -23,50 +43,99 @@ function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   )
 }
 
+const loadingTextLLMProviders: AllLLMProviders = {
+  Ollama: {
+    provider: ProviderNames.Ollama,
+    enabled: false,
+    baseUrl: 'Loading...',
+    models: [],
+    apiKey: '',
+  },
+  OpenAI: {
+    provider: ProviderNames.OpenAI,
+    enabled: false,
+    apiKey: 'Loading...',
+  },
+  WebLLM: { provider: ProviderNames.WebLLM, enabled: false },
+  Azure: {
+    provider: ProviderNames.Azure,
+    enabled: false,
+    AzureEndpoint: 'Loading...',
+    AzureDeployment: '',
+    apiKey: 'Loading...',
+  },
+  Anthropic: {
+    provider: ProviderNames.Anthropic,
+    enabled: false,
+    apiKey: 'Loading...',
+  },
+}
+
 export default function APIKeyInputForm() {
   const queryClient = useQueryClient()
-  const course_name = 'test-video-ingest-22' // TODO Replace with actual course name
+  const course_name = GetCurrentPageName()
 
-  const { data: initialProviders, isLoading } =
+  // const [defaultModel, setDefaultModel] = React.useState<string>(defaultModel || 'Loading...');
+  // const [defaultTemp, setDefaultTemp] = React.useState<number>(llmProviders?.defaultTemp || 0.7);
+
+  const { data: llmProviders, isLoading } =
     useGetProjectLLMProviders(course_name)
 
-  const mutation = useSetProjectLLMProviders(
-    course_name,
-    queryClient,
-    initialProviders || {},
-  )
+  // TODO: handle errors!!
+  const {
+    data,
+    isLoading: isLoadingDefaultModel,
+    isError: isErrorDefaultModel,
+  } = useGetProjectDefaultModel(course_name)
+  const defaultModel = data?.defaultModel ?? 'gpt-4o-mini'
+  const defaultTemp = data?.defaultTemp ?? 0.1
+  if (isErrorDefaultModel) {
+    showConfirmationToast({
+      title: 'Error',
+      message: 'Failed to fetch default model',
+      isError: true,
+    })
+  }
+
+  const mutation = useSetProjectLLMProviders(queryClient)
 
   const form = useForm({
     defaultValues: {
-      providers: initialProviders || {},
-      defaultModel: '',
-      temperature: 0.1,
+      providers: llmProviders || loadingTextLLMProviders,
+      defaultModel: defaultModel || 'Loading...', // TODO: return this from /models endpoint
+      defaultTemperature: defaultTemp || NaN, // TODO: return this from /models endpoint
     },
     onSubmit: async ({ value }) => {
       console.log('Submitting', value)
-      // TODO
-      // await mutation.mutateAsync(value.providers);
+      await mutation.mutateAsync({
+        course_name,
+        queryClient,
+        llmProviders: value.providers,
+        defaultModelID: value.defaultModel,
+        defaultTemperature: value.defaultTemperature.toString(),
+      })
     },
   })
 
-  if (isLoading) {
-    return <Text>Loading...</Text>
-  }
-  console.log('initialProviders', JSON.stringify(initialProviders, null, 2))
-  console.log('form', JSON.stringify(form, null, 2))
+  // if (isLoading) {
+  //   // TODO replace with nice skeleton loader
+  //   return <Text>Loading...</Text>
+  // }
+  console.log('initialProviders', JSON.stringify(llmProviders, null, 2))
+  // console.log('form', JSON.stringify(form, null, 2))
 
-  const defaultModelOptions = Object.entries(initialProviders || {}).flatMap(
+  const defaultModelOptions = Object.entries(llmProviders || {}).flatMap(
     ([providerName, provider]) =>
       provider.models?.map((model) => ({
         value: `${providerName}:${model.id}`,
         label: `${providerName} - ${model.name}`,
       })) || [],
   )
-  console.log('defaultModelOptions', defaultModelOptions)
-  console.log(
-    'providers from FORM',
-    Object.values(form.getFieldValue('providers')),
-  )
+  // console.log('defaultModelOptions', defaultModelOptions)
+  // console.log(
+  //   'providers from FORM',
+  //   Object.values(form.getFieldValue('providers')),
+  // )
 
   return (
     <Card
@@ -129,9 +198,9 @@ export default function APIKeyInputForm() {
           {/* Temperature */}
           <div>
             <Text size="sm" weight={500} mb={4}>
-              Temperature: {form.getFieldValue('temperature')}
+              Default Temperature: {form.getFieldValue('defaultTemperature')}
             </Text>
-            <form.Field name="temperature">
+            <form.Field name="defaultTemperature">
               {(field) => (
                 <Slider
                   value={field.state.value}
@@ -374,6 +443,27 @@ export default function APIKeyInputForm() {
                 </>
               )}
             </form.Field>
+            <form.Field name="providers.Azure.apiKey">
+              {(field) => (
+                <>
+                  <input
+                    placeholder="Azure API Key"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    style={{
+                      backgroundColor: '#2d2d3d',
+                      borderColor: '#4a4a5e',
+                      color: 'white',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      width: '100%',
+                      marginTop: '8px',
+                    }}
+                  />
+                  <FieldInfo field={field} />
+                </>
+              )}
+            </form.Field>
           </div>
         </div>
 
@@ -397,5 +487,53 @@ export default function APIKeyInputForm() {
         </form.Subscribe>
       </form>
     </Card>
+  )
+}
+
+export const showConfirmationToast = ({
+  title,
+  message,
+  isError = false,
+}: {
+  title: string
+  message: string
+  isError?: boolean
+}) => {
+  return (
+    // docs: https://mantine.dev/others/notifications/
+
+    notifications.show({
+      id: 'confirmation-toast',
+      withCloseButton: true,
+      onClose: () => console.log('unmounted'),
+      onOpen: () => console.log('mounted'),
+      autoClose: 6000,
+      title: title,
+      message: message,
+      icon: isError ? <IconAlertCircle /> : <IconCheck />,
+      styles: {
+        root: {
+          backgroundColor: isError
+            ? '#FEE2E2' // errorBackground
+            : '#F9FAFB', // nearlyWhite
+          borderColor: isError
+            ? '#FCA5A5' // errorBorder
+            : '#8B5CF6', // aiPurple
+        },
+        title: {
+          color: '#111827', // nearlyBlack
+        },
+        description: {
+          color: '#111827', // nearlyBlack
+        },
+        closeButton: {
+          color: '#111827', // nearlyBlack
+          '&:hover': {
+            backgroundColor: '#F3F4F6', // dark[1]
+          },
+        },
+      },
+      loading: false,
+    })
   )
 }
