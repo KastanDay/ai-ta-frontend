@@ -48,7 +48,7 @@ import ChatUI, {
 } from '~/utils/modelProviders/WebLLM'
 import { VisionCapableModels } from '~/types/LLMProvider'
 import { OpenAIModelID } from '~/utils/modelProviders/openai'
-import { ModelSelect } from './ModelSelect'
+import { UserSettings } from '~/components/Chat/UserSettings';
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -88,7 +88,7 @@ export const ChatInput = ({
   const { t } = useTranslation('chat')
 
   const {
-    state: { selectedConversation, messageIsStreaming, prompts },
+    state: { selectedConversation, messageIsStreaming, prompts, showModelSettings },
 
     dispatch: homeDispatch,
   } = useContext(HomeContext)
@@ -117,21 +117,33 @@ export const ChatInput = ({
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
-  const [showModelSelect, setShowModelSelect] = useState(false)
+  // const [showModelSelect, setShowModelSelect] = useState(false)
   const modelSelectContainerRef = useRef<HTMLDivElement | null>(null)
 
+  // const handleTextClick = () => {
+  //   console.log('handleTextClick')
+  //   setShowModelSelect((prev) => !prev)
+  // }
   const handleTextClick = () => {
-    setShowModelSelect((prev) => !prev)
-  }
+    console.log('handleTextClick');
+    homeDispatch({
+      field: 'showModelSettings',
+      value: !showModelSettings,
+    });
+  };
+
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
       modelSelectContainerRef.current &&
       !modelSelectContainerRef.current.contains(event.target as Node)
     ) {
-      setShowModelSelect(false)
+      homeDispatch({
+        field: 'showModelSettings',
+        value: false,
+      });
     }
-  }
+  };
 
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside)
@@ -943,10 +955,16 @@ export const ChatInput = ({
               '  Please wait while the model is loading...'}
             {/* webLLMModels.some((m) => m.name === model.name) */}
           </Text>
-          {showModelSelect && (
+          {showModelSettings && (
             <div ref={modelSelectContainerRef}
-              className="absolute bottom-12 left-0 right-0 bg-[#1d1f33] p-4 rounded-lg z-50 shadow-lg">
-              <ModelSelect maxDropdownHeight={370} />
+              style={{
+                position: 'absolute',
+                zIndex: 100,
+                right: '30px',
+                top: '75px',
+              }}
+            >
+              <UserSettings />
             </div>
           )}
         </div>
