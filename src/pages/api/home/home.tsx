@@ -39,65 +39,61 @@ import {
 } from '~/hooks/folderQueries'
 import {
   useFetchConversationHistory,
-  // useUpdateConversation,
+  useUpdateConversation,
 } from '~/hooks/conversationQueries'
 import { FolderType, FolderWithConversation } from '~/types/folder'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCreateFolder } from '~/hooks/folderQueries'
-import { updateConversation } from '~/utils/app/conversation'
 
-const Home = () => {
-  // Router
-  const router = useRouter()
-
-  // Constants
-  const course_name = router.query.course_name as string
-  const curr_route_path = router.asPath as string
-
+const Home = ({
+  current_email,
+  course_metadata,
+  course_name,
+}: {
+  current_email: string
+  course_metadata: CourseMetadata | null
+  course_name: string
+}) => {
   // States
   const [isInitialSetupDone, setIsInitialSetupDone] = useState(false)
-  const [isCourseMetadataLoading, setIsCourseMetadataLoading] = useState(true)
-  const [course_metadata, setCourseMetadata] = useState<CourseMetadata | null>(
-    null,
-  )
-  const [isLoading, setIsLoading] = useState<boolean>(true) // Add a new state for loading
+
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+
   // Make a new conversation if the current one isn't empty
   const [hasMadeNewConvoAlready, setHasMadeNewConvoAlready] = useState(false)
-  const clerk_user_outer = useUser()
-  const { user, isLoaded, isSignedIn } = clerk_user_outer
-  const user_email = extractEmailsFromClerk(user)[0]
-  // const [user_email, setUserEmail] = useState<string | null>(null)
 
   // Hooks
   const { t } = useTranslation('chat')
   const { getModels } = useApiService()
   const { getModelsError } = useErrorService()
+
   const queryClient = useQueryClient()
-  const queryCache = queryClient.getQueryCache()
-  // const updateConversationMutation = useUpdateConversation(
-  //   user_email as string,
-  //   queryClient,
-  // )
+  // const queryCache = queryClient.getQueryCache()
+
+  const updateConversationMutation = useUpdateConversation(
+    current_email as string,
+    queryClient,
+  )
   const createFolderMutation = useCreateFolder(
-    user_email as string,
+    current_email as string,
     queryClient,
   )
   const updateFolderMutation = useUpdateFolder(
-    user_email as string,
+    current_email as string,
     queryClient,
   )
   const deleteFolderMutation = useDeleteFolder(
-    user_email as string,
+    current_email as string,
     queryClient,
   )
-  const conversationKey = ['conversationHistory', user_email]
+
   const {
     data: conversationHistory,
     isFetched: isConversationHistoryFetched,
     isLoading: isLoadingConversationHistory,
     error: errorConversationHistory,
     refetch: refetchConversationHistory,
-  } = useFetchConversationHistory(user_email as string)
+  } = useFetchConversationHistory(current_email as string)
 
   const {
     data: foldersData,
@@ -105,7 +101,7 @@ const Home = () => {
     isLoading: isLoadingFolders,
     error: errorFolders,
     refetch: refetchFolders,
-  } = useFetchFolders(user_email as string)
+  } = useFetchFolders(current_email as string)
 
   const stopConversationRef = useRef<boolean>(false)
   const serverSidePluginKeysSet = true
@@ -152,62 +148,6 @@ const Home = () => {
       })
     }
   }, [llmProviders])
-
-  useEffect(() => {
-    if (!course_name && curr_route_path != '/gpt4') return
-    const courseMetadata = async () => {
-      setIsLoading(true) // Set loading to true before fetching data
-
-      // Handle /gpt4 page (special non-course page)
-      let curr_course_name = course_name
-      if (curr_route_path == '/gpt4') {
-        curr_course_name = 'gpt4'
-      }
-
-      const response = await fetch(
-        `/api/UIUC-api/getCourseMetadata?course_name=${curr_course_name}`,
-      )
-      const data = await response.json()
-      setCourseMetadata(data.course_metadata)
-      // console.log("Course Metadata in home: ", data.course_metadata)
-      setIsCourseMetadataLoading(false)
-      // setIsLoading(false) // Set loading to false after fetching data
-    }
-    courseMetadata()
-  }, [course_name])
-
-  // console.log('clerk_user_email: ', user_email)
-  // ------------------- 👇 MOST BASIC AUTH CHECK 👇 -------------------
-  useEffect(() => {
-    if (!clerk_user_outer.isLoaded || isCourseMetadataLoading) {
-      return
-    }
-    if (clerk_user_outer.isLoaded || isCourseMetadataLoading) {
-      if (course_metadata != null) {
-        const permission_str = get_user_permission(
-          course_metadata,
-          clerk_user_outer,
-          router,
-        )
-
-        if (permission_str == 'edit' || permission_str == 'view') {
-        } else {
-          router.replace(`/${course_name}/not_authorized`)
-        }
-      } else {
-        // 🆕 MAKE A NEW COURSE
-        console.log('Course does not exist, redirecting to materials page')
-        router.push(`/${course_name}/materials`)
-      }
-      console.log(
-        'Changing user email to: ',
-        extractEmailsFromClerk(clerk_user_outer.user)[0],
-      )
-      // This will not work because setUserEmail is async
-      // setUserEmail(extractEmailsFromClerk(clerk_user_outer.user)[0] as string)
-      console.log('setting user email: ', user_email)
-    }
-  }, [clerk_user_outer.isLoaded, isCourseMetadataLoading])
 
   // ---- Set OpenAI API Key (either course-wide or from storage) ----
   useEffect(() => {
@@ -280,31 +220,12 @@ const Home = () => {
   }, [selectedConversation, conversations])
 
   useEffect(() => {
-    console.log('queryCache CHANGED!!!: ', queryCache)
-    console.log('queryClient: ', queryClient)
-    console.log('conversationHistory: ', conversationHistory)
-  }, [queryCache])
-
-  useEffect(() => {
-    async function fetchData() {
-      const key = ['conversationHistory', user_email]
-      const queryData = queryClient.getQueryData<Conversation[]>(key)
-      const queryStatus = queryClient.getQueryState(key)
-      console.log(
-        'queryData: ',
-        queryData,
-        ' for key: ',
-        key,
-        ' type: ',
-        typeof queryData,
-        ' queryStatus: ',
-        queryStatus,
-      )
-    }
-
     if (isConversationHistoryFetched && !isLoadingConversationHistory) {
-      fetchData()
-      console.log('conversationHistory: ', conversationHistory)
+      // fetchData()
+      console.log(
+        'conversationHistory storing in react context: ',
+        conversationHistory,
+      )
       dispatch({ field: 'conversations', value: conversationHistory })
       // Should we save the conversation history to local storage? This usually exceeds the limit.
       // localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory))
@@ -321,8 +242,8 @@ const Home = () => {
 
   // FOLDER OPERATIONS  --------------------------------------------
   const handleCreateFolder = (name: string, type: FolderType) => {
-    if (user_email == undefined) {
-      console.error('user_email is undefined')
+    if (current_email == undefined) {
+      console.error('current_email is undefined')
       return
     }
 
@@ -336,8 +257,8 @@ const Home = () => {
   }
 
   const handleDeleteFolder = (folderId: string) => {
-    if (user_email == undefined) {
-      console.error('user_email is undefined')
+    if (current_email == undefined) {
+      console.error('current_email is undefined')
       return
     }
     const deletedFolder = folders.find(
@@ -348,8 +269,8 @@ const Home = () => {
   }
 
   const handleUpdateFolder = (folderId: string, name: string) => {
-    if (user_email == undefined) {
-      console.error('user_email is undefined')
+    if (current_email == undefined) {
+      console.error('current_email is undefined')
       return
     }
 
@@ -360,90 +281,6 @@ const Home = () => {
 
     updateFolderMutation.mutate(updatedFolder)
   }
-  // const handleCreateFolder = (name: string, type: FolderType) => {
-  //   const newFolder: FolderInterface = {
-  //     id: uuidv4(),
-  //     name,
-  //     type,
-  //   }
-
-  //   const updatedFolders = [...folders, newFolder]
-
-  //   dispatch({ field: 'folders', value: updatedFolders })
-  //   // saveFolders(updatedFolders)
-  //   if (user_email == undefined) {
-  //     console.error('user_email is undefined')
-  //     return
-  //   }
-  //   saveFolderToServer(newFolder, user_email).catch((error) => {
-  //     console.error('Error saving folder to server:', error)
-  //   })
-  // }
-
-  // const handleDeleteFolder = (folderId: string) => {
-  //   const updatedFolders = folders.filter((f) => f.id !== folderId)
-  //   dispatch({ field: 'folders', value: updatedFolders })
-  //   // saveFolders(updatedFolders)
-  //   //Todo: add delete folder from server
-
-  //   const updatedConversations: Conversation[] = conversations.map((c) => {
-  //     if (c.folderId === folderId) {
-  //       return {
-  //         ...c,
-  //         folderId: null,
-  //       }
-  //     }
-
-  //     return c
-  //   })
-
-  //   dispatch({ field: 'conversations', value: updatedConversations })
-  //   saveConversations(updatedConversations)
-
-  //   const updatedPrompts: Prompt[] = prompts.map((p) => {
-  //     if (p.folderId === folderId) {
-  //       return {
-  //         ...p,
-  //         folderId: null,
-  //       }
-  //     }
-
-  //     return p
-  //   })
-
-  //   dispatch({ field: 'prompts', value: updatedPrompts })
-  //   savePrompts(updatedPrompts)
-  // }
-
-  // const handleUpdateFolder = (folderId: string, name: string) => {
-  //   const updatedFolders = folders.map((f) => {
-  //     if (f.id === folderId) {
-  //       return {
-  //         ...f,
-  //         name,
-  //       }
-  //     }
-  //     return f
-  //   })
-
-  //   const updatedFolder = updatedFolders.find((f) => f.id === folderId)
-
-  //   if (!updatedFolder) {
-  //     console.error('Folder not found')
-  //     return
-  //   }
-
-  //   dispatch({ field: 'folders', value: updatedFolders })
-
-  //   if (user_email == undefined) {
-  //     console.error('user_email is undefined')
-  //     return
-  //   }
-
-  //   saveFolderToServer(updatedFolder, user_email).catch((error) => {
-  //     console.error('Error saving folder to server:', error)
-  //   })
-  // }
 
   // CONVERSATION OPERATIONS  --------------------------------------------
   const handleSelectConversation = async (conversation: Conversation) => {
@@ -455,6 +292,7 @@ const Home = () => {
     // await saveConversationToServer(conversation)
   }
 
+  // This will ONLY update the react context and not the server
   const handleNewConversation = () => {
     // if (selectedConversation?.messages.length === 0) return
     const lastConversation = conversations[conversations.length - 1]
@@ -470,7 +308,7 @@ const Home = () => {
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
-      userEmail: user_email || undefined,
+      userEmail: current_email || undefined,
       projectName: course_name,
     }
 
@@ -488,7 +326,6 @@ const Home = () => {
     dispatch({ field: 'loading', value: false })
   }
 
-  // This will ONLY update the local storage and not the server
   const handleUpdateConversation = (
     conversation: Conversation,
     data: KeyValuePair,
@@ -504,10 +341,10 @@ const Home = () => {
     }
 
     console.log('updating conversation in local storage: ', updatedConversation)
-    // localStorage.setItem(
-    //   'selectedConversation',
-    //   JSON.stringify(updatedConversation),
-    // )
+    localStorage.setItem(
+      'selectedConversation',
+      JSON.stringify(updatedConversation),
+    )
 
     dispatch({ field: 'selectedConversation', value: updatedConversation })
 
@@ -519,10 +356,10 @@ const Home = () => {
       return c
     })
     dispatch({ field: 'conversations', value: updatedConversations })
-    localStorage.setItem(
-      'conversationHistory',
-      JSON.stringify(updatedConversations),
-    )
+    // localStorage.setItem(
+    //   'conversationHistory',
+    //   JSON.stringify(updatedConversations),
+    // )
 
     // if (data) {
     //   updatedConversation = {
@@ -545,11 +382,8 @@ const Home = () => {
     // } else if() {
 
     // }
-    // This was a HUGE DISCOVERY
-    // REACT QUERY MUTATIONS ARE SOMEHOW RESETTING THE STATE OF THE CONVERSATION QUERY! Is this because is in the react context action?
-    // const updateConversationMutation = useUpdateConversation(user_email, queryClient)
-    // updateConversationMutation.mutate(updatedConversation)
-    updateConversation(updatedConversation)
+    updateConversationMutation.mutate(updatedConversation)
+    // updateConversation(updatedConversation)
     // dispatch({ field: 'selectedConversation', value: updatedConversation })
   }
 
@@ -564,16 +398,6 @@ const Home = () => {
   const setIsRouting = (isRouting: boolean) => {
     dispatch({ field: 'isRouting', value: isRouting })
   }
-
-  // Routing Response
-  // const setRoutingResponse = (routingResponse: RoutingResponse) => {
-  //   dispatch({ field: 'routingResponse', value: routingResponse })
-  // }
-
-  // Pest Detection
-  // const setIsRunningTool = (isRunningTool: boolean) => {
-  //   dispatch({ field: 'isRunningTool', value: isRunningTool })
-  // }
 
   // Retrieval
   const setIsRetrievalLoading = (isRetrievalLoading: boolean) => {
@@ -704,7 +528,7 @@ const Home = () => {
 
   useEffect(() => {
     const initialSetup = async () => {
-      // console.log('user_email: ', user_email)
+      // console.log('current_email: ', current_email)
       console.log('isInitialSetupDone: ', isInitialSetupDone)
       if (isInitialSetupDone) return
       const settings = getSettings()
@@ -757,12 +581,12 @@ const Home = () => {
     if (!isInitialSetupDone) {
       initialSetup()
     }
-  }, [dispatch, llmProviders, user_email]) // ! serverSidePluginKeysSet, removed
+  }, [dispatch, llmProviders, current_email]) // ! serverSidePluginKeysSet, removed
   // }, [defaultModelId, dispatch, serverSidePluginKeysSet, models, conversations]) // original!
 
   if (isLoading) {
     // show blank page during loading
-    return <></>
+    return <>Loading</>
   }
   return (
     <div>
@@ -816,13 +640,15 @@ const Home = () => {
                     </span>
                   </div>
                 )}
-              <Chatbar />
+              <Chatbar current_email={current_email} />
 
               <div className="flex max-w-full flex-1 overflow-x-hidden">
                 {course_metadata && (
                   <Chat
                     stopConversationRef={stopConversationRef}
                     courseMetadata={course_metadata}
+                    courseName={course_name}
+                    currentEmail={current_email}
                   />
                 )}
               </div>

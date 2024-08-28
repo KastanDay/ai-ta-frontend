@@ -13,6 +13,8 @@ export interface Conversation {
   folderId: string | null
   userEmail?: string
   projectName?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface Message {
@@ -25,6 +27,8 @@ export interface Message {
   finalPromtEngineeredMessage?: string // after all prompt enginering, to generate final response.
   responseTimeSec?: number
   conversation_id?: string
+  created_at?: string
+  updated_at?: string
 }
 
 export interface UIUCTool {

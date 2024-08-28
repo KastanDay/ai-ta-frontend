@@ -50,7 +50,7 @@ export type Database = {
           user_email: string | null
         }
         Insert: {
-          created_at?: string
+          created_at: string
           folder_id?: string | null
           id: string
           model: string
@@ -58,7 +58,7 @@ export type Database = {
           project_name?: string
           prompt: string
           temperature: number
-          updated_at?: string
+          updated_at: string
           user_email?: string | null
         }
         Update: {
@@ -463,6 +463,7 @@ export type Database = {
           id: string
           name: string
           type: string | null
+          updated_at: string | null
           user_email: string
         }
         Insert: {
@@ -470,6 +471,7 @@ export type Database = {
           id: string
           name: string
           type?: string | null
+          updated_at?: string | null
           user_email: string
         }
         Update: {
@@ -477,6 +479,7 @@ export type Database = {
           id?: string
           name?: string
           type?: string | null
+          updated_at?: string | null
           user_email?: string
         }
         Relationships: []
@@ -633,18 +636,20 @@ export type Database = {
           response_time_sec: number | null
           role: string
           tools: Json | null
+          updated_at: string | null
         }
         Insert: {
           content: Json
           contexts?: Json | null
           conversation_id?: string | null
-          created_at?: string
+          created_at: string
           final_prompt_engineered_message?: string | null
           id: string
           latest_system_message?: string | null
           response_time_sec?: number | null
           role: string
           tools?: Json | null
+          updated_at?: string | null
         }
         Update: {
           content?: Json
@@ -657,6 +662,7 @@ export type Database = {
           response_time_sec?: number | null
           role?: string
           tools?: Json | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -689,6 +695,7 @@ export type Database = {
           doi: string | null
           doi_number: string | null
           id: number
+          ingested: boolean | null
           license: string | null
           link: string | null
           metadata: Json | null
@@ -700,6 +707,7 @@ export type Database = {
           doi?: string | null
           doi_number?: string | null
           id?: number
+          ingested?: boolean | null
           license?: string | null
           link?: string | null
           metadata?: Json | null
@@ -711,6 +719,7 @@ export type Database = {
           doi?: string | null
           doi_number?: string | null
           id?: number
+          ingested?: boolean | null
           license?: string | null
           link?: string | null
           metadata?: Json | null

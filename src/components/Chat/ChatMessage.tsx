@@ -11,7 +11,6 @@ import {
 import { FC, memo, useContext, useEffect, useRef, useState } from 'react'
 
 import { useTranslation } from 'next-i18next'
-import { updateConversation } from '@/utils/app/conversation'
 import { ContextWithMetadata, Message } from '@/types/chat'
 import HomeContext from '~/pages/api/home/home.context'
 import { CodeBlock } from '../Markdown/CodeBlock'

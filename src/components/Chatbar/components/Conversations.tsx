@@ -12,7 +12,7 @@ export const Conversations = ({ conversations }: Props) => {
       {conversations
         .filter((conversation) => !conversation.folderId)
         .slice()
-        .reverse()
+        // .reverse()
         .map((conversation, index) => (
           <ConversationComponent key={index} conversation={conversation} />
         ))}

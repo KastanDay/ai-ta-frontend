@@ -28,10 +28,9 @@ import { v4 as uuidv4 } from 'uuid'
 import router from 'next/router'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { useUser } from '@clerk/nextjs'
-import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
+import { useDeleteConversation } from '~/hooks/conversationQueries'
 
-export const Chatbar = () => {
+export const Chatbar = ({ current_email }: { current_email: string }) => {
   const { t } = useTranslation('sidebar')
 
   const chatBarContextValue = useCreateReducer<ChatbarInitialState>({
@@ -54,8 +53,10 @@ export const Chatbar = () => {
   } = chatBarContextValue
 
   const queryClient = useQueryClient()
-  const user = useUser()
-  const user_email = extractEmailsFromClerk(user.user)[0]
+  const deleteConversationMutation = useDeleteConversation(
+    current_email,
+    queryClient,
+  )
 
   const handleApiKeyChange = useCallback(
     (apiKey: string) => {
@@ -159,14 +160,14 @@ export const Chatbar = () => {
     // saveConversations(updatedConversations)
 
     if (updatedConversations.length > 0) {
-      const lastConversation =
-        updatedConversations[updatedConversations.length - 1]
+      const lastConversation = updatedConversations[0]
       if (lastConversation) {
         homeDispatch({
           field: 'selectedConversation',
           value: lastConversation,
         })
 
+        deleteConversationMutation.mutate(conversation)
         // saveConversation(lastConversation)
         // saveConversationToServer(lastConversation).catch((error) => {
         //   console.error('Error saving updated conversation to server:', error)
@@ -200,7 +201,7 @@ export const Chatbar = () => {
   const handleDrop = (e: any) => {
     if (e.dataTransfer) {
       const conversation = JSON.parse(e.dataTransfer.getData('conversation'))
-      handleUpdateConversation(conversation, { key: 'folderId', value: 0 })
+      handleUpdateConversation(conversation, { key: 'folderId', value: null })
       chatDispatch({ field: 'searchTerm', value: '' })
       e.target.style.background = 'none'
     }

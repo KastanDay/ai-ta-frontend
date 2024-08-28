@@ -35,8 +35,8 @@ export function convertChatToDBConversation(
     user_email: chatConversation.userEmail || null,
     project_name: chatConversation.projectName || '',
     folder_id: chatConversation.folderId || null,
-    created_at: new Date().toISOString(), // Assuming current time for new records
-    updated_at: new Date().toISOString(), // Assuming current time for new records
+    created_at: chatConversation.createdAt || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   }
 }
 
@@ -65,6 +65,8 @@ export function convertDBToChatConversation(
       finalPromtEngineeredMessage:
         (msg.final_prompt_engineered_message as string) || undefined,
       responseTimeSec: (msg.response_time_sec as number) || undefined,
+      created_at: msg.created_at || undefined,
+      updated_at: msg.updated_at || undefined,
     })),
   }
 }
@@ -80,7 +82,7 @@ export function convertChatToDBMessage(
     contexts:
       chatMessage.contexts?.map((context, index) => {
         if (context.s3_path) {
-          return { s3_path_chunk_index: context.s3_path + index }
+          return { chunk_index: context.s3_path + index }
         } else if (context.url) {
           return { url_chunk_index: context.url + index }
         } else {
@@ -93,7 +95,8 @@ export function convertChatToDBMessage(
       chatMessage.finalPromtEngineeredMessage || null,
     response_time_sec: chatMessage.responseTimeSec || null,
     conversation_id: conversationId,
-    created_at: new Date().toISOString(), // Assuming current time for new records
+    created_at: chatMessage.created_at || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   }
 }
 
@@ -193,11 +196,30 @@ export default async function handler(
           const convMessages = conv.messages || []
           return convertDBToChatConversation(conv, convMessages)
         })
-        console.log('Fetched conversations:', fetchedConversations)
+        // console.log('Fetched conversations:', fetchedConversations)
         res.status(200).json(fetchedConversations)
       } catch (error) {
         res.status(500).json({ error: 'Error fetching conversation history' })
         console.error('Error fetching conversation history:', error)
+      }
+      break
+
+    case 'DELETE':
+      const { id } = req.body as {
+        id: string
+      }
+      try {
+        // Delete conversation
+        const { data, error } = await supabase
+          .from('conversations')
+          .delete()
+          .eq('id', id)
+        if (error) throw error
+
+        res.status(200).json({ message: 'Conversation deleted successfully' })
+      } catch (error) {
+        res.status(500).json({ error: 'Error deleting conversation' })
+        console.error('Error deleting conversation:', error)
       }
       break
 

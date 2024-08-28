@@ -18,7 +18,7 @@ export function useFetchFolders(user_email: string) {
     queryKey: ['folders', user_email],
     queryFn: async () => (user_email ? fetchFolders(user_email) : []),
     enabled: !!user_email,
-    // refetchInterval: 20_000,
+    refetchInterval: 20_000,
   })
 }
 

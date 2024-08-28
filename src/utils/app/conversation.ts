@@ -23,10 +23,6 @@ export async function fetchConversationHistory(
     const conversationHistory = await response.json()
 
     finalResponse = cleanConversationHistory(conversationHistory)
-
-    console.log('cleanedConversationHistory: ', finalResponse)
-    // dispatch({ field: 'conversations', value: cleanedConversationHistory })
-    // return cleanedConversationHistory
   } catch (error) {
     console.error('Error fetching conversation history:', error)
   }
@@ -49,26 +45,6 @@ export const deleteConversationFromServer = async (id: string) => {
   } catch (error) {
     console.error('Error deleting conversation:', error)
   }
-}
-
-export const updateConversation = (
-  updatedConversation: Conversation,
-  // allConversations: Conversation[],
-) => {
-  // const updatedConversations = allConversations.map((c) => {
-  //   if (c.id === updatedConversation.id) {
-  //     return updatedConversation
-  //   }
-
-  //   return c
-  // })
-
-  // Save conversations to server instead of local storage
-  saveConversationToServer(updatedConversation).catch((error) => {
-    console.error('Error saving updated conversation to server:', error)
-  })
-
-  return updatedConversation
 }
 
 export const saveConversationToLocalStorage = (conversation: Conversation) => {

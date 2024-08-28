@@ -18,6 +18,22 @@ export function convertDBFolderToChatFolder(
       const convMessages = conv.messages
       return convertDBToChatConversation(conv, convMessages)
     }),
+    createdAt: dbFolder.created_at || new Date().toISOString(),
+    updatedAt: dbFolder.updated_at || new Date().toISOString(),
+  }
+}
+
+export function convertChatFolderToDBFolder(
+  folder: FolderWithConversation,
+  email: string,
+): Folder {
+  return {
+    id: folder.id,
+    name: folder.name,
+    type: folder.type.toString(),
+    user_email: email,
+    created_at: folder.createdAt || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   }
 }
 
@@ -40,13 +56,7 @@ export default async function handler(
         email,
       }: { folder: FolderWithConversation; email: string } = req.body
       //   Convert folder to DB type
-      const dbFolder: Folder = {
-        id: folder.id,
-        name: folder.name,
-        type: folder.type.toString(),
-        user_email: email,
-        created_at: new Date().toISOString(),
-      }
+      const dbFolder = convertChatFolderToDBFolder(folder, email)
 
       try {
         const { data, error } = await supabase
