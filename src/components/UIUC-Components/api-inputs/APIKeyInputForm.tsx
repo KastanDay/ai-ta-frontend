@@ -177,13 +177,28 @@ export default function APIKeyInputForm() {
     },
     onSubmit: async ({ value }) => {
       console.log('onSubmit here: ', value)
-      await mutation.mutateAsync({
-        course_name,
-        queryClient,
-        llmProviders: value.providers,
-        defaultModelID: value.defaultModel.toString(),
-        defaultTemperature: value.defaultTemperature.toString(),
-      })
+      mutation.mutate(
+        {
+          course_name,
+          queryClient,
+          llmProviders: value.providers,
+          defaultModelID: value.defaultModel.toString(),
+          defaultTemperature: value.defaultTemperature.toString(),
+        },
+        {
+          onSuccess: (data, variables, context) =>
+            showConfirmationToast({
+              title: 'Updated LLM providers',
+              message: `Now your project's users can use the supplied LLMs!`,
+            }),
+          onError: (error, variables, context) =>
+            showConfirmationToast({
+              title: 'Error updating LLM providers',
+              message: `Failed to update LLM providers with error: ${error.name} -- ${error.message}`,
+              isError: true,
+            }),
+        },
+      )
     },
   })
 
@@ -196,11 +211,6 @@ export default function APIKeyInputForm() {
         label: `${providerName} - ${model.name}`,
       })) || [],
   )
-  // console.log('defaultModelOptions', defaultModelOptions)
-  // console.log(
-  //   'providers from FORM',
-  //   Object.values(form.getFieldValue('providers')),
-  // )
 
   return (
     <Card
@@ -306,7 +316,11 @@ export default function APIKeyInputForm() {
 
                 {/* API Key Input */}
                 {providerName !== 'WebLLM' && (
-                  <form.Field name={`providers.${providerName}.apiKey`}>
+                  <form.Field
+                    name={
+                      `providers.${providerName}.apiKey` as `providers.${keyof AllLLMProviders}.apiKey`
+                    }
+                  >
                     {(field) => (
                       <APIKeyInput
                         field={field}
@@ -389,7 +403,9 @@ export default function APIKeyInputForm() {
                   provider.models.map((model) => (
                     <form.Field
                       key={model.id}
-                      name={`providers.${providerName}.models.${model.id}.enabled`}
+                      name={
+                        `providers.${providerName}.models.${model.id}.enabled` as any
+                      }
                     >
                       {(field) => (
                         <Switch
