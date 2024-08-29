@@ -349,7 +349,7 @@ export default function APIKeyInputForm() {
                 </div>
 
                 {/* API Key Input */}
-                {providerName !== 'WebLLM' && providerName !== 'Ollama' && (
+                {providerName !== 'WebLLM' && providerName !== 'Ollama' && providerName !=='Azure' && (
                   <form.Field
                     name={
                       `providers.${providerName}.apiKey` as `providers.${keyof AllLLMProviders}.apiKey`
@@ -428,20 +428,22 @@ export default function APIKeyInputForm() {
                     >
                       {(field) => (
                         <>
-                          <input
-                            placeholder="Azure Endpoint"
-                            value={field.state.value as string}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            style={{
-                              backgroundColor: '#2d2d3d',
-                              borderColor: '#4a4a5e',
-                              color: 'white',
-                              padding: '8px',
-                              borderRadius: '4px',
-                              width: '100%',
-                              marginBottom: '8px',
-                            }}
-                          />
+                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                            <label style={{ width: '120px', marginRight: '8px', fontSize: '12px', color: 'dimmed' }}>Base URL:</label>
+                            <input
+                              placeholder="Azure Endpoint"
+                              value={field.state.value as string}
+                              onChange={(e) => field.handleChange(e.target.value)}
+                              style={{
+                                backgroundColor: '#2d2d3d',
+                                borderColor: '#4a4a5e',
+                                color: 'white',
+                                padding: '8px',
+                                borderRadius: '4px',
+                                width: '100%',
+                              }}
+                            />
+                          </div>
                           <FieldInfo field={field} />
                         </>
                       )}
@@ -453,20 +455,39 @@ export default function APIKeyInputForm() {
                     >
                       {(field) => (
                         <>
-                          <input
-                            placeholder="Azure Deployment"
-                            value={field.state.value as string}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            style={{
-                              backgroundColor: '#2d2d3d',
-                              borderColor: '#4a4a5e',
-                              color: 'white',
-                              padding: '8px',
-                              borderRadius: '4px',
-                              width: '100%',
-                              marginBottom: '8px',
-                            }}
-                          />
+                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                            <label style={{ width: '120px', marginRight: '8px', fontSize: '12px', color: 'dimmed' }}>Deployment Name:</label>
+                            <input
+                              placeholder="Azure Deployment"
+                              value={field.state.value as string}
+                              onChange={(e) => field.handleChange(e.target.value)}
+                              style={{
+                                backgroundColor: '#2d2d3d',
+                                borderColor: '#4a4a5e',
+                                color: 'white',
+                                padding: '8px',
+                                borderRadius: '4px',
+                                width: '100%',
+                              }}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </form.Field>
+                    <form.Field
+                      name={
+                        `providers.${providerName}.apiKey` as `providers.${keyof AllLLMProviders}.apiKey`
+                      }
+                    >
+                      {(field) => (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                            <label style={{ width: '120px', marginRight: '8px', fontSize: '12px', color: 'dimmed' }}>API Key:</label>
+                            <APIKeyInput
+                              field={field}
+                              placeholder="Azure API Key"
+                            />
+                          </div>
                         </>
                       )}
                     </form.Field>
