@@ -64,7 +64,7 @@ const APIKeyInput = ({
         type={isVisible ? 'text' : 'password'}
         placeholder={placeholder}
         value={field.value}
-        onChange={(e) => field.onChange(e.target.value)}
+        onChange={(e) => field.handleChange(e.target.value)}
         style={{
           backgroundColor: '#2d2d3d',
           borderColor: '#4a4a5e',
@@ -90,6 +90,7 @@ const APIKeyInput = ({
       >
         {isVisible ? <IconEyeOff size={16} /> : <IconEye size={16} />}
       </Button>
+      <FieldInfo field={field} />
     </div>
   )
 }
@@ -102,7 +103,6 @@ const loadingTextLLMProviders: AllLLMProviders = {
     enabled: false,
     baseUrl: 'Loading...',
     models: [],
-    apiKey: '',
   },
   OpenAI: {
     provider: ProviderNames.OpenAI,
@@ -349,11 +349,22 @@ export default function APIKeyInputForm() {
                 </div>
 
                 {/* API Key Input */}
-                {providerName !== 'WebLLM' && (
+                {providerName !== 'WebLLM' && providerName !== 'Ollama' && (
                   <form.Field
                     name={
                       `providers.${providerName}.apiKey` as `providers.${keyof AllLLMProviders}.apiKey`
                     }
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (providerName === 'OpenAI' && !value.startsWith('sk-')) {
+                          return 'OpenAI API key must start with "sk-"'
+                        }
+                        if (providerName === 'Anthropic' && !value.startsWith('sk-ant')) {
+                          return 'Anthropic API key must start with "sk-ant"'
+                        }
+                        return undefined
+                      },
+                    }}
                   >
                     {(field) => (
                       <>
@@ -372,6 +383,12 @@ export default function APIKeyInputForm() {
                     name={
                       `providers.${providerName}.baseUrl` as `providers.${keyof AllLLMProviders}.baseUrl`
                     }
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!/^https?:\/\//.test(value)) return 'Base URL must start with http:// or https://'
+                        return undefined
+                      },
+                    }}
                   >
                     {(field) => (
                       <>
@@ -389,6 +406,7 @@ export default function APIKeyInputForm() {
                             marginBottom: '8px',
                           }}
                         />
+                        <FieldInfo field={field} />
                       </>
                     )}
                   </form.Field>
@@ -401,6 +419,12 @@ export default function APIKeyInputForm() {
                       name={
                         `providers.${providerName}.AzureEndpoint` as `providers.${keyof AllLLMProviders}.AzureEndpoint`
                       }
+                      validators={{
+                        onChange: ({ value }) => {
+                          if (!/^https?:\/\//.test(value)) return 'Azure Endpoint must start with http:// or https://'
+                          return undefined
+                        },
+                      }}
                     >
                       {(field) => (
                         <>
@@ -418,6 +442,7 @@ export default function APIKeyInputForm() {
                               marginBottom: '8px',
                             }}
                           />
+                          <FieldInfo field={field} />
                         </>
                       )}
                     </form.Field>
