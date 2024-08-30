@@ -500,47 +500,93 @@ export default function APIKeyInputForm() {
                     `providers.${providerName}.enabled` as `providers.${keyof AllLLMProviders}.enabled`
                   }
                 >
-                  {(enabledField) => (
-                    <AnimatePresence>
-                      {enabledField.state.value && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          {provider.models &&
-                            provider.models.map((model) => (
-                              <form.Field
-                                key={model.id}
-                                name={
-                                  `providers.${providerName}.models.${model.id}.enabled` as `providers.${keyof AllLLMProviders}.models.${string}.enabled`
-                                }
-                              >
-                                {(field) => (
-                                  <Switch
-                                    label={model.name}
-                                    checked={field.state.value as boolean}
-                                    onChange={(event) =>
-                                      field.handleChange(
-                                        event.currentTarget.checked,
-                                      )
-                                    }
-                                    styles={(theme) => ({
-                                      track: {
-                                        backgroundColor: field.state.value
-                                          ? theme.colors.blue[6]
-                                          : theme.colors.gray[5],
+                  {(enabledField) => {
+                    // Move hooks outside of the callback
+                    const queryClient = useQueryClient();
+                    const mutation = useMutation({
+                      mutationFn: (newEnabled: boolean) => {
+                        // Update the enabled status for the provider
+                        return updateProviderEnabled(providerName, newEnabled);
+                      },
+                      onSuccess: () => {
+                        // Invalidate and refetch
+                        queryClient.invalidateQueries({ queryKey: ['llmProviders'] });
+                      },
+                    });
+
+                    // Update the toggle state from llmProviders on page load
+                    useEffect(() => {
+                      if (llmProviders && llmProviders[providerName as keyof AllLLMProviders]) {
+                        enabledField.handleChange(llmProviders[providerName as keyof AllLLMProviders].enabled);
+                      }
+                    }, [llmProviders, providerName, enabledField]);
+
+                    return (
+                      <AnimatePresence>
+                        {enabledField.state.value && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            {provider.models &&
+                              provider.models.map((model) => (
+                                <form.Field
+                                  key={model.id}
+                                  name={
+                                    `providers.${providerName}.models.${model.id}.enabled` as `providers.${keyof AllLLMProviders}.models.${string}.enabled`
+                                  }
+                                >
+                                  {(field) => {
+                                    // Move hooks outside of the callback
+                                    const modelMutation = useMutation({
+                                      mutationFn: (newEnabled: boolean) => {
+                                        // Update the enabled status for the model
+                                        return updateModelEnabled(providerName, model.id, newEnabled);
                                       },
-                                    })}
-                                  />
-                                )}
-                              </form.Field>
-                            ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  )}
+                                      onSuccess: () => {
+                                        // Invalidate and refetch
+                                        queryClient.invalidateQueries({ queryKey: ['llmProviders'] });
+                                      },
+                                    });
+
+                                    // Update the model toggle state from llmProviders on page load
+                                    useEffect(() => {
+                                      if (llmProviders && llmProviders[providerName as keyof AllLLMProviders] && llmProviders[providerName as keyof AllLLMProviders].models) {
+                                        const modelData = llmProviders[providerName as keyof AllLLMProviders].models.find(m => m.id === model.id);
+                                        if (modelData) {
+                                          field.handleChange(modelData.enabled);
+                                        }
+                                      }
+                                    }, [llmProviders, providerName, model.id, field]);
+
+                                    return (
+                                      <Switch
+                                        label={model.name}
+                                        checked={field.state.value as boolean}
+                                        onChange={(event) => {
+                                          const newValue = event.currentTarget.checked;
+                                          field.handleChange(newValue);
+                                          modelMutation.mutate(newValue);
+                                        }}
+                                        styles={(theme) => ({
+                                          track: {
+                                            backgroundColor: field.state.value
+                                              ? theme.colors.blue[6]
+                                              : theme.colors.gray[5],
+                                          },
+                                        })}
+                                      />
+                                    );
+                                  }}
+                                </form.Field>
+                              ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    );
+                  }}
                 </form.Field>
               </div>
             ),
