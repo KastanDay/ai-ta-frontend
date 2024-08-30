@@ -144,8 +144,7 @@ const Promptbar = () => {
         handleCreateItem={handleCreatePrompt}
         handleCreateFolder={() => handleCreateFolder(t('New folder'), 'prompt')}
         handleDrop={handleDrop}
-        showCurrentCourseOnly={false}
-        onToggleCurrentCourseOnly={() => {}}
+        onScroll={() => {}}
       />
     </PromptbarContext.Provider>
   )

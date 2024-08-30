@@ -1,20 +1,29 @@
 // @utils/app/conversation
-import { Conversation } from '@/types/chat'
+import { Conversation, ConversationPage } from '@/types/chat'
 import posthog from 'posthog-js'
 import { cleanConversationHistory } from './clean'
 
 export async function fetchConversationHistory(
   user_email: string,
-): Promise<Conversation[]> {
+  searchTerm: string,
+  courseName: string,
+  pageParam: number,
+): Promise<ConversationPage> {
   console.log('fetchConversationHistory: ', user_email)
-  let finalResponse: Conversation[] = []
+  let finalResponse: ConversationPage = {
+    conversations: [],
+    nextCursor: null,
+  }
   try {
-    const response = await fetch(`/api/conversation?user_email=${user_email}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      `/api/conversation?user_email=${user_email}&searchTerm=${searchTerm}&courseName=${courseName}&pageParam=${pageParam}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       },
-    })
+    )
 
     if (!response.ok) {
       throw new Error('Error fetching conversation history')
@@ -26,7 +35,8 @@ export async function fetchConversationHistory(
   } catch (error) {
     console.error('Error fetching conversation history:', error)
   }
-  return finalResponse as Conversation[]
+  console.log('finalResponse: ', finalResponse)
+  return finalResponse
 }
 
 export const deleteConversationFromServer = async (id: string) => {

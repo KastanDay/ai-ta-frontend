@@ -17,7 +17,7 @@ import { NextWebVitalsMetric } from 'next/app'
 import posthog from 'posthog-js'
 import { PostHogProvider } from 'posthog-js/react'
 import { useRouter } from 'next/router'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 

@@ -2,6 +2,11 @@ import { CourseMetadata } from './courseMetadata'
 import { N8NParameter } from './tools'
 import { AnySupportedModel } from './LLMProvider'
 
+export interface ConversationPage {
+  conversations: Conversation[]
+  nextCursor: number | null
+}
+
 export interface Conversation {
   // NO KEY
   id: string

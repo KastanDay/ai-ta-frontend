@@ -1,5 +1,10 @@
-import { QueryClient, useMutation, useQuery } from '@tanstack/react-query'
-import { Conversation } from '~/types/chat'
+import {
+  QueryClient,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+} from '@tanstack/react-query'
+import { Conversation, ConversationPage } from '~/types/chat'
 import { FolderWithConversation } from '~/types/folder'
 import {
   deleteConversationFromServer,
@@ -7,12 +12,18 @@ import {
   saveConversationToServer,
 } from '~/utils/app/conversation'
 
-export function useFetchConversationHistory(user_email: string) {
-  // console.log('useFetchConversationHistory with user_email: ', user_email)
-  return useQuery({
-    queryKey: ['conversationHistory', user_email],
-    queryFn: () => (user_email ? fetchConversationHistory(user_email) : []),
-    enabled: !!user_email,
+export function useFetchConversationHistory(
+  user_email: string,
+  searchTerm: string,
+  courseName: string,
+) {
+  return useInfiniteQuery({
+    queryKey: ['conversationHistory', user_email, courseName, searchTerm],
+    queryFn: ({ pageParam = 0 }) =>
+      fetchConversationHistory(user_email, searchTerm, courseName, pageParam),
+    initialPageParam: 0,
+    enabled: !!user_email && !!courseName,
+    getNextPageParam: (lastPage: ConversationPage) => lastPage.nextCursor,
     refetchInterval: 20_000,
   })
 }
@@ -85,6 +96,7 @@ export function useFetchConversationHistory(user_email: string) {
 export function useUpdateConversation(
   user_email: string,
   queryClient: QueryClient,
+  course_name: string,
 ) {
   // console.log('useUpdateConversation with user_email: ', user_email)
   return useMutation({
@@ -102,11 +114,18 @@ export function useUpdateConversation(
       // 4. Return the updated conversation and old conversation to the success handler
       let oldConversations = null
       let oldFolders = null
+      const conversationPage = queryClient.getQueryData([
+        'conversationHistory',
+        user_email,
+        course_name,
+        '',
+      ]) as ConversationPage
+
       if (user_email !== undefined) {
         console.log('user_email in update mutation: ', user_email)
         // Step 1: Cancel the query to prevent it from refetching
         await queryClient.cancelQueries({
-          queryKey: ['conversationHistory', user_email],
+          queryKey: ['conversationHistory', user_email, course_name, ''],
         })
 
         if (updatedConversation.folderId) {
@@ -117,15 +136,16 @@ export function useUpdateConversation(
 
         // Step 2: Perform the optimistic update
         queryClient.setQueryData(
-          ['conversationHistory', user_email],
-          (oldData: Conversation[]) => {
+          ['conversationHistory', user_email, course_name, ''],
+          (oldData: ConversationPage | undefined) => {
+            if (!oldData || !oldData.conversations) return
             console.log('oldData: ', oldData)
-            return oldData.map((c: Conversation) => {
-              if (c.id === updatedConversation.id) {
-                return updatedConversation
-              }
-              return c
-            })
+            return {
+              ...oldData,
+              conversations: oldData.conversations.map((c: Conversation) =>
+                c.id === updatedConversation.id ? updatedConversation : c,
+              ),
+            }
           },
         )
 
@@ -162,12 +182,9 @@ export function useUpdateConversation(
         }
 
         // Step 3: Add old conversation to react query context
-        oldConversations = (
-          queryClient.getQueryData([
-            'conversationHistory',
-            user_email,
-          ]) as Conversation[]
-        ).find((c: Conversation) => c.id === updatedConversation.id)
+        oldConversations = conversationPage?.conversations?.find(
+          (c: Conversation) => c.id === updatedConversation.id,
+        ) || { conversations: [], nextCursor: null }
       } else {
         console.log('user_email is undefined in update mutation')
       }
@@ -178,7 +195,7 @@ export function useUpdateConversation(
       // An error happened!
       // Rollback the optimistic update
       queryClient.setQueryData(
-        ['conversationHistory', user_email],
+        ['conversationHistory', user_email, course_name, ''],
         context?.oldConversations,
       )
       if (context?.oldFolders) {
@@ -201,7 +218,7 @@ export function useUpdateConversation(
       // Do something here, like closing a modal
       console.log('Invalidating query: ', variables)
       queryClient.invalidateQueries({
-        queryKey: ['conversationHistory', user_email],
+        queryKey: ['conversationHistory', user_email, course_name, ''],
       })
 
       if (context?.oldFolders) {
@@ -216,6 +233,8 @@ export function useUpdateConversation(
 export function useDeleteConversation(
   user_email: string,
   queryClient: QueryClient,
+  course_name: string,
+  search_term: string,
 ) {
   console.log('useDeleteConversation')
   return useMutation({
@@ -225,11 +244,21 @@ export function useDeleteConversation(
     onMutate: async (deletedConversation: Conversation) => {
       // Step 1: Cancel the query to prevent it from refetching
       await queryClient.cancelQueries({
-        queryKey: ['conversationHistory', deletedConversation.userEmail],
+        queryKey: [
+          'conversationHistory',
+          deletedConversation.userEmail,
+          course_name,
+          '',
+        ],
       })
       // Step 2: Perform the optimistic update
       queryClient.setQueryData(
-        ['conversationHistory', deletedConversation.userEmail],
+        [
+          'conversationHistory',
+          deletedConversation.userEmail,
+          course_name,
+          search_term,
+        ],
         (oldData: Conversation[]) => {
           return oldData.filter(
             (c: Conversation) => c.id !== deletedConversation.id,
@@ -240,6 +269,8 @@ export function useDeleteConversation(
       const oldConversation = queryClient.getQueryData([
         'conversationHistory',
         deletedConversation.userEmail,
+        course_name,
+        search_term,
       ])
       // Step 4: Return the deleted and old conversation to the success handler
       return { oldConversation, deletedConversation }
@@ -248,7 +279,7 @@ export function useDeleteConversation(
       // An error happened!
       // Rollback the optimistic update
       queryClient.setQueryData(
-        ['conversationHistory', user_email],
+        ['conversationHistory', user_email, course_name, search_term],
         context?.oldConversation,
       )
       console.error(
@@ -267,7 +298,7 @@ export function useDeleteConversation(
       // Do something here, like closing a modal
       console.log('Invalidating query: ', variables)
       queryClient.invalidateQueries({
-        queryKey: ['conversationHistory', user_email],
+        queryKey: ['conversationHistory', user_email, course_name, search_term],
       })
     },
   })

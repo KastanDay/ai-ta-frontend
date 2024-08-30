@@ -75,16 +75,23 @@ export function convertChatToDBMessage(
   chatMessage: ChatMessage,
   conversationId: string,
 ): DBMessage {
+  console.log('chatMessage.content: ', chatMessage.content)
+  console.log('chatMessage.content type: ', typeof chatMessage.content)
   return {
     id: chatMessage.id || uuidv4(),
     role: chatMessage.role,
-    content: chatMessage.content as any,
+    content:
+      typeof chatMessage.content == 'string'
+        ? [{ text: chatMessage.content, type: 'text' }]
+        : (chatMessage.content as any),
     contexts:
       chatMessage.contexts?.map((context, index) => {
+        // TODO:
+        // This is where we will put context_id in the future
         if (context.s3_path) {
-          return { chunk_index: context.s3_path + index }
+          return { chunk_index: context.s3_path + '_' + index }
         } else if (context.url) {
-          return { url_chunk_index: context.url + index }
+          return { url_chunk_index: context.url + '_' + index }
         } else {
           return {}
         }
@@ -149,36 +156,64 @@ export default async function handler(
       break
 
     case 'GET':
-      const { user_email } = req.query
-      try {
-        if (!user_email || typeof user_email !== 'string') {
-          res.status(400).json({ error: 'No valid email address provided' })
-          return
-        }
+      const user_email = req.query.user_email as string
+      const searchTerm = req.query.searchTerm as string
+      const courseName = req.query.courseName as string
+      const pageParam = parseInt(req.query.pageParam as string, 0)
+      // Search term is optional
+      if (!user_email || !courseName || isNaN(pageParam)) {
+        console.log('first boolean:', !user_email)
+        console.log('second boolean:', !searchTerm)
+        console.log('third boolean:', !courseName)
+        console.log('fourth boolean:', isNaN(pageParam))
+        console.log('Invalid query parameters:', req.query)
+        res.status(400).json({ error: 'Invalid query parameters' })
+        return
+      }
 
-        const { data, error } = await supabase
+      try {
+        const pageSize = 20
+
+        let query = supabase
           .from('conversations')
           .select(
             `
-              *,
-              messages (
-                id,
-                role,
-                content,
-                contexts,
-                tools,
-                latest_system_message,
-                final_prompt_engineered_message,
-                response_time_sec,
-                conversation_id,
-                created_at
-              )
-            `,
+            *,
+            messages (
+              id,
+              role,
+              content,
+              contexts,
+              tools,
+              latest_system_message,
+              final_prompt_engineered_message,
+              response_time_sec,
+              conversation_id,
+              created_at
+            )
+          `,
           )
           .eq('user_email', user_email)
+          .eq('project_name', courseName)
           .is('folder_id', null)
+
+        // Add search condition only if searchTerm is provided
+        if (searchTerm) {
+          query = query.or(
+            `(name.ilike.%${searchTerm}%),(messages.content.ilike.%${searchTerm}%)`,
+          )
+        }
+        console.log('query: ', query)
+
+        const rangeStart = pageParam * pageSize
+        const rangeEnd = (pageParam + 1) * pageSize - 1
+        console.log('Range:', { rangeStart, rangeEnd })
+
+        const { data, error } = await query
           .order('updated_at', { ascending: false })
-          .limit(10)
+          .limit(pageSize)
+          .range(rangeStart, rangeEnd)
+
         if (error) {
           console.error(
             'Error fetching conversation history in sql query:',
@@ -196,7 +231,7 @@ export default async function handler(
           const convMessages = conv.messages || []
           return convertDBToChatConversation(conv, convMessages)
         })
-        // console.log('Fetched conversations:', fetchedConversations)
+        console.log('Fetched conversations:', fetchedConversations.length)
         res.status(200).json(fetchedConversations)
       } catch (error) {
         res.status(500).json({ error: 'Error fetching conversation history' })

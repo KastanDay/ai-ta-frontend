@@ -70,10 +70,6 @@ const Home = ({
   const queryClient = useQueryClient()
   // const queryCache = queryClient.getQueryCache()
 
-  const updateConversationMutation = useUpdateConversation(
-    current_email as string,
-    queryClient,
-  )
   const createFolderMutation = useCreateFolder(
     current_email as string,
     queryClient,
@@ -87,13 +83,13 @@ const Home = ({
     queryClient,
   )
 
-  const {
-    data: conversationHistory,
-    isFetched: isConversationHistoryFetched,
-    isLoading: isLoadingConversationHistory,
-    error: errorConversationHistory,
-    refetch: refetchConversationHistory,
-  } = useFetchConversationHistory(current_email as string)
+  // const {
+  //   data: conversationHistory,
+  //   isFetched: isConversationHistoryFetched,
+  //   isLoading: isLoadingConversationHistory,
+  //   error: errorConversationHistory,
+  //   refetch: refetchConversationHistory,
+  // } = useFetchConversationHistory(current_email as string)
 
   const {
     data: foldersData,
@@ -123,10 +119,16 @@ const Home = ({
       llmProviders,
       documentGroups,
       tools,
+      searchTerm,
     },
     dispatch,
   } = contextValue
 
+  const updateConversationMutation = useUpdateConversation(
+    current_email as string,
+    queryClient,
+    course_name,
+  )
   // Use effects for setting up the course metadata and models depending on the course/project
   useEffect(() => {
     // Set model after we fetch available models
@@ -219,18 +221,18 @@ const Home = ({
     }
   }, [selectedConversation, conversations])
 
-  useEffect(() => {
-    if (isConversationHistoryFetched && !isLoadingConversationHistory) {
-      // fetchData()
-      console.log(
-        'conversationHistory storing in react context: ',
-        conversationHistory,
-      )
-      dispatch({ field: 'conversations', value: conversationHistory })
-      // Should we save the conversation history to local storage? This usually exceeds the limit.
-      // localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory))
-    }
-  }, [conversationHistory])
+  // useEffect(() => {
+  //   if (isConversationHistoryFetched && !isLoadingConversationHistory) {
+  //     // fetchData()
+  //     console.log(
+  //       'conversationHistory storing in react context: ',
+  //       conversationHistory,
+  //     )
+  //     dispatch({ field: 'conversations', value: conversationHistory })
+  //     // Should we save the conversation history to local storage? This usually exceeds the limit.
+  //     // localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory))
+  //   }
+  // }, [conversationHistory])
 
   useEffect(() => {
     if (isFoldersFetched && !isLoadingFolders) {
@@ -640,7 +642,7 @@ const Home = ({
                     </span>
                   </div>
                 )}
-              <Chatbar current_email={current_email} />
+              <Chatbar current_email={current_email} courseName={course_name} />
 
               <div className="flex max-w-full flex-1 overflow-x-hidden">
                 {course_metadata && (

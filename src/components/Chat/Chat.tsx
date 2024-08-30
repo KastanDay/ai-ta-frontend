@@ -213,6 +213,7 @@ export const Chat = memo(
     const updateConversationMutation = useUpdateConversation(
       currentEmail,
       queryClient,
+      courseName,
     )
 
     // Document Groups
