@@ -44,6 +44,7 @@ import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { notifications } from '@mantine/notifications'
 import SetExampleQuestions from './SetExampleQuestions'
 import { AllLLMProviders } from '~/types/LLMProvider'
+import createProject from '~/pages/api/UIUC-api/createProject'
 
 const montserrat_light = Montserrat({
   weight: '400',
@@ -141,6 +142,16 @@ const EditCourseCard = ({
     // `/new` --> `new`
     // `/new?course_name=mycourse` --> `new`
     return router.asPath.split('/')[1]?.split('?')[0] as string
+  }
+
+  const handleSubmit = async (project_name: string, project_description: string | undefined) => {
+    try {
+      const result = await createProject(project_name, project_description)
+      console.log('Project created successfully:', result)
+      // Handle the result as needed
+    } catch (error) {
+      console.error('Error creating project:', error)
+    }
   }
 
   useEffect(() => {
@@ -352,10 +363,7 @@ const EditCourseCard = ({
                   rightSection={
                     <Button
                       onClick={(e) => {
-                        // e.preventDefault()
-                        // if (validateInputs() && validateUrl(url)) {
-                        //   handleSubmit()
-                        // }
+                        handleSubmit(courseName, '');
                       }}
                       size="md"
                       radius={'xl'}
