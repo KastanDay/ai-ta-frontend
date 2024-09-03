@@ -384,11 +384,13 @@ const EditCourseCard = ({
                       handleSubmit(courseName, projectDescription);
                     }}
                     size="md"
+                    radius={'lg'}
                     className={`${isCourseAvailable && courseName !== '' ? 'bg-purple-800' : 'border-purple-800'}
                        overflow-ellipsis text-ellipsis p-2 ${isCourseAvailable && courseName !== '' ? 'text-white' : 'text-gray-500'}
                         min-w-[5rem] transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
-                    w={`${isSmallScreen ? '40%' : '30%'}`}
+                    w={`${isSmallScreen ? '40%' : '20%'}`}
                     style={{ alignSelf: 'flex-end' }}
+                    disabled={courseName === ''}
                   >
                     Create
                   </Button>
