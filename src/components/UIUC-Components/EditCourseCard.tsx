@@ -14,6 +14,7 @@ import {
   Accordion,
   createStyles,
   Switch,
+  TextInput,
 } from '@mantine/core'
 import {
   IconAlertCircle,
@@ -104,14 +105,17 @@ const EditCourseCard = ({
   current_user_email,
   is_new_course = false,
   courseMetadata,
+  project_description,
 }: {
   course_name: string
   current_user_email: string
   is_new_course?: boolean
   courseMetadata?: CourseMetadata
+  project_description?: string
 }) => {
   const [introMessage, setIntroMessage] = useState('')
   const [courseName, setCourseName] = useState(course_name || '')
+  const [projectDescription, setProjectDescription] = useState(project_description || '')
   const [isCourseAvailable, setIsCourseAvailable] = useState<
     boolean | undefined
   >(undefined)
@@ -329,61 +333,73 @@ const EditCourseCard = ({
             </Title>
             {is_new_course && (
               <>
-                <Input
-                  // icon={icon}
-                  // className={`mt-4 w-[80%] min-w-[20rem] disabled:bg-purple-200 lg:w-[75%]`}
-                  styles={{
-                    input: {
-                      backgroundColor: '#1A1B1E',
-                      paddingRight: '6rem', // Adjust right padding to prevent text from hiding behind the button
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      // borderColor: isCourseAvailable && courseName != '' ? 'green' : 'red',
-                      color: isCourseAvailable && courseName != '' ? 'green' : 'red',
-                      '&:focus-within': {
-                        borderColor: isCourseAvailable && courseName !== '' ? 'green' : 'red',
-                      },
-                    }
-                  }}
-                  placeholder="Project name"
-                  radius={'xl'}
-                  type="text"
-                  value={courseName}
-                  size={'lg'}
-                  disabled={!is_new_course}
-                  onChange={(e) => setCourseName(e.target.value.replaceAll(' ', '-'))}
-                  autoFocus
-                  className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-                  //               className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                  // ${isCourseAvailable && courseName != ''
-                  //                   ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                  //                   : 'border-red-800 text-red-600 focus:border-red-800'
-                  //                 } ${montserrat_paragraph.variable} font-montserratParagraph`}
-                  rightSection={
-                    <Button
-                      onClick={(e) => {
-                        handleSubmit(courseName, '');
-                      }}
-                      size="md"
-                      radius={'xl'}
-                      className={`rounded-s-md ${isCourseAvailable && courseName !== '' ? 'bg-purple-800' : 'border-purple-800'}
+                <Flex direction="column" gap="md" w={isSmallScreen ? '80%' : '60%'}>
+
+                  <TextInput
+                    // icon={icon}
+                    // className={`mt-4 w-[80%] min-w-[20rem] disabled:bg-purple-200 lg:w-[75%]`}
+                    styles={{
+                      input: {
+                        backgroundColor: '#1A1B1E',
+                        paddingRight: '6rem', // Adjust right padding to prevent text from hiding behind the button
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        // borderColor: isCourseAvailable && courseName != '' ? 'green' : 'red',
+                        color: isCourseAvailable && courseName != '' ? 'green' : 'red',
+                        '&:focus-within': {
+                          borderColor: isCourseAvailable && courseName !== '' ? 'green' : 'red',
+                        },
+                      }
+                    }}
+                    placeholder="Project name"
+                    radius={'xl'}
+                    type="text"
+                    value={courseName}
+                    label="What is the project name?"
+                    size={'lg'}
+                    disabled={!is_new_course}
+                    onChange={(e) => setCourseName(e.target.value.replaceAll(' ', '-'))}
+                    autoFocus
+                    withAsterisk
+                    className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                    //               className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
+                    // ${isCourseAvailable && courseName != ''
+                    //                   ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                    //                   : 'border-red-800 text-red-600 focus:border-red-800'
+                    //                 } ${montserrat_paragraph.variable} font-montserratParagraph`}
+
+                    rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
+                  />
+                  <Textarea
+                    placeholder="Describe your project..."
+                    radius={'xl'}
+                    value={projectDescription}
+                    label="What is this project about?"
+                    onChange={(e) => setProjectDescription(e.target.value)}
+                    size={'lg'}
+                  />
+                  <Button
+                    onClick={(e) => {
+                      handleSubmit(courseName, projectDescription);
+                    }}
+                    size="md"
+                    className={`${isCourseAvailable && courseName !== '' ? 'bg-purple-800' : 'border-purple-800'}
                        overflow-ellipsis text-ellipsis p-2 ${isCourseAvailable && courseName !== '' ? 'text-white' : 'text-gray-500'}
-                        min-w-[5rem] -translate-x-1 transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
-                      w={`${isSmallScreen ? 'auto' : 'auto'}`}
-                    >
-                      Create
-                    </Button>
-                  }
-                  rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
-                />
-                <Title
-                  order={4}
-                  className={`w-full text-center ${montserrat_paragraph.variable} mt-4 font-montserratParagraph`}
-                >
-                  Just one step: upload any and all materials. More is better,
-                  it&apos;s fine if they&apos;re messy.
-                </Title>
+                        min-w-[5rem] transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
+                    w={`${isSmallScreen ? '40%' : '30%'}`}
+                    style={{ alignSelf: 'flex-end' }}
+                  >
+                    Create
+                  </Button>
+                  <Title
+                    order={4}
+                    className={`w-full text-center ${montserrat_paragraph.variable} mt-4 font-montserratParagraph`}
+                  >
+                    Just one step: upload any and all materials. More is better,
+                    it&apos;s fine if they&apos;re messy.
+                  </Title>
+                </Flex>
               </>
             )}
             <Flex direction={'column'} align={'center'} w={'100%'}>
