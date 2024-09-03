@@ -345,11 +345,12 @@ const EditCourseCard = ({
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        // borderColor: isCourseAvailable && courseName != '' ? 'green' : 'red',
                         color: isCourseAvailable && courseName != '' ? 'green' : 'red',
                         '&:focus-within': {
                           borderColor: isCourseAvailable && courseName !== '' ? 'green' : 'red',
                         },
+                        fontSize: '16px', // Added text styling
+                        font: `${montserrat_paragraph.variable} font-montserratParagraph`,
                       }
                     }}
                     placeholder="Project name"
@@ -378,6 +379,15 @@ const EditCourseCard = ({
                     label="What is this project about?"
                     onChange={(e) => setProjectDescription(e.target.value)}
                     size={'lg'}
+                    styles={{
+                      input: {
+                        backgroundColor: '#1A1B1E',
+                        fontSize: '16px', // Added text styling
+                        font: `${montserrat_paragraph.variable} font-montserratParagraph`,
+                      } // Added text styling
+                    }}
+                    className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+
                   />
                   <Button
                     onClick={(e) => {
