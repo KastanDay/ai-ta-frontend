@@ -152,7 +152,8 @@ const EditCourseCard = ({
     try {
       const result = await createProject(project_name, project_description)
       console.log('Project created successfully:', result)
-      // Handle the result as needed
+
+
     } catch (error) {
       console.error('Error creating project:', error)
     }
@@ -331,7 +332,7 @@ const EditCourseCard = ({
             >
               {!is_new_course ? `${courseName}` : 'Chat with your documents'}
             </Title>
-            {is_new_course && (
+            {/* {is_new_course && (
               <>
                 <Flex direction="column" gap="md" w={isSmallScreen ? '80%' : '60%'}>
 
@@ -354,7 +355,7 @@ const EditCourseCard = ({
                       }
                     }}
                     placeholder="Project name"
-                    radius={'xl'}
+                    radius={'lg'}
                     type="text"
                     value={courseName}
                     label="What is the project name?"
@@ -373,10 +374,10 @@ const EditCourseCard = ({
                     rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
                   />
                   <Textarea
-                    placeholder="Describe your project..."
-                    radius={'xl'}
+                    placeholder="Describe your project, goals, expected impact etc..."
+                    radius={'lg'}
                     value={projectDescription}
-                    label="What is this project about?"
+                    label="What do you want to achieve?"
                     onChange={(e) => setProjectDescription(e.target.value)}
                     size={'lg'}
                     styles={{
@@ -394,7 +395,7 @@ const EditCourseCard = ({
                       handleSubmit(courseName, projectDescription);
                     }}
                     size="md"
-                    radius={'lg'}
+                    radius={'sm'}
                     className={`${isCourseAvailable && courseName !== '' ? 'bg-purple-800' : 'border-purple-800'}
                        overflow-ellipsis text-ellipsis p-2 ${isCourseAvailable && courseName !== '' ? 'text-white' : 'text-gray-500'}
                         min-w-[5rem] transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
@@ -413,7 +414,7 @@ const EditCourseCard = ({
                   </Title>
                 </Flex>
               </>
-            )}
+            )} */}
             <Flex direction={'column'} align={'center'} w={'100%'}>
               <div className={'flex flex-row items-center'}>
                 {loadinSpinner && (
