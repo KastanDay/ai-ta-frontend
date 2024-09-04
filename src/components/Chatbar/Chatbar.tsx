@@ -99,16 +99,21 @@ export const Chatbar = ({
     homeDispatch,
   ])
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const bottom =
-      e.currentTarget.scrollHeight - e.currentTarget.scrollTop <=
-      e.currentTarget.clientHeight + 100
+  const handleLoadMoreConversations = () => {
     if (
-      bottom &&
       hasNextPageConversationHistory &&
       !isFetchingNextPageConversationHistory
     ) {
       fetchNextPageConversationHistory()
+    }
+  }
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const bottom =
+      e.currentTarget.scrollHeight - e.currentTarget.scrollTop <=
+      e.currentTarget.clientHeight + 100
+    if (bottom) {
+      handleLoadMoreConversations()
     }
   }
 
@@ -212,7 +217,10 @@ export const Chatbar = ({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <Conversations conversations={conversations} />
+              <Conversations
+                conversations={conversations}
+                onLoadMore={handleLoadMoreConversations}
+              />
               <AnimatePresence>
                 {isFetchingNextPageConversationHistory && (
                   <motion.div

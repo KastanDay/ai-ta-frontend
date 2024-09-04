@@ -173,7 +173,7 @@ export default async function handler(
       }
 
       try {
-        const pageSize = 3
+        const pageSize = 8
 
         let query = supabase
           .from('conversations')
@@ -201,9 +201,7 @@ export default async function handler(
 
         // Add search condition only if searchTerm is provided
         if (searchTerm) {
-          query = query.or(
-            `(name.ilike.%${searchTerm}%),(messages.content.ilike.%${searchTerm}%)`,
-          )
+          query = query.or(`name.ilike.%${searchTerm}%`)
         }
         console.log('query: ', query)
 
