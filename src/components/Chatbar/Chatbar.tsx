@@ -1,4 +1,4 @@
-import { useState, useCallback, useContext, useEffect } from 'react'
+import { useState, useCallback, useContext, useEffect, Suspense } from 'react'
 import { useTranslation } from 'next-i18next'
 import { useCreateReducer } from '@/hooks/useCreateReducer'
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const'
@@ -20,6 +20,8 @@ import {
   useFetchConversationHistory,
   useUpdateConversation,
 } from '~/hooks/conversationQueries'
+import { AnimatePresence, motion } from 'framer-motion'
+import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
 
 export const Chatbar = ({
   current_email,
@@ -84,7 +86,6 @@ export const Chatbar = ({
       !isConversationHistoryLoading &&
       conversationHistory
     ) {
-      console.log('Conversation history: ', conversationHistory)
       const allConversations = conversationHistory.pages
         .flatMap((page) => (Array.isArray(page) ? page : []))
         .filter((conversation) => conversation !== undefined)
@@ -100,8 +101,8 @@ export const Chatbar = ({
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const bottom =
-      e.currentTarget.scrollHeight - e.currentTarget.scrollTop ===
-      e.currentTarget.clientHeight
+      e.currentTarget.scrollHeight - e.currentTarget.scrollTop <=
+      e.currentTarget.clientHeight + 100
     if (
       bottom &&
       hasNextPageConversationHistory &&
@@ -183,20 +184,6 @@ export const Chatbar = ({
     }
   }
 
-  // const { data: conversationPages, fetchNextPage } = useFetchConversationHistory(
-  //   current_email,
-  //   searchTerm,
-  //   courseName,
-  // )
-
-  // useEffect(() => {
-  //   if (conversationHistory) {
-  //     const allConversations = conversationHistory.pages.flatMap(page => page.conversations)
-  //     chatDispatch({ field: 'filteredConversations', value: allConversations })
-  //     console.log('filteredConversations: ', allConversations)
-  //   }
-  // }, [conversationHistory])
-
   return (
     <ChatbarContext.Provider
       value={{
@@ -211,8 +198,39 @@ export const Chatbar = ({
         side={'left'}
         isOpen={showChatbar}
         addItemButtonTitle={t('New chat')}
-        itemComponent={<Conversations conversations={conversations} />}
+        itemComponent={
+          <Suspense
+            fallback={
+              <div>
+                Loading... <LoadingSpinner size="sm" />
+              </div>
+            }
+          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Conversations conversations={conversations} />
+              <AnimatePresence>
+                {isFetchingNextPageConversationHistory && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex justify-center py-4"
+                  >
+                    <LoadingSpinner size="sm" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </Suspense>
+        }
         folderComponent={<ChatFolders searchTerm={searchTerm} />}
+        folders={folders}
         items={conversations}
         searchTerm={searchTerm}
         handleSearchTerm={(searchTerm: string) =>

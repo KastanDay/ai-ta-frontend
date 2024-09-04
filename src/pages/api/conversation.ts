@@ -88,6 +88,7 @@ export function convertChatToDBMessage(
       chatMessage.contexts?.map((context, index) => {
         // TODO:
         // This is where we will put context_id in the future
+        // console.log('context: ', context)
         if (context.s3_path) {
           return { chunk_index: context.s3_path + '_' + index }
         } else if (context.url) {
@@ -172,7 +173,7 @@ export default async function handler(
       }
 
       try {
-        const pageSize = 20
+        const pageSize = 3
 
         let query = supabase
           .from('conversations')
@@ -192,6 +193,7 @@ export default async function handler(
               created_at
             )
           `,
+            { count: 'exact' },
           )
           .eq('user_email', user_email)
           .eq('project_name', courseName)
@@ -209,8 +211,9 @@ export default async function handler(
         const rangeEnd = (pageParam + 1) * pageSize - 1
         console.log('Range:', { rangeStart, rangeEnd })
 
-        const { data, error } = await query
+        const { data, count, error } = await query
           .order('updated_at', { ascending: false })
+          .order('updated_at', { foreignTable: 'messages', ascending: true })
           .limit(pageSize)
           .range(rangeStart, rangeEnd)
 
@@ -231,8 +234,20 @@ export default async function handler(
           const convMessages = conv.messages || []
           return convertDBToChatConversation(conv, convMessages)
         })
-        console.log('Fetched conversations:', fetchedConversations.length)
-        res.status(200).json(fetchedConversations)
+
+        const nextCursor =
+          count && count > (pageParam + 1) * pageSize ? pageParam + 1 : null
+
+        console.log(
+          'Fetched conversations:',
+          fetchedConversations.length,
+          'for user_email:',
+          user_email,
+        )
+        res.status(200).json({
+          conversations: fetchedConversations,
+          nextCursor: nextCursor,
+        })
       } catch (error) {
         res.status(500).json({ error: 'Error fetching conversation history' })
         console.error('Error fetching conversation history:', error)

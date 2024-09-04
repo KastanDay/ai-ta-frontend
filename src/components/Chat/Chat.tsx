@@ -72,6 +72,7 @@ import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import { handleImageContent } from '~/utils/streamProcessing'
 import { useQueryClient } from '@tanstack/react-query'
 import { useUpdateConversation } from '~/hooks/conversationQueries'
+import { motion } from 'framer-motion'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -422,7 +423,7 @@ export const Chat = memo(
           homeDispatch({ field: 'messageIsStreaming', value: true })
           const controller = new AbortController()
 
-          const courseName = getCurrentPageName()
+          // const courseName = getCurrentPageName()
 
           let imgDesc = ''
           let imageUrls: string[] = []
@@ -883,10 +884,11 @@ export const Chat = memo(
         if (scrollTop + clientHeight < scrollHeight - bottomTolerance) {
           setAutoScrollEnabled(false)
           setShowScrollDownButton(true)
-        } else {
-          setAutoScrollEnabled(true)
-          setShowScrollDownButton(false)
         }
+        // else {
+        //   setAutoScrollEnabled(true)
+        //   setShowScrollDownButton(false)
+        // }
       }
     }
 
@@ -923,12 +925,16 @@ export const Chat = memo(
 
     useEffect(() => {
       throttledScrollDown()
-      selectedConversation &&
-        setCurrentMessage(
-          selectedConversation.messages[
-            selectedConversation.messages.length - 2
-          ],
-        )
+      if (selectedConversation) {
+        const messages = selectedConversation.messages
+        if (messages.length > 1) {
+          setCurrentMessage(messages[messages.length - 2])
+        } else if (messages.length === 1) {
+          setCurrentMessage(messages[0])
+        } else {
+          setCurrentMessage(undefined)
+        }
+      }
     }, [selectedConversation, throttledScrollDown])
 
     useEffect(() => {
@@ -1102,10 +1108,15 @@ export const Chat = memo(
               <ErrorMessageDiv error={modelError} />
             ) : (
               <>
-                <div
+                <motion.div
+                  key={selectedConversation?.id}
                   className="mt-4 max-h-full"
                   ref={chatContainerRef}
                   onScroll={handleScroll}
+                  initial={{ opacity: 0, scale: 0.95 }} // Initial state: invisible and slightly scaled down
+                  animate={{ opacity: 1, scale: 1 }} // Animate to: fully visible and scaled to normal size
+                  exit={{ opacity: 0, scale: 0.95 }} // Exit state: invisible and slightly scaled down
+                  transition={{ duration: 0.25, ease: 'easeInOut' }} // Duration and easing of the animation
                 >
                   {selectedConversation?.messages.length === 0 ? (
                     <>
@@ -1141,7 +1152,7 @@ export const Chat = memo(
                       />
                     </>
                   )}
-                </div>
+                </motion.div>
                 {/* <div className="w-full max-w-[calc(100% - var(--sidebar-width))] mx-auto flex justify-center"> */}
                 <ChatInput
                   stopConversationRef={stopConversationRef}

@@ -9,6 +9,7 @@ import {
 } from './components/OpenCloseButton'
 
 import Search from '../Search'
+import { FolderWithConversation } from '~/types/folder'
 
 interface Props<T> {
   isOpen: boolean
@@ -17,6 +18,7 @@ interface Props<T> {
   items: T[]
   itemComponent: ReactNode
   folderComponent: ReactNode
+  folders: FolderWithConversation[]
   footerComponent?: ReactNode
   searchTerm: string
   handleSearchTerm: (searchTerm: string) => void
@@ -34,6 +36,7 @@ const Sidebar = <T,>({
   items,
   itemComponent,
   folderComponent,
+  folders,
   footerComponent,
   searchTerm,
   handleSearchTerm,
@@ -86,8 +89,8 @@ const Sidebar = <T,>({
           searchTerm={searchTerm}
           onSearch={handleSearchTerm}
         />
-        <div className="flex-grow overflow-auto">
-          {items?.length > 0 && (
+        <div className="flex-grow overflow-auto" onScroll={onScroll}>
+          {folders?.length > 0 && (
             <div className="flex border-b border-white/20 pb-2">
               {folderComponent}
             </div>
@@ -100,7 +103,7 @@ const Sidebar = <T,>({
               onDragOver={allowDrop}
               onDragEnter={highlightDrop}
               onDragLeave={removeHighlight}
-              onScroll={onScroll}
+              // onScroll={onScroll}
             >
               {itemComponent}
             </div>

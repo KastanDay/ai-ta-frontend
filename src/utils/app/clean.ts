@@ -99,7 +99,6 @@ export const cleanConversationHistory = (history: any[]): ConversationPage => {
     }
     return {
       conversations: acc,
-      nextCursor: null,
     }
   }, [])
 }

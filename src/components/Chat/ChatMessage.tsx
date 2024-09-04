@@ -11,7 +11,7 @@ import {
 import { FC, memo, useContext, useEffect, useRef, useState } from 'react'
 
 import { useTranslation } from 'next-i18next'
-import { ContextWithMetadata, Message } from '@/types/chat'
+import { Content, ContextWithMetadata, Message } from '@/types/chat'
 import HomeContext from '~/pages/api/home/home.context'
 import { CodeBlock } from '../Markdown/CodeBlock'
 import { MemoizedReactMarkdown } from '../Markdown/MemoizedReactMarkdown'
@@ -1117,9 +1117,6 @@ export const ChatMessage: FC<Props> = memo(
                       },
                       a({ node, className, children, ...props }) {
                         const { href, title } = props
-                        // console.log("href:", href);
-                        // console.log("title:", title);
-                        // console.log("children:", children);
                         const isCitationLink = /^\d+$/.test(
                           children[0] as string,
                         )
@@ -1151,19 +1148,23 @@ export const ChatMessage: FC<Props> = memo(
                       },
                     }}
                   >
-                    {`${message.content}${
-                      messageIsStreaming &&
-                      messageIndex ==
-                        (selectedConversation?.messages.length ?? 0) - 1
-                        ? '`▍`'
-                        : ''
-                    }`}
+                    {(() => {
+                      if (
+                        messageIsStreaming &&
+                        messageIndex ===
+                          (selectedConversation?.messages.length ?? 0) - 1
+                      ) {
+                        return `${message.content} ▍`
+                      }
+                      if (Array.isArray(message.content)) {
+                        return (message.content as Content[])
+                          .filter((content) => content.type === 'text')
+                          .map((content) => content.text)
+                          .join(' ')
+                      }
+                      return message.content as string
+                    })()}
                   </MemoizedReactMarkdown>
-                  {/* {message.contexts && message.contexts.length > 0 && (
-                    <Group variant="row" spacing="xs">
-                      <ContextCards contexts={message.contexts} />
-                    </Group>
-                  )} */}
                 </div>
 
                 <div className="ml-1 flex flex-col items-center justify-end gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-start md:gap-1">

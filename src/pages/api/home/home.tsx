@@ -216,9 +216,9 @@ const Home = ({
     if (hasMadeNewConvoAlready) return
     setHasMadeNewConvoAlready(true)
 
-    if (selectedConversation?.messages.length > 0) {
-      handleNewConversation()
-    }
+    // if (selectedConversation?.messages.length > 0) {
+    handleNewConversation()
+    // }
   }, [selectedConversation, conversations])
 
   // useEffect(() => {
@@ -296,7 +296,7 @@ const Home = ({
 
   // This will ONLY update the react context and not the server
   const handleNewConversation = () => {
-    // if (selectedConversation?.messages.length === 0) return
+    if (selectedConversation?.messages.length === 0) return
     const lastConversation = conversations[conversations.length - 1]
 
     // Determine the model to use for the new conversation

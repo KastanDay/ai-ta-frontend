@@ -29,9 +29,10 @@ export async function fetchConversationHistory(
       throw new Error('Error fetching conversation history')
     }
 
-    const conversationHistory = await response.json()
+    const { conversations, nextCursor } = await response.json()
 
-    finalResponse = cleanConversationHistory(conversationHistory)
+    finalResponse = cleanConversationHistory(conversations)
+    finalResponse.nextCursor = nextCursor
   } catch (error) {
     console.error('Error fetching conversation history:', error)
   }
