@@ -32,6 +32,11 @@ import GlobalFooter from '../GlobalFooter'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import Navbar from '../navbars/Navbar'
 import Head from 'next/head'
+import OpenAIProviderInput from './providers/OpenAIProviderInput'
+import AnthropicProviderInput from './providers/AnthropicProviderInput'
+import AzureProviderInput from './providers/AzureProviderInput'
+import OllamaProviderInput from './providers/OllamaProviderInput'
+import WebLLMProviderInput from './providers/WebLLMProviderInput'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -48,7 +53,7 @@ function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   )
 }
 
-const APIKeyInput = ({
+export const APIKeyInput = ({
   field,
   placeholder,
 }: {
@@ -296,7 +301,50 @@ export default function APIKeyInputForm() {
                             <Text size="xl" weight={700} mb="xs">
                               LLM Providers
                             </Text>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
+
+          {Object.entries(llmProviders || {}).map(([providerName, provider]) => (
+            <div key={providerName}>
+              {providerName === 'OpenAI' && (
+                <OpenAIProviderInput 
+                  provider={provider} 
+                  form={form} 
+                  providerName={providerName} 
+                />
+              )}
+              {providerName === 'Ollama' && (
+                <OllamaProviderInput 
+                  provider={provider} 
+                  form={form} 
+                  providerName={providerName} 
+                />
+              )}
+              {providerName === 'WebLLM' && (
+                <WebLLMProviderInput 
+                  provider={provider} 
+                  form={form} 
+                  providerName={providerName} 
+                />
+              )}
+              {providerName === 'Azure' && (
+                <AzureProviderInput 
+                  provider={provider} 
+                  form={form} 
+                  providerName={providerName} 
+                />
+              )}
+              {providerName === 'Anthropic' && (
+                <AnthropicProviderInput 
+                  provider={provider} 
+                  form={form} 
+                  providerName={providerName} 
+                />
+              )}
+            </div>
+          ))}
+        </div>
+                            {/*
                             {Object.entries(llmProviders || {}).map(
                               ([providerName, provider]) => (
                                 <div key={providerName}>
@@ -305,7 +353,7 @@ export default function APIKeyInputForm() {
                                       display: 'flex',
                                       alignItems: 'center',
                                       justifyContent: 'space-between',
-                                      marginBottom: '8px',
+                                      marginBottom: '8px',  
                                     }}
                                   >
                                     <Text size="sm" weight={500}>
@@ -334,10 +382,10 @@ export default function APIKeyInputForm() {
                                         />
                                       )}
                                     </form.Field>
-                                  </div>
+                                  </div> */}
 
                                   {/* API Key Input */}
-                                  {providerName !== 'WebLLM' && (
+                                  {/* {providerName !== 'WebLLM' && (
                                     <form.Field
                                       name={
                                         `providers.${providerName}.apiKey` as `providers.${keyof AllLLMProviders}.apiKey`
@@ -352,10 +400,10 @@ export default function APIKeyInputForm() {
                                         </>
                                       )}
                                     </form.Field>
-                                  )}
+                                  )} */}
 
                                   {/* Base URL Input (for Ollama) */}
-                                  {providerName === 'Ollama' && (
+                                  {/* {providerName === 'Ollama' && (
                                     <form.Field
                                       name={
                                         `providers.${providerName}.baseUrl` as `providers.${keyof AllLLMProviders}.baseUrl`
@@ -382,10 +430,10 @@ export default function APIKeyInputForm() {
                                         </>
                                       )}
                                     </form.Field>
-                                  )}
+                                  )} */}
 
                                   {/* Azure-specific fields */}
-                                  {providerName === 'Azure' && (
+                                  {/* {providerName === 'Azure' && (
                                     <>
                                       <form.Field
                                         name={
@@ -448,10 +496,10 @@ export default function APIKeyInputForm() {
                                         )}
                                       </form.Field>
                                     </>
-                                  )}
+                                  )} */}
 
                                   {/* Model Toggles */}
-                                  <form.Field
+                                  {/* <form.Field
                                     name={
                                       `providers.${providerName}.enabled` as `providers.${keyof AllLLMProviders}.enabled`
                                     }
@@ -510,7 +558,7 @@ export default function APIKeyInputForm() {
                                   </form.Field>
                                 </div>
                               ),
-                            )}
+                            )} */}
                           </div>
 
                           <form.Subscribe
