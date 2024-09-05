@@ -1,6 +1,6 @@
 // all values are email addresses
 
-import { LLMProvider } from './LLMProvider'
+import { LLMProvider, ProviderNames } from './LLMProvider'
 
 // courseMetadata.ts
 export interface CourseMetadata {
@@ -11,10 +11,19 @@ export interface CourseMetadata {
   example_questions: string[] | undefined
   banner_image_s3: string | undefined
   course_intro_message: string | undefined
-  openai_api_key: string | undefined
   system_prompt: string | undefined
+  // openai_api_key: string | undefined
+  // disabled_models: string[] | undefined
+  // llmProviders?: LLMProvider[]
+}
+
+export type ProjectWideLLMProviders = {
+  [P in ProviderNames]?: LLMProvider & { provider: P }
+} & {
+  // llmProviders?: LLMProvider[]
+  defaultModel: string
+  defaultTemperature: number
   disabled_models: string[] | undefined
-  llmProviders?: LLMProvider[]
 }
 
 export interface CourseMetadataOptionalForUpsert {
