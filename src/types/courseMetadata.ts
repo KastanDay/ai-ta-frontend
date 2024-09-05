@@ -12,8 +12,8 @@ export interface CourseMetadata {
   banner_image_s3: string | undefined
   course_intro_message: string | undefined
   system_prompt: string | undefined
-  // openai_api_key: string | undefined
-  // disabled_models: string[] | undefined
+  openai_api_key: string | undefined // TODO: remove
+  disabled_models: string[] | undefined // TODO: remove
   // llmProviders?: LLMProvider[]
 }
 

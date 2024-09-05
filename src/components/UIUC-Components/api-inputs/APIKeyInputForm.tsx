@@ -17,7 +17,15 @@ import {
   useGetProjectLLMProviders,
   useSetProjectLLMProviders,
 } from '~/hooks/useProjectAPIKeys'
-import { AllLLMProviders, ProviderNames } from '~/types/LLMProvider'
+import {
+  AllLLMProviders,
+  AnthropicProvider,
+  AzureProvider,
+  OllamaProvider,
+  OpenAIProvider,
+  ProviderNames,
+  WebLLMProvider,
+} from '~/types/LLMProvider'
 import { notifications } from '@mantine/notifications'
 import {
   IconAlertCircle,
@@ -37,6 +45,7 @@ import AnthropicProviderInput from './providers/AnthropicProviderInput'
 import AzureProviderInput from './providers/AzureProviderInput'
 import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
+// import { OllamaProvider } from 'ollama-ai-provider'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -67,7 +76,7 @@ export const APIKeyInput = ({
       <input
         type={isVisible ? 'text' : 'password'}
         placeholder={placeholder}
-        value={field.value}
+        value={field.state.value}
         onChange={(e) => field.handleChange(e.target.value)}
         style={{
           backgroundColor: '#2d2d3d',
@@ -301,49 +310,55 @@ export default function APIKeyInputForm() {
                             <Text size="xl" weight={700} mb="xs">
                               LLM Providers
                             </Text>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-
-          {Object.entries(llmProviders || {}).map(([providerName, provider]) => (
-            <div key={providerName}>
-              {providerName === 'OpenAI' && (
-                <OpenAIProviderInput 
-                  provider={provider} 
-                  form={form} 
-                  providerName={providerName} 
-                />
-              )}
-              {providerName === 'Ollama' && (
-                <OllamaProviderInput 
-                  provider={provider} 
-                  form={form} 
-                  providerName={providerName} 
-                />
-              )}
-              {providerName === 'WebLLM' && (
-                <WebLLMProviderInput 
-                  provider={provider} 
-                  form={form} 
-                  providerName={providerName} 
-                />
-              )}
-              {providerName === 'Azure' && (
-                <AzureProviderInput 
-                  provider={provider} 
-                  form={form} 
-                  providerName={providerName} 
-                />
-              )}
-              {providerName === 'Anthropic' && (
-                <AnthropicProviderInput 
-                  provider={provider} 
-                  form={form} 
-                  providerName={providerName} 
-                />
-              )}
-            </div>
-          ))}
-        </div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 16,
+                              }}
+                            >
+                              {Object.entries(llmProviders || {}).map(
+                                ([providerName, provider]) => (
+                                  <div key={providerName}>
+                                    {providerName === 'OpenAI' && (
+                                      <OpenAIProviderInput
+                                        provider={provider as OpenAIProvider}
+                                        form={form}
+                                        providerName={providerName}
+                                      />
+                                    )}
+                                    {providerName === 'Ollama' && (
+                                      <OllamaProviderInput
+                                        provider={provider as OllamaProvider}
+                                        form={form}
+                                        providerName={providerName}
+                                      />
+                                    )}
+                                    {providerName === 'WebLLM' && (
+                                      <WebLLMProviderInput
+                                        provider={provider as WebLLMProvider}
+                                        form={form}
+                                        providerName={providerName}
+                                      />
+                                    )}
+                                    {providerName === 'Azure' && (
+                                      <AzureProviderInput
+                                        provider={provider as AzureProvider}
+                                        form={form}
+                                        providerName={providerName}
+                                      />
+                                    )}
+                                    {providerName === 'Anthropic' && (
+                                      <AnthropicProviderInput
+                                        provider={provider as AnthropicProvider}
+                                        form={form}
+                                        providerName={providerName}
+                                      />
+                                    )}
+                                  </div>
+                                ),
+                              )}
+                            </div>
                             {/*
                             {Object.entries(llmProviders || {}).map(
                               ([providerName, provider]) => (
@@ -384,8 +399,8 @@ export default function APIKeyInputForm() {
                                     </form.Field>
                                   </div> */}
 
-                                  {/* API Key Input */}
-                                  {/* {providerName !== 'WebLLM' && (
+                            {/* API Key Input */}
+                            {/* {providerName !== 'WebLLM' && (
                                     <form.Field
                                       name={
                                         `providers.${providerName}.apiKey` as `providers.${keyof AllLLMProviders}.apiKey`
@@ -402,8 +417,8 @@ export default function APIKeyInputForm() {
                                     </form.Field>
                                   )} */}
 
-                                  {/* Base URL Input (for Ollama) */}
-                                  {/* {providerName === 'Ollama' && (
+                            {/* Base URL Input (for Ollama) */}
+                            {/* {providerName === 'Ollama' && (
                                     <form.Field
                                       name={
                                         `providers.${providerName}.baseUrl` as `providers.${keyof AllLLMProviders}.baseUrl`
@@ -432,8 +447,8 @@ export default function APIKeyInputForm() {
                                     </form.Field>
                                   )} */}
 
-                                  {/* Azure-specific fields */}
-                                  {/* {providerName === 'Azure' && (
+                            {/* Azure-specific fields */}
+                            {/* {providerName === 'Azure' && (
                                     <>
                                       <form.Field
                                         name={
@@ -498,8 +513,8 @@ export default function APIKeyInputForm() {
                                     </>
                                   )} */}
 
-                                  {/* Model Toggles */}
-                                  {/* <form.Field
+                            {/* Model Toggles */}
+                            {/* <form.Field
                                     name={
                                       `providers.${providerName}.enabled` as `providers.${keyof AllLLMProviders}.enabled`
                                     }

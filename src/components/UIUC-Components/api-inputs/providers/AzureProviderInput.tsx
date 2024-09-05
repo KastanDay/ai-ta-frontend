@@ -78,8 +78,9 @@ export default function AzureProviderInput({
           </form.Field>
         </div>
         <Text size="sm" color="dimmed" mb="md">
-          Azure OpenAI Service provides REST API access to OpenAI's powerful
-          language models with the security and enterprise promise of Azure.
+          Azure OpenAI Service provides REST API access to OpenAI&apos;s
+          powerful language models with the security and enterprise promise of
+          Azure.
         </Text>
         <form.Field name={`providers.${providerName}.apiKey`}>
           {(field: any) => (
