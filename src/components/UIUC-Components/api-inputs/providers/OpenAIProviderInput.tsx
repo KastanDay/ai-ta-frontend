@@ -18,12 +18,14 @@ export default function OpenAIProviderInput({
 }) {
   return (
     <motion.div layout>
-      <Card shadow="sm" p="lg" radius="md" withBorder>
+      {/* <APIKeyInput field={field} placeholder="OpenAI API Key" /> */}
+      <Card shadow="sm" p="lg" radius="md" withBorder style={{ width: '100%' }}>
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            width: '100%',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
