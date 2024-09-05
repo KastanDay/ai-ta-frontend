@@ -4,10 +4,11 @@ import {
   Text,
   Switch,
   Select,
-  Tabs,
   Card,
   Slider,
-  MantineTheme,
+  Flex,
+  Title,
+  Stack,
 } from '@mantine/core'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm, FieldApi, FieldMeta } from '@tanstack/react-form'
@@ -16,23 +17,21 @@ import {
   useGetProjectLLMProviders,
   useSetProjectLLMProviders,
 } from '~/hooks/useProjectAPIKeys'
-import {
-  AllLLMProviders,
-  LLMProvider,
-  ProviderNames,
-} from '~/types/LLMProvider'
-import upsertCourseMetadataReactQuery from '~/pages/api/UIUC-api/upsertCourseMetadataReactQuery'
-import { errorToast } from '~/components/Chat/Chat'
+import { AllLLMProviders, ProviderNames } from '~/types/LLMProvider'
 import { notifications } from '@mantine/notifications'
 import {
   IconAlertCircle,
   IconCheck,
+  IconExternalLink,
   IconEye,
   IconEyeOff,
 } from '@tabler/icons-react'
-import { title } from 'process'
 import { GetCurrentPageName } from '../CanViewOnlyCourse'
 import { AnimatePresence, motion } from 'framer-motion'
+import GlobalFooter from '../GlobalFooter'
+import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import Navbar from '../navbars/Navbar'
+import Head from 'next/head'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -214,405 +213,490 @@ export default function APIKeyInputForm() {
   )
 
   return (
-    <Card
-      shadow="sm"
-      padding="lg"
-      radius="md"
-      style={{
-        width: 400,
-        backgroundColor: '#1c1c28',
-        color: 'white',
-        border: 'none',
-      }}
-    >
-      <Text size="xl" weight={700} mb="xs">
-        LLM Configuration
-      </Text>
-      <Text size="sm" color="dimmed" mb="md">
-        Configure your default settings and API keys for each provider.
-      </Text>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-        }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* Default Model */}
-          <div>
-            <Text size="sm" weight={500} mb={4}>
-              Default Model
-            </Text>
-            <form.Field name="defaultModel">
-              {(field) => (
-                <>
-                  <Select
-                    value={field.state.value}
-                    onChange={(value) => field.handleChange(value || '')}
-                    data={defaultModelOptions}
-                    styles={(theme) => ({
-                      input: {
-                        backgroundColor: '#2d2d3d',
-                        borderColor: '#4a4a5e',
-                        color: 'white',
-                      },
-                      item: {
-                        '&[data-selected]': {
-                          backgroundColor: theme.fn.variant({
-                            variant: 'filled',
-                            color: theme.primaryColor,
-                          }).background,
-                          color: theme.white,
-                        },
-                      },
-                    })}
-                  />
-                </>
-              )}
-            </form.Field>
-          </div>
+    <>
+      <Navbar course_name={course_name} />
 
-          {/* Temperature */}
-          <div>
-            <Text size="sm" weight={500} mb={4}>
-              Default Temperature: {form.getFieldValue('defaultTemperature')}
-            </Text>
-            <form.Field name="defaultTemperature">
-              {(field) => (
-                <>
-                  <Slider
-                    value={field.state.value}
-                    onChange={(value) => field.handleChange(value)}
-                    min={0}
-                    max={1}
-                    step={0.1}
-                    label={null}
-                    styles={(theme) => ({
-                      track: {
-                        backgroundColor: theme.colors.gray[2],
-                      },
-                      thumb: {
-                        borderWidth: 2,
-                        padding: 3,
-                      },
-                    })}
-                  />
-                </>
-              )}
-            </form.Field>
-            <Text size="xs" color="dimmed" mt={4}>
-              Higher values increase randomness, lower values increase focus and
-              determinism.
-            </Text>
-          </div>
+      <Head>
+        <title>{course_name}</title>
+        <meta
+          name="description"
+          content="The AI teaching assistant built for students at UIUC."
+        />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
 
-          {/* Providers */}
-          <Text size="xl" weight={700} mb="xs">
-            LLM Providers
-          </Text>
-
-          {Object.entries(llmProviders || {}).map(
-            ([providerName, provider]) => (
-              <div key={providerName}>
+      <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center">
+        <div className="items-left flex w-full flex-col justify-center py-0">
+          <Flex direction="column" align="center" w="100%">
+            <Card
+              shadow="xs"
+              padding="none"
+              radius="xl"
+              style={{ maxWidth: '85%', width: '100%', marginTop: '4%' }}
+            >
+              <Flex className="flex-col md:flex-row">
+                {/* // direction={isSmallScreen ? 'column' : 'row'}> */}
                 <div
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '8px',
+                    // flex: isSmallScreen ? '1 1 100%' : '1 1 60%',
+                    border: 'None',
+                    color: 'white',
                   }}
+                  className="min-h-full flex-[1_1_100%] bg-gradient-to-r from-purple-900 via-indigo-800 to-blue-800 md:flex-[1_1_60%]"
                 >
-                  <Text size="sm" weight={500}>
-                    {providerName}
-                  </Text>
-                  <form.Field
-                    name={
-                      `providers.${providerName}.enabled` as `providers.${keyof AllLLMProviders}.enabled`
-                    }
-                  >
-                    {(field) => (
-                      <Switch
-                        checked={field.state.value as boolean}
-                        onChange={(event) =>
-                          field.handleChange(event.currentTarget.checked)
-                        }
-                        styles={(theme) => ({
-                          track: {
-                            backgroundColor: field.state.value
-                              ? theme.colors.blue[6]
-                              : theme.colors.gray[5],
-                          },
-                        })}
-                      />
-                    )}
-                  </form.Field>
-                </div>
-
-                {/* API Key Input */}
-                {providerName !== 'WebLLM' && providerName !== 'Ollama' && providerName !=='Azure' && (
-                  <form.Field
-                    name={
-                      `providers.${providerName}.apiKey` as `providers.${keyof AllLLMProviders}.apiKey`
-                    }
-                    validators={{
-                      onChange: ({ value }) => {
-                        if (providerName === 'OpenAI' && !value.startsWith('sk-')) {
-                          return 'OpenAI API key must start with "sk-"'
-                        }
-                        if (providerName === 'Anthropic' && !value.startsWith('sk-ant')) {
-                          return 'Anthropic API key must start with "sk-ant"'
-                        }
-                        return undefined
-                      },
-                    }}
-                  >
-                    {(field) => (
-                      <>
-                        <APIKeyInput
-                          field={field}
-                          placeholder={`${providerName} API Key`}
-                        />
-                      </>
-                    )}
-                  </form.Field>
-                )}
-
-                {/* Base URL Input (for Ollama) */}
-                {providerName === 'Ollama' && (
-                  <form.Field
-                    name={
-                      `providers.${providerName}.baseUrl` as `providers.${keyof AllLLMProviders}.baseUrl`
-                    }
-                    validators={{
-                      onChange: ({ value }) => {
-                        if (!/^https?:\/\//.test(value)) return 'Base URL must start with http:// or https://'
-                        return undefined
-                      },
-                    }}
-                  >
-                    {(field) => (
-                      <>
-                        <input
-                          placeholder={`${providerName} Base URL`}
-                          value={field.state.value as string}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          style={{
-                            backgroundColor: '#2d2d3d',
-                            borderColor: '#4a4a5e',
-                            color: 'white',
-                            padding: '8px',
-                            borderRadius: '4px',
-                            width: '100%',
-                            marginBottom: '8px',
+                  <Flex gap="md" direction="column">
+                    <Title
+                      order={2}
+                      pt={43}
+                      variant="gradient"
+                      align="center"
+                      gradient={{ from: 'gold', to: 'white', deg: 50 }}
+                      className={`${montserrat_heading.variable} font-montserratHeading`}
+                    >
+                      API Keys &amp; Project Defaults
+                    </Title>
+                    <Stack align="center" justify="start">
+                      <div className="flex flex-col lg:flex-row">
+                        <Title
+                          className={`${montserrat_heading.variable} flex-[1_1_50%] font-montserratHeading`}
+                          order={5}
+                          w={'100%'}
+                          ml={'md'}
+                          style={{ textAlign: 'left' }}
+                        >
+                          Configure your default settings and API keys for each
+                          provider.
+                        </Title>
+                      </div>
+                      <Card
+                        shadow="sm"
+                        padding="lg"
+                        radius="md"
+                        style={{
+                          width: 400,
+                          backgroundColor: '#1c1c28',
+                          color: 'white',
+                          border: 'none',
+                        }}
+                      >
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
                           }}
-                        />
-                        <FieldInfo field={field} />
-                      </>
-                    )}
-                  </form.Field>
-                )}
-
-                {/* Azure-specific fields */}
-                {providerName === 'Azure' && (
-                  <>
-                    <form.Field
-                      name={
-                        `providers.${providerName}.AzureEndpoint` as `providers.${keyof AllLLMProviders}.AzureEndpoint`
-                      }
-                      validators={{
-                        onChange: ({ value }) => {
-                          if (!/^https?:\/\//.test(value)) return 'Azure Endpoint must start with http:// or https://'
-                          return undefined
-                        },
-                      }}
-                    >
-                      {(field) => (
-                        <>
-                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                            <label style={{ width: '120px', marginRight: '8px', fontSize: '12px', color: 'dimmed' }}>Base URL:</label>
-                            <input
-                              placeholder="Azure Endpoint"
-                              value={field.state.value as string}
-                              onChange={(e) => field.handleChange(e.target.value)}
-                              style={{
-                                backgroundColor: '#2d2d3d',
-                                borderColor: '#4a4a5e',
-                                color: 'white',
-                                padding: '8px',
-                                borderRadius: '4px',
-                                width: '100%',
-                              }}
-                            />
-                          </div>
-                          <FieldInfo field={field} />
-                        </>
-                      )}
-                    </form.Field>
-                    <form.Field
-                      name={
-                        `providers.${providerName}.AzureDeployment` as `providers.${keyof AllLLMProviders}.AzureDeployment`
-                      }
-                    >
-                      {(field) => (
-                        <>
-                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                            <label style={{ width: '120px', marginRight: '8px', fontSize: '12px', color: 'dimmed' }}>Deployment Name:</label>
-                            <input
-                              placeholder="Azure Deployment"
-                              value={field.state.value as string}
-                              onChange={(e) => field.handleChange(e.target.value)}
-                              style={{
-                                backgroundColor: '#2d2d3d',
-                                borderColor: '#4a4a5e',
-                                color: 'white',
-                                padding: '8px',
-                                borderRadius: '4px',
-                                width: '100%',
-                              }}
-                            />
-                          </div>
-                        </>
-                      )}
-                    </form.Field>
-                    <form.Field
-                      name={
-                        `providers.${providerName}.apiKey` as `providers.${keyof AllLLMProviders}.apiKey`
-                      }
-                    >
-                      {(field) => (
-                        <>
-                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                            <label style={{ width: '120px', marginRight: '8px', fontSize: '12px', color: 'dimmed' }}>API Key:</label>
-                            <APIKeyInput
-                              field={field}
-                              placeholder="Azure API Key"
-                            />
-                          </div>
-                        </>
-                      )}
-                    </form.Field>
-                  </>
-                )}
-
-                {/* Model Toggles */}
-                <form.Field
-                  name={
-                    `providers.${providerName}.enabled` as `providers.${keyof AllLLMProviders}.enabled`
-                  }
-                >
-                  {(enabledField) => {
-                    // Move hooks outside of the callback
-                    const queryClient = useQueryClient();
-                    const mutation = useMutation({
-                      mutationFn: (newEnabled: boolean) => {
-                        // Update the enabled status for the provider
-                        return updateProviderEnabled(providerName, newEnabled);
-                      },
-                      onSuccess: () => {
-                        // Invalidate and refetch
-                        queryClient.invalidateQueries({ queryKey: ['llmProviders'] });
-                      },
-                    });
-
-                    // Update the toggle state from llmProviders on page load
-                    useEffect(() => {
-                      if (llmProviders && llmProviders[providerName as keyof AllLLMProviders]) {
-                        enabledField.handleChange(llmProviders[providerName as keyof AllLLMProviders].enabled);
-                      }
-                    }, [llmProviders, providerName, enabledField]);
-
-                    return (
-                      <AnimatePresence>
-                        {enabledField.state.value && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3 }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 16,
+                            }}
                           >
-                            {provider.models &&
-                              provider.models.map((model) => (
-                                <form.Field
-                                  key={model.id}
-                                  name={
-                                    `providers.${providerName}.models.${model.id}.enabled` as `providers.${keyof AllLLMProviders}.models.${string}.enabled`
-                                  }
-                                >
-                                  {(field) => {
-                                    // Move hooks outside of the callback
-                                    const modelMutation = useMutation({
-                                      mutationFn: (newEnabled: boolean) => {
-                                        // Update the enabled status for the model
-                                        return updateModelEnabled(providerName, model.id, newEnabled);
-                                      },
-                                      onSuccess: () => {
-                                        // Invalidate and refetch
-                                        queryClient.invalidateQueries({ queryKey: ['llmProviders'] });
-                                      },
-                                    });
+                            {/* Providers */}
+                            <Text size="xl" weight={700} mb="xs">
+                              LLM Providers
+                            </Text>
 
-                                    // Update the model toggle state from llmProviders on page load
-                                    useEffect(() => {
-                                      if (llmProviders && llmProviders[providerName as keyof AllLLMProviders] && llmProviders[providerName as keyof AllLLMProviders].models) {
-                                        const modelData = llmProviders[providerName as keyof AllLLMProviders].models.find(m => m.id === model.id);
-                                        if (modelData) {
-                                          field.handleChange(modelData.enabled);
-                                        }
+                            {Object.entries(llmProviders || {}).map(
+                              ([providerName, provider]) => (
+                                <div key={providerName}>
+                                  <div
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      marginBottom: '8px',
+                                    }}
+                                  >
+                                    <Text size="sm" weight={500}>
+                                      {providerName}
+                                    </Text>
+                                    <form.Field
+                                      name={
+                                        `providers.${providerName}.enabled` as `providers.${keyof AllLLMProviders}.enabled`
                                       }
-                                    }, [llmProviders, providerName, model.id, field]);
+                                    >
+                                      {(field) => (
+                                        <Switch
+                                          checked={field.state.value as boolean}
+                                          onChange={(event) =>
+                                            field.handleChange(
+                                              event.currentTarget.checked,
+                                            )
+                                          }
+                                          styles={(theme) => ({
+                                            track: {
+                                              backgroundColor: field.state.value
+                                                ? theme.colors.blue[6]
+                                                : theme.colors.gray[5],
+                                            },
+                                          })}
+                                        />
+                                      )}
+                                    </form.Field>
+                                  </div>
 
-                                    return (
-                                      <Switch
-                                        label={model.name}
-                                        checked={field.state.value as boolean}
-                                        onChange={(event) => {
-                                          const newValue = event.currentTarget.checked;
-                                          field.handleChange(newValue);
-                                          modelMutation.mutate(newValue);
-                                        }}
-                                        styles={(theme) => ({
-                                          track: {
-                                            backgroundColor: field.state.value
-                                              ? theme.colors.blue[6]
-                                              : theme.colors.gray[5],
-                                          },
-                                        })}
-                                      />
-                                    );
-                                  }}
-                                </form.Field>
-                              ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    );
+                                  {/* API Key Input */}
+                                  {providerName !== 'WebLLM' && (
+                                    <form.Field
+                                      name={
+                                        `providers.${providerName}.apiKey` as `providers.${keyof AllLLMProviders}.apiKey`
+                                      }
+                                    >
+                                      {(field) => (
+                                        <>
+                                          <APIKeyInput
+                                            field={field}
+                                            placeholder={`${providerName} API Key`}
+                                          />
+                                        </>
+                                      )}
+                                    </form.Field>
+                                  )}
+
+                                  {/* Base URL Input (for Ollama) */}
+                                  {providerName === 'Ollama' && (
+                                    <form.Field
+                                      name={
+                                        `providers.${providerName}.baseUrl` as `providers.${keyof AllLLMProviders}.baseUrl`
+                                      }
+                                    >
+                                      {(field) => (
+                                        <>
+                                          <input
+                                            placeholder={`${providerName} Base URL`}
+                                            value={field.state.value as string}
+                                            onChange={(e) =>
+                                              field.handleChange(e.target.value)
+                                            }
+                                            style={{
+                                              backgroundColor: '#2d2d3d',
+                                              borderColor: '#4a4a5e',
+                                              color: 'white',
+                                              padding: '8px',
+                                              borderRadius: '4px',
+                                              width: '100%',
+                                              marginBottom: '8px',
+                                            }}
+                                          />
+                                        </>
+                                      )}
+                                    </form.Field>
+                                  )}
+
+                                  {/* Azure-specific fields */}
+                                  {providerName === 'Azure' && (
+                                    <>
+                                      <form.Field
+                                        name={
+                                          `providers.${providerName}.AzureEndpoint` as `providers.${keyof AllLLMProviders}.AzureEndpoint`
+                                        }
+                                      >
+                                        {(field) => (
+                                          <>
+                                            <input
+                                              placeholder="Azure Endpoint"
+                                              value={
+                                                field.state.value as string
+                                              }
+                                              onChange={(e) =>
+                                                field.handleChange(
+                                                  e.target.value,
+                                                )
+                                              }
+                                              style={{
+                                                backgroundColor: '#2d2d3d',
+                                                borderColor: '#4a4a5e',
+                                                color: 'white',
+                                                padding: '8px',
+                                                borderRadius: '4px',
+                                                width: '100%',
+                                                marginBottom: '8px',
+                                              }}
+                                            />
+                                          </>
+                                        )}
+                                      </form.Field>
+                                      <form.Field
+                                        name={
+                                          `providers.${providerName}.AzureDeployment` as `providers.${keyof AllLLMProviders}.AzureDeployment`
+                                        }
+                                      >
+                                        {(field) => (
+                                          <>
+                                            <input
+                                              placeholder="Azure Deployment"
+                                              value={
+                                                field.state.value as string
+                                              }
+                                              onChange={(e) =>
+                                                field.handleChange(
+                                                  e.target.value,
+                                                )
+                                              }
+                                              style={{
+                                                backgroundColor: '#2d2d3d',
+                                                borderColor: '#4a4a5e',
+                                                color: 'white',
+                                                padding: '8px',
+                                                borderRadius: '4px',
+                                                width: '100%',
+                                                marginBottom: '8px',
+                                              }}
+                                            />
+                                          </>
+                                        )}
+                                      </form.Field>
+                                    </>
+                                  )}
+
+                                  {/* Model Toggles */}
+                                  <form.Field
+                                    name={
+                                      `providers.${providerName}.enabled` as `providers.${keyof AllLLMProviders}.enabled`
+                                    }
+                                  >
+                                    {(enabledField) => (
+                                      <AnimatePresence>
+                                        {enabledField.state.value && (
+                                          <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{
+                                              opacity: 1,
+                                              height: 'auto',
+                                            }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                          >
+                                            {provider.models &&
+                                              provider.models.map((model) => (
+                                                <form.Field
+                                                  key={model.id}
+                                                  name={
+                                                    `providers.${providerName}.models.${model.id}.enabled` as `providers.${keyof AllLLMProviders}.models.${string}.enabled`
+                                                  }
+                                                >
+                                                  {(field) => (
+                                                    <Switch
+                                                      label={model.name}
+                                                      checked={
+                                                        field.state
+                                                          .value as boolean
+                                                      }
+                                                      onChange={(event) =>
+                                                        field.handleChange(
+                                                          event.currentTarget
+                                                            .checked,
+                                                        )
+                                                      }
+                                                      styles={(theme) => ({
+                                                        track: {
+                                                          backgroundColor: field
+                                                            .state.value
+                                                            ? theme.colors
+                                                              .blue[6]
+                                                            : theme.colors
+                                                              .gray[5],
+                                                        },
+                                                      })}
+                                                    />
+                                                  )}
+                                                </form.Field>
+                                              ))}
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    )}
+                                  </form.Field>
+                                </div>
+                              ),
+                            )}
+                          </div>
+
+                          <form.Subscribe
+                            selector={(state) => [
+                              state.canSubmit,
+                              state.isSubmitting,
+                            ]}
+                          >
+                            {([canSubmit, isSubmitting]) => (
+                              <Button
+                                type="submit"
+                                fullWidth
+                                disabled={!canSubmit}
+                                sx={(theme) => ({
+                                  marginTop: 16,
+                                  backgroundColor: '#9333ea',
+                                  '&:hover': { backgroundColor: '#7e22ce' },
+                                })}
+                              >
+                                {isSubmitting ? '...' : 'Save Changes'}
+                              </Button>
+                            )}
+                          </form.Subscribe>
+                        </form>
+                      </Card>
+                    </Stack>
+                  </Flex>
+                </div>
+                <div
+                  className="flex flex-[1_1_100%] md:flex-[1_1_40%]"
+                  style={{
+                    // flex: isSmallScreen ? '1 1 100%' : '1 1 40%',
+                    padding: '1rem',
+                    backgroundColor: '#15162c',
+                    color: 'white',
                   }}
-                </form.Field>
-              </div>
-            ),
-          )}
-        </div>
+                >
+                  <div className="card flex h-full flex-col justify-center">
+                    <div className="card-body">
+                      <div className="pb-4">
+                        <Title
+                          // className={`label ${montserrat.className}`}
+                          className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                          variant="gradient"
+                          gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                          order={3}
+                        >
+                          Default Model
+                        </Title>
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 16,
+                          }}
+                        >
+                          {/* Default Model */}
+                          <div>
+                            <Text size="sm" weight={500} mb={4}>
+                              Default Model
+                            </Text>
+                            <form.Field name="defaultModel">
+                              {(field) => (
+                                <>
+                                  <Select
+                                    value={field.state.value}
+                                    onChange={(value) =>
+                                      field.handleChange(value || '')
+                                    }
+                                    data={defaultModelOptions}
+                                    styles={(theme) => ({
+                                      input: {
+                                        backgroundColor: '#2d2d3d',
+                                        borderColor: '#4a4a5e',
+                                        color: 'white',
+                                      },
+                                      item: {
+                                        '&[data-selected]': {
+                                          backgroundColor: theme.fn.variant({
+                                            variant: 'filled',
+                                            color: theme.primaryColor,
+                                          }).background,
+                                          color: theme.white,
+                                        },
+                                      },
+                                    })}
+                                  />
+                                </>
+                              )}
+                            </form.Field>
+                          </div>
 
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-        >
-          {([canSubmit, isSubmitting]) => (
-            <Button
-              type="submit"
-              fullWidth
-              disabled={!canSubmit}
-              sx={(theme) => ({
-                marginTop: 16,
-                backgroundColor: '#9333ea',
-                '&:hover': { backgroundColor: '#7e22ce' },
-              })}
+                          {/* Temperature */}
+                          <div>
+                            <Text size="sm" weight={500} mb={4}>
+                              Default Temperature:{' '}
+                              {form.getFieldValue('defaultTemperature')}
+                            </Text>
+                            <form.Field name="defaultTemperature">
+                              {(field) => (
+                                <>
+                                  <Slider
+                                    value={field.state.value}
+                                    onChange={(value) =>
+                                      field.handleChange(value)
+                                    }
+                                    min={0}
+                                    max={1}
+                                    step={0.1}
+                                    label={null}
+                                    styles={(theme) => ({
+                                      track: {
+                                        backgroundColor: theme.colors.gray[2],
+                                      },
+                                      thumb: {
+                                        borderWidth: 2,
+                                        padding: 3,
+                                      },
+                                    })}
+                                  />
+                                </>
+                              )}
+                            </form.Field>
+                            <Text size="xs" color="dimmed" mt={4}>
+                              Higher values increase randomness, lower values
+                              increase focus and determinism.
+                            </Text>
+                          </div>
+                        </div>
+
+                        <div className="pt-2" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Flex>
+            </Card>
+
+            <div
+              // Course files header/background
+              className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
+              style={{ zIndex: 1, background: '#15162c' }}
             >
-              {isSubmitting ? '...' : 'Save Changes'}
-            </Button>
-          )}
-        </form.Subscribe>
-      </form>
-    </Card>
+              <Flex direction="row" justify="space-between">
+                <div className="flex flex-col items-start justify-start">
+                  <Title
+                    className={`${montserrat_heading.variable} font-montserratHeading`}
+                    variant="gradient"
+                    gradient={{
+                      from: 'hsl(280,100%,70%)',
+                      to: 'white',
+                      deg: 185,
+                    }}
+                    order={3}
+                    p="xl"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Title
+                      order={3}
+                      pt={40}
+                      // w={}
+                      // size={'xl'}
+                      className={`pb-3 pt-3 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                    >
+                      OTHER INFO, TBD
+                    </Title>
+                  </Title>
+                </div>
+                <div className=" flex flex-col items-end justify-center">
+                  {/* Can add more buttons here */}
+                  {/* <Button className={`${montserrat_paragraph.variable} font-montserratParagraph ${classes.downloadButton}`} rightIcon={isLoading ? <LoadingSpinner size="sm" /> : <IconCloudDownload />}
+                    onClick={() => downloadConversationHistory(course_name)}>
+                    Download Conversation History
+                  </Button> */}
+                </div>
+              </Flex>
+            </div>
+          </Flex>
+        </div>
+        <GlobalFooter />
+      </main>
+    </>
   )
 }
 
