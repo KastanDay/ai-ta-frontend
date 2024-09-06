@@ -81,11 +81,6 @@ export default function AnthropicProviderInput({
           Anthropic provides advanced AI models like Claude. Sign up on their
           website to get an API key.
         </Text>
-        <form.Field name={`providers.${providerName}.apiKey`}>
-          {(field: any) => (
-            <APIKeyInput field={field} placeholder="Anthropic API Key" />
-          )}
-        </form.Field>
         <form.Field name={`providers.${providerName}.enabled`}>
           {(field: any) => (
             <AnimatePresence>
@@ -96,6 +91,14 @@ export default function AnthropicProviderInput({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
+                  <form.Field name={`providers.${providerName}.apiKey`}>
+                    {(field: any) => (
+                      <APIKeyInput
+                        field={field}
+                        placeholder="Anthropic API Key"
+                      />
+                    )}
+                  </form.Field>
                   <ModelToggles
                     form={form}
                     providerName={providerName}

@@ -18,7 +18,6 @@ export default function OpenAIProviderInput({
 }) {
   return (
     <motion.div layout>
-      {/* <APIKeyInput field={field} placeholder="OpenAI API Key" /> */}
       <Card shadow="sm" p="lg" radius="md" withBorder style={{ width: '100%' }}>
         <div
           style={{
@@ -83,11 +82,6 @@ export default function OpenAIProviderInput({
           OpenAI offers powerful language models like GPT-3.5 and GPT-4. Get
           your API key from the OpenAI platform.
         </Text>
-        <form.Field name={`providers.${providerName}.apiKey`}>
-          {(field: any) => (
-            <APIKeyInput field={field} placeholder="OpenAI API Key" />
-          )}
-        </form.Field>
         <form.Field name={`providers.${providerName}.enabled`}>
           {(field: any) => (
             <AnimatePresence>
@@ -98,6 +92,14 @@ export default function OpenAIProviderInput({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
+                  <form.Field name={`providers.${providerName}.apiKey`}>
+                    {(apiKeyField: any) => (
+                      <APIKeyInput
+                        field={apiKeyField}
+                        placeholder="OpenAI API Key"
+                      />
+                    )}
+                  </form.Field>
                   <ModelToggles
                     form={form}
                     providerName={providerName}

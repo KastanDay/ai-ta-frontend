@@ -82,35 +82,6 @@ export default function AzureProviderInput({
           powerful language models with the security and enterprise promise of
           Azure.
         </Text>
-        <form.Field name={`providers.${providerName}.apiKey`}>
-          {(field: any) => (
-            <APIKeyInput field={field} placeholder="Azure API Key" />
-          )}
-        </form.Field>
-        <form.Field name={`providers.${providerName}.AzureEndpoint`}>
-          {(field: any) => (
-            <TextInput
-              label="Azure Endpoint"
-              placeholder="https://your-resource-name.openai.azure.com/"
-              value={field.state.value}
-              onChange={(event) =>
-                field.handleChange(event.currentTarget.value)
-              }
-            />
-          )}
-        </form.Field>
-        <form.Field name={`providers.${providerName}.AzureDeployment`}>
-          {(field: any) => (
-            <TextInput
-              label="Azure Deployment"
-              placeholder="your-deployment-name"
-              value={field.state.value}
-              onChange={(event) =>
-                field.handleChange(event.currentTarget.value)
-              }
-            />
-          )}
-        </form.Field>
         <form.Field name={`providers.${providerName}.enabled`}>
           {(field: any) => (
             <AnimatePresence>
@@ -121,6 +92,37 @@ export default function AzureProviderInput({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
+                  <form.Field name={`providers.${providerName}.apiKey`}>
+                    {(field: any) => (
+                      <APIKeyInput field={field} placeholder="Azure API Key" />
+                    )}
+                  </form.Field>
+                  <form.Field name={`providers.${providerName}.AzureEndpoint`}>
+                    {(field: any) => (
+                      <TextInput
+                        label="Azure Endpoint"
+                        placeholder="https://your-resource-name.openai.azure.com/"
+                        value={field.state.value}
+                        onChange={(event) =>
+                          field.handleChange(event.currentTarget.value)
+                        }
+                      />
+                    )}
+                  </form.Field>
+                  <form.Field
+                    name={`providers.${providerName}.AzureDeployment`}
+                  >
+                    {(field: any) => (
+                      <TextInput
+                        label="Azure Deployment"
+                        placeholder="your-deployment-name"
+                        value={field.state.value}
+                        onChange={(event) =>
+                          field.handleChange(event.currentTarget.value)
+                        }
+                      />
+                    )}
+                  </form.Field>
                   <ModelToggles
                     form={form}
                     providerName={providerName}

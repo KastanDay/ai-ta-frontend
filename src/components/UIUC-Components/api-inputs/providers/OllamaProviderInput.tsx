@@ -80,18 +80,6 @@ export default function OllamaProviderInput({
           Ollama allows you to run large language models locally. Set up Ollama
           on your machine and provide the base URL.
         </Text>
-        <form.Field name={`providers.${providerName}.baseUrl`}>
-          {(field: any) => (
-            <TextInput
-              label="Base URL"
-              placeholder="http://localhost:11434"
-              value={field.state.value}
-              onChange={(event) =>
-                field.handleChange(event.currentTarget.value)
-              }
-            />
-          )}
-        </form.Field>
         <form.Field name={`providers.${providerName}.enabled`}>
           {(field: any) => (
             <AnimatePresence>
@@ -102,6 +90,18 @@ export default function OllamaProviderInput({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
+                  <form.Field name={`providers.${providerName}.baseUrl`}>
+                    {(field: any) => (
+                      <TextInput
+                        label="Base URL"
+                        placeholder="http://localhost:11434"
+                        value={field.state.value}
+                        onChange={(event) =>
+                          field.handleChange(event.currentTarget.value)
+                        }
+                      />
+                    )}
+                  </form.Field>
                   <ModelToggles
                     form={form}
                     providerName={providerName}
