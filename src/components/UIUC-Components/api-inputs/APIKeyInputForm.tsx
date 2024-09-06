@@ -71,6 +71,13 @@ export const APIKeyInput = ({
   placeholder: string
 }) => {
   const [isVisible, setIsVisible] = useState(false)
+  const [showCopiedToast, setShowCopiedToast] = useState(false)
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(field.state.value)
+    setShowCopiedToast(true)
+    setTimeout(() => setShowCopiedToast(false), 4000)
+  }
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
@@ -101,13 +108,35 @@ export const APIKeyInput = ({
             >
               {isVisible ? <IconEyeOff size={18} /> : <IconEye size={18} />}
             </ActionIcon>
-            <ActionIcon
-              onClick={() => navigator.clipboard.writeText(field.state.value)}
-              variant="subtle"
-              size="sm"
-            >
-              <IconCopy size={18} />
-            </ActionIcon>
+            <div style={{ position: 'relative' }}>
+              <ActionIcon onClick={handleCopy} variant="subtle" size="sm">
+                <IconCopy size={18} />
+              </ActionIcon>
+              <AnimatePresence>
+                {showCopiedToast && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.1 }}
+                    style={{
+                      position: 'absolute',
+                      bottom: '100%',
+                      right: 0,
+                      backgroundColor: '#333',
+                      color: 'white',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      whiteSpace: 'nowrap',
+                      zIndex: 1000,
+                    }}
+                  >
+                    Copied ✓
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </Input.Wrapper>
