@@ -97,7 +97,8 @@ export default async function handler(
               messages (
                 id,
                 role,
-                content,
+                content_text,
+                content_image_url,
                 contexts,
                 tools,
                 latest_system_message,
