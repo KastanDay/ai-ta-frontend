@@ -91,20 +91,22 @@ export const APIKeyInput = ({
               },
             }}
           />
-          <div style={{ display: 'flex', marginLeft: '8px' }}>
+          <div
+            style={{ display: 'flex', marginLeft: '6px', marginRight: '-2px' }}
+          >
             <ActionIcon
               onClick={() => setIsVisible(!isVisible)}
               variant="subtle"
               size="sm"
             >
-              {isVisible ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+              {isVisible ? <IconEyeOff size={18} /> : <IconEye size={18} />}
             </ActionIcon>
             <ActionIcon
               onClick={() => navigator.clipboard.writeText(field.state.value)}
               variant="subtle"
               size="sm"
             >
-              <IconCopy size={16} />
+              <IconCopy size={18} />
             </ActionIcon>
           </div>
         </div>
@@ -321,46 +323,44 @@ export default function APIKeyInputForm() {
                                 gap: 16,
                               }}
                             >
-                              {Object.entries(llmProviders || {}).map(
-                                ([providerName, provider]) => (
-                                  <div key={providerName}>
-                                    {providerName === 'OpenAI' && (
-                                      <OpenAIProviderInput
-                                        provider={provider as OpenAIProvider}
-                                        form={form}
-                                        providerName={providerName}
-                                      />
-                                    )}
-                                    {providerName === 'Ollama' && (
-                                      <OllamaProviderInput
-                                        provider={provider as OllamaProvider}
-                                        form={form}
-                                        providerName={providerName}
-                                      />
-                                    )}
-                                    {providerName === 'WebLLM' && (
-                                      <WebLLMProviderInput
-                                        provider={provider as WebLLMProvider}
-                                        form={form}
-                                        providerName={providerName}
-                                      />
-                                    )}
-                                    {providerName === 'Azure' && (
-                                      <AzureProviderInput
-                                        provider={provider as AzureProvider}
-                                        form={form}
-                                        providerName={providerName}
-                                      />
-                                    )}
-                                    {providerName === 'Anthropic' && (
-                                      <AnthropicProviderInput
-                                        provider={provider as AnthropicProvider}
-                                        form={form}
-                                        providerName={providerName}
-                                      />
-                                    )}
-                                  </div>
-                                ),
+                              {llmProviders && (
+                                <>
+                                  <OpenAIProviderInput
+                                    provider={
+                                      llmProviders.OpenAI as OpenAIProvider
+                                    }
+                                    form={form}
+                                    providerName="OpenAI"
+                                  />
+                                  <AnthropicProviderInput
+                                    provider={
+                                      llmProviders.Anthropic as AnthropicProvider
+                                    }
+                                    form={form}
+                                    providerName="Anthropic"
+                                  />
+                                  <AzureProviderInput
+                                    provider={
+                                      llmProviders.Azure as AzureProvider
+                                    }
+                                    form={form}
+                                    providerName="Azure"
+                                  />
+                                  <OllamaProviderInput
+                                    provider={
+                                      llmProviders.Ollama as OllamaProvider
+                                    }
+                                    form={form}
+                                    providerName="Ollama"
+                                  />
+                                  <WebLLMProviderInput
+                                    provider={
+                                      llmProviders.WebLLM as WebLLMProvider
+                                    }
+                                    form={form}
+                                    providerName="WebLLM"
+                                  />
+                                </>
                               )}
                             </div>
                           </div>
