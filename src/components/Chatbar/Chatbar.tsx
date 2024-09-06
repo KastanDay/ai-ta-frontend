@@ -22,6 +22,7 @@ import {
 } from '~/hooks/conversationQueries'
 import { AnimatePresence, motion } from 'framer-motion'
 import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
+import { useDebouncedState } from '@mantine/hooks'
 
 export const Chatbar = ({
   current_email,
@@ -48,6 +49,11 @@ export const Chatbar = ({
     dispatch: chatDispatch,
   } = chatBarContextValue
 
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useDebouncedState(
+    searchTerm,
+    500,
+  )
+
   const queryClient = useQueryClient()
   const deleteConversationMutation = useDeleteConversation(
     current_email,
@@ -72,13 +78,21 @@ export const Chatbar = ({
     fetchNextPage: fetchNextPageConversationHistory,
     hasNextPage: hasNextPageConversationHistory,
     isFetchingNextPage: isFetchingNextPageConversationHistory,
-  } = useFetchConversationHistory(current_email, searchTerm, courseName)
+  } = useFetchConversationHistory(
+    current_email,
+    debouncedSearchTerm,
+    courseName,
+  )
 
   const updateConversationMutation = useUpdateConversation(
     current_email as string,
     queryClient,
     courseName,
   )
+
+  useEffect(() => {
+    setDebouncedSearchTerm(searchTerm)
+  }, [searchTerm])
 
   useEffect(() => {
     if (

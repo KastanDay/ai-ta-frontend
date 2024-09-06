@@ -208,56 +208,17 @@ export default async function handler(
       try {
         const pageSize = 8
 
-        let query = supabase
-          .from('conversations')
-          .select(
-            `
-            *,
-            messages (
-              id,
-              role,
-              content_text,
-              content_image_url,
-              contexts,
-              tools,
-              latest_system_message,
-              final_prompt_engineered_message,
-              response_time_sec,
-              conversation_id,
-              created_at
-            )
-          `,
-            { count: 'exact' },
-          )
-          .eq('user_email', user_email)
-          .eq('project_name', courseName)
-          // .or(`content_text.ilike.%${searchTerm}%`, { foreignTable : 'messages'})
-          // .or(`messages.content_text.ilike.%${searchTerm}%`)
-          .is('folder_id', null)
+        const { data, error } = await supabase.rpc('search_conversations', {
+          p_user_email: user_email,
+          p_project_name: courseName,
+          p_search_term: searchTerm || null,
+          p_limit: pageSize,
+          p_offset: pageParam * pageSize,
+        })
 
-        // Add search condition only if searchTerm is provided
-        if (searchTerm) {
-          // query = query.or(`name.ilike.%${searchTerm}%`).or(`content_text.ilike.%${searchTerm}%`, { foreignTable : 'messages'})
-          // query = query.or(`messages.content_text.ilike.%${searchTerm}%`)
-          query = query.or(`name.ilike.%${searchTerm}%`)
-          // query.filter('messages.content_text', 'ilike', `%${searchTerm}%`) // Filter on the message content in the related table
-          query = query.or(`content_text.ilike.%${searchTerm}%`, {
-            foreignTable: 'messages',
-          })
-          // .or(`name.ilike.%${searchTerm}%`)
-          // query = query.textSearch('content_text', `%${searchTerm}%`, { type : 'plain'}, { foreignTable : 'messages'})
-        }
-        console.log('query: ', query)
+        // console.log('data:', data)
 
-        const rangeStart = pageParam * pageSize
-        const rangeEnd = (pageParam + 1) * pageSize - 1
-        console.log('Range:', { rangeStart, rangeEnd })
-
-        const { data, count, error } = await query
-          .order('updated_at', { ascending: false })
-          .order('updated_at', { foreignTable: 'messages', ascending: true })
-          .limit(pageSize)
-          .range(rangeStart, rangeEnd)
+        const count = data?.total_count || 0
 
         if (error) {
           console.error(
@@ -271,14 +232,20 @@ export default async function handler(
         //   data,
         // )
 
-        const fetchedConversations = (data || []).map((conv) => {
-          // console.log('Fetched conversation:', conv)
-          const convMessages = conv.messages || []
-          return convertDBToChatConversation(conv, convMessages)
-        })
+        const fetchedConversations = (data.conversations || []).map(
+          (conv: any) => {
+            // console.log('Fetched conversation:', conv)
+            const convMessages = conv.messages || []
+            return convertDBToChatConversation(conv, convMessages)
+          },
+        )
 
         const nextCursor =
-          count && count > (pageParam + 1) * pageSize ? pageParam + 1 : null
+          count &&
+          count > (pageParam + 1) * pageSize &&
+          count > fetchedConversations.length
+            ? pageParam + 1
+            : null
 
         console.log(
           'Fetched conversations:',
