@@ -8,11 +8,9 @@ import { AzureProvider } from '~/types/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function AzureProviderInput({
-  provider,
   form,
   providerName,
 }: {
-  provider: AzureProvider
   form: any
   providerName: string
 }) {
@@ -123,15 +121,7 @@ export default function AzureProviderInput({
                       />
                     )}
                   </form.Field>
-                  <ModelToggles
-                    form={form}
-                    providerName={providerName}
-                    models={
-                      provider.models?.map(
-                        (model: AzureModel) => model.name as string,
-                      ) || []
-                    }
-                  />
+                  <ModelToggles form={form} providerName={providerName} />
                 </motion.div>
               )}
             </AnimatePresence>

@@ -7,7 +7,6 @@ import { WebLLMProvider } from '~/types/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function WebLLMProviderInput({
-  provider,
   form,
   providerName,
 }: {
@@ -89,15 +88,7 @@ export default function WebLLMProviderInput({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <ModelToggles
-                    form={form}
-                    providerName={providerName}
-                    models={
-                      provider.models?.map(
-                        (model: WebllmModel) => model.name as string,
-                      ) || []
-                    }
-                  />
+                  <ModelToggles form={form} providerName={providerName} />
                 </motion.div>
               )}
             </AnimatePresence>

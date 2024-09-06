@@ -8,7 +8,6 @@ import { AnthropicModel } from '~/utils/modelProviders/anthropic'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function AnthropicProviderInput({
-  provider,
   form,
   providerName,
 }: {
@@ -99,15 +98,7 @@ export default function AnthropicProviderInput({
                       />
                     )}
                   </form.Field>
-                  <ModelToggles
-                    form={form}
-                    providerName={providerName}
-                    models={
-                      provider.models?.map(
-                        (model: AnthropicModel) => model.name as string,
-                      ) || []
-                    }
-                  />
+                  <ModelToggles form={form} providerName={providerName} />
                 </motion.div>
               )}
             </AnimatePresence>

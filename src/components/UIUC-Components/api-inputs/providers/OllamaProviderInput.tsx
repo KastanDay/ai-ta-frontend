@@ -7,11 +7,9 @@ import { OllamaProvider } from '~/types/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function OllamaProviderInput({
-  provider,
   form,
   providerName,
 }: {
-  provider: OllamaProvider
   form: any
   providerName: string
 }) {
@@ -102,15 +100,7 @@ export default function OllamaProviderInput({
                       />
                     )}
                   </form.Field>
-                  <ModelToggles
-                    form={form}
-                    providerName={providerName}
-                    models={
-                      provider.models?.map(
-                        (model: OllamaModel) => model.name as string,
-                      ) || []
-                    }
-                  />
+                  <ModelToggles form={form} providerName={providerName} />
                 </motion.div>
               )}
             </AnimatePresence>

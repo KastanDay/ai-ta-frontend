@@ -51,7 +51,7 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
       defaultTemperature: string
     }) => {
       // TODO: update llmProviders to upsertCourseMetadata
-      const response = await fetch('/api/llmProviders', {
+      const response = await fetch('/api/UIUC-api/llmProviders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

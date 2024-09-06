@@ -8,7 +8,6 @@ import { OpenAIProvider } from '~/types/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function OpenAIProviderInput({
-  provider,
   form,
   providerName,
 }: {
@@ -101,15 +100,7 @@ export default function OpenAIProviderInput({
                     )}
                   </form.Field>
 
-                  <ModelToggles
-                    form={form}
-                    providerName={providerName}
-                    models={
-                      provider.models?.map(
-                        (model: OpenAIModel) => model.name as string,
-                      ) || []
-                    }
-                  />
+                  <ModelToggles form={form} providerName={providerName} />
                 </motion.div>
               )}
             </AnimatePresence>
