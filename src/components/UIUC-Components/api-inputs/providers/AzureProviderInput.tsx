@@ -18,7 +18,7 @@ export default function AzureProviderInput({
 }) {
   return (
     <motion.div layout>
-      <Card shadow="sm" p="lg" radius="md" withBorder>
+      <Card shadow="sm" p="lg" radius="md" className="bg-[#15162c]">
         <div
           style={{
             display: 'flex',

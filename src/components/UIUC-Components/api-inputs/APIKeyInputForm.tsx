@@ -141,6 +141,18 @@ export const APIKeyInput = ({
         </div>
       </Input.Wrapper>
       <FieldInfo field={field} />
+      <div className="pt-1" />
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ marginRight: '48px' }}>
+          <Button
+            compact
+            className="bg-purple-800 hover:border-indigo-600 hover:bg-indigo-600"
+            type="submit"
+          >
+            Save
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -319,7 +331,7 @@ export default function APIKeyInputForm() {
                           provider.
                         </Title>
                       </div>
-                      <Card
+                      {/* <Card
                         shadow="sm"
                         padding="lg"
                         radius="md"
@@ -329,96 +341,80 @@ export default function APIKeyInputForm() {
                           color: 'white',
                           border: 'none',
                         }}
+                      > */}
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
                       >
-                        <form
-                          onSubmit={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
+                        {/* Providers */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 16,
+                            padding: '2rem',
                           }}
                         >
-                          <div
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: 16,
-                            }}
-                          >
-                            {/* Providers */}
-                            <Text size="xl" weight={700} mb="xs">
-                              LLM Providers
-                            </Text>
-                            <div
-                              style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 16,
-                              }}
-                            >
-                              {llmProviders && (
-                                <>
-                                  <OpenAIProviderInput
-                                    provider={
-                                      llmProviders.OpenAI as OpenAIProvider
-                                    }
-                                    form={form}
-                                    providerName="OpenAI"
-                                  />
-                                  <AnthropicProviderInput
-                                    provider={
-                                      llmProviders.Anthropic as AnthropicProvider
-                                    }
-                                    form={form}
-                                    providerName="Anthropic"
-                                  />
-                                  <AzureProviderInput
-                                    provider={
-                                      llmProviders.Azure as AzureProvider
-                                    }
-                                    form={form}
-                                    providerName="Azure"
-                                  />
-                                  <OllamaProviderInput
-                                    provider={
-                                      llmProviders.Ollama as OllamaProvider
-                                    }
-                                    form={form}
-                                    providerName="Ollama"
-                                  />
-                                  <WebLLMProviderInput
-                                    provider={
-                                      llmProviders.WebLLM as WebLLMProvider
-                                    }
-                                    form={form}
-                                    providerName="WebLLM"
-                                  />
-                                </>
-                              )}
-                            </div>
-                          </div>
+                          {llmProviders && (
+                            <>
+                              <AnthropicProviderInput
+                                provider={
+                                  llmProviders.Anthropic as AnthropicProvider
+                                }
+                                form={form}
+                                providerName="Anthropic"
+                              />
+                              <OpenAIProviderInput
+                                provider={llmProviders.OpenAI as OpenAIProvider}
+                                form={form}
+                                providerName="OpenAI"
+                              />
+                              <AzureProviderInput
+                                provider={llmProviders.Azure as AzureProvider}
+                                form={form}
+                                providerName="Azure"
+                              />
+                              <OllamaProviderInput
+                                provider={llmProviders.Ollama as OllamaProvider}
+                                form={form}
+                                providerName="Ollama"
+                              />
+                              <WebLLMProviderInput
+                                provider={llmProviders.WebLLM as WebLLMProvider}
+                                form={form}
+                                providerName="WebLLM"
+                              />
+                            </>
+                          )}
+                        </div>
 
-                          <form.Subscribe
-                            selector={(state) => [
-                              state.canSubmit,
-                              state.isSubmitting,
-                            ]}
-                          >
-                            {([canSubmit, isSubmitting]) => (
-                              <Button
-                                type="submit"
-                                fullWidth
-                                disabled={!canSubmit}
-                                sx={(theme) => ({
-                                  marginTop: 16,
-                                  backgroundColor: '#9333ea',
-                                  '&:hover': { backgroundColor: '#7e22ce' },
-                                })}
-                              >
-                                {isSubmitting ? '...' : 'Save Changes'}
-                              </Button>
-                            )}
-                          </form.Subscribe>
-                        </form>
-                      </Card>
+                        <form.Subscribe
+                          selector={(state) => [
+                            state.canSubmit,
+                            state.isSubmitting,
+                          ]}
+                        >
+                          {([canSubmit, isSubmitting]) => (
+                            <Button
+                              type="submit"
+                              fullWidth
+                              disabled={!canSubmit}
+                              sx={(theme) => ({
+                                marginTop: 16,
+                                backgroundColor: '#9333ea',
+                                '&:hover': { backgroundColor: '#7e22ce' },
+                              })}
+                            >
+                              {isSubmitting
+                                ? '...'
+                                : 'Save Changes - TODO remove this button. Each has their own.'}
+                            </Button>
+                          )}
+                        </form.Subscribe>
+                      </form>
+                      {/* </Card> */}
                     </Stack>
                   </Flex>
                 </div>
@@ -532,8 +528,8 @@ export default function APIKeyInputForm() {
               </Flex>
             </Card>
 
-            <div
-              // SECTION: OTHER INFO, TBD
+            {/* SECTION: OTHER INFO, TBD */}
+            {/* <div
               className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
             >
@@ -567,14 +563,10 @@ export default function APIKeyInputForm() {
                   </Title>
                 </div>
                 <div className=" flex flex-col items-end justify-center">
-                  {/* Can add more buttons here */}
-                  {/* <Button className={`${montserrat_paragraph.variable} font-montserratParagraph ${classes.downloadButton}`} rightIcon={isLoading ? <LoadingSpinner size="sm" /> : <IconCloudDownload />}
-                    onClick={() => downloadConversationHistory(course_name)}>
-                    Download Conversation History
-                  </Button> */}
+                  
                 </div>
               </Flex>
-            </div>
+            </div> */}
           </Flex>
         </div>
         <GlobalFooter />

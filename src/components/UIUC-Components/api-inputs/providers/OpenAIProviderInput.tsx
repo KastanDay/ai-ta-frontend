@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text, Switch, Card } from '@mantine/core'
+import { Text, Switch, Card, Button } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
 import { APIKeyInput } from '../APIKeyInputForm'
 import { ModelToggles } from '../ModelToggles'
@@ -18,7 +18,7 @@ export default function OpenAIProviderInput({
 }) {
   return (
     <motion.div layout>
-      <Card shadow="sm" p="lg" radius="md" withBorder style={{ width: '100%' }}>
+      <Card shadow="sm" p="lg" radius="md" className="bg-[#15162c]">
         <div
           style={{
             display: 'flex',
@@ -100,6 +100,7 @@ export default function OpenAIProviderInput({
                       />
                     )}
                   </form.Field>
+
                   <ModelToggles
                     form={form}
                     providerName={providerName}
