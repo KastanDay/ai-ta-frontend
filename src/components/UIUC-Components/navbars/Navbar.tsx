@@ -21,6 +21,7 @@ import {
   Key,
   Code,
   Brain,
+  Message,
 } from 'tabler-icons-react'
 import { useRouter } from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
@@ -144,17 +145,17 @@ const Navbar = ({
   }
 
   const items = [
-    {
-      name: (
-        <span
-          className={`${montserrat_heading.variable} font-montserratHeading`}
-        >
-          Chat
-        </span>
-      ),
-      icon: <MessageChatIcon />,
-      link: `/${getCurrentCourseName()}/chat`,
-    },
+    // {
+    //   name: (
+    //     <span
+    //       className={`${montserrat_heading.variable} font-montserratHeading`}
+    //     >
+    //       Chat
+    //     </span>
+    //   ),
+    //   icon: <MessageChatIcon />,
+    //   link: `/${getCurrentCourseName()}/chat`,
+    // },
     {
       name: (
         <span
@@ -282,7 +283,34 @@ const Navbar = ({
                     </Paper>
                   )}
                 </Transition>
-                <Container className={classes.inner}>
+                <button
+                  className={`${classes.link}`}
+                  onClick={() => {
+                    router.push(`/${getCurrentCourseName()}/chat`)
+                  }}
+                >
+                  <div
+                    // ref={topBarRef}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      width: '100%',
+                    }}
+                  >
+                    <MessageChatIcon
+                    />
+                    <span
+                      style={{ whiteSpace: 'nowrap', marginRight: '-5px' }}
+                      className={`${montserrat_heading.variable} font-montserratHeading`}
+                    >
+                      {/* Model: {modelName} */}
+                      {/* {selectedConversation?.model.name} */}
+                      Chat
+                    </span>
+                    {/* </span> */}
+                  </div>
+                </button>
+                <Container className={classes.inner} style={{ paddingLeft: '0px' }}>
                   <div className={classes.links}>
                     {items.map((item, index) => (
                       <Link
@@ -312,8 +340,8 @@ const Navbar = ({
             <GlobalHeader isNavbar={true} />
           </div>
         </div>
-      </Flex>
-    </div>
+      </Flex >
+    </div >
   )
 }
 
