@@ -23,6 +23,8 @@ import {
 import { AnimatePresence, motion } from 'framer-motion'
 import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
 import { useDebouncedState } from '@mantine/hooks'
+import posthog from 'posthog-js'
+import { saveConversationToServer } from '~/utils/app/conversation'
 
 export const Chatbar = ({
   current_email,
@@ -78,6 +80,7 @@ export const Chatbar = ({
     fetchNextPage: fetchNextPageConversationHistory,
     hasNextPage: hasNextPageConversationHistory,
     isFetchingNextPage: isFetchingNextPageConversationHistory,
+    refetch: refetchConversationHistory,
   } = useFetchConversationHistory(
     current_email,
     debouncedSearchTerm,
@@ -90,21 +93,84 @@ export const Chatbar = ({
     courseName,
   )
 
+  const [convoMigrationLoading, setConvoMigrationLoading] =
+    useState<boolean>(false)
+
   useEffect(() => {
     setDebouncedSearchTerm(searchTerm)
   }, [searchTerm])
 
+  async function updateConversations(conversationHistory: Conversation[]) {
+    await Promise.all(
+      conversationHistory.map(async (conversation: Conversation) => {
+        conversation.userEmail = current_email
+        conversation.projectName = courseName
+        const response = await saveConversationToServer(conversation)
+        console.log('Response from saveConversationToServer: ', response)
+      }),
+    )
+  }
+
   useEffect(() => {
-    if (
-      isConversationHistoryFetched &&
-      !isConversationHistoryLoading &&
-      conversationHistory
-    ) {
-      const allConversations = conversationHistory.pages
-        .flatMap((page) => (Array.isArray(page) ? page : []))
-        .filter((conversation) => conversation !== undefined)
-      homeDispatch({ field: 'conversations', value: allConversations })
-      console.log('Dispatching conversations: ', allConversations)
+    try {
+      if (
+        isConversationHistoryFetched &&
+        !isConversationHistoryLoading &&
+        conversationHistory
+      ) {
+        const allConversations = conversationHistory.pages
+          .flatMap((page) => (Array.isArray(page) ? page : []))
+          .filter((conversation) => conversation !== undefined)
+        homeDispatch({ field: 'conversations', value: allConversations })
+        console.log('Dispatching conversations: ', allConversations)
+
+        const convoMigrationComplete = localStorage.getItem(
+          'convoMigrationComplete',
+        )
+        if (convoMigrationComplete === 'true') return
+
+        if (
+          convoMigrationComplete === null ||
+          convoMigrationComplete === undefined ||
+          convoMigrationComplete === 'false'
+        ) {
+          localStorage.setItem('convoMigrationComplete', 'false')
+          setConvoMigrationLoading(true)
+
+          if (
+            isConversationHistoryFetched &&
+            !isConversationHistoryLoading &&
+            allConversations.length === 0 &&
+            localStorage.getItem('conversationHistory') != null &&
+            localStorage.getItem('conversationHistory') != undefined &&
+            localStorage.getItem('conversationHistory') != '[]'
+          ) {
+            posthog.capture('migration_started', {
+              distinctId: current_email,
+            })
+            console.log(
+              'Migrating conversations from local storage to supabase',
+            )
+            const conversationHistory = JSON.parse(
+              localStorage.getItem('conversationHistory') || '[]',
+            )
+            homeDispatch({ field: 'conversations', value: conversationHistory })
+            updateConversations(conversationHistory)
+            localStorage.setItem('convoMigrationComplete', 'true')
+            setTimeout(() => refetchConversationHistory(), 100)
+          } else {
+            console.log('No need to migrate conversations')
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Error during conversation migration:', error)
+      posthog.capture('migration_error', {
+        distinctId: current_email,
+        error: error.message,
+      })
+    } finally {
+      setConvoMigrationLoading(false)
     }
   }, [
     conversationHistory,
@@ -231,23 +297,31 @@ export const Chatbar = ({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <Conversations
-                conversations={conversations}
-                onLoadMore={handleLoadMoreConversations}
-              />
-              <AnimatePresence>
-                {isFetchingNextPageConversationHistory && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="flex justify-center py-4"
-                  >
-                    <LoadingSpinner size="sm" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {convoMigrationLoading ? (
+                <div className="flex justify-center py-4">
+                  <LoadingSpinner size="sm" />
+                </div>
+              ) : (
+                <>
+                  <Conversations
+                    conversations={conversations}
+                    onLoadMore={handleLoadMoreConversations}
+                  />
+                  <AnimatePresence>
+                    {isFetchingNextPageConversationHistory && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="flex justify-center py-4"
+                      >
+                        <LoadingSpinner size="sm" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </>
+              )}
             </motion.div>
           </Suspense>
         }
