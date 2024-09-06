@@ -626,7 +626,8 @@ export type Database = {
       }
       messages: {
         Row: {
-          content: Json
+          content_image_url: string[] | null
+          content_text: string
           contexts: Json | null
           conversation_id: string | null
           created_at: string
@@ -639,7 +640,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          content: Json
+          content_image_url?: string[] | null
+          content_text: string
           contexts?: Json | null
           conversation_id?: string | null
           created_at: string
@@ -652,7 +654,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          content?: Json
+          content_image_url?: string[] | null
+          content_text?: string
           contexts?: Json | null
           conversation_id?: string | null
           created_at?: string
@@ -694,8 +697,9 @@ export type Database = {
           created_at: string
           doi: string | null
           doi_number: string | null
+          downloadable: boolean
           id: number
-          ingested: boolean | null
+          ingested: boolean
           license: string | null
           link: string | null
           metadata: Json | null
@@ -706,8 +710,9 @@ export type Database = {
           created_at?: string
           doi?: string | null
           doi_number?: string | null
+          downloadable?: boolean
           id?: number
-          ingested?: boolean | null
+          ingested?: boolean
           license?: string | null
           link?: string | null
           metadata?: Json | null
@@ -718,13 +723,38 @@ export type Database = {
           created_at?: string
           doi?: string | null
           doi_number?: string | null
+          downloadable?: boolean
           id?: number
-          ingested?: boolean | null
+          ingested?: boolean
           license?: string | null
           link?: string | null
           metadata?: Json | null
           publisher?: string | null
           title?: string | null
+        }
+        Relationships: []
+      }
+      pre_authorized_api_keys: {
+        Row: {
+          api_key: Json | null
+          created_at: string
+          emails: Json | null
+          id: number
+          provider_name: Database['public']['Enums']['LLMProvider'] | null
+        }
+        Insert: {
+          api_key?: Json | null
+          created_at?: string
+          emails?: Json | null
+          id?: number
+          provider_name?: Database['public']['Enums']['LLMProvider'] | null
+        }
+        Update: {
+          api_key?: Json | null
+          created_at?: string
+          emails?: Json | null
+          id?: number
+          provider_name?: Database['public']['Enums']['LLMProvider'] | null
         }
         Relationships: []
       }
@@ -1113,7 +1143,14 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      LLMProvider:
+        | 'azure'
+        | 'openai'
+        | 'anthropic'
+        | 'ollama'
+        | 'google'
+        | 'groq'
+        | 'togetherai'
     }
     CompositeTypes: {
       index_advisor_output: {

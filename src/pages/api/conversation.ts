@@ -55,19 +55,39 @@ export function convertDBToChatConversation(
     userEmail: dbConversation.user_email || undefined,
     projectName: dbConversation.project_name,
     folderId: dbConversation.folder_id,
-    messages: (dbMessages || []).map((msg) => ({
-      id: msg.id,
-      role: msg.role as Role,
-      content: msg.content as string | Content[],
-      contexts: msg.contexts as ContextWithMetadata[] | [],
-      tools: msg.tools as UIUCTool[] | [],
-      latestSystemMessage: (msg.latest_system_message as string) || undefined,
-      finalPromtEngineeredMessage:
-        (msg.final_prompt_engineered_message as string) || undefined,
-      responseTimeSec: (msg.response_time_sec as number) || undefined,
-      created_at: msg.created_at || undefined,
-      updated_at: msg.updated_at || undefined,
-    })),
+    messages: (dbMessages || []).map((msg) => {
+      const content: Content[] = []
+      if (msg.content_text) {
+        content.push({
+          type: 'text',
+          text: msg.content_text,
+        })
+      }
+      if (msg.content_image_url && msg.content_image_url.length > 0) {
+        for (const imageUrl of msg.content_image_url) {
+          content.push({
+            type: 'image_url',
+            image_url: {
+              url: imageUrl,
+            },
+          })
+        }
+      }
+
+      return {
+        id: msg.id,
+        role: msg.role as Role,
+        content: content,
+        contexts: (msg.contexts as any as ContextWithMetadata[]) || [],
+        tools: (msg.tools as any as UIUCTool[]) || [],
+        latestSystemMessage: msg.latest_system_message || undefined,
+        finalPromtEngineeredMessage:
+          msg.final_prompt_engineered_message || undefined,
+        responseTimeSec: msg.response_time_sec || undefined,
+        created_at: msg.created_at || undefined,
+        updated_at: msg.updated_at || undefined,
+      }
+    }),
   }
 }
 
@@ -77,13 +97,26 @@ export function convertChatToDBMessage(
 ): DBMessage {
   console.log('chatMessage.content: ', chatMessage.content)
   console.log('chatMessage.content type: ', typeof chatMessage.content)
+  let content_text = ''
+  let content_image_urls: string[] = []
+
+  if (typeof chatMessage.content == 'string') {
+    content_text = chatMessage.content
+  } else if (Array.isArray(chatMessage.content)) {
+    content_text = chatMessage.content
+      .filter((content) => content.type === 'text')
+      .map((content) => content.text)
+      .join(' ')
+    content_image_urls = chatMessage.content
+      .filter((content) => content.type === 'image_url')
+      .map((content) => content.image_url?.url || '')
+  }
+
   return {
     id: chatMessage.id || uuidv4(),
     role: chatMessage.role,
-    content:
-      typeof chatMessage.content == 'string'
-        ? [{ text: chatMessage.content, type: 'text' }]
-        : (chatMessage.content as any),
+    content_text: content_text,
+    content_image_url: content_image_urls,
     contexts:
       chatMessage.contexts?.map((context, index) => {
         // TODO:
@@ -104,7 +137,7 @@ export function convertChatToDBMessage(
     response_time_sec: chatMessage.responseTimeSec || null,
     conversation_id: conversationId,
     created_at: chatMessage.created_at || new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: chatMessage.updated_at || new Date().toISOString(),
   }
 }
 
@@ -183,7 +216,8 @@ export default async function handler(
             messages (
               id,
               role,
-              content,
+              content_text,
+              content_image_url,
               contexts,
               tools,
               latest_system_message,
@@ -197,11 +231,21 @@ export default async function handler(
           )
           .eq('user_email', user_email)
           .eq('project_name', courseName)
+          // .or(`content_text.ilike.%${searchTerm}%`, { foreignTable : 'messages'})
+          // .or(`messages.content_text.ilike.%${searchTerm}%`)
           .is('folder_id', null)
 
         // Add search condition only if searchTerm is provided
         if (searchTerm) {
+          // query = query.or(`name.ilike.%${searchTerm}%`).or(`content_text.ilike.%${searchTerm}%`, { foreignTable : 'messages'})
+          // query = query.or(`messages.content_text.ilike.%${searchTerm}%`)
           query = query.or(`name.ilike.%${searchTerm}%`)
+          // query.filter('messages.content_text', 'ilike', `%${searchTerm}%`) // Filter on the message content in the related table
+          query = query.or(`content_text.ilike.%${searchTerm}%`, {
+            foreignTable: 'messages',
+          })
+          // .or(`name.ilike.%${searchTerm}%`)
+          // query = query.textSearch('content_text', `%${searchTerm}%`, { type : 'plain'}, { foreignTable : 'messages'})
         }
         console.log('query: ', query)
 
