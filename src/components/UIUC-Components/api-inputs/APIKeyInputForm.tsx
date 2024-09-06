@@ -189,16 +189,19 @@ const loadingTextLLMProviders: AllLLMProviders = {
 export default function APIKeyInputForm() {
   const course_name = GetCurrentPageName()
 
-  const homeContextValue = React.useMemo(() => ({
-    state: {
-      selectedConversation: null,
-      llmProviders: {},
-      defaultModelId: '',
-      webLLMModelIdLoading: { id: '', isLoading: false },
-    },
-    handleUpdateConversation: () => {},
-    dispatch: () => {},
-  }), [])
+  const homeContextValue = React.useMemo(
+    () => ({
+      state: {
+        selectedConversation: null,
+        llmProviders: {},
+        defaultModelId: '',
+        webLLMModelIdLoading: { id: '', isLoading: false },
+      },
+      handleUpdateConversation: () => {},
+      dispatch: () => {},
+    }),
+    [],
+  )
 
   // ------------ <TANSTACK QUERIES> ------------
   const queryClient = useQueryClient()
@@ -289,63 +292,63 @@ export default function APIKeyInputForm() {
   return (
     <>
       <HomeContext.Provider value={homeContextValue}>
-      <Navbar course_name={course_name} />
+        <Navbar course_name={course_name} />
 
-      <Head>
-        <title>{course_name}/LLMs</title>
-        <meta
-          name="UIUC.chat"
-          content="The AI teaching assistant built for students at UIUC."
-        />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+        <Head>
+          <title>{course_name}/LLMs</title>
+          <meta
+            name="UIUC.chat"
+            content="The AI teaching assistant built for students at UIUC."
+          />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
 
-      <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center">
-        <div className="items-left flex w-full flex-col justify-center py-0">
-          <Flex direction="column" align="center" w="100%">
-            <Card
-              shadow="xs"
-              padding="none"
-              radius="xl"
-              style={{ maxWidth: '85%', width: '100%', marginTop: '2%' }}
-            >
-              <Flex className="flex-col md:flex-row">
-                {/* // direction={isSmallScreen ? 'column' : 'row'}> */}
-                <div
-                  style={{
-                    // flex: isSmallScreen ? '1 1 100%' : '1 1 60%',
-                    border: 'None',
-                    color: 'white',
-                  }}
-                  className="min-h-full flex-[1_1_100%] bg-gradient-to-r from-purple-900 via-indigo-800 to-blue-800 md:flex-[1_1_60%]"
-                >
-                  <Flex gap="md" direction="column">
-                    <Title
-                      order={2}
-                      pt={43}
-                      px={12}
-                      variant="gradient"
-                      align="center"
-                      gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                      className={`${montserrat_heading.variable} font-montserratHeading`}
-                    >
-                      API Keys &amp; Project Defaults
-                    </Title>
-                    <Stack align="center" justify="start">
-                      <div className="flex flex-col lg:flex-row">
-                        <Title
-                          className={`${montserrat_heading.variable} flex-[1_1_50%] font-montserratHeading`}
-                          order={5}
-                          w={'100%'}
-                          px={18}
-                          ml={'md'}
-                          style={{ textAlign: 'left' }}
-                        >
-                          Configure your default settings and API keys for each
-                          provider.
-                        </Title>
-                      </div>
-                      {/* <Card
+        <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center">
+          <div className="items-left flex w-full flex-col justify-center py-0">
+            <Flex direction="column" align="center" w="100%">
+              <Card
+                shadow="xs"
+                padding="none"
+                radius="xl"
+                style={{ maxWidth: '90%', width: '100%', marginTop: '2%' }}
+              >
+                <Flex className="flex-col md:flex-row">
+                  {/* // direction={isSmallScreen ? 'column' : 'row'}> */}
+                  <div
+                    style={{
+                      // flex: isSmallScreen ? '1 1 100%' : '1 1 60%',
+                      border: 'None',
+                      color: 'white',
+                    }}
+                    className="min-h-full flex-[1_1_100%] bg-gradient-to-r from-purple-900 via-indigo-800 to-blue-800 md:flex-[1_1_60%]"
+                  >
+                    <Flex gap="md" direction="column">
+                      <Title
+                        order={2}
+                        pt={43}
+                        px={12}
+                        variant="gradient"
+                        align="center"
+                        gradient={{ from: 'gold', to: 'white', deg: 50 }}
+                        className={`${montserrat_heading.variable} font-montserratHeading`}
+                      >
+                        API Keys &amp; Project Defaults
+                      </Title>
+                      <Stack align="center" justify="start">
+                        <div className="flex flex-col lg:flex-row">
+                          <Title
+                            className={`${montserrat_heading.variable} flex-[1_1_50%] font-montserratHeading`}
+                            order={5}
+                            w={'100%'}
+                            px={18}
+                            ml={'md'}
+                            style={{ textAlign: 'left' }}
+                          >
+                            Configure your default settings and API keys for
+                            each provider.
+                          </Title>
+                        </div>
+                        {/* <Card
                         shadow="sm"
                         padding="lg"
                         radius="md"
@@ -356,167 +359,172 @@ export default function APIKeyInputForm() {
                           border: 'none',
                         }}
                       > */}
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                        }}
-                      >
-                        {/* Providers */}
-                        <div
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 16,
-                            padding: '2rem',
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
                           }}
                         >
-                          {llmProviders && (
-                            <>
-                              <AnthropicProviderInput
-                                provider={
-                                  llmProviders.Anthropic as AnthropicProvider
-                                }
-                                form={form}
-                                providerName="Anthropic"
-                              />
-                              <OpenAIProviderInput
-                                provider={llmProviders.OpenAI as OpenAIProvider}
-                                form={form}
-                                providerName="OpenAI"
-                              />
-                              <AzureProviderInput
-                                provider={llmProviders.Azure as AzureProvider}
-                                form={form}
-                                providerName="Azure"
-                              />
-                              <OllamaProviderInput
-                                provider={llmProviders.Ollama as OllamaProvider}
-                                form={form}
-                                providerName="Ollama"
-                              />
-                              <WebLLMProviderInput
-                                provider={llmProviders.WebLLM as WebLLMProvider}
-                                form={form}
-                                providerName="WebLLM"
-                              />
-                            </>
-                          )}
-                        </div>
+                          {/* Providers */}
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 16,
+                              padding: '2rem',
+                            }}
+                          >
+                            {llmProviders && (
+                              <>
+                                <AnthropicProviderInput
+                                  provider={
+                                    llmProviders.Anthropic as AnthropicProvider
+                                  }
+                                  form={form}
+                                  providerName="Anthropic"
+                                />
+                                <OpenAIProviderInput
+                                  provider={
+                                    llmProviders.OpenAI as OpenAIProvider
+                                  }
+                                  form={form}
+                                  providerName="OpenAI"
+                                />
+                                <AzureProviderInput
+                                  provider={llmProviders.Azure as AzureProvider}
+                                  form={form}
+                                  providerName="Azure"
+                                />
+                                <OllamaProviderInput
+                                  provider={
+                                    llmProviders.Ollama as OllamaProvider
+                                  }
+                                  form={form}
+                                  providerName="Ollama"
+                                />
+                                <WebLLMProviderInput
+                                  provider={
+                                    llmProviders.WebLLM as WebLLMProvider
+                                  }
+                                  form={form}
+                                  providerName="WebLLM"
+                                />
+                              </>
+                            )}
+                          </div>
 
-                        <form.Subscribe
-                          selector={(state) => [
-                            state.canSubmit,
-                            state.isSubmitting,
-                          ]}
-                        >
-                          {([canSubmit, isSubmitting]) => (
-                            <Button
-                              type="submit"
-                              fullWidth
-                              disabled={!canSubmit}
-                              sx={(theme) => ({
-                                marginTop: 16,
-                                backgroundColor: '#9333ea',
-                                '&:hover': { backgroundColor: '#7e22ce' },
-                              })}
-                            >
-                              {isSubmitting
-                                ? '...'
-                                : 'Save Changes - TODO remove this button. Each has their own.'}
-                            </Button>
-                          )}
-                        </form.Subscribe>
-                      </form>
-                      {/* </Card> */}
-                    </Stack>
-                  </Flex>
-                </div>
-                <div
-                  className="flex flex-[1_1_100%] md:flex-[1_1_40%]"
-                  style={{
-                    // flex: isSmallScreen ? '1 1 100%' : '1 1 40%',
-                    padding: '1rem',
-                    backgroundColor: '#15162c',
-                    color: 'white',
-                  }}
-                >
-                  <div className="card flex h-full flex-col justify-center">
-                    <div className="card-body">
-                      <div className="pb-4">
-                        <Title
-                          // className={`label ${montserrat.className}`}
-                          className={`label ${montserrat_heading.variable} font-montserratHeading`}
-                          variant="gradient"
-                          gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                          order={3}
-                        >
-                          Default Model
-                        </Title>
-                        <div
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 16,
-                          }}
-                        >
-                          {/* Default Model */}
-                          <div>
-                            {/* <Text size="sm" weight={500} mb={4}>
+                          <form.Subscribe
+                            selector={(state) => [
+                              state.canSubmit,
+                              state.isSubmitting,
+                            ]}
+                          >
+                            {([canSubmit, isSubmitting]) => (
+                              <Button
+                                type="submit"
+                                fullWidth
+                                disabled={!canSubmit}
+                                sx={(theme) => ({
+                                  marginTop: 16,
+                                  backgroundColor: '#9333ea',
+                                  '&:hover': { backgroundColor: '#7e22ce' },
+                                })}
+                              >
+                                {isSubmitting
+                                  ? '...'
+                                  : 'Save Changes - TODO remove this button. Each has their own.'}
+                              </Button>
+                            )}
+                          </form.Subscribe>
+                        </form>
+                        {/* </Card> */}
+                      </Stack>
+                    </Flex>
+                  </div>
+                  <div
+                    className="flex flex-[1_1_100%] md:flex-[1_1_40%]"
+                    style={{
+                      // flex: isSmallScreen ? '1 1 100%' : '1 1 40%',
+                      padding: '1rem',
+                      backgroundColor: '#15162c',
+                      color: 'white',
+                    }}
+                  >
+                    <div className="card flex h-full flex-col justify-center">
+                      <div className="card-body">
+                        <div className="pb-4">
+                          <Title
+                            // className={`label ${montserrat.className}`}
+                            className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                            variant="gradient"
+                            gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                            order={3}
+                          >
+                            Default Model
+                          </Title>
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 16,
+                            }}
+                          >
+                            {/* Default Model */}
+                            <div>
+                              {/* <Text size="sm" weight={500} mb={4}>
                               Default Model
                             </Text> */}
-                            <ModelSelect/>
-                          </div>
-                          
-                          
-                          {/* Temperature */}
-                          <div>
-                            <Text size="sm" weight={500} mb={4}>
-                              Default Temperature:{' '}
-                              {form.getFieldValue('defaultTemperature')}
-                            </Text>
-                            <form.Field name="defaultTemperature">
-                              {(field) => (
-                                <>
-                                  <Slider
-                                    value={field.state.value}
-                                    onChange={(value) =>
-                                      field.handleChange(value)
-                                    }
-                                    min={0}
-                                    max={1}
-                                    step={0.1}
-                                    label={null}
-                                    styles={(theme) => ({
-                                      track: {
-                                        backgroundColor: theme.colors.gray[2],
-                                      },
-                                      thumb: {
-                                        borderWidth: 2,
-                                        padding: 3,
-                                      },
-                                    })}
-                                  />
-                                </>
-                              )}
-                            </form.Field>
-                            <Text size="xs" color="dimmed" mt={4}>
-                              Higher values increase randomness, lower values
-                              increase focus and determinism.
-                            </Text>
-                          </div>
-                        </div>
+                              <ModelSelect />
+                            </div>
 
-                        <div className="pt-2" />
+                            {/* Temperature */}
+                            <div>
+                              <Text size="sm" weight={500} mb={4}>
+                                Default Temperature:{' '}
+                                {form.getFieldValue('defaultTemperature')}
+                              </Text>
+                              <form.Field name="defaultTemperature">
+                                {(field) => (
+                                  <>
+                                    <Slider
+                                      value={field.state.value}
+                                      onChange={(value) =>
+                                        field.handleChange(value)
+                                      }
+                                      min={0}
+                                      max={1}
+                                      step={0.1}
+                                      label={null}
+                                      styles={(theme) => ({
+                                        track: {
+                                          backgroundColor: theme.colors.gray[2],
+                                        },
+                                        thumb: {
+                                          borderWidth: 2,
+                                          padding: 3,
+                                        },
+                                      })}
+                                    />
+                                  </>
+                                )}
+                              </form.Field>
+                              <Text size="xs" color="dimmed" mt={4}>
+                                Higher values increase randomness, lower values
+                                increase focus and determinism.
+                              </Text>
+                            </div>
+                          </div>
+
+                          <div className="pt-2" />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </Flex>
-            </Card>
+                </Flex>
+              </Card>
 
-            {/* SECTION: OTHER INFO, TBD */}
-            {/* <div
+              {/* SECTION: OTHER INFO, TBD */}
+              {/* <div
               className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
             >
@@ -554,12 +562,12 @@ export default function APIKeyInputForm() {
                 </div>
               </Flex>
             </div> */}
-          </Flex>
-        </div>
-        <GlobalFooter />
-      </main>
+            </Flex>
+          </div>
+          <GlobalFooter />
+        </main>
       </HomeContext.Provider>
-    </>  
+    </>
   )
 }
 
