@@ -47,6 +47,8 @@ import AnthropicProviderInput from './providers/AnthropicProviderInput'
 import AzureProviderInput from './providers/AzureProviderInput'
 import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
+import { ModelSelect } from '~/components/Chat/ModelSelect'
+import HomeContext from '~/pages/api/home/home.context'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -187,6 +189,17 @@ const loadingTextLLMProviders: AllLLMProviders = {
 export default function APIKeyInputForm() {
   const course_name = GetCurrentPageName()
 
+  const homeContextValue = React.useMemo(() => ({
+    state: {
+      selectedConversation: null,
+      llmProviders: {},
+      defaultModelId: '',
+      webLLMModelIdLoading: { id: '', isLoading: false },
+    },
+    handleUpdateConversation: () => {},
+    dispatch: () => {},
+  }), [])
+
   // ------------ <TANSTACK QUERIES> ------------
   const queryClient = useQueryClient()
   const {
@@ -275,6 +288,7 @@ export default function APIKeyInputForm() {
 
   return (
     <>
+      <HomeContext.Provider value={homeContextValue}>
       <Navbar course_name={course_name} />
 
       <Head>
@@ -448,40 +462,13 @@ export default function APIKeyInputForm() {
                         >
                           {/* Default Model */}
                           <div>
-                            <Text size="sm" weight={500} mb={4}>
+                            {/* <Text size="sm" weight={500} mb={4}>
                               Default Model
-                            </Text>
-                            <form.Field name="defaultModel">
-                              {(field) => (
-                                <>
-                                  <Select
-                                    value={field.state.value}
-                                    onChange={(value) =>
-                                      field.handleChange(value || '')
-                                    }
-                                    data={defaultModelOptions}
-                                    styles={(theme) => ({
-                                      input: {
-                                        backgroundColor: '#2d2d3d',
-                                        borderColor: '#4a4a5e',
-                                        color: 'white',
-                                      },
-                                      item: {
-                                        '&[data-selected]': {
-                                          backgroundColor: theme.fn.variant({
-                                            variant: 'filled',
-                                            color: theme.primaryColor,
-                                          }).background,
-                                          color: theme.white,
-                                        },
-                                      },
-                                    })}
-                                  />
-                                </>
-                              )}
-                            </form.Field>
+                            </Text> */}
+                            <ModelSelect/>
                           </div>
-
+                          
+                          
                           {/* Temperature */}
                           <div>
                             <Text size="sm" weight={500} mb={4}>
@@ -571,7 +558,8 @@ export default function APIKeyInputForm() {
         </div>
         <GlobalFooter />
       </main>
-    </>
+      </HomeContext.Provider>
+    </>  
   )
 }
 
