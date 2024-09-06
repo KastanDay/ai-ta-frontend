@@ -266,9 +266,9 @@ export default function APIKeyInputForm() {
       <Navbar course_name={course_name} />
 
       <Head>
-        <title>{course_name}</title>
+        <title>{course_name}/LLMs</title>
         <meta
-          name="description"
+          name="UIUC.chat"
           content="The AI teaching assistant built for students at UIUC."
         />
         <link rel="icon" href="/favicon.ico" />
@@ -281,7 +281,7 @@ export default function APIKeyInputForm() {
               shadow="xs"
               padding="none"
               radius="xl"
-              style={{ maxWidth: '85%', width: '100%', marginTop: '4%' }}
+              style={{ maxWidth: '85%', width: '100%', marginTop: '2%' }}
             >
               <Flex className="flex-col md:flex-row">
                 {/* // direction={isSmallScreen ? 'column' : 'row'}> */}

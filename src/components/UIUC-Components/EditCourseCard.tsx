@@ -290,8 +290,8 @@ const EditCourseCard = ({
       shadow="xs"
       padding="none"
       radius="xl"
-      // style={{ maxWidth: '85%', width: '100%', marginTop: '4%' }}
-      className="mt-[4%] w-[96%] md:w-[90%] 2xl:w-[75%]"
+      // style={{ maxWidth: '85%', width: '100%', marginTop: '2%' }}
+      className="mt-[2%] w-[96%] md:w-[90%] 2xl:w-[75%]"
     >
       <Flex direction={isSmallScreen ? 'column' : 'row'}>
         <div

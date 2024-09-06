@@ -20,6 +20,7 @@ import {
   MessageCode,
   Key,
   Code,
+  Brain,
 } from 'tabler-icons-react'
 import { useRouter } from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
@@ -170,11 +171,11 @@ const Navbar = ({
         <span
           className={`${montserrat_heading.variable} font-montserratHeading`}
         >
-          Keys
+          LLMs
         </span>
       ),
-      icon: <KeyIcon />,
-      link: `/${getCurrentCourseName()}/keys`,
+      icon: <LLMIcon />,
+      link: `/${getCurrentCourseName()}/llms`,
     },
     {
       name: (
@@ -358,9 +359,9 @@ export function ReportIcon() {
   )
 }
 
-export function KeyIcon() {
+export function LLMIcon() {
   return (
-    <Key
+    <Brain
       size={18}
       strokeWidth={2}
       style={{ marginRight: '3px', marginLeft: '3px' }}

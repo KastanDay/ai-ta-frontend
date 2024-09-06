@@ -251,7 +251,7 @@ const ApiKeyManagement = ({
       shadow="xs"
       padding="none"
       radius="xl"
-      style={{ maxWidth: '85%', width: '100%', marginTop: '4%' }}
+      style={{ maxWidth: '85%', width: '100%', marginTop: '2%' }}
     >
       <Flex
         direction={isSmallScreen ? 'column' : 'row'}
