@@ -297,6 +297,7 @@ export default function APIKeyInputForm() {
                     <Title
                       order={2}
                       pt={43}
+                      px={12}
                       variant="gradient"
                       align="center"
                       gradient={{ from: 'gold', to: 'white', deg: 50 }}
@@ -310,6 +311,7 @@ export default function APIKeyInputForm() {
                           className={`${montserrat_heading.variable} flex-[1_1_50%] font-montserratHeading`}
                           order={5}
                           w={'100%'}
+                          px={18}
                           ml={'md'}
                           style={{ textAlign: 'left' }}
                         >
