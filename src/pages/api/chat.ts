@@ -32,9 +32,14 @@ const handler = async (req: Request): Promise<NextResponse> => {
     const openAIKey = await parseOpenaiKey(key)
 
     if (!conversation) {
-      console.error('No conversation provided')
+      console.error(
+        'No conversation provided. It seems the `messages` array was empty.',
+      )
       return new NextResponse(
-        JSON.stringify({ error: 'No conversation provided' }),
+        JSON.stringify({
+          error:
+            'No conversation provided. It seems the `messages` array was empty.',
+        }),
         { status: 400 },
       )
     }
