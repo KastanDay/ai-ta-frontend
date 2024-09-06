@@ -148,16 +148,6 @@ const EditCourseCard = ({
     return router.asPath.split('/')[1]?.split('?')[0] as string
   }
 
-  const handleSubmit = async (project_name: string, project_description: string | undefined) => {
-    try {
-      const result = await createProject(project_name, project_description)
-      console.log('Project created successfully:', result)
-
-
-    } catch (error) {
-      console.error('Error creating project:', error)
-    }
-  }
 
   useEffect(() => {
     // only run when creating new courses.. otherwise VERY wasteful on DB.
@@ -332,89 +322,7 @@ const EditCourseCard = ({
             >
               {!is_new_course ? `${courseName}` : 'Chat with your documents'}
             </Title>
-            {/* {is_new_course && (
-              <>
-                <Flex direction="column" gap="md" w={isSmallScreen ? '80%' : '60%'}>
 
-                  <TextInput
-                    // icon={icon}
-                    // className={`mt-4 w-[80%] min-w-[20rem] disabled:bg-purple-200 lg:w-[75%]`}
-                    styles={{
-                      input: {
-                        backgroundColor: '#1A1B1E',
-                        paddingRight: '6rem', // Adjust right padding to prevent text from hiding behind the button
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        color: isCourseAvailable && courseName != '' ? 'green' : 'red',
-                        '&:focus-within': {
-                          borderColor: isCourseAvailable && courseName !== '' ? 'green' : 'red',
-                        },
-                        fontSize: '16px', // Added text styling
-                        font: `${montserrat_paragraph.variable} font-montserratParagraph`,
-                      }
-                    }}
-                    placeholder="Project name"
-                    radius={'lg'}
-                    type="text"
-                    value={courseName}
-                    label="What is the project name?"
-                    size={'lg'}
-                    disabled={!is_new_course}
-                    onChange={(e) => setCourseName(e.target.value.replaceAll(' ', '-'))}
-                    autoFocus
-                    withAsterisk
-                    className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-                    //               className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                    // ${isCourseAvailable && courseName != ''
-                    //                   ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                    //                   : 'border-red-800 text-red-600 focus:border-red-800'
-                    //                 } ${montserrat_paragraph.variable} font-montserratParagraph`}
-
-                    rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
-                  />
-                  <Textarea
-                    placeholder="Describe your project, goals, expected impact etc..."
-                    radius={'lg'}
-                    value={projectDescription}
-                    label="What do you want to achieve?"
-                    onChange={(e) => setProjectDescription(e.target.value)}
-                    size={'lg'}
-                    styles={{
-                      input: {
-                        backgroundColor: '#1A1B1E',
-                        fontSize: '16px', // Added text styling
-                        font: `${montserrat_paragraph.variable} font-montserratParagraph`,
-                      } // Added text styling
-                    }}
-                    className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-
-                  />
-                  <Button
-                    onClick={(e) => {
-                      handleSubmit(courseName, projectDescription);
-                    }}
-                    size="md"
-                    radius={'sm'}
-                    className={`${isCourseAvailable && courseName !== '' ? 'bg-purple-800' : 'border-purple-800'}
-                       overflow-ellipsis text-ellipsis p-2 ${isCourseAvailable && courseName !== '' ? 'text-white' : 'text-gray-500'}
-                        min-w-[5rem] transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
-                    w={`${isSmallScreen ? '40%' : '20%'}`}
-                    style={{ alignSelf: 'flex-end' }}
-                    disabled={courseName === ''}
-                  >
-                    Create
-                  </Button>
-                  <Title
-                    order={4}
-                    className={`w-full text-center ${montserrat_paragraph.variable} mt-4 font-montserratParagraph`}
-                  >
-                    Just one step: upload any and all materials. More is better,
-                    it&apos;s fine if they&apos;re messy.
-                  </Title>
-                </Flex>
-              </>
-            )} */}
             <Flex direction={'column'} align={'center'} w={'100%'}>
               <div className={'flex flex-row items-center'}>
                 {loadinSpinner && (

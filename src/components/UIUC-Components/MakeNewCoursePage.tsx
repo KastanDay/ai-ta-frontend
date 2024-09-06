@@ -12,20 +12,18 @@ import { callSetCourseMetadata } from '~/utils/apiUtils'
 import { CourseMetadata } from '~/types/courseMetadata'
 
 const MakeNewCoursePage = ({
-  course_name,
+  project_name,
   current_user_email,
   is_new_course = true,
   project_description,
-  courseMetadata,
 }: {
-  course_name: string
+  project_name: string
   current_user_email: string
   is_new_course?: boolean
   project_description?: string
-  courseMetadata: CourseMetadata
 }) => {
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
-  const [courseName, setCourseName] = useState(course_name || '')
+  const [projectName, setProjectName] = useState(project_name || '')
   const [projectDescription, setProjectDescription] = useState(project_description || '')
   const [isCourseAvailable, setIsCourseAvailable] = useState<
     boolean | undefined
@@ -35,9 +33,9 @@ const MakeNewCoursePage = ({
   >([])
   const checkCourseAvailability = () => {
     const courseExists =
-      courseName != '' &&
+      projectName != '' &&
       allExistingCourseNames &&
-      allExistingCourseNames.includes(courseName)
+      allExistingCourseNames.includes(projectName)
     setIsCourseAvailable(!courseExists)
   }
   const checkIfNewCoursePage = () => {
@@ -73,14 +71,14 @@ const MakeNewCoursePage = ({
 
   useEffect(() => {
     checkCourseAvailability()
-  }, [courseName])
+  }, [projectName])
 
-  const handleSubmit = async (project_name: string, project_description: string | undefined) => {
+  const handleSubmit = async (project_name: string, project_description: string | undefined, current_user_email: string) => {
     try {
-      const result = await createProject(project_name, project_description)
+      const result = await createProject(project_name, project_description, current_user_email)
       console.log('Project created successfully:', result)
       if (is_new_course) {
-        await router.push(`/${courseName}/materials`)
+        await router.push(`/${projectName}/materials`)
         return
       }
     } catch (error) {
@@ -92,7 +90,7 @@ const MakeNewCoursePage = ({
     <>
       <Navbar isPlain={true} />
       <Head>
-        <title>{course_name}</title>
+        <title>{project_name}</title>
         <meta name="description" content="Create a new project on UIUC.chat." />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -133,9 +131,9 @@ const MakeNewCoursePage = ({
                     order={2}
                     variant="gradient"
                     gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                    className={`${montserrat_heading.variable} font-montserratHeading`}
+                    className={`${montserrat_heading.variable} font-montserratHeading text-center`}
                   >
-                    {!is_new_course ? `${courseName}` : 'Create a new project'}
+                    {!is_new_course ? `${projectName}` : 'Create a new project'}
                   </Title>
                   {/* {is_new_course && ( */}
                   {/* <> */}
@@ -150,27 +148,29 @@ const MakeNewCoursePage = ({
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        color: isCourseAvailable && courseName != '' ? 'green' : 'red',
+                        color: isCourseAvailable && projectName != '' ? 'green' : 'red',
                         '&:focus-within': {
-                          borderColor: isCourseAvailable && courseName !== '' ? 'green' : 'red',
+                          borderColor: isCourseAvailable && projectName !== '' ? 'green' : 'red',
                         },
                         fontSize: '16px', // Added text styling
                         font: `${montserrat_paragraph.variable} font-montserratParagraph`,
                       },
                       label: {
                         fontWeight: 'bold',
+                        fontSize: '20px',
                         color: 'white',
+                        marginBottom: '1rem',
                       }
                     }}
                     placeholder="Project name"
                     radius={'lg'}
                     type="text"
-                    value={courseName}
+                    value={projectName}
                     label="What is the project name?"
                     size={'lg'}
                     disabled={!is_new_course
                     }
-                    onChange={(e) => setCourseName(e.target.value.replaceAll(' ', '-'))}
+                    onChange={(e) => setProjectName(e.target.value.replaceAll(' ', '-'))}
                     autoFocus
                     withAsterisk
                     className={`${montserrat_paragraph.variable} font-montserratParagraph`}
@@ -182,11 +182,18 @@ const MakeNewCoursePage = ({
 
                     rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
                   />
+                  <Flex justify="space-between" align="center">
+                    <label className={`${montserrat_paragraph.variable} font-montserratParagraph font-bold mt-4`} style={{ fontSize: '20px' }}>
+                      What do you want to achieve?
+                    </label>
+                    <label className={`${montserrat_paragraph.variable} font-montserratParagraph text-gray-400 font-bold mt-4`}>
+                      Optional
+                    </label>
+                  </Flex>
                   <Textarea
                     placeholder="Describe your project, goals, expected impact etc..."
                     radius={'lg'}
                     value={projectDescription}
-                    label="What do you want to achieve? (optional)"
                     onChange={(e) => setProjectDescription(e.target.value)}
                     size={'lg'}
                     minRows={4}
@@ -210,23 +217,22 @@ const MakeNewCoursePage = ({
                       className={`w-full pr-2 text-right pr-7 ${montserrat_paragraph.variable} mt-2 font-montserratParagraph`}
                     >
                       Next: let&apos;s upload some documents
-
                       {/* </> */}
                     </Title>
                     <Button
                       onClick={(e) => {
-                        handleSubmit(courseName, projectDescription);
+                        handleSubmit(projectName, projectDescription, current_user_email);
                       }}
                       size="md"
                       radius={'sm'}
-                      className={`${isCourseAvailable && courseName !== '' ? 'bg-purple-800' : 'border-purple-800'}
-                       overflow-ellipsis text-ellipsis p-2 ${isCourseAvailable && courseName !== '' ? 'text-white' : 'text-gray-500'}
+                      className={`${isCourseAvailable && projectName !== '' ? 'bg-purple-800' : 'border-purple-800'}
+                       overflow-ellipsis text-ellipsis p-2 ${isCourseAvailable && projectName !== '' ? 'text-white' : 'text-gray-500'}
                         min-w-[5rem] transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
                       w={`${isSmallScreen ? '40%' : '20%'}`}
                       style={{
                         alignSelf: 'flex-end',
                       }}
-                      disabled={courseName === ''}
+                      disabled={projectName === ''}
                     >
                       Create
                     </Button>

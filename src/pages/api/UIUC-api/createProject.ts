@@ -3,10 +3,12 @@ import { ContextWithMetadata } from "~/types/chat";
 export const createProject = async (
   project_name: string,
   project_description: string | undefined,
+  project_owner_email: string,
 ): Promise<boolean> => {
   const requestBody = {
     project_name: project_name,
     project_description: project_description,
+    project_owner_email: project_owner_email,
   }
   const url = 'https://flask-pr-291.up.railway.app/createProject'
 
