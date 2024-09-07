@@ -46,8 +46,9 @@ import AnthropicProviderInput from './providers/AnthropicProviderInput'
 import AzureProviderInput from './providers/AzureProviderInput'
 import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
-import { ModelSelect } from '~/components/Chat/ModelSelect'
-import HomeContext from '~/pages/api/home/home.context'
+import { ModelDropdown } from '~/components/Chat/ModelSelect'
+import { webLLMModels } from '~/utils/modelProviders/WebLLM'
+// import { ModelSelect } from '~/components/Chat/ModelSelect'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -210,27 +211,9 @@ export default function APIKeyInputForm() {
     isError: isErrorLLMProviders,
   } = useGetProjectLLMProviders(course_name)
 
-  // const {
-  //   data: defaultModelData,
-  //   isLoading: isLoadingDefaultModel,
-  //   isError: isErrorDefaultModel,
-  // } = useGetProjectDefaultModel(course_name)
-
   // TODO: TEMP HACK
   const defaultModel = 'tmp' // don't default... stay undefined
   const defaultTemp = 1.0 // default to 0.1
-
-  // useEffect(() => {
-  //   // handle errors
-  //   if (isErrorDefaultModel) {
-  //     showConfirmationToast({
-  //       title: 'Error',
-  //       message:
-  //         'Failed to fetch default model. Our database must be having a bad day. Please refresh or try again later.',
-  //       isError: true,
-  //     })
-  //   }
-  // }, [isErrorDefaultModel])
 
   useEffect(() => {
     // handle errors
@@ -247,29 +230,22 @@ export default function APIKeyInputForm() {
   const mutation = useSetProjectLLMProviders(queryClient)
   // ------------ </TANSTACK QUERIES> ------------
 
-  // if (isLoadingLLMProviders) {
-  //   return (
-  //     <div className="flex items-center justify-center h-screen">
-  //       <Text>Loading...</Text>
-  //     </div>
-  //   )
-  // }
-
   const form = useForm({
     defaultValues: {
-      providers: llmProviders || loadingTextLLMProviders,
-      defaultModel: defaultModel || 'Loading...',
-      defaultTemperature: defaultTemp || NaN,
+      providers: llmProviders ?? loadingTextLLMProviders,
+      defaultModel: defaultModel ?? 'Loading...',
+      defaultTemperature: defaultTemp ?? 0.1,
     },
     onSubmit: async ({ value }) => {
       console.log('onSubmit here: ', value)
+      const llmProviders = value.providers || {}
       mutation.mutate(
         {
           course_name,
           queryClient,
-          llmProviders: value.providers,
-          defaultModelID: value.defaultModel.toString(),
-          defaultTemperature: value.defaultTemperature.toString(),
+          llmProviders,
+          defaultModelID: (value.defaultModel || '').toString(),
+          defaultTemperature: (value.defaultTemperature || '').toString(),
         },
         {
           onSuccess: (data, variables, context) =>
@@ -290,6 +266,35 @@ export default function APIKeyInputForm() {
 
   console.log('llmProviders', JSON.stringify(llmProviders, null, 2))
   console.log('form.state', JSON.stringify(form.state, null, 2))
+  if (isLoadingLLMProviders) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Text>Loading...</Text>
+      </div>
+    )
+  }
+
+  if (isErrorLLMProviders) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Text>Failed to load API keys. Please try again later.</Text>
+      </div>
+    )
+  }
+
+  // if the providers are empty, null, undefined, or an empty object, show error
+  if (
+    !llmProviders ||
+    llmProviders === null ||
+    llmProviders === undefined ||
+    Object.keys(llmProviders).length === 0
+  ) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Text>Failed to load API keys. Please try again later.</Text>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -364,6 +369,7 @@ export default function APIKeyInputForm() {
                         onSubmit={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
+                          form.handleSubmit()
                         }}
                       >
                         {/* Providers */}
@@ -424,7 +430,7 @@ export default function APIKeyInputForm() {
                               })}
                             >
                               {isSubmitting
-                                ? '...'
+                                ? '...saving to DB....'
                                 : 'Save Changes - TODO remove this button. Each has their own.'}
                             </Button>
                           )}
@@ -464,10 +470,56 @@ export default function APIKeyInputForm() {
                         >
                           {/* Default Model */}
                           <div>
-                            {/* <Text size="sm" weight={500} mb={4}>
-                              Default Model
-                            </Text> */}
-                            <ModelSelect />
+                            {/* TODO: REENABLE MODEL SELECT WITHOUT HOME CONTEXT */}
+                            {/* <ModelSelect /> */}
+                            {llmProviders && (
+                              <ModelDropdown
+                                value={form.getFieldValue('defaultModel')}
+                                onChange={
+                                  // async (modelId) => {
+                                  // // if (state.webLLMModelIdLoading) {
+                                  // //   setLoadingModelId(modelId)
+                                  // //   console.log('model is loading', state.webLLMModelIdLoading.id)
+                                  // // }
+                                  // await handleModelClick(modelId)
+                                  async (modelId) => {
+                                    // TODO
+                                    // handleModelClick(modelId)
+                                  }
+                                }
+                                models={{
+                                  Ollama: llmProviders.Ollama?.models?.filter(
+                                    (model) => model.enabled,
+                                  ),
+                                  OpenAI: llmProviders.OpenAI?.models?.filter(
+                                    (model) => model.enabled,
+                                  ),
+                                  Anthropic:
+                                    llmProviders.Anthropic?.models?.filter(
+                                      (model) => model.enabled,
+                                    ),
+                                  Azure: llmProviders.Azure?.models?.filter(
+                                    (model) => model.enabled,
+                                  ),
+                                }}
+                                // isSmallScreen={isSmallScreen}
+                                // loadingModelId={loadingModelId}
+                                // setLoadingModelId={setLoadingModelId}
+                                // chat_ui={chat_ui}
+                                isSmallScreen={false}
+                                loadingModelId={'test'}
+                                setLoadingModelId={(id: string | null) => {
+                                  /* TODO: Implement this */
+                                }}
+                                state={{
+                                  webLLMModelIdLoading: {
+                                    id: 'test',
+                                    isLoading: false,
+                                  },
+                                }}
+                                showWebLLmModels={false}
+                              />
+                            )}
                           </div>
 
                           {/* Temperature */}

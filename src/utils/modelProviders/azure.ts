@@ -76,7 +76,6 @@ export const getAzureModels = async (
     }
 
     const data = await response.json()
-    console.log('this is the data', data)
     const azureModels: AzureModel[] = data.data
       .filter((model: any) => Object.values(AzureModelID).includes(model.id))
       .map((model: any) => {
@@ -88,7 +87,6 @@ export const getAzureModels = async (
           enabled: true,
         } as AzureModel
       })
-    console.log('Azure OpenAI models:', azureModels)
     azureProvider.models = azureModels
     return azureProvider
   } catch (error: any) {

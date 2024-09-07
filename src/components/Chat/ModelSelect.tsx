@@ -17,12 +17,7 @@ import { OpenAIModel } from '~/utils/modelProviders/openai'
 import ChatUI, { webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { modelCached } from './UserSettings'
 import Image from 'next/image'
-import {
-  LLMProvider,
-  ProviderNames,
-  selectBestModel,
-} from '~/types/LLMProvider'
-import { SelectItemProps } from '@mantine/core'
+import { ProviderNames, selectBestModel } from '~/types/LLMProvider'
 import {
   recommendedModelIds,
   warningLargeModelIds,
@@ -30,23 +25,30 @@ import {
 import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
 
 interface ModelDropdownProps {
-  title: string
   value: string | undefined
   onChange: (value: string) => void
   models: {
     OpenAI?: { id: string; name: string; downloadSize?: string }[]
     Ollama?: { id: string; name: string; downloadSize?: string }[]
+    Azure?: { id: string; name: string; downloadSize?: string }[]
     WebLLM?: { id: string; name: string; downloadSize?: string }[]
     Anthropic?: { id: string; name: string; downloadSize?: string }[]
   }
   isSmallScreen: boolean
-  isWebLLM?: boolean
   loadingModelId: string | null
-  chat_ui: ChatUI
+  state: {
+    webLLMModelIdLoading: {
+      id: string | null
+      isLoading: boolean
+    }
+    // Add other state properties as needed
+  }
+  showWebLLmModels: boolean
 }
 
 interface ModelItemProps extends React.ComponentPropsWithoutRef<'div'> {
   label: string
+  showWebLLmModels: boolean
   downloadSize?: string
   isDownloaded?: boolean
   modelId: string
@@ -91,6 +93,7 @@ const ModelItem = forwardRef<
       loadingModelId,
       setLoadingModelId,
       chat_ui,
+      showWebLLmModels,
       ...others
     }: ModelItemProps & {
       loadingModelId: string | null
@@ -101,44 +104,23 @@ const ModelItem = forwardRef<
     const [isModelCached, setIsModelCached] = useState(false)
     const showSparkles = recommendedModelIds.includes(label)
     const showWarningLargeModel = warningLargeModelIds.includes(label)
-    const { state, dispatch: homeDispatch } = useContext(HomeContext)
-    // const {
-    //   state: {
-    //     isLoadingWebLLMModelId,
 
-    //   },
-    //   handleUpdateConversation,
-    //   dispatch: homeDispatch,
-    // } = useContext(HomeContext)
     useEffect(() => {
       const checkModelCache = async () => {
-        // if (!chat_ui?.isModelLoading()) {
-        //   setLoadingModelId(null)
-        // }
-
         const cached = modelCached.some((model) => model.id === modelId)
         setIsModelCached(cached)
-        // if (cached && isLoading) {
-        //   const webLLMLoadingState = { id: modelId, isLoading: false }
-        //   // homeDispatch({
-        //   //   field: 'webLLMModelIdLoading',
-        //   //   value: WebLLMLoadingState,
-        //   // })
-        //   setLoadingModelId(null)
-        // }
-        //   console.log('model is loading', state.webLLMModelIdLoading)
-        //   if (state.webLLMModelIdLoading.isLoading) {
-        //     setLoadingModelId(modelId)
-        //     console.log('model id', modelId)
-        //     console.log('loading model id', loadingModelId)
-        //     console.log('model is loading', state.webLLMModelIdLoading.id)
-        //   } else if (!state.webLLMModelIdLoading.isLoading) {
-        //     setLoadingModelId(null)
-        //   }
-        // }
       }
       checkModelCache()
     }, [modelId])
+
+    // Only use local state when showing WebLLMs. /chat vs /llms page.
+    let state, homeDispatch
+    if (!showWebLLmModels && modelType === ProviderNames.WebLLM) {
+      return null
+    } else if (showWebLLmModels && modelType === ProviderNames.WebLLM) {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      ;({ state, dispatch: homeDispatch } = useContext(HomeContext))
+    }
 
     return (
       <div ref={ref} {...others}>
@@ -152,11 +134,6 @@ const ModelItem = forwardRef<
                 height={20}
                 style={{ marginRight: '8px', borderRadius: '4px' }}
               />
-              {/* {selectedModelId === modelId ? (
-                <IconCircleCheck stroke={2} />
-              ) : (
-                <IconCircleDashed stroke={2} />
-              )} */}
               <Text size="sm" style={{ marginLeft: '8px' }}>
                 {label}
               </Text>
@@ -172,8 +149,8 @@ const ModelItem = forwardRef<
                 <Text size="xs" opacity={0.65}>
                   {downloadSize}
                 </Text>
-                {state.webLLMModelIdLoading.id == modelId &&
-                state.webLLMModelIdLoading.isLoading ? (
+                {state!.webLLMModelIdLoading.id == modelId &&
+                state!.webLLMModelIdLoading.isLoading ? (
                   <div
                     style={{
                       marginLeft: '8px',
@@ -193,8 +170,8 @@ const ModelItem = forwardRef<
                 ) : (
                   <>
                     {isModelCached ||
-                    (state.webLLMModelIdLoading.id == modelId &&
-                      !state.webLLMModelIdLoading.isLoading) ? (
+                    (state!.webLLMModelIdLoading.id == modelId &&
+                      !state!.webLLMModelIdLoading.isLoading) ? (
                       <>
                         <IconCircleCheck
                           size="1rem"
@@ -212,15 +189,15 @@ const ModelItem = forwardRef<
                       style={{ marginLeft: '4px' }}
                       className={
                         isModelCached ||
-                        (state.webLLMModelIdLoading.id == modelId &&
-                          !state.webLLMModelIdLoading.isLoading)
+                        (state!.webLLMModelIdLoading.id == modelId &&
+                          !state!.webLLMModelIdLoading.isLoading)
                           ? 'text-purple-400'
                           : ''
                       }
                     >
                       {isModelCached ||
-                      (state.webLLMModelIdLoading.id == modelId &&
-                        !state.webLLMModelIdLoading.isLoading)
+                      (state!.webLLMModelIdLoading.id == modelId &&
+                        !state!.webLLMModelIdLoading.isLoading)
                         ? 'downloaded'
                         : 'download'}
                     </Text>
@@ -262,23 +239,25 @@ const ModelItem = forwardRef<
   },
 )
 
-const ModelDropdown: React.FC<
+export const ModelDropdown: React.FC<
   ModelDropdownProps & {
     setLoadingModelId: (id: string | null) => void
     onChange: (modelId: string) => Promise<void>
   }
 > = ({
-  title,
   value,
   onChange,
   models,
   isSmallScreen,
-  isWebLLM,
   loadingModelId,
   setLoadingModelId,
-  chat_ui,
+  state,
+  showWebLLmModels,
 }) => {
-  const { state, dispatch: homeDispatch } = useContext(HomeContext)
+  // const { state, dispatch: homeDispatch } = useContext(HomeContext)
+
+  console.log('Inside model dropdown', models)
+
   const allModels = [
     ...(models.Ollama || []).map((model) => ({
       ...model,
@@ -295,11 +274,13 @@ const ModelDropdown: React.FC<
       provider: ProviderNames.Anthropic,
       group: 'Anthropic',
     })),
-    ...(models.WebLLM || []).map((model) => ({
-      ...model,
-      provider: ProviderNames.WebLLM,
-      group: 'Local in Browser LLMs, runs on your device',
-    })),
+    ...(models.WebLLM && models.WebLLM.length > 0
+      ? models.WebLLM.map((model) => ({
+          ...model,
+          provider: ProviderNames.WebLLM,
+          group: 'Local in Browser LLMs, runs on your device',
+        }))
+      : []),
   ]
   const selectedModel = allModels.find((model) => model.id === value)
 
@@ -349,6 +330,7 @@ const ModelDropdown: React.FC<
               {...props}
               loadingModelId={loadingModelId}
               setLoadingModelId={setLoadingModelId}
+              showWebLLmModels={showWebLLmModels}
             />
           )}
           maxDropdownHeight={480}
@@ -457,7 +439,6 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
         <div>
           <div className="flex flex-col">
             <ModelDropdown
-              title="Select Model"
               value={selectedConversation?.model.id || defaultModelId}
               onChange={
                 // async (modelId) => {
@@ -487,7 +468,14 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               isSmallScreen={isSmallScreen}
               loadingModelId={loadingModelId}
               setLoadingModelId={setLoadingModelId}
-              chat_ui={chat_ui}
+              showWebLLmModels={true}
+              state={{
+                webLLMModelIdLoading: {
+                  id: 'test',
+                  isLoading: false,
+                },
+              }}
+              // homeDispatch={homeDispatch}
             />
             <Title
               className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
