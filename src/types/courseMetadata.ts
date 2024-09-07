@@ -14,6 +14,7 @@ export interface CourseMetadata {
   system_prompt: string | undefined
   openai_api_key: string | undefined // TODO: remove
   disabled_models: string[] | undefined // TODO: remove
+  project_descriptions: string | undefined
   // llmProviders?: LLMProvider[]
 }
 
@@ -37,4 +38,5 @@ export interface CourseMetadataOptionalForUpsert {
   openai_api_key: string | undefined
   system_prompt: string | undefined
   disabled_models: string[] | undefined
+  project_descriptions: string | undefined
 }
