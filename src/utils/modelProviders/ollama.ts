@@ -1,4 +1,5 @@
-import { LLMProvider } from '~/types/LLMProvider'
+// import { OllamaProvider } from 'ollama-ai-provider'
+import { LLMProvider, OllamaProvider } from '~/types/LLMProvider'
 
 export interface OllamaModel {
   id: string
@@ -25,18 +26,18 @@ export const OllamaModels: Record<OllamaModelIDs, OllamaModel> = {
 
 export const getOllamaModels = async (
   ollamaProvider: LLMProvider,
-): Promise<LLMProvider> => {
+): Promise<OllamaProvider> => {
   try {
     if (!ollamaProvider.baseUrl) {
       ollamaProvider.error = `Ollama baseurl not defined: ${ollamaProvider.baseUrl}`
-      return ollamaProvider
+      return ollamaProvider as OllamaProvider
     }
 
     const response = await fetch(ollamaProvider.baseUrl + '/api/tags')
 
     if (!response.ok) {
       ollamaProvider.error = `HTTP error! status: ${response.status}`
-      return ollamaProvider
+      return ollamaProvider as OllamaProvider
     }
     const data = await response.json()
     const ollamaModels: OllamaModel[] = data.models
@@ -48,9 +49,9 @@ export const getOllamaModels = async (
       })
 
     ollamaProvider.models = ollamaModels
-    return ollamaProvider
+    return ollamaProvider as OllamaProvider
   } catch (error: any) {
     ollamaProvider.error = error.message
-    return ollamaProvider
+    return ollamaProvider as OllamaProvider
   }
 }

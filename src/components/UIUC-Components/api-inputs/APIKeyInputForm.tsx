@@ -162,26 +162,26 @@ export const APIKeyInput = ({
 const loadingTextLLMProviders: AllLLMProviders = {
   Ollama: {
     provider: ProviderNames.Ollama,
-    enabled: false,
-    baseUrl: 'Loading...',
+    enabled: true,
+    baseUrl: undefined,
     models: [],
   },
   OpenAI: {
     provider: ProviderNames.OpenAI,
-    enabled: false,
-    apiKey: 'Loading...',
+    enabled: true,
+    apiKey: undefined,
   },
   WebLLM: { provider: ProviderNames.WebLLM, enabled: false },
   Azure: {
     provider: ProviderNames.Azure,
-    enabled: false,
+    enabled: true,
     AzureEndpoint: 'Loading...',
     AzureDeployment: 'Loading...',
     apiKey: 'Loading...',
   },
   Anthropic: {
     provider: ProviderNames.Anthropic,
-    enabled: false,
+    enabled: true,
     apiKey: 'Loading...',
   },
 }

@@ -1,8 +1,13 @@
 import {
   AllLLMProviders,
   AllSupportedModels,
+  AnthropicProvider,
+  AzureProvider,
   LLMProvider,
+  OllamaProvider,
+  OpenAIProvider,
   ProviderNames,
+  WebLLMProvider,
 } from '~/types/LLMProvider'
 import { getOllamaModels } from '~/utils/modelProviders/ollama'
 import { getOpenAIModels } from '~/utils/modelProviders/openai'
@@ -35,94 +40,104 @@ const handler = async (
 
     // Fetch LLM providers from the API
     // TODO: work in progress.
-    const llmProviders = await kv.get(`${projectName}-llms`)
-    // TODO: fix this to verify models are working after fetching API keys.
+    const llmProviders = (await kv.get(
+      `${projectName}-llms`,
+    )) as AllLLMProviders
 
     console.log('llmProviders in /models', llmProviders)
     console.log(
       '❌⭐️❌TODO: fix /models to grab Keys form DB, fetch available && enabled models.',
     )
-    return NextResponse.json(llmProviders as AllLLMProviders, {
+
+    if (!llmProviders) {
+      return NextResponse.json(
+        { error: 'No LLM providers found for this project' },
+        { status: 200 },
+      )
+    }
+
+    // TODO: MOVE THESE TO DB INPUTS
+    // const AzureProvider: LLMProvider = {
+    //   provider: ProviderNames.Azure,
+    //   enabled: true,
+    //   // TODO: COME FROM DB/INPUT not env
+    //   apiKey: process.env.TMP_AZURE_KEY,
+    //   AzureDeployment: process.env.TMP_DEPLOYMENT,
+    //   AzureEndpoint: process.env.TMP_ENDPOINT,
+    // }
+
+    // const AnthropicProvider: LLMProvider = {
+    //   provider: ProviderNames.Anthropic,
+    //   enabled: true,
+    //   apiKey: process.env.TMP_ANTHROPIC_API_KEY, // this is the anthropic api key
+    // }
+
+    // const ollamaProvider: LLMProvider = {
+    //   provider: ProviderNames.Ollama,
+    //   enabled: true,
+    //   baseUrl: process.env.OLLAMA_SERVER_URL,
+    // }
+
+    // const OpenAIProvider: LLMProvider = {
+    //   provider: ProviderNames.OpenAI,
+    //   enabled: true,
+    //   apiKey: apiKey,
+    // }
+
+    // const WebLLMProvider: LLMProvider = {
+    //   provider: ProviderNames.WebLLM,
+    //   enabled: true,
+    // }
+
+    // const llmProviderKeys: LLMProvider[] = [
+    //   ollamaProvider,
+    //   OpenAIProvider,
+    //   WebLLMProvider,
+    //   AzureProvider,
+    //   AnthropicProvider,
+    // ]
+    // END-TODO: MOVE THESE TO DB INPUTS
+
+    const allLLMProviders: AllLLMProviders = {}
+    for (const [providerName, llmProvider] of Object.entries(llmProviders)) {
+      if (!llmProvider.enabled) continue
+
+      const typedProviderName = providerName as keyof AllLLMProviders
+
+      switch (typedProviderName) {
+        case ProviderNames.Ollama:
+          allLLMProviders[typedProviderName] = await getOllamaModels(
+            llmProvider as OllamaProvider,
+          )
+          break
+        case ProviderNames.OpenAI:
+          allLLMProviders[typedProviderName] = await getOpenAIModels(
+            llmProvider as OpenAIProvider,
+            projectName,
+          )
+          break
+        case ProviderNames.Azure:
+          allLLMProviders[typedProviderName] = await getAzureModels(
+            llmProvider as AzureProvider,
+          )
+          break
+        case ProviderNames.Anthropic:
+          allLLMProviders[typedProviderName] = await getAnthropicModels(
+            llmProvider as AnthropicProvider,
+          )
+          break
+        case ProviderNames.WebLLM:
+          ;(llmProvider as WebLLMProvider).models = webLLMModels
+          allLLMProviders[typedProviderName] = llmProvider as WebLLMProvider
+          break
+        default:
+          continue
+      }
+    }
+
+    return NextResponse.json(allLLMProviders as AllLLMProviders, {
       status: 200,
     })
-
-    //   let apiKey: string | undefined
-    //   if (openAIApiKey) {
-    //     apiKey = await parseOpenaiKey(openAIApiKey)
-    //   }
-
-    //   // TODO: MOVE THESE TO DB INPUTS
-    //   const AzureProvider: LLMProvider = {
-    //     provider: ProviderNames.Azure,
-    //     enabled: true,
-    //     // TODO: COME FROM DB/INPUT not env
-    //     apiKey: process.env.TMP_AZURE_KEY,
-    //     AzureDeployment: process.env.TMP_DEPLOYMENT,
-    //     AzureEndpoint: process.env.TMP_ENDPOINT,
-    //   }
-
-    //   const AnthropicProvider: LLMProvider = {
-    //     provider: ProviderNames.Anthropic,
-    //     enabled: true,
-    //     apiKey: process.env.TMP_ANTHROPIC_API_KEY, // this is the anthropic api key
-    //   }
-
-    //   const ollamaProvider: LLMProvider = {
-    //     provider: ProviderNames.Ollama,
-    //     enabled: true,
-    //     baseUrl: process.env.OLLAMA_SERVER_URL,
-    //   }
-
-    //   const OpenAIProvider: LLMProvider = {
-    //     provider: ProviderNames.OpenAI,
-    //     enabled: true,
-    //     apiKey: apiKey,
-    //   }
-
-    //   const WebLLMProvider: LLMProvider = {
-    //     provider: ProviderNames.WebLLM,
-    //     enabled: true,
-    //   }
-
-    //   const llmProviderKeys: LLMProvider[] = [
-    //     ollamaProvider,
-    //     OpenAIProvider,
-    //     WebLLMProvider,
-    //     AzureProvider,
-    //     AnthropicProvider,
-    //   ]
-    //   // END-TODO: MOVE THESE TO DB INPUTS
-
-    //   const allLLMProviders: { [key in ProviderNames]?: LLMProvider } = {}
-    //   for (const llmProvider of llmProviderKeys) {
-    //     if (!llmProvider.enabled) {
-    //       continue
-    //     }
-    //     if (llmProvider.provider == ProviderNames.Ollama) {
-    //       allLLMProviders[llmProvider.provider] =
-    //         await getOllamaModels(llmProvider)
-    //     } else if (llmProvider.provider == ProviderNames.OpenAI) {
-    //       allLLMProviders[llmProvider.provider] = await getOpenAIModels(
-    //         llmProvider,
-    //         projectName,
-    //       )
-    //     } else if (llmProvider.provider == ProviderNames.Azure) {
-    //       allLLMProviders[llmProvider.provider] =
-    //         await getAzureModels(llmProvider)
-    //     } else if (llmProvider.provider == ProviderNames.Anthropic) {
-    //       allLLMProviders[llmProvider.provider] =
-    //         await getAnthropicModels(llmProvider)
-    //     } else if (llmProvider.provider == ProviderNames.WebLLM) {
-    //       llmProvider.models = webLLMModels
-    //       allLLMProviders[llmProvider.provider] = llmProvider
-    //     } else {
-    //       continue
-    //     }
-    //   }
-
-    //   return NextResponse.json(allLLMProviders as AllLLMProviders, {
-    //     status: 200,
-    //   })
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: JSON.stringify(error) }, { status: 500 })
