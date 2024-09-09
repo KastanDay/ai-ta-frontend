@@ -32,7 +32,10 @@ const NewCoursePage = () => {
         {/* <SignIn /> */}
         <SignedOut>
           {/* Signed out users get sign in button */}
-          <SignInButton fallbackRedirectUrl={'https://chat.illinois.edu/new'}>
+          <SignInButton
+            forceRedirectUrl={'https://chat.illinois.edu/new'}
+            fallbackRedirectUrl={'https://chat.illinois.edu/new'}
+          >
             <button className="rounded-sm px-[14px] py-[10px] text-[13px] font-bold text-[#f1f5f9] transition-all duration-100 ease-in-out hover:rounded-[10px] hover:bg-[rgba(255,255,255,0.1)] hover:text-[hsl(280,100%,70%)] hover:no-underline data-[active=true]:rounded-[10px] data-[active=true]:border-b-2 data-[active=true]:border-[hsl(280,100%,70%)] data-[active=true]:bg-[rgba(255,255,255,0.1)] data-[active=true]:text-right data-[active=true]:text-[hsl(280,100%,70%)] data-[active=true]:no-underline">
               <span
                 className={`${montserrat_heading.variable} font-montserratHeading`}
