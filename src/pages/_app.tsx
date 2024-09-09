@@ -63,7 +63,7 @@ const MyApp: AppType = ({ Component, pageProps: { ...pageProps } }) => {
               // Thes FFFFFF are needed to make the text readable.
               colorPrimary: '#FFFFFF',
               colorNeutral: '#FFFFFF',
-              // colorText: '#FFFFFF',
+              colorText: '#FFFFFF',
               // colorTextSecondary: '#FFFFFF',
               // colorTextOnPrimaryBackground: '#FFFFFF',
             },
