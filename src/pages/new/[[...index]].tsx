@@ -2,7 +2,7 @@ import { useRouter } from 'next/router'
 import React, { useEffect } from 'react'
 import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
-import { useUser } from '@clerk/nextjs'
+import { SignIn, useUser } from '@clerk/nextjs'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
@@ -25,11 +25,14 @@ const NewCoursePage = () => {
   }
 
   if (!isSignedIn) {
-    console.log('User not logged in', isSignedIn, isLoaded, 'NewCoursePage')
+    console.debug('User not logged in', isSignedIn, isLoaded, 'NewCoursePage')
     return (
-      <AuthComponent
-        course_name={course_name ? (course_name as string) : 'new'}
-      />
+      <MainPageBackground>
+        <SignIn />
+      </MainPageBackground>
+      // <AuthComponent
+      //   course_name={course_name ? (course_name as string) : 'new'}
+      // />
     )
   }
 
