@@ -15,6 +15,7 @@ export enum ProviderNames {
   Azure = 'Azure',
   Anthropic = 'Anthropic',
   WebLLM = 'WebLLM',
+  NCSAHosted = 'NCSAHosted',
 }
 
 export type AnySupportedModel =

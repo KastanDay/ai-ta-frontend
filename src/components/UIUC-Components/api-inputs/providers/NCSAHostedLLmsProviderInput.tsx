@@ -1,33 +1,11 @@
 import React from 'react'
-import { Text, Switch, Card, Skeleton } from '@mantine/core'
+import { Text, Switch, Card, TextInput } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
-import { APIKeyInput } from '../APIKeyInputForm'
 import { ModelToggles } from '../ModelToggles'
-import { AnthropicProvider, ProviderNames } from '~/types/LLMProvider'
-import { AnthropicModel } from '~/utils/modelProviders/anthropic'
+import { ProviderNames } from '~/types/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export default function AnthropicProviderInput({
-  provider,
-  form,
-}: {
-  provider: AnthropicProvider
-  form: any
-}) {
-  const validateApiKey = async (apiKey: string) => {
-    if (!apiKey) throw new Error('API key is empty')
-    const response = await fetch('/api/UIUC-api/llmProviders', {
-      method: 'POST',
-      body: JSON.stringify({
-        courseName: 'test',
-        llmProviders: { anthropic: { apiKey } },
-      }),
-    })
-    if (!response.ok) {
-      throw new Error('Invalid API key')
-    }
-  }
-
+export default function NCSAHostedLLmsProviderInput({ form }: { form: any }) {
   return (
     <motion.div layout>
       <Card shadow="sm" p="lg" radius="md" className="bg-[#15162c]">
@@ -45,25 +23,25 @@ export default function AnthropicProviderInput({
               mb="xs"
               style={{ paddingRight: '8px' }}
             >
-              Anthropic
+              NCSA Hosted LLMs
             </Text>
             <a
               className="mb-3"
-              href="https://www.anthropic.com/"
+              href="https://ncsa.illinois.edu/"
               target="_blank"
               rel="noopener noreferrer"
             >
               <IconExternalLink size={16} />
             </a>
           </div>
-          <form.Field name={`providers.${ProviderNames.Anthropic}.enabled`}>
+          <form.Field name={`providers.${ProviderNames.NCSAHosted}.enabled`}>
             {(field: any) => (
               <Switch
                 size="md"
                 labelPosition="left"
                 onLabel="ON"
                 offLabel="OFF"
-                aria-label="Enable Anthropic provider"
+                aria-label="Enable NCSA Hosted LLMs provider"
                 checked={field.state.value}
                 onChange={(event) =>
                   field.handleChange(event.currentTarget.checked)
@@ -90,10 +68,11 @@ export default function AnthropicProviderInput({
           </form.Field>
         </div>
         <Text size="sm" color="dimmed" mb="md">
-          Anthropic provides advanced AI models like Claude. Sign up on their
-          website to get an API key.
+          NCSA Hosted LLMs provide access to large language models hosted by the
+          National Center for Supercomputing Applications. Provide the base URL
+          to connect.
         </Text>
-        <form.Field name={`providers.${ProviderNames.Anthropic}.enabled`}>
+        <form.Field name={`providers.${ProviderNames.NCSAHosted}.enabled`}>
           {(field: any) => (
             <AnimatePresence>
               {field.state.value && (
@@ -103,20 +82,9 @@ export default function AnthropicProviderInput({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <form.Field
-                    name={`providers.${ProviderNames.Anthropic}.apiKey`}
-                  >
-                    {(field: any) => (
-                      <APIKeyInput
-                        field={field}
-                        placeholder="Anthropic API Key"
-                        onValidate={validateApiKey}
-                      />
-                    )}
-                  </form.Field>
                   <ModelToggles
                     form={form}
-                    providerName={ProviderNames.Anthropic}
+                    providerName={ProviderNames.NCSAHosted}
                   />
                 </motion.div>
               )}

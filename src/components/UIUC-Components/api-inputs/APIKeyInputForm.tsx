@@ -48,6 +48,7 @@ import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
 import { ModelDropdown } from '~/components/Chat/ModelSelect'
 import { webLLMModels } from '~/utils/modelProviders/WebLLM'
+import NCSAHostedLLmsProviderInput from './providers/NCSAHostedLLmsProviderInput'
 // import { ModelSelect } from '~/components/Chat/ModelSelect'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
@@ -198,33 +199,6 @@ export const APIKeyInput = ({
   )
 }
 
-const loadingTextLLMProviders: AllLLMProviders = {
-  Ollama: {
-    provider: ProviderNames.Ollama,
-    enabled: true,
-    baseUrl: undefined,
-    models: [],
-  },
-  OpenAI: {
-    provider: ProviderNames.OpenAI,
-    enabled: true,
-    apiKey: undefined,
-  },
-  WebLLM: { provider: ProviderNames.WebLLM, enabled: false },
-  Azure: {
-    provider: ProviderNames.Azure,
-    enabled: true,
-    AzureEndpoint: 'Loading...',
-    AzureDeployment: 'Loading...',
-    apiKey: 'Loading...',
-  },
-  Anthropic: {
-    provider: ProviderNames.Anthropic,
-    enabled: true,
-    apiKey: 'Loading...',
-  },
-}
-
 export default function APIKeyInputForm() {
   const course_name = GetCurrentPageName()
 
@@ -248,6 +222,7 @@ export default function APIKeyInputForm() {
     data: llmProviders,
     isLoading: isLoadingLLMProviders,
     isError: isErrorLLMProviders,
+    error: errorLLMProviders,
   } = useGetProjectLLMProviders(course_name)
 
   // TODO: TEMP HACK
@@ -271,9 +246,9 @@ export default function APIKeyInputForm() {
 
   const form = useForm({
     defaultValues: {
-      providers: llmProviders ?? loadingTextLLMProviders,
-      defaultModel: defaultModel ?? 'Loading...',
-      defaultTemperature: defaultTemp ?? 0.1,
+      providers: llmProviders,
+      defaultModel: defaultModel,
+      defaultTemperature: defaultTemp,
     },
     onSubmit: async ({ value }) => {
       console.log('onSubmit here: ', value)
@@ -305,35 +280,41 @@ export default function APIKeyInputForm() {
 
   console.log('llmProviders', JSON.stringify(llmProviders, null, 2))
   console.log('form.state', JSON.stringify(form.state, null, 2))
-  if (isLoadingLLMProviders) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Text>Loading...</Text>
-      </div>
-    )
-  }
+  // if (isLoadingLLMProviders) {
+  //   return (
+  //     <div className="flex h-screen items-center justify-center">
+  //       <Text>Loading...</Text>
+  //     </div>
+  //   )
+  // }
 
   if (isErrorLLMProviders) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <Text>Failed to load API keys. Please try again later.</Text>
+        <Text>
+          Failed to load API keys. Please try again later.{' '}
+          {errorLLMProviders?.message}
+        </Text>
       </div>
     )
   }
 
   // if the providers are empty, null, undefined, or an empty object, show error
-  if (
-    !llmProviders ||
-    llmProviders === null ||
-    llmProviders === undefined ||
-    Object.keys(llmProviders).length === 0
-  ) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Text>Failed to load API keys. Please try again later.</Text>
-      </div>
-    )
-  }
+  // if (
+  //   !llmProviders ||
+  //   llmProviders === null ||
+  //   llmProviders === undefined ||
+  //   Object.keys(llmProviders).length === 0
+  // ) {
+  //   console.log("llmProviders:", llmProviders)
+  //   console.log("llmProviders type:", typeof llmProviders)
+  //   // console.log("llmProviders keys:", Object.keys(llmProviders))
+  //   return (
+  //     <div className="flex h-screen items-center justify-center">
+  //       <Text>Failed to load API keys. Please try again later. HEREEE</Text>
+  //     </div>
+  //   )
+  // }
 
   return (
     <>
@@ -422,30 +403,25 @@ export default function APIKeyInputForm() {
                         >
                           {llmProviders && (
                             <>
-                              <AnthropicProviderInput
+                              {/* <AnthropicProviderInput
                                 provider={
                                   llmProviders.Anthropic as AnthropicProvider
                                 }
                                 form={form}
-                                providerName="Anthropic"
-                              />
+                              /> */}
                               <OpenAIProviderInput
                                 provider={llmProviders.OpenAI as OpenAIProvider}
                                 form={form}
-                                providerName="OpenAI"
                               />
-                              <AzureProviderInput
-                                form={form}
-                                providerName="Azure"
-                              />
-                              <OllamaProviderInput
+                              <AzureProviderInput form={form} />
+                              {/* <OllamaProviderInput
                                 form={form}
                                 providerName="Ollama"
-                              />
+                              /> */}
+                              <NCSAHostedLLmsProviderInput form={form} />
                               <WebLLMProviderInput
                                 provider={llmProviders.WebLLM as WebLLMProvider}
                                 form={form}
-                                providerName="WebLLM"
                               />
                             </>
                           )}
@@ -479,7 +455,7 @@ export default function APIKeyInputForm() {
                     </Stack>
                   </Flex>
                 </div>
-                <div
+                {/* <div
                   className="flex flex-[1_1_100%] md:flex-[1_1_40%]"
                   style={{
                     // flex: isSmallScreen ? '1 1 100%' : '1 1 40%',
@@ -507,103 +483,98 @@ export default function APIKeyInputForm() {
                             gap: 16,
                           }}
                         >
-                          {/* Default Model */}
-                          <div>
-                            {/* TODO: REENABLE MODEL SELECT WITHOUT HOME CONTEXT */}
-                            {/* <ModelSelect /> */}
-                            {llmProviders && (
-                              <ModelDropdown
-                                value={form.getFieldValue('defaultModel')}
-                                onChange={
-                                  // async (modelId) => {
-                                  // // if (state.webLLMModelIdLoading) {
-                                  // //   setLoadingModelId(modelId)
-                                  // //   console.log('model is loading', state.webLLMModelIdLoading.id)
-                                  // // }
-                                  // await handleModelClick(modelId)
-                                  async (modelId) => {
-                                    // TODO
-                                    // handleModelClick(modelId)
-                                  }
-                                }
-                                models={{
-                                  Ollama: llmProviders.Ollama?.models?.filter(
-                                    (model) => model.enabled,
-                                  ),
-                                  OpenAI: llmProviders.OpenAI?.models?.filter(
-                                    (model) => model.enabled,
-                                  ),
-                                  Anthropic:
-                                    llmProviders.Anthropic?.models?.filter(
-                                      (model) => model.enabled,
-                                    ),
-                                  Azure: llmProviders.Azure?.models?.filter(
-                                    (model) => model.enabled,
-                                  ),
-                                }}
-                                // isSmallScreen={isSmallScreen}
-                                // loadingModelId={loadingModelId}
-                                // setLoadingModelId={setLoadingModelId}
-                                // chat_ui={chat_ui}
-                                isSmallScreen={false}
-                                loadingModelId={'test'}
-                                setLoadingModelId={(id: string | null) => {
-                                  /* TODO: Implement this */
-                                }}
-                                state={{
-                                  webLLMModelIdLoading: {
-                                    id: 'test',
-                                    isLoading: false,
-                                  },
-                                }}
-                                showWebLLmModels={false}
-                              />
-                            )}
-                          </div>
+                <div>
+                  {llmProviders && (
+                    <ModelDropdown
+                      value={form.getFieldValue('defaultModel')}
+                      onChange={
+                        // async (modelId) => {
+                        // // if (state.webLLMModelIdLoading) {
+                        // //   setLoadingModelId(modelId)
+                        // //   console.log('model is loading', state.webLLMModelIdLoading.id)
+                        // // }
+                        // await handleModelClick(modelId)
+                        async (modelId) => {
+                          // TODO
+                          // handleModelClick(modelId)
+                        }
+                      }
+                      models={{
+                        Ollama: llmProviders.Ollama?.models?.filter(
+                          (model) => model.enabled,
+                        ),
+                        OpenAI: llmProviders.OpenAI?.models?.filter(
+                          (model) => model.enabled,
+                        ),
+                        Anthropic:
+                          llmProviders.Anthropic?.models?.filter(
+                            (model) => model.enabled,
+                          ),
+                        Azure: llmProviders.Azure?.models?.filter(
+                          (model) => model.enabled,
+                        ),
+                      }}
+                      // isSmallScreen={isSmallScreen}
+                      // loadingModelId={loadingModelId}
+                      // setLoadingModelId={setLoadingModelId}
+                      // chat_ui={chat_ui}
+                      isSmallScreen={false}
+                      loadingModelId={'test'}
+                      setLoadingModelId={(id: string | null) => {
+                }}
+                state={{
+                  webLLMModelIdLoading: {
+                    id: 'test',
+                    isLoading: false,
+                  },
+                }}
+                showWebLLmModels={false}
+                    />
+                  )}
+              </div>
 
-                          {/* Temperature */}
-                          <div>
-                            <Text size="sm" weight={500} mb={4}>
-                              Default Temperature:{' '}
-                              {form.getFieldValue('defaultTemperature')}
-                            </Text>
-                            <form.Field name="defaultTemperature">
-                              {(field) => (
-                                <>
-                                  <Slider
-                                    value={field.state.value}
-                                    onChange={(value) =>
-                                      field.handleChange(value)
-                                    }
-                                    min={0}
-                                    max={1}
-                                    step={0.1}
-                                    label={null}
-                                    styles={(theme) => ({
-                                      track: {
-                                        backgroundColor: theme.colors.gray[2],
-                                      },
-                                      thumb: {
-                                        borderWidth: 2,
-                                        padding: 3,
-                                      },
-                                    })}
-                                  />
-                                </>
-                              )}
-                            </form.Field>
-                            <Text size="xs" color="dimmed" mt={4}>
-                              Higher values increase randomness, lower values
-                              increase focus and determinism.
-                            </Text>
-                          </div>
-                        </div>
-
-                        <div className="pt-2" />
-                      </div>
-                    </div>
-                  </div>
+                <div>
+                  <Text size="sm" weight={500} mb={4}>
+                    Default Temperature:{' '}
+                    {form.getFieldValue('defaultTemperature')}
+                  </Text>
+                  <form.Field name="defaultTemperature">
+                    {(field) => (
+                      <>
+                        <Slider
+                          value={field.state.value}
+                          onChange={(value) =>
+                            field.handleChange(value)
+                          }
+                          min={0}
+                          max={1}
+                          step={0.1}
+                          label={null}
+                          styles={(theme) => ({
+                            track: {
+                              backgroundColor: theme.colors.gray[2],
+                            },
+                            thumb: {
+                              borderWidth: 2,
+                              padding: 3,
+                            },
+                          })}
+                        />
+                      </>
+                    )}
+                  </form.Field>
+                  <Text size="xs" color="dimmed" mt={4}>
+                    Higher values increase randomness, lower values
+                    increase focus and determinism.
+                  </Text>
                 </div>
+              </div>
+
+              <div className="pt-2" />
+            </div>
+        </div>
+      </div >
+    </div > */}
               </Flex>
             </Card>
 

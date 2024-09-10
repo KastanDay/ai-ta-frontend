@@ -4,7 +4,7 @@ import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
 import { APIKeyInput } from '../APIKeyInputForm'
 import { ModelToggles } from '../ModelToggles'
 import { AzureModel } from '~/utils/modelProviders/azure'
-import { AzureProvider } from '~/types/LLMProvider'
+import { AzureProvider, ProviderNames } from '~/types/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function AzureProviderInput({
@@ -55,7 +55,7 @@ export default function AzureProviderInput({
               <IconExternalLink size={16} />
             </a>
           </div>
-          <form.Field name={`providers.${providerName}.enabled`}>
+          <form.Field name={`providers.${ProviderNames.Azure}.enabled`}>
             {(field: any) => (
               <Switch
                 size="md"
@@ -93,7 +93,7 @@ export default function AzureProviderInput({
           powerful language models with the security and enterprise promise of
           Azure.
         </Text>
-        <form.Field name={`providers.${providerName}.enabled`}>
+        <form.Field name={`providers.${ProviderNames.Azure}.enabled`}>
           {(field: any) => (
             <AnimatePresence>
               {field.state.value && (
@@ -103,7 +103,7 @@ export default function AzureProviderInput({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <form.Field name={`providers.${providerName}.apiKey`}>
+                  <form.Field name={`providers.${ProviderNames.Azure}.apiKey`}>
                     {(field: any) => (
                       <APIKeyInput
                         field={field}
@@ -112,7 +112,9 @@ export default function AzureProviderInput({
                       />
                     )}
                   </form.Field>
-                  <form.Field name={`providers.${providerName}.AzureEndpoint`}>
+                  <form.Field
+                    name={`providers.${ProviderNames.Azure}.AzureEndpoint`}
+                  >
                     {(field: any) => (
                       <TextInput
                         label="Azure Endpoint"
@@ -125,7 +127,7 @@ export default function AzureProviderInput({
                     )}
                   </form.Field>
                   <form.Field
-                    name={`providers.${providerName}.AzureDeployment`}
+                    name={`providers.${ProviderNames.Azure}.AzureDeployment`}
                   >
                     {(field: any) => (
                       <TextInput
@@ -138,7 +140,10 @@ export default function AzureProviderInput({
                       />
                     )}
                   </form.Field>
-                  <ModelToggles form={form} providerName={providerName} />
+                  <ModelToggles
+                    form={form}
+                    providerName={ProviderNames.Azure}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>

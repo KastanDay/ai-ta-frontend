@@ -131,7 +131,9 @@ const EditCourseCard = ({
     courseMetadata?.openai_api_key as string,
   )
   const [isKeyUpdated, setIsKeyUpdated] = useState(false)
-  const [projectDescription, setProjectDescription] = useState(courseMetadata?.project_descriptions || '')
+  const [projectDescription, setProjectDescription] = useState(
+    courseMetadata?.project_descriptions || '',
+  )
 
   const checkCourseAvailability = () => {
     const courseExists =
@@ -163,12 +165,13 @@ const EditCourseCard = ({
       ),
       message: (
         <Text className={`${montserrat_med.className} text-neutral-200`}>
-          We have provided several other providers in the LLMs tab where you can update the model key and select the model you want to use.
+          We have provided several other providers in the LLMs tab where you can
+          update the model key and select the model you want to use.
         </Text>
       ),
       color: 'hsl(280,100%,70%)',
       radius: 'lg',
-      icon: <IconAlertCircle color='hsl(280, 100%, 70%)' />,
+      icon: <IconAlertCircle color="hsl(280, 100%, 70%)" />,
       className: 'my-notification-class',
       style: {
         backgroundColor: 'rgba(21,22,44,0.3)',
@@ -179,8 +182,8 @@ const EditCourseCard = ({
       styles: (theme) => ({
         icon: {
           color: 'hsl(280, 100%, 70%)',
-          backgroundColor: 'transparent'
-        }
+          backgroundColor: 'transparent',
+        },
       }),
       withBorder: true,
       loading: false,
@@ -252,7 +255,7 @@ const EditCourseCard = ({
     }
 
     if (inputValue === '' && courseMetadata?.openai_api_key !== '') {
-      ; (courseMetadata as CourseMetadata).openai_api_key = inputValue
+      ;(courseMetadata as CourseMetadata).openai_api_key = inputValue
       console.log('Removing api key')
       setApiKey(inputValue)
       await callSetCourseMetadata(course_name, courseMetadata as CourseMetadata)
@@ -372,18 +375,20 @@ const EditCourseCard = ({
                   autoFocus
                   disabled={!is_new_course}
                   className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${isCourseAvailable && courseName != ''
-                      ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                      : 'border-red-800 text-red-600 focus:border-red-800'
-                    } ${montserrat_paragraph.variable
-                    } font-montserratParagraph`}
+                                ${
+                                  isCourseAvailable && courseName != ''
+                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                                    : 'border-red-800 text-red-600 focus:border-red-800'
+                                } ${
+                                  montserrat_paragraph.variable
+                                } font-montserratParagraph`}
                 />
                 <Title
                   order={4}
                   className={`w-full text-center ${montserrat_paragraph.variable} mt-4 font-montserratParagraph`}
                 >
-                  Just one step: upload any and all materials. More is better,
-                  it&apos;s fine if they&apos;re messy.
+                  Just one step: upload everything. The more, the better &mdash;
+                  even if it&apos;s messy.
                 </Title>
               </>
             )}
@@ -454,7 +459,6 @@ const EditCourseCard = ({
                   <Textarea
                     placeholder="Describe your project, goals, expected impact etc..."
                     radius={'sm'}
-
                     value={projectDescription}
                     onChange={(e) => setProjectDescription(e.target.value)}
                     size={'lg'}
@@ -468,12 +472,12 @@ const EditCourseCard = ({
                       label: {
                         fontWeight: 'bold',
                         color: 'white',
-                      }
+                      },
                     }}
                     className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                   />
                   <Button
-                    className="relative m-1 w-[20%] self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 mt-3"
+                    className="relative m-1 mt-3 w-[20%] self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600"
                     type="submit"
                     onClick={async () => {
                       if (courseMetadata) {
@@ -803,8 +807,7 @@ const PrivateOrPublicCourse = ({
 
   return (
     <>
-      <Divider>
-      </Divider>
+      <Divider></Divider>
       <Title
         className={`${montserrat_heading.variable} font-montserratHeading`}
         variant="gradient"
@@ -853,7 +856,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-              // style={{ textDecoration: 'underline' }}
+                // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
@@ -865,8 +868,9 @@ const PrivateOrPublicCourse = ({
 
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${isPrivate ? 'private' : 'public'
-            }. Click to change.`}
+          label={`Course is ${
+            isPrivate ? 'private' : 'public'
+          }. Click to change.`}
           wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
@@ -939,7 +943,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-              // style={{ textDecoration: 'underline' }}
+                // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
