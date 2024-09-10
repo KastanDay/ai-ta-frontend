@@ -68,9 +68,11 @@ function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
 export const APIKeyInput = ({
   field,
   placeholder,
+  onValidate,
 }: {
   field: FieldApi<any, any, any, any>
   placeholder: string
+  onValidate: (apiKey: string) => Promise<void>
 }) => {
   const [isVisible, setIsVisible] = useState(false)
   const [showCopiedToast, setShowCopiedToast] = useState(false)
@@ -79,6 +81,29 @@ export const APIKeyInput = ({
     navigator.clipboard.writeText(field.state.value)
     setShowCopiedToast(true)
     setTimeout(() => setShowCopiedToast(false), 4000)
+  }
+
+  const [isValidating, setIsValidating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setError(null)
+  }, [field.state.value])
+
+  const handleValidate = async () => {
+    setIsValidating(true)
+    setError(null)
+    try {
+      await onValidate(field.state.value)
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('An unknown error occurred')
+      }
+    } finally {
+      setIsValidating(false)
+    }
   }
 
   return (
@@ -144,12 +169,26 @@ export const APIKeyInput = ({
       </Input.Wrapper>
       <FieldInfo field={field} />
       <div className="pt-1" />
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <div style={{ marginRight: '48px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        {error && (
+          <Text color="red" size="sm">
+            {error}
+          </Text>
+        )}
+        <div>
           <Button
             compact
             className="bg-purple-800 hover:border-indigo-600 hover:bg-indigo-600"
             type="submit"
+            onClick={handleValidate}
+            loading={isValidating}
+            disabled={!field.state.value}
           >
             Save
           </Button>

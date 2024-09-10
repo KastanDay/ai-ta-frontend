@@ -15,6 +15,20 @@ export default function OpenAIProviderInput({
   form: any
   providerName: string
 }) {
+  const validateApiKey = async (apiKey: string) => {
+    if (!apiKey) throw new Error('API key is empty')
+    const response = await fetch('/api/UIUC-api/llmProviders', {
+      method: 'POST',
+      body: JSON.stringify({
+        courseName: 'test',
+        llmProviders: { OpenAI: { apiKey } },
+      }),
+    })
+    if (!response.ok) {
+      throw new Error('Invalid API key')
+    }
+  }
+
   return (
     <motion.div layout>
       <Card shadow="sm" p="lg" radius="md" className="bg-[#15162c]">
@@ -96,6 +110,7 @@ export default function OpenAIProviderInput({
                       <APIKeyInput
                         field={apiKeyField}
                         placeholder="OpenAI API Key"
+                        onValidate={validateApiKey}
                       />
                     )}
                   </form.Field>

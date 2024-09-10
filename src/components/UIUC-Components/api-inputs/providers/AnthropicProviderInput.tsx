@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text, Switch, Card } from '@mantine/core'
+import { Text, Switch, Card, Skeleton } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
 import { APIKeyInput } from '../APIKeyInputForm'
 import { ModelToggles } from '../ModelToggles'
@@ -8,6 +8,7 @@ import { AnthropicModel } from '~/utils/modelProviders/anthropic'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function AnthropicProviderInput({
+  provider,
   form,
   providerName,
 }: {
@@ -15,6 +16,20 @@ export default function AnthropicProviderInput({
   form: any
   providerName: string
 }) {
+  const validateApiKey = async (apiKey: string) => {
+    if (!apiKey) throw new Error('API key is empty')
+    const response = await fetch('/api/UIUC-api/llmProviders', {
+      method: 'POST',
+      body: JSON.stringify({
+        courseName: 'test',
+        llmProviders: { anthropic: { apiKey } },
+      }),
+    })
+    if (!response.ok) {
+      throw new Error('Invalid API key')
+    }
+  }
+
   return (
     <motion.div layout>
       <Card shadow="sm" p="lg" radius="md" className="bg-[#15162c]">
@@ -95,6 +110,7 @@ export default function AnthropicProviderInput({
                       <APIKeyInput
                         field={field}
                         placeholder="Anthropic API Key"
+                        onValidate={validateApiKey}
                       />
                     )}
                   </form.Field>
