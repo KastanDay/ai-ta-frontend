@@ -48,7 +48,8 @@ import ChatUI, {
 } from '~/utils/modelProviders/WebLLM'
 import { VisionCapableModels } from '~/types/LLMProvider'
 import { OpenAIModelID } from '~/utils/modelProviders/openai'
-import { UserSettings } from '~/components/Chat/UserSettings';
+import { UserSettings } from '~/components/Chat/UserSettings'
+import { IconChevronRight } from '@tabler/icons-react'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -88,7 +89,12 @@ export const ChatInput = ({
   const { t } = useTranslation('chat')
 
   const {
-    state: { selectedConversation, messageIsStreaming, prompts, showModelSettings },
+    state: {
+      selectedConversation,
+      messageIsStreaming,
+      prompts,
+      showModelSettings,
+    },
 
     dispatch: homeDispatch,
   } = useContext(HomeContext)
@@ -125,13 +131,12 @@ export const ChatInput = ({
   //   setShowModelSelect((prev) => !prev)
   // }
   const handleTextClick = () => {
-    console.log('handleTextClick');
+    console.log('handleTextClick')
     homeDispatch({
       field: 'showModelSettings',
       value: !showModelSettings,
-    });
-  };
-
+    })
+  }
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -141,9 +146,9 @@ export const ChatInput = ({
       homeDispatch({
         field: 'showModelSettings',
         value: false,
-      });
+      })
     }
-  };
+  }
 
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside)
@@ -223,10 +228,10 @@ export const ChatInput = ({
           imageUrls.length > 0
             ? imageUrls
             : await Promise.all(
-              imageFiles.map((file) =>
-                uploadImageAndGetUrl(file, courseName),
-              ),
-            )
+                imageFiles.map((file) =>
+                  uploadImageAndGetUrl(file, courseName),
+                ),
+              )
 
         // Construct image content for the message
         imageContent = imageUrlsToUse
@@ -634,8 +639,9 @@ export const ChatInput = ({
     if (textareaRef && textareaRef.current) {
       textareaRef.current.style.height = 'inherit'
       textareaRef.current.style.height = `${textareaRef.current?.scrollHeight}px`
-      textareaRef.current.style.overflow = `${textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
-        }`
+      textareaRef.current.style.overflow = `${
+        textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
+      }`
     }
   }, [content])
 
@@ -863,11 +869,12 @@ export const ChatInput = ({
             {/* Button 3: main input text area  */}
             <div
               className={`
-                ${VisionCapableModels.has(
-                selectedConversation?.model.id as OpenAIModelID,
-              )
-                  ? 'pl-8'
-                  : 'pl-1'
+                ${
+                  VisionCapableModels.has(
+                    selectedConversation?.model.id as OpenAIModelID,
+                  )
+                    ? 'pl-8'
+                    : 'pl-1'
                 }
                   `}
             >
@@ -941,7 +948,7 @@ export const ChatInput = ({
 
           <Text
             size={isSmallScreen ? '10px' : 'xs'}
-            className={`font-montserratHeading ${montserrat_heading.variable} absolute bottom-2 left-5 break-words text-neutral-400 rounded-full p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200`}
+            className={`font-montserratHeading ${montserrat_heading.variable} absolute bottom-2 left-5 break-words rounded-full p-1 text-neutral-400 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200`}
             tt={'capitalize'}
             onClick={handleTextClick}
             style={{ cursor: 'pointer' }}
@@ -953,10 +960,18 @@ export const ChatInput = ({
               ) &&
               chat_ui?.isModelLoading() &&
               '  Please wait while the model is loading...'}
-            {/* webLLMModels.some((m) => m.name === model.name) */}
+            <IconChevronRight
+              size={isSmallScreen ? '10px' : '13px'}
+              style={{
+                marginLeft: '2px',
+                marginBottom: isSmallScreen ? '2px' : '4px',
+                display: 'inline-block',
+              }}
+            />
           </Text>
           {showModelSettings && (
-            <div ref={modelSelectContainerRef}
+            <div
+              ref={modelSelectContainerRef}
               style={{
                 position: 'absolute',
                 zIndex: 100,
