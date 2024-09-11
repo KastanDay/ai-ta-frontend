@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import GlobalHeader from '~/components/UIUC-Components/navbars/GlobalHeader'
-import { Flex } from '@mantine/core'
+import { Flex, Indicator } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
@@ -276,8 +276,17 @@ const Navbar = ({
                             style={{ display: 'flex', alignItems: 'center' }}
                           >
                             {item.icon}
-                            {item.name}
-                          </span>
+                            {item.name.props.children === 'LLMs' ? (
+                              <Indicator label="New">
+                                {item.icon}
+                                {item.name}
+                              </Indicator>
+                            ) : (
+                              <>
+                                {item.icon}
+                                {item.name}
+                              </>
+                            )}</span>
                         </Link>
                       ))}
                     </Paper>

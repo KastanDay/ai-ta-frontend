@@ -104,7 +104,7 @@ const handler = async (
           )
           break
         case ProviderNames.WebLLM:
-          ;(llmProvider as WebLLMProvider).models = webLLMModels
+          ; (llmProvider as WebLLMProvider).models = webLLMModels
           allLLMProviders[providerName] = llmProvider as WebLLMProvider
           break
         case ProviderNames.NCSAHosted:
