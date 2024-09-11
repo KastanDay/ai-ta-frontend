@@ -45,9 +45,6 @@ const handler = async (
     )) as AllLLMProviders
 
     console.log('llmProviders in /models', llmProviders)
-    console.log('TYPEOF llmProviders in /models', typeof llmProviders)
-    console.log('AZURE SHOULD BE HERE ', llmProviders[ProviderNames.Azure])
-    console.log('AZURE SHOULD BE HERE  p2', llmProviders.Azure)
     console.log(
       '❌⭐️❌TODO: fix /models to grab Keys form DB, fetch available && enabled models.',
     )
@@ -113,23 +110,16 @@ const handler = async (
         ;(allLLMProviders[providerName] as LLMProvider) = {
           provider: ProviderNames[providerName],
           enabled: false,
+          apiKey: undefined,
           models: [],
         }
         console.log(
           'Created disabled provider entry',
           allLLMProviders[providerName],
         )
-      } else {
-        // Initialize the enabled provider in allLLMProviders
-        ;(allLLMProviders[providerName] as LLMProvider) = {
-          ...llmProvider,
-          models: [],
-        }
-        console.log(
-          'Created enabled provider entry',
-          allLLMProviders[providerName],
-        )
       }
+
+      // TODO: update how undefined values are handled... inside each provider or out here?
 
       switch (providerName) {
         case ProviderNames.Ollama:
@@ -164,7 +154,7 @@ const handler = async (
           console.warn(`Unhandled provider: ${providerName}`)
       }
     }
-
+    console.log('FINAL -- allLLMProviders', allLLMProviders)
     return NextResponse.json(allLLMProviders as AllLLMProviders, {
       status: 200,
     })

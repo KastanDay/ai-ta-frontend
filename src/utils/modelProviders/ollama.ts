@@ -25,8 +25,9 @@ export const OllamaModels: Record<OllamaModelIDs, OllamaModel> = {
 }
 
 export const getOllamaModels = async (
-  ollamaProvider: LLMProvider,
+  ollamaProvider: OllamaProvider,
 ): Promise<OllamaProvider> => {
+  console.log('ollamaProvider in checkING', ollamaProvider)
   try {
     if (!ollamaProvider.baseUrl) {
       ollamaProvider.error = `Ollama baseurl not defined: ${ollamaProvider.baseUrl}`
