@@ -300,7 +300,7 @@ const Navbar = ({
                     <MessageChatIcon
                     />
                     <span
-                      style={{ whiteSpace: 'nowrap', marginRight: '-5px' }}
+                      style={{ whiteSpace: 'nowrap', marginRight: '-5px', paddingRight: '2px', padding: `4px 0` }}
                       className={`${montserrat_heading.variable} font-montserratHeading`}
                     >
                       {/* Model: {modelName} */}

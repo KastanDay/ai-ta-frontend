@@ -151,44 +151,55 @@ const EditCourseCard = ({
   }
 
   useEffect(() => {
-    notifications.show({
-      id: 'info-notification',
-      withCloseButton: true,
-      closeButtonProps: { style: { color: 'hsl(280,100%,70%)' } },
-      onClose: () => console.log('info notification unmounted'),
-      onOpen: () => console.log('info notification mounted'),
-      autoClose: false,
-      title: (
-        <Text size={'lg'} className={`${montserrat_med.className}`}>
-          Information
-        </Text>
-      ),
-      message: (
-        <Text className={`${montserrat_med.className} text-neutral-200`}>
-          We have provided several other providers in the LLMs tab where you can
-          update the model key and select the model you want to use.
-        </Text>
-      ),
-      color: 'hsl(280,100%,70%)',
-      radius: 'lg',
-      icon: <IconAlertCircle color="hsl(280, 100%, 70%)" />,
-      className: 'my-notification-class',
-      style: {
-        backgroundColor: 'rgba(21,22,44,0.3)',
-        backdropFilter: 'blur(10px)',
-        borderLeft: '5px solid hsl(280,100%,70%)',
+    const showNotification = () => {
+      notifications.show({
+        id: 'info-notification',
+        withCloseButton: true,
+        closeButtonProps: { style: { color: 'hsl(280,100%,70%)' } },
+        onClose: () => console.log('info notification unmounted'),
+        onOpen: () => console.log('info notification mounted'),
+        autoClose: false,
+        title: (
+          <Text size={'lg'} className={`${montserrat_med.className}`}>
+            Information
+          </Text>
+        ),
+        message: (
+          <Text className={`${montserrat_med.className} text-neutral-200`}>
+            We have provided several other providers in the LLMs tab where you can update the model key and select the model you want to use.
+          </Text>
+        ),
         color: 'hsl(280,100%,70%)',
-      },
-      styles: (theme) => ({
-        icon: {
-          color: 'hsl(280, 100%, 70%)',
-          backgroundColor: 'transparent',
+        radius: 'lg',
+        icon: <IconAlertCircle color='hsl(280, 100%, 70%)' />,
+        className: 'my-notification-class',
+        style: {
+          backgroundColor: 'rgba(21,22,44,0.3)',
+          backdropFilter: 'blur(10px)',
+          borderLeft: '5px solid hsl(280,100%,70%)',
+          color: 'hsl(280,100%,70%)',
         },
-      }),
-      withBorder: true,
-      loading: false,
-    })
-  }, [])
+        styles: (theme) => ({
+          icon: {
+            color: 'hsl(280, 100%, 70%)',
+            backgroundColor: 'transparent'
+          }
+        }),
+        withBorder: true,
+        loading: false,
+      })
+    }
+
+    if (router.pathname.endsWith('/materials')) {
+      showNotification()
+    } else {
+      notifications.hide('info-notification')
+    }
+
+    return () => {
+      notifications.hide('info-notification')
+    }
+  }, [router.pathname])
 
   useEffect(() => {
     // only run when creating new courses.. otherwise VERY wasteful on DB.
@@ -255,7 +266,7 @@ const EditCourseCard = ({
     }
 
     if (inputValue === '' && courseMetadata?.openai_api_key !== '') {
-      ;(courseMetadata as CourseMetadata).openai_api_key = inputValue
+      ; (courseMetadata as CourseMetadata).openai_api_key = inputValue
       console.log('Removing api key')
       setApiKey(inputValue)
       await callSetCourseMetadata(course_name, courseMetadata as CourseMetadata)
@@ -375,13 +386,11 @@ const EditCourseCard = ({
                   autoFocus
                   disabled={!is_new_course}
                   className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${
-                                  isCourseAvailable && courseName != ''
-                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                                    : 'border-red-800 text-red-600 focus:border-red-800'
-                                } ${
-                                  montserrat_paragraph.variable
-                                } font-montserratParagraph`}
+                                ${isCourseAvailable && courseName != ''
+                      ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                      : 'border-red-800 text-red-600 focus:border-red-800'
+                    } ${montserrat_paragraph.variable
+                    } font-montserratParagraph`}
                 />
                 <Title
                   order={4}
@@ -856,7 +865,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                // style={{ textDecoration: 'underline' }}
+              // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
@@ -868,9 +877,8 @@ const PrivateOrPublicCourse = ({
 
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${
-            isPrivate ? 'private' : 'public'
-          }. Click to change.`}
+          label={`Course is ${isPrivate ? 'private' : 'public'
+            }. Click to change.`}
           wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
@@ -943,7 +951,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                // style={{ textDecoration: 'underline' }}
+              // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
