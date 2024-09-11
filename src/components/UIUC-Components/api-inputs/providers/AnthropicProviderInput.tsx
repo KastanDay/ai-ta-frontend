@@ -13,6 +13,7 @@ export default function AnthropicProviderInput({
   provider: AnthropicProvider
   form: any
 }) {
+  console.log('AnthropicProviderInput', provider)
   return (
     <motion.div layout>
       <Card shadow="sm" p="lg" radius="md" className="bg-[#15162c]">
@@ -83,27 +84,21 @@ export default function AnthropicProviderInput({
           website to get an API key.
         </Text>
         {provider?.error &&
-          form.state.values?.providers?.Anthropic?.enabled && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
+          (form.state.values?.providers?.Anthropic?.enabled ||
+            provider.enabled) && (
+            <Text
+              size="sm"
+              color="red"
+              mb="md"
+              style={{
+                padding: '8px',
+                borderRadius: '4px',
+                backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                border: '1px solid rgba(255, 0, 0, 0.2)',
+              }}
             >
-              <Text
-                size="sm"
-                color="red"
-                mb="md"
-                style={{
-                  padding: '8px',
-                  borderRadius: '4px',
-                  backgroundColor: 'rgba(255, 0, 0, 0.1)',
-                  border: '1px solid rgba(255, 0, 0, 0.2)',
-                }}
-              >
-                {provider.error}
-              </Text>
-            </motion.div>
+              {provider.error}
+            </Text>
           )}
         <form.Field name={`providers.${ProviderNames.Anthropic}.enabled`}>
           {(field: any) => (

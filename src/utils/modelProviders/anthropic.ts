@@ -52,6 +52,7 @@ export const getAnthropicModels = async (
     return anthropicProvider
   }
   anthropicProvider.models = Object.values(AnthropicModels) as AnthropicModel[]
+  anthropicProvider.error = undefined // clear any previous errors.
   return anthropicProvider
 }
 

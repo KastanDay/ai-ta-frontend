@@ -1,6 +1,5 @@
 import {
   AllLLMProviders,
-  AllSupportedModels,
   AnthropicProvider,
   AzureProvider,
   LLMProvider,
@@ -15,13 +14,9 @@ import { getOpenAIModels } from '~/utils/modelProviders/openai'
 import { getAzureModels } from '~/utils/modelProviders/azure'
 import { getAnthropicModels } from '~/utils/modelProviders/anthropic'
 import { webLLMModels } from '~/utils/modelProviders/WebLLM'
-import { parseOpenaiKey } from '~/utils/crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
-import {
-  getNCSAHostedModels,
-  NCSAHostedModelID,
-} from '~/utils/modelProviders/NCSAHosted'
+import { getNCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
 
 export const config = {
   runtime: 'edge',
@@ -43,17 +38,12 @@ const handler = async (
     }
 
     // Fetch the project's API keys
-    const llmProviders = (await kv.get(
-      `${projectName}-llms`,
-    )) as AllLLMProviders
+    let llmProviders = (await kv.get(`${projectName}-llms`)) as AllLLMProviders
 
     console.log('llmProviders in /models', llmProviders)
 
     if (!llmProviders) {
-      return NextResponse.json(
-        { error: 'No LLM providers found for this project' },
-        { status: 200 },
-      )
+      llmProviders = {}
     }
 
     const allLLMProviders: AllLLMProviders = {}
@@ -77,7 +67,6 @@ const handler = async (
           allLLMProviders[providerName],
         )
       }
-      console.log('llmProvider', llmProvider)
 
       // TODO: update how undefined values are handled... inside each provider or out here?
 

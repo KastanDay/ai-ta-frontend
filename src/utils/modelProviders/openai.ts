@@ -126,10 +126,12 @@ export const getOpenAIModels = async (
       })
 
     openAIProvider.models = openAIModels
+    openAIProvider.error = undefined // clear any previous errors.
     return openAIProvider
   } catch (error: any) {
     console.error('Error fetching models:', error)
     openAIProvider.error = error.message
+    openAIProvider.models = [] // clear any previous models.
     return openAIProvider
   }
 }

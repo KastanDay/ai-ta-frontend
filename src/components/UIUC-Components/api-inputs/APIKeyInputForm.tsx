@@ -382,7 +382,7 @@ export default function APIKeyInputForm() {
                             padding: '2rem',
                           }}
                         >
-                          {llmProviders && (
+                          {llmProviders && !isLoadingLLMProviders && (
                             <>
                               <AnthropicProviderInput
                                 provider={
