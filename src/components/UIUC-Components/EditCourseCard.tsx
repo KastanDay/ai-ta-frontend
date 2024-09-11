@@ -133,7 +133,7 @@ const EditCourseCard = ({
     courseMetadata?.openai_api_key as string,
   )
   const [projectDescription, setProjectDescription] = useState(
-    courseMetadata?.project_descriptions || '',
+    courseMetadata?.project_description || '',
   )
 
   const checkCourseAvailability = () => {
@@ -151,7 +151,6 @@ const EditCourseCard = ({
     return router.asPath.split('/')[1]?.split('?')[0] as string
   }
 
-
   useEffect(() => {
     const showNotification = () => {
       notifications.show({
@@ -168,12 +167,13 @@ const EditCourseCard = ({
         ),
         message: (
           <Text className={`${montserrat_med.className} text-neutral-200`}>
-            We have provided several other providers in the LLMs tab where you can update the model key and select the model you want to use.
+            We have provided several other providers in the LLMs tab where you
+            can update the model key and select the model you want to use.
           </Text>
         ),
         color: 'hsl(280,100%,70%)',
         radius: 'lg',
-        icon: <IconAlertCircle color='hsl(280, 100%, 70%)' />,
+        icon: <IconAlertCircle color="hsl(280, 100%, 70%)" />,
         className: 'my-notification-class',
         style: {
           backgroundColor: 'rgba(21,22,44,0.3)',
@@ -184,8 +184,8 @@ const EditCourseCard = ({
         styles: (theme) => ({
           icon: {
             color: 'hsl(280, 100%, 70%)',
-            backgroundColor: 'transparent'
-          }
+            backgroundColor: 'transparent',
+          },
         }),
         withBorder: true,
         loading: false,
@@ -268,7 +268,7 @@ const EditCourseCard = ({
     }
 
     if (inputValue === '' && courseMetadata?.openai_api_key !== '') {
-      ; (courseMetadata as CourseMetadata).openai_api_key = inputValue
+      ;(courseMetadata as CourseMetadata).openai_api_key = inputValue
       console.log('Removing api key')
       setApiKey(inputValue)
       await callSetCourseMetadata(course_name, courseMetadata as CourseMetadata)
@@ -388,11 +388,13 @@ const EditCourseCard = ({
                   autoFocus
                   disabled={!is_new_course}
                   className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${isCourseAvailable && courseName != ''
-                      ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                      : 'border-red-800 text-red-600 focus:border-red-800'
-                    } ${montserrat_paragraph.variable
-                    } font-montserratParagraph`}
+                                ${
+                                  isCourseAvailable && courseName != ''
+                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                                    : 'border-red-800 text-red-600 focus:border-red-800'
+                                } ${
+                                  montserrat_paragraph.variable
+                                } font-montserratParagraph`}
                 />
                 <Title
                   order={4}
@@ -492,7 +494,7 @@ const EditCourseCard = ({
                     type="submit"
                     onClick={async () => {
                       if (courseMetadata) {
-                        courseMetadata.project_descriptions = projectDescription
+                        courseMetadata.project_description = projectDescription
                         // Update the courseMetadata object
 
                         const resp = await callSetCourseMetadata(
@@ -867,7 +869,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-              // style={{ textDecoration: 'underline' }}
+                // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
@@ -879,8 +881,9 @@ const PrivateOrPublicCourse = ({
 
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${isPrivate ? 'private' : 'public'
-            }. Click to change.`}
+          label={`Course is ${
+            isPrivate ? 'private' : 'public'
+          }. Click to change.`}
           wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
@@ -895,21 +898,19 @@ const PrivateOrPublicCourse = ({
         />
       </Group>
 
-      {
-        isPrivate && (
-          <EmailChipsComponent
-            course_owner={courseMetadata.course_owner as string}
-            course_admins={courseAdmins}
-            course_name={course_name}
-            is_private={isPrivate}
-            onEmailAddressesChange={handleEmailAddressesChange}
-            course_intro_message={courseMetadata.course_intro_message || ''}
-            banner_image_s3={courseMetadata.banner_image_s3 || ''}
-            openai_api_key={courseMetadata.openai_api_key as string}
-            is_for_admins={false}
-          />
-        )
-      }
+      {isPrivate && (
+        <EmailChipsComponent
+          course_owner={courseMetadata.course_owner as string}
+          course_admins={courseAdmins}
+          course_name={course_name}
+          is_private={isPrivate}
+          onEmailAddressesChange={handleEmailAddressesChange}
+          course_intro_message={courseMetadata.course_intro_message || ''}
+          banner_image_s3={courseMetadata.banner_image_s3 || ''}
+          openai_api_key={courseMetadata.openai_api_key as string}
+          is_for_admins={false}
+        />
+      )}
       <Divider />
       <Title
         className={`${montserrat_heading.variable} font-montserratHeading`}
@@ -955,7 +956,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-              // style={{ textDecoration: 'underline' }}
+                // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}

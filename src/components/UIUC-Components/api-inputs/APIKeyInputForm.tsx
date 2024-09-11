@@ -14,17 +14,12 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 import { useForm, FieldApi } from '@tanstack/react-form'
 import {
-  useGetProjectDefaultModel,
   useGetProjectLLMProviders,
   useSetProjectLLMProviders,
 } from '~/hooks/useProjectAPIKeys'
 import {
-  AllLLMProviders,
-  AnthropicProvider,
   AzureProvider,
-  OllamaProvider,
   OpenAIProvider,
-  ProviderNames,
   WebLLMProvider,
 } from '~/types/LLMProvider'
 import { notifications } from '@mantine/notifications'
@@ -46,8 +41,7 @@ import AnthropicProviderInput from './providers/AnthropicProviderInput'
 import AzureProviderInput from './providers/AzureProviderInput'
 import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
-import { ModelDropdown } from '~/components/Chat/ModelSelect'
-import { webLLMModels } from '~/utils/modelProviders/WebLLM'
+// import { ModelDropdown } from '~/components/Chat/ModelSelect'
 import NCSAHostedLLmsProviderInput from './providers/NCSAHostedLLmsProviderInput'
 // import { ModelSelect } from '~/components/Chat/ModelSelect'
 

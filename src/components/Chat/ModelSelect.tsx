@@ -17,7 +17,12 @@ import { OpenAIModel } from '~/utils/modelProviders/openai'
 import ChatUI, { webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { modelCached } from './UserSettings'
 import Image from 'next/image'
-import { ProviderNames, selectBestModel } from '~/types/LLMProvider'
+import {
+  LLMProvider,
+  ProviderNames,
+  selectBestModel,
+} from '~/types/LLMProvider'
+import { SelectItemProps } from '@mantine/core'
 import {
   recommendedModelIds,
   warningLargeModelIds,
@@ -25,30 +30,23 @@ import {
 import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
 
 interface ModelDropdownProps {
+  title: string
   value: string | undefined
   onChange: (value: string) => void
   models: {
     OpenAI?: { id: string; name: string; downloadSize?: string }[]
     Ollama?: { id: string; name: string; downloadSize?: string }[]
-    Azure?: { id: string; name: string; downloadSize?: string }[]
     WebLLM?: { id: string; name: string; downloadSize?: string }[]
     Anthropic?: { id: string; name: string; downloadSize?: string }[]
   }
   isSmallScreen: boolean
+  isWebLLM?: boolean
   loadingModelId: string | null
-  state: {
-    webLLMModelIdLoading: {
-      id: string | null
-      isLoading: boolean
-    }
-    // Add other state properties as needed
-  }
-  showWebLLmModels: boolean
+  chat_ui: ChatUI
 }
 
 interface ModelItemProps extends React.ComponentPropsWithoutRef<'div'> {
   label: string
-  showWebLLmModels: boolean
   downloadSize?: string
   isDownloaded?: boolean
   modelId: string
@@ -93,7 +91,6 @@ const ModelItem = forwardRef<
       loadingModelId,
       setLoadingModelId,
       chat_ui,
-      showWebLLmModels,
       ...others
     }: ModelItemProps & {
       loadingModelId: string | null
@@ -104,23 +101,44 @@ const ModelItem = forwardRef<
     const [isModelCached, setIsModelCached] = useState(false)
     const showSparkles = recommendedModelIds.includes(label)
     const showWarningLargeModel = warningLargeModelIds.includes(label)
+    const { state, dispatch: homeDispatch } = useContext(HomeContext)
+    // const {
+    //   state: {
+    //     isLoadingWebLLMModelId,
 
+    //   },
+    //   handleUpdateConversation,
+    //   dispatch: homeDispatch,
+    // } = useContext(HomeContext)
     useEffect(() => {
       const checkModelCache = async () => {
+        // if (!chat_ui?.isModelLoading()) {
+        //   setLoadingModelId(null)
+        // }
+
         const cached = modelCached.some((model) => model.id === modelId)
         setIsModelCached(cached)
+        // if (cached && isLoading) {
+        //   const webLLMLoadingState = { id: modelId, isLoading: false }
+        //   // homeDispatch({
+        //   //   field: 'webLLMModelIdLoading',
+        //   //   value: WebLLMLoadingState,
+        //   // })
+        //   setLoadingModelId(null)
+        // }
+        //   console.log('model is loading', state.webLLMModelIdLoading)
+        //   if (state.webLLMModelIdLoading.isLoading) {
+        //     setLoadingModelId(modelId)
+        //     console.log('model id', modelId)
+        //     console.log('loading model id', loadingModelId)
+        //     console.log('model is loading', state.webLLMModelIdLoading.id)
+        //   } else if (!state.webLLMModelIdLoading.isLoading) {
+        //     setLoadingModelId(null)
+        //   }
+        // }
       }
       checkModelCache()
     }, [modelId])
-
-    // Only use local state when showing WebLLMs. /chat vs /llms page.
-    let state, homeDispatch
-    if (!showWebLLmModels && modelType === ProviderNames.WebLLM) {
-      return null
-    } else if (showWebLLmModels && modelType === ProviderNames.WebLLM) {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      ; ({ state, dispatch: homeDispatch } = useContext(HomeContext))
-    }
 
     return (
       <div ref={ref} {...others}>
@@ -134,6 +152,11 @@ const ModelItem = forwardRef<
                 height={20}
                 style={{ marginRight: '8px', borderRadius: '4px' }}
               />
+              {/* {selectedModelId === modelId ? (
+                <IconCircleCheck stroke={2} />
+              ) : (
+                <IconCircleDashed stroke={2} />
+              )} */}
               <Text size="sm" style={{ marginLeft: '8px' }}>
                 {label}
               </Text>
@@ -149,8 +172,8 @@ const ModelItem = forwardRef<
                 <Text size="xs" opacity={0.65}>
                   {downloadSize}
                 </Text>
-                {state!.webLLMModelIdLoading.id == modelId &&
-                  state!.webLLMModelIdLoading.isLoading ? (
+                {state.webLLMModelIdLoading.id == modelId &&
+                state.webLLMModelIdLoading.isLoading ? (
                   <div
                     style={{
                       marginLeft: '8px',
@@ -170,8 +193,8 @@ const ModelItem = forwardRef<
                 ) : (
                   <>
                     {isModelCached ||
-                      (state!.webLLMModelIdLoading.id == modelId &&
-                        !state!.webLLMModelIdLoading.isLoading) ? (
+                    (state.webLLMModelIdLoading.id == modelId &&
+                      !state.webLLMModelIdLoading.isLoading) ? (
                       <>
                         <IconCircleCheck
                           size="1rem"
@@ -189,15 +212,15 @@ const ModelItem = forwardRef<
                       style={{ marginLeft: '4px' }}
                       className={
                         isModelCached ||
-                          (state!.webLLMModelIdLoading.id == modelId &&
-                            !state!.webLLMModelIdLoading.isLoading)
+                        (state.webLLMModelIdLoading.id == modelId &&
+                          !state.webLLMModelIdLoading.isLoading)
                           ? 'text-purple-400'
                           : ''
                       }
                     >
                       {isModelCached ||
-                        (state!.webLLMModelIdLoading.id == modelId &&
-                          !state!.webLLMModelIdLoading.isLoading)
+                      (state.webLLMModelIdLoading.id == modelId &&
+                        !state.webLLMModelIdLoading.isLoading)
                         ? 'downloaded'
                         : 'download'}
                     </Text>
@@ -239,175 +262,163 @@ const ModelItem = forwardRef<
   },
 )
 
-export const ModelDropdown: React.FC<
+const ModelDropdown: React.FC<
   ModelDropdownProps & {
     setLoadingModelId: (id: string | null) => void
     onChange: (modelId: string) => Promise<void>
   }
 > = ({
+  title,
   value,
   onChange,
   models,
   isSmallScreen,
+  isWebLLM,
   loadingModelId,
   setLoadingModelId,
-  state,
-  showWebLLmModels,
+  chat_ui,
 }) => {
-    // const { state, dispatch: homeDispatch } = useContext(HomeContext)
+  const { state, dispatch: homeDispatch } = useContext(HomeContext)
+  const allModels = [
+    ...(models.Ollama || []).map((model) => ({
+      ...model,
+      provider: ProviderNames.Ollama,
+      group: 'NCSA Hosted Models, 100% free',
+    })),
+    ...(models.OpenAI || []).map((model) => ({
+      ...model,
+      provider: ProviderNames.OpenAI,
+      group: 'OpenAI',
+    })),
+    ...(models.Anthropic || []).map((model) => ({
+      ...model,
+      provider: ProviderNames.Anthropic,
+      group: 'Anthropic',
+    })),
+    ...(models.WebLLM || []).map((model) => ({
+      ...model,
+      provider: ProviderNames.WebLLM,
+      group: 'Local in Browser LLMs, runs on your device',
+    })),
+  ]
+  const selectedModel = allModels.find((model) => model.id === value)
 
-    console.log('Inside model dropdown', models)
-
-    const allModels = [
-      ...(models.Ollama || []).map((model) => ({
-        ...model,
-        provider: ProviderNames.Ollama,
-        group: 'NCSA Hosted Models, 100% free',
-      })),
-      ...(models.OpenAI || []).map((model) => ({
-        ...model,
-        provider: ProviderNames.OpenAI,
-        group: 'OpenAI',
-      })),
-      ...(models.Anthropic || []).map((model) => ({
-        ...model,
-        provider: ProviderNames.Anthropic,
-        group: 'Anthropic',
-      })),
-      ...(models.WebLLM && models.WebLLM.length > 0
-        ? models.WebLLM.map((model) => ({
-          ...model,
-          provider: ProviderNames.WebLLM,
-          group: 'Local in Browser LLMs, runs on your device',
-        }))
-        : []),
-    ]
-    const selectedModel = allModels.find((model) => model.id === value)
-
-    useEffect(() => {
-      console.log('maxDropdownHeight:', maxDropdownHeight)
-    }, [maxDropdownHeight])
-
-      < div
-    tabIndex = { 0}
-    className = "relative mt-4 flex w-full flex-col items-start px-4"
+  return (
+    <>
+      <Title
+        className={`px-4 pt-4 ${montserrat_heading.variable} rounded-lg bg-[#15162c] p-4 font-montserratHeading md:rounded-lg`}
+        color="white"
+        order={isSmallScreen ? 5 : 4}
       >
-      <Select
-        className="menu z-[50] w-full"
-        size="md"
-        placeholder="Select a model"
-        searchable
-        value={value}
-        onChange={async (modelId) => {
-          if (state.webLLMModelIdLoading.isLoading) {
-            setLoadingModelId(modelId)
-            console.log('model id', modelId)
-            console.log('loading model id', loadingModelId)
-            console.log('model is loading', state.webLLMModelIdLoading.id)
-          } else if (!state.webLLMModelIdLoading.isLoading) {
-            setLoadingModelId(null)
-          }
-          await onChange(modelId!)
-        }}
-        data={allModels.map((model: any) => ({
-          value: model.id,
-          label: model.name,
-          downloadSize: model.downloadSize,
-          modelId: model.id,
-          selectedModelId: value,
-          modelType: model.provider,
-          group: model.group,
-          vram_required_MB: model.vram_required_MB,
-        }))}
-        itemComponent={(props) => (
-          <ModelItem
-            {...props}
-            loadingModelId={loadingModelId}
-            setLoadingModelId={setLoadingModelId}
-            showWebLLmModels={showWebLLmModels}
-          />
-        )}
-        maxDropdownHeight={480}
-        rightSectionWidth="auto"
-        icon={
-          selectedModel ? (
-            <Image
-              src={getModelLogo(selectedModel.provider)}
-              alt={`${selectedModel.provider} logo`}
-              width={20}
-              height={20}
-              style={{ marginLeft: '4px', borderRadius: '4px' }}
+        Model
+      </Title>
+
+      <div
+        tabIndex={0}
+        className="relative mt-4 flex w-full flex-col items-start px-4"
+      >
+        <Select
+          className="menu z-[50] w-full"
+          size="md"
+          placeholder="Select a model"
+          searchable
+          value={value}
+          onChange={async (modelId) => {
+            if (state.webLLMModelIdLoading.isLoading) {
+              setLoadingModelId(modelId)
+              console.log('model id', modelId)
+              console.log('loading model id', loadingModelId)
+              console.log('model is loading', state.webLLMModelIdLoading.id)
+            } else if (!state.webLLMModelIdLoading.isLoading) {
+              setLoadingModelId(null)
+            }
+            await onChange(modelId!)
+          }}
+          data={allModels.map((model: any) => ({
+            value: model.id,
+            label: model.name,
+            downloadSize: model.downloadSize,
+            modelId: model.id,
+            selectedModelId: value,
+            modelType: model.provider,
+            group: model.group,
+            vram_required_MB: model.vram_required_MB,
+          }))}
+          itemComponent={(props) => (
+            <ModelItem
+              {...props}
+              loadingModelId={loadingModelId}
+              setLoadingModelId={setLoadingModelId}
             />
           )}
-        maxDropdownHeight={maxDropdownHeight || 370}
-        rightSectionWidth="auto"
-        icon={
-          selectedModel ? (
-            <Image
-              src={getModelLogo(selectedModel.provider)}
-              alt={`${selectedModel.provider} logo`}
-              width={20}
-              height={20}
-              style={{ marginLeft: '4px', borderRadius: '4px' }}
-            />
-          ) : null
-        }
-        rightSection={<IconChevronDown size="1rem" />}
-        classNames={{
-          root: 'w-full',
-          wrapper: 'w-full',
-          input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'} w-full`,
-          rightSection: 'pointer-events-none',
-          item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
-        }}
-        styles={(theme) => ({
-          input: {
-            backgroundColor: 'rgb(107, 33, 168)',
-            border: 'none',
-            // color: theme.white,
-            // borderRadius: theme.radius.md,
-            // width: '24rem',
-            // [`@media (max-width: 960px)`]: {
-            //   width: '17rem', // Smaller width for small screens
-            // },
-          },
-          dropdown: {
-            backgroundColor: '#1d1f33',
-            border: '1px solid rgba(42,42,120,1)',
-            borderRadius: theme.radius.md,
-            marginTop: '2px',
-            boxShadow: theme.shadows.xs,
-            width: '100%',
-            maxWidth: '100%',
-            position: 'absolute',
-            maxHeight: '50vh !important',
-          },
-          item: {
-            backgroundColor: '#1d1f33',
-            borderRadius: theme.radius.md,
-            margin: '2px',
-            '&[data-selected]': {
-              '&': {
-                backgroundColor: 'transparent',
+          maxDropdownHeight={480}
+          rightSectionWidth="auto"
+          icon={
+            selectedModel ? (
+              <Image
+                src={getModelLogo(selectedModel.provider)}
+                alt={`${selectedModel.provider} logo`}
+                width={20}
+                height={20}
+                style={{ marginLeft: '4px', borderRadius: '4px' }}
+              />
+            ) : null
+          }
+          rightSection={<IconChevronDown size="1rem" />}
+          classNames={{
+            root: 'w-full',
+            wrapper: 'w-full',
+            input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'} w-full`,
+            rightSection: 'pointer-events-none',
+            item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
+          }}
+          styles={(theme) => ({
+            input: {
+              backgroundColor: 'rgb(107, 33, 168)',
+              border: 'none',
+              // color: theme.white,
+              // borderRadius: theme.radius.md,
+              // width: '24rem',
+              // [`@media (max-width: 960px)`]: {
+              //   width: '17rem', // Smaller width for small screens
+              // },
+            },
+            dropdown: {
+              backgroundColor: '#1d1f33',
+              border: '1px solid rgba(42,42,120,1)',
+              borderRadius: theme.radius.md,
+              marginTop: '2px',
+              boxShadow: theme.shadows.xs,
+              width: '100%',
+              maxWidth: '100%',
+              position: 'absolute',
+            },
+            item: {
+              backgroundColor: '#1d1f33',
+              borderRadius: theme.radius.md,
+              margin: '2px',
+              '&[data-selected]': {
+                '&': {
+                  backgroundColor: 'transparent',
+                },
+                '&:hover': {
+                  backgroundColor: 'rgb(107, 33, 168)',
+                  color: theme.white,
+                },
               },
-              '&:hover': {
+              '&[data-hovered]': {
                 backgroundColor: 'rgb(107, 33, 168)',
                 color: theme.white,
               },
             },
-            '&[data-hovered]': {
-              backgroundColor: 'rgb(107, 33, 168)',
-              color: theme.white,
-            },
-          },
-        })}
-        dropdownPosition="bottom"
-        withinPortal
-      />
-        </div >
-      </>
-    )
-  }
+          })}
+          dropdownPosition="bottom"
+          withinPortal
+        />
+      </div>
+    </>
+  )
+}
 
 export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
   ({ chat_ui, props }, ref) => {
@@ -446,6 +457,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
         <div>
           <div className="flex flex-col">
             <ModelDropdown
+              title="Select Model"
               value={selectedConversation?.model.id || defaultModelId}
               onChange={
                 // async (modelId) => {
@@ -475,14 +487,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
               isSmallScreen={isSmallScreen}
               loadingModelId={loadingModelId}
               setLoadingModelId={setLoadingModelId}
-              showWebLLmModels={true}
-              state={{
-                webLLMModelIdLoading: {
-                  id: 'test',
-                  isLoading: false,
-                },
-              }}
-            // homeDispatch={homeDispatch}
+              chat_ui={chat_ui}
             />
             <Title
               className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}

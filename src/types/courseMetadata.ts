@@ -14,18 +14,16 @@ export interface CourseMetadata {
   system_prompt: string | undefined
   openai_api_key: string | undefined // TODO: remove
   disabled_models: string[] | undefined // TODO: remove
-  project_descriptions: string | undefined
-  // llmProviders?: LLMProvider[]
+  project_description: string | undefined
 }
 
 export type ProjectWideLLMProviders = {
   [P in ProviderNames]?: LLMProvider & { provider: P }
 } & {
-  // llmProviders?: LLMProvider[]
+  llmProviders?: LLMProvider[]
   defaultModel: string
   defaultTemperature: number
   disabled_models: string[] | undefined
-  project_description: string | undefined
 }
 
 export interface CourseMetadataOptionalForUpsert {
@@ -39,5 +37,5 @@ export interface CourseMetadataOptionalForUpsert {
   openai_api_key: string | undefined
   system_prompt: string | undefined
   disabled_models: string[] | undefined
-  project_descriptions: string | undefined
+  project_description: string | undefined
 }
