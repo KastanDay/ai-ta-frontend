@@ -1,4 +1,4 @@
-import { ContextWithMetadata } from "~/types/chat";
+import { ContextWithMetadata } from '~/types/chat'
 
 export const createProject = async (
   project_name: string,
@@ -10,7 +10,7 @@ export const createProject = async (
     project_description: project_description,
     project_owner_email: project_owner_email,
   }
-  const url = 'https://flask-pr-291.up.railway.app/createProject'
+  const url = 'https://flask-production-751b.up.railway.app/createProject'
 
   try {
     const response = await fetch(url, {
@@ -21,10 +21,14 @@ export const createProject = async (
       body: JSON.stringify(requestBody),
     })
     if (!response.ok) {
-      console.error('Failed to create the project. Err status:', response.status)
-      throw new Error('Failed to create the project. Err status:' + response.status)
+      console.error(
+        'Failed to create the project. Err status:',
+        response.status,
+      )
+      throw new Error(
+        'Failed to create the project. Err status:' + response.status,
+      )
     }
-    const data = await response.json()
     return true
   } catch (error) {
     console.error(error)
