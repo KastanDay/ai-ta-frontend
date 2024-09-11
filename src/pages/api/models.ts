@@ -45,6 +45,9 @@ const handler = async (
     )) as AllLLMProviders
 
     console.log('llmProviders in /models', llmProviders)
+    console.log('TYPEOF llmProviders in /models', typeof llmProviders)
+    console.log('AZURE SHOULD BE HERE ', llmProviders[ProviderNames.Azure])
+    console.log('AZURE SHOULD BE HERE  p2', llmProviders.Azure)
     console.log(
       '❌⭐️❌TODO: fix /models to grab Keys form DB, fetch available && enabled models.',
     )
@@ -99,39 +102,54 @@ const handler = async (
     // END-TODO: MOVE THESE TO DB INPUTS
 
     const allLLMProviders: AllLLMProviders = {}
-    for (const [providerName, llmProvider] of Object.entries(llmProviders)) {
-      if (!llmProvider.enabled) continue
 
-      const typedProviderName = providerName as keyof AllLLMProviders
+    for (const providerName of Object.values(ProviderNames)) {
+      const llmProvider = llmProviders[providerName]
 
-      switch (typedProviderName) {
+      console.log('llmProvider', llmProvider)
+      console.log('providerName', providerName)
+      if (!llmProvider || !llmProvider.enabled) {
+        // Return empty object for empty and disabled providers
+        allLLMProviders[providerName] = {
+          provider: providerName,
+          enabled: false,
+          models: [],
+        }
+        console.log('Got empty provider', allLLMProviders[providerName])
+        continue
+      }
+
+      switch (providerName) {
         case ProviderNames.Ollama:
-          allLLMProviders[typedProviderName] = await getOllamaModels(
+          allLLMProviders[providerName] = await getOllamaModels(
             llmProvider as OllamaProvider,
           )
           break
         case ProviderNames.OpenAI:
-          allLLMProviders[typedProviderName] = await getOpenAIModels(
+          allLLMProviders[providerName] = await getOpenAIModels(
             llmProvider as OpenAIProvider,
             projectName,
           )
           break
         case ProviderNames.Azure:
-          allLLMProviders[typedProviderName] = await getAzureModels(
+          allLLMProviders[providerName] = await getAzureModels(
             llmProvider as AzureProvider,
           )
           break
         case ProviderNames.Anthropic:
-          allLLMProviders[typedProviderName] = await getAnthropicModels(
+          allLLMProviders[providerName] = await getAnthropicModels(
             llmProvider as AnthropicProvider,
           )
           break
         case ProviderNames.WebLLM:
           ;(llmProvider as WebLLMProvider).models = webLLMModels
-          allLLMProviders[typedProviderName] = llmProvider as WebLLMProvider
+          allLLMProviders[providerName] = llmProvider as WebLLMProvider
+          break
+        case ProviderNames.NCSAHosted:
+          // TODO: Implement NCSAHosted provider handling
           break
         default:
-          continue
+          console.warn(`Unhandled provider: ${providerName}`)
       }
     }
 
