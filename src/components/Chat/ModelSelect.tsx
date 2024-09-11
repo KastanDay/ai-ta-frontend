@@ -173,7 +173,7 @@ const ModelItem = forwardRef<
                   {downloadSize}
                 </Text>
                 {state.webLLMModelIdLoading.id == modelId &&
-                state.webLLMModelIdLoading.isLoading ? (
+                  state.webLLMModelIdLoading.isLoading ? (
                   <div
                     style={{
                       marginLeft: '8px',
@@ -193,8 +193,8 @@ const ModelItem = forwardRef<
                 ) : (
                   <>
                     {isModelCached ||
-                    (state.webLLMModelIdLoading.id == modelId &&
-                      !state.webLLMModelIdLoading.isLoading) ? (
+                      (state.webLLMModelIdLoading.id == modelId &&
+                        !state.webLLMModelIdLoading.isLoading) ? (
                       <>
                         <IconCircleCheck
                           size="1rem"
@@ -212,15 +212,15 @@ const ModelItem = forwardRef<
                       style={{ marginLeft: '4px' }}
                       className={
                         isModelCached ||
-                        (state.webLLMModelIdLoading.id == modelId &&
-                          !state.webLLMModelIdLoading.isLoading)
+                          (state.webLLMModelIdLoading.id == modelId &&
+                            !state.webLLMModelIdLoading.isLoading)
                           ? 'text-purple-400'
                           : ''
                       }
                     >
                       {isModelCached ||
-                      (state.webLLMModelIdLoading.id == modelId &&
-                        !state.webLLMModelIdLoading.isLoading)
+                        (state.webLLMModelIdLoading.id == modelId &&
+                          !state.webLLMModelIdLoading.isLoading)
                         ? 'downloaded'
                         : 'download'}
                     </Text>
@@ -278,147 +278,147 @@ const ModelDropdown: React.FC<
   setLoadingModelId,
   chat_ui,
 }) => {
-  const { state, dispatch: homeDispatch } = useContext(HomeContext)
-  const allModels = [
-    ...(models.Ollama || []).map((model) => ({
-      ...model,
-      provider: ProviderNames.Ollama,
-      group: 'NCSA Hosted Models, 100% free',
-    })),
-    ...(models.OpenAI || []).map((model) => ({
-      ...model,
-      provider: ProviderNames.OpenAI,
-      group: 'OpenAI',
-    })),
-    ...(models.Anthropic || []).map((model) => ({
-      ...model,
-      provider: ProviderNames.Anthropic,
-      group: 'Anthropic',
-    })),
-    ...(models.WebLLM || []).map((model) => ({
-      ...model,
-      provider: ProviderNames.WebLLM,
-      group: 'Local in Browser LLMs, runs on your device',
-    })),
-  ]
-  const selectedModel = allModels.find((model) => model.id === value)
+    const { state, dispatch: homeDispatch } = useContext(HomeContext)
+    const allModels = [
+      ...(models.Ollama || []).map((model) => ({
+        ...model,
+        provider: ProviderNames.Ollama,
+        group: 'NCSA Hosted Models, 100% free',
+      })),
+      ...(models.OpenAI || []).map((model) => ({
+        ...model,
+        provider: ProviderNames.OpenAI,
+        group: 'OpenAI',
+      })),
+      ...(models.Anthropic || []).map((model) => ({
+        ...model,
+        provider: ProviderNames.Anthropic,
+        group: 'Anthropic',
+      })),
+      ...(models.WebLLM || []).map((model) => ({
+        ...model,
+        provider: ProviderNames.WebLLM,
+        group: 'Local in Browser LLMs, runs on your device',
+      })),
+    ]
+    const selectedModel = allModels.find((model) => model.id === value)
 
-  return (
-    <>
-      <Title
-        className={`px-4 pt-4 ${montserrat_heading.variable} rounded-lg bg-[#15162c] p-4 font-montserratHeading md:rounded-lg`}
-        color="white"
-        order={isSmallScreen ? 5 : 4}
-      >
-        Model
-      </Title>
+    return (
+      <>
+        <Title
+          className={`px-4 pt-4 ${montserrat_heading.variable} rounded-lg bg-[#15162c] p-4 font-montserratHeading md:rounded-lg`}
+          color="white"
+          order={isSmallScreen ? 5 : 4}
+        >
+          Model
+        </Title>
 
-      <div
-        tabIndex={0}
-        className="relative mt-4 flex w-full flex-col items-start px-4"
-      >
-        <Select
-          className="menu z-[50] w-full"
-          size="md"
-          placeholder="Select a model"
-          searchable
-          value={value}
-          onChange={async (modelId) => {
-            if (state.webLLMModelIdLoading.isLoading) {
-              setLoadingModelId(modelId)
-              console.log('model id', modelId)
-              console.log('loading model id', loadingModelId)
-              console.log('model is loading', state.webLLMModelIdLoading.id)
-            } else if (!state.webLLMModelIdLoading.isLoading) {
-              setLoadingModelId(null)
-            }
-            await onChange(modelId!)
-          }}
-          data={allModels.map((model: any) => ({
-            value: model.id,
-            label: model.name,
-            downloadSize: model.downloadSize,
-            modelId: model.id,
-            selectedModelId: value,
-            modelType: model.provider,
-            group: model.group,
-            vram_required_MB: model.vram_required_MB,
-          }))}
-          itemComponent={(props) => (
-            <ModelItem
-              {...props}
-              loadingModelId={loadingModelId}
-              setLoadingModelId={setLoadingModelId}
-            />
-          )}
-          maxDropdownHeight={480}
-          rightSectionWidth="auto"
-          icon={
-            selectedModel ? (
-              <Image
-                src={getModelLogo(selectedModel.provider)}
-                alt={`${selectedModel.provider} logo`}
-                width={20}
-                height={20}
-                style={{ marginLeft: '4px', borderRadius: '4px' }}
+        <div
+          tabIndex={0}
+          className="relative mt-4 flex w-full flex-col items-start px-4"
+        >
+          <Select
+            className="menu z-[50] w-full"
+            size="md"
+            placeholder="Select a model"
+            searchable
+            value={value}
+            onChange={async (modelId) => {
+              if (state.webLLMModelIdLoading.isLoading) {
+                setLoadingModelId(modelId)
+                console.log('model id', modelId)
+                console.log('loading model id', loadingModelId)
+                console.log('model is loading', state.webLLMModelIdLoading.id)
+              } else if (!state.webLLMModelIdLoading.isLoading) {
+                setLoadingModelId(null)
+              }
+              await onChange(modelId!)
+            }}
+            data={allModels.map((model: any) => ({
+              value: model.id,
+              label: model.name,
+              downloadSize: model.downloadSize,
+              modelId: model.id,
+              selectedModelId: value,
+              modelType: model.provider,
+              group: model.group,
+              vram_required_MB: model.vram_required_MB,
+            }))}
+            itemComponent={(props) => (
+              <ModelItem
+                {...props}
+                loadingModelId={loadingModelId}
+                setLoadingModelId={setLoadingModelId}
               />
-            ) : null
-          }
-          rightSection={<IconChevronDown size="1rem" />}
-          classNames={{
-            root: 'w-full',
-            wrapper: 'w-full',
-            input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'} w-full`,
-            rightSection: 'pointer-events-none',
-            item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
-          }}
-          styles={(theme) => ({
-            input: {
-              backgroundColor: 'rgb(107, 33, 168)',
-              border: 'none',
-              // color: theme.white,
-              // borderRadius: theme.radius.md,
-              // width: '24rem',
-              // [`@media (max-width: 960px)`]: {
-              //   width: '17rem', // Smaller width for small screens
-              // },
-            },
-            dropdown: {
-              backgroundColor: '#1d1f33',
-              border: '1px solid rgba(42,42,120,1)',
-              borderRadius: theme.radius.md,
-              marginTop: '2px',
-              boxShadow: theme.shadows.xs,
-              width: '100%',
-              maxWidth: '100%',
-              position: 'absolute',
-            },
-            item: {
-              backgroundColor: '#1d1f33',
-              borderRadius: theme.radius.md,
-              margin: '2px',
-              '&[data-selected]': {
-                '&': {
-                  backgroundColor: 'transparent',
+            )}
+            maxDropdownHeight={480}
+            rightSectionWidth="auto"
+            icon={
+              selectedModel ? (
+                <Image
+                  src={getModelLogo(selectedModel.provider)}
+                  alt={`${selectedModel.provider} logo`}
+                  width={20}
+                  height={20}
+                  style={{ marginLeft: '4px', borderRadius: '4px' }}
+                />
+              ) : null
+            }
+            rightSection={<IconChevronDown size="1rem" />}
+            classNames={{
+              root: 'w-full',
+              wrapper: 'w-full',
+              input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'} w-full`,
+              rightSection: 'pointer-events-none',
+              item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
+            }}
+            styles={(theme) => ({
+              input: {
+                backgroundColor: 'rgb(107, 33, 168)',
+                border: 'none',
+                // color: theme.white,
+                // borderRadius: theme.radius.md,
+                // width: '24rem',
+                // [`@media (max-width: 960px)`]: {
+                //   width: '17rem', // Smaller width for small screens
+                // },
+              },
+              dropdown: {
+                backgroundColor: '#1d1f33',
+                border: '1px solid rgba(42,42,120,1)',
+                borderRadius: theme.radius.md,
+                marginTop: '2px',
+                boxShadow: theme.shadows.xs,
+                width: '100%',
+                maxWidth: '100%',
+                position: 'absolute',
+              },
+              item: {
+                backgroundColor: '#1d1f33',
+                borderRadius: theme.radius.md,
+                margin: '2px',
+                '&[data-selected]': {
+                  '&': {
+                    backgroundColor: 'transparent',
+                  },
+                  '&:hover': {
+                    backgroundColor: 'rgb(107, 33, 168)',
+                    color: theme.white,
+                  },
                 },
-                '&:hover': {
+                '&[data-hovered]': {
                   backgroundColor: 'rgb(107, 33, 168)',
                   color: theme.white,
                 },
               },
-              '&[data-hovered]': {
-                backgroundColor: 'rgb(107, 33, 168)',
-                color: theme.white,
-              },
-            },
-          })}
-          dropdownPosition="bottom"
-          withinPortal
-        />
-      </div>
-    </>
-  )
-}
+            })}
+            dropdownPosition="bottom"
+            withinPortal
+          />
+        </div>
+      </>
+    )
+  }
 
 export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
   ({ chat_ui, props }, ref) => {

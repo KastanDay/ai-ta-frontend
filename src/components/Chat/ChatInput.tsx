@@ -123,13 +123,9 @@ export const ChatInput = ({
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
-  // const [showModelSelect, setShowModelSelect] = useState(false)
+  // const [showModelSettings, setShowModelSettings] = useState(false);
   const modelSelectContainerRef = useRef<HTMLDivElement | null>(null)
 
-  // const handleTextClick = () => {
-  //   console.log('handleTextClick')
-  //   setShowModelSelect((prev) => !prev)
-  // }
   const handleTextClick = () => {
     console.log('handleTextClick')
     homeDispatch({
@@ -137,25 +133,6 @@ export const ChatInput = ({
       value: !showModelSettings,
     })
   }
-
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      modelSelectContainerRef.current &&
-      !modelSelectContainerRef.current.contains(event.target as Node)
-    ) {
-      homeDispatch({
-        field: 'showModelSettings',
-        value: false,
-      })
-    }
-  }
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [modelSelectContainerRef])
 
   const removeButtonStyle: CSSProperties = {
     position: 'absolute',
