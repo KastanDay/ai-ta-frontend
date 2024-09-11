@@ -15,7 +15,7 @@ export const env = createEnv({
     AWS_SECRET: z.string().min(1),
     CLERK_SECRET_KEY: z.string().min(1),
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
-    EDGE_CONFIG: z.string().min(1),
+    // EDGE_CONFIG: z.string().min(1),
     NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1),
     NEXT_PUBLIC_POSTHOG_HOST: z.string().min(1),
     NEXT_PUBLIC_MAGIC_BELL_API: z.string().min(1),
@@ -60,12 +60,10 @@ export const env = createEnv({
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
-    EDGE_CONFIG: process.env.EDGE_CONFIG,
+    // EDGE_CONFIG: process.env.EDGE_CONFIG,
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     NEXT_PUBLIC_MAGIC_BELL_API: process.env.NEXT_PUBLIC_MAGIC_BELL_API,
     OLLAMA_SERVER_URL: process.env.OLLAMA_SERVER_URL,
   },
-
-
 })
