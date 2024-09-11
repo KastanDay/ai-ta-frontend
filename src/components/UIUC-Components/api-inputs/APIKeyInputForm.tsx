@@ -20,6 +20,8 @@ import {
 import {
   AnthropicProvider,
   AzureProvider,
+  NCSAHostedProvider,
+  OllamaProvider,
   OpenAIProvider,
   WebLLMProvider,
 } from '~/types/LLMProvider'
@@ -42,9 +44,7 @@ import AnthropicProviderInput from './providers/AnthropicProviderInput'
 import AzureProviderInput from './providers/AzureProviderInput'
 import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
-// import { ModelDropdown } from '~/components/Chat/ModelSelect'
-import NCSAHostedLLmsProviderInput from './providers/NCSAHostedLLmsProviderInput'
-// import { ModelSelect } from '~/components/Chat/ModelSelect'
+import NCSAHostedLLmsProviderInput from './providers/NCSAHostedProviderInput'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -398,11 +398,16 @@ export default function APIKeyInputForm() {
                                 provider={llmProviders.Azure as AzureProvider}
                                 form={form}
                               />
-                              {/* <OllamaProviderInput
+                              <OllamaProviderInput
+                                provider={llmProviders.Ollama as OllamaProvider}
                                 form={form}
-                                providerName="Ollama"
-                              /> */}
-                              <NCSAHostedLLmsProviderInput form={form} />
+                              />
+                              <NCSAHostedLLmsProviderInput
+                                provider={
+                                  llmProviders.NCSAHosted as NCSAHostedProvider
+                                }
+                                form={form}
+                              />
                               <WebLLMProviderInput
                                 provider={llmProviders.WebLLM as WebLLMProvider}
                                 form={form}
@@ -411,7 +416,7 @@ export default function APIKeyInputForm() {
                           )}
                         </div>
 
-                        <form.Subscribe
+                        {/* <form.Subscribe
                           selector={(state) => [
                             state.canSubmit,
                             state.isSubmitting,
@@ -433,7 +438,7 @@ export default function APIKeyInputForm() {
                                 : 'Save Changes - TODO remove this button. Each has their own.'}
                             </Button>
                           )}
-                        </form.Subscribe>
+                        </form.Subscribe> */}
                       </form>
                       {/* </Card> */}
                     </Stack>

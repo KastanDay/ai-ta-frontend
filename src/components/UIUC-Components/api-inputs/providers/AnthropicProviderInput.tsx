@@ -13,8 +13,6 @@ export default function AnthropicProviderInput({
   provider: AnthropicProvider
   form: any
 }) {
-  // TODO: display errors from provider.error
-
   return (
     <motion.div layout>
       <Card shadow="sm" p="lg" radius="md" className="bg-[#15162c]">
@@ -25,22 +23,24 @@ export default function AnthropicProviderInput({
             justifyContent: 'space-between',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Text
-              size="lg"
-              weight={500}
-              mb="xs"
-              style={{ paddingRight: '8px' }}
-            >
-              Anthropic
-            </Text>
+          <div>
             <a
               className="mb-3"
-              href="https://www.anthropic.com/"
+              href="https://console.anthropic.com/settings/keys"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <IconExternalLink size={16} />
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Text
+                  size="lg"
+                  weight={500}
+                  mb="xs"
+                  style={{ paddingRight: '8px' }}
+                >
+                  Anthropic
+                </Text>
+                <IconExternalLink size={16} className="mb-3" />
+              </div>
             </a>
           </div>
           <form.Field name={`providers.${ProviderNames.Anthropic}.enabled`}>
@@ -52,9 +52,11 @@ export default function AnthropicProviderInput({
                 offLabel="OFF"
                 aria-label="Enable Anthropic provider"
                 checked={field.state.value}
-                onChange={(event) =>
+                onChange={(event) => {
                   field.handleChange(event.currentTarget.checked)
-                }
+                  // Trigger form submission
+                  setTimeout(() => form.handleSubmit(), 0)
+                }}
                 thumbIcon={
                   field.state.value ? (
                     <IconCheck size="0.8rem" color="purple" stroke={3} />
@@ -80,6 +82,29 @@ export default function AnthropicProviderInput({
           Anthropic provides advanced AI models like Claude. Sign up on their
           website to get an API key.
         </Text>
+        {provider?.error &&
+          form.state.values?.providers?.Anthropic?.enabled && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Text
+                size="sm"
+                color="red"
+                mb="md"
+                style={{
+                  padding: '8px',
+                  borderRadius: '4px',
+                  backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                  border: '1px solid rgba(255, 0, 0, 0.2)',
+                }}
+              >
+                {provider.error}
+              </Text>
+            </motion.div>
+          )}
         <form.Field name={`providers.${ProviderNames.Anthropic}.enabled`}>
           {(field: any) => (
             <AnimatePresence>

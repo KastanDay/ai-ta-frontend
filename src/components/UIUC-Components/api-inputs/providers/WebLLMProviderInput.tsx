@@ -22,22 +22,24 @@ export default function WebLLMProviderInput({
             justifyContent: 'space-between',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Text
-              size="lg"
-              weight={500}
-              mb="xs"
-              style={{ paddingRight: '8px' }}
-            >
-              WebLLM
-            </Text>
+          <div>
             <a
               className="mb-3"
               href="https://github.com/mlc-ai/web-llm"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <IconExternalLink size={16} />
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Text
+                  size="lg"
+                  weight={500}
+                  mb="xs"
+                  style={{ paddingRight: '8px' }}
+                >
+                  WebLLM
+                </Text>
+                <IconExternalLink size={16} className="mb-3" />
+              </div>
             </a>
           </div>
           <form.Field name={`providers.${ProviderNames.WebLLM}.enabled`}>
@@ -49,9 +51,11 @@ export default function WebLLMProviderInput({
                 offLabel="OFF"
                 aria-label="Enable WebLLM provider"
                 checked={field.state.value}
-                onChange={(event) =>
+                onChange={(event) => {
                   field.handleChange(event.currentTarget.checked)
-                }
+                  // Trigger form submission
+                  setTimeout(() => form.handleSubmit(), 0)
+                }}
                 thumbIcon={
                   field.state.value ? (
                     <IconCheck size="0.8rem" color="purple" stroke={3} />

@@ -4,6 +4,7 @@ import {
   AnthropicProvider,
   AzureProvider,
   LLMProvider,
+  NCSAHostedProvider,
   OllamaProvider,
   OpenAIProvider,
   ProviderNames,
@@ -17,6 +18,10 @@ import { webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { parseOpenaiKey } from '~/utils/crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
+import {
+  getNCSAHostedModels,
+  NCSAHostedModelID,
+} from '~/utils/modelProviders/NCSAHosted'
 
 export const config = {
   runtime: 'edge',
@@ -26,9 +31,8 @@ const handler = async (
   req: NextRequest,
 ): Promise<NextResponse<AllLLMProviders | { error: string }>> => {
   try {
-    const { projectName, openAIApiKey } = (await req.json()) as {
+    const { projectName } = (await req.json()) as {
       projectName: string
-      openAIApiKey?: string
     }
 
     if (!projectName) {
@@ -38,16 +42,12 @@ const handler = async (
       )
     }
 
-    // Fetch LLM providers from the API
-    // TODO: work in progress.
+    // Fetch the project's API keys
     const llmProviders = (await kv.get(
       `${projectName}-llms`,
     )) as AllLLMProviders
 
     console.log('llmProviders in /models', llmProviders)
-    console.log(
-      '❌⭐️❌TODO: fix /models to grab Keys form DB, fetch available && enabled models.',
-    )
 
     if (!llmProviders) {
       return NextResponse.json(
@@ -108,7 +108,9 @@ const handler = async (
           allLLMProviders[providerName] = llmProvider as WebLLMProvider
           break
         case ProviderNames.NCSAHosted:
-          // TODO: Implement NCSAHosted provider handling
+          allLLMProviders[providerName] = await getNCSAHostedModels(
+            llmProvider as NCSAHostedProvider,
+          )
           break
         default:
           console.warn(`Unhandled provider: ${providerName}`)

@@ -99,7 +99,7 @@ export const getOpenAIModels = async (
     }
 
     if (!openAIProvider.apiKey || openAIProvider.apiKey === undefined) {
-      openAIProvider.error = 'OpenAI API Key is not set'
+      openAIProvider.error = 'OpenAI API Key is not set.'
       return openAIProvider
     }
 

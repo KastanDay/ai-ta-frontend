@@ -23,24 +23,48 @@ export default function AzureProviderInput({
             justifyContent: 'space-between',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Text
-              size="lg"
-              weight={500}
-              mb="xs"
-              style={{ paddingRight: '8px' }}
-            >
-              Azure OpenAI
-            </Text>
+          <div>
             <a
               className="mb-3"
               href="https://azure.microsoft.com/en-us/products/cognitive-services/openai-service/"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <IconExternalLink size={16} />
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Text
+                  size="lg"
+                  weight={500}
+                  mb="xs"
+                  style={{ paddingRight: '8px' }}
+                >
+                  Azure OpenAI
+                </Text>
+                <IconExternalLink size={16} className="mb-3" />
+              </div>
             </a>
           </div>
+          {provider?.error && form.state.values?.providers?.Azure?.enabled && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Text
+                size="sm"
+                color="red"
+                mb="md"
+                style={{
+                  padding: '8px',
+                  borderRadius: '4px',
+                  backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                  border: '1px solid rgba(255, 0, 0, 0.2)',
+                }}
+              >
+                {provider.error}
+              </Text>
+            </motion.div>
+          )}
           <form.Field name={`providers.${ProviderNames.Azure}.enabled`}>
             {(field: any) => (
               <Switch
@@ -50,9 +74,11 @@ export default function AzureProviderInput({
                 offLabel="OFF"
                 aria-label="Enable Azure OpenAI provider"
                 checked={field.state.value}
-                onChange={(event) =>
+                onChange={(event) => {
                   field.handleChange(event.currentTarget.checked)
-                }
+                  // Trigger form submission
+                  setTimeout(() => form.handleSubmit(), 0)
+                }}
                 thumbIcon={
                   field.state.value ? (
                     <IconCheck size="0.8rem" color="purple" stroke={3} />

@@ -48,7 +48,7 @@ export const getAnthropicModels = async (
   anthropicProvider: AnthropicProvider,
 ): Promise<AnthropicProvider> => {
   if (!anthropicProvider.apiKey) {
-    anthropicProvider.error = 'Anthropic API key not defined'
+    anthropicProvider.error = 'Anthropic API key not set.'
     return anthropicProvider
   }
   anthropicProvider.models = Object.values(AnthropicModels) as AnthropicModel[]
