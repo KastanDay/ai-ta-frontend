@@ -14,6 +14,7 @@ import {
   Accordion,
   createStyles,
   Switch,
+  TextInput,
 } from '@mantine/core'
 import {
   IconAlertCircle,
@@ -44,6 +45,7 @@ import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { notifications } from '@mantine/notifications'
 import SetExampleQuestions from './SetExampleQuestions'
 import { AllLLMProviders } from '~/types/LLMProvider'
+import createProject from '~/pages/api/UIUC-api/createProject'
 
 const montserrat_light = Montserrat({
   weight: '400',
@@ -130,7 +132,6 @@ const EditCourseCard = ({
   const [apiKey, setApiKey] = useState<string | undefined>(
     courseMetadata?.openai_api_key as string,
   )
-  const [isKeyUpdated, setIsKeyUpdated] = useState(false)
   const [projectDescription, setProjectDescription] = useState(
     courseMetadata?.project_descriptions || '',
   )
@@ -149,6 +150,7 @@ const EditCourseCard = ({
     // `/new?course_name=mycourse` --> `new`
     return router.asPath.split('/')[1]?.split('?')[0] as string
   }
+
 
   useEffect(() => {
     const showNotification = () => {
@@ -893,19 +895,21 @@ const PrivateOrPublicCourse = ({
         />
       </Group>
 
-      {isPrivate && (
-        <EmailChipsComponent
-          course_owner={courseMetadata.course_owner as string}
-          course_admins={courseAdmins}
-          course_name={course_name}
-          is_private={isPrivate}
-          onEmailAddressesChange={handleEmailAddressesChange}
-          course_intro_message={courseMetadata.course_intro_message || ''}
-          banner_image_s3={courseMetadata.banner_image_s3 || ''}
-          openai_api_key={courseMetadata.openai_api_key as string}
-          is_for_admins={false}
-        />
-      )}
+      {
+        isPrivate && (
+          <EmailChipsComponent
+            course_owner={courseMetadata.course_owner as string}
+            course_admins={courseAdmins}
+            course_name={course_name}
+            is_private={isPrivate}
+            onEmailAddressesChange={handleEmailAddressesChange}
+            course_intro_message={courseMetadata.course_intro_message || ''}
+            banner_image_s3={courseMetadata.banner_image_s3 || ''}
+            openai_api_key={courseMetadata.openai_api_key as string}
+            is_for_admins={false}
+          />
+        )
+      }
       <Divider />
       <Title
         className={`${montserrat_heading.variable} font-montserratHeading`}

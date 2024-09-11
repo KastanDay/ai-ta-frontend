@@ -109,7 +109,7 @@ const ToolsPage: NextPage = () => {
   if (courseData === null) {
     return (
       <MakeNewCoursePage
-        course_name={course_name as string}
+        project_name={course_name as string}
         current_user_email={user_emails[0] as string}
       />
     )

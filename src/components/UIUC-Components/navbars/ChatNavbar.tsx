@@ -5,16 +5,14 @@ import { useDisclosure } from '@mantine/hooks'
 import Image from 'next/image'
 import { useEffect, useState, useContext, useRef } from 'react'
 import {
-  createStyles,
-  // Header,
-  Flex,
-  Container,
-  // Anchor,
-  Group,
   Burger,
+  Container,
+  createStyles,
+  Flex,
+  Group,
+  Paper,
   rem,
   Transition,
-  Paper,
 } from '@mantine/core'
 import { spotlight } from '@mantine/spotlight'
 import {
@@ -22,32 +20,23 @@ import {
   Folder,
   ReportAnalytics,
   ChartDots3,
-  // Settings,
   MessageCode,
 } from 'tabler-icons-react'
 import {
   IconFileText,
-  // IconExternalLink,
-  IconRobot,
   IconSettings,
-  IconTools,
-  // IconCloudUpload,
-  // IconSettings,
 } from '@tabler/icons-react'
 import { useRouter } from 'next/router'
 import { montserrat_heading } from 'fonts'
 import { useUser } from '@clerk/nextjs'
-// import { getCoursesByOwnerOrAdmin } from '../getAllCourseMetaData'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import HomeContext from '~/pages/api/home/home.context'
-import { ModelSelect } from '../../Chat/ModelSelect'
 import { UserSettings } from '../../Chat/UserSettings'
 import MagicBell, {
   FloatingNotificationInbox,
 } from '@magicbell/magicbell-react'
 import { usePostHog } from 'posthog-js/react'
-import { wrap } from 'module'
 
 const styles: Record<string, React.CSSProperties> = {
   logoContainerBox: {
@@ -278,7 +267,7 @@ const ChatNavbar = ({
               className={`${montserrat_heading.variable} font-montserratHeading`}
             >
               Admin Dashboard
-            </span>
+            </span >
           ),
           icon: <FolderIcon />,
           link: `/${getCurrentCourseName()}/materials`,
