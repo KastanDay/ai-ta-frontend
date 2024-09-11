@@ -2,17 +2,15 @@ import React from 'react'
 import { Text, Switch, Card } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
 import { ModelToggles } from '../ModelToggles'
-import { WebllmModel } from '~/utils/modelProviders/WebLLM'
-import { WebLLMProvider } from '~/types/LLMProvider'
+import { ProviderNames, WebLLMProvider } from '~/types/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function WebLLMProviderInput({
+  provider,
   form,
-  providerName,
 }: {
   provider: WebLLMProvider
   form: any
-  providerName: string
 }) {
   return (
     <motion.div layout>
@@ -42,7 +40,7 @@ export default function WebLLMProviderInput({
               <IconExternalLink size={16} />
             </a>
           </div>
-          <form.Field name={`providers.${providerName}.enabled`}>
+          <form.Field name={`providers.${ProviderNames.WebLLM}.enabled`}>
             {(field: any) => (
               <Switch
                 size="md"
@@ -78,7 +76,7 @@ export default function WebLLMProviderInput({
         <Text size="sm" color="dimmed" mb="md">
           WebLLM is a framework for building and deploying LLMs in the browser.
         </Text>
-        <form.Field name={`providers.${providerName}.enabled`}>
+        <form.Field name={`providers.${ProviderNames.WebLLM}.enabled`}>
           {(field: any) => (
             <AnimatePresence>
               {field.state.value && (
@@ -88,7 +86,10 @@ export default function WebLLMProviderInput({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <ModelToggles form={form} providerName={providerName} />
+                  <ModelToggles
+                    form={form}
+                    providerName={ProviderNames.WebLLM}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>

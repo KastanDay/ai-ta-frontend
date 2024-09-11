@@ -2,17 +2,10 @@ import React from 'react'
 import { Text, Switch, Card, TextInput } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
 import { ModelToggles } from '../ModelToggles'
-import { OllamaModel } from '~/utils/modelProviders/ollama'
-import { OllamaProvider } from '~/types/LLMProvider'
+import { ProviderNames } from '~/types/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export default function OllamaProviderInput({
-  form,
-  providerName,
-}: {
-  form: any
-  providerName: string
-}) {
+export default function OllamaProviderInput({ form }: { form: any }) {
   return (
     <motion.div layout>
       <Card shadow="sm" p="lg" radius="md" className="bg-[#15162c]">
@@ -41,7 +34,7 @@ export default function OllamaProviderInput({
               <IconExternalLink size={16} />
             </a>
           </div>
-          <form.Field name={`providers.${providerName}.enabled`}>
+          <form.Field name={`providers.${ProviderNames.Ollama}.enabled`}>
             {(field: any) => (
               <Switch
                 size="md"
@@ -78,7 +71,7 @@ export default function OllamaProviderInput({
           Ollama allows you to run large language models locally. Set up Ollama
           on your machine and provide the base URL.
         </Text>
-        <form.Field name={`providers.${providerName}.enabled`}>
+        <form.Field name={`providers.${ProviderNames.Ollama}.enabled`}>
           {(field: any) => (
             <AnimatePresence>
               {field.state.value && (
@@ -88,7 +81,9 @@ export default function OllamaProviderInput({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <form.Field name={`providers.${providerName}.baseUrl`}>
+                  <form.Field
+                    name={`providers.${ProviderNames.Ollama}.baseUrl`}
+                  >
                     {(field: any) => (
                       <TextInput
                         label="Base URL"
@@ -100,7 +95,10 @@ export default function OllamaProviderInput({
                       />
                     )}
                   </form.Field>
-                  <ModelToggles form={form} providerName={providerName} />
+                  <ModelToggles
+                    form={form}
+                    providerName={ProviderNames.Ollama}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>

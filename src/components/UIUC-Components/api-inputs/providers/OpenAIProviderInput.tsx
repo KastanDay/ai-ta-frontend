@@ -3,31 +3,17 @@ import { Text, Switch, Card, Button } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
 import { APIKeyInput } from '../APIKeyInputForm'
 import { ModelToggles } from '../ModelToggles'
-import { OpenAIModel } from '~/utils/modelProviders/openai'
-import { OpenAIProvider } from '~/types/LLMProvider'
+import { OpenAIProvider, ProviderNames } from '~/types/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function OpenAIProviderInput({
+  provider,
   form,
-  providerName,
 }: {
   provider: OpenAIProvider
   form: any
-  providerName: string
 }) {
-  const validateApiKey = async (apiKey: string) => {
-    if (!apiKey) throw new Error('API key is empty')
-    const response = await fetch('/api/UIUC-api/llmProviders', {
-      method: 'POST',
-      body: JSON.stringify({
-        courseName: 'test',
-        llmProviders: { OpenAI: { apiKey } },
-      }),
-    })
-    if (!response.ok) {
-      throw new Error('Invalid API key')
-    }
-  }
+  // TODO: display errors from provider.error
 
   return (
     <motion.div layout>
@@ -58,7 +44,7 @@ export default function OpenAIProviderInput({
               <IconExternalLink size={16} />
             </a>
           </div>
-          <form.Field name={`providers.${providerName}.enabled`}>
+          <form.Field name={`providers.${ProviderNames.OpenAI}.enabled`}>
             {(field: any) => (
               <Switch
                 size="md"
@@ -95,7 +81,7 @@ export default function OpenAIProviderInput({
           OpenAI offers powerful language models like GPT-3.5 and GPT-4. Get
           your API key from the OpenAI platform.
         </Text>
-        <form.Field name={`providers.${providerName}.enabled`}>
+        <form.Field name={`providers.${ProviderNames.OpenAI}.enabled`}>
           {(field: any) => (
             <AnimatePresence>
               {field.state.value && (
@@ -105,17 +91,20 @@ export default function OpenAIProviderInput({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <form.Field name={`providers.${providerName}.apiKey`}>
+                  <form.Field name={`providers.${ProviderNames.OpenAI}.apiKey`}>
                     {(apiKeyField: any) => (
                       <APIKeyInput
                         field={apiKeyField}
                         placeholder="OpenAI API Key"
-                        onValidate={validateApiKey}
+                        // onValidate={validateApiKey}
                       />
                     )}
                   </form.Field>
 
-                  <ModelToggles form={form} providerName={providerName} />
+                  <ModelToggles
+                    form={form}
+                    providerName={ProviderNames.OpenAI}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>

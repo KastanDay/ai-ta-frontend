@@ -69,11 +69,11 @@ function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
 export const APIKeyInput = ({
   field,
   placeholder,
-  onValidate,
+  // onValidate,
 }: {
   field: FieldApi<any, any, any, any>
   placeholder: string
-  onValidate: (apiKey: string) => Promise<void>
+  // onValidate: (apiKey: string) => Promise<void>
 }) => {
   const [isVisible, setIsVisible] = useState(false)
   const [showCopiedToast, setShowCopiedToast] = useState(false)
@@ -91,21 +91,21 @@ export const APIKeyInput = ({
     setError(null)
   }, [field.state.value])
 
-  const handleValidate = async () => {
-    setIsValidating(true)
-    setError(null)
-    try {
-      await onValidate(field.state.value)
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message)
-      } else {
-        setError('An unknown error occurred')
-      }
-    } finally {
-      setIsValidating(false)
-    }
-  }
+  // const handleValidate = async () => {
+  //   setIsValidating(true)
+  //   setError(null)
+  //   try {
+  //     await onValidate(field.state.value)
+  //   } catch (err: unknown) {
+  //     if (err instanceof Error) {
+  //       setError(err.message)
+  //     } else {
+  //       setError('An unknown error occurred')
+  //     }
+  //   } finally {
+  //     setIsValidating(false)
+  //   }
+  // }
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
@@ -187,7 +187,7 @@ export const APIKeyInput = ({
             compact
             className="bg-purple-800 hover:border-indigo-600 hover:bg-indigo-600"
             type="submit"
-            onClick={handleValidate}
+            // onClick={handleValidate}
             loading={isValidating}
             disabled={!field.state.value}
           >
@@ -201,20 +201,6 @@ export const APIKeyInput = ({
 
 export default function APIKeyInputForm() {
   const course_name = GetCurrentPageName()
-
-  const homeContextValue = React.useMemo(
-    () => ({
-      state: {
-        selectedConversation: null,
-        llmProviders: {},
-        defaultModelId: '',
-        webLLMModelIdLoading: { id: '', isLoading: false },
-      },
-      handleUpdateConversation: () => {},
-      dispatch: () => {},
-    }),
-    [],
-  )
 
   // ------------ <TANSTACK QUERIES> ------------
   const queryClient = useQueryClient()
@@ -288,16 +274,16 @@ export default function APIKeyInputForm() {
   //   )
   // }
 
-  if (isErrorLLMProviders) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Text>
-          Failed to load API keys. Please try again later.{' '}
-          {errorLLMProviders?.message}
-        </Text>
-      </div>
-    )
-  }
+  // if (isErrorLLMProviders) {
+  //   return (
+  //     <div className="flex h-screen items-center justify-center">
+  //       <Text>
+  //         Failed to load API keys. Please try again later.{' '}
+  //         {errorLLMProviders?.message}
+  //       </Text>
+  //     </div>
+  //   )
+  // }
 
   // if the providers are empty, null, undefined, or an empty object, show error
   // if (
@@ -413,7 +399,10 @@ export default function APIKeyInputForm() {
                                 provider={llmProviders.OpenAI as OpenAIProvider}
                                 form={form}
                               />
-                              <AzureProviderInput form={form} />
+                              <AzureProviderInput
+                                provider={llmProviders.Azure as AzureProvider}
+                                form={form}
+                              />
                               {/* <OllamaProviderInput
                                 form={form}
                                 providerName="Ollama"
