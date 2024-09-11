@@ -75,6 +75,12 @@ export interface OllamaProvider extends BaseLLMProvider {
   models?: OllamaModel[]
 }
 
+export interface NCSAHostedProvider extends BaseLLMProvider {
+  // This uses Ollama, but hosted by NCSA. Keep it separate.
+  provider: ProviderNames.NCSAHosted
+  models?: OllamaModel[]
+}
+
 export interface OpenAIProvider extends BaseLLMProvider {
   provider: ProviderNames.OpenAI
   models?: OpenAIModel[]
@@ -103,10 +109,15 @@ export type LLMProvider =
   | AzureProvider
   | AnthropicProvider
   | WebLLMProvider
+  | NCSAHostedProvider
 
 export type AllLLMProviders = {
   [P in ProviderNames]?: LLMProvider & { provider: P }
 }
+
+// type AllLLMProviders = {
+//   [key in ProviderNames]: LLMProvider;
+// };
 
 // Ordered list of preferred model IDs -- the first available model will be used as default
 export const preferredModelIds = [

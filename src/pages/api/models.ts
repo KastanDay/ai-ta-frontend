@@ -109,14 +109,26 @@ const handler = async (
       console.log('llmProvider', llmProvider)
       console.log('providerName', providerName)
       if (!llmProvider || !llmProvider.enabled) {
-        // Return empty object for empty and disabled providers
-        allLLMProviders[providerName] = {
-          provider: providerName,
+        // Create a disabled provider entry
+        ;(allLLMProviders[providerName] as LLMProvider) = {
+          provider: ProviderNames[providerName],
           enabled: false,
           models: [],
         }
-        console.log('Got empty provider', allLLMProviders[providerName])
-        continue
+        console.log(
+          'Created disabled provider entry',
+          allLLMProviders[providerName],
+        )
+      } else {
+        // Initialize the enabled provider in allLLMProviders
+        ;(allLLMProviders[providerName] as LLMProvider) = {
+          ...llmProvider,
+          models: [],
+        }
+        console.log(
+          'Created enabled provider entry',
+          allLLMProviders[providerName],
+        )
       }
 
       switch (providerName) {
