@@ -3,7 +3,16 @@ import React, { useEffect, useState } from 'react'
 
 import EditCourseCard from '~/components/UIUC-Components/EditCourseCard'
 import Navbar from './navbars/Navbar'
-import { Button, Card, Flex, Group, Textarea, TextInput, Title } from '@mantine/core'
+import {
+  Button,
+  Card,
+  Flex,
+  Group,
+  Textarea,
+  TextInput,
+  Title,
+  Tooltip,
+} from '@mantine/core'
 import { useMediaQuery } from '@mantine/hooks'
 import router from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
@@ -24,7 +33,9 @@ const MakeNewCoursePage = ({
 }) => {
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
   const [projectName, setProjectName] = useState(project_name || '')
-  const [projectDescription, setProjectDescription] = useState(project_description || '')
+  const [projectDescription, setProjectDescription] = useState(
+    project_description || '',
+  )
   const [isCourseAvailable, setIsCourseAvailable] = useState<
     boolean | undefined
   >(undefined)
@@ -73,9 +84,17 @@ const MakeNewCoursePage = ({
     checkCourseAvailability()
   }, [projectName])
 
-  const handleSubmit = async (project_name: string, project_description: string | undefined, current_user_email: string) => {
+  const handleSubmit = async (
+    project_name: string,
+    project_description: string | undefined,
+    current_user_email: string,
+  ) => {
     try {
-      const result = await createProject(project_name, project_description, current_user_email)
+      const result = await createProject(
+        project_name,
+        project_description,
+        current_user_email,
+      )
       console.log('Project created successfully:', result)
       if (is_new_course) {
         await router.push(`/${projectName}/materials`)
@@ -126,12 +145,16 @@ const MakeNewCoursePage = ({
                 align="center"
                 style={{ justifyContent: 'center' }}
               >
-                <Flex direction="column" gap="md" w={isSmallScreen ? '80%' : '60%'}>
+                <Flex
+                  direction="column"
+                  gap="md"
+                  w={isSmallScreen ? '80%' : '60%'}
+                >
                   <Title
                     order={2}
                     variant="gradient"
                     gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                    className={`${montserrat_heading.variable} font-montserratHeading text-center`}
+                    className={`${montserrat_heading.variable} text-center font-montserratHeading`}
                   >
                     {!is_new_course ? `${projectName}` : 'Create a new project'}
                   </Title>
@@ -139,18 +162,25 @@ const MakeNewCoursePage = ({
                   {/* <> */}
 
                   <TextInput
-                    // icon={icon}
-                    // className={`mt-4 w-[80%] min-w-[20rem] disabled:bg-purple-200 lg:w-[75%]`}
+                    autoComplete="off"
+                    data-lpignore="true"
+                    data-form-type="other"
                     styles={{
                       input: {
                         backgroundColor: '#1A1B1E',
-                        paddingRight: '6rem', // Adjust right padding to prevent text from hiding behind the button
+                        paddingRight: '6rem',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        color: isCourseAvailable && projectName != '' ? 'green' : 'red',
+                        color:
+                          isCourseAvailable && projectName != ''
+                            ? 'green'
+                            : 'red',
                         '&:focus-within': {
-                          borderColor: isCourseAvailable && projectName !== '' ? 'green' : 'red',
+                          borderColor:
+                            isCourseAvailable && projectName !== ''
+                              ? 'green'
+                              : 'red',
                         },
                         fontSize: '16px', // Added text styling
                         font: `${montserrat_paragraph.variable} font-montserratParagraph`,
@@ -160,7 +190,7 @@ const MakeNewCoursePage = ({
                         fontSize: '20px',
                         color: 'white',
                         marginBottom: '1rem',
-                      }
+                      },
                     }}
                     placeholder="Project name"
                     radius={'lg'}
@@ -168,26 +198,26 @@ const MakeNewCoursePage = ({
                     value={projectName}
                     label="What is the project name?"
                     size={'lg'}
-                    disabled={!is_new_course
+                    disabled={!is_new_course}
+                    onChange={(e) =>
+                      setProjectName(e.target.value.replaceAll(' ', '-'))
                     }
-                    onChange={(e) => setProjectName(e.target.value.replaceAll(' ', '-'))}
                     autoFocus
                     withAsterisk
                     className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-                    //               className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                    // ${isCourseAvailable && courseName != ''
-                    //                   ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                    //                   : 'border-red-800 text-red-600 focus:border-red-800'
-                    //                 } ${montserrat_paragraph.variable} font-montserratParagraph`}
-
                     rightSectionWidth={isSmallScreen ? 'auto' : 'auto'}
                   />
-                  <Flex justify="space-between" align="center">
-                    <label className={`${montserrat_paragraph.variable} font-montserratParagraph font-bold mt-4`} style={{ fontSize: '20px' }}>
+                  <Flex direction="row" align="flex-end">
+                    <label
+                      className={`${montserrat_paragraph.variable} mt-4 font-montserratParagraph font-bold`}
+                      style={{ fontSize: '20px' }}
+                    >
                       What do you want to achieve?
                     </label>
-                    <label className={`${montserrat_paragraph.variable} font-montserratParagraph text-gray-400 font-bold mt-4`}>
-                      Optional
+                    <label
+                      className={`${montserrat_paragraph.variable} mt-5 pl-2 font-montserratParagraph text-gray-400`}
+                    >
+                      (optional)
                     </label>
                   </Flex>
                   <Textarea
@@ -206,36 +236,47 @@ const MakeNewCoursePage = ({
                       label: {
                         fontWeight: 'bold',
                         color: 'white',
-                      }
+                      },
                     }}
                     className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-
                   />
                   <Flex direction={'row'}>
                     <Title
                       order={4}
-                      className={`w-full pr-2 text-right pr-7 ${montserrat_paragraph.variable} mt-2 font-montserratParagraph`}
+                      className={`w-full pr-2 pr-7 text-right ${montserrat_paragraph.variable} mt-2 font-montserratParagraph`}
                     >
                       Next: let&apos;s upload some documents
                       {/* </> */}
                     </Title>
-                    <Button
-                      onClick={(e) => {
-                        handleSubmit(projectName, projectDescription, current_user_email);
-                      }}
-                      size="md"
-                      radius={'sm'}
-                      className={`${isCourseAvailable && projectName !== '' ? 'bg-purple-800' : 'border-purple-800'}
-                       overflow-ellipsis text-ellipsis p-2 ${isCourseAvailable && projectName !== '' ? 'text-white' : 'text-gray-500'}
-                        min-w-[5rem] transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
-                      w={`${isSmallScreen ? '40%' : '20%'}`}
-                      style={{
-                        alignSelf: 'flex-end',
-                      }}
-                      disabled={projectName === ''}
+                    <Tooltip
+                      label="Add a project name above :)"
+                      withArrow
+                      disabled={projectName !== ''}
                     >
-                      Create
-                    </Button>
+                      <span>
+                        <Button
+                          onClick={(e) => {
+                            handleSubmit(
+                              projectName,
+                              projectDescription,
+                              current_user_email,
+                            )
+                          }}
+                          size="md"
+                          radius={'sm'}
+                          className={`${isCourseAvailable && projectName !== '' ? 'bg-purple-800' : 'border-purple-800'}
+                        overflow-ellipsis text-ellipsis p-2 ${isCourseAvailable && projectName !== '' ? 'text-white' : 'text-gray-500'}
+                        min-w-[8rem] transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
+                          w={`${isSmallScreen ? '90%' : '50%'}`}
+                          style={{
+                            alignSelf: 'flex-end',
+                          }}
+                          disabled={projectName === ''}
+                        >
+                          Create
+                        </Button>
+                      </span>
+                    </Tooltip>
                   </Flex>
                 </Flex>
               </Group>
