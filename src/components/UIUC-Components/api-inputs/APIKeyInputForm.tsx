@@ -18,6 +18,7 @@ import {
   useSetProjectLLMProviders,
 } from '~/hooks/useProjectAPIKeys'
 import {
+  AnthropicProvider,
   AzureProvider,
   OpenAIProvider,
   WebLLMProvider,
@@ -383,12 +384,12 @@ export default function APIKeyInputForm() {
                         >
                           {llmProviders && (
                             <>
-                              {/* <AnthropicProviderInput
+                              <AnthropicProviderInput
                                 provider={
                                   llmProviders.Anthropic as AnthropicProvider
                                 }
                                 form={form}
-                              /> */}
+                              />
                               <OpenAIProviderInput
                                 provider={llmProviders.OpenAI as OpenAIProvider}
                                 form={form}

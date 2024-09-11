@@ -140,14 +140,14 @@ const MakeNewCoursePage = ({
               className="min-h-full bg-gradient-to-r from-purple-900 via-indigo-800 to-blue-800"
             >
               <Group
-                // spacing="lg"
                 m="3rem"
                 align="center"
                 style={{ justifyContent: 'center' }}
               >
+                {/* Flex just to left align title. */}
                 <Flex
-                  direction="column"
-                  gap="md"
+                  justify="flex-start"
+                  align="flex-start"
                   w={isSmallScreen ? '80%' : '60%'}
                 >
                   <Title
@@ -158,9 +158,13 @@ const MakeNewCoursePage = ({
                   >
                     {!is_new_course ? `${projectName}` : 'Create a new project'}
                   </Title>
-                  {/* {is_new_course && ( */}
-                  {/* <> */}
+                </Flex>
 
+                <Flex
+                  direction="column"
+                  gap="md"
+                  w={isSmallScreen ? '80%' : '60%'}
+                >
                   <TextInput
                     autoComplete="off"
                     data-lpignore="true"
@@ -232,6 +236,10 @@ const MakeNewCoursePage = ({
                         backgroundColor: '#1A1B1E',
                         fontSize: '16px', // Added text styling
                         font: `${montserrat_paragraph.variable} font-montserratParagraph`,
+                        // borderColor: '#8e44ad', // Grape color
+                        '&:focus': {
+                          borderColor: '#8e44ad', // Grape color when focused/selected
+                        },
                       },
                       label: {
                         fontWeight: 'bold',
@@ -246,7 +254,6 @@ const MakeNewCoursePage = ({
                       className={`w-full pr-2 pr-7 text-right ${montserrat_paragraph.variable} mt-2 font-montserratParagraph`}
                     >
                       Next: let&apos;s upload some documents
-                      {/* </> */}
                     </Title>
                     <Tooltip
                       label="Add a project name above :)"
@@ -283,7 +290,6 @@ const MakeNewCoursePage = ({
             </div>
           </Flex>
         </Card>
-        {/* )} */}
       </main>
     </>
   )

@@ -56,68 +56,28 @@ const handler = async (
       )
     }
 
-    // TODO: MOVE THESE TO DB INPUTS
-    // const AzureProvider: LLMProvider = {
-    //   provider: ProviderNames.Azure,
-    //   enabled: true,
-    //   // TODO: COME FROM DB/INPUT not env
-    //   apiKey: process.env.TMP_AZURE_KEY,
-    //   AzureDeployment: process.env.TMP_DEPLOYMENT,
-    //   AzureEndpoint: process.env.TMP_ENDPOINT,
-    // }
-
-    // const AnthropicProvider: LLMProvider = {
-    //   provider: ProviderNames.Anthropic,
-    //   enabled: true,
-    //   apiKey: process.env.TMP_ANTHROPIC_API_KEY, // this is the anthropic api key
-    // }
-
-    // const ollamaProvider: LLMProvider = {
-    //   provider: ProviderNames.Ollama,
-    //   enabled: true,
-    //   baseUrl: process.env.OLLAMA_SERVER_URL,
-    // }
-
-    // const OpenAIProvider: LLMProvider = {
-    //   provider: ProviderNames.OpenAI,
-    //   enabled: true,
-    //   apiKey: apiKey,
-    // }
-
-    // const WebLLMProvider: LLMProvider = {
-    //   provider: ProviderNames.WebLLM,
-    //   enabled: true,
-    // }
-
-    // const llmProviderKeys: LLMProvider[] = [
-    //   ollamaProvider,
-    //   OpenAIProvider,
-    //   WebLLMProvider,
-    //   AzureProvider,
-    //   AnthropicProvider,
-    // ]
-    // END-TODO: MOVE THESE TO DB INPUTS
-
     const allLLMProviders: AllLLMProviders = {}
 
+    // VALIDATE API KEYS - Collect available models.
     for (const providerName of Object.values(ProviderNames)) {
-      const llmProvider = llmProviders[providerName]
+      let llmProvider = llmProviders[providerName]
 
       console.log('llmProvider', llmProvider)
       console.log('providerName', providerName)
-      if (!llmProvider || !llmProvider.enabled) {
+      if (!llmProvider) {
         // Create a disabled provider entry
-        ;(allLLMProviders[providerName] as LLMProvider) = {
+        llmProvider = {
           provider: ProviderNames[providerName],
           enabled: false,
           apiKey: undefined,
           models: [],
-        }
+        } as LLMProvider
         console.log(
           'Created disabled provider entry',
           allLLMProviders[providerName],
         )
       }
+      console.log('llmProvider', llmProvider)
 
       // TODO: update how undefined values are handled... inside each provider or out here?
 

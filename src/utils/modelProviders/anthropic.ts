@@ -47,6 +47,10 @@ export const AnthropicModels: Record<AnthropicModelID, AnthropicModel> = {
 export const getAnthropicModels = async (
   anthropicProvider: AnthropicProvider,
 ): Promise<AnthropicProvider> => {
+  if (!anthropicProvider.apiKey) {
+    anthropicProvider.error = 'Anthropic API key not defined'
+    return anthropicProvider
+  }
   anthropicProvider.models = Object.values(AnthropicModels) as AnthropicModel[]
   return anthropicProvider
 }
