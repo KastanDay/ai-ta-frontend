@@ -187,7 +187,7 @@ const Navbar = ({
         </span>
       ),
       icon: <ReportIcon />,
-      link: `/${getCurrentCourseName()}/query-analysis`,
+      link: `/${getCurrentCourseName()}/analysis`,
     },
     {
       name: (
