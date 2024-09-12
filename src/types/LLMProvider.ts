@@ -112,7 +112,6 @@ export type LLMProvider =
   | AnthropicProvider
   | WebLLMProvider
   | NCSAHostedProvider
-  | WebLLMProvider
 
 export type AllLLMProviders = {
   [P in ProviderNames]?: LLMProvider & { provider: P }

@@ -10,9 +10,10 @@ export const config = {
 
 const handler = async (req: Request): Promise<NextResponse> => {
   try {
-    const { conversation, key, course_name } = (await req.json()) as ImageBody
+    const { conversation, llmProviders, course_name } =
+      (await req.json()) as ImageBody
 
-    const openAIKey = await parseOpenaiKey(key)
+    // const openAIKey = await parseOpenaiKey(key)
 
     const systemPrompt = getImageDescriptionSystemPrompt()
 
@@ -45,7 +46,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
       conversation.model,
       systemPrompt,
       conversation.temperature,
-      openAIKey,
+      llmProviders,
       messages,
       false,
     )

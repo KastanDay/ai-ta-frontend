@@ -783,21 +783,20 @@ export async function handleImageContent(
   course_name: string,
   updatedConversation: Conversation,
   searchQuery: string,
-  courseMetadata: CourseMetadata,
-  apiKey: string,
+  llmProviders: AllLLMProviders,
   controller: AbortController,
 ) {
-  const key =
-    courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != ''
-      ? courseMetadata.openai_api_key
-      : apiKey
-  console.log('fetching image description for message: ', message)
+  // TODO: bring back client-side API keys.
+  // const key =
+  //   courseMetadata?.openai_api_key && courseMetadata?.openai_api_key != ''
+  //     ? courseMetadata.openai_api_key
+  //     : apiKey
   let imgDesc = ''
   try {
     imgDesc = await fetchImageDescription(
       course_name,
       updatedConversation,
-      key,
+      llmProviders,
       controller,
     )
 

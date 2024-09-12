@@ -107,7 +107,7 @@ export interface ChatBody {
 export interface ImageBody {
   conversation: Conversation
   course_name: string
-  key: string
+  llmProviders: AllLLMProviders
 }
 
 export interface ChatApiBody {

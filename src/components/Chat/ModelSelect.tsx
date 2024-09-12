@@ -19,6 +19,7 @@ import { modelCached } from './UserSettings'
 import Image from 'next/image'
 import {
   AllLLMProviders,
+  AnySupportedModel,
   LLMProvider,
   ProviderNames,
   selectBestModel,
@@ -281,16 +282,23 @@ const ModelDropdown: React.FC<
   const { state, dispatch: homeDispatch } = useContext(HomeContext)
 
   // Filter out providers that are not enabled and their models which are disabled
-  const { enabledProvidersAndModels, allModels, selectedModel } = Object.keys(
+  const { enabledProvidersAndModels, allModels } = Object.keys(
     llmProviders,
   ).reduce(
-    (acc, key) => {
+    (
+      acc: {
+        enabledProvidersAndModels: Record<string, LLMProvider>
+        allModels: AnySupportedModel[]
+      },
+      key,
+    ) => {
       const provider = llmProviders[key as keyof typeof llmProviders]
       console.log('provider', provider)
       if (provider && provider.enabled) {
         const enabledModels =
           provider.models?.filter((model) => model.enabled) || []
         if (enabledModels.length > 0) {
+          // @ts-ignore -- Can't figure out why the types aren't perfect.
           acc.enabledProvidersAndModels[key as keyof typeof llmProviders] = {
             ...provider,
             models: enabledModels,
@@ -299,7 +307,6 @@ const ModelDropdown: React.FC<
             ...enabledModels.map((model) => ({
               ...model,
               provider: provider.provider,
-              group: provider.provider,
             })),
           )
         }
@@ -307,15 +314,14 @@ const ModelDropdown: React.FC<
       return acc
     },
     {
-      enabledProvidersAndModels: {} as typeof llmProviders,
-      allModels: [] as any[],
-      selectedModel: undefined,
+      enabledProvidersAndModels: {} as Record<string, LLMProvider>,
+      allModels: [] as AnySupportedModel[],
     },
   )
 
   console.log('enabledProvidersAndModels', enabledProvidersAndModels)
 
-  // const selectedModel = allModels.find((model) => model.id === value)
+  const selectedModel = allModels.find((model) => model.id === value)
 
   return (
     <>
@@ -353,11 +359,13 @@ const ModelDropdown: React.FC<
               provider.models?.map((model) => ({
                 value: model.id,
                 label: model.name,
+                // @ts-ignore -- this being missing is fine
                 downloadSize: model?.downloadSize,
                 modelId: model.id,
                 selectedModelId: value,
                 modelType: provider.provider,
                 group: provider.provider,
+                // @ts-ignore -- this being missing is fine
                 vram_required_MB: model.vram_required_MB,
               })) || [],
           )}
@@ -373,7 +381,9 @@ const ModelDropdown: React.FC<
           icon={
             selectedModel ? (
               <Image
+                // @ts-ignore -- this being missing is fine
                 src={getModelLogo(selectedModel.provider)}
+                // @ts-ignore -- this being missing is fine
                 alt={`${selectedModel.provider} logo`}
                 width={20}
                 height={20}

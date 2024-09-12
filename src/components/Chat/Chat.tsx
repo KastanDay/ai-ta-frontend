@@ -357,8 +357,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                   courseName,
                   updatedConversation,
                   searchQuery,
-                  courseMetadata,
-                  apiKey,
+                  llmProviders,
                   controller,
                 )
               searchQuery = newSearchQuery
