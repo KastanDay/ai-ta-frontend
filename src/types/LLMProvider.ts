@@ -5,8 +5,11 @@ import {
   OpenAIModelID,
   OpenAIModels,
 } from '~/utils/modelProviders/openai'
-import { AnthropicModel } from '~/utils/modelProviders/anthropic'
-import { AzureModel } from '~/utils/modelProviders/azure'
+import {
+  AnthropicModel,
+  AnthropicModelID,
+} from '~/utils/modelProviders/anthropic'
+import { AzureModel, AzureModelID } from '~/utils/modelProviders/azure'
 import { Conversation } from './chat'
 
 export enum ProviderNames {
@@ -26,12 +29,19 @@ export type AnySupportedModel =
   | AzureModel
 
 // Add other vision capable models as needed
-export const VisionCapableModels: Set<OpenAIModelID> = new Set([
+export const VisionCapableModels: Set<
+  OpenAIModelID | AzureModelID | AnthropicModelID
+> = new Set([
   OpenAIModelID.GPT_4_Turbo,
   OpenAIModelID.GPT_4_AZURE_04_09,
   OpenAIModelID.GPT_4o,
   OpenAIModelID.GPT_4o_mini,
+
+  AzureModelID.GPT_4_Turbo,
+  AzureModelID.GPT_4o,
+  AzureModelID.GPT_4o_mini,
   // claude-3.5....
+  AnthropicModelID.Claude_3_5_Sonnet,
 ])
 
 export const AllSupportedModels: Set<GenericSupportedModel> = new Set([

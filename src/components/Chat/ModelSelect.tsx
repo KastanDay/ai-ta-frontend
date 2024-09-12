@@ -141,6 +141,16 @@ export const ModelItem = forwardRef<
       checkModelCache()
     }, [modelId])
 
+    console.log(
+      'Model item',
+      modelType,
+      modelId,
+      isModelCached,
+      state.webLLMModelIdLoading.id,
+      state.webLLMModelIdLoading.isLoading,
+      loadingModelId,
+    )
+
     return (
       <div ref={ref} {...others}>
         <Group noWrap>
