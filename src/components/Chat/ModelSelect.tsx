@@ -38,6 +38,7 @@ interface ModelDropdownProps {
     Ollama?: { id: string; name: string; downloadSize?: string }[]
     WebLLM?: { id: string; name: string; downloadSize?: string }[]
     Anthropic?: { id: string; name: string; downloadSize?: string }[]
+    NCSAHosted?: { id: string; name: string; downloadSize?: string }[]
   }
   isSmallScreen: boolean
   isWebLLM?: boolean
@@ -68,6 +69,8 @@ const getModelLogo = (modelType: string) => {
       return 'https://avatars.githubusercontent.com/u/106173866?s=48&v=4'
     case ProviderNames.Anthropic:
       return 'https://www.anthropic.com/images/icons/safari-pinned-tab.svg'
+    case ProviderNames.NCSAHosted:
+      return 'https://assets.kastan.ai/UofI-logo-white.jpg'
     default:
       throw new Error(`Unknown model type: ${modelType}`)
   }
@@ -280,11 +283,16 @@ const ModelDropdown: React.FC<
 }) => {
     const { state, dispatch: homeDispatch } = useContext(HomeContext)
     const allModels = [
-      ...(models.Ollama || []).map((model) => ({
-        ...model,
-        provider: ProviderNames.Ollama,
-        group: 'NCSA Hosted Models, 100% free',
-      })),
+      ...(models.NCSAHosted || []).map((
+        model) => ({
+          ...model,
+          provider: ProviderNames.NCSAHosted,
+          group: 'NCSA Hosted Models, 100% free',
+        })), ...(models.Ollama || []).map((model) => ({
+          ...model,
+          provider: ProviderNames.Ollama,
+          group: 'NCSA Hosted Models, 100% free',
+        })),
       ...(models.OpenAI || []).map((model) => ({
         ...model,
         provider: ProviderNames.OpenAI,
@@ -295,11 +303,13 @@ const ModelDropdown: React.FC<
         provider: ProviderNames.Anthropic,
         group: 'Anthropic',
       })),
-      ...(models.WebLLM || []).map((model) => ({
-        ...model,
-        provider: ProviderNames.WebLLM,
-        group: 'Local in Browser LLMs, runs on your device',
-      })),
+      ...(models.WebLLM || []).map((
+        model) => ({
+          ...model,
+          provider: ProviderNames.WebLLM,
+          group: 'Local in Browser LLMs, runs on your device',
+        })),
+
     ]
     const selectedModel = allModels.find((model) => model.id === value)
 
@@ -482,7 +492,12 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                   name: model.name,
                   downloadSize: model.downloadSize,
                 })),
-                // Anthropic: models.Anthropic,
+                Anthropic: llmProviders.Anthropic?.models?.filter(
+                  (model) => model.enabled,
+                ),
+                NCSAHosted: llmProviders.NCSAHosted?.models?.filter(
+                  (model) => model.enabled,
+                ),
               }}
               isSmallScreen={isSmallScreen}
               loadingModelId={loadingModelId}

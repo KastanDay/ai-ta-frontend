@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import GlobalHeader from '~/components/UIUC-Components/navbars/GlobalHeader'
-import { Flex, Indicator } from '@mantine/core'
+import { Flex, Indicator, Tooltip } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
@@ -169,11 +169,11 @@ const Navbar = ({
     },
     {
       name: (
-        <span
+        <Indicator label='New' color='hsl(280,100%,70%)' size={12} styles={{ indicator: { top: '-4px !important' } }} className=''> <span
           className={`${montserrat_heading.variable} font-montserratHeading`}
         >
           LLMs
-        </span>
+        </span></Indicator>
       ),
       icon: <LLMIcon />,
       link: `/${getCurrentCourseName()}/llms`,
@@ -276,17 +276,8 @@ const Navbar = ({
                             style={{ display: 'flex', alignItems: 'center' }}
                           >
                             {item.icon}
-                            {item.name.props.children === 'LLMs' ? (
-                              <Indicator label="New">
-                                {item.icon}
-                                {item.name}
-                              </Indicator>
-                            ) : (
-                              <>
-                                {item.icon}
-                                {item.name}
-                              </>
-                            )}</span>
+                            {item.name}
+                          </span>
                         </Link>
                       ))}
                     </Paper>
