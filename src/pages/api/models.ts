@@ -13,7 +13,7 @@ import { getOllamaModels } from '~/utils/modelProviders/ollama'
 import { getOpenAIModels } from '~/utils/modelProviders/openai'
 import { getAzureModels } from '~/utils/modelProviders/azure'
 import { getAnthropicModels } from '~/utils/modelProviders/anthropic'
-import { webLLMModels } from '~/utils/modelProviders/WebLLM'
+import { getWebLLMModels, webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
 import { getNCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
@@ -49,7 +49,7 @@ const handler = async (
 
     const allLLMProviders: AllLLMProviders = {}
 
-    // VALIDATE API KEYS - Collect available models.
+    // Iterate through all possible providers
     for (const providerName of Object.values(ProviderNames)) {
       let llmProvider = llmProviders[providerName]
 
@@ -94,8 +94,9 @@ const handler = async (
           )
           break
         case ProviderNames.WebLLM:
-          ;(llmProvider as WebLLMProvider).models = webLLMModels
-          allLLMProviders[providerName] = llmProvider as WebLLMProvider
+          allLLMProviders[providerName] = await getWebLLMModels(
+            llmProvider as WebLLMProvider,
+          )
           break
         case ProviderNames.NCSAHosted:
           allLLMProviders[providerName] = await getNCSAHostedModels(

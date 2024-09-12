@@ -88,9 +88,9 @@ export interface OpenAIProvider extends BaseLLMProvider {
 
 export interface AzureProvider extends BaseLLMProvider {
   provider: ProviderNames.Azure
+  models?: AzureModel[]
   AzureEndpoint?: string
   AzureDeployment?: string
-  models?: AzureModel[]
 }
 
 export interface AnthropicProvider extends BaseLLMProvider {
@@ -101,6 +101,8 @@ export interface AnthropicProvider extends BaseLLMProvider {
 export interface WebLLMProvider extends BaseLLMProvider {
   provider: ProviderNames.WebLLM
   models?: WebllmModel[]
+  downloadSize?: string
+  vram_required_MB?: string
 }
 
 export type LLMProvider =
@@ -110,6 +112,7 @@ export type LLMProvider =
   | AnthropicProvider
   | WebLLMProvider
   | NCSAHostedProvider
+  | WebLLMProvider
 
 export type AllLLMProviders = {
   [P in ProviderNames]?: LLMProvider & { provider: P }

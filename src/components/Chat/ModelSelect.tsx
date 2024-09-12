@@ -18,6 +18,7 @@ import ChatUI, { webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { modelCached } from './UserSettings'
 import Image from 'next/image'
 import {
+  AllLLMProviders,
   LLMProvider,
   ProviderNames,
   selectBestModel,
@@ -33,14 +34,7 @@ interface ModelDropdownProps {
   title: string
   value: string | undefined
   onChange: (value: string) => void
-  models: {
-    OpenAI?: { id: string; name: string; downloadSize?: string }[]
-    Ollama?: { id: string; name: string; downloadSize?: string }[]
-    Azure?: { id: string; name: string; downloadSize?: string }[]
-    WebLLM?: { id: string; name: string; downloadSize?: string }[]
-    Anthropic?: { id: string; name: string; downloadSize?: string }[]
-    NCSAHosted?: { id: string; name: string; downloadSize?: string }[]
-  }
+  llmProviders: AllLLMProviders
   isSmallScreen: boolean
   isWebLLM?: boolean
   loadingModelId: string | null
@@ -73,7 +67,7 @@ export const getModelLogo = (modelType: string) => {
     case ProviderNames.NCSAHosted:
       return 'https://assets.kastan.ai/UofI-logo-white.jpg'
     case ProviderNames.Azure:
-      return 'https://images.squarespace-cdn.com/content/v1/5a4908d949fc2b8e312bdf53/1676298536608-GQSN44SGOEHWCFSIZIGK/openai_icon.png?format=750w'
+      return 'https://assets.kastan.ai/uiuc-chat-emails/msft-logo.png'
     default:
       throw new Error(`Unknown model type: ${modelType}`)
   }
@@ -277,7 +271,7 @@ const ModelDropdown: React.FC<
   title,
   value,
   onChange,
-  models,
+  llmProviders,
   isSmallScreen,
   isWebLLM,
   loadingModelId,
@@ -285,39 +279,43 @@ const ModelDropdown: React.FC<
   chat_ui,
 }) => {
   const { state, dispatch: homeDispatch } = useContext(HomeContext)
-  const allModels = [
-    ...(models.NCSAHosted || []).map((model) => ({
-      ...model,
-      provider: ProviderNames.NCSAHosted,
-      group: 'NCSA Hosted Models, 100% free',
-    })),
-    // ...(models.Ollama || []).map((model) => ({
-    //   ...model,
-    //   provider: ProviderNames.Ollama,
-    //   group: 'NCSA Hosted Models, 100% free',
-    // })),
-    ...(models.Anthropic || []).map((model) => ({
-      ...model,
-      provider: ProviderNames.Anthropic,
-      group: 'Anthropic',
-    })),
-    ...(models.OpenAI || []).map((model) => ({
-      ...model,
-      provider: ProviderNames.OpenAI,
-      group: 'OpenAI',
-    })),
-    ...(models.Azure || []).map((model) => ({
-      ...model,
-      provider: ProviderNames.Azure,
-      group: 'Azure',
-    })),
-    ...(models.WebLLM || []).map((model) => ({
-      ...model,
-      provider: ProviderNames.WebLLM,
-      group: 'Local in Browser LLMs, runs on your device',
-    })),
-  ]
-  const selectedModel = allModels.find((model) => model.id === value)
+
+  // Filter out providers that are not enabled and their models which are disabled
+  const { enabledProvidersAndModels, allModels, selectedModel } = Object.keys(
+    llmProviders,
+  ).reduce(
+    (acc, key) => {
+      const provider = llmProviders[key as keyof typeof llmProviders]
+      console.log('provider', provider)
+      if (provider && provider.enabled) {
+        const enabledModels =
+          provider.models?.filter((model) => model.enabled) || []
+        if (enabledModels.length > 0) {
+          acc.enabledProvidersAndModels[key as keyof typeof llmProviders] = {
+            ...provider,
+            models: enabledModels,
+          }
+          acc.allModels.push(
+            ...enabledModels.map((model) => ({
+              ...model,
+              provider: provider.provider,
+              group: provider.provider,
+            })),
+          )
+        }
+      }
+      return acc
+    },
+    {
+      enabledProvidersAndModels: {} as typeof llmProviders,
+      allModels: [] as any[],
+      selectedModel: undefined,
+    },
+  )
+
+  console.log('enabledProvidersAndModels', enabledProvidersAndModels)
+
+  // const selectedModel = allModels.find((model) => model.id === value)
 
   return (
     <>
@@ -350,16 +348,19 @@ const ModelDropdown: React.FC<
             }
             await onChange(modelId!)
           }}
-          data={allModels.map((model: any) => ({
-            value: model.id,
-            label: model.name,
-            downloadSize: model.downloadSize,
-            modelId: model.id,
-            selectedModelId: value,
-            modelType: model.provider,
-            group: model.group,
-            vram_required_MB: model.vram_required_MB,
-          }))}
+          data={Object.values(enabledProvidersAndModels).flatMap(
+            (provider: LLMProvider) =>
+              provider.models?.map((model) => ({
+                value: model.id,
+                label: model.name,
+                downloadSize: model?.downloadSize,
+                modelId: model.id,
+                selectedModelId: value,
+                modelType: provider.provider,
+                group: provider.provider,
+                vram_required_MB: model.vram_required_MB,
+              })) || [],
+          )}
           itemComponent={(props) => (
             <ModelItem
               {...props}
@@ -380,7 +381,7 @@ const ModelDropdown: React.FC<
               />
             ) : null
           }
-          rightSection={<IconChevronDown size="1rem" />}
+          rightSection={<IconChevronDown size="1rem" className="mr-2" />}
           classNames={{
             root: 'w-full',
             wrapper: 'w-full',
@@ -443,6 +444,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       handleUpdateConversation,
       dispatch: homeDispatch,
     } = useContext(HomeContext)
+    console.log('llmProviders in top of modelselect', llmProviders)
     const isSmallScreen = useMediaQuery('(max-width: 960px)')
     const defaultModel = selectBestModel(llmProviders, selectedConversation).id
     const [loadingModelId, setLoadingModelId] = useState<string | null>(null)
@@ -467,7 +469,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
 
     return (
       <div
-        className="flex h-full w-[100%] flex-col space-y-4 rounded-lg bg-[#1d1f33] p-4 dark:bg-[#1d1f33]"
+        className="flex h-full w-[100%] flex-col space-y-4 rounded-lg bg-[#1d1f33] p-3 dark:bg-[#1d1f33]"
         style={{ position: 'relative', zIndex: 100 }}
       >
         <div>
@@ -486,89 +488,70 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                   handleModelClick(modelId)
                 }
               }
-              models={{
-                Ollama: llmProviders.Ollama?.models?.filter(
-                  (model) => model.enabled,
-                ),
-                OpenAI: llmProviders.OpenAI?.models?.filter(
-                  (model) => model.enabled,
-                ),
-                WebLLM: Object.values(webLLMModels).map((model) => ({
-                  id: model.id,
-                  name: model.name,
-                  downloadSize: model.downloadSize,
-                })),
-                Anthropic: llmProviders.Anthropic?.models?.filter(
-                  (model) => model.enabled,
-                ),
-                NCSAHosted: llmProviders.NCSAHosted?.models?.filter(
-                  (model) => model.enabled,
-                ),
-                Azure: llmProviders.Azure?.models?.filter(
-                  (model) => model.enabled,
-                ),
-              }}
+              llmProviders={llmProviders}
               isSmallScreen={isSmallScreen}
               loadingModelId={loadingModelId}
               setLoadingModelId={setLoadingModelId}
               chat_ui={chat_ui}
             />
-            <Title
-              className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
-              // variant="gradient"
-              // gradient={{ from: 'gold', to: 'white', deg: 170 }}
-              variant="gradient"
-              gradient={{
-                from: 'hsl(280,100%,70%)',
-                to: 'white',
-                deg: 185,
-              }}
-              order={5}
-            >
-              NCSA Hosted Models, 100% free
-            </Title>
-            <Text
-              size={'sm'}
-              className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
-            >
-              The best free option is the Llama 3.1 70b model, hosted by NCSA.
-            </Text>
-            <Title
-              className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
-              // variant="gradient"
-              // gradient={{ from: 'gold', to: 'white', deg: 170 }}
-              variant="gradient"
-              gradient={{
-                from: 'hsl(280,100%,70%)',
-                to: 'white',
-                deg: 185,
-              }}
-              order={5}
-            >
-              OpenAI
-            </Title>
-            <Text
-              size={'sm'}
-              className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
-            >
-              OpenAI{' '}
-              <Link
-                href="https://platform.openai.com/docs/models"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 visited:text-purple-600 hover:text-blue-700 hover:underline"
+            <div className="px-5">
+              <Title
+                className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+                // variant="gradient"
+                // gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                variant="gradient"
+                gradient={{
+                  from: 'hsl(280,100%,70%)',
+                  to: 'white',
+                  deg: 185,
+                }}
+                order={5}
               >
-                model details and pricing.{' '}
-                <IconExternalLink
-                  size={15}
-                  style={{ position: 'relative', top: '2px' }}
-                  className={'mb-2 inline'}
-                />
-              </Link>{' '}
-              An OpenAI API key is required, and you may face rate-limit issues
-              until you complete your first billing cycle.
-            </Text>
-            {/* <div
+                NCSA Hosted Models, 100% free
+              </Title>
+              <Text
+                size={'sm'}
+                className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
+              >
+                The best free option is the Llama 3.1 70b model, hosted by NCSA.
+              </Text>
+              <Title
+                className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+                // variant="gradient"
+                // gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                variant="gradient"
+                gradient={{
+                  from: 'hsl(280,100%,70%)',
+                  to: 'white',
+                  deg: 185,
+                }}
+                order={5}
+              >
+                OpenAI
+              </Title>
+              <Text
+                size={'sm'}
+                className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
+              >
+                OpenAI{' '}
+                <Link
+                  href="https://platform.openai.com/docs/models"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 visited:text-purple-600 hover:text-blue-700 hover:underline"
+                >
+                  model details and pricing.{' '}
+                  <IconExternalLink
+                    size={15}
+                    style={{ position: 'relative', top: '2px' }}
+                    className={'mb-2 inline'}
+                  />
+                </Link>{' '}
+                An OpenAI API key is required, and you may face rate-limit
+                issues until you complete your first billing cycle.
+              </Text>
+
+              {/* <div
               className="w-[95%] items-start rounded-2xl shadow-md shadow-purple-600 md:w-[93%] xl:w-[85%]"
               style={{ zIndex: 1, background: '#15162c' }}
             >
@@ -592,66 +575,67 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 On-device LLMs
               </Title>
             </div> */}
-            <Title
-              className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
-              // variant="gradient"
-              // gradient={{ from: 'gold', to: 'white', deg: 170 }}
-              variant="gradient"
-              gradient={{
-                from: 'hsl(280,100%,70%)',
-                to: 'white',
-                deg: 185,
-              }}
-              order={5}
-            >
-              On-device LLMs
-            </Title>
-            <Text
-              size={'sm'}
-              className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
-            >
-              We support running some models in your web browser on your device.
-              That&apos;s 100% local, on-device AI. It even uses your GPU. For
-              this, your browser{' '}
-              <Link
-                href={'https://webgpureport.org/'}
-                className="text-blue-500 visited:text-purple-600 hover:text-blue-700 hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Title
+                className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+                // variant="gradient"
+                // gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                variant="gradient"
+                gradient={{
+                  from: 'hsl(280,100%,70%)',
+                  to: 'white',
+                  deg: 185,
+                }}
+                order={5}
               >
-                must pass this compatability check for WebGPU.{' '}
-                <IconExternalLink
-                  size={15}
-                  style={{ position: 'relative', top: '2px' }}
-                  className={'mb-2 inline'}
-                />
-              </Link>
-              <br />
-              If you see lots of text, it&apos;s working. If you see
-              &quot;webgpu not available on this browser&quot;, it&apos;s not
-              working.
-            </Text>
-            <Title
-              className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
-              // variant="gradient"
-              // gradient={{ from: 'gold', to: 'white', deg: 170 }}
-              variant="gradient"
-              gradient={{
-                from: 'hsl(280,100%,70%)',
-                to: 'white',
-                deg: 185,
-              }}
-              order={5}
-            >
-              Coming soon
-            </Title>
-            <Text
-              size={'sm'}
-              className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
-            >
-              Anthropic, Google Gemini, Azure OpenAI, customizable OpenAI
-              compaitble servers.
-            </Text>
+                On-device LLMs
+              </Title>
+              <Text
+                size={'sm'}
+                className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
+              >
+                We support running some models in your web browser on your
+                device. That&apos;s 100% local, on-device AI. It even uses your
+                GPU. For this, your browser{' '}
+                <Link
+                  href={'https://webgpureport.org/'}
+                  className="text-blue-500 visited:text-purple-600 hover:text-blue-700 hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  must pass this compatability check for WebGPU.{' '}
+                  <IconExternalLink
+                    size={15}
+                    style={{ position: 'relative', top: '2px' }}
+                    className={'mb-2 inline'}
+                  />
+                </Link>
+                <br />
+                If you see lots of text, it&apos;s working. If you see
+                &quot;webgpu not available on this browser&quot;, it&apos;s not
+                working.
+              </Text>
+              <Title
+                className={`pb-1 pl-4 pt-2 ${montserrat_heading.variable} font-montserratHeading`}
+                // variant="gradient"
+                // gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                variant="gradient"
+                gradient={{
+                  from: 'hsl(280,100%,70%)',
+                  to: 'white',
+                  deg: 185,
+                }}
+                order={5}
+              >
+                Coming soon
+              </Title>
+              <Text
+                size={'sm'}
+                className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
+              >
+                Anthropic, Google Gemini, Azure OpenAI, customizable OpenAI
+                compaitble servers.
+              </Text>
+            </div>
           </div>
         </div>
       </div>

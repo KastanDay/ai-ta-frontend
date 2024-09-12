@@ -18,7 +18,6 @@ import {
   AllLLMProviders,
   AllSupportedModels,
   GenericSupportedModel,
-  AnySupportedModel,
   VisionCapableModels,
 } from '~/types/LLMProvider'
 import fetchMQRContexts from '~/pages/api/getContextsMQR'
@@ -31,6 +30,7 @@ import { AzureModelID } from './modelProviders/azure'
 export const config = {
   runtime: 'edge',
 }
+export const maxDuration = 60
 
 /**
  * Enum representing the possible states of the state machine used in processing text chunks.
@@ -880,7 +880,7 @@ export const routeModelRequest = async (
     ) ||
     Object.values(AzureModelID).includes(selectedConversation.model.id as any)
   ) {
-    // Call the OpenAI API
+    // Call the OpenAI or Azure API
     const url = baseUrl ? `${baseUrl}/api/chat` : '/api/chat'
     response = await fetch(url, {
       method: 'POST',

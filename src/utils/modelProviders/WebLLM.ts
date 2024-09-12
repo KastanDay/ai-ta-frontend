@@ -8,6 +8,7 @@ import { buildPrompt } from '~/pages/api/chat'
 // import buildPrompt from '~/pages/api/chat'
 import { Conversation, Message } from '~/types/chat'
 import { ModelRecord, prebuiltAppConfig } from './ConfigWebLLM'
+import { WebLLMProvider } from '~/types/LLMProvider'
 // import { ModelRecord, prebuiltAppConfig } from './ConfigWebLLM'
 
 // TODO: finish this message interface. Write a converter between `Message` and `WebLLMMessage`
@@ -306,3 +307,23 @@ export function convertToLocalModels(record: ModelRecord): WebllmModel {
 export const webLLMModels: WebllmModel[] = prebuiltAppConfig.model_list.map(
   (model: ModelRecord) => convertToLocalModels(model),
 )
+
+export const getWebLLMModels = async (
+  webLLMProvider: WebLLMProvider,
+): Promise<WebLLMProvider> => {
+  if (!webLLMProvider.models || webLLMProvider.models.length === 0) {
+    // If no models, add all possible models and enable them
+    webLLMProvider.models = webLLMModels.map((model) => ({
+      ...model,
+      enabled: true,
+    }))
+  } else {
+    // Ensure existing models are in the master list and remove any that aren't
+    const masterModelIds = new Set(webLLMModels.map((model) => model.id))
+    webLLMProvider.models = webLLMProvider.models.filter((model) =>
+      masterModelIds.has(model.id),
+    )
+  }
+  delete webLLMProvider.error // Remove the error property if it exists
+  return webLLMProvider
+}
