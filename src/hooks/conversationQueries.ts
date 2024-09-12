@@ -24,13 +24,8 @@ export function useFetchConversationHistory(
       fetchConversationHistory(user_email, searchTerm, courseName, pageParam),
     initialPageParam: 0,
     enabled: !!user_email && !!courseName,
-    getNextPageParam: (lastPage: ConversationPage) => {
-      // console.log('lastPage: ', lastPage)
-      if (lastPage && lastPage.conversations) {
-        return lastPage.nextCursor
-      }
-      return null
-    },
+    getNextPageParam: (lastPage: ConversationPage) =>
+      lastPage.nextCursor ?? null,
     refetchInterval: 20_000,
   })
 }
