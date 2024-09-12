@@ -57,7 +57,7 @@ interface ModelItemProps extends React.ComponentPropsWithoutRef<'div'> {
   chat_ui: ChatUI
 }
 
-const getModelLogo = (modelType: string) => {
+export const getModelLogo = (modelType: string) => {
   switch (modelType) {
     case ProviderNames.OpenAI:
       return 'https://images.squarespace-cdn.com/content/v1/5a4908d949fc2b8e312bdf53/1676298536608-GQSN44SGOEHWCFSIZIGK/openai_icon.png?format=750w'
@@ -75,7 +75,7 @@ const getModelLogo = (modelType: string) => {
       throw new Error(`Unknown model type: ${modelType}`)
   }
 }
-const ModelItem = forwardRef<
+export const ModelItem = forwardRef<
   HTMLDivElement,
   ModelItemProps & {
     loadingModelId: string | null
