@@ -436,7 +436,7 @@ const EditCourseCard = ({
                     className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                   />
                   <Button
-                    className={`relative m-1 mt-3 ${isSmallScreen ? 'w-[30%]' : 'w-[30%]'} self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600`}
+                    className={`relative m-1 mt-3 w-1rem self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600`}
                     type="submit"
                     onClick={async () => {
                       if (courseMetadata) {
