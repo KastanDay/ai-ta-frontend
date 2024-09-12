@@ -13,7 +13,6 @@ export default function AnthropicProviderInput({
   provider: AnthropicProvider
   form: any
 }) {
-  console.log('AnthropicProviderInput', provider)
   return (
     <motion.div layout>
       <Card shadow="sm" p="lg" radius="md" className="bg-[#15162c]">

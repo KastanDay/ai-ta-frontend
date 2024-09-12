@@ -27,7 +27,7 @@ export const OllamaModels: Record<OllamaModelIDs, OllamaModel> = {
 export const getOllamaModels = async (
   ollamaProvider: OllamaProvider,
 ): Promise<OllamaProvider> => {
-  console.log('ollamaProvider in checkING', ollamaProvider)
+  delete ollamaProvider.error // Remove the error property if it exists
   try {
     if (!ollamaProvider.baseUrl) {
       ollamaProvider.error = `Ollama Base Url is not defined, please set it to the URL that points to your Ollama instance.`
@@ -53,6 +53,8 @@ export const getOllamaModels = async (
     return ollamaProvider as OllamaProvider
   } catch (error: any) {
     ollamaProvider.error = error.message
+    console.warn('ERROR in getOllamaModels', error)
+    ollamaProvider.models = [] // clear any previous models.
     return ollamaProvider as OllamaProvider
   }
 }

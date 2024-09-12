@@ -55,6 +55,7 @@ export const AzureModels: Record<AzureModelID, AzureModel> = {
 export const getAzureModels = async (
   azureProvider: AzureProvider,
 ): Promise<AzureProvider> => {
+  delete azureProvider.error // Remove the error property if it exists
   try {
     if (!azureProvider.AzureEndpoint || !azureProvider.AzureDeployment) {
       azureProvider.error = `Azure OpenAI endpoint or deployment is not set. Endpoint: ${azureProvider.AzureEndpoint}, Deployment: ${azureProvider.AzureDeployment}`
@@ -91,6 +92,8 @@ export const getAzureModels = async (
     return azureProvider
   } catch (error: any) {
     azureProvider.error = error.message
+    console.warn('Error fetching Azure models:', error)
+    azureProvider.models = [] // clear any previous models.
     return azureProvider
   }
 }

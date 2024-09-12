@@ -30,21 +30,9 @@ export enum OpenAIModelID {
 }
 
 export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
-  [OpenAIModelID.GPT_3_5]: {
-    id: OpenAIModelID.GPT_3_5,
-    name: 'GPT-3.5',
-    tokenLimit: 16385,
-    enabled: false,
-  },
-  [OpenAIModelID.GPT_4]: {
-    id: OpenAIModelID.GPT_4,
-    name: 'GPT-4',
-    tokenLimit: 8192,
-    enabled: false,
-  },
-  [OpenAIModelID.GPT_4_Turbo]: {
-    id: OpenAIModelID.GPT_4_Turbo,
-    name: 'GPT-4 Turbo',
+  [OpenAIModelID.GPT_4o_mini]: {
+    id: OpenAIModelID.GPT_4o_mini,
+    name: 'GPT-4o-mini',
     tokenLimit: 128000,
     enabled: false,
   },
@@ -54,10 +42,22 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
     tokenLimit: 128000,
     enabled: false,
   },
-  [OpenAIModelID.GPT_4o_mini]: {
-    id: OpenAIModelID.GPT_4o_mini,
-    name: 'GPT-4o-mini',
+  [OpenAIModelID.GPT_4_Turbo]: {
+    id: OpenAIModelID.GPT_4_Turbo,
+    name: 'GPT-4 Turbo',
     tokenLimit: 128000,
+    enabled: false,
+  },
+  [OpenAIModelID.GPT_4]: {
+    id: OpenAIModelID.GPT_4,
+    name: 'GPT-4',
+    tokenLimit: 8192,
+    enabled: false,
+  },
+  [OpenAIModelID.GPT_3_5]: {
+    id: OpenAIModelID.GPT_3_5,
+    name: 'GPT-3.5',
+    tokenLimit: 16385,
     enabled: false,
   },
 
@@ -87,6 +87,7 @@ export const getOpenAIModels = async (
   projectName: string,
 ): Promise<OpenAIProvider> => {
   try {
+    delete openAIProvider.error // Remove the error property if it exists
     // Priority #1: use passed in key
     // Priority #2: use the key from the course metadata
     const { disabledModels, openaiAPIKey } = await getDisabledOpenAIModels({
@@ -126,10 +127,9 @@ export const getOpenAIModels = async (
       })
 
     openAIProvider.models = openAIModels
-    openAIProvider.error = undefined // clear any previous errors.
     return openAIProvider
   } catch (error: any) {
-    console.error('Error fetching models:', error)
+    console.warn('Error fetching OpenAImodels:', error)
     openAIProvider.error = error.message
     openAIProvider.models = [] // clear any previous models.
     return openAIProvider

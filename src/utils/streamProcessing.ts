@@ -26,6 +26,7 @@ import fetchContexts from '~/pages/api/getContexts'
 import { OllamaModelIDs } from './modelProviders/ollama'
 import { webLLMModels } from './modelProviders/WebLLM'
 import { OpenAIModelID } from './modelProviders/openai'
+import { AzureModelID } from './modelProviders/azure'
 
 export const config = {
   runtime: 'edge',
@@ -876,6 +877,20 @@ export const routeModelRequest = async (
   ) {
     // Call the OpenAI API
     const url = baseUrl ? `${baseUrl}/api/chat` : '/api/chat'
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+      body: JSON.stringify(chatBody),
+    })
+  } else if (
+    Object.values(AzureModelID).includes(selectedConversation.model.id as any)
+  ) {
+    // Call the OpenAI API
+    const url = baseUrl ? `${baseUrl}/api/chat` : '/api/chat'
+
     response = await fetch(url, {
       method: 'POST',
       headers: {

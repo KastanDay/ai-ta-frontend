@@ -1,6 +1,10 @@
 import { CourseMetadata } from './courseMetadata'
 import { N8NParameter } from './tools'
-import { GenericSupportedModel, AnySupportedModel } from './LLMProvider'
+import {
+  GenericSupportedModel,
+  AnySupportedModel,
+  BaseLLMProvider,
+} from './LLMProvider'
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import { OllamaModel } from '~/utils/modelProviders/ollama'
 import { OpenAIModel } from '~/utils/modelProviders/openai'
@@ -94,6 +98,7 @@ export interface ChatBody {
   temperature?: number
   conversation?: Conversation
   key: string
+  provider?: BaseLLMProvider // TODO: make mandatory
   course_name: string
   stream: boolean
   isImage?: boolean

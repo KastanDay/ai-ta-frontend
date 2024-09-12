@@ -43,28 +43,6 @@ export default function AzureProviderInput({
               </div>
             </a>
           </div>
-          {provider?.error && form.state.values?.providers?.Azure?.enabled && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Text
-                size="sm"
-                color="red"
-                mb="md"
-                style={{
-                  padding: '8px',
-                  borderRadius: '4px',
-                  backgroundColor: 'rgba(255, 0, 0, 0.1)',
-                  border: '1px solid rgba(255, 0, 0, 0.2)',
-                }}
-              >
-                {provider.error}
-              </Text>
-            </motion.div>
-          )}
           <form.Field name={`providers.${ProviderNames.Azure}.enabled`}>
             {(field: any) => (
               <Switch
@@ -105,6 +83,23 @@ export default function AzureProviderInput({
           powerful language models with the security and enterprise promise of
           Azure.
         </Text>
+        {provider?.error &&
+          (form.state.values?.providers?.Azure?.enabled ||
+            provider.enabled) && (
+            <Text
+              size="sm"
+              color="red"
+              mb="md"
+              style={{
+                padding: '8px',
+                borderRadius: '4px',
+                backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                border: '1px solid rgba(255, 0, 0, 0.2)',
+              }}
+            >
+              {provider.error}
+            </Text>
+          )}
         <form.Field name={`providers.${ProviderNames.Azure}.enabled`}>
           {(field: any) => (
             <AnimatePresence>

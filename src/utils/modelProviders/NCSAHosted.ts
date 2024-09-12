@@ -27,12 +27,11 @@ export const NCSAHostedModels: Record<NCSAHostedModelID, OllamaModel> = {
 export const getNCSAHostedModels = async (
   ncsaHostedProvider: NCSAHostedProvider,
 ): Promise<NCSAHostedProvider> => {
+  delete ncsaHostedProvider.error // Remove the error property if it exists
   try {
     if (!ncsaHostedProvider.baseUrl) {
       ncsaHostedProvider.baseUrl = process.env.OLLAMA_SERVER_URL
     }
-
-    console.log('NCSA HOSTED PROVIDER', ncsaHostedProvider)
 
     const response = await fetch(ncsaHostedProvider.baseUrl + '/api/tags')
 
@@ -53,7 +52,8 @@ export const getNCSAHostedModels = async (
     return ncsaHostedProvider as NCSAHostedProvider
   } catch (error: any) {
     ncsaHostedProvider.error = error.message
-    console.log('ERROR in getNCSAHostedModels', error)
+    console.warn('ERROR in getNCSAHostedModels', error)
+    ncsaHostedProvider.models = [] // clear any previous models.
     return ncsaHostedProvider as NCSAHostedProvider
   }
 }

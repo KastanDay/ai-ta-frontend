@@ -1,44 +1,43 @@
 import { AnthropicProvider } from '~/types/LLMProvider'
 import Anthropic from '@anthropic-ai/sdk'
 
-// anthropic model interface for dispay
 export interface AnthropicModel {
   id: string
   name: string
   tokenLimit: number
   enabled: boolean
 }
-// gave the id's for each anthropic model available
+
 export enum AnthropicModelID {
-  Claude_3_5_Sonnet = 'claude-3-5-sonnet-20240620', // rolling model
-  Claude_3_Opus = 'claude-3-opus-20240229', // rolling model
-  Claude_3_Sonnet = 'claude-3-sonnet-20240229', // rolling model
-  Claude_3_Haiku = 'claude-3-haiku-20240307', // rolling model
+  Claude_3_5_Sonnet = 'claude-3-5-sonnet-20240620',
+  Claude_3_Opus = 'claude-3-opus-20240229',
+  // Claude_3_Sonnet = 'claude-3-sonnet-20240229',
+  Claude_3_Haiku = 'claude-3-haiku-20240307',
 }
 
 // hardcoded anthropic models
 export const AnthropicModels: Record<AnthropicModelID, AnthropicModel> = {
   [AnthropicModelID.Claude_3_5_Sonnet]: {
     id: AnthropicModelID.Claude_3_5_Sonnet,
-    name: 'claude-3-5-sonnet',
+    name: 'Claude 3.5 Sonnet',
     tokenLimit: 200000,
     enabled: true,
   },
   [AnthropicModelID.Claude_3_Opus]: {
     id: AnthropicModelID.Claude_3_Opus,
-    name: 'claude-3-opus',
+    name: 'Claude 3 opus',
     tokenLimit: 200000,
     enabled: true,
   },
-  [AnthropicModelID.Claude_3_Sonnet]: {
-    id: AnthropicModelID.Claude_3_Sonnet,
-    name: 'claude-3-sonnet',
-    tokenLimit: 200000,
-    enabled: false,
-  },
+  // [AnthropicModelID.Claude_3_Sonnet]: {
+  //   id: AnthropicModelID.Claude_3_Sonnet,
+  //   name: 'Claude 3 sonnet',
+  //   tokenLimit: 200000,
+  //   enabled: false,
+  // },
   [AnthropicModelID.Claude_3_Haiku]: {
     id: AnthropicModelID.Claude_3_Haiku,
-    name: 'claude-3-haiku',
+    name: 'Claude 3 Haiku',
     tokenLimit: 200000,
     enabled: true,
   },
@@ -52,7 +51,7 @@ export const getAnthropicModels = async (
     return anthropicProvider
   }
   anthropicProvider.models = Object.values(AnthropicModels) as AnthropicModel[]
-  anthropicProvider.error = undefined // clear any previous errors.
+  delete anthropicProvider.error // Remove the error property if it exists
   return anthropicProvider
 }
 

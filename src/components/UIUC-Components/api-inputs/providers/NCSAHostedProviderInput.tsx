@@ -79,7 +79,7 @@ export default function NCSAHostedLLmsProviderInput({
         </div>
         <Text size="sm" color="dimmed" mb="md">
           These models are hosted by the Center for AI Innovation at the
-          National Center for Supercomputing Applications. They're free.
+          National Center for Supercomputing Applications. They`&apos;re free.
         </Text>
         {provider?.error &&
           form.state.values?.providers?.NCSAHosted?.enabled && (

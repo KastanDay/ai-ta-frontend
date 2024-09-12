@@ -283,10 +283,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   // THIS IS WHERE MESSAGES ARE SENT.
   const handleSend = useCallback(
     async (message: Message, deleteCount = 0, plugin: Plugin | null = null) => {
-      // New way with React Context API
-      // TODO: MOVE THIS INTO ChatMessage
-      // console.log('IN handleSend: ', message)
-      // setSearchQuery(message.content)
       const searchQuery = Array.isArray(message.content)
         ? message.content.map((content) => content.text).join(' ')
         : message.content
@@ -343,6 +339,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           course_name: getCurrentPageName(),
           stream: true,
           isImage: false,
+          // TODO: Add provider here... for the active model.
         }
         const endpoint = getEndpoint(plugin) // THIS is where we could support EXTREME prompt stuffing.
         let body

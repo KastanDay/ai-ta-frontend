@@ -24,9 +24,11 @@ export function ModelToggles({ form, providerName }: ModelTogglesProps) {
                 checked={field.state.value}
                 onLabel="ON"
                 offLabel="OFF"
-                onChange={(event) =>
+                onChange={(event) => {
                   field.handleChange(event.currentTarget.checked)
-                }
+                  // Trigger form submission
+                  setTimeout(() => form.handleSubmit(), 0)
+                }}
                 thumbIcon={
                   field.state.value ? (
                     <IconCheck size="0.8rem" color="purple" stroke={3} />
