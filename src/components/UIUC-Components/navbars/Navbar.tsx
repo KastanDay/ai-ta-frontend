@@ -169,7 +169,7 @@ const Navbar = ({
     },
     {
       name: (
-        <Indicator label='New' color='hsl(280,100%,70%)' size={12} styles={{ indicator: { top: '-4px !important' } }} className=''> <span
+        <Indicator label='New' color='hsl(280,100%,70%)' size={12} styles={{ indicator: { top: '-4px !important' } }} > <span
           className={`${montserrat_heading.variable} font-montserratHeading`}
         >
           LLMs
