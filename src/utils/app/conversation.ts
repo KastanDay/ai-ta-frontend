@@ -58,6 +58,28 @@ export const deleteConversationFromServer = async (id: string) => {
   }
 }
 
+export const deleteAllConversationsFromServer = async (
+  user_email: string,
+  course_name: string,
+) => {
+  console.log('deleteAllConversationsFromServer')
+  try {
+    const response = await fetch('/api/conversation', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_email, course_name }),
+    })
+
+    if (!response.ok) {
+      throw new Error('Error deleting conversation')
+    }
+  } catch (error) {
+    console.error('Error deleting conversation:', error)
+  }
+}
+
 export const saveConversationToLocalStorage = (conversation: Conversation) => {
   /*
   Save convo to local storage. If storage is full, clear the oldest conversation and try again.
@@ -171,7 +193,7 @@ export const saveConversations = (conversations: Conversation[]) => {
 
 export async function saveConversationToServer(conversation: Conversation) {
   try {
-    console.log('Saving conversation to server:', conversation)
+    console.debug('Saving conversation to server:', conversation)
     const response = await fetch('/api/conversation', {
       method: 'POST',
       headers: {

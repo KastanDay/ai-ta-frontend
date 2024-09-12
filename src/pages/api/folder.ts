@@ -41,12 +41,12 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  console.log(
-    'Received request for folders API:',
-    req.method,
-    req.body,
-    req.query,
-  )
+  // console.log(
+  //   'Received request for folders API:',
+  //   req.method,
+  //   req.body,
+  //   req.query,
+  // )
   const { method } = req
 
   switch (method) {

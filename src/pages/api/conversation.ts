@@ -63,6 +63,12 @@ export function convertDBToChatConversation(
           text: msg.content_text,
         })
       }
+      if (msg.image_description) {
+        content.push({
+          type: 'text',
+          text: `Image description: ${msg.image_description}`,
+        })
+      }
       if (msg.content_image_url && msg.content_image_url.length > 0) {
         for (const imageUrl of msg.content_image_url) {
           content.push({
@@ -96,16 +102,23 @@ export function convertChatToDBMessage(
   conversationId: string,
 ): DBMessage {
   console.log('chatMessage.content: ', chatMessage.content)
-  console.log('chatMessage.content type: ', typeof chatMessage.content)
+  // console.log('chatMessage.content type: ', typeof chatMessage.content)
   let content_text = ''
   let content_image_urls: string[] = []
-
+  let image_description = ''
   if (typeof chatMessage.content == 'string') {
     content_text = chatMessage.content
   } else if (Array.isArray(chatMessage.content)) {
     content_text = chatMessage.content
-      .filter((content) => content.type === 'text')
-      .map((content) => content.text)
+      .filter((content) => content.type === 'text' && content.text)
+      .map((content) => {
+        if ((content.text as string).trim().startsWith('Image description:')) {
+          image_description =
+            content.text?.split(':').slice(1).join(':').trim() || ''
+          return ''
+        }
+        return content.text
+      })
       .join(' ')
     content_image_urls = chatMessage.content
       .filter((content) => content.type === 'image_url')
@@ -117,6 +130,7 @@ export function convertChatToDBMessage(
     role: chatMessage.role,
     content_text: content_text,
     content_image_url: content_image_urls,
+    image_description: image_description,
     contexts:
       chatMessage.contexts?.map((context, index) => {
         // TODO:
@@ -145,12 +159,12 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  console.log(
-    'Received request for conversation API:',
-    req.method,
-    req.body,
-    req.query,
-  )
+  // console.log(
+  //   'Received request for conversation API:',
+  //   req.method,
+  //   req.body,
+  //   req.query,
+  // )
   const { method } = req
 
   switch (method) {
@@ -247,12 +261,12 @@ export default async function handler(
             ? pageParam + 1
             : null
 
-        console.log(
-          'Fetched conversations:',
-          fetchedConversations.length,
-          'for user_email:',
-          user_email,
-        )
+        // console.log(
+        //   'Fetched conversations:',
+        //   fetchedConversations.length,
+        //   'for user_email:',
+        //   user_email,
+        // )
         res.status(200).json({
           conversations: fetchedConversations,
           nextCursor: nextCursor,
@@ -264,16 +278,48 @@ export default async function handler(
       break
 
     case 'DELETE':
-      const { id } = req.body as {
-        id: string
+      const {
+        id,
+        user_email: userEmail,
+        course_name,
+      }: {
+        id?: string
+        user_email?: string
+        course_name?: string
+      } = req.body as {
+        id?: string
+        user_email?: string
+        course_name?: string
       }
+      console.log(
+        'id: ',
+        id,
+        'userEmail: ',
+        userEmail,
+        'course_name: ',
+        course_name,
+      )
       try {
-        // Delete conversation
-        const { data, error } = await supabase
-          .from('conversations')
-          .delete()
-          .eq('id', id)
-        if (error) throw error
+        if (id) {
+          // Delete conversation
+          const { data, error } = await supabase
+            .from('conversations')
+            .delete()
+            .eq('id', id)
+          if (error) throw error
+        } else if (userEmail && course_name) {
+          // Delete all conversations
+          console.log('deleting all conversations')
+          const { data, error } = await supabase
+            .from('conversations')
+            .delete()
+            .eq('user_email', userEmail)
+            .eq('project_name', course_name)
+          if (error) throw error
+        } else {
+          res.status(400).json({ error: 'Invalid request parameters' })
+          return
+        }
 
         res.status(200).json({ message: 'Conversation deleted successfully' })
       } catch (error) {

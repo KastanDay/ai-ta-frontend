@@ -366,11 +366,11 @@ export const Chat = memo(
               ...selectedConversation,
               messages: [...selectedConversation.messages, message],
             }
-            console.log(
-              'updatedConversation before name:',
-              updatedConversation,
-              updatedConversation.messages.length,
-            )
+            // console.log(
+            //   'updatedConversation before name:',
+            //   updatedConversation,
+            //   updatedConversation.messages.length,
+            // )
             // Update the name of the conversation if it's the first message
             if (updatedConversation.messages.length === 1) {
               const { content } = message
@@ -389,10 +389,10 @@ export const Chat = memo(
                 ...updatedConversation,
                 name: customName,
               }
-              console.log(
-                'updatedConversation after name:',
-                updatedConversation,
-              )
+              // console.log(
+              //   'updatedConversation after name:',
+              //   updatedConversation,
+              // )
             }
           }
           // homeDispatch({
@@ -404,15 +404,15 @@ export const Chat = memo(
           // saveConversationToLocalStorage(updatedConversation)
           // } else {
 
-          console.log(
-            'updatedConversation before mutation:',
-            updatedConversation,
-          )
+          // console.log(
+          //   'updatedConversation before mutation:',
+          //   updatedConversation,
+          // )
           handleUpdateConversation(updatedConversation, {
             key: 'messages',
             value: updatedConversation.messages,
           })
-          // updateConversationMutation.mutate(updatedConversation)
+          updateConversationMutation.mutate(updatedConversation)
           // createConversationMutation.mutate(updatedConversation)
           console.log(
             'updatedConversation after mutation:',
@@ -459,6 +459,7 @@ export const Chat = memo(
                 )
               } finally {
                 homeDispatch({ field: 'isImg2TextLoading', value: false })
+                // updateConversationMutation.mutate(updatedConversation)
               }
             }
           }
@@ -736,11 +737,11 @@ export const Chat = memo(
                 key: 'messages',
                 value: updatedConversation.messages,
               })
+              updateConversationMutation.mutate(updatedConversation)
               console.debug(
                 'updatedConversation after mutation:',
                 updatedConversation,
               )
-              // updateConversationMutation.mutate(updatedConversation)
 
               onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
 
@@ -884,11 +885,10 @@ export const Chat = memo(
         if (scrollTop + clientHeight < scrollHeight - bottomTolerance) {
           setAutoScrollEnabled(false)
           setShowScrollDownButton(true)
+        } else {
+          setAutoScrollEnabled(true)
+          setShowScrollDownButton(false)
         }
-        // else {
-        //   setAutoScrollEnabled(true)
-        //   setShowScrollDownButton(false)
-        // }
       }
     }
 

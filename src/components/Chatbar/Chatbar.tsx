@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from 'uuid'
 import router from 'next/router'
 import { useQueryClient } from '@tanstack/react-query'
 import {
+  useDeleteAllConversations,
   useDeleteConversation,
   useFetchConversationHistory,
   useUpdateConversation,
@@ -25,6 +26,7 @@ import { LoadingSpinner } from '../UIUC-Components/LoadingSpinner'
 import { useDebouncedState } from '@mantine/hooks'
 import posthog from 'posthog-js'
 import { saveConversationToServer } from '~/utils/app/conversation'
+import { downloadConversationHistoryUser } from '~/pages/api/UIUC-api/downloadConvoHistoryUser'
 
 export const Chatbar = ({
   current_email,
@@ -62,6 +64,12 @@ export const Chatbar = ({
     queryClient,
     courseName,
     searchTerm,
+  )
+
+  const deleteAllConversationMutation = useDeleteAllConversations(
+    queryClient,
+    current_email,
+    courseName,
   )
 
   const handleApiKeyChange = useCallback(
@@ -140,6 +148,7 @@ export const Chatbar = ({
           if (
             isConversationHistoryFetched &&
             !isConversationHistoryLoading &&
+            allConversations &&
             allConversations.length === 0 &&
             localStorage.getItem('conversationHistory') != null &&
             localStorage.getItem('conversationHistory') != undefined &&
@@ -198,30 +207,13 @@ export const Chatbar = ({
   }
 
   const handleExportData = () => {
-    exportData()
+    if (courseName && current_email) {
+      downloadConversationHistoryUser(current_email, courseName)
+    }
   }
 
   const handleClearConversations = () => {
-    defaultModelId &&
-      homeDispatch({
-        field: 'selectedConversation',
-        value: {
-          id: uuidv4(),
-          name: t('New Conversation'),
-          messages: [],
-          model: OpenAIModels[defaultModelId],
-          prompt: DEFAULT_SYSTEM_PROMPT,
-          temperature: DEFAULT_TEMPERATURE,
-          folderId: null,
-        },
-      })
-
-    homeDispatch({ field: 'conversations', value: [] })
-    localStorage.removeItem('conversationHistory')
-    localStorage.removeItem('selectedConversation')
-
-    const updatedFolders = folders.filter((f) => f.type !== 'chat')
-    homeDispatch({ field: 'folders', value: updatedFolders })
+    deleteAllConversationMutation.mutate()
   }
 
   const handleDeleteConversation = (conversation: Conversation) => {

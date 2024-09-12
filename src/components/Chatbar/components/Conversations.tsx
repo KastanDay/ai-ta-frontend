@@ -12,7 +12,6 @@ export const Conversations = ({ conversations, onLoadMore }: Props) => {
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    console.log('Conversations component rendered')
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
@@ -21,17 +20,17 @@ export const Conversations = ({ conversations, onLoadMore }: Props) => {
       },
       { threshold: 1.0 },
     )
-    console.log('IntersectionObserver created')
+    // console.log('IntersectionObserver created')
 
     if (sentinelRef.current) {
       observer.observe(sentinelRef.current)
-      console.log('IntersectionObserver observing sentinelRef')
+      // console.log('IntersectionObserver observing sentinelRef')
     }
 
     return () => {
       if (sentinelRef.current) {
         observer.unobserve(sentinelRef.current)
-        console.log('IntersectionObserver unobserving sentinelRef')
+        // console.log('IntersectionObserver unobserving sentinelRef')
       }
     }
   }, [onLoadMore])

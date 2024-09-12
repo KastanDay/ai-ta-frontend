@@ -236,7 +236,7 @@ const Home = ({
 
   useEffect(() => {
     if (isFoldersFetched && !isLoadingFolders) {
-      console.log('foldersData: ', foldersData)
+      // console.log('foldersData: ', foldersData)
       dispatch({ field: 'folders', value: foldersData })
       // localStorage.setItem('folders', JSON.stringify(foldersData))
     }
@@ -384,7 +384,7 @@ const Home = ({
     // } else if() {
 
     // }
-    updateConversationMutation.mutate(updatedConversation)
+    // updateConversationMutation.mutate(updatedConversation)
     // updateConversation(updatedConversation)
     // dispatch({ field: 'selectedConversation', value: updatedConversation })
   }

@@ -173,6 +173,52 @@ export type Database = {
         }
         Relationships: []
       }
+      doc_groups_sharing: {
+        Row: {
+          created_at: string
+          destination_project_id: number | null
+          destination_project_name: string | null
+          doc_group_id: number | null
+          id: number
+        }
+        Insert: {
+          created_at?: string
+          destination_project_id?: number | null
+          destination_project_name?: string | null
+          doc_group_id?: number | null
+          id?: number
+        }
+        Update: {
+          created_at?: string
+          destination_project_id?: number | null
+          destination_project_name?: string | null
+          doc_group_id?: number | null
+          id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'doc_groups_sharing_destination_project_id_fkey'
+            columns: ['destination_project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'doc_groups_sharing_destination_project_name_fkey'
+            columns: ['destination_project_name']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['course_name']
+          },
+          {
+            foreignKeyName: 'doc_groups_sharing_doc_group_id_fkey'
+            columns: ['doc_group_id']
+            isOneToOne: false
+            referencedRelation: 'doc_groups'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       document_insight: {
         Row: {
           context_id: string | null
@@ -633,6 +679,7 @@ export type Database = {
           created_at: string
           final_prompt_engineered_message: string | null
           id: string
+          image_description: string | null
           latest_system_message: string | null
           response_time_sec: number | null
           role: string
@@ -647,6 +694,7 @@ export type Database = {
           created_at: string
           final_prompt_engineered_message?: string | null
           id: string
+          image_description?: string | null
           latest_system_message?: string | null
           response_time_sec?: number | null
           role: string
@@ -661,6 +709,7 @@ export type Database = {
           created_at?: string
           final_prompt_engineered_message?: string | null
           id?: string
+          image_description?: string | null
           latest_system_message?: string | null
           response_time_sec?: number | null
           role?: string
@@ -1141,16 +1190,26 @@ export type Database = {
         }
         Returns: undefined
       }
+      search_conversations: {
+        Args: {
+          p_user_email: string
+          p_project_name: string
+          p_search_term?: string
+          p_limit?: number
+          p_offset?: number
+        }
+        Returns: Json
+      }
     }
     Enums: {
       LLMProvider:
-        | 'azure'
-        | 'openai'
-        | 'anthropic'
-        | 'ollama'
-        | 'google'
-        | 'groq'
-        | 'togetherai'
+        | 'Azure'
+        | 'OpenAI'
+        | 'Anthropic'
+        | 'Ollama'
+        | 'NCSAHosted'
+        | 'WebLLM'
+        | 'null'
     }
     CompositeTypes: {
       index_advisor_output: {

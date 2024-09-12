@@ -7,6 +7,7 @@ import {
 import { Conversation, ConversationPage } from '~/types/chat'
 import { FolderWithConversation } from '~/types/folder'
 import {
+  deleteAllConversationsFromServer,
   deleteConversationFromServer,
   fetchConversationHistory,
   saveConversationToServer,
@@ -23,75 +24,16 @@ export function useFetchConversationHistory(
       fetchConversationHistory(user_email, searchTerm, courseName, pageParam),
     initialPageParam: 0,
     enabled: !!user_email && !!courseName,
-    getNextPageParam: (lastPage: ConversationPage) => lastPage.nextCursor,
+    getNextPageParam: (lastPage: ConversationPage) => {
+      // console.log('lastPage: ', lastPage)
+      if (lastPage && lastPage.conversations) {
+        return lastPage.nextCursor
+      }
+      return null
+    },
     refetchInterval: 20_000,
   })
 }
-
-// export function useCreateConversation(queryClient: QueryClient) {
-//     console.log('useCreateConversation with queryClient: ', queryClient)
-//   return useMutation({
-//     // mutationKey: ['createConversation'],
-//     mutationFn: async (newConversation: Conversation) =>
-//       saveConversationToServer(newConversation),
-//     onMutate: async (newConversation: Conversation) => {
-//       console.log('Mutation from useCreateConversation: ', newConversation)
-//       // A mutation is about to happen!
-//       // Optimistically update the conversation
-//       // Steps:
-//       // 1. Cancel the query to prevent it from refetching
-//       // 2. Use the queryClient to update the conversationHistory query result
-//       // 3. Return the new conversation to the success handler
-
-//       // Step 1: Cancel the query to prevent it from refetching
-//     //   await queryClient.cancelQueries({
-//     //     queryKey: ['conversationHistory', newConversation.userEmail],
-//     //   })
-//     const queryKey = ['conversationHistory', newConversation.userEmail]
-//     const checkingOldData = await queryClient.getQueryData(queryKey)
-//     console.log('checkingOldData: ', checkingOldData)
-//       // Step 2: Perform the optimistic update
-//       console.log('newConversation to be updated: ', newConversation)
-//     //   queryClient.setQueryData(
-//     //     ['conversationHistory', newConversation.userEmail],
-//     //     (oldData: Conversation[] | []) => {
-//     //         console.log('oldData in usecreate mut: ', oldData)
-//     //       return [newConversation, ...oldData]
-//     //     },
-//     //   )
-
-//       // Step 3: Return the new conversation
-//       return newConversation
-//     },
-//     onError: (error, variables, context) => {
-//       // An error happened!
-//       // Rollback the optimistic update
-//     //   queryClient.setQueryData(
-//     //     ['conversationHistory', variables.userEmail],
-//     //     context,
-//     //   )
-//       console.error(
-//         'Error saving updated conversation to server:',
-//         error,
-//         context,
-//       )
-//     },
-//     onSuccess: (data, variables, context) => {
-//       // The mutation was successful!
-//       // Do something with the updated conversation
-//       // updateConversation(data)
-//       // No need to do anything here because the conversationHistory query will be invalidated
-//     },
-//     onSettled: (data, error, variables, context) => {
-//       // The mutation is done!
-//       // Do something here, like closing a modal
-//       console.log('Invalidating query: ', variables)
-//       queryClient.invalidateQueries({
-//         queryKey: ['conversationHistory', variables.userEmail],
-//       })
-//     },
-//   })
-// }
 
 export function useUpdateConversation(
   user_email: string,
@@ -104,7 +46,7 @@ export function useUpdateConversation(
     mutationFn: async (conversation: Conversation) =>
       saveConversationToServer(conversation),
     onMutate: async (updatedConversation: Conversation) => {
-      console.log('Mutation from useUpdateConversation: ', updatedConversation)
+      // console.log('Mutation from useUpdateConversation: ', updatedConversation)
       // A mutation is about to happen!
       // Optimistically update the conversation
       // Steps:
@@ -216,7 +158,6 @@ export function useUpdateConversation(
     onSettled: (data, error, variables, context) => {
       // The mutation is done!
       // Do something here, like closing a modal
-      console.log('Invalidating query: ', variables)
       queryClient.invalidateQueries({
         queryKey: ['conversationHistory', user_email, course_name, ''],
       })
@@ -236,7 +177,6 @@ export function useDeleteConversation(
   course_name: string,
   search_term: string,
 ) {
-  console.log('useDeleteConversation')
   return useMutation({
     mutationKey: ['deleteConversation', user_email],
     mutationFn: async (deleteConversation: Conversation) =>
@@ -253,16 +193,16 @@ export function useDeleteConversation(
       })
       // Step 2: Perform the optimistic update
       queryClient.setQueryData(
-        [
-          'conversationHistory',
-          deletedConversation.userEmail,
-          course_name,
-          search_term,
-        ],
-        (oldData: Conversation[]) => {
-          return oldData.filter(
-            (c: Conversation) => c.id !== deletedConversation.id,
-          )
+        ['conversationHistory', user_email, course_name, ''],
+        (oldData: ConversationPage | undefined) => {
+          if (!oldData || !oldData.conversations) return oldData
+          console.log('oldData: ', oldData)
+          return {
+            ...oldData,
+            conversations: oldData.conversations.filter(
+              (c: Conversation) => c.id !== deletedConversation.id,
+            ),
+          }
         },
       )
       // Step 3: Create a context object with the deleted conversation
@@ -296,10 +236,62 @@ export function useDeleteConversation(
     onSettled: (data, error, variables, context) => {
       // The mutation is done!
       // Do something here, like closing a modal
-      console.log('Invalidating query: ', variables)
       queryClient.invalidateQueries({
         queryKey: ['conversationHistory', user_email, course_name, search_term],
       })
+    },
+  })
+}
+
+export function useDeleteAllConversations(
+  queryClient: QueryClient,
+  user_email: string,
+  course_name: string,
+) {
+  return useMutation({
+    mutationKey: ['deleteAllConversations', user_email, course_name],
+    mutationFn: async () =>
+      deleteAllConversationsFromServer(user_email, course_name),
+    onMutate: async () => {
+      // Step 1: Cancel the query to prevent it from refetching
+      await queryClient.cancelQueries({
+        queryKey: ['conversationHistory', user_email, course_name, ''],
+      })
+      // Step 2: Perform the optimistic update
+      queryClient.setQueryData(
+        ['conversationHistory', user_email, course_name, ''],
+        (oldData: ConversationPage | undefined) =>
+          oldData || { conversations: [], nextCursor: null },
+      )
+
+      // Step 3: Create a context object with the deleted conversation
+      const oldConversationHistory = queryClient.getQueryData([
+        'conversationHistory',
+        user_email,
+        course_name,
+        '',
+      ]) || { conversations: [], nextCursor: null }
+      // Step 4: Return the deleted and old conversation to the success handler
+      return { oldConversationHistory }
+    },
+    onError: (error, variables, context) => {
+      // An error happened!
+      // Rollback the optimistic update
+      queryClient.setQueryData(
+        ['conversationHistory', user_email, course_name, ''],
+        context?.oldConversationHistory,
+      )
+      console.error('Error deleting all conversations:', error, context)
+      return { context: context?.oldConversationHistory }
+    },
+    onSettled: (data, error, variables, context) => {
+      // The mutation is done!
+      // Do something here, like closing a modal
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ['conversationHistory', user_email, course_name, ''],
+        })
+      }, 300)
     },
   })
 }
