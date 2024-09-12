@@ -16,6 +16,7 @@ export interface OpenAIModel {
 }
 
 export enum OpenAIModelID {
+  // GPT_o1 = 'o1-preview', // rolling model
   GPT_4o_mini = 'gpt-4o-mini', // rolling model - currently points to gpt-4o-2024-05-13
   GPT_4o = 'gpt-4o', // rolling model - currently points to gpt-4o-2024-05-13
   GPT_4 = 'gpt-4', // rolling model - currently points to gpt-4-0613
@@ -30,6 +31,12 @@ export enum OpenAIModelID {
 }
 
 export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
+  // [OpenAIModelID.GPT_o1]: {
+  //   id: OpenAIModelID.GPT_4o_mini,
+  //   name: 'o1-preview',
+  //   tokenLimit: 128000,
+  //   enabled: false,
+  // },
   [OpenAIModelID.GPT_4o_mini]: {
     id: OpenAIModelID.GPT_4o_mini,
     name: 'GPT-4o-mini',

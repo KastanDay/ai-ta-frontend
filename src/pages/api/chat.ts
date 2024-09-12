@@ -19,6 +19,10 @@ import {
 } from '@/types/chat'
 import { NextResponse } from 'next/server'
 import { parseOpenaiKey } from '~/utils/crypto'
+import { ProviderNames } from '~/types/LLMProvider'
+import { AzureModels } from '~/utils/modelProviders/azure'
+import { OpenAIModels } from '~/utils/modelProviders/openai'
+import OpenAI from 'openai'
 
 export const config = {
   runtime: 'edge',
@@ -26,8 +30,14 @@ export const config = {
 
 const handler = async (req: Request): Promise<NextResponse> => {
   try {
-    const { conversation, key, course_name, courseMetadata, stream } =
-      (await req.json()) as ChatBody
+    const {
+      conversation,
+      key,
+      course_name,
+      courseMetadata,
+      stream,
+      llmProviders,
+    } = (await req.json()) as ChatBody
 
     const openAIKey = await parseOpenaiKey(key)
 
@@ -57,12 +67,14 @@ const handler = async (req: Request): Promise<NextResponse> => {
       conversation.messages[conversation.messages.length - 1]!
         .latestSystemMessage,
     )
+
     const apiStream = await OpenAIStream(
       conversation.model,
       conversation.messages[conversation.messages.length - 1]!
         .latestSystemMessage!,
       conversation.temperature,
-      openAIKey,
+      llmProviders!,
+      // openAIKey,
       // @ts-ignore -- I think the types are fine.
       messagesToSend, //old: conversation.messages
       stream,

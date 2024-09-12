@@ -144,6 +144,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       documentGroups,
       tools,
       webLLMModelIdLoading,
+      llmProviders,
     },
     handleUpdateConversation,
     dispatch: homeDispatch,
@@ -310,8 +311,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           message.contexts = []
           message.content = Array.isArray(message.content)
             ? message.content.filter(
-              (content) => content.type !== 'tool_image_url',
-            )
+                (content) => content.type !== 'tool_image_url',
+              )
             : message.content
 
           const updatedMessages = [...selectedConversation.messages]
@@ -430,6 +431,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           courseName,
           true,
           courseMetadata,
+          llmProviders,
         )
         // Action 4: Build Prompt - Put everything together into a prompt
         const buildPromptResponse = await fetch('/api/buildPrompt', {
@@ -746,7 +748,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
       if (imgDescIndex !== -1) {
         // Remove the existing image description
-        ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
+        ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
       handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
@@ -839,13 +841,13 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
 
   const statements =
     courseMetadata?.example_questions &&
-      courseMetadata.example_questions.length > 0
+    courseMetadata.example_questions.length > 0
       ? courseMetadata.example_questions
       : [
-        'Make a bullet point list of key takeaways from this project.',
-        'What are the best practices for [Activity or Process] in [Context or Field]?',
-        'Can you explain the concept of [Specific Concept] in simple terms?',
-      ]
+          'Make a bullet point list of key takeaways from this project.',
+          'What are the best practices for [Activity or Process] in [Context or Field]?',
+          'Can you explain the concept of [Specific Concept] in simple terms?',
+        ]
 
   // Add this function to create dividers with statements
   const renderIntroductoryStatements = () => {

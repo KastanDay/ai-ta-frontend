@@ -1,5 +1,5 @@
 import { Message, type OpenAIChatMessage } from '@/types/chat'
-import { type OpenAIModel } from '~/utils/modelProviders/openai'
+import { OpenAIModels, type OpenAIModel } from '~/utils/modelProviders/openai'
 
 import {
   AZURE_DEPLOYMENT_ID,
@@ -15,6 +15,13 @@ import {
   createParser,
 } from 'eventsource-parser'
 import { decrypt, isEncrypted } from '../crypto'
+import {
+  AllLLMProviders,
+  AzureProvider,
+  OpenAIProvider,
+  ProviderNames,
+} from '~/types/LLMProvider'
+import { AzureModels } from '../modelProviders/azure'
 
 export class OpenAIError extends Error {
   type: string
@@ -37,40 +44,57 @@ export const OpenAIStream = async (
   model: OpenAIModel,
   systemPrompt: string,
   temperature: number,
-  key: string,
+  llmProviders: AllLLMProviders,
   messages: OpenAIChatMessage[],
   stream: boolean,
 ) => {
-  // console.debug('In OpenAIStream, model: ', model)
+  console.debug('In OpenAIStream, model: ', model)
   // messages.forEach((message, index) => {
   //   console.log(`Message ${index}:`, message.role, message.content)
   // })
-  let apiKey = key
-  let apiType = OPENAI_API_TYPE
-  let endpoint = OPENAI_API_HOST
-  if (key && isEncrypted(key)) {
-    const decryptedText = await decrypt(
-      key,
-      process.env.NEXT_PUBLIC_SIGNING_KEY as string,
-    )
-    apiKey = decryptedText as string
-    // console.log('Decrypted api key for openai chat: ', apiKey)
-    // console.log('Decrypted api key for openai chat')
+
+  let provider
+  if (llmProviders) {
+    if (
+      Object.values(OpenAIModels).some((oaiModel) => oaiModel.id === model.id)
+    ) {
+      provider = llmProviders[ProviderNames.OpenAI] as OpenAIProvider
+    } else if (
+      Object.values(AzureModels).some((oaiModel) => oaiModel.id === model.id)
+    ) {
+      provider = llmProviders[ProviderNames.Azure] as AzureProvider
+    } else {
+      throw new Error('Unsupported model provider')
+    }
   }
-  // else {
-  //   console.log('Using client key for openai chat: ', apiKey)
+
+  // default to OpenAI not Azure
+  let apiType = ProviderNames.OpenAI
+  let endpoint = OPENAI_API_HOST
+  let url = `${endpoint}/v1/chat/completions`
+
+  // if (key && isEncrypted(key)) {
+  //   const decryptedText = await decrypt(
+  //     key,
+  //     process.env.NEXT_PUBLIC_SIGNING_KEY as string,
+  //   )
+  //   apiKey = decryptedText as string
+  //   // console.log('Decrypted api key for openai chat: ', apiKey)
+  //   // console.log('Decrypted api key for openai chat')
   // }
 
-  if (apiKey && !apiKey.startsWith('sk-')) {
-    console.log('setting azure variables')
-    apiType = 'azure'
-    endpoint = process.env.AZURE_OPENAI_ENDPOINT || OPENAI_API_HOST
+  function isAzureProvider(provider: any): provider is AzureProvider {
+    return provider && provider.apiKey && !provider.apiKey.startsWith('sk-')
   }
 
-  let url = `${endpoint}/v1/chat/completions`
-  if (apiType === 'azure') {
-    const deploymentName = model.id || process.env.AZURE_OPENAI_ENGINE
-    url = `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${OPENAI_API_VERSION}`
+  if (
+    isAzureProvider(provider) &&
+    provider!.apiKey &&
+    !provider!.apiKey.startsWith('sk-')
+  ) {
+    apiType = ProviderNames.Azure
+    endpoint = provider!.AzureEndpoint as string
+    url = `${endpoint}/openai/deployments/${provider.AzureDeployment}/chat/completions?api-version=${OPENAI_API_VERSION}`
   }
 
   // ! DEBUGGING to view the full message as sent to OpenAI.
@@ -108,13 +132,13 @@ export const OpenAIStream = async (
   const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
-      ...(apiType === 'openai' && {
-        Authorization: `Bearer ${apiKey}`,
+      ...(apiType === ProviderNames.OpenAI && {
+        Authorization: `Bearer ${provider!.apiKey}`,
       }),
-      ...(apiType === 'azure' && {
-        'api-key': `${apiKey}`,
+      ...(apiType === ProviderNames.Azure && {
+        'api-key': `${provider!.apiKey}`,
       }),
-      ...(apiType === 'openai' &&
+      ...(apiType === ProviderNames.OpenAI &&
         OPENAI_ORGANIZATION && {
           'OpenAI-Organization': OPENAI_ORGANIZATION,
         }),

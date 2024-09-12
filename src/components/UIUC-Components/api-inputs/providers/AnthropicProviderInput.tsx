@@ -15,7 +15,7 @@ export default function AnthropicProviderInput({
 }) {
   return (
     <motion.div layout>
-      <Card shadow="sm" p="lg" radius="md" className="bg-[#15162c]">
+      <Card shadow="sm" p="lg" radius="md" className="w-[350px] bg-[#15162c]">
         <div
           style={{
             display: 'flex',
@@ -78,10 +78,10 @@ export default function AnthropicProviderInput({
             )}
           </form.Field>
         </div>
-        <Text size="sm" color="dimmed" mb="md">
+        {/* <Text size="sm" color="dimmed" mb="md">
           Anthropic provides advanced AI models like Claude. Sign up on their
           website to get an API key.
-        </Text>
+        </Text> */}
         {provider?.error &&
           (form.state.values?.providers?.Anthropic?.enabled ||
             provider.enabled) && (

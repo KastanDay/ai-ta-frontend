@@ -25,6 +25,7 @@ import {
   NCSAHostedProvider,
   OllamaProvider,
   OpenAIProvider,
+  ProviderNames,
   WebLLMProvider,
 } from '~/types/LLMProvider'
 import { notifications } from '@mantine/notifications'
@@ -68,7 +69,6 @@ function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
 export const APIKeyInput = ({
   field,
   placeholder,
-  // onValidate,
 }: {
   field: FieldApi<any, any, any, any>
   placeholder: string
@@ -89,23 +89,6 @@ export const APIKeyInput = ({
   useEffect(() => {
     setError(null)
   }, [field.state.value])
-
-  const handleValidate = async () => {
-    setIsValidating(true)
-    setError(null)
-    try {
-      await onValidate(field.state.value)
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message)
-      } else {
-        console.log('Unknown error:', err)
-        setError(null)
-      }
-    } finally {
-      setIsValidating(false)
-    }
-  }
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
@@ -188,7 +171,6 @@ export const APIKeyInput = ({
             className="bg-purple-800 hover:border-indigo-600 hover:bg-indigo-600"
             type="submit"
             // onClick={handleValidate}
-            loading={isValidating}
             disabled={!field.state.value}
           >
             Save
@@ -236,149 +218,149 @@ const NewModelDropdown: React.FC<
   state,
   showWebLLmModels,
 }) => {
-  // const { state, dispatch: homeDispatch } = useContext(HomeContext)
+    // const { state, dispatch: homeDispatch } = useContext(HomeContext)
 
-  console.log('Inside model dropdown', models)
+    console.log('Inside model dropdown', models)
 
-  const allModels = [
-    ...(models.Ollama || []).map((model: any) => ({
-      ...model,
-      provider: ProviderNames.Ollama,
-      group: 'NCSA Hosted Models, 100% free',
-    })),
-    ...(models.OpenAI || []).map((model: any) => ({
-      ...model,
-      provider: ProviderNames.OpenAI,
-      group: 'OpenAI',
-    })),
-    ...(models.Anthropic || []).map((model: any) => ({
-      ...model,
-      provider: ProviderNames.Anthropic,
-      group: 'Anthropic',
-    })),
-    ...(models.WebLLM && models.WebLLM.length > 0
-      ? models.WebLLM.map((model: any) => ({
+    const allModels = [
+      ...(models.Ollama || []).map((model: any) => ({
+        ...model,
+        provider: ProviderNames.Ollama,
+        group: 'NCSA Hosted Models, 100% free',
+      })),
+      ...(models.OpenAI || []).map((model: any) => ({
+        ...model,
+        provider: ProviderNames.OpenAI,
+        group: 'OpenAI',
+      })),
+      ...(models.Anthropic || []).map((model: any) => ({
+        ...model,
+        provider: ProviderNames.Anthropic,
+        group: 'Anthropic',
+      })),
+      ...(models.WebLLM && models.WebLLM.length > 0
+        ? models.WebLLM.map((model: any) => ({
           ...model,
           provider: ProviderNames.WebLLM,
           group: 'Local in Browser LLMs, runs on your device',
         }))
-      : []),
-  ]
-  const selectedModel = allModels.find((model) => model.id === value)
+        : []),
+    ]
+    const selectedModel = allModels.find((model) => model.id === value)
 
-  return (
-    <>
-      <div
-        tabIndex={0}
-        className="relative flex w-full flex-col items-start px-2"
-      >
-        <Select
-          className="menu z-[50] w-full"
-          size="md"
-          placeholder="Select a model"
-          searchable
-          value={value}
-          onChange={async (modelId: any) => {
-            if (state.webLLMModelIdLoading.isLoading) {
-              setLoadingModelId(modelId)
-              console.log('model id', modelId)
-              console.log('loading model id', loadingModelId)
-              console.log('model is loading', state.webLLMModelIdLoading.id)
-            } else if (!state.webLLMModelIdLoading.isLoading) {
-              setLoadingModelId(null)
-            }
-            await onChange(modelId!)
-          }}
-          data={allModels.map((model: any) => ({
-            value: model.id,
-            label: model.name,
-            downloadSize: model.downloadSize,
-            modelId: model.id,
-            selectedModelId: value,
-            modelType: model.provider,
-            group: model.group,
-            vram_required_MB: model.vram_required_MB,
-          }))}
-          itemComponent={(props: any) => (
-            <ModelItem
-              {...props}
-              loadingModelId={loadingModelId}
-              setLoadingModelId={setLoadingModelId}
-              showWebLLmModels={showWebLLmModels}
-            />
-          )}
-          maxDropdownHeight={480}
-          rightSectionWidth="auto"
-          icon={
-            selectedModel ? (
-              <Image
-                src={getModelLogo(selectedModel.provider)}
-                alt={`${selectedModel.provider} logo`}
-                width={20}
-                height={20}
-                style={{ marginLeft: '4px', borderRadius: '4px' }}
+    return (
+      <>
+        <div
+          tabIndex={0}
+          className="relative flex w-full flex-col items-start px-2"
+        >
+          <Select
+            className="menu z-[50] w-full"
+            size="md"
+            placeholder="Select a model"
+            searchable
+            value={value}
+            onChange={async (modelId: any) => {
+              if (state.webLLMModelIdLoading.isLoading) {
+                setLoadingModelId(modelId)
+                console.log('model id', modelId)
+                console.log('loading model id', loadingModelId)
+                console.log('model is loading', state.webLLMModelIdLoading.id)
+              } else if (!state.webLLMModelIdLoading.isLoading) {
+                setLoadingModelId(null)
+              }
+              await onChange(modelId!)
+            }}
+            data={allModels.map((model: any) => ({
+              value: model.id,
+              label: model.name,
+              downloadSize: model.downloadSize,
+              modelId: model.id,
+              selectedModelId: value,
+              modelType: model.provider,
+              group: model.group,
+              vram_required_MB: model.vram_required_MB,
+            }))}
+            itemComponent={(props: any) => (
+              <ModelItem
+                {...props}
+                loadingModelId={loadingModelId}
+                setLoadingModelId={setLoadingModelId}
+                showWebLLmModels={showWebLLmModels}
               />
-            ) : null
-          }
-          rightSection={<IconChevronDown size="1rem" />}
-          classNames={{
-            root: 'w-full',
-            wrapper: 'w-full',
-            input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'} w-full`,
-            rightSection: 'pointer-events-none',
-            item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
-          }}
-          styles={(theme: {
-            radius: { md: any }
-            shadows: { xs: any }
-            white: any
-          }) => ({
-            input: {
-              backgroundColor: 'rgb(107, 33, 168)',
-              border: 'none',
-              // color: theme.white,
-              // borderRadius: theme.radius.md,
-              // width: '24rem',
-              // [`@media (max-width: 960px)`]: {
-              //   width: '17rem', // Smaller width for small screens
-              // },
-            },
-            dropdown: {
-              backgroundColor: '#1d1f33',
-              border: '1px solid rgba(42,42,120,1)',
-              borderRadius: theme.radius.md,
-              marginTop: '2px',
-              boxShadow: theme.shadows.xs,
-              width: '100%',
-              maxWidth: '100%',
-              position: 'absolute',
-            },
-            item: {
-              backgroundColor: '#1d1f33',
-              borderRadius: theme.radius.md,
-              margin: '2px',
-              '&[data-selected]': {
-                '&': {
-                  backgroundColor: 'transparent',
+            )}
+            maxDropdownHeight={480}
+            rightSectionWidth="auto"
+            icon={
+              selectedModel ? (
+                <Image
+                  src={getModelLogo(selectedModel.provider)}
+                  alt={`${selectedModel.provider} logo`}
+                  width={20}
+                  height={20}
+                  style={{ marginLeft: '4px', borderRadius: '4px' }}
+                />
+              ) : null
+            }
+            rightSection={<IconChevronDown size="1rem" />}
+            classNames={{
+              root: 'w-full',
+              wrapper: 'w-full',
+              input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'} w-full`,
+              rightSection: 'pointer-events-none',
+              item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
+            }}
+            styles={(theme: {
+              radius: { md: any }
+              shadows: { xs: any }
+              white: any
+            }) => ({
+              input: {
+                backgroundColor: 'rgb(107, 33, 168)',
+                border: 'none',
+                // color: theme.white,
+                // borderRadius: theme.radius.md,
+                // width: '24rem',
+                // [`@media (max-width: 960px)`]: {
+                //   width: '17rem', // Smaller width for small screens
+                // },
+              },
+              dropdown: {
+                backgroundColor: '#1d1f33',
+                border: '1px solid rgba(42,42,120,1)',
+                borderRadius: theme.radius.md,
+                marginTop: '2px',
+                boxShadow: theme.shadows.xs,
+                width: '100%',
+                maxWidth: '100%',
+                position: 'absolute',
+              },
+              item: {
+                backgroundColor: '#1d1f33',
+                borderRadius: theme.radius.md,
+                margin: '2px',
+                '&[data-selected]': {
+                  '&': {
+                    backgroundColor: 'transparent',
+                  },
+                  '&:hover': {
+                    backgroundColor: 'rgb(107, 33, 168)',
+                    color: theme.white,
+                  },
                 },
-                '&:hover': {
+                '&[data-hovered]': {
                   backgroundColor: 'rgb(107, 33, 168)',
                   color: theme.white,
                 },
               },
-              '&[data-hovered]': {
-                backgroundColor: 'rgb(107, 33, 168)',
-                color: theme.white,
-              },
-            },
-          })}
-          dropdownPosition="bottom"
-          withinPortal
-        />
-      </div>
-    </>
-  )
-}
+            })}
+            dropdownPosition="bottom"
+            withinPortal
+          />
+        </div>
+      </>
+    )
+  }
 
 export default function APIKeyInputForm() {
   const course_name = GetCurrentPageName()
@@ -447,6 +429,7 @@ export default function APIKeyInputForm() {
 
   console.log('llmProviders', JSON.stringify(llmProviders, null, 2))
   console.log('form.state', JSON.stringify(form.state, null, 2))
+
   // if (isLoadingLLMProviders) {
   //   return (
   //     <div className="flex h-screen items-center justify-center">
@@ -462,23 +445,6 @@ export default function APIKeyInputForm() {
   //         Failed to load API keys. Please try again later.{' '}
   //         {errorLLMProviders?.message}
   //       </Text>
-  //     </div>
-  //   )
-  // }
-
-  // if the providers are empty, null, undefined, or an empty object, show error
-  // if (
-  //   !llmProviders ||
-  //   llmProviders === null ||
-  //   llmProviders === undefined ||
-  //   Object.keys(llmProviders).length === 0
-  // ) {
-  //   console.log("llmProviders:", llmProviders)
-  //   console.log("llmProviders type:", typeof llmProviders)
-  //   // console.log("llmProviders keys:", Object.keys(llmProviders))
-  //   return (
-  //     <div className="flex h-screen items-center justify-center">
-  //       <Text>Failed to load API keys. Please try again later. HEREEE</Text>
   //     </div>
   //   )
   // }
@@ -506,52 +472,39 @@ export default function APIKeyInputForm() {
               style={{ maxWidth: '90%', width: '100%', marginTop: '2%' }}
             >
               <Flex className="flex-col md:flex-row">
-                {/* // direction={isSmallScreen ? 'column' : 'row'}> */}
                 <div
                   style={{
-                    // flex: isSmallScreen ? '1 1 100%' : '1 1 60%',
                     border: 'None',
                     color: 'white',
                   }}
                   className="min-h-full flex-[1_1_100%] bg-gradient-to-r from-purple-900 via-indigo-800 to-blue-800 md:flex-[1_1_60%]"
                 >
-                  <Flex gap="md" direction="column">
+                  <Flex
+                    gap="md"
+                    direction="column"
+                    justify="flex-start"
+                    align="flex-start"
+                  >
                     <Title
                       order={2}
-                      pt={43}
-                      px={12}
                       variant="gradient"
-                      align="center"
+                      align="left"
                       gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                      className={`${montserrat_heading.variable} font-montserratHeading`}
+                      className={`pl-8 pt-8 ${montserrat_heading.variable} font-montserratHeading`}
                     >
-                      API Keys &amp; Project Defaults
+                      API Keys: Add LLMs to your Chatbot
+                    </Title>
+                    <Title
+                      className={`${montserrat_heading.variable} max-w-prose flex-[1_1_50%] font-montserratHeading`}
+                      order={5}
+                      px={18}
+                      ml={'md'}
+                      style={{ textAlign: 'left' }}
+                    >
+                      Configure which LLMs are available to you users. Enable or
+                      disable models to balance price and performance.
                     </Title>
                     <Stack align="center" justify="start">
-                      <div className="flex flex-col lg:flex-row">
-                        <Title
-                          className={`${montserrat_heading.variable} flex-[1_1_50%] font-montserratHeading`}
-                          order={5}
-                          w={'100%'}
-                          px={18}
-                          ml={'md'}
-                          style={{ textAlign: 'left' }}
-                        >
-                          Configure your default settings and API keys for each
-                          provider.
-                        </Title>
-                      </div>
-                      {/* <Card
-                        shadow="sm"
-                        padding="lg"
-                        radius="md"
-                        style={{
-                          width: 400,
-                          backgroundColor: '#1c1c28',
-                          color: 'white',
-                          border: 'none',
-                        }}
-                      > */}
                       <form
                         onSubmit={(e) => {
                           e.preventDefault()
@@ -561,72 +514,108 @@ export default function APIKeyInputForm() {
                       >
                         {/* Providers */}
                         <div
+                          className="pb-8 pl-8"
                           style={{
                             display: 'flex',
                             flexDirection: 'column',
                             gap: 16,
-                            padding: '2rem',
                           }}
                         >
                           {llmProviders && !isLoadingLLMProviders && (
                             <>
-                              <AnthropicProviderInput
-                                provider={
-                                  llmProviders.Anthropic as AnthropicProvider
-                                }
-                                form={form}
-                              />
-                              <OpenAIProviderInput
-                                provider={llmProviders.OpenAI as OpenAIProvider}
-                                form={form}
-                              />
-                              <AzureProviderInput
-                                provider={llmProviders.Azure as AzureProvider}
-                                form={form}
-                              />
-                              <OllamaProviderInput
-                                provider={llmProviders.Ollama as OllamaProvider}
-                                form={form}
-                              />
-                              <NCSAHostedLLmsProviderInput
-                                provider={
-                                  llmProviders.NCSAHosted as NCSAHostedProvider
-                                }
-                                form={form}
-                              />
-                              <WebLLMProviderInput
-                                provider={llmProviders.WebLLM as WebLLMProvider}
-                                form={form}
-                              />
+                              <Title
+                                className={`-mb-3 ${montserrat_heading.variable} font-montserratHeading`}
+                                variant="gradient"
+                                gradient={{
+                                  from: 'gold',
+                                  to: 'white',
+                                  deg: 170,
+                                }}
+                                order={3}
+                              >
+                                Closed source LLMs
+                              </Title>
+                              <Text
+                                className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                size="md"
+                              >
+                                The best performers, but you gotta pay their
+                                prices and follow their rules.
+                              </Text>
+                              <Flex
+                                // direction={{ base: 'column', '79rem': 'row' }}
+                                direction={{ base: 'column', '130rem': 'row' }}
+                                wrap="wrap"
+                                justify="flex-start"
+                                align="flex-start"
+                                className="gap-4"
+                              >
+                                <AnthropicProviderInput
+                                  provider={
+                                    llmProviders.Anthropic as AnthropicProvider
+                                  }
+                                  form={form}
+                                />
+                                <OpenAIProviderInput
+                                  provider={
+                                    llmProviders.OpenAI as OpenAIProvider
+                                  }
+                                  form={form}
+                                />
+                                <AzureProviderInput
+                                  provider={llmProviders.Azure as AzureProvider}
+                                  form={form}
+                                />
+                              </Flex>
+                              <Title
+                                className={`-mb-3 ${montserrat_heading.variable} font-montserratHeading`}
+                                variant="gradient"
+                                gradient={{
+                                  from: 'gold',
+                                  to: 'white',
+                                  deg: 170,
+                                }}
+                                order={3}
+                              >
+                                Open source LLMs
+                              </Title>
+                              <Text
+                                className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                size="md"
+                              >
+                                Your weights, your rules.
+                              </Text>
+                              <Flex
+                                direction={{ base: 'column', '79rem': 'row' }}
+                                wrap="wrap"
+                                justify="flex-start"
+                                align="flex-start"
+                                className="gap-4"
+                              >
+                                {' '}
+                                <NCSAHostedLLmsProviderInput
+                                  provider={
+                                    llmProviders.NCSAHosted as NCSAHostedProvider
+                                  }
+                                  form={form}
+                                />
+                                <OllamaProviderInput
+                                  provider={
+                                    llmProviders.Ollama as OllamaProvider
+                                  }
+                                  form={form}
+                                />
+                                <WebLLMProviderInput
+                                  provider={
+                                    llmProviders.WebLLM as WebLLMProvider
+                                  }
+                                  form={form}
+                                />
+                              </Flex>
                             </>
                           )}
                         </div>
-
-                        {/* <form.Subscribe
-                          selector={(state) => [
-                            state.canSubmit,
-                            state.isSubmitting,
-                          ]}
-                        >
-                          {([canSubmit, isSubmitting]) => (
-                            <Button
-                              type="submit"
-                              fullWidth
-                              disabled={!canSubmit}
-                              sx={(theme) => ({
-                                marginTop: 16,
-                                backgroundColor: '#9333ea',
-                                '&:hover': { backgroundColor: '#7e22ce' },
-                              })}
-                            >
-                              {isSubmitting
-                                ? '...saving to DB....'
-                                : 'Save Changes - TODO remove this button. Each has their own.'}
-                            </Button>
-                          )}
-                        </form.Subscribe> */}
                       </form>
-                      {/* </Card> */}
                     </Stack>
                   </Flex>
                 </div>
@@ -740,7 +729,7 @@ export default function APIKeyInputForm() {
                                 // chat_ui={chat_ui}
                                 isSmallScreen={false}
                                 loadingModelId={'test'}
-                                setLoadingModelId={(id: string | null) => {}}
+                                setLoadingModelId={(id: string | null) => { }}
                                 state={{
                                   webLLMModelIdLoading: {
                                     id: 'test',

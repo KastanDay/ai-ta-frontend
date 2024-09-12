@@ -17,7 +17,7 @@ export default function OpenAIProviderInput({
 
   return (
     <motion.div layout>
-      <Card shadow="sm" p="lg" radius="md" className="bg-[#15162c]">
+      <Card shadow="sm" p="lg" radius="md" className="w-[350px] bg-[#15162c]">
         <div
           style={{
             display: 'flex',
@@ -81,17 +81,13 @@ export default function OpenAIProviderInput({
             )}
           </form.Field>
         </div>
-        <Text size="sm" color="dimmed" mb="md">
+        {/* <Text size="sm" color="dimmed" mb="md">
           OpenAI offers powerful language models like GPT-3.5 and GPT-4. Get
           your API key from the OpenAI platform.
-        </Text>
-        {provider?.error && form.state.values?.providers?.OpenAI?.enabled && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
+        </Text> */}
+        {provider?.error &&
+          (form.state.values?.providers?.OpenAI?.enabled ||
+            provider.enabled) && (
             <Text
               size="sm"
               color="red"
@@ -105,8 +101,7 @@ export default function OpenAIProviderInput({
             >
               {provider.error}
             </Text>
-          </motion.div>
-        )}
+          )}
         <form.Field name={`providers.${ProviderNames.OpenAI}.enabled`}>
           {(field: any) => (
             <AnimatePresence>

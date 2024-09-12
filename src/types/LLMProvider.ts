@@ -136,6 +136,7 @@ export const selectBestModel = (
     .flatMap((provider) => provider.models || [])
     .filter((model) => model.enabled)
 
+  // TODO: if project has global default model, use it.
   // First, try to use the model from the conversation if it exists and is valid
   // if (
   //   convo &&

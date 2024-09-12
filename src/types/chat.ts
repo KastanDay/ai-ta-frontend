@@ -1,13 +1,10 @@
 import { CourseMetadata } from './courseMetadata'
 import { N8NParameter } from './tools'
 import {
-  GenericSupportedModel,
   AnySupportedModel,
   BaseLLMProvider,
+  AllLLMProviders,
 } from './LLMProvider'
-import { WebllmModel } from '~/utils/modelProviders/WebLLM'
-import { OllamaModel } from '~/utils/modelProviders/ollama'
-import { OpenAIModel } from '~/utils/modelProviders/openai'
 
 export interface Conversation {
   // NO KEY
@@ -103,6 +100,7 @@ export interface ChatBody {
   stream: boolean
   isImage?: boolean
   courseMetadata?: CourseMetadata
+  llmProviders?: AllLLMProviders
   // NO FOLDER ID
 }
 

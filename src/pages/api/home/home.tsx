@@ -1,5 +1,5 @@
 // src/pages/home/home.tsx
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useTranslation } from 'next-i18next'
 import Head from 'next/head'
@@ -7,7 +7,6 @@ import Head from 'next/head'
 import { useCreateReducer } from '@/hooks/useCreateReducer'
 
 import useErrorService from '@/services/errorService'
-import useApiService from '@/services/useApiService'
 
 import {
   cleanConversationHistory,
@@ -46,9 +45,30 @@ import { OpenAIModelID } from '~/utils/modelProviders/openai'
 
 const Home = () => {
   const { t } = useTranslation('chat')
-  const { getModels } = useApiService()
   const { getModelsError } = useErrorService()
   const [isLoading, setIsLoading] = useState<boolean>(true) // Add a new state for loading
+
+  const getModels = useCallback(
+    async (params: { projectName: string }, signal?: AbortSignal) => {
+      const response = await fetch(`/api/models`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal,
+        body: JSON.stringify({
+          projectName: params.projectName,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch models')
+      }
+
+      return response.json()
+    },
+    [],
+  )
 
   const serverSidePluginKeysSet = true
 
@@ -212,8 +232,8 @@ const Home = () => {
 
         const models = await getModels({
           projectName: course_name,
-          openAIApiKey: key || undefined,
         })
+        console.log('models in home.tsx', models)
         dispatch({ field: 'llmProviders', value: models })
       } catch (error) {
         console.error('Error fetching models user has access to: ', error)

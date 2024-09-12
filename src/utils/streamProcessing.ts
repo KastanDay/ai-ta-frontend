@@ -540,6 +540,7 @@ export function constructChatBody(
   course_name: string,
   stream: boolean,
   courseMetadata?: CourseMetadata,
+  llmProviders?: AllLLMProviders,
 ): ChatBody {
   return {
     conversation: conversation,
@@ -547,6 +548,7 @@ export function constructChatBody(
     course_name: course_name,
     stream: stream,
     courseMetadata: courseMetadata,
+    llmProviders: llmProviders,
   }
 }
 
@@ -873,24 +875,13 @@ export const routeModelRequest = async (
       body: JSON.stringify({ conversation: selectedConversation }),
     })
   } else if (
-    Object.values(OpenAIModelID).includes(selectedConversation.model.id as any)
-  ) {
-    // Call the OpenAI API
-    const url = baseUrl ? `${baseUrl}/api/chat` : '/api/chat'
-    response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      signal: controller.signal,
-      body: JSON.stringify(chatBody),
-    })
-  } else if (
+    Object.values(OpenAIModelID).includes(
+      selectedConversation.model.id as any,
+    ) ||
     Object.values(AzureModelID).includes(selectedConversation.model.id as any)
   ) {
     // Call the OpenAI API
     const url = baseUrl ? `${baseUrl}/api/chat` : '/api/chat'
-
     response = await fetch(url, {
       method: 'POST',
       headers: {

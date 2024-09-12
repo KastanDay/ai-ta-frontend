@@ -17,6 +17,7 @@ import { webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
 import { getNCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
+import { migrateAllKeys } from './UIUC-api/MIGRATEALLKEYS'
 
 export const config = {
   runtime: 'edge',
@@ -93,7 +94,7 @@ const handler = async (
           )
           break
         case ProviderNames.WebLLM:
-          ; (llmProvider as WebLLMProvider).models = webLLMModels
+          ;(llmProvider as WebLLMProvider).models = webLLMModels
           allLLMProviders[providerName] = llmProvider as WebLLMProvider
           break
         case ProviderNames.NCSAHosted:
@@ -105,6 +106,14 @@ const handler = async (
           console.warn(`Unhandled provider: ${providerName}`)
       }
     }
+    // Call MIGRATEALLKEYS.ts
+    // try {
+    //   const migrateResult = await migrateAllKeys()
+    //   console.log('MIGRATEALLKEYS result:', migrateResult);
+    // } catch (error) {
+    //   console.error('Error calling MIGRATEALLKEYS:', error);
+    // }
+
     console.log('FINAL -- allLLMProviders', allLLMProviders)
     return NextResponse.json(allLLMProviders as AllLLMProviders, {
       status: 200,
