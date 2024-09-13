@@ -16,6 +16,7 @@ export interface ChatbarContextProps {
   handleExportData: () => void
   // handleImportConversations: (data: SupportedExportFormats) => void
   handleApiKeyChange: (apiKey: string) => void
+  isExporting: boolean
 }
 
 const ChatbarContext = createContext<ChatbarContextProps>(undefined!)

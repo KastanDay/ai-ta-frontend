@@ -29,8 +29,12 @@ export const ChatbarSettings = () => {
     dispatch: homeDispatch,
   } = useContext(HomeContext)
 
-  const { handleClearConversations, handleExportData, handleApiKeyChange } =
-    useContext(ChatbarContext)
+  const {
+    handleClearConversations,
+    handleExportData,
+    handleApiKeyChange,
+    isExporting,
+  } = useContext(ChatbarContext)
 
   return (
     <div className="flex flex-col items-center space-y-1 border-t border-white/20 pt-1 text-sm">
@@ -42,6 +46,7 @@ export const ChatbarSettings = () => {
         text={t('Export history')}
         icon={<IconFileExport size={18} />}
         onClick={() => handleExportData()}
+        loading={isExporting}
       />
 
       {!serverSideApiKeyIsSet ? (

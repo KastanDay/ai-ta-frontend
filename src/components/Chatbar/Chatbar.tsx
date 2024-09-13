@@ -39,6 +39,7 @@ export const Chatbar = ({
   const chatBarContextValue = useCreateReducer<ChatbarInitialState>({
     initialState,
   })
+  const [isExporting, setIsExporting] = useState<boolean>(false)
 
   const {
     state: { conversations, showChatbar, defaultModelId, folders },
@@ -206,9 +207,14 @@ export const Chatbar = ({
     }
   }
 
-  const handleExportData = () => {
+  const handleExportData = async () => {
     if (courseName && current_email) {
-      downloadConversationHistoryUser(current_email, courseName)
+      setIsExporting(true)
+      try {
+        await downloadConversationHistoryUser(current_email, courseName)
+      } finally {
+        setIsExporting(false)
+      }
     }
   }
 
@@ -271,6 +277,7 @@ export const Chatbar = ({
         handleClearConversations,
         handleExportData,
         handleApiKeyChange,
+        isExporting,
       }}
     >
       <Sidebar<Conversation>
