@@ -218,10 +218,6 @@ const NewModelDropdown: React.FC<
   state,
   showWebLLmModels,
 }) => {
-  // const { state, dispatch: homeDispatch } = useContext(HomeContext)
-
-  console.log('Inside model dropdown', models)
-
   const allModels = [
     ...(models.Ollama || []).map((model: any) => ({
       ...model,
