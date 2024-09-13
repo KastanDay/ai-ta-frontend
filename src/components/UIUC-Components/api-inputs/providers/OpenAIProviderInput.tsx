@@ -57,6 +57,7 @@ export default function OpenAIProviderInput({
                 checked={field.state.value}
                 onChange={(event) => {
                   field.handleChange(event.currentTarget.checked)
+
                   // Trigger form submission
                   setTimeout(() => form.handleSubmit(), 0)
                 }}
@@ -122,10 +123,7 @@ export default function OpenAIProviderInput({
                     )}
                   </form.Field>
 
-                  <ModelToggles
-                    form={form}
-                    providerName={ProviderNames.OpenAI}
-                  />
+                  <ModelToggles form={form} provider={provider} />
                 </motion.div>
               )}
             </AnimatePresence>

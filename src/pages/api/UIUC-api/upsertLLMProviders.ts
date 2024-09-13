@@ -57,10 +57,12 @@ export default async function handler(req: NextRequest, res: NextResponse) {
   }
 
   try {
+    console.debug('llmProviders BEFORE being cleaned and such', llmProviders)
+
     const redisKey = `${courseName}-llms`
     const existingLLMs = (await kv.get(redisKey)) as ProjectWideLLMProviders
 
-    // If a key is "defined but hidden" then replace that Provider with one from the DB.
+    // If a key is "defined but hidden" then replace that Provider's API KEY ONLY with it's key from the DB
     Object.keys(llmProviders).forEach((providerName) => {
       const typedProviderName = providerName as keyof AllLLMProviders
       const provider = llmProviders[typedProviderName]
@@ -73,13 +75,13 @@ export default async function handler(req: NextRequest, res: NextResponse) {
           // @ts-ignore - idk how to get around this 'cannot be undefined' thing.
           llmProviders[typedProviderName] = {
             ...provider,
-            ...existingLLMs[typedProviderName],
+            apiKey: existingLLMs[typedProviderName]?.apiKey ?? undefined,
           } as AllLLMProviders[typeof typedProviderName]
-          console.log(
-            `Replacing hidden key for ${providerName} with existing data`,
+          console.debug(
+            `Replacing hidden key for ${providerName} with existing apiKey`,
           )
         } else {
-          console.log(
+          console.debug(
             'Removing hidden key for',
             providerName,
             'data',
@@ -90,10 +92,6 @@ export default async function handler(req: NextRequest, res: NextResponse) {
         }
       }
     })
-
-    if (!existingLLMs) {
-      console.log('No existing LLM keys.')
-    }
 
     // Combine the existing metadata with the new metadata, prioritizing the new values
     const combined_llms = { ...existingLLMs, ...llmProviders }
@@ -106,11 +104,11 @@ export default async function handler(req: NextRequest, res: NextResponse) {
       combined_llms.defaultTemp = defaultTemperature
     }
 
-    console.log('-----------------------------------------')
-    console.log('EXISTING course metadata:', existingLLMs)
-    console.log('passed into upsert metadata:', llmProviders)
-    console.log('FINAL COMBINED course metadata:', combined_llms)
-    console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+    console.debug('-----------------------------------------')
+    console.debug('EXISTING LLM Providers:', existingLLMs)
+    console.debug('passed into upsert LLM Providers:', llmProviders)
+    console.debug('FINAL COMBINED LLM Providers:', combined_llms)
+    console.debug('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 
     // Save the combined metadata
     await kv.set(redisKey, combined_llms)

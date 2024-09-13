@@ -1,14 +1,17 @@
 import React from 'react'
 import { IconCheck, IconX } from '@tabler/icons-react'
 import { Switch, Stack } from '@mantine/core'
+import { LLMProvider } from '~/types/LLMProvider'
 
-interface ModelTogglesProps {
+export function ModelToggles({
+  form,
+  provider,
+}: {
   form: any
-  providerName: string
-}
-
-export function ModelToggles({ form, providerName }: ModelTogglesProps) {
-  const providerModels = form.state.values.providers[providerName]?.models || {}
+  provider: LLMProvider
+}) {
+  const providerModels =
+    form.state.values.providers[provider.provider]?.models || {}
 
   return (
     <Stack mt="md">
@@ -16,7 +19,7 @@ export function ModelToggles({ form, providerName }: ModelTogglesProps) {
         ([modelId, modelData]: [string, any]) => (
           <form.Field
             key={modelId}
-            name={`providers.${providerName}.models.${modelId}.enabled`}
+            name={`providers.${provider.provider}.models.${modelId}.enabled`}
           >
             {(field: any) => (
               <Switch

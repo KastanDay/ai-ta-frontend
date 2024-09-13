@@ -114,10 +114,7 @@ export default function NCSAHostedLLmsProviderInput({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <ModelToggles
-                    form={form}
-                    providerName={ProviderNames.NCSAHosted}
-                  />
+                  <ModelToggles form={form} provider={provider} />
                 </motion.div>
               )}
             </AnimatePresence>

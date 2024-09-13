@@ -143,10 +143,7 @@ export default function AzureProviderInput({
                       />
                     )}
                   </form.Field>
-                  <ModelToggles
-                    form={form}
-                    providerName={ProviderNames.Azure}
-                  />
+                  <ModelToggles form={form} provider={provider} />
                 </motion.div>
               )}
             </AnimatePresence>

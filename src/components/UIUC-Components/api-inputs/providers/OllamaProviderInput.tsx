@@ -127,10 +127,7 @@ export default function OllamaProviderInput({
                       />
                     )}
                   </form.Field>
-                  <ModelToggles
-                    form={form}
-                    providerName={ProviderNames.Ollama}
-                  />
+                  <ModelToggles form={form} provider={provider} />
                 </motion.div>
               )}
             </AnimatePresence>

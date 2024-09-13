@@ -51,6 +51,7 @@ import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
 import NCSAHostedLLmsProviderInput from './providers/NCSAHostedProviderInput'
 import { getModelLogo, ModelItem } from '~/components/Chat/ModelSelect'
+import { LoadingSpinner } from '../LoadingSpinner'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -80,6 +81,10 @@ export const APIKeyInput = ({
     setError(null)
   }, [field.state.value])
 
+  // const handleSubmit = () => {
+  //   field.form.handleSubmit()
+  // }
+
   return (
     <div style={{ position: 'relative', width: '100%' }}>
       <Input.Wrapper id="API-key-input" label={placeholder}>
@@ -91,6 +96,12 @@ export const APIKeyInput = ({
             value={field.state.value}
             onChange={(e) => {
               field.handleChange(e.target.value)
+            }}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                field.form.handleSubmit()
+              }
             }}
             style={{ flex: 1 }}
             styles={{
@@ -104,8 +115,10 @@ export const APIKeyInput = ({
           <ActionIcon
             size="xs"
             color="red"
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault()
               field.handleChange('')
+              field.form.handleSubmit()
               console.log('field.state in onclick for delete', field.state)
             }}
             type="submit"
@@ -133,7 +146,9 @@ export const APIKeyInput = ({
           <Button
             compact
             className="bg-purple-800 hover:border-indigo-600 hover:bg-indigo-600"
-            type="submit"
+            onClick={() => {
+              field.form.handleSubmit()
+            }}
           >
             Save
           </Button>
@@ -330,7 +345,14 @@ export default function APIKeyInputForm() {
     isLoading: isLoadingLLMProviders,
     isError: isErrorLLMProviders,
     error: errorLLMProviders,
+    // enabled: !!projectName // Only run the query when projectName is available
   } = useGetProjectLLMProviders({ projectName: projectName, hideApiKeys: true })
+
+  useEffect(() => {
+    if (llmProviders) {
+      form.reset()
+    }
+  }, [llmProviders])
 
   // TODO: TEMP HACK
   const defaultModel = 'tmp' // don't default... stay undefined
@@ -358,7 +380,6 @@ export default function APIKeyInputForm() {
       defaultTemperature: defaultTemp,
     },
     onSubmit: async ({ value }) => {
-      console.log('onSubmit here: ', value)
       const llmProviders = value.providers || {}
       mutation.mutate(
         {
@@ -369,11 +390,16 @@ export default function APIKeyInputForm() {
           defaultTemperature: (value.defaultTemperature || '').toString(),
         },
         {
-          onSuccess: (data, variables, context) =>
-            showConfirmationToast({
-              title: 'Updated LLM providers',
-              message: `Now your project's users can use the supplied LLMs!`,
-            }),
+          onSuccess: (data, variables, context) => {
+            // queryClient.invalidateQueries(['projectLLMProviders', projectName])
+            // queryClient.invalidateQueries({
+            //   queryKey: ['projectLLMProviders', projectName],
+            // })
+            // showConfirmationToast({
+            //   title: 'Updated LLM providers',
+            //   message: `Now your project's users can use the supplied LLMs!`,
+            // })
+          },
           onError: (error, variables, context) =>
             showConfirmationToast({
               title: 'Error updating LLM providers',
@@ -384,9 +410,6 @@ export default function APIKeyInputForm() {
       )
     },
   })
-
-  console.log('llmProviders', JSON.stringify(llmProviders, null, 2))
-  console.log('form.state', JSON.stringify(form.state, null, 2))
 
   // if (isLoadingLLMProviders) {
   //   return (
@@ -479,6 +502,13 @@ export default function APIKeyInputForm() {
                             gap: 16,
                           }}
                         >
+                          {isLoadingLLMProviders && (
+                            <>
+                              <br />
+                              <LoadingSpinner />
+                              <br />
+                            </>
+                          )}
                           {llmProviders && !isLoadingLLMProviders && (
                             <>
                               <Title
@@ -501,7 +531,8 @@ export default function APIKeyInputForm() {
                                 prices and follow their rules.
                               </Text>
                               <Flex
-                                direction={{ base: 'column', '130rem': 'row' }}
+                                // direction={{ base: 'column', '130rem': 'row' }} // good for split screen card.
+                                direction={{ base: 'column', '75rem': 'row' }}
                                 wrap="wrap"
                                 justify="flex-start"
                                 align="flex-start"
@@ -543,7 +574,8 @@ export default function APIKeyInputForm() {
                                 Your weights, your rules.
                               </Text>
                               <Flex
-                                direction={{ base: 'column', '130rem': 'row' }}
+                                // direction={{ base: 'column', '130rem': 'row' }} // good for split screen card.
+                                direction={{ base: 'column', '75rem': 'row' }}
                                 wrap="wrap"
                                 justify="flex-start"
                                 align="flex-start"
@@ -576,7 +608,7 @@ export default function APIKeyInputForm() {
                     </Stack>
                   </Flex>
                 </div>
-                <div
+                {/* <div
                   className="flex flex-[1_1_100%] md:flex-[1_1_40%]"
                   style={{
                     // flex: isSmallScreen ? '1 1 100%' : '1 1 40%',
@@ -738,8 +770,8 @@ export default function APIKeyInputForm() {
                         <div className="pt-2" />
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </div> 
+                </div> */}
               </Flex>
             </Card>
 
