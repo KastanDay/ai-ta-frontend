@@ -27,8 +27,9 @@ const handler = async (
   req: NextRequest,
 ): Promise<NextResponse<AllLLMProviders | { error: string }>> => {
   try {
-    const { projectName } = (await req.json()) as {
+    const { projectName, filterApiKeys } = (await req.json()) as {
       projectName: string
+      filterApiKeys?: boolean
     }
 
     if (!projectName) {
@@ -38,10 +39,8 @@ const handler = async (
       )
     }
 
-    // Fetch the project's API keys
+    // Fetch the project's API keys, filtering out all keys if requested
     let llmProviders = (await kv.get(`${projectName}-llms`)) as AllLLMProviders
-
-    console.log('llmProviders in /models', llmProviders)
 
     if (!llmProviders) {
       llmProviders = {}
@@ -115,7 +114,22 @@ const handler = async (
     //   console.error('Error calling MIGRATEALLKEYS:', error);
     // }
 
+    if (filterApiKeys) {
+      let cleanedLLMProviders = { ...allLLMProviders }
+      cleanedLLMProviders = Object.fromEntries(
+        Object.entries(llmProviders).map(([key, value]) => [
+          key,
+          { ...value, apiKey: undefined },
+        ]),
+      )
+      delete cleanedLLMProviders.NCSAHosted?.baseUrl
+      console.log('FINAL -- cleanedLLMProviders', cleanedLLMProviders)
+      return NextResponse.json(cleanedLLMProviders as AllLLMProviders, {
+        status: 200,
+      })
+    }
     console.log('FINAL -- allLLMProviders', allLLMProviders)
+
     return NextResponse.json(allLLMProviders as AllLLMProviders, {
       status: 200,
     })

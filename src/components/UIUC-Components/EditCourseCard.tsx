@@ -8,51 +8,29 @@ import {
   Checkbox,
   Title,
   type CheckboxProps,
-  Input,
   Button,
   Divider,
   Accordion,
   createStyles,
-  Switch,
-  TextInput,
 } from '@mantine/core'
-import {
-  IconAlertCircle,
-  IconArrowUpRight,
-  IconCircleCheck,
-  IconEdit,
-  IconKey,
-  IconLock,
-  IconTrash,
-} from '@tabler/icons-react'
-import { OpenAIModel } from '~/utils/modelProviders/openai'
+import { IconLock } from '@tabler/icons-react'
 import {
   CourseMetadataOptionalForUpsert,
   type CourseMetadata,
 } from '~/types/courseMetadata'
 import LargeDropzone from './LargeDropzone'
-import { CanvasIngest } from './CanvasIngest'
 import EmailChipsComponent from './EmailChipsComponent'
 import { useMediaQuery } from '@mantine/hooks'
 import { Montserrat } from 'next/font/google'
-// import { GetCurrentPageName } from './CanViewOnlyCourse'
 import { useRouter } from 'next/router'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
-// import axios from 'axios'
 import { WebScrape } from '~/components/UIUC-Components/WebScrape'
 import { callSetCourseMetadata, uploadToS3 } from '~/utils/apiUtils'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
-import { notifications } from '@mantine/notifications'
 import SetExampleQuestions from './SetExampleQuestions'
-import { AllLLMProviders } from '~/types/LLMProvider'
-import createProject from '~/pages/api/UIUC-api/createProject'
 
 const montserrat_light = Montserrat({
   weight: '400',
-  subsets: ['latin'],
-})
-const montserrat_med = Montserrat({
-  weight: '500',
   subsets: ['latin'],
 })
 
@@ -77,7 +55,6 @@ const useStyles = createStyles((theme) => ({
   },
   item: {
     backgroundColor: 'bg-transparent',
-    // border: `${rem(1)} solid transparent`,
     border: `solid transparent`,
     borderRadius: theme.radius.xl,
     position: 'relative',
@@ -88,8 +65,6 @@ const useStyles = createStyles((theme) => ({
     '&[data-active]': {
       transform: 'scale(1.03)',
       backgroundColor: 'bg-transparent',
-      // boxShadow: theme.shadows.xl,
-      // borderRadius: theme.radius.lg,
       zIndex: 1,
     },
     '&:hover': {
@@ -185,112 +160,6 @@ const EditCourseCard = ({
     setApiKey(courseMetadata?.openai_api_key as string)
   }, [courseMetadata])
 
-  const validateKey = async (key: string, isAzure: boolean) => {
-    const response = await fetch('/api/validateKey', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ key: key, isAzure: isAzure }),
-    })
-
-    return response
-  }
-
-  const handleKeyUpdate = async (inputValue: string, isAzure: boolean) => {
-    setIsKeyUpdating(true) // Start loading
-    if (inputValue === '' && courseMetadata?.openai_api_key === '') {
-      console.log('Key already empty')
-      notifications.show({
-        id: 'info-notification',
-        title: 'No Changes',
-        message: 'The key is already empty.',
-        color: 'blue',
-        radius: 'lg',
-        icon: <IconAlertCircle />,
-        className: 'my-notification-class',
-        style: { backgroundColor: '#15162c' },
-        loading: false,
-      })
-      return
-    }
-
-    if (inputValue === '' && courseMetadata?.openai_api_key !== '') {
-      ; (courseMetadata as CourseMetadata).openai_api_key = inputValue
-      console.log('Removing api key')
-      setApiKey(inputValue)
-      await callSetCourseMetadata(course_name, courseMetadata as CourseMetadata)
-      setIsKeyUpdating(false)
-      notifications.show({
-        id: 'success-notification',
-        title: 'Update Successful',
-        message: 'Key removed.',
-        color: 'green',
-        radius: 'lg',
-        icon: <IconTrash />,
-        className: 'my-notification-class',
-        style: { backgroundColor: '#15162c' },
-        loading: false,
-      })
-      return
-    }
-    // Disabling this condition to support Azure OpenAI keys
-    // if (!inputValue.startsWith('sk-')) {
-    // console.log('Invalid OpenAI API Key')
-    // notifications.show({
-    //   id: 'error-notification',
-    //   title: 'Invalid OpenAI API Key',
-    //   message:
-    //     'The OpenAI API Key usually looks like "sk-***". Did you paste something else you copied? 😉',
-    //   color: 'red',
-    //   radius: 'lg',
-    //   icon: <IconAlertCircle />,
-    //   className: 'my-notification-class',
-    //   style: { backgroundColor: '#15162c' },
-    //   loading: false,
-    // })
-    // return
-    // }
-
-    const validationResponse = await validateKey(inputValue, isAzure)
-    if (!validationResponse.ok) {
-      const response = await validationResponse.json()
-      console.log('New key validated')
-      notifications.show({
-        id: 'error-notification',
-        title: response.name,
-        message: response.message,
-        color: 'red',
-        radius: 'lg',
-        icon: <IconAlertCircle />,
-        className: 'my-notification-class',
-        style: { backgroundColor: '#15162c' },
-        loading: false,
-      })
-      return
-    }
-
-    if (courseMetadata) {
-      console.log('Key updated for course')
-      courseMetadata.openai_api_key = inputValue
-      setApiKey(inputValue)
-      await callSetCourseMetadata(course_name, courseMetadata)
-      notifications.show({
-        id: 'success-notification',
-        title: 'Update Successful',
-        message: 'Course Wide api key set successfully.',
-        color: 'green',
-        radius: 'lg',
-        icon: <IconCircleCheck />,
-        className: 'my-notification-class',
-        style: { backgroundColor: '#15162c' },
-        loading: false,
-      })
-      setIsEditing(false)
-      setIsKeyUpdating(false)
-    }
-  }
-
   const { classes } = useStyles() // for Accordion
 
   return (
@@ -336,11 +205,13 @@ const EditCourseCard = ({
                   autoFocus
                   disabled={!is_new_course}
                   className={`input-bordered input w-[70%] rounded-lg border-2 border-solid bg-gray-800 lg:w-[50%] 
-                                ${isCourseAvailable && courseName != ''
-                      ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
-                      : 'border-red-800 text-red-600 focus:border-red-800'
-                    } ${montserrat_paragraph.variable
-                    } font-montserratParagraph`}
+                                ${
+                                  isCourseAvailable && courseName != ''
+                                    ? 'border-2 border-green-500 text-green-500 focus:border-green-500'
+                                    : 'border-red-800 text-red-600 focus:border-red-800'
+                                } ${
+                                  montserrat_paragraph.variable
+                                } font-montserratParagraph`}
                 />
                 <Title
                   order={4}
@@ -395,17 +266,6 @@ const EditCourseCard = ({
             <div className="card flex h-full flex-col justify-center">
               <div className="card-body">
                 <div className="form-control relative">
-                  {/* <Title
-                    className={montserrat.className}
-                    variant="gradient"
-                    gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                    order={2}
-                    p="xs"
-                    style={{ alignSelf: 'center' }}
-                  >
-                    Customization{' '}
-                  </Title> */}
-
                   <Title
                     // className={`label ${montserrat.className}`}
                     className={`label ${montserrat_heading.variable} font-montserratHeading`}
@@ -436,7 +296,7 @@ const EditCourseCard = ({
                     className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                   />
                   <Button
-                    className={`relative m-1 mt-3 w-1rem self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600`}
+                    className={`w-1rem relative m-1 mt-3 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600`}
                     type="submit"
                     onClick={async () => {
                       if (courseMetadata) {
@@ -568,7 +428,6 @@ const EditCourseCard = ({
                     className={`file-input-bordered file-input w-full border-violet-800 bg-violet-800 text-white  shadow-inner hover:border-violet-600 hover:bg-violet-800 ${montserrat_paragraph.variable} font-montserratParagraph`}
                     onChange={async (e) => {
                       // Assuming the file is converted to a URL somewhere else
-                      setCourseBannerUrl(e.target.value)
                       if (e.target.files?.length) {
                         console.log('Uploading to s3')
                         const banner_s3_image = await uploadToS3(
@@ -577,18 +436,10 @@ const EditCourseCard = ({
                         )
                         if (banner_s3_image && courseMetadata) {
                           courseMetadata.banner_image_s3 = banner_s3_image
-                          const response = await callSetCourseMetadata(
+                          await callSetCourseMetadata(
                             course_name,
                             courseMetadata,
                           )
-                          if (response) {
-                            setCourseBannerUrl(banner_s3_image)
-                          } else {
-                            console.log(
-                              'Error upserting course metadata for course: ',
-                              course_name,
-                            )
-                          }
                         }
                       }
                     }}
@@ -673,97 +524,6 @@ const PrivateOrPublicCourse = ({
     }
   }
 
-  const [selectedModels, setSelectedModels] = useState<OpenAIModel[]>([])
-  const [models, setModels] = useState<OpenAIModel[]>([])
-  useEffect(() => {
-    const fetchModels = async () => {
-      const res = await fetch('/api/models', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          openAIApiKey: apiKey,
-          projectName: course_name,
-        }),
-      })
-      if (res.ok) {
-        // TODO: eventually support multipe LLM providers for disabling models.
-        const allLLMProviders = (await res.json()) as AllLLMProviders
-
-        // set OpenAI modles or empty
-        setModels(allLLMProviders.OpenAI?.models || [])
-
-        if (allLLMProviders.OpenAI?.models) {
-          setSelectedModels(
-            allLLMProviders.OpenAI.models.filter(
-              (model) => !courseMetadata.disabled_models?.includes(model.id),
-            ),
-          )
-        }
-      } else {
-        console.error(`Error fetching models: ${res.status}`)
-      }
-    }
-
-    if (apiKey) {
-      fetchModels()
-    } else {
-      setModels([])
-      // console.error('No API key provided')
-    }
-  }, [apiKey])
-
-  const handleModelCheckboxChange = (modelId: string, isChecked: boolean) => {
-    if (!isChecked) {
-      console.log('Model being unchecked')
-
-      const mySelectedModels = selectedModels.filter(
-        (model) => model.id !== modelId,
-      )
-
-      // start with models and filter out all of mySelectedModels from it
-      const myDisabledModels = models.filter(
-        (model) => !mySelectedModels.includes(model),
-      )
-
-      setSelectedModels((prevModels) =>
-        prevModels.filter((model) => model.id !== modelId),
-      )
-      setDisabledModels(myDisabledModels)
-    } else {
-      const model = models.find((model) => model.id === modelId)
-      const mySelectedModels = [...selectedModels, model]
-      const myDisabledModels = models.filter(
-        (model) => !mySelectedModels.includes(model),
-      )
-
-      if (model) {
-        setSelectedModels((prevModels) => [...prevModels, model])
-      }
-      setDisabledModels(myDisabledModels)
-    }
-  }
-
-  const setDisabledModels = async (disabledModels: OpenAIModel[]) => {
-    const disabledModelIds = disabledModels.map((model) => model.id)
-    const res = await fetch('/api/UIUC-api/setDisabledModels', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        course_name: course_name,
-        disabled_models: disabledModelIds,
-      }),
-    })
-    if (res.ok) {
-      console.log('Successfully set disabled models')
-    } else {
-      console.error(`Error setting disabled models on backend: ${res.status}`)
-    }
-  }
-
   return (
     <>
       <Divider></Divider>
@@ -815,7 +575,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-              // style={{ textDecoration: 'underline' }}
+                // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
@@ -827,8 +587,9 @@ const PrivateOrPublicCourse = ({
 
       <Group className="p-3">
         <Checkbox
-          label={`Course is ${isPrivate ? 'private' : 'public'
-            }. Click to change.`}
+          label={`Course is ${
+            isPrivate ? 'private' : 'public'
+          }. Click to change.`}
           wrapperProps={{}}
           // description="Course is private by default."
           aria-label="Checkbox to toggle Course being public or private. Private requires a list of allowed email addresses."
@@ -901,7 +662,7 @@ const PrivateOrPublicCourse = ({
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-              // style={{ textDecoration: 'underline' }}
+                // style={{ textDecoration: 'underline' }}
               >
                 strict security policy
               </a>{' '}
