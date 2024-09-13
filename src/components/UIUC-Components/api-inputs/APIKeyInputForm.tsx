@@ -368,7 +368,7 @@ export default function APIKeyInputForm() {
     isLoading: isLoadingLLMProviders,
     isError: isErrorLLMProviders,
     error: errorLLMProviders,
-  } = useGetProjectLLMProviders(course_name)
+  } = useGetProjectLLMProviders({ course_name, filterGiesBizSchoolKeys: true })
 
   // TODO: TEMP HACK
   const defaultModel = 'tmp' // don't default... stay undefined

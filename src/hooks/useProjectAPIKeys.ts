@@ -4,7 +4,13 @@ import { showConfirmationToast } from '~/components/UIUC-Components/api-inputs/A
 import { CourseMetadata } from '~/types/courseMetadata'
 import { AllLLMProviders, LLMProvider } from '~/types/LLMProvider'
 
-export function useGetProjectLLMProviders(course_name: string) {
+export function useGetProjectLLMProviders({
+  course_name,
+  filterGiesBizSchoolKeys,
+}: {
+  course_name: string
+  filterGiesBizSchoolKeys: boolean
+}) {
   // USAGE:
   // const {
   //   data: projectLLMProviders,
@@ -14,7 +20,7 @@ export function useGetProjectLLMProviders(course_name: string) {
   // } = useGetProjectLLMProviders(course_name)
 
   return useQuery({
-    queryKey: ['projectLLMProviders', course_name],
+    queryKey: ['projectLLMProviders', course_name, filterGiesBizSchoolKeys],
     queryFn: async () => {
       const response = await fetch('/api/models', {
         method: 'POST',
@@ -23,6 +29,7 @@ export function useGetProjectLLMProviders(course_name: string) {
         },
         body: JSON.stringify({
           projectName: course_name,
+          filterGiesBizSchoolKeys: filterGiesBizSchoolKeys,
         }),
       })
 
@@ -33,6 +40,7 @@ export function useGetProjectLLMProviders(course_name: string) {
       const data = await response.json()
       return data as AllLLMProviders
     },
+    retry: 1, // Limit retries to 1
   })
 }
 

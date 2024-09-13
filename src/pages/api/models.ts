@@ -27,10 +27,12 @@ const handler = async (
   req: NextRequest,
 ): Promise<NextResponse<AllLLMProviders | { error: string }>> => {
   try {
-    const { projectName, filterApiKeys } = (await req.json()) as {
-      projectName: string
-      filterApiKeys?: boolean
-    }
+    const { projectName, filterApiKeys, filterGiesBizSchoolKeys } =
+      (await req.json()) as {
+        projectName: string
+        filterApiKeys?: boolean
+        filterGiesBizSchoolKeys?: boolean
+      }
 
     if (!projectName) {
       return NextResponse.json(
@@ -106,13 +108,17 @@ const handler = async (
           console.warn(`Unhandled provider: ${providerName}`)
       }
     }
-    // Call MIGRATEALLKEYS.ts
-    // try {
-    //   const migrateResult = await migrateAllKeys()
-    //   console.log('MIGRATEALLKEYS result:', migrateResult);
-    // } catch (error) {
-    //   console.error('Error calling MIGRATEALLKEYS:', error);
-    // }
+
+    if (filterGiesBizSchoolKeys) {
+      // filter this key out of azure
+      if (
+        allLLMProviders.Azure &&
+        allLLMProviders.Azure.apiKey == process.env.CAMPUS_AZURE_API_KEY
+      ) {
+        allLLMProviders.Azure.apiKey =
+          "U of I pays for this key so you can't see it!"
+      }
+    }
 
     if (filterApiKeys) {
       let cleanedLLMProviders = { ...allLLMProviders }
@@ -128,8 +134,16 @@ const handler = async (
         status: 200,
       })
     }
-    console.log('FINAL -- allLLMProviders', allLLMProviders)
 
+    // Call MIGRATEALLKEYS.ts
+    // try {
+    //   const migrateResult = await migrateAllKeys()
+    //   console.log('MIGRATEALLKEYS result:', migrateResult);
+    // } catch (error) {
+    //   console.error('Error calling MIGRATEALLKEYS:', error);
+    // }
+
+    console.log('FINAL -- allLLMProviders', allLLMProviders)
     return NextResponse.json(allLLMProviders as AllLLMProviders, {
       status: 200,
     })
