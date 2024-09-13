@@ -9,7 +9,7 @@ export async function fetchConversationHistory(
   courseName: string,
   pageParam: number,
 ): Promise<ConversationPage> {
-  console.log('fetchConversationHistory: ', user_email)
+  // console.log('fetchConversationHistory: ', user_email)
   let finalResponse: ConversationPage = {
     conversations: [],
     nextCursor: null,

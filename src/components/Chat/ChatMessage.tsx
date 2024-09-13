@@ -478,7 +478,7 @@ export const ChatMessage: FC<Props> = memo(
         } max-w-[100%]`}
         style={{ overflowWrap: 'anywhere' }}
       >
-        <div className="relative flex w-full px-2 py-4 text-base md:mx-[10%] md:max-w-[80%] md:gap-6 md:p-6 lg:mx-[15%] lg:max-w-[70%] lg:px-0">
+        <div className="relative flex w-full px-2 py-4 text-base md:mx-[5%] md:max-w-[90%] md:gap-6 md:p-6 lg:mx-[10%]">
           <div className="min-w-[40px] text-left">
             {message.role === 'assistant' ? (
               <>
@@ -490,9 +490,9 @@ export const ChatMessage: FC<Props> = memo(
             )}
           </div>
 
-          <div className="dark:prose-invert prose mt-[-2px] flex w-full max-w-full">
+          <div className="dark:prose-invert prose mt-[-2px] flex w-full max-w-full flex-wrap lg:w-[90%]">
             {message.role === 'user' ? (
-              <div className="flex w-full flex-row">
+              <div className="flex w-[90%] flex-row flex-wrap">
                 {isEditing ? (
                   <div className="flex w-full flex-col">
                     <textarea
@@ -533,7 +533,7 @@ export const ChatMessage: FC<Props> = memo(
                     </div>
                   </div>
                 ) : (
-                  <div className="dark:prose-invert prose w-4/5 flex-1 whitespace-pre-wrap">
+                  <div className="dark:prose-invert w-9/10 prose flex-1 whitespace-pre-wrap lg:mr-2">
                     {Array.isArray(message.content) ? (
                       <>
                         <div className="mb-2 flex w-full flex-col items-start space-y-2">
@@ -898,7 +898,7 @@ export const ChatMessage: FC<Props> = memo(
                 )}
 
                 {!isEditing && (
-                  <div className="mb-10 ml-1 flex w-1/5 flex-col items-end justify-start gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-end md:gap-1">
+                  <div className="w-1/10 mb-10 ml-1 flex flex-col items-end justify-start gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-end md:gap-1">
                     <button
                       className={`invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300 
                         ${Array.isArray(message.content) && message.content.some((content) => content.type === 'image_url') ? 'hidden' : ''}`}
@@ -916,10 +916,11 @@ export const ChatMessage: FC<Props> = memo(
                 )}
               </div>
             ) : (
-              <div className="flex max-w-[90%] flex-row overflow-hidden">
-                <div className="w-full max-w-full flex-1 overflow-hidden">
+              <div className="flex w-[90%] flex-row flex-wrap">
+                {/* <div className='overflow-hidden'> */}
+                <div className="w-9/10 max-w-9/10 flex-1 overflow-hidden lg:mr-2">
                   <MemoizedReactMarkdown
-                    className={`dark:prose-invert linkMarkDown supMarkdown codeBlock prose flex-1`}
+                    className={`dark:prose-invert linkMarkDown supMarkdown codeBlock prose mb-2 flex-1 flex-col items-start space-y-2`}
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeMathjax]}
                     components={{
@@ -972,7 +973,7 @@ export const ChatMessage: FC<Props> = memo(
                       p({ node, children }) {
                         return (
                           <p
-                            className={`text-base font-normal ${montserrat_paragraph.variable} pb-2 font-montserratParagraph`}
+                            className={`self-start text-base font-normal ${montserrat_paragraph.variable} pb-2 font-montserratParagraph`}
                           >
                             {children}
                           </p>
@@ -1131,8 +1132,8 @@ export const ChatMessage: FC<Props> = memo(
                     })()}
                   </MemoizedReactMarkdown>
                 </div>
-
-                <div className="ml-1 flex flex-col items-center justify-end gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-start md:gap-1">
+                {/* <div className="ml-1 flex flex-col items-center justify-end gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-start md:gap-1"> */}
+                <div className="w-1/10 mb-10 ml-1 flex flex-col items-end justify-start gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-end md:gap-1">
                   {messagedCopied ? (
                     <IconCheck
                       size={20}

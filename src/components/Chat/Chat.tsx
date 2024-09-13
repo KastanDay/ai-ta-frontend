@@ -944,7 +944,7 @@ export const Chat = memo(
     const throttledScrollDown = throttle(scrollDown, 250)
 
     useEffect(() => {
-      throttledScrollDown()
+      if (messageIsStreaming) throttledScrollDown()
       if (selectedConversation) {
         const messages = selectedConversation.messages
         if (messages.length > 1) {
