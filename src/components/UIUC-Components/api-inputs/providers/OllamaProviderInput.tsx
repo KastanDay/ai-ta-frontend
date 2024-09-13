@@ -14,7 +14,7 @@ export default function OllamaProviderInput({
 }) {
   return (
     <motion.div layout>
-      <Card shadow="sm" p="lg" radius="md" className="w-[350px] bg-[#15162c]">
+      <Card shadow="sm" p="lg" radius="md" className="w-[330px] bg-[#15162c]">
         <div
           style={{
             display: 'flex',

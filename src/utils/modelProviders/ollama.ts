@@ -31,6 +31,7 @@ export const getOllamaModels = async (
   try {
     if (!ollamaProvider.baseUrl) {
       ollamaProvider.error = `Ollama Base Url is not defined, please set it to the URL that points to your Ollama instance.`
+      ollamaProvider.models = [] // clear any previous models.
       return ollamaProvider as OllamaProvider
     }
 
@@ -38,6 +39,7 @@ export const getOllamaModels = async (
 
     if (!response.ok) {
       ollamaProvider.error = `HTTP error! status: ${response.status}`
+      ollamaProvider.models = [] // clear any previous models.
       return ollamaProvider as OllamaProvider
     }
     const data = await response.json()

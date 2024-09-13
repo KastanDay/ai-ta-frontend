@@ -48,10 +48,11 @@ export const getAnthropicModels = async (
 ): Promise<AnthropicProvider> => {
   if (!anthropicProvider.apiKey) {
     anthropicProvider.error = 'Anthropic API key not set.'
+    anthropicProvider.models = []
     return anthropicProvider
   }
   anthropicProvider.models = Object.values(AnthropicModels) as AnthropicModel[]
-  delete anthropicProvider.error // Remove the error property if it exists
+  delete anthropicProvider.error // Clear any previous errors
   return anthropicProvider
 }
 

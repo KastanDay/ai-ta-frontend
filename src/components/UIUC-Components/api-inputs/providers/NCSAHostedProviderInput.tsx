@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text, Switch, Card, TextInput } from '@mantine/core'
+import { Text, Switch, Card } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
 import { ModelToggles } from '../ModelToggles'
 import { NCSAHostedProvider, ProviderNames } from '~/types/LLMProvider'
@@ -14,7 +14,7 @@ export default function NCSAHostedLLmsProviderInput({
 }) {
   return (
     <motion.div layout>
-      <Card shadow="sm" p="lg" radius="md" className="w-[350px] bg-[#15162c]">
+      <Card shadow="sm" p="lg" radius="md" className="w-[330px] bg-[#15162c]">
         <div
           style={{
             display: 'flex',

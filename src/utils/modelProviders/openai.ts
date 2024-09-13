@@ -95,6 +95,7 @@ export const getOpenAIModels = async (
 ): Promise<OpenAIProvider> => {
   try {
     delete openAIProvider.error // Remove the error property if it exists
+    console.log('GETTING OPENAI MODELS WITH PROVIDER: ', openAIProvider)
     // Priority #1: use passed in key
     // Priority #2: use the key from the course metadata
     const { disabledModels, openaiAPIKey } = await getDisabledOpenAIModels({
@@ -108,6 +109,7 @@ export const getOpenAIModels = async (
 
     if (!openAIProvider.apiKey || openAIProvider.apiKey === undefined) {
       openAIProvider.error = 'OpenAI API Key is not set.'
+      openAIProvider.models = [] // clear any previous models.
       return openAIProvider
     }
 

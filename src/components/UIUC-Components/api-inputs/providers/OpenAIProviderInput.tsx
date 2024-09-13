@@ -1,10 +1,10 @@
 import React from 'react'
-import { Text, Switch, Card, Button } from '@mantine/core'
+import { Text, Switch, Card } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
-import { APIKeyInput } from '../APIKeyInputForm'
 import { ModelToggles } from '../ModelToggles'
 import { OpenAIProvider, ProviderNames } from '~/types/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
+import { APIKeyInput } from '../LLMsApiKeyInputForm'
 
 export default function OpenAIProviderInput({
   provider,
@@ -17,7 +17,7 @@ export default function OpenAIProviderInput({
 
   return (
     <motion.div layout>
-      <Card shadow="sm" p="lg" radius="md" className="w-[350px] bg-[#15162c]">
+      <Card shadow="sm" p="lg" radius="md" className="w-[330px] bg-[#15162c]">
         <div
           style={{
             display: 'flex',

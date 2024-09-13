@@ -37,6 +37,7 @@ export const getNCSAHostedModels = async (
 
     if (!response.ok) {
       ncsaHostedProvider.error = `HTTP error! status: ${response.status}`
+      ncsaHostedProvider.models = [] // clear any previous models.
       return ncsaHostedProvider as NCSAHostedProvider
     }
     const data = await response.json()

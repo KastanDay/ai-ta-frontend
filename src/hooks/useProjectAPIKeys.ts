@@ -1,15 +1,13 @@
 import { QueryClient, useMutation, useQuery } from '@tanstack/react-query'
-import { kv } from '@vercel/kv'
-import { showConfirmationToast } from '~/components/UIUC-Components/api-inputs/APIKeyInputForm'
-import { CourseMetadata } from '~/types/courseMetadata'
-import { AllLLMProviders, LLMProvider } from '~/types/LLMProvider'
+import { showConfirmationToast } from '~/components/UIUC-Components/api-inputs/LLMsApiKeyInputForm'
+import { AllLLMProviders } from '~/types/LLMProvider'
 
 export function useGetProjectLLMProviders({
-  course_name,
-  filterGiesBizSchoolKeys,
+  projectName,
+  hideApiKeys,
 }: {
-  course_name: string
-  filterGiesBizSchoolKeys: boolean
+  projectName: string
+  hideApiKeys: boolean
 }) {
   // USAGE:
   // const {
@@ -20,7 +18,7 @@ export function useGetProjectLLMProviders({
   // } = useGetProjectLLMProviders(course_name)
 
   return useQuery({
-    queryKey: ['projectLLMProviders', course_name, filterGiesBizSchoolKeys],
+    queryKey: ['projectLLMProviders', projectName, hideApiKeys],
     queryFn: async () => {
       const response = await fetch('/api/models', {
         method: 'POST',
@@ -28,8 +26,8 @@ export function useGetProjectLLMProviders({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          projectName: course_name,
-          filterGiesBizSchoolKeys: filterGiesBizSchoolKeys,
+          projectName: projectName,
+          hideApiKeys: hideApiKeys,
         }),
       })
 
@@ -47,26 +45,24 @@ export function useGetProjectLLMProviders({
 export function useSetProjectLLMProviders(queryClient: QueryClient) {
   return useMutation({
     mutationFn: async ({
-      course_name,
+      projectName,
       llmProviders,
       defaultModelID,
       defaultTemperature,
     }: {
-      course_name: string
+      projectName: string
       queryClient: QueryClient
       llmProviders: AllLLMProviders
       defaultModelID: string
       defaultTemperature: string
     }) => {
-      // TODO: update llmProviders to upsertCourseMetadata
-      const response = await fetch('/api/UIUC-api/llmProviders', {
+      const response = await fetch('/api/UIUC-api/upsertLLMProviders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          action: 'setLLMProviders',
-          courseName: course_name,
+          projectName: projectName,
           llmProviders: llmProviders,
           defaultModelID: defaultModelID,
           defaultTemperature: defaultTemperature,
@@ -79,13 +75,13 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
     },
     onMutate: async (variables) => {
       await queryClient.cancelQueries({
-        queryKey: ['projectLLMProviders', variables.course_name],
+        queryKey: ['projectLLMProviders', variables.projectName],
       })
       const previousLLMProviders = queryClient.getQueryData([
         'projectLLMProviders',
-        variables.course_name,
+        variables.projectName,
       ])
-      queryClient.setQueryData(['projectLLMProviders', variables.course_name], {
+      queryClient.setQueryData(['projectLLMProviders', variables.projectName], {
         providers: variables.llmProviders,
         defaultModel: variables.defaultModelID,
         defaultTemp: parseFloat(variables.defaultTemperature),

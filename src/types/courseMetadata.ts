@@ -22,8 +22,7 @@ export type ProjectWideLLMProviders = {
 } & {
   llmProviders?: LLMProvider[]
   defaultModel: string
-  defaultTemperature: number
-  disabled_models: string[] | undefined
+  defaultTemp: number
 }
 
 export interface CourseMetadataOptionalForUpsert {

@@ -27,12 +27,10 @@ const handler = async (
   req: NextRequest,
 ): Promise<NextResponse<AllLLMProviders | { error: string }>> => {
   try {
-    const { projectName, filterApiKeys, filterGiesBizSchoolKeys } =
-      (await req.json()) as {
-        projectName: string
-        filterApiKeys?: boolean
-        filterGiesBizSchoolKeys?: boolean
-      }
+    const { projectName, hideApiKeys } = (await req.json()) as {
+      projectName: string
+      hideApiKeys?: boolean
+    }
 
     if (!projectName) {
       return NextResponse.json(
@@ -54,8 +52,6 @@ const handler = async (
     for (const providerName of Object.values(ProviderNames)) {
       let llmProvider = llmProviders[providerName]
 
-      console.log('llmProvider', llmProvider)
-      console.log('providerName', providerName)
       if (!llmProvider) {
         // Create a disabled provider entry
         llmProvider = {
@@ -64,13 +60,7 @@ const handler = async (
           apiKey: undefined,
           models: [],
         } as LLMProvider
-        console.log(
-          'Created disabled provider entry',
-          allLLMProviders[providerName],
-        )
       }
-
-      // TODO: update how undefined values are handled... inside each provider or out here?
 
       switch (providerName) {
         case ProviderNames.Ollama:
@@ -109,27 +99,22 @@ const handler = async (
       }
     }
 
-    if (filterGiesBizSchoolKeys) {
-      // filter this key out of azure
-      if (
-        allLLMProviders.Azure &&
-        allLLMProviders.Azure.apiKey == process.env.CAMPUS_AZURE_API_KEY
-      ) {
-        allLLMProviders.Azure.apiKey =
-          "U of I pays for this key so you can't see it!"
-      }
-    }
-
-    if (filterApiKeys) {
+    // Don't show any API keys.
+    if (hideApiKeys) {
       let cleanedLLMProviders = { ...allLLMProviders }
       cleanedLLMProviders = Object.fromEntries(
-        Object.entries(llmProviders).map(([key, value]) => [
+        Object.entries(allLLMProviders).map(([key, value]) => [
           key,
-          { ...value, apiKey: undefined },
+          {
+            ...value,
+            apiKey:
+              value.apiKey && value.apiKey !== ''
+                ? 'this key is defined, but hidden'
+                : undefined,
+          },
         ]),
       )
       delete cleanedLLMProviders.NCSAHosted?.baseUrl
-      console.log('FINAL -- cleanedLLMProviders', cleanedLLMProviders)
       return NextResponse.json(cleanedLLMProviders as AllLLMProviders, {
         status: 200,
       })

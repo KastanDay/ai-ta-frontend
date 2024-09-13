@@ -12,7 +12,7 @@ import {
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { fetchCourseMetadata } from '~/utils/apiUtils'
 import { CourseMetadata } from '~/types/courseMetadata'
-import APIKeyInputForm from '~/components/UIUC-Components/api-inputs/APIKeyInputForm'
+import APIKeyInputForm from '~/components/UIUC-Components/api-inputs/LLMsApiKeyInputForm'
 
 const CourseMain: NextPage = () => {
   const router = useRouter()

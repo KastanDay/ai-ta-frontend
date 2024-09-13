@@ -1,6 +1,7 @@
 // upsertCourseMetadata.ts
 import { kv } from '@vercel/kv'
 import { type NextRequest, NextResponse } from 'next/server'
+import { ProjectWideLLMProviders } from '~/types/courseMetadata'
 import { AllLLMProviders } from '~/types/LLMProvider'
 
 export const runtime = 'edge'
@@ -12,14 +13,17 @@ export default async function handler(req: NextRequest, res: NextResponse) {
   }
 
   const requestBody = await req.text()
-  let courseName, llmProviders, defaultModelID, defaultTemperature
+  let courseName: string
+  let llmProviders: AllLLMProviders
+  let defaultModelID: string
+  let defaultTemperature: number
 
   try {
     const parsedBody = JSON.parse(requestBody)
-    courseName = parsedBody.courseName
-    llmProviders = parsedBody.llmProviders
-    defaultModelID = parsedBody.defaultModelID
-    defaultTemperature = parsedBody.defaultTemperature
+    courseName = parsedBody.projectName as string
+    llmProviders = parsedBody.llmProviders as AllLLMProviders
+    defaultModelID = parsedBody.defaultModelID as string
+    defaultTemperature = parsedBody.defaultTemperature as number
   } catch (error) {
     console.error('Error parsing request body:', error)
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
@@ -52,27 +56,46 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     return NextResponse.json({ error: 'Invalid llmProviders' }, { status: 400 })
   }
 
-  console.log('API Request:', requestBody)
-  console.log('courseMetadata:', llmProviders)
-
   try {
-    // Redis Structured like this:
-    // "{
-    //    "Provider": {"key": "val"},
-    //    "Provider2": {"key-2": "val-2"}},
-    //    "defaultModel": "llama",
-    //    "defaultTemp": 1.0"
-    // }"
-
     const redisKey = `${courseName}-llms`
+    const existingLLMs = (await kv.get(redisKey)) as ProjectWideLLMProviders
 
-    const existingLLMs = kv.get(redisKey)
+    // If a key is "defined but hidden" then replace that Provider with one from the DB.
+    Object.keys(llmProviders).forEach((providerName) => {
+      const typedProviderName = providerName as keyof AllLLMProviders
+      const provider = llmProviders[typedProviderName]
+      if (provider?.apiKey == '') {
+        // If the key is empty, delete it. That's our convention.
+        delete provider.apiKey
+      }
+      if (provider?.apiKey === 'this key is defined, but hidden') {
+        if (existingLLMs && existingLLMs[typedProviderName]) {
+          // @ts-ignore - idk how to get around this 'cannot be undefined' thing.
+          llmProviders[typedProviderName] = {
+            ...provider,
+            ...existingLLMs[typedProviderName],
+          } as AllLLMProviders[typeof typedProviderName]
+          console.log(
+            `Replacing hidden key for ${providerName} with existing data`,
+          )
+        } else {
+          console.log(
+            'Removing hidden key for',
+            providerName,
+            'data',
+            llmProviders[typedProviderName],
+          )
+          delete llmProviders[typedProviderName]
+          // console.log(`Removing hidden key for ${providerName}`)
+        }
+      }
+    })
+
     if (!existingLLMs) {
-      // TODO
       console.log('No existing LLM keys.')
     }
 
-    // Combine the existing metadata with the new metadata, prioritizing the new values (order matters!)
+    // Combine the existing metadata with the new metadata, prioritizing the new values
     const combined_llms = { ...existingLLMs, ...llmProviders }
 
     if (defaultModelID) {

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Text, Switch, Card, TextInput } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
-import { APIKeyInput } from '../APIKeyInputForm'
+import { APIKeyInput } from '../LLMsApiKeyInputForm'
 import { ModelToggles } from '../ModelToggles'
 import { AzureProvider, ProviderNames } from '~/types/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -15,7 +15,7 @@ export default function AzureProviderInput({
 }) {
   return (
     <motion.div layout>
-      <Card shadow="sm" p="lg" radius="md" className="w-[350px] bg-[#15162c]">
+      <Card shadow="sm" p="lg" radius="md" className="w-[330px] bg-[#15162c]">
         <div
           style={{
             display: 'flex',

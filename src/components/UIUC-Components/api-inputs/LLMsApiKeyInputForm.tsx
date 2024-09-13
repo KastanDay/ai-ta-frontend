@@ -36,6 +36,7 @@ import {
   IconCopy,
   IconEye,
   IconEyeOff,
+  IconX,
 } from '@tabler/icons-react'
 import { GetCurrentPageName } from '../CanViewOnlyCourse'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -72,18 +73,7 @@ export const APIKeyInput = ({
 }: {
   field: FieldApi<any, any, any, any>
   placeholder: string
-  // onValidate: (apiKey: string) => Promise<void>
 }) => {
-  const [isVisible, setIsVisible] = useState(false)
-  const [showCopiedToast, setShowCopiedToast] = useState(false)
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(field.state.value)
-    setShowCopiedToast(true)
-    setTimeout(() => setShowCopiedToast(false), 4000)
-  }
-
-  const [isValidating, setIsValidating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -95,11 +85,13 @@ export const APIKeyInput = ({
       <Input.Wrapper id="API-key-input" label={placeholder}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <TextInput
-            type={isVisible ? 'text' : 'password'}
+            type="password"
             placeholder={placeholder}
             aria-label={placeholder}
             value={field.state.value}
-            onChange={(e) => field.handleChange(e.target.value)}
+            onChange={(e) => {
+              field.handleChange(e.target.value)
+            }}
             style={{ flex: 1 }}
             styles={{
               input: {
@@ -109,46 +101,18 @@ export const APIKeyInput = ({
               },
             }}
           />
-          <div
-            style={{ display: 'flex', marginLeft: '6px', marginRight: '-2px' }}
+          <ActionIcon
+            size="xs"
+            color="red"
+            onClick={() => {
+              field.handleChange('')
+              console.log('field.state in onclick for delete', field.state)
+            }}
+            type="submit"
+            style={{ marginLeft: '8px' }}
           >
-            <ActionIcon
-              onClick={() => setIsVisible(!isVisible)}
-              variant="subtle"
-              size="sm"
-            >
-              {isVisible ? <IconEyeOff size={18} /> : <IconEye size={18} />}
-            </ActionIcon>
-            <div style={{ position: 'relative' }}>
-              <ActionIcon onClick={handleCopy} variant="subtle" size="sm">
-                <IconCopy size={18} />
-              </ActionIcon>
-              <AnimatePresence>
-                {showCopiedToast && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.1 }}
-                    style={{
-                      position: 'absolute',
-                      bottom: '100%',
-                      right: 0,
-                      backgroundColor: '#333',
-                      color: 'white',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      whiteSpace: 'nowrap',
-                      zIndex: 1000,
-                    }}
-                  >
-                    Copied ✓
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
+            <IconX size={12} />
+          </ActionIcon>
         </div>
       </Input.Wrapper>
       <FieldInfo field={field} />
@@ -170,8 +134,6 @@ export const APIKeyInput = ({
             compact
             className="bg-purple-800 hover:border-indigo-600 hover:bg-indigo-600"
             type="submit"
-            // onClick={handleValidate}
-            disabled={!field.state.value}
           >
             Save
           </Button>
@@ -359,7 +321,7 @@ const NewModelDropdown: React.FC<
 }
 
 export default function APIKeyInputForm() {
-  const course_name = GetCurrentPageName()
+  const projectName = GetCurrentPageName()
 
   // ------------ <TANSTACK QUERIES> ------------
   const queryClient = useQueryClient()
@@ -368,7 +330,7 @@ export default function APIKeyInputForm() {
     isLoading: isLoadingLLMProviders,
     isError: isErrorLLMProviders,
     error: errorLLMProviders,
-  } = useGetProjectLLMProviders({ course_name, filterGiesBizSchoolKeys: true })
+  } = useGetProjectLLMProviders({ projectName: projectName, hideApiKeys: true })
 
   // TODO: TEMP HACK
   const defaultModel = 'tmp' // don't default... stay undefined
@@ -400,7 +362,7 @@ export default function APIKeyInputForm() {
       const llmProviders = value.providers || {}
       mutation.mutate(
         {
-          course_name,
+          projectName,
           queryClient,
           llmProviders,
           defaultModelID: (value.defaultModel || '').toString(),
@@ -447,10 +409,10 @@ export default function APIKeyInputForm() {
 
   return (
     <>
-      <Navbar course_name={course_name} />
+      <Navbar course_name={projectName} />
 
       <Head>
-        <title>{course_name}/LLMs</title>
+        <title>{projectName}/LLMs</title>
         <meta
           name="UIUC.chat"
           content="The AI teaching assistant built for students at UIUC."
