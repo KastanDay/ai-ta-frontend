@@ -1,5 +1,5 @@
 // import { OllamaProvider } from 'ollama-ai-provider'
-import { LLMProvider, OllamaProvider } from '~/types/LLMProvider'
+import { LLMProvider, OllamaProvider, ProviderNames } from '~/types/LLMProvider'
 
 export interface OllamaModel {
   id: string
@@ -28,6 +28,7 @@ export const getOllamaModels = async (
   ollamaProvider: OllamaProvider,
 ): Promise<OllamaProvider> => {
   delete ollamaProvider.error // Remove the error property if it exists
+  ollamaProvider.provider = ProviderNames.Ollama
   try {
     if (!ollamaProvider.baseUrl) {
       ollamaProvider.error = `Ollama Base Url is not defined, please set it to the URL that points to your Ollama instance.`

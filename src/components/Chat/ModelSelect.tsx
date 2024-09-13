@@ -70,7 +70,8 @@ export const getModelLogo = (modelType: string) => {
     case ProviderNames.Azure:
       return 'https://assets.kastan.ai/uiuc-chat-emails/msft-logo.png'
     default:
-      throw new Error(`Unknown model type: ${modelType}`)
+      console.warn('Unknown model type: ', modelType)
+    // throw new Error(`Unknown model type: ${modelType}`)
   }
 }
 export const ModelItem = forwardRef<
@@ -157,7 +158,7 @@ export const ModelItem = forwardRef<
           <div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <Image
-                src={getModelLogo(modelType)}
+                src={getModelLogo(modelType) || ''}
                 alt={`${modelType} logo`}
                 width={20}
                 height={20}
@@ -291,6 +292,8 @@ const ModelDropdown: React.FC<
 }) => {
   const { state, dispatch: homeDispatch } = useContext(HomeContext)
 
+  console.log('llmProviders AT TOP model dropdown', llmProviders)
+
   // Filter out providers that are not enabled and their models which are disabled
   const { enabledProvidersAndModels, allModels } = Object.keys(
     llmProviders,
@@ -303,7 +306,6 @@ const ModelDropdown: React.FC<
       key,
     ) => {
       const provider = llmProviders[key as keyof typeof llmProviders]
-      console.log('provider', provider)
       if (provider && provider.enabled) {
         const enabledModels =
           provider.models?.filter((model) => model.enabled) || []
@@ -329,7 +331,10 @@ const ModelDropdown: React.FC<
     },
   )
 
-  console.log('enabledProvidersAndModels', enabledProvidersAndModels)
+  console.log(
+    'llmProviders AFTER FILTERING FOR ENABLED in model dropdown',
+    enabledProvidersAndModels,
+  )
 
   const selectedModel = allModels.find((model) => model.id === value)
 

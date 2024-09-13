@@ -1,4 +1,4 @@
-import { AzureProvider } from '~/types/LLMProvider'
+import { AzureProvider, ProviderNames } from '~/types/LLMProvider'
 
 export const config = {
   runtime: 'edge',
@@ -56,6 +56,7 @@ export const getAzureModels = async (
   azureProvider: AzureProvider,
 ): Promise<AzureProvider> => {
   delete azureProvider.error // Clear previous errors if any.
+  azureProvider.provider = ProviderNames.Azure
   try {
     if (!azureProvider.AzureEndpoint || !azureProvider.AzureDeployment) {
       azureProvider.error = `Azure OpenAI Endpoint or Deployment is not set. Endpoint: ${azureProvider.AzureEndpoint}, Deployment: ${azureProvider.AzureDeployment}`

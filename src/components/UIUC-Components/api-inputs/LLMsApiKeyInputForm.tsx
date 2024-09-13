@@ -267,7 +267,7 @@ const NewModelDropdown: React.FC<
           icon={
             selectedModel ? (
               <Image
-                src={getModelLogo(selectedModel.provider)}
+                src={getModelLogo(selectedModel.provider) || ''}
                 alt={`${selectedModel.provider} logo`}
                 width={20}
                 height={20}

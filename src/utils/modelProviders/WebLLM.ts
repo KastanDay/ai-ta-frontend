@@ -8,7 +8,7 @@ import { buildPrompt } from '~/pages/api/chat'
 // import buildPrompt from '~/pages/api/chat'
 import { Conversation, Message } from '~/types/chat'
 import { ModelRecord, prebuiltAppConfig } from './ConfigWebLLM'
-import { WebLLMProvider } from '~/types/LLMProvider'
+import { ProviderNames, WebLLMProvider } from '~/types/LLMProvider'
 // import { ModelRecord, prebuiltAppConfig } from './ConfigWebLLM'
 
 // TODO: finish this message interface. Write a converter between `Message` and `WebLLMMessage`
@@ -311,6 +311,7 @@ export const webLLMModels: WebllmModel[] = prebuiltAppConfig.model_list.map(
 export const getWebLLMModels = async (
   webLLMProvider: WebLLMProvider,
 ): Promise<WebLLMProvider> => {
+  webLLMProvider.provider = ProviderNames.WebLLM
   if (!webLLMProvider.models || webLLMProvider.models.length === 0) {
     // If no models, add all possible models and enable them
     webLLMProvider.models = webLLMModels.map((model) => ({

@@ -1,6 +1,6 @@
 import { kv } from '@vercel/kv'
 import { CourseMetadata } from '~/types/courseMetadata'
-import { OpenAIProvider } from '~/types/LLMProvider'
+import { OpenAIProvider, ProviderNames } from '~/types/LLMProvider'
 import { OpenAI } from 'openai'
 import { parseOpenaiKey } from '../crypto'
 
@@ -93,6 +93,7 @@ export const getOpenAIModels = async (
   openAIProvider: OpenAIProvider,
   projectName: string,
 ): Promise<OpenAIProvider> => {
+  openAIProvider.provider = ProviderNames.OpenAI
   try {
     delete openAIProvider.error // Remove the error property if it exists
     // Priority #1: use passed in key
