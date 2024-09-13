@@ -20,7 +20,7 @@ export async function fetchFolders(
       throw new Error('Error fetching folders')
     }
     fetchedFolders = await foldersResonse.json()
-    console.log('fetched folders ', fetchedFolders)
+    // console.log('fetched folders ', fetchedFolders)
   } catch (error) {
     console.error('Error fetching folders:', error)
   }

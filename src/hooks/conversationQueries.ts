@@ -170,7 +170,7 @@ export function useDeleteConversation(
   user_email: string,
   queryClient: QueryClient,
   course_name: string,
-  search_term: string,
+  search_term: string = '',
 ) {
   return useMutation({
     mutationKey: ['deleteConversation', user_email],

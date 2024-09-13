@@ -312,9 +312,11 @@ const Home = ({
       folderId: null,
       userEmail: current_email || undefined,
       projectName: course_name,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }
 
-    const updatedConversations = [...conversations, newConversation]
+    const updatedConversations = [newConversation, ...conversations]
 
     dispatch({ field: 'selectedConversation', value: newConversation })
     dispatch({ field: 'conversations', value: updatedConversations })

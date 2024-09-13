@@ -73,6 +73,7 @@ import { handleImageContent } from '~/utils/streamProcessing'
 import { useQueryClient } from '@tanstack/react-query'
 import { useUpdateConversation } from '~/hooks/conversationQueries'
 import { motion } from 'framer-motion'
+import { useDeleteMessages } from '~/hooks/messageQueries'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -217,6 +218,12 @@ export const Chat = memo(
       courseName,
     )
 
+    const deleteMessagesMutation = useDeleteMessages(
+      currentEmail,
+      queryClient,
+      courseName,
+    )
+
     // Document Groups
     useEffect(() => {
       if (isSuccessDocumentGroups) {
@@ -354,6 +361,7 @@ export const Chat = memo(
               : message.content
 
             const updatedMessages = [...selectedConversation.messages]
+            const messagesToDelete = updatedMessages.slice(0, deleteCount)
             for (let i = 0; i < deleteCount; i++) {
               updatedMessages.pop()
             }
@@ -361,6 +369,10 @@ export const Chat = memo(
               ...selectedConversation,
               messages: [...updatedMessages, message],
             }
+            await deleteMessagesMutation.mutate({
+              convoId: selectedConversation.id,
+              deletedMessages: messagesToDelete,
+            })
           } else {
             updatedConversation = {
               ...selectedConversation,
@@ -413,12 +425,10 @@ export const Chat = memo(
             value: updatedConversation.messages,
           })
           updateConversationMutation.mutate(updatedConversation)
-          // createConversationMutation.mutate(updatedConversation)
           console.log(
             'updatedConversation after mutation:',
             updatedConversation,
           )
-          // }
           homeDispatch({ field: 'loading', value: true })
           homeDispatch({ field: 'messageIsStreaming', value: true })
           const controller = new AbortController()
@@ -834,7 +844,7 @@ export const Chat = memo(
                 field: 'conversations',
                 value: updatedConversations,
               })
-              saveConversations(updatedConversations)
+              // saveConversations(updatedConversations)
               homeDispatch({ field: 'loading', value: false })
               homeDispatch({ field: 'messageIsStreaming', value: false })
             }
@@ -864,8 +874,17 @@ export const Chat = memo(
           // Remove the existing image description
           ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
         }
-
-        handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
+        if (
+          selectedConversation?.messages[
+            selectedConversation?.messages.length - 1
+          ]?.role === 'user'
+        ) {
+          // console.log('user')
+          handleSend(currentMessage, 1, null, tools, enabledDocumentGroups)
+        } else {
+          // console.log('assistant')
+          handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
+        }
       }
     }, [currentMessage, handleSend])
 
@@ -885,10 +904,11 @@ export const Chat = memo(
         if (scrollTop + clientHeight < scrollHeight - bottomTolerance) {
           setAutoScrollEnabled(false)
           setShowScrollDownButton(true)
-        } else {
-          setAutoScrollEnabled(true)
-          setShowScrollDownButton(false)
         }
+        // else {
+        //   setAutoScrollEnabled(true)
+        //   setShowScrollDownButton(false)
+        // }
       }
     }
 
@@ -928,7 +948,11 @@ export const Chat = memo(
       if (selectedConversation) {
         const messages = selectedConversation.messages
         if (messages.length > 1) {
-          setCurrentMessage(messages[messages.length - 2])
+          if (messages[messages.length - 1]?.role === 'assistant') {
+            setCurrentMessage(messages[messages.length - 2])
+          } else {
+            setCurrentMessage(messages[messages.length - 1])
+          }
         } else if (messages.length === 1) {
           setCurrentMessage(messages[0])
         } else {
@@ -1084,7 +1108,7 @@ export const Chat = memo(
         }
 
         homeDispatch({ field: 'conversations', value: updatedConversations })
-        saveConversations(updatedConversations)
+        // saveConversations(updatedConversations)
       },
       [selectedConversation, conversations],
     )

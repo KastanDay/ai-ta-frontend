@@ -130,7 +130,7 @@ export const Chatbar = ({
           .flatMap((page) => (Array.isArray(page) ? page : []))
           .filter((conversation) => conversation !== undefined)
         homeDispatch({ field: 'conversations', value: allConversations })
-        console.log('Dispatching conversations: ', allConversations)
+        // console.log('Dispatching conversations: ', allConversations)
 
         const convoMigrationComplete = localStorage.getItem(
           'convoMigrationComplete',
@@ -214,6 +214,7 @@ export const Chatbar = ({
 
   const handleClearConversations = () => {
     deleteAllConversationMutation.mutate()
+    handleNewConversation()
   }
 
   const handleDeleteConversation = (conversation: Conversation) => {
@@ -223,11 +224,12 @@ export const Chatbar = ({
     homeDispatch({ field: 'conversations', value: updatedConversations })
     chatDispatch({ field: 'searchTerm', value: '' })
 
+    deleteConversationMutation.mutate(conversation)
+
     if (updatedConversations.length > 0) {
       const lastConversation = updatedConversations[0]
       if (lastConversation) {
         homeDispatch({ field: 'selectedConversation', value: lastConversation })
-        deleteConversationMutation.mutate(conversation)
       }
     } else {
       defaultModelId &&

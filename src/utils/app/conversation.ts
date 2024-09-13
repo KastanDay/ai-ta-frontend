@@ -36,7 +36,7 @@ export async function fetchConversationHistory(
   } catch (error) {
     console.error('Error fetching conversation history:', error)
   }
-  console.log('finalResponse: ', finalResponse)
+  // console.log('finalResponse: ', finalResponse)
   return finalResponse
 }
 

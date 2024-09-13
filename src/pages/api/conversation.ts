@@ -44,6 +44,8 @@ export function convertDBToChatConversation(
   dbConversation: DBConversation,
   dbMessages: DBMessage[],
 ): ChatConversation {
+  // console.log('dbConversation: ', dbConversation)
+  // console.log('dbMessages: ', dbMessages)
   return {
     id: dbConversation.id,
     name: dbConversation.name,
@@ -101,7 +103,13 @@ export function convertChatToDBMessage(
   chatMessage: ChatMessage,
   conversationId: string,
 ): DBMessage {
-  console.log('chatMessage.content: ', chatMessage.content)
+  console.log(
+    'chatMessage',
+    'for id: ',
+    conversationId,
+    'for message: ',
+    // chatMessage,
+  )
   // console.log('chatMessage.content type: ', typeof chatMessage.content)
   let content_text = ''
   let content_image_urls: string[] = []
@@ -140,9 +148,7 @@ export function convertChatToDBMessage(
           return { chunk_index: context.s3_path + '_' + index }
         } else if (context.url) {
           return { url_chunk_index: context.url + '_' + index }
-        } else {
-          return {}
-        }
+        } else return JSON.parse(JSON.stringify(context)) // Ensure context is JSON-compatible
       }) || [],
     tools: chatMessage.tools || (null as any),
     latest_system_message: chatMessage.latestSystemMessage || null,
