@@ -63,26 +63,21 @@ const MakeNewCoursePage = ({
 
         if (response.ok) {
           const data = await response.json()
-          return data.all_course_names
+          setAllExistingCourseNames(data.all_course_names)
         } else {
           console.error(`Error fetching course metadata: ${response.status}`)
-          return null
         }
       }
 
-      fetchGetAllCourseNames()
-        .then((result) => {
-          setAllExistingCourseNames(result)
-        })
-        .catch((error) => {
-          console.error(error)
-        })
+      fetchGetAllCourseNames().catch((error) => {
+        console.error(error)
+      })
     }
   }, [])
 
   useEffect(() => {
     checkCourseAvailability()
-  }, [projectName])
+  }, [projectName, allExistingCourseNames])
 
   const handleSubmit = async (
     project_name: string,
