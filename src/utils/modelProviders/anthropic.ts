@@ -1,4 +1,4 @@
-import { AnthropicProvider } from '~/types/LLMProvider'
+import { AnthropicProvider, ProviderNames } from '~/types/LLMProvider'
 import Anthropic from '@anthropic-ai/sdk'
 
 export interface AnthropicModel {
@@ -46,6 +46,7 @@ export const AnthropicModels: Record<AnthropicModelID, AnthropicModel> = {
 export const getAnthropicModels = async (
   anthropicProvider: AnthropicProvider,
 ): Promise<AnthropicProvider> => {
+  anthropicProvider.provider = ProviderNames.Anthropic
   if (!anthropicProvider.apiKey) {
     anthropicProvider.error = 'Anthropic API key not set.'
     anthropicProvider.models = []

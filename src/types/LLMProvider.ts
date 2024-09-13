@@ -8,9 +8,16 @@ import {
 import {
   AnthropicModel,
   AnthropicModelID,
+  AnthropicModels,
 } from '~/utils/modelProviders/anthropic'
-import { AzureModel, AzureModelID } from '~/utils/modelProviders/azure'
+import {
+  AzureModel,
+  AzureModelID,
+  AzureModels,
+} from '~/utils/modelProviders/azure'
 import { Conversation } from './chat'
+import { AzureOpenAI } from 'openai'
+import { NCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
 
 export enum ProviderNames {
   Ollama = 'Ollama',
@@ -45,9 +52,12 @@ export const VisionCapableModels: Set<
 ])
 
 export const AllSupportedModels: Set<GenericSupportedModel> = new Set([
-  ...Object.values(OllamaModels),
+  ...Object.values(AnthropicModels),
   ...Object.values(OpenAIModels),
-  ...webLLMModels,
+  ...Object.values(AzureModels),
+  ...Object.values(OllamaModels),
+  ...Object.values(NCSAHostedModels),
+  // ...webLLMModels,
 ])
 // e.g. Easily validate ALL POSSIBLE models that we support. They may be offline or disabled, but they are supported.
 // {

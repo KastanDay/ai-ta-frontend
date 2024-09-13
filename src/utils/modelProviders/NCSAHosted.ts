@@ -1,5 +1,5 @@
 // import { OllamaProvider } from 'ollama-ai-provider'
-import { NCSAHostedProvider } from '~/types/LLMProvider'
+import { NCSAHostedProvider, ProviderNames } from '~/types/LLMProvider'
 
 export interface OllamaModel {
   id: string
@@ -28,6 +28,7 @@ export const getNCSAHostedModels = async (
   ncsaHostedProvider: NCSAHostedProvider,
 ): Promise<NCSAHostedProvider> => {
   delete ncsaHostedProvider.error // Remove the error property if it exists
+  ncsaHostedProvider.provider = ProviderNames.NCSAHosted
   try {
     if (!ncsaHostedProvider.baseUrl) {
       ncsaHostedProvider.baseUrl = process.env.OLLAMA_SERVER_URL
