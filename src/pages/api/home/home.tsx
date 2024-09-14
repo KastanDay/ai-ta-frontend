@@ -236,7 +236,6 @@ const Home = () => {
         const models = await getModels({
           projectName: course_name,
         })
-        console.log('models in home.tsx', models)
         dispatch({ field: 'llmProviders', value: models })
       } catch (error) {
         console.error('Error fetching models user has access to: ', error)

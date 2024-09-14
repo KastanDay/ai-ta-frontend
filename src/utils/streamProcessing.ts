@@ -18,6 +18,7 @@ import {
   AllLLMProviders,
   AllSupportedModels,
   GenericSupportedModel,
+  OllamaProvider,
   VisionCapableModels,
 } from '~/utils/modelProviders/LLMProvider'
 import fetchMQRContexts from '~/pages/api/getContextsMQR'
@@ -864,17 +865,17 @@ export const routeModelRequest = async (
   if (
     Object.values(OllamaModelIDs).includes(selectedConversation.model.id as any)
   ) {
-    // Model is Ollama
-    const url = baseUrl ? `${baseUrl}/api/chat/ollama` : '/api/chat/ollama'
-    // Is Ollama model
-    response = await fetch(url, {
+    // Ollama model
+    console.log('Ollama provider in stream: ', chatBody!.llmProviders!.Ollama)
+
+    response = await fetch('/api/chat/ollama', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         conversation: selectedConversation,
-        ollamaProvider: chatBody!.llmProviders!.Ollama,
+        ollamaProvider: chatBody!.llmProviders!.Ollama as OllamaProvider,
       }),
     })
   } else if (

@@ -1,7 +1,10 @@
 import { createOllama } from 'ollama-ai-provider'
 import { CoreMessage, StreamingTextResponse, streamText } from 'ai'
 import { Conversation } from '~/types/chat'
-import { OllamaProvider } from '~/utils/modelProviders/LLMProvider'
+import {
+  NCSAHostedProvider,
+  OllamaProvider,
+} from '~/utils/modelProviders/LLMProvider'
 import { OllamaModel } from '~/utils/modelProviders/ollama'
 import { decryptKeyIfNeeded } from '~/utils/crypto'
 
@@ -18,21 +21,19 @@ export async function POST(req: Request) {
     ollamaProvider,
   }: {
     conversation: Conversation
-    ollamaProvider: OllamaProvider
+    ollamaProvider: OllamaProvider | NCSAHostedProvider
   } = await req.json()
 
   const ollama = createOllama({
-    baseURL: decryptKeyIfNeeded(ollamaProvider!.baseUrl!) as any,
+    baseURL: `${(await decryptKeyIfNeeded(ollamaProvider!.baseUrl!)) as any}/api`,
   })
-
-  console.log('ollamaProvider! in ollama', ollamaProvider)
 
   if (conversation.messages.length === 0) {
     throw new Error('Conversation messages array is empty')
   }
 
   const result = await streamText({
-    model: ollama('llama3.1:70b'),
+    model: ollama(conversation.model.id),
     messages: convertConversatonToVercelAISDKv3(conversation),
     temperature: conversation.temperature,
     maxTokens: 4096, // output tokens

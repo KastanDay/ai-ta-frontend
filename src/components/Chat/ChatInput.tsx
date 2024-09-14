@@ -862,6 +862,9 @@ export const ChatInput = ({
                 placeholder={
                   t('Type a message or type "/" to select a prompt...') || ''
                 }
+                aria-label={
+                  t('Type a message or type "/" to select a prompt...') || ''
+                }
                 value={content}
                 rows={1}
                 onCompositionStart={() => setIsTyping(true)}

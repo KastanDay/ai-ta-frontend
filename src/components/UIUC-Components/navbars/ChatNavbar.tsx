@@ -176,7 +176,6 @@ const ChatNavbar = ({ bannerUrl = '', isgpt4 = true }: ChatNavbarProps) => {
     const fetchCourses = async () => {
       if (clerk_user.isLoaded && clerk_user.isSignedIn) {
         const currUserEmails = extractEmailsFromClerk(clerk_user.user)
-        console.log('CURR USER EMAILS', currUserEmails)
         // Posthog identify
         posthog?.identify(clerk_user.user.id, {
           email: currUserEmails[0] || 'no_email',
@@ -522,15 +521,12 @@ const ChatNavbar = ({ bannerUrl = '', isgpt4 = true }: ChatNavbarProps) => {
                   className={`${classes.link}`}
                   style={{ padding: '0px 10px', minWidth: '120px' }}
                   onClick={() => {
-                    console.log(
-                      'clicked model settings, toggling showModelSettings: ',
-                      showModelSettings,
-                    )
                     homeDispatch({
                       field: 'showModelSettings',
                       value: !showModelSettings,
                     })
                   }}
+                  aria-label={`Open or close show model settings.`}
                 >
                   <div
                     ref={topBarRef}

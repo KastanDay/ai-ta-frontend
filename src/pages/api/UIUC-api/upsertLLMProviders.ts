@@ -97,11 +97,11 @@ export default async function handler(req: NextRequest, res: NextResponse) {
       combined_llms.defaultTemp = defaultTemperature
     }
 
-    console.debug('-----------------------------------------')
-    console.debug('EXISTING LLM Providers:', existingLLMs)
-    console.debug('passed into upsert LLM Providers:', llmProviders)
-    console.debug('FINAL COMBINED LLM Providers:', combined_llms)
-    console.debug('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+    // console.debug('-----------------------------------------')
+    // console.debug('EXISTING LLM Providers:', existingLLMs)
+    // console.debug('passed into upsert LLM Providers:', llmProviders)
+    // console.debug('FINAL COMBINED LLM Providers:', combined_llms)
+    // console.debug('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 
     // Save the combined metadata
     await kv.set(redisKey, combined_llms)

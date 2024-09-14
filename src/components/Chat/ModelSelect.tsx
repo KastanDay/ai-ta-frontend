@@ -139,16 +139,6 @@ export const ModelItem = forwardRef<
       checkModelCache()
     }, [modelId])
 
-    console.log(
-      'Model item',
-      modelType,
-      modelId,
-      isModelCached,
-      state.webLLMModelIdLoading.id,
-      state.webLLMModelIdLoading.isLoading,
-      loadingModelId,
-    )
-
     return (
       <div ref={ref} {...others}>
         <Group noWrap>
@@ -301,7 +291,6 @@ const ModelDropdown: React.FC<
       key,
     ) => {
       const provider = llmProviders[key as keyof typeof llmProviders]
-      console.log('provider', provider)
       if (provider && provider.enabled) {
         const enabledModels =
           provider.models?.filter((model) => model.enabled) || []
@@ -326,8 +315,6 @@ const ModelDropdown: React.FC<
       allModels: [] as AnySupportedModel[],
     },
   )
-
-  console.log('enabledProvidersAndModels', enabledProvidersAndModels)
 
   const selectedModel = allModels.find((model) => model.id === value)
 
@@ -462,7 +449,6 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       handleUpdateConversation,
       dispatch: homeDispatch,
     } = useContext(HomeContext)
-    console.log('llmProviders in top of modelselect', llmProviders)
     const isSmallScreen = useMediaQuery('(max-width: 960px)')
     const defaultModel = selectBestModel(llmProviders, selectedConversation).id
     const [loadingModelId, setLoadingModelId] = useState<string | null>(null)

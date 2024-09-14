@@ -152,10 +152,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
   } = useContext(HomeContext)
 
   useEffect(() => {
-    console.log('LLM Providers in Chat.tsx: ', llmProviders)
-  }, [llmProviders])
-
-  useEffect(() => {
     const loadModel = async () => {
       if (selectedConversation && !chat_ui.isModelLoading()) {
         homeDispatch({
@@ -302,7 +298,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       enabledDocumentGroups: string[],
       llmProviders: AllLLMProviders,
     ) => {
-      console.log('LLM Providers in handleSend: ', llmProviders)
       setCurrentMessage(message)
       resetMessageStates()
 
@@ -395,10 +390,8 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         homeDispatch({ field: 'isRetrievalLoading', value: false })
 
         // Action 3: Tool Execution
-        console.log('tools.length > 0', tools.length)
         if (tools.length > 0) {
           try {
-            console.log('INSIDE TOOLS in Chat.tsx')
             homeDispatch({ field: 'isRouting', value: true })
             // Check if any tools need to be run
             const uiucToolsToRun = await handleFunctionCall(
@@ -430,7 +423,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             homeDispatch({ field: 'isRunningTool', value: false })
           }
         }
-        console.log('LLM Providers: ', llmProviders)
 
         const chatBody: ChatBody = constructChatBody(
           updatedConversation,
@@ -486,7 +478,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           }
         } else {
           try {
-            console.log('chatBody in Chat.tsx: ', chatBody)
             // Route to the specific model provider
             response = await routeModelRequest(chatBody, controller)
           } catch (error) {
@@ -1048,7 +1039,6 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 textareaRef={textareaRef}
                 onSend={(message, plugin) => {
                   // setCurrentMessage(message)
-                  console.log('llm providers before handleSend: ', llmProviders)
                   handleSend(
                     message,
                     0,
