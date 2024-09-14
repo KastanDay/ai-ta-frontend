@@ -1,6 +1,4 @@
-// import { OllamaProvider } from 'ollama-ai-provider'
 import {
-  LLMProvider,
   OllamaProvider,
   ProviderNames,
 } from '~/utils/modelProviders/LLMProvider'

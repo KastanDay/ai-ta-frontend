@@ -71,46 +71,51 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
       return response.json()
     },
     onMutate: async (variables) => {
+      // Cancel any outgoing refetches
       await queryClient.cancelQueries({
         queryKey: ['projectLLMProviders', variables.projectName],
       })
+
+      // Snapshot the previous value
       const previousLLMProviders = queryClient.getQueryData([
         'projectLLMProviders',
         variables.projectName,
       ])
+
+      // Optimistically update to the new value
       queryClient.setQueryData(['projectLLMProviders', variables.projectName], {
-        providers: variables.llmProviders,
+        ...variables.llmProviders,
         defaultModel: variables.defaultModelID,
         defaultTemp: parseFloat(variables.defaultTemperature),
       })
+
+      // Return a context object with the snapshotted value
       return { previousLLMProviders }
     },
-    onError: (err, variables, context) => {
+    onError: (err, newData, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
       queryClient.setQueryData(
-        ['projectLLMProviders'],
+        ['projectLLMProviders', newData.projectName],
         context?.previousLLMProviders,
       )
       showConfirmationToast({
         title: 'Failed to set LLM providers',
-        message: `The database request failed with error error: ${err.name} -- ${err.message}`,
+        message: `The database request failed with error: ${err.name} -- ${err.message}`,
         isError: true,
       })
     },
     onSuccess: (data, variables, context) => {
-      // Boom baby!
+      // Optionally, you can show a success toast here
       // showConfirmationToast({
       //   title: 'Updated LLM providers',
       //   message: `Now your project's users can use the supplied LLMs!`,
       //   isError: false,
       // })
     },
-    onSettled: (data, variables, context) => {
-      console.log('onSettled data: ', data)
-      console.log('onSettled variables: ', variables)
-      console.log('onSettled context: ', context)
-
+    onSettled: (data, error, variables, context) => {
+      // Always refetch after error or success to ensure we have the latest data
       queryClient.invalidateQueries({
-        queryKey: ['projectLLMProviders', context.projectName],
+        queryKey: ['projectLLMProviders', variables.projectName],
       })
     },
   })

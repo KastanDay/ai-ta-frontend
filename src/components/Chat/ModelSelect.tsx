@@ -58,9 +58,7 @@ export const getModelLogo = (modelType: string) => {
     case ProviderNames.OpenAI:
       return 'https://images.squarespace-cdn.com/content/v1/5a4908d949fc2b8e312bdf53/1676298536608-GQSN44SGOEHWCFSIZIGK/openai_icon.png?format=750w'
     case ProviderNames.Ollama:
-      // return 'https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/ollama.png'
-      // return 'https://assets.kastan.ai/UofI-logo.jpg'
-      return 'https://assets.kastan.ai/UofI-logo-white.jpg'
+      return 'https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/ollama.png'
     case ProviderNames.WebLLM:
       return 'https://avatars.githubusercontent.com/u/106173866?s=48&v=4'
     case ProviderNames.Anthropic:

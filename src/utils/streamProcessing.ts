@@ -872,7 +872,10 @@ export const routeModelRequest = async (
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ conversation: selectedConversation }),
+      body: JSON.stringify({
+        conversation: selectedConversation,
+        ollamaProvider: chatBody!.llmProviders!.Ollama,
+      }),
     })
   } else if (
     Object.values(AnthropicModelID).includes(

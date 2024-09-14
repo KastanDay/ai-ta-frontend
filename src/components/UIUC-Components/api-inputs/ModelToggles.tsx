@@ -10,8 +10,11 @@ export function ModelToggles({
   form: any
   provider: LLMProvider
 }) {
-  const providerModels =
-    form.state.values.providers[provider.provider]?.models || {}
+  console.log('provider in model toggles', provider)
+  const providerModels = provider?.provider
+    ? form.state.values.providers[provider.provider]?.models || {}
+    : {}
+  console.log('providerModels in model toggles', providerModels)
 
   return (
     <Stack mt="md">

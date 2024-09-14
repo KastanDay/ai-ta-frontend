@@ -5,7 +5,6 @@ import {
 } from '~/utils/modelProviders/types/openai'
 
 import {
-  AZURE_DEPLOYMENT_ID,
   OPENAI_API_HOST,
   OPENAI_API_TYPE,
   OPENAI_API_VERSION,
@@ -51,57 +50,35 @@ export const OpenAIStream = async (
   messages: OpenAIChatMessage[],
   stream: boolean,
 ) => {
+  // default to OpenAI not Azure
+  let apiType
+  let url
+
+  // TODO: What if user brings their own OpenAI compatible models??
+
   let provider
   if (llmProviders) {
     if (
       Object.values(OpenAIModels).some((oaiModel) => oaiModel.id === model.id)
     ) {
+      // OPENAI
       provider = llmProviders[ProviderNames.OpenAI] as OpenAIProvider
       provider.apiKey = await decryptKeyIfNeeded(provider.apiKey!)
+      apiType = ProviderNames.OpenAI
+      url = `${OPENAI_API_HOST}/v1/chat/completions`
     } else if (
       Object.values(AzureModels).some((oaiModel) => oaiModel.id === model.id)
     ) {
+      // AZURE
       provider = llmProviders[ProviderNames.Azure] as AzureProvider
       provider.apiKey = await decryptKeyIfNeeded(provider.apiKey!)
+
+      apiType = ProviderNames.Azure
+      url = `${provider!.AzureEndpoint}/openai/deployments/${provider.AzureDeployment}/chat/completions?api-version=${OPENAI_API_VERSION}`
     } else {
       throw new Error('Unsupported model provider')
     }
   }
-
-  // default to OpenAI not Azure
-  let apiType = ProviderNames.OpenAI
-  let endpoint = OPENAI_API_HOST
-  let url = `${endpoint}/v1/chat/completions`
-
-  function isAzureProvider(provider: any): provider is AzureProvider {
-    return provider && provider.apiKey && !provider.apiKey.startsWith('sk-')
-  }
-
-  if (
-    isAzureProvider(provider) &&
-    provider!.apiKey &&
-    !provider!.apiKey.startsWith('sk-')
-  ) {
-    apiType = ProviderNames.Azure
-    endpoint = provider!.AzureEndpoint as string
-    url = `${endpoint}/openai/deployments/${provider.AzureDeployment}/chat/completions?api-version=${OPENAI_API_VERSION}`
-  }
-
-  // ! DEBUGGING to view the full message as sent to OpenAI.
-  // const final_request_to_openai = JSON.stringify({
-  //   ...(OPENAI_API_TYPE === 'openai' && { model: model.id }),
-  //   messages: [
-  //     {
-  //       role: 'system',
-  //       content: systemPrompt,
-  //     },
-  //     ...messages,
-  //   ],
-  //   max_tokens: 1000,
-  //   temperature: temperature,
-  //   stream: true,
-  // })
-  // console.debug("Final request sent to OpenAI ", JSON.stringify(JSON.parse(final_request_to_openai), null, 2))
 
   const body = JSON.stringify({
     ...(OPENAI_API_TYPE === 'openai' && { model: model.id }),

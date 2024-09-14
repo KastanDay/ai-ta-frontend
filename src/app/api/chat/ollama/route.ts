@@ -3,6 +3,7 @@ import { CoreMessage, StreamingTextResponse, streamText } from 'ai'
 import { Conversation } from '~/types/chat'
 import { OllamaProvider } from '~/utils/modelProviders/LLMProvider'
 import { OllamaModel } from '~/utils/modelProviders/ollama'
+import { decryptKeyIfNeeded } from '~/utils/crypto'
 
 // export const runtime = 'edge' // Does NOT work
 export const dynamic = 'force-dynamic' // known bug with Vercel: https://sdk.vercel.ai/docs/troubleshooting/common-issues/streaming-not-working-on-vercel
@@ -21,9 +22,10 @@ export async function POST(req: Request) {
   } = await req.json()
 
   const ollama = createOllama({
-    baseURL: `${process.env.OLLAMA_SERVER_URL}/api`,
-    // baseURL: `${ollamaProvider.baseUrl}/api`, // TODO use user-defiend base URL...
+    baseURL: decryptKeyIfNeeded(ollamaProvider!.baseUrl!) as any,
   })
+
+  console.log('ollamaProvider! in ollama', ollamaProvider)
 
   if (conversation.messages.length === 0) {
     throw new Error('Conversation messages array is empty')
