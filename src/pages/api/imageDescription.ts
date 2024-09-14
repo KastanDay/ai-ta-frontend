@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { ChatBody, Content, ImageBody, OpenAIChatMessage } from '~/types/chat'
-import { parseOpenaiKey } from '~/utils/crypto'
+import { decryptKeyIfNeeded } from '~/utils/crypto'
 
 import { OpenAIError, OpenAIStream } from '@/utils/server'
 
@@ -13,7 +13,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
     const { conversation, llmProviders, course_name } =
       (await req.json()) as ImageBody
 
-    // const openAIKey = await parseOpenaiKey(key)
+    // const openAIKey = await decryptKeyIfNeeded(key)
 
     const systemPrompt = getImageDescriptionSystemPrompt()
 

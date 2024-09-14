@@ -61,7 +61,6 @@ const Home = () => {
         signal,
         body: JSON.stringify({
           projectName: params.projectName,
-          hideApiKeys: true,
         }),
       })
 

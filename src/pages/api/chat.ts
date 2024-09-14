@@ -18,7 +18,7 @@ import {
   UIUCTool,
 } from '@/types/chat'
 import { NextResponse } from 'next/server'
-import { parseOpenaiKey } from '~/utils/crypto'
+import { decryptKeyIfNeeded } from '~/utils/crypto'
 import { ProviderNames } from '~/utils/modelProviders/LLMProvider'
 import { AzureModels } from '~/utils/modelProviders/azure'
 import { OpenAIModels } from '~/utils/modelProviders/types/openai'
@@ -39,7 +39,7 @@ const handler = async (req: Request): Promise<NextResponse> => {
       llmProviders,
     } = (await req.json()) as ChatBody
 
-    const openAIKey = await parseOpenaiKey(key)
+    const openAIKey = await decryptKeyIfNeeded(key)
 
     if (!conversation) {
       console.error(
@@ -205,7 +205,7 @@ Priorities for building prompt w/ limited window:
 
   // do these things in parallel -- await at end
   const allPromises = []
-  // allPromises.push(parseOpenaiKey(rawOpenaiKey))
+  // allPromises.push(decryptKeyIfNeeded(rawOpenaiKey))
   allPromises.push(_getLastUserTextInput({ conversation }))
   allPromises.push(_getLastToolResult({ conversation }))
   allPromises.push(_getSystemPrompt({ courseMetadata, conversation }))

@@ -11,7 +11,7 @@ import {
 } from '~/utils/modelProviders/LLMProvider'
 import { getOllamaModels } from '~/utils/modelProviders/ollama'
 import { getAzureModels } from '~/utils/modelProviders/azure'
-import { getAnthropicModels } from '~/utils/modelProviders/anthropic'
+import { getAnthropicModels } from '~/utils/modelProviders/routes/anthropic'
 import { getWebLLMModels } from '~/utils/modelProviders/WebLLM'
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
@@ -27,9 +27,8 @@ const handler = async (
   req: NextRequest,
 ): Promise<NextResponse<AllLLMProviders | { error: string }>> => {
   try {
-    const { projectName, hideApiKeys } = (await req.json()) as {
+    const { projectName } = (await req.json()) as {
       projectName: string
-      hideApiKeys?: boolean
     }
 
     if (!projectName) {
@@ -43,30 +42,52 @@ const handler = async (
     let llmProviders = (await kv.get(`${projectName}-llms`)) as AllLLMProviders
 
     if (!llmProviders) {
-      llmProviders = {}
+      // Initialize providers if they don't exist
+      llmProviders = {
+        [ProviderNames.Ollama]: {
+          provider: ProviderNames.Ollama,
+          enabled: false,
+          models: [],
+        },
+        [ProviderNames.OpenAI]: {
+          provider: ProviderNames.OpenAI,
+          enabled: false,
+          models: [],
+        },
+        [ProviderNames.Azure]: {
+          provider: ProviderNames.Azure,
+          enabled: false,
+          models: [],
+        },
+        [ProviderNames.Anthropic]: {
+          provider: ProviderNames.Anthropic,
+          enabled: false,
+          models: [],
+        },
+        [ProviderNames.WebLLM]: {
+          provider: ProviderNames.WebLLM,
+          enabled: true,
+          models: [],
+        },
+        [ProviderNames.NCSAHosted]: {
+          provider: ProviderNames.NCSAHosted,
+          enabled: true,
+          models: [],
+        },
+      } as AllLLMProviders
     }
 
-    const allLLMProviders: AllLLMProviders = {}
+    const allLLMProviders: Partial<AllLLMProviders> = {}
 
     // Iterate through all possible providers
     for (const providerName of Object.values(ProviderNames)) {
-      let llmProvider = llmProviders[providerName]
-
-      if (!llmProvider) {
-        // Create a disabled provider entry
-        llmProvider = {
-          provider: ProviderNames[providerName],
-          enabled: false,
-          apiKey: undefined,
-          models: [],
-        } as LLMProvider
-      }
+      const llmProvider = llmProviders[providerName]
 
       switch (providerName) {
         case ProviderNames.Ollama:
-          allLLMProviders[providerName] = await getOllamaModels(
+          allLLMProviders[providerName] = (await getOllamaModels(
             llmProvider as OllamaProvider,
-          )
+          )) as OllamaProvider
           break
         case ProviderNames.OpenAI:
           allLLMProviders[providerName] = await getOpenAIModels(
@@ -97,27 +118,6 @@ const handler = async (
         default:
           console.warn(`Unhandled provider: ${providerName}`)
       }
-    }
-
-    // Don't show any API keys.
-    if (hideApiKeys) {
-      let cleanedLLMProviders = { ...allLLMProviders }
-      cleanedLLMProviders = Object.fromEntries(
-        Object.entries(allLLMProviders).map(([key, value]) => [
-          key,
-          {
-            ...value,
-            apiKey:
-              value.apiKey && value.apiKey !== ''
-                ? 'this key is defined, but hidden'
-                : undefined,
-          },
-        ]),
-      )
-      delete cleanedLLMProviders.NCSAHosted?.baseUrl
-      return NextResponse.json(cleanedLLMProviders as AllLLMProviders, {
-        status: 200,
-      })
     }
 
     // Call MIGRATEALLKEYS.ts

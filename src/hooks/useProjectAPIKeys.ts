@@ -4,10 +4,8 @@ import { AllLLMProviders } from '~/utils/modelProviders/LLMProvider'
 
 export function useGetProjectLLMProviders({
   projectName,
-  hideApiKeys,
 }: {
   projectName: string
-  hideApiKeys: boolean
 }) {
   // USAGE:
   // const {
@@ -18,7 +16,7 @@ export function useGetProjectLLMProviders({
   // } = useGetProjectLLMProviders(course_name)
 
   return useQuery({
-    queryKey: ['projectLLMProviders', projectName, hideApiKeys],
+    queryKey: ['projectLLMProviders', projectName],
     queryFn: async () => {
       const response = await fetch('/api/models', {
         method: 'POST',
@@ -27,7 +25,6 @@ export function useGetProjectLLMProviders({
         },
         body: JSON.stringify({
           projectName: projectName,
-          hideApiKeys: hideApiKeys,
         }),
       })
 

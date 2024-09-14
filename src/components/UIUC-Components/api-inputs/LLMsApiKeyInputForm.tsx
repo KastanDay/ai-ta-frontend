@@ -20,6 +20,7 @@ import {
   useSetProjectLLMProviders,
 } from '~/hooks/useProjectAPIKeys'
 import {
+  AllLLMProviders,
   AnthropicProvider,
   AzureProvider,
   NCSAHostedProvider,
@@ -346,7 +347,7 @@ export default function APIKeyInputForm() {
     isError: isErrorLLMProviders,
     error: errorLLMProviders,
     // enabled: !!projectName // Only run the query when projectName is available
-  } = useGetProjectLLMProviders({ projectName: projectName, hideApiKeys: true })
+  } = useGetProjectLLMProviders({ projectName: projectName })
 
   useEffect(() => {
     if (llmProviders) {
@@ -380,7 +381,7 @@ export default function APIKeyInputForm() {
       defaultTemperature: defaultTemp,
     },
     onSubmit: async ({ value }) => {
-      const llmProviders = value.providers || {}
+      const llmProviders = value.providers as AllLLMProviders
       mutation.mutate(
         {
           projectName,

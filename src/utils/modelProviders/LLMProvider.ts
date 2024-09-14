@@ -9,7 +9,7 @@ import {
   AnthropicModel,
   AnthropicModelID,
   AnthropicModels,
-} from '~/utils/modelProviders/anthropic'
+} from '~/utils/modelProviders/types/anthropic'
 import {
   AzureModel,
   AzureModelID,
@@ -133,13 +133,17 @@ export type LLMProvider =
   | WebLLMProvider
   | NCSAHostedProvider
 
-export type AllLLMProviders = {
-  [P in ProviderNames]?: LLMProvider & { provider: P }
-}
+// export type AllLLMProviders = {
+//   [P in ProviderNames]?: LLMProvider & { provider: P }
+// }
 
-// type AllLLMProviders = {
-//   [key in ProviderNames]: LLMProvider;
-// };
+// export interface AllLLMProviders {
+//   [key: string]: LLMProvider & { provider: ProviderNames } | undefined;
+// }
+
+export type AllLLMProviders = {
+  [key in ProviderNames]: LLMProvider
+}
 
 // Ordered list of preferred model IDs -- the first available model will be used as default
 export const preferredModelIds = [
@@ -155,7 +159,7 @@ export const selectBestModel = (
   convo?: Conversation,
 ): GenericSupportedModel => {
   const allModels = Object.values(allLLMProviders)
-    .flatMap((provider) => provider.models || [])
+    .flatMap((provider) => provider!.models || [])
     .filter((model) => model.enabled)
 
   // TODO: if project has global default model, use it.

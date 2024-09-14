@@ -1,5 +1,5 @@
 import { CourseMetadata } from '~/types/courseMetadata'
-import { parseOpenaiKey } from '~/utils/crypto'
+import { decryptKeyIfNeeded } from '~/utils/crypto'
 import { OpenAIModelID, OpenAIModels, OpenAIProvider } from '../types/openai'
 import OpenAI from 'openai'
 import { kv } from '@vercel/kv'
@@ -81,7 +81,7 @@ const getDisabledOpenAIModels = async ({
 
   let apiKey: string | undefined = undefined
   if (course_metadata.openai_api_key) {
-    apiKey = await parseOpenaiKey(course_metadata.openai_api_key)
+    apiKey = await decryptKeyIfNeeded(course_metadata.openai_api_key)
   }
 
   if (course_metadata && course_metadata.disabled_models) {

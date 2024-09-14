@@ -95,11 +95,11 @@ export interface ChatBody {
   temperature?: number
   conversation?: Conversation
   key: string
-  provider?: BaseLLMProvider // TODO: make mandatory
   course_name: string
   stream: boolean
   isImage?: boolean
   courseMetadata?: CourseMetadata
+  // provider?: BaseLLMProvider // TODO: make mandatory
   llmProviders?: AllLLMProviders
   // NO FOLDER ID
 }
