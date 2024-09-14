@@ -503,7 +503,7 @@ export default function APIKeyInputForm() {
                       >
                         {/* Providers */}
                         <div
-                          className="pb-8 pl-8"
+                          className="pb-8 pl-8 pr-8"
                           style={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -511,107 +511,119 @@ export default function APIKeyInputForm() {
                           }}
                         >
                           {isLoadingLLMProviders && (
-                            <>
-                              <br />
-                              <LoadingSpinner />
-                              <br />
-                            </>
+                            <Flex
+                              justify="center"
+                              align="center"
+                              className={`${montserrat_heading.variable} font-montserratHeading`}
+                            >
+                              Synchronizing LLM providers… smart settings
+                              inbound! <LoadingSpinner size="sm" />
+                            </Flex>
                           )}
 
-                          {llmProviders && !isLoadingLLMProviders && (
-                            <>
-                              <Title
-                                className={`${montserrat_heading.variable} mt-4 font-montserratHeading`}
-                                variant="gradient"
-                                gradient={{
-                                  from: 'gold',
-                                  to: 'white',
-                                  deg: 170,
-                                }}
-                                order={3}
-                              >
-                                Closed source LLMs
-                              </Title>
-                              <Text
-                                className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                size="md"
-                              >
-                                The best performers, but you gotta pay their
-                                prices and follow their rules.
-                              </Text>
-                              <Flex
-                                // direction={{ base: 'column', '130rem': 'row' }} // good for split screen card.
-                                direction={{ base: 'column', '75rem': 'row' }}
-                                wrap="wrap"
-                                justify="flex-start"
-                                align="flex-start"
-                                className="gap-4"
-                              >
-                                <AnthropicProviderInput
-                                  provider={
-                                    llmProviders.Anthropic as AnthropicProvider
-                                  }
-                                  form={form}
-                                />
-                                <OpenAIProviderInput
-                                  provider={
-                                    llmProviders.OpenAI as OpenAIProvider
-                                  }
-                                  form={form}
-                                />
-                                <AzureProviderInput
-                                  provider={llmProviders.Azure as AzureProvider}
-                                  form={form}
-                                />
-                              </Flex>
-                              <Title
-                                className={`-mb-3 ${montserrat_heading.variable} mt-4 font-montserratHeading`}
-                                variant="gradient"
-                                gradient={{
-                                  from: 'gold',
-                                  to: 'white',
-                                  deg: 170,
-                                }}
-                                order={3}
-                              >
-                                Open source LLMs
-                              </Title>
-                              <Text
-                                className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                size="md"
-                              >
-                                Your weights, your rules.
-                              </Text>
-                              <Flex
-                                // direction={{ base: 'column', '130rem': 'row' }} // good for split screen card.
-                                direction={{ base: 'column', '75rem': 'row' }}
-                                wrap="wrap"
-                                justify="flex-start"
-                                align="flex-start"
-                                className="gap-4"
-                              >
-                                {' '}
-                                <NCSAHostedLLmsProviderInput
-                                  provider={
-                                    llmProviders.NCSAHosted as NCSAHostedProvider
-                                  }
-                                  form={form}
-                                />
-                                <OllamaProviderInput
-                                  provider={
-                                    llmProviders.Ollama as OllamaProvider
-                                  }
-                                  form={form}
-                                />
-                                <WebLLMProviderInput
-                                  provider={
-                                    llmProviders.WebLLM as WebLLMProvider
-                                  }
-                                  form={form}
-                                />
-                              </Flex>
-                            </>
-                          )}
+                          {/* {llmProviders && ( */}
+                          <>
+                            <Title
+                              className={`${montserrat_heading.variable} mt-4 font-montserratHeading`}
+                              variant="gradient"
+                              gradient={{
+                                from: 'gold',
+                                to: 'white',
+                                deg: 170,
+                              }}
+                              order={3}
+                            >
+                              Closed source LLMs
+                            </Title>
+                            <Text
+                              className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                              size="md"
+                            >
+                              The best performers, but you gotta pay their
+                              prices and follow their rules.
+                            </Text>
+                            <Flex
+                              // direction={{ base: 'column', '130rem': 'row' }} // good for split screen card.
+                              direction={{ base: 'column', '75rem': 'row' }}
+                              wrap="wrap"
+                              justify="space-between"
+                              align="flex-start"
+                              className="gap-4"
+                              w={'100%'}
+                            >
+                              <AnthropicProviderInput
+                                provider={
+                                  llmProviders?.Anthropic as AnthropicProvider
+                                }
+                                form={form}
+                                isLoading={isLoadingLLMProviders}
+                              />
+                              <OpenAIProviderInput
+                                provider={
+                                  llmProviders?.OpenAI as OpenAIProvider
+                                }
+                                form={form}
+                                isLoading={isLoadingLLMProviders}
+                              />
+                              <AzureProviderInput
+                                provider={llmProviders?.Azure as AzureProvider}
+                                form={form}
+                                isLoading={isLoadingLLMProviders}
+                              />
+                            </Flex>
+                            <Title
+                              className={`-mb-3 ${montserrat_heading.variable} mt-4 font-montserratHeading`}
+                              variant="gradient"
+                              gradient={{
+                                from: 'gold',
+                                to: 'white',
+                                deg: 170,
+                              }}
+                              order={3}
+                            >
+                              Open source LLMs
+                            </Title>
+                            <Text
+                              className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                              size="md"
+                            >
+                              Your weights, your rules.
+                            </Text>
+                            <Flex
+                              // direction={{ base: 'column', '130rem': 'row' }} // good for split screen card.
+                              direction={{ base: 'column', '75rem': 'row' }}
+                              wrap="wrap"
+                              justify="space-between"
+                              align="flex-start"
+                              className="gap-4"
+                              w={'100%'}
+                            >
+                              {' '}
+                              <NCSAHostedLLmsProviderInput
+                                provider={
+                                  llmProviders?.NCSAHosted as NCSAHostedProvider
+                                }
+                                form={form}
+                                isLoading={isLoadingLLMProviders}
+                              />
+                              <OllamaProviderInput
+                                provider={
+                                  llmProviders?.Ollama as OllamaProvider
+                                }
+                                form={form}
+                                isLoading={isLoadingLLMProviders}
+                              />
+                              <WebLLMProviderInput
+                                provider={
+                                  llmProviders?.WebLLM as WebLLMProvider
+                                }
+                                form={form}
+                                isLoading={isLoadingLLMProviders}
+                              />
+                            </Flex>
+                          </>
+
+                          {/* } */}
                         </div>
                       </form>
                     </Stack>
