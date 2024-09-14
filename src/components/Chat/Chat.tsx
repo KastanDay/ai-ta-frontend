@@ -68,6 +68,7 @@ import { MLCEngine } from '@mlc-ai/web-llm'
 import * as webllm from '@mlc-ai/web-llm'
 import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import { handleImageContent } from '~/utils/streamProcessing'
+import { AllLLMProviders } from '~/utils/modelProviders/LLMProvider'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -149,6 +150,10 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     handleUpdateConversation,
     dispatch: homeDispatch,
   } = useContext(HomeContext)
+
+  useEffect(() => {
+    console.log('LLM Providers in Chat.tsx: ', llmProviders)
+  }, [llmProviders])
 
   useEffect(() => {
     const loadModel = async () => {
@@ -295,7 +300,9 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
       plugin: Plugin | null = null,
       tools: UIUCTool[],
       enabledDocumentGroups: string[],
+      llmProviders: AllLLMProviders,
     ) => {
+      console.log('LLM Providers in handleSend: ', llmProviders)
       setCurrentMessage(message)
       resetMessageStates()
 
@@ -423,6 +430,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             homeDispatch({ field: 'isRunningTool', value: false })
           }
         }
+        console.log('LLM Providers: ', llmProviders)
 
         const chatBody: ChatBody = constructChatBody(
           updatedConversation,
@@ -478,6 +486,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           }
         } else {
           try {
+            console.log('chatBody in Chat.tsx: ', chatBody)
             // Route to the specific model provider
             response = await routeModelRequest(chatBody, controller)
           } catch (error) {
@@ -750,7 +759,14 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
         ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
       }
 
-      handleSend(currentMessage, 2, null, tools, enabledDocumentGroups)
+      handleSend(
+        currentMessage,
+        2,
+        null,
+        tools,
+        enabledDocumentGroups,
+        llmProviders,
+      )
     }
   }, [currentMessage, handleSend])
 
@@ -1012,6 +1028,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                             null,
                             tools,
                             enabledDocumentGroups,
+                            llmProviders,
                           )
                         }}
                         onImageUrlsUpdate={onImageUrlsUpdate}
@@ -1031,7 +1048,15 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
                 textareaRef={textareaRef}
                 onSend={(message, plugin) => {
                   // setCurrentMessage(message)
-                  handleSend(message, 0, plugin, tools, enabledDocumentGroups)
+                  console.log('llm providers before handleSend: ', llmProviders)
+                  handleSend(
+                    message,
+                    0,
+                    plugin,
+                    tools,
+                    enabledDocumentGroups,
+                    llmProviders,
+                  )
                 }}
                 onScrollDownClick={handleScrollDown}
                 onRegenerate={handleRegenerate}

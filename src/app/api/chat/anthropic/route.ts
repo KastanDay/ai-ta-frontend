@@ -1,77 +1,68 @@
-import { createOllama } from 'ollama-ai-provider'
-import { CoreMessage, StreamingTextResponse, streamText } from 'ai'
-import { Conversation } from '~/types/chat'
-import { OllamaProvider } from '~/utils/modelProviders/LLMProvider'
-import { OllamaModel } from '~/utils/modelProviders/ollama'
+import { CoreMessage, streamText } from 'ai'
+import { ChatBody, Conversation } from '~/types/chat'
+import { createAnthropic } from '@ai-sdk/anthropic'
 
-// export const runtime = 'edge' // Does NOT work
-export const dynamic = 'force-dynamic' // known bug with Vercel: https://sdk.vercel.ai/docs/troubleshooting/common-issues/streaming-not-working-on-vercel
+export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
-// export async function POST(req: Request) {
-//   /*
-//   Run Ollama chat, given a text string. Return a streaming response promise.
-//   */
-//   const {
-//     conversation,
-//     ollamaProvider,
-//   }: {
-//     conversation: Conversation
-//     ollamaProvider: OllamaProvider
-//   } = await req.json()
+export async function POST(req: Request) {
+  const {
+    chatBody,
+  }: {
+    chatBody: ChatBody
+  } = await req.json()
 
-//   const ollama = createOllama({
-//     baseURL: `${process.env.OLLAMA_SERVER_URL}/api`,
-//     // baseURL: `${ollamaProvider.baseUrl}/api`, // TODO use user-defiend base URL...
-//   })
+  console.log('chatBody: ', chatBody)
 
-//   if (conversation.messages.length === 0) {
-//     throw new Error('Conversation messages array is empty')
-//   }
+  const conversation = chatBody.conversation!
 
-//   const result = await streamText({
-//     model: ollama('llama3.1:70b'),
-//     messages: convertConversatonToVercelAISDKv3(conversation),
-//     temperature: conversation.temperature,
-//     maxTokens: 4096, // output tokens
-//   })
-//   return result.toTextStreamResponse()
-// }
+  console.log('conversation', conversation)
 
-function convertConversatonToVercelAISDKv3(
+  const anthropic = createAnthropic({
+    apiKey: chatBody.llmProviders?.Anthropic?.apiKey,
+  })
+
+  if (conversation.messages.length === 0) {
+    throw new Error('Conversation messages array is empty')
+  }
+
+  console.log('model', conversation.model.id)
+
+  const model = anthropic(conversation.model.id)
+
+  const result = await streamText({
+    model: model,
+    messages: convertConversationToVercelAISDKv3(conversation),
+    temperature: conversation.temperature,
+    maxTokens: 4096,
+  })
+  return result.toTextStreamResponse()
+}
+
+function convertConversationToVercelAISDKv3(
   conversation: Conversation,
 ): CoreMessage[] {
   const coreMessages: CoreMessage[] = []
 
-  // Add system message as the first message
   const systemMessage = conversation.messages.findLast(
     (msg) => msg.latestSystemMessage !== undefined,
   )
   if (systemMessage) {
-    console.log(
-      'Found system message, latestSystemMessage: ',
-      systemMessage.latestSystemMessage,
-    )
     coreMessages.push({
       role: 'system',
       content: systemMessage.latestSystemMessage || '',
     })
   }
 
-  // Convert other messages
   conversation.messages.forEach((message, index) => {
-    if (message.role === 'system') return // Skip system message as it's already added
+    if (message.role === 'system') return
 
     let content: string
     if (index === conversation.messages.length - 1 && message.role === 'user') {
-      // Use finalPromtEngineeredMessage for the most recent user message
       content = message.finalPromtEngineeredMessage || ''
-
-      // just for Llama 3.1 70b, remind it to use proper citation format.
       content +=
         '\n\nIf you use the <Potentially Relevant Documents> in your response, please remember cite your sources using the required formatting, e.g. "The grass is green. [29, page: 11]'
     } else if (Array.isArray(message.content)) {
-      // Combine text content from array
       content = message.content
         .filter((c) => c.type === 'text')
         .map((c) => c.text)
@@ -90,7 +81,6 @@ function convertConversatonToVercelAISDKv3(
 }
 
 import { NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 import {
   AnthropicModels,
   AnthropicModel,

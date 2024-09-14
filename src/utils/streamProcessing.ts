@@ -26,6 +26,7 @@ import { OllamaModelIDs } from './modelProviders/ollama'
 import { webLLMModels } from './modelProviders/WebLLM'
 import { OpenAIModelID } from './modelProviders/types/openai'
 import { AzureModelID } from './modelProviders/azure'
+import { AnthropicModelID } from './modelProviders/anthropic'
 
 export const config = {
   runtime: 'edge',
@@ -872,6 +873,22 @@ export const routeModelRequest = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ conversation: selectedConversation }),
+    })
+  } else if (
+    Object.values(AnthropicModelID).includes(
+      selectedConversation.model.id as any,
+    )
+  ) {
+    console.log('Anthropic model: ', chatBody)
+    const url = baseUrl
+      ? `${baseUrl}/api/chat/anthropic`
+      : '/api/chat/anthropic'
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ chatBody }),
     })
   } else if (
     Object.values(OpenAIModelID).includes(
