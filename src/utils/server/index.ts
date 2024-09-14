@@ -17,7 +17,7 @@ import {
   type ReconnectInterval,
   createParser,
 } from 'eventsource-parser'
-import { decrypt, isEncrypted } from '../crypto'
+import { decrypt, decryptKeyIfNeeded, isEncrypted } from '../crypto'
 import {
   AllLLMProviders,
   AzureProvider,
@@ -51,21 +51,18 @@ export const OpenAIStream = async (
   messages: OpenAIChatMessage[],
   stream: boolean,
 ) => {
-  console.debug('In OpenAIStream, model: ', model)
-  // messages.forEach((message, index) => {
-  //   console.log(`Message ${index}:`, message.role, message.content)
-  // })
-
   let provider
   if (llmProviders) {
     if (
       Object.values(OpenAIModels).some((oaiModel) => oaiModel.id === model.id)
     ) {
       provider = llmProviders[ProviderNames.OpenAI] as OpenAIProvider
+      provider.apiKey = await decryptKeyIfNeeded(provider.apiKey!)
     } else if (
       Object.values(AzureModels).some((oaiModel) => oaiModel.id === model.id)
     ) {
       provider = llmProviders[ProviderNames.Azure] as AzureProvider
+      provider.apiKey = await decryptKeyIfNeeded(provider.apiKey!)
     } else {
       throw new Error('Unsupported model provider')
     }
@@ -75,16 +72,6 @@ export const OpenAIStream = async (
   let apiType = ProviderNames.OpenAI
   let endpoint = OPENAI_API_HOST
   let url = `${endpoint}/v1/chat/completions`
-
-  // if (key && isEncrypted(key)) {
-  //   const decryptedText = await decrypt(
-  //     key,
-  //     process.env.NEXT_PUBLIC_SIGNING_KEY as string,
-  //   )
-  //   apiKey = decryptedText as string
-  //   // console.log('Decrypted api key for openai chat: ', apiKey)
-  //   // console.log('Decrypted api key for openai chat')
-  // }
 
   function isAzureProvider(provider: any): provider is AzureProvider {
     return provider && provider.apiKey && !provider.apiKey.startsWith('sk-')

@@ -1,5 +1,5 @@
 import { OllamaModel, OllamaModels } from '~/utils/modelProviders/ollama'
-import { WebllmModel, webLLMModels } from '~/utils/modelProviders/WebLLM'
+import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import {
   OpenAIModel,
   OpenAIModelID,
@@ -20,7 +20,6 @@ import { NCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
 
 export enum ProviderNames {
   Ollama = 'Ollama',
-  // OpenAI = OpenAIProviderName.OpenAI,
   OpenAI = 'OpenAI',
   Azure = 'Azure',
   Anthropic = 'Anthropic',

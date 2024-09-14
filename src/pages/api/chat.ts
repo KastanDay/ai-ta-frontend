@@ -39,8 +39,6 @@ const handler = async (req: Request): Promise<NextResponse> => {
       llmProviders,
     } = (await req.json()) as ChatBody
 
-    const openAIKey = await decryptKeyIfNeeded(key)
-
     if (!conversation) {
       console.error(
         'No conversation provided. It seems the `messages` array was empty.',

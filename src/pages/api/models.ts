@@ -18,6 +18,7 @@ import { kv } from '@vercel/kv'
 import { getNCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
 // import { migrateAllKeys } from './UIUC-api/MIGRATEALLKEYS'
 import { getOpenAIModels } from '~/utils/modelProviders/routes/openai'
+import { decryptKeyIfNeeded } from '~/utils/crypto'
 
 export const config = {
   runtime: 'edge',
@@ -40,6 +41,8 @@ const handler = async (
 
     // Fetch the project's API keys, filtering out all keys if requested
     let llmProviders = (await kv.get(`${projectName}-llms`)) as AllLLMProviders
+
+    console.log('INITIAL -- llmProviders', llmProviders)
 
     if (!llmProviders) {
       // Initialize providers if they don't exist
@@ -75,6 +78,30 @@ const handler = async (
           models: [],
         },
       } as AllLLMProviders
+    } else {
+      // Decrypt API keys
+      const processProviders = async () => {
+        for (const providerName in llmProviders) {
+          if (providerName == 'defaultModel' || providerName == 'defaultTemp') {
+            continue
+          }
+          const typedProviderName = providerName as keyof AllLLMProviders
+          const provider = llmProviders[typedProviderName]
+          console.log('LOOP -- provider', provider)
+          if (
+            provider &&
+            'apiKey' in provider &&
+            provider.apiKey !== 'this key is defined, but hidden'
+          ) {
+            llmProviders[typedProviderName] = {
+              ...provider,
+              apiKey:
+                (await decryptKeyIfNeeded(provider.apiKey!)) ?? provider.apiKey,
+            } as LLMProvider & { provider: typeof typedProviderName }
+          }
+        }
+      }
+      await processProviders()
     }
 
     const allLLMProviders: Partial<AllLLMProviders> = {}
