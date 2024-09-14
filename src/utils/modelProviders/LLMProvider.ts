@@ -4,7 +4,7 @@ import {
   OpenAIModel,
   OpenAIModelID,
   OpenAIModels,
-} from '~/utils/modelProviders/openai'
+} from '~/utils/modelProviders/types/openai'
 import {
   AnthropicModel,
   AnthropicModelID,
@@ -15,12 +15,12 @@ import {
   AzureModelID,
   AzureModels,
 } from '~/utils/modelProviders/azure'
-import { Conversation } from './chat'
-import { AzureOpenAI } from 'openai'
+import { Conversation } from '../../types/chat'
 import { NCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
 
 export enum ProviderNames {
   Ollama = 'Ollama',
+  // OpenAI = OpenAIProviderName.OpenAI,
   OpenAI = 'OpenAI',
   Azure = 'Azure',
   Anthropic = 'Anthropic',

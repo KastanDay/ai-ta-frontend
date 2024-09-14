@@ -1,5 +1,9 @@
 // import { OllamaProvider } from 'ollama-ai-provider'
-import { LLMProvider, OllamaProvider, ProviderNames } from '~/types/LLMProvider'
+import {
+  LLMProvider,
+  OllamaProvider,
+  ProviderNames,
+} from '~/utils/modelProviders/LLMProvider'
 
 export interface OllamaModel {
   id: string

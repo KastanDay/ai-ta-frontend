@@ -5,7 +5,10 @@ import {
 } from '@mlc-ai/web-llm'
 import { Conversation } from '~/types/chat'
 import { ModelRecord, prebuiltAppConfig } from './ConfigWebLLM'
-import { ProviderNames, WebLLMProvider } from '~/types/LLMProvider'
+import {
+  ProviderNames,
+  WebLLMProvider,
+} from '~/utils/modelProviders/LLMProvider'
 
 // TODO: finish this message interface. Write a converter between `Message` and `WebLLMMessage`
 export interface WebLLMMessage {

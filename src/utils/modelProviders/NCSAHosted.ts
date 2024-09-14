@@ -1,5 +1,8 @@
 // import { OllamaProvider } from 'ollama-ai-provider'
-import { NCSAHostedProvider, ProviderNames } from '~/types/LLMProvider'
+import {
+  NCSAHostedProvider,
+  ProviderNames,
+} from '~/utils/modelProviders/LLMProvider'
 
 export interface OllamaModel {
   id: string

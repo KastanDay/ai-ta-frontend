@@ -13,7 +13,7 @@ import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Group, Select, Title, Text } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
-import { OpenAIModel } from '~/utils/modelProviders/openai'
+import { OpenAIModel } from '~/utils/modelProviders/types/openai'
 import ChatUI, { webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { modelCached } from './UserSettings'
 import Image from 'next/image'
@@ -23,7 +23,7 @@ import {
   LLMProvider,
   ProviderNames,
   selectBestModel,
-} from '~/types/LLMProvider'
+} from '~/utils/modelProviders/LLMProvider'
 import { SelectItemProps } from '@mantine/core'
 import {
   recommendedModelIds,

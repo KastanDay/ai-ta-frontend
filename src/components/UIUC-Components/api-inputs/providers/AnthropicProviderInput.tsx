@@ -3,7 +3,10 @@ import { Text, Switch, Card } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
 import { APIKeyInput } from '../LLMsApiKeyInputForm'
 import { ModelToggles } from '../ModelToggles'
-import { AnthropicProvider, ProviderNames } from '~/types/LLMProvider'
+import {
+  AnthropicProvider,
+  ProviderNames,
+} from '~/utils/modelProviders/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function AnthropicProviderInput({

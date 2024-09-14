@@ -19,12 +19,12 @@ import {
   AllSupportedModels,
   GenericSupportedModel,
   VisionCapableModels,
-} from '~/types/LLMProvider'
+} from '~/utils/modelProviders/LLMProvider'
 import fetchMQRContexts from '~/pages/api/getContextsMQR'
 import fetchContexts from '~/pages/api/getContexts'
 import { OllamaModelIDs } from './modelProviders/ollama'
 import { webLLMModels } from './modelProviders/WebLLM'
-import { OpenAIModelID } from './modelProviders/openai'
+import { OpenAIModelID } from './modelProviders/types/openai'
 import { AzureModelID } from './modelProviders/azure'
 
 export const config = {

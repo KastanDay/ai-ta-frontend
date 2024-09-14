@@ -4,7 +4,7 @@ import {
   AnySupportedModel,
   BaseLLMProvider,
   AllLLMProviders,
-} from './LLMProvider'
+} from '../utils/modelProviders/LLMProvider'
 
 export interface Conversation {
   // NO KEY

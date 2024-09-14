@@ -1,5 +1,5 @@
-import { AnthropicProvider, ProviderNames } from '~/types/LLMProvider'
 import Anthropic from '@anthropic-ai/sdk'
+import { AnthropicProvider, ProviderNames } from './LLMProvider'
 
 export interface AnthropicModel {
   id: string

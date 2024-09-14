@@ -1,6 +1,6 @@
 import { QueryClient, useMutation, useQuery } from '@tanstack/react-query'
 import { showConfirmationToast } from '~/components/UIUC-Components/api-inputs/LLMsApiKeyInputForm'
-import { AllLLMProviders } from '~/types/LLMProvider'
+import { AllLLMProviders } from '~/utils/modelProviders/LLMProvider'
 
 export function useGetProjectLLMProviders({
   projectName,

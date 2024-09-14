@@ -2,7 +2,10 @@ import React from 'react'
 import { Text, Switch, Card, TextInput } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
 import { ModelToggles } from '../ModelToggles'
-import { OllamaProvider, ProviderNames } from '~/types/LLMProvider'
+import {
+  OllamaProvider,
+  ProviderNames,
+} from '~/utils/modelProviders/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function OllamaProviderInput({

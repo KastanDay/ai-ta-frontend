@@ -1,7 +1,7 @@
 import { createOllama } from 'ollama-ai-provider'
 import { CoreMessage, StreamingTextResponse, streamText } from 'ai'
 import { Conversation } from '~/types/chat'
-import { OllamaProvider } from '~/types/LLMProvider'
+import { OllamaProvider } from '~/utils/modelProviders/LLMProvider'
 import { OllamaModel } from '~/utils/modelProviders/ollama'
 
 // export const runtime = 'edge' // Does NOT work

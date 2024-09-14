@@ -1,7 +1,7 @@
 import React from 'react'
 import { IconCheck, IconX } from '@tabler/icons-react'
 import { Switch, Stack } from '@mantine/core'
-import { LLMProvider } from '~/types/LLMProvider'
+import { LLMProvider } from '~/utils/modelProviders/LLMProvider'
 
 export function ModelToggles({
   form,

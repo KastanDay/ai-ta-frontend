@@ -1,5 +1,8 @@
 import { Message, type OpenAIChatMessage } from '@/types/chat'
-import { OpenAIModels, type OpenAIModel } from '~/utils/modelProviders/openai'
+import {
+  OpenAIModels,
+  type OpenAIModel,
+} from '~/utils/modelProviders/types/openai'
 
 import {
   AZURE_DEPLOYMENT_ID,
@@ -20,7 +23,7 @@ import {
   AzureProvider,
   OpenAIProvider,
   ProviderNames,
-} from '~/types/LLMProvider'
+} from '~/utils/modelProviders/LLMProvider'
 import { AzureModels } from '../modelProviders/azure'
 
 export class OpenAIError extends Error {

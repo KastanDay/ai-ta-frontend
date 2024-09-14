@@ -35,7 +35,7 @@ import {
   GenericSupportedModel,
   OpenAIProvider,
   ProviderNames,
-} from '~/types/LLMProvider'
+} from '~/utils/modelProviders/LLMProvider'
 import { fetchEnabledDocGroups } from '~/utils/dbUtils'
 
 export const runtime = 'edge'

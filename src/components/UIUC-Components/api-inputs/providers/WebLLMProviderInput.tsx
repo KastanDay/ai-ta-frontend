@@ -2,7 +2,10 @@ import React from 'react'
 import { Text, Switch, Card } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
 import { ModelToggles } from '../ModelToggles'
-import { ProviderNames, WebLLMProvider } from '~/types/LLMProvider'
+import {
+  ProviderNames,
+  WebLLMProvider,
+} from '~/utils/modelProviders/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function WebLLMProviderInput({

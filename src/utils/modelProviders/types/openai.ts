@@ -1,12 +1,13 @@
-import { kv } from '@vercel/kv'
-import { CourseMetadata } from '~/types/courseMetadata'
-import { OpenAIProvider, ProviderNames } from '~/types/LLMProvider'
-import { OpenAI } from 'openai'
-import { parseOpenaiKey } from '../crypto'
+import { ProviderNames } from '../LLMProvider'
 
-// export const config = {
-//   runtime: 'edge',
-// }
+export interface OpenAIProvider {
+  provider: ProviderNames.OpenAI
+  enabled: boolean
+  baseUrl?: string
+  apiKey?: string
+  error?: string
+  models?: OpenAIModel[]
+}
 
 export interface OpenAIModel {
   id: string

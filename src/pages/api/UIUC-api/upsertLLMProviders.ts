@@ -2,7 +2,7 @@
 import { kv } from '@vercel/kv'
 import { type NextRequest, NextResponse } from 'next/server'
 import { ProjectWideLLMProviders } from '~/types/courseMetadata'
-import { AllLLMProviders } from '~/types/LLMProvider'
+import { AllLLMProviders } from '~/utils/modelProviders/LLMProvider'
 
 export const runtime = 'edge'
 

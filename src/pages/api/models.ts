@@ -8,16 +8,16 @@ import {
   OpenAIProvider,
   ProviderNames,
   WebLLMProvider,
-} from '~/types/LLMProvider'
+} from '~/utils/modelProviders/LLMProvider'
 import { getOllamaModels } from '~/utils/modelProviders/ollama'
 import { getAzureModels } from '~/utils/modelProviders/azure'
 import { getAnthropicModels } from '~/utils/modelProviders/anthropic'
-import { getWebLLMModels, webLLMModels } from '~/utils/modelProviders/WebLLM'
+import { getWebLLMModels } from '~/utils/modelProviders/WebLLM'
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
 import { getNCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
-import { migrateAllKeys } from './UIUC-api/MIGRATEALLKEYS'
-import { getOpenAIModels } from '~/app/api/chat/openAI/route'
+// import { migrateAllKeys } from './UIUC-api/MIGRATEALLKEYS'
+import { getOpenAIModels } from '~/utils/modelProviders/routes/openai'
 
 export const config = {
   runtime: 'edge',

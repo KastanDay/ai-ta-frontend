@@ -1,4 +1,7 @@
-import { AzureProvider, ProviderNames } from '~/types/LLMProvider'
+import {
+  AzureProvider,
+  ProviderNames,
+} from '~/utils/modelProviders/LLMProvider'
 
 export const config = {
   runtime: 'edge',

@@ -27,7 +27,7 @@ import {
   OpenAIProvider,
   ProviderNames,
   WebLLMProvider,
-} from '~/types/LLMProvider'
+} from '~/utils/modelProviders/LLMProvider'
 import { notifications } from '@mantine/notifications'
 import {
   IconAlertCircle,

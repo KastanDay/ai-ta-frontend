@@ -1,5 +1,8 @@
 import { Conversation } from '@/types/chat'
-import { OpenAIModelID, OpenAIModels } from '~/utils/modelProviders/openai'
+import {
+  OpenAIModelID,
+  OpenAIModels,
+} from '~/utils/modelProviders/types/openai'
 
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from './const'
 

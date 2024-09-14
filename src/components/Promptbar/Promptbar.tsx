@@ -18,7 +18,7 @@ import PromptbarContext from './PromptBar.context'
 import { PromptbarInitialState, initialState } from './Promptbar.state'
 
 import { v4 as uuidv4 } from 'uuid'
-import { OpenAIModels } from '~/utils/modelProviders/openai'
+import { OpenAIModels } from '~/utils/modelProviders/types/openai'
 
 const Promptbar = () => {
   const { t } = useTranslation('promptbar')

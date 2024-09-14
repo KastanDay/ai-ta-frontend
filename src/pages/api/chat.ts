@@ -19,9 +19,9 @@ import {
 } from '@/types/chat'
 import { NextResponse } from 'next/server'
 import { parseOpenaiKey } from '~/utils/crypto'
-import { ProviderNames } from '~/types/LLMProvider'
+import { ProviderNames } from '~/utils/modelProviders/LLMProvider'
 import { AzureModels } from '~/utils/modelProviders/azure'
-import { OpenAIModels } from '~/utils/modelProviders/openai'
+import { OpenAIModels } from '~/utils/modelProviders/types/openai'
 import OpenAI from 'openai'
 
 export const config = {
