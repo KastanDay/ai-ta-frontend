@@ -27,31 +27,31 @@ export const AzureModels: Record<AzureModelID, AzureModel> = {
     id: AzureModelID.GPT_3_5,
     name: 'GPT-3.5',
     tokenLimit: 16385,
-    enabled: false,
+    enabled: true,
   },
   [AzureModelID.GPT_4]: {
     id: AzureModelID.GPT_4,
     name: 'GPT-4',
     tokenLimit: 8192,
-    enabled: false,
+    enabled: true,
   },
   [AzureModelID.GPT_4_Turbo]: {
     id: AzureModelID.GPT_4_Turbo,
     name: 'GPT-4 Turbo',
     tokenLimit: 128000,
-    enabled: false,
+    enabled: true,
   },
   [AzureModelID.GPT_4o]: {
     id: AzureModelID.GPT_4o,
     name: 'GPT-4o',
     tokenLimit: 128000,
-    enabled: false,
+    enabled: true,
   },
   [AzureModelID.GPT_4o_mini]: {
     id: AzureModelID.GPT_4o_mini,
     name: 'GPT-4o-mini',
     tokenLimit: 128000,
-    enabled: false,
+    enabled: true,
   },
 }
 

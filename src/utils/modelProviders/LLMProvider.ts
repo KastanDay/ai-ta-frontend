@@ -39,7 +39,6 @@ export const VisionCapableModels: Set<
   OpenAIModelID | AzureModelID | AnthropicModelID
 > = new Set([
   OpenAIModelID.GPT_4_Turbo,
-  OpenAIModelID.GPT_4_AZURE_04_09,
   OpenAIModelID.GPT_4o,
   OpenAIModelID.GPT_4o_mini,
 

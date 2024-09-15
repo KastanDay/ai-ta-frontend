@@ -2,6 +2,13 @@ import { kv } from '@vercel/kv'
 import { type NextRequest, NextResponse } from 'next/server'
 import { getAllCourseMetadata } from './getAllCourseMetadata'
 import { CourseMetadata } from '~/types/courseMetadata'
+import OpenAI from 'openai'
+import {
+  OpenAIModelID,
+  OpenAIModels,
+} from '~/utils/modelProviders/types/openai'
+import { ProviderNames } from '~/utils/modelProviders/LLMProvider'
+import { encryptKeyIfNeeded } from '~/utils/crypto'
 
 export const runtime = 'edge'
 
@@ -63,9 +70,116 @@ export const migrateAllKeys = async () => {
 
   console.log('Matching courses:', JSON.stringify(matchingCourses, null, 2))
 
-  return {
-    success: true,
-    message: 'Migration check completed',
-    matchingCoursesCount: matchingCourses.length,
+  // Step 3: Iterate through matching courses
+  for (const courseObj of matchingCourses) {
+    const [courseName, metadata] = Object.entries(courseObj)[0] ?? []
+    if (!courseName || !metadata) continue
+    console.log(`Processing course: ${courseName}`)
+
+    try {
+      // 1. Decrypt the OpenAI API key
+      if (metadata.openai_api_key) {
+        const decryptedKey = await legacy___parseOpenaiKey(
+          metadata.openai_api_key,
+        )
+        console.log('Decrypted key:', decryptedKey)
+
+        const encryptedKey = await encryptKeyIfNeeded(decryptedKey)
+
+        // Set all models enabled by default
+        const openAIModels = Object.values(OpenAIModels)
+
+        if (metadata.disabled_models) {
+          console.log('Disabled models:', metadata.disabled_models)
+
+          // Iterate through all OpenAI models, assume they're enabled by default unless there's a match with a model that's disabled by ID.
+          // If a match is found, set the model to disabled.
+          for (const model of openAIModels) {
+            if (metadata.disabled_models.includes(model.id)) {
+              model.enabled = false
+            } else {
+              model.enabled = true
+            }
+          }
+          // console.log("OpenAI objects:", openAIModels)
+        } else {
+          // No disabled models, so all are enabled...
+        }
+
+        // HERE WE UPSERT --
+
+        const final_LLMs = {
+          defaultModel: OpenAIModelID.GPT_4o_mini,
+          defaultTemp: 0.1,
+          [ProviderNames.OpenAI]: {
+            provider: ProviderNames.OpenAI,
+            enabled: true,
+            models: openAIModels,
+            apiKey: encryptedKey,
+          },
+        }
+        console.log('Final LLMs:', final_LLMs)
+
+        // kv.set(`${courseName}-llms`, final_LLMs)
+        await new Promise((resolve) => setTimeout(resolve, 101))
+      }
+      // dddd
+
+      console.log(`Successfully processed course: ${courseName}`)
+    } catch (error) {
+      console.error(`Error processing course ${courseName}:`, error)
+    }
   }
+}
+
+export const legacy___parseOpenaiKey = async (openaiKey: string) => {
+  if (openaiKey && legacy___isEncrypted(openaiKey)) {
+    const decryptedText = await legacy___decrypt(
+      openaiKey,
+      process.env.NEXT_PUBLIC_SIGNING_KEY as string,
+    )
+    openaiKey = decryptedText as string
+  } else {
+    // console.log('Using client key for openai chat: ', apiKey)
+  }
+  return openaiKey
+}
+
+export const legacy___decrypt = async (encryptedText: string, key: string) => {
+  if (!encryptedText || !key) {
+    console.error(
+      'Error decrypting because encryptedText or key is not available',
+      encryptedText,
+      key,
+    )
+    return
+  }
+  const [encryptedBase64, ivBase64] = encryptedText.split('.')
+  if (!ivBase64 || !encryptedBase64) {
+    throw new Error('Invalid API key format')
+  }
+  const pwUtf8 = new TextEncoder().encode(key)
+  const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8)
+  const iv = Buffer.from(ivBase64, 'base64')
+  const alg = { name: 'AES-GCM', iv: new Uint8Array(iv) }
+  const decryptKey = await crypto.subtle.importKey('raw', pwHash, alg, false, [
+    'decrypt',
+  ])
+  const ptBuffer = await crypto.subtle.decrypt(
+    alg,
+    decryptKey,
+    Buffer.from(encryptedBase64, 'base64'),
+  )
+  return new TextDecoder().decode(ptBuffer)
+}
+
+export function legacy___isEncrypted(str: string) {
+  const base64Regex =
+    /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/
+  const parts = str.split('.')
+  return (
+    parts.length === 2 &&
+    base64Regex.test(parts[0] as string) &&
+    base64Regex.test(parts[1] as string)
+  )
 }
