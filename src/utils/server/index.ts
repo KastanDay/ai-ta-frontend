@@ -96,6 +96,10 @@ export const OpenAIStream = async (
   // This could be logged and tracked better
   // console.log("openai api body: ", body)
 
+  if (!url) {
+    throw new Error('URL is undefined')
+  }
+
   const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
