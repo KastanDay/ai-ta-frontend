@@ -145,12 +145,18 @@ export type AllLLMProviders = {
 
 // Ordered list of preferred model IDs -- the first available model will be used as default
 export const preferredModelIds = [
-  AnthropicModelID.Claude_3_5_Sonnet,
   OpenAIModelID.GPT_4o_mini,
   OpenAIModelID.GPT_4o,
   OpenAIModelID.GPT_4_Turbo,
   OpenAIModelID.GPT_4,
   OpenAIModelID.GPT_3_5,
+  AzureModelID.GPT_4o_mini,
+  AzureModelID.GPT_4o,
+  AzureModelID.GPT_4_Turbo,
+  AzureModelID.GPT_4,
+  AnthropicModelID.Claude_3_5_Sonnet,
+  AnthropicModelID.Claude_3_Opus,
+  AnthropicModelID.Claude_3_Haiku,
 ]
 
 export const selectBestModel = (
@@ -158,9 +164,11 @@ export const selectBestModel = (
   convo?: Conversation,
 ): GenericSupportedModel => {
   const allModels = Object.values(allLLMProviders)
+    .filter((provider) => provider!.enabled)
     .flatMap((provider) => provider!.models || [])
     .filter((model) => model.enabled)
 
+  // console.log('in selectBestModel with models: ', allModels)
   // TODO: if project has global default model, use it.
   // First, try to use the model from the conversation if it exists and is valid
   // if (
@@ -174,16 +182,33 @@ export const selectBestModel = (
   //     return conversationModel
   //   }
   // }
+  const defaultModelId = localStorage.getItem('defaultModel')
+  // console.log('defaultModelId from localstorage: ', defaultModelId)
+  if (defaultModelId && allModels.find((m) => m.id === defaultModelId)) {
+    const defaultModel = allModels
+      .filter((model) => model.enabled)
+      .find((m) => m.id === defaultModelId)
+    // console.log('FOUND DEFAULT MODEL in localStorage: ', defaultModel)
+    if (defaultModel) {
+      return defaultModel
+    }
+  }
 
   // If the conversation model is not available or invalid, use the preferredModelIds
   for (const preferredId of preferredModelIds) {
-    const model = allModels.find((m) => m.id === preferredId)
+    const model = allModels
+      .filter((model) => model.enabled)
+      .find((m) => m.id === preferredId)
     if (model) {
+      // console.log('FOUND PREFERRED MODEL from hardcoded list: ', model)
+      localStorage.setItem('defaultModel', preferredId)
       return model
     }
   }
 
   // If no preferred models are available, fallback to Llama 3.1 70b
+  // console.log('NO PREFERRED MODEL FOUND, USING FALLBACK MODEL')
+  localStorage.setItem('defaultModel', 'llama3.1:70b')
   return {
     id: 'llama3.1:70b',
     name: 'Llama 3.1 70b',

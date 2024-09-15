@@ -469,6 +469,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
           key: 'model',
           value: model as OpenAIModel,
         })
+      localStorage.setItem('defaultModel', modelId)
     }
 
     return (
