@@ -503,14 +503,14 @@ export default function APIKeyInputForm() {
                       >
                         {/* Providers */}
                         <div
-                          className="pb-8 pl-8 pr-8"
+                          className="px-8 pb-8"
                           style={{
                             display: 'flex',
                             flexDirection: 'column',
                             gap: 16,
                           }}
                         >
-                          {isLoadingLLMProviders && (
+                          {/* {isLoadingLLMProviders && (
                             <Flex
                               justify="center"
                               align="center"
@@ -519,7 +519,7 @@ export default function APIKeyInputForm() {
                               Synchronizing LLM providers… smart settings
                               inbound! <LoadingSpinner size="sm" />
                             </Flex>
-                          )}
+                          )} */}
 
                           {/* {llmProviders && ( */}
                           <>
@@ -653,7 +653,7 @@ export default function APIKeyInputForm() {
                         <Text
                           className={`label ${montserrat_paragraph.className}`}
                         >
-                          You can choose the default model for your chat page.
+                          You can choose the default model for your chatbot.
                         </Text>
                         <br />
                         <div className="flex justify-center">
