@@ -145,18 +145,25 @@ export type AllLLMProviders = {
 
 // Ordered list of preferred model IDs -- the first available model will be used as default
 export const preferredModelIds = [
-  OpenAIModelID.GPT_4o_mini,
-  OpenAIModelID.GPT_4o,
-  OpenAIModelID.GPT_4_Turbo,
-  OpenAIModelID.GPT_4,
-  OpenAIModelID.GPT_3_5,
-  AzureModelID.GPT_4o_mini,
-  AzureModelID.GPT_4o,
-  AzureModelID.GPT_4_Turbo,
-  AzureModelID.GPT_4,
   AnthropicModelID.Claude_3_5_Sonnet,
-  AnthropicModelID.Claude_3_Opus,
+
+  OpenAIModelID.GPT_4o_mini,
+  AzureModelID.GPT_4o_mini,
+
   AnthropicModelID.Claude_3_Haiku,
+
+  OpenAIModelID.GPT_4o,
+  AzureModelID.GPT_4o,
+
+  OpenAIModelID.GPT_4_Turbo,
+  AzureModelID.GPT_4_Turbo,
+
+  AnthropicModelID.Claude_3_Opus,
+
+  OpenAIModelID.GPT_4,
+  AzureModelID.GPT_4,
+
+  OpenAIModelID.GPT_3_5,
 ]
 
 export const selectBestModel = (
