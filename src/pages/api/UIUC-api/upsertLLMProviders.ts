@@ -2,7 +2,11 @@
 import { kv } from '@vercel/kv'
 import { type NextRequest, NextResponse } from 'next/server'
 import { ProjectWideLLMProviders } from '~/types/courseMetadata'
-import { AllLLMProviders } from '~/types/LLMProvider'
+import { encryptKeyIfNeeded } from '~/utils/crypto'
+import {
+  AllLLMProviders,
+  LLMProvider,
+} from '~/utils/modelProviders/LLMProvider'
 
 export const runtime = 'edge'
 
@@ -62,36 +66,21 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     const redisKey = `${courseName}-llms`
     const existingLLMs = (await kv.get(redisKey)) as ProjectWideLLMProviders
 
-    // If a key is "defined but hidden" then replace that Provider's API KEY ONLY with it's key from the DB
-    Object.keys(llmProviders).forEach((providerName) => {
-      const typedProviderName = providerName as keyof AllLLMProviders
-      const provider = llmProviders[typedProviderName]
-      if (provider?.apiKey == '') {
-        // If the key is empty, delete it. That's our convention.
-        delete provider.apiKey
-      }
-      if (provider?.apiKey === 'this key is defined, but hidden') {
-        if (existingLLMs && existingLLMs[typedProviderName]) {
-          // @ts-ignore - idk how to get around this 'cannot be undefined' thing.
+    // Ensure all keys are encrypted, then save to DB.
+    const processProviders = async () => {
+      for (const providerName in llmProviders) {
+        const typedProviderName = providerName as keyof AllLLMProviders
+        const provider = llmProviders[typedProviderName]
+        if (provider && 'apiKey' in provider) {
           llmProviders[typedProviderName] = {
             ...provider,
-            apiKey: existingLLMs[typedProviderName]?.apiKey ?? undefined,
-          } as AllLLMProviders[typeof typedProviderName]
-          console.debug(
-            `Replacing hidden key for ${providerName} with existing apiKey`,
-          )
-        } else {
-          console.debug(
-            'Removing hidden key for',
-            providerName,
-            'data',
-            llmProviders[typedProviderName],
-          )
-          delete llmProviders[typedProviderName]
-          // console.log(`Removing hidden key for ${providerName}`)
+            apiKey:
+              (await encryptKeyIfNeeded(provider.apiKey!)) ?? provider.apiKey,
+          } as LLMProvider & { provider: typeof typedProviderName }
         }
       }
-    })
+    }
+    await processProviders()
 
     // Combine the existing metadata with the new metadata, prioritizing the new values
     const combined_llms = { ...existingLLMs, ...llmProviders }

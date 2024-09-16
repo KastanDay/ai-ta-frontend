@@ -1,20 +1,33 @@
 import React from 'react'
-import { Text, Switch, Card, TextInput } from '@mantine/core'
+import { Text, Switch, Card, TextInput, Skeleton } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
 import { ModelToggles } from '../ModelToggles'
-import { OllamaProvider, ProviderNames } from '~/types/LLMProvider'
+import {
+  OllamaProvider,
+  ProviderNames,
+} from '~/utils/modelProviders/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function OllamaProviderInput({
   form,
   provider,
+  isLoading,
 }: {
   form: any
   provider: OllamaProvider
+  isLoading: boolean
 }) {
+  if (isLoading) {
+    return <Skeleton height={200} width={330} radius={'lg'} />
+  }
   return (
     <motion.div layout>
-      <Card shadow="sm" p="lg" radius="md" className="w-[330px] bg-[#15162c]">
+      <Card
+        shadow="sm"
+        p="lg"
+        radius="lg"
+        className="max-w-[330px] bg-[#15162c] md:w-[330px]"
+      >
         <div
           style={{
             display: 'flex',

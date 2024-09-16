@@ -1,7 +1,7 @@
 // src/pages/api/UIUC-api/fetchImageDescription.ts
 
 import { Conversation, ImageBody } from '@/types/chat'
-import { AllLLMProviders } from '~/types/LLMProvider'
+import { AllLLMProviders } from '~/utils/modelProviders/LLMProvider'
 
 export const config = {
   runtime: 'edge',

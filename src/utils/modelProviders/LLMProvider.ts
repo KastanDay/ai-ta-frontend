@@ -1,16 +1,22 @@
 import { OllamaModel, OllamaModels } from '~/utils/modelProviders/ollama'
-import { WebllmModel, webLLMModels } from '~/utils/modelProviders/WebLLM'
+import { WebllmModel } from '~/utils/modelProviders/WebLLM'
 import {
   OpenAIModel,
   OpenAIModelID,
   OpenAIModels,
-} from '~/utils/modelProviders/openai'
+} from '~/utils/modelProviders/types/openai'
 import {
   AnthropicModel,
   AnthropicModelID,
-} from '~/utils/modelProviders/anthropic'
-import { AzureModel, AzureModelID } from '~/utils/modelProviders/azure'
-import { Conversation } from './chat'
+  AnthropicModels,
+} from '~/utils/modelProviders/types/anthropic'
+import {
+  AzureModel,
+  AzureModelID,
+  AzureModels,
+} from '~/utils/modelProviders/azure'
+import { Conversation } from '../../types/chat'
+import { NCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
 
 export enum ProviderNames {
   Ollama = 'Ollama',
@@ -33,7 +39,6 @@ export const VisionCapableModels: Set<
   OpenAIModelID | AzureModelID | AnthropicModelID
 > = new Set([
   OpenAIModelID.GPT_4_Turbo,
-  OpenAIModelID.GPT_4_AZURE_04_09,
   OpenAIModelID.GPT_4o,
   OpenAIModelID.GPT_4o_mini,
 
@@ -45,9 +50,12 @@ export const VisionCapableModels: Set<
 ])
 
 export const AllSupportedModels: Set<GenericSupportedModel> = new Set([
-  ...Object.values(OllamaModels),
+  ...Object.values(AnthropicModels),
   ...Object.values(OpenAIModels),
-  ...webLLMModels,
+  ...Object.values(AzureModels),
+  ...Object.values(OllamaModels),
+  ...Object.values(NCSAHostedModels),
+  // ...webLLMModels,
 ])
 // e.g. Easily validate ALL POSSIBLE models that we support. They may be offline or disabled, but they are supported.
 // {
@@ -123,20 +131,38 @@ export type LLMProvider =
   | WebLLMProvider
   | NCSAHostedProvider
 
-export type AllLLMProviders = {
-  [P in ProviderNames]?: LLMProvider & { provider: P }
-}
+// export type AllLLMProviders = {
+//   [P in ProviderNames]?: LLMProvider & { provider: P }
+// }
 
-// type AllLLMProviders = {
-//   [key in ProviderNames]: LLMProvider;
-// };
+// export interface AllLLMProviders {
+//   [key: string]: LLMProvider & { provider: ProviderNames } | undefined;
+// }
+
+export type AllLLMProviders = {
+  [key in ProviderNames]: LLMProvider
+}
 
 // Ordered list of preferred model IDs -- the first available model will be used as default
 export const preferredModelIds = [
+  AnthropicModelID.Claude_3_5_Sonnet,
+
   OpenAIModelID.GPT_4o_mini,
+  AzureModelID.GPT_4o_mini,
+
+  AnthropicModelID.Claude_3_Haiku,
+
   OpenAIModelID.GPT_4o,
+  AzureModelID.GPT_4o,
+
   OpenAIModelID.GPT_4_Turbo,
+  AzureModelID.GPT_4_Turbo,
+
+  AnthropicModelID.Claude_3_Opus,
+
   OpenAIModelID.GPT_4,
+  AzureModelID.GPT_4,
+
   OpenAIModelID.GPT_3_5,
 ]
 
@@ -145,9 +171,11 @@ export const selectBestModel = (
   convo?: Conversation,
 ): GenericSupportedModel => {
   const allModels = Object.values(allLLMProviders)
-    .flatMap((provider) => provider.models || [])
+    .filter((provider) => provider!.enabled)
+    .flatMap((provider) => provider!.models || [])
     .filter((model) => model.enabled)
 
+  // console.log('in selectBestModel with models: ', allModels)
   // TODO: if project has global default model, use it.
   // First, try to use the model from the conversation if it exists and is valid
   // if (
@@ -161,16 +189,33 @@ export const selectBestModel = (
   //     return conversationModel
   //   }
   // }
+  const defaultModelId = localStorage.getItem('defaultModel')
+  // console.log('defaultModelId from localstorage: ', defaultModelId)
+  if (defaultModelId && allModels.find((m) => m.id === defaultModelId)) {
+    const defaultModel = allModels
+      .filter((model) => model.enabled)
+      .find((m) => m.id === defaultModelId)
+    // console.log('FOUND DEFAULT MODEL in localStorage: ', defaultModel)
+    if (defaultModel) {
+      return defaultModel
+    }
+  }
 
   // If the conversation model is not available or invalid, use the preferredModelIds
   for (const preferredId of preferredModelIds) {
-    const model = allModels.find((m) => m.id === preferredId)
+    const model = allModels
+      .filter((model) => model.enabled)
+      .find((m) => m.id === preferredId)
     if (model) {
+      // console.log('FOUND PREFERRED MODEL from hardcoded list: ', model)
+      localStorage.setItem('defaultModel', preferredId)
       return model
     }
   }
 
   // If no preferred models are available, fallback to Llama 3.1 70b
+  // console.log('NO PREFERRED MODEL FOUND, USING FALLBACK MODEL')
+  localStorage.setItem('defaultModel', 'llama3.1:70b')
   return {
     id: 'llama3.1:70b',
     name: 'Llama 3.1 70b',

@@ -1,4 +1,7 @@
-import { AzureProvider, ProviderNames } from '~/types/LLMProvider'
+import {
+  AzureProvider,
+  ProviderNames,
+} from '~/utils/modelProviders/LLMProvider'
 
 export const config = {
   runtime: 'edge',
@@ -24,31 +27,31 @@ export const AzureModels: Record<AzureModelID, AzureModel> = {
     id: AzureModelID.GPT_3_5,
     name: 'GPT-3.5',
     tokenLimit: 16385,
-    enabled: false,
+    enabled: true,
   },
   [AzureModelID.GPT_4]: {
     id: AzureModelID.GPT_4,
     name: 'GPT-4',
     tokenLimit: 8192,
-    enabled: false,
+    enabled: true,
   },
   [AzureModelID.GPT_4_Turbo]: {
     id: AzureModelID.GPT_4_Turbo,
     name: 'GPT-4 Turbo',
     tokenLimit: 128000,
-    enabled: false,
+    enabled: true,
   },
   [AzureModelID.GPT_4o]: {
     id: AzureModelID.GPT_4o,
     name: 'GPT-4o',
     tokenLimit: 128000,
-    enabled: false,
+    enabled: true,
   },
   [AzureModelID.GPT_4o_mini]: {
     id: AzureModelID.GPT_4o_mini,
     name: 'GPT-4o-mini',
     tokenLimit: 128000,
-    enabled: false,
+    enabled: true,
   },
 }
 
@@ -59,7 +62,7 @@ export const getAzureModels = async (
   azureProvider.provider = ProviderNames.Azure
   try {
     if (!azureProvider.AzureEndpoint || !azureProvider.AzureDeployment) {
-      azureProvider.error = `Azure OpenAI Endpoint or Deployment is not set. Endpoint: ${azureProvider.AzureEndpoint}, Deployment: ${azureProvider.AzureDeployment}`
+      // azureProvider.error = `Azure OpenAI Endpoint or Deployment is not set. Endpoint: ${azureProvider.AzureEndpoint}, Deployment: ${azureProvider.AzureDeployment}`
       azureProvider.models = [] // clear any previous models.
       return azureProvider
     }

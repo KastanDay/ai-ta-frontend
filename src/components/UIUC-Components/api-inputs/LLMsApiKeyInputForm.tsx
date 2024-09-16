@@ -3,7 +3,6 @@ import {
   Button,
   Text,
   Card,
-  Slider,
   Flex,
   Title,
   Stack,
@@ -20,6 +19,7 @@ import {
   useSetProjectLLMProviders,
 } from '~/hooks/useProjectAPIKeys'
 import {
+  AllLLMProviders,
   AnthropicProvider,
   AzureProvider,
   NCSAHostedProvider,
@@ -27,19 +27,15 @@ import {
   OpenAIProvider,
   ProviderNames,
   WebLLMProvider,
-} from '~/types/LLMProvider'
+} from '~/utils/modelProviders/LLMProvider'
 import { notifications } from '@mantine/notifications'
 import {
   IconAlertCircle,
   IconCheck,
   IconChevronDown,
-  IconCopy,
-  IconEye,
-  IconEyeOff,
   IconX,
 } from '@tabler/icons-react'
 import { GetCurrentPageName } from '../CanViewOnlyCourse'
-import { AnimatePresence, motion } from 'framer-motion'
 import GlobalFooter from '../GlobalFooter'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import Navbar from '../navbars/Navbar'
@@ -51,7 +47,6 @@ import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
 import NCSAHostedLLmsProviderInput from './providers/NCSAHostedProviderInput'
 import { getModelLogo, ModelItem } from '~/components/Chat/ModelSelect'
-import { LoadingSpinner } from '../LoadingSpinner'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -346,7 +341,7 @@ export default function APIKeyInputForm() {
     isError: isErrorLLMProviders,
     error: errorLLMProviders,
     // enabled: !!projectName // Only run the query when projectName is available
-  } = useGetProjectLLMProviders({ projectName: projectName, hideApiKeys: true })
+  } = useGetProjectLLMProviders({ projectName: projectName })
 
   useEffect(() => {
     if (llmProviders) {
@@ -380,7 +375,7 @@ export default function APIKeyInputForm() {
       defaultTemperature: defaultTemp,
     },
     onSubmit: async ({ value }) => {
-      const llmProviders = value.providers || {}
+      const llmProviders = value.providers as AllLLMProviders
       mutation.mutate(
         {
           projectName,
@@ -445,7 +440,12 @@ export default function APIKeyInputForm() {
 
       <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center">
         <div className="items-left flex w-full flex-col justify-center py-0">
-          <Flex direction="column" align="center" w="100%">
+          <Flex
+            direction="column"
+            align="center"
+            w="100%"
+            className="mt-8 lg:mt-4"
+          >
             <Card
               shadow="xs"
               padding="none"
@@ -458,13 +458,14 @@ export default function APIKeyInputForm() {
                     border: 'None',
                     color: 'white',
                   }}
-                  className="min-h-full flex-[1_1_100%] bg-gradient-to-r from-purple-900 via-indigo-800 to-blue-800 md:flex-[1_1_60%]"
+                  className="min-h-full flex-[1_1_100%] bg-gradient-to-r from-purple-900 via-indigo-800 to-blue-800 md:flex-[1_1_70%]"
                 >
                   <Flex
                     gap="md"
                     direction="column"
                     justify="flex-start"
                     align="flex-start"
+                    className="lg:ml-8"
                   >
                     <Title
                       order={2}
@@ -473,10 +474,11 @@ export default function APIKeyInputForm() {
                       gradient={{ from: 'gold', to: 'white', deg: 50 }}
                       className={`pl-8 pt-8 ${montserrat_heading.variable} font-montserratHeading`}
                     >
-                      API Keys: Add LLMs to your Chatbot
+                      {/* API Keys: Add LLMs to your Chatbot */}
+                      Configure LLM Providers for your Chatbot
                     </Title>
                     <Title
-                      className={`${montserrat_heading.variable} max-w-prose flex-[1_1_50%] font-montserratHeading`}
+                      className={`${montserrat_heading.variable} flex-[1_1_50%] font-montserratHeading`}
                       order={5}
                       px={18}
                       ml={'md'}
@@ -495,121 +497,134 @@ export default function APIKeyInputForm() {
                       >
                         {/* Providers */}
                         <div
-                          className="pb-8 pl-8"
+                          className="px-8 pb-8"
                           style={{
                             display: 'flex',
                             flexDirection: 'column',
                             gap: 16,
                           }}
                         >
-                          {isLoadingLLMProviders && (
-                            <>
-                              <br />
-                              <LoadingSpinner />
-                              <br />
-                            </>
-                          )}
-                          {llmProviders && !isLoadingLLMProviders && (
-                            <>
-                              <Title
-                                className={`-mb-3 ${montserrat_heading.variable} font-montserratHeading`}
-                                variant="gradient"
-                                gradient={{
-                                  from: 'gold',
-                                  to: 'white',
-                                  deg: 170,
-                                }}
-                                order={3}
-                              >
-                                Closed source LLMs
-                              </Title>
-                              <Text
-                                className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                size="md"
-                              >
-                                The best performers, but you gotta pay their
-                                prices and follow their rules.
-                              </Text>
-                              <Flex
-                                // direction={{ base: 'column', '130rem': 'row' }} // good for split screen card.
-                                direction={{ base: 'column', '75rem': 'row' }}
-                                wrap="wrap"
-                                justify="flex-start"
-                                align="flex-start"
-                                className="gap-4"
-                              >
-                                <AnthropicProviderInput
-                                  provider={
-                                    llmProviders.Anthropic as AnthropicProvider
-                                  }
-                                  form={form}
-                                />
-                                <OpenAIProviderInput
-                                  provider={
-                                    llmProviders.OpenAI as OpenAIProvider
-                                  }
-                                  form={form}
-                                />
-                                <AzureProviderInput
-                                  provider={llmProviders.Azure as AzureProvider}
-                                  form={form}
-                                />
-                              </Flex>
-                              <Title
-                                className={`-mb-3 ${montserrat_heading.variable} font-montserratHeading`}
-                                variant="gradient"
-                                gradient={{
-                                  from: 'gold',
-                                  to: 'white',
-                                  deg: 170,
-                                }}
-                                order={3}
-                              >
-                                Open source LLMs
-                              </Title>
-                              <Text
-                                className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                size="md"
-                              >
-                                Your weights, your rules.
-                              </Text>
-                              <Flex
-                                // direction={{ base: 'column', '130rem': 'row' }} // good for split screen card.
-                                direction={{ base: 'column', '75rem': 'row' }}
-                                wrap="wrap"
-                                justify="flex-start"
-                                align="flex-start"
-                                className="gap-4"
-                              >
-                                {' '}
-                                <NCSAHostedLLmsProviderInput
-                                  provider={
-                                    llmProviders.NCSAHosted as NCSAHostedProvider
-                                  }
-                                  form={form}
-                                />
-                                <OllamaProviderInput
-                                  provider={
-                                    llmProviders.Ollama as OllamaProvider
-                                  }
-                                  form={form}
-                                />
-                                <WebLLMProviderInput
-                                  provider={
-                                    llmProviders.WebLLM as WebLLMProvider
-                                  }
-                                  form={form}
-                                />
-                              </Flex>
-                            </>
-                          )}
+                          {/* {isLoadingLLMProviders && (
+                            <Flex
+                              justify="center"
+                              align="center"
+                              className={`${montserrat_heading.variable} font-montserratHeading`}
+                            >
+                              Synchronizing LLM providers… smart settings
+                              inbound! <LoadingSpinner size="sm" />
+                            </Flex>
+                          )} */}
+
+                          {/* {llmProviders && ( */}
+                          <>
+                            <Title
+                              className={`${montserrat_heading.variable} mt-4 font-montserratHeading`}
+                              variant="gradient"
+                              gradient={{
+                                from: 'gold',
+                                to: 'white',
+                                deg: 170,
+                              }}
+                              order={3}
+                            >
+                              Closed source LLMs
+                            </Title>
+                            <Text
+                              className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                              size="md"
+                            >
+                              The best performers, but you gotta pay their
+                              prices and follow their rules.
+                            </Text>
+                            <Flex
+                              // direction={{ base: 'column', '130rem': 'row' }} // good for split screen card.
+                              direction={{ base: 'column', '75rem': 'row' }}
+                              wrap="wrap"
+                              justify="space-between"
+                              align="flex-start"
+                              className="gap-4"
+                              w={'100%'}
+                            >
+                              <AnthropicProviderInput
+                                provider={
+                                  llmProviders?.Anthropic as AnthropicProvider
+                                }
+                                form={form}
+                                isLoading={isLoadingLLMProviders}
+                              />
+                              <OpenAIProviderInput
+                                provider={
+                                  llmProviders?.OpenAI as OpenAIProvider
+                                }
+                                form={form}
+                                isLoading={isLoadingLLMProviders}
+                              />
+                              <AzureProviderInput
+                                provider={llmProviders?.Azure as AzureProvider}
+                                form={form}
+                                isLoading={isLoadingLLMProviders}
+                              />
+                            </Flex>
+                            <Title
+                              className={`-mb-3 ${montserrat_heading.variable} mt-4 font-montserratHeading`}
+                              variant="gradient"
+                              gradient={{
+                                from: 'gold',
+                                to: 'white',
+                                deg: 170,
+                              }}
+                              order={3}
+                            >
+                              Open source LLMs
+                            </Title>
+                            <Text
+                              className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                              size="md"
+                            >
+                              Your weights, your rules.
+                            </Text>
+                            <Flex
+                              // direction={{ base: 'column', '130rem': 'row' }} // good for split screen card.
+                              direction={{ base: 'column', '75rem': 'row' }}
+                              wrap="wrap"
+                              justify="space-between"
+                              align="flex-start"
+                              className="gap-4"
+                              w={'100%'}
+                            >
+                              {' '}
+                              <NCSAHostedLLmsProviderInput
+                                provider={
+                                  llmProviders?.NCSAHosted as NCSAHostedProvider
+                                }
+                                form={form}
+                                isLoading={isLoadingLLMProviders}
+                              />
+                              <OllamaProviderInput
+                                provider={
+                                  llmProviders?.Ollama as OllamaProvider
+                                }
+                                form={form}
+                                isLoading={isLoadingLLMProviders}
+                              />
+                              <WebLLMProviderInput
+                                provider={
+                                  llmProviders?.WebLLM as WebLLMProvider
+                                }
+                                form={form}
+                                isLoading={isLoadingLLMProviders}
+                              />
+                            </Flex>
+                          </>
+
+                          {/* } */}
                         </div>
                       </form>
                     </Stack>
                   </Flex>
                 </div>
-                {/* <div
-                  className="flex flex-[1_1_100%] md:flex-[1_1_40%]"
+                <div
+                  className="flex flex-[1_1_100%] md:flex-[1_1_30%]"
                   style={{
                     // flex: isSmallScreen ? '1 1 100%' : '1 1 40%',
                     padding: '1rem',
@@ -621,7 +636,6 @@ export default function APIKeyInputForm() {
                     <div className="card-body">
                       <div className="pb-4">
                         <Title
-                          // className={`label ${montserrat.className}`}
                           className={`label ${montserrat_heading.variable} font-montserratHeading`}
                           variant="gradient"
                           gradient={{ from: 'gold', to: 'white', deg: 170 }}
@@ -629,149 +643,27 @@ export default function APIKeyInputForm() {
                         >
                           Default Model
                         </Title>
-                        <div
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 16,
-                          }}
+                        <br />
+                        <Text
+                          className={`label ${montserrat_paragraph.className}`}
                         >
-                          <div>
-                            {llmProviders && (
-                              //     <ModelDropdown
-                              //       value={form.getFieldValue('defaultModel')}
-                              //       onChange={
-                              //         // async (modelId) => {
-                              //         // // if (state.webLLMModelIdLoading) {
-                              //         // //   setLoadingModelId(modelId)
-                              //         // //   console.log('model is loading', state.webLLMModelIdLoading.id)
-                              //         // // }
-                              //         // await handleModelClick(modelId)
-                              //         async (modelId) => {
-                              //           // TODO
-                              //           // handleModelClick(modelId)
-                              //         }
-                              //       }
-                              //       models={{
-                              //         Ollama: llmProviders.Ollama?.models?.filter(
-                              //           (model) => model.enabled,
-                              //         ),
-                              //         OpenAI: llmProviders.OpenAI?.models?.filter(
-                              //           (model) => model.enabled,
-                              //         ),
-                              //         Anthropic:
-                              //           llmProviders.Anthropic?.models?.filter(
-                              //             (model) => model.enabled,
-                              //           ),
-                              //         Azure: llmProviders.Azure?.models?.filter(
-                              //           (model) => model.enabled,
-                              //         ),
-                              //       }}
-                              //       // isSmallScreen={isSmallScreen}
-                              //       // loadingModelId={loadingModelId}
-                              //       // setLoadingModelId={setLoadingModelId}
-                              //       // chat_ui={chat_ui}
-                              //       isSmallScreen={false}
-                              //       loadingModelId={'test'}
-                              //       setLoadingModelId={(id: string | null) => {
-                              // }}
-                              // state={{
-                              //   webLLMModelIdLoading: {
-                              //     id: 'test',
-                              //     isLoading: false,
-                              //   },
-                              // }}
-                              // showWebLLmModels={false}
-                              //     />
-                              <NewModelDropdown
-                                value={form.getFieldValue('defaultModel')}
-                                onChange={
-                                  // async (modelId) => {
-                                  // // if (state.webLLMModelIdLoading) {
-                                  // //   setLoadingModelId(modelId)
-                                  // //   console.log('model is loading', state.webLLMModelIdLoading.id)
-                                  // // }
-                                  // await handleModelClick(modelId)
-                                  async (modelId) => {
-                                    // TODO
-                                    // handleModelClick(modelId)
-                                  }
-                                }
-                                models={{
-                                  Ollama: llmProviders.Ollama?.models?.filter(
-                                    (model) => model.enabled,
-                                  ),
-                                  OpenAI: llmProviders.OpenAI?.models?.filter(
-                                    (model) => model.enabled,
-                                  ),
-                                  Anthropic:
-                                    llmProviders.Anthropic?.models?.filter(
-                                      (model) => model.enabled,
-                                    ),
-                                  Azure: llmProviders.Azure?.models?.filter(
-                                    (model) => model.enabled,
-                                  ),
-                                }}
-                                // isSmallScreen={isSmallScreen}
-                                // loadingModelId={loadingModelId}
-                                // setLoadingModelId={setLoadingModelId}
-                                // chat_ui={chat_ui}
-                                isSmallScreen={false}
-                                loadingModelId={'test'}
-                                setLoadingModelId={(id: string | null) => {}}
-                                state={{
-                                  webLLMModelIdLoading: {
-                                    id: 'test',
-                                    isLoading: false,
-                                  },
-                                }}
-                                showWebLLmModels={false}
-                              ></NewModelDropdown>
-                            )}
-                          </div>
-
-                          <div>
-                            <Text size="sm" weight={500} mb={4}>
-                              Default Temperature:{' '}
-                              {form.getFieldValue('defaultTemperature')}
-                            </Text>
-                            <form.Field name="defaultTemperature">
-                              {(field) => (
-                                <>
-                                  <Slider
-                                    value={field.state.value}
-                                    onChange={(value) =>
-                                      field.handleChange(value)
-                                    }
-                                    min={0}
-                                    max={1}
-                                    step={0.1}
-                                    label={null}
-                                    styles={(theme) => ({
-                                      track: {
-                                        backgroundColor: theme.colors.gray[2],
-                                      },
-                                      thumb: {
-                                        borderWidth: 2,
-                                        padding: 3,
-                                      },
-                                    })}
-                                  />
-                                </>
-                              )}
-                            </form.Field>
-                            <Text size="xs" color="dimmed" mt={4}>
-                              Higher values increase randomness, lower values
-                              increase focus and determinism.
-                            </Text>
-                          </div>
+                          You can choose the default model for your chatbot.
+                        </Text>
+                        <br />
+                        <div className="flex justify-center">
+                          <Text
+                            className={`label ${montserrat_paragraph.className}`}
+                            variant="gradient"
+                            gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                          >
+                            Coming Soon...
+                          </Text>
                         </div>
-
                         <div className="pt-2" />
                       </div>
                     </div>
-                  </div> 
-                </div> */}
+                  </div>
+                </div>
               </Flex>
             </Card>
 

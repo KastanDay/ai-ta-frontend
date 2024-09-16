@@ -18,14 +18,17 @@ import {
   AllLLMProviders,
   AllSupportedModels,
   GenericSupportedModel,
+  OllamaProvider,
   VisionCapableModels,
-} from '~/types/LLMProvider'
+} from '~/utils/modelProviders/LLMProvider'
 import fetchMQRContexts from '~/pages/api/getContextsMQR'
 import fetchContexts from '~/pages/api/getContexts'
 import { OllamaModelIDs } from './modelProviders/ollama'
 import { webLLMModels } from './modelProviders/WebLLM'
-import { OpenAIModelID } from './modelProviders/openai'
+import { OpenAIModelID } from './modelProviders/types/openai'
+import { v4 as uuidv4 } from 'uuid'
 import { AzureModelID } from './modelProviders/azure'
+import { AnthropicModelID } from './modelProviders/types/anthropic'
 
 export const config = {
   runtime: 'edge',
@@ -633,6 +636,7 @@ export async function handleStreamingResponse(
       }
       // Append the processed response to the conversation
       conversation.messages.push({
+        id: uuidv4(),
         role: 'assistant',
         content: fullAssistantResponse,
       })
@@ -761,7 +765,7 @@ export async function updateConversationInDatabase(
   posthog.capture('stream_api_conversation_updated', {
     distinct_id: req.headers.get('x-forwarded-for') || req.ip,
     conversation_id: conversation.id,
-    user_id: conversation.user_email,
+    user_id: conversation.userEmail,
   })
 }
 
@@ -849,11 +853,11 @@ export const routeModelRequest = async (
   const selectedConversation = chatBody.conversation!
 
   posthog.capture('LLM Invoked', {
-    distinct_id: selectedConversation.user_email
-      ? selectedConversation.user_email
+    distinct_id: selectedConversation.userEmail
+      ? selectedConversation.userEmail
       : 'anonymous',
-    user_id: selectedConversation.user_email
-      ? selectedConversation.user_email
+    user_id: selectedConversation.userEmail
+      ? selectedConversation.userEmail
       : 'anonymous',
     conversation_id: selectedConversation.id,
     model_id: selectedConversation.model.id,
@@ -863,15 +867,34 @@ export const routeModelRequest = async (
   if (
     Object.values(OllamaModelIDs).includes(selectedConversation.model.id as any)
   ) {
-    // Model is Ollama
-    const url = baseUrl ? `${baseUrl}/api/chat/ollama` : '/api/chat/ollama'
-    // Is Ollama model
+    // Ollama model
+    console.log('Ollama provider in stream: ', chatBody!.llmProviders!.Ollama)
+
+    response = await fetch('/api/chat/ollama', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        conversation: selectedConversation,
+        ollamaProvider: chatBody!.llmProviders!.Ollama as OllamaProvider,
+      }),
+    })
+  } else if (
+    Object.values(AnthropicModelID).includes(
+      selectedConversation.model.id as any,
+    )
+  ) {
+    console.log('Anthropic model: ', chatBody)
+    const url = baseUrl
+      ? `${baseUrl}/api/chat/anthropic`
+      : '/api/chat/anthropic'
     response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ conversation: selectedConversation }),
+      body: JSON.stringify({ chatBody }),
     })
   } else if (
     Object.values(OpenAIModelID).includes(

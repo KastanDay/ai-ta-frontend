@@ -13,7 +13,7 @@ import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { Group, Select, Title, Text } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
-import { OpenAIModel } from '~/utils/modelProviders/openai'
+import { OpenAIModel } from '~/utils/modelProviders/types/openai'
 import ChatUI, { webLLMModels } from '~/utils/modelProviders/WebLLM'
 import { modelCached } from './UserSettings'
 import Image from 'next/image'
@@ -23,7 +23,7 @@ import {
   LLMProvider,
   ProviderNames,
   selectBestModel,
-} from '~/types/LLMProvider'
+} from '~/utils/modelProviders/LLMProvider'
 import { SelectItemProps } from '@mantine/core'
 import {
   recommendedModelIds,
@@ -58,9 +58,7 @@ export const getModelLogo = (modelType: string) => {
     case ProviderNames.OpenAI:
       return 'https://images.squarespace-cdn.com/content/v1/5a4908d949fc2b8e312bdf53/1676298536608-GQSN44SGOEHWCFSIZIGK/openai_icon.png?format=750w'
     case ProviderNames.Ollama:
-      // return 'https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/ollama.png'
-      // return 'https://assets.kastan.ai/UofI-logo.jpg'
-      return 'https://assets.kastan.ai/UofI-logo-white.jpg'
+      return 'https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/ollama.png'
     case ProviderNames.WebLLM:
       return 'https://avatars.githubusercontent.com/u/106173866?s=48&v=4'
     case ProviderNames.Anthropic:
@@ -141,16 +139,6 @@ export const ModelItem = forwardRef<
       }
       checkModelCache()
     }, [modelId])
-
-    console.log(
-      'Model item',
-      modelType,
-      modelId,
-      isModelCached,
-      state.webLLMModelIdLoading.id,
-      state.webLLMModelIdLoading.isLoading,
-      loadingModelId,
-    )
 
     return (
       <div ref={ref} {...others}>
@@ -331,11 +319,6 @@ const ModelDropdown: React.FC<
     },
   )
 
-  console.log(
-    'llmProviders AFTER FILTERING FOR ENABLED in model dropdown',
-    enabledProvidersAndModels,
-  )
-
   const selectedModel = allModels.find((model) => model.id === value)
 
   return (
@@ -469,7 +452,6 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       handleUpdateConversation,
       dispatch: homeDispatch,
     } = useContext(HomeContext)
-    console.log('llmProviders in top of modelselect', llmProviders)
     const isSmallScreen = useMediaQuery('(max-width: 960px)')
     const defaultModel = selectBestModel(llmProviders, selectedConversation).id
     const [loadingModelId, setLoadingModelId] = useState<string | null>(null)
@@ -490,6 +472,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
           key: 'model',
           value: model as OpenAIModel,
         })
+      localStorage.setItem('defaultModel', modelId)
     }
 
     return (

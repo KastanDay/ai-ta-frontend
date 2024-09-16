@@ -8,16 +8,17 @@ import {
   OpenAIProvider,
   ProviderNames,
   WebLLMProvider,
-} from '~/types/LLMProvider'
+} from '~/utils/modelProviders/LLMProvider'
 import { getOllamaModels } from '~/utils/modelProviders/ollama'
-import { getOpenAIModels } from '~/utils/modelProviders/openai'
 import { getAzureModels } from '~/utils/modelProviders/azure'
-import { getAnthropicModels } from '~/utils/modelProviders/anthropic'
-import { getWebLLMModels, webLLMModels } from '~/utils/modelProviders/WebLLM'
+import { getAnthropicModels } from '~/utils/modelProviders/routes/anthropic'
+import { getWebLLMModels } from '~/utils/modelProviders/WebLLM'
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
 import { getNCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
-import { migrateAllKeys } from './UIUC-api/MIGRATEALLKEYS'
+import { getOpenAIModels } from '~/utils/modelProviders/routes/openai'
+import { decryptKeyIfNeeded } from '~/utils/crypto'
+import { OpenAIModelID } from '~/utils/modelProviders/types/openai'
 
 export const config = {
   runtime: 'edge',
@@ -27,9 +28,8 @@ const handler = async (
   req: NextRequest,
 ): Promise<NextResponse<AllLLMProviders | { error: string }>> => {
   try {
-    const { projectName, hideApiKeys } = (await req.json()) as {
+    const { projectName } = (await req.json()) as {
       projectName: string
-      hideApiKeys?: boolean
     }
 
     if (!projectName) {
@@ -40,33 +40,74 @@ const handler = async (
     }
 
     // Fetch the project's API keys, filtering out all keys if requested
-    let llmProviders = (await kv.get(`${projectName}-llms`)) as AllLLMProviders
-
-    if (!llmProviders) {
-      llmProviders = {}
+    let llmProviders = (await kv.get(
+      `${projectName}-llms`,
+    )) as Partial<AllLLMProviders> & {
+      defaultModel?: string
+      defaultTemp?: number
     }
 
-    const allLLMProviders: AllLLMProviders = {}
+    console.log('INITIAL -- llmProviders', llmProviders)
+
+    // Define a function to create a placeholder provider
+    const createPlaceholderProvider = (
+      providerName: ProviderNames,
+    ): LLMProvider => ({
+      provider: providerName,
+      enabled: false,
+      models: [],
+    })
+
+    // Ensure all providers are defined
+    const allProviderNames = Object.values(ProviderNames)
+    for (const providerName of allProviderNames) {
+      if (!llmProviders[providerName]) {
+        llmProviders[providerName] = createPlaceholderProvider(providerName)
+      }
+    }
+
+    // Ensure defaultModel and defaultTemp are set
+    if (!llmProviders.defaultModel) {
+      llmProviders.defaultModel = OpenAIModelID.GPT_4o_mini
+    }
+    if (!llmProviders.defaultTemp) {
+      llmProviders.defaultTemp = 0.1
+    }
+
+    // Decrypt API keys
+    const processProviders = async () => {
+      for (const providerName in llmProviders) {
+        if (providerName === 'defaultModel' || providerName === 'defaultTemp') {
+          continue
+        }
+
+        const typedProviderName = providerName as keyof AllLLMProviders
+        const provider = llmProviders[typedProviderName] as LLMProvider
+        if (provider && 'apiKey' in provider) {
+          llmProviders[typedProviderName] = {
+            ...provider,
+            apiKey:
+              (await decryptKeyIfNeeded(provider.apiKey!)) ?? provider.apiKey,
+          } as LLMProvider & { provider: typeof typedProviderName }
+        }
+      }
+    }
+    await processProviders()
+
+    // Cast llmProviders to AllLLMProviders now that we've ensured all providers are defined
+    llmProviders = llmProviders as AllLLMProviders
+
+    const allLLMProviders: Partial<AllLLMProviders> = {}
 
     // Iterate through all possible providers
     for (const providerName of Object.values(ProviderNames)) {
-      let llmProvider = llmProviders[providerName]
-
-      if (!llmProvider) {
-        // Create a disabled provider entry
-        llmProvider = {
-          provider: ProviderNames[providerName],
-          enabled: false,
-          apiKey: undefined,
-          models: [],
-        } as LLMProvider
-      }
+      const llmProvider = llmProviders[providerName]
 
       switch (providerName) {
         case ProviderNames.Ollama:
-          allLLMProviders[providerName] = await getOllamaModels(
+          allLLMProviders[providerName] = (await getOllamaModels(
             llmProvider as OllamaProvider,
-          )
+          )) as OllamaProvider
           break
         case ProviderNames.OpenAI:
           allLLMProviders[providerName] = await getOpenAIModels(
@@ -99,34 +140,16 @@ const handler = async (
       }
     }
 
-    // Don't show any API keys.
-    if (hideApiKeys) {
-      let cleanedLLMProviders = { ...allLLMProviders }
-      cleanedLLMProviders = Object.fromEntries(
-        Object.entries(allLLMProviders).map(([key, value]) => [
-          key,
-          {
-            ...value,
-            apiKey:
-              value.apiKey && value.apiKey !== ''
-                ? 'this key is defined, but hidden'
-                : undefined,
-          },
-        ]),
-      )
-      delete cleanedLLMProviders.NCSAHosted?.baseUrl
-      return NextResponse.json(cleanedLLMProviders as AllLLMProviders, {
-        status: 200,
-      })
-    }
-
     // Call MIGRATEALLKEYS.ts
     // try {
-    //   const migrateResult = await migrateAllKeys()
-    //   console.log('MIGRATEALLKEYS result:', migrateResult);
+    //   await migrateAllKeys()
+    //   console.log('DONE MIGRATEALLKEYS:');
     // } catch (error) {
     //   console.error('Error calling MIGRATEALLKEYS:', error);
     // }
+
+    // const openAIModels = Object.values(OpenAIModels)
+    // console.log("openAIModels", openAIModels)
 
     console.log('FINAL -- allLLMProviders', allLLMProviders)
     return NextResponse.json(allLLMProviders as AllLLMProviders, {

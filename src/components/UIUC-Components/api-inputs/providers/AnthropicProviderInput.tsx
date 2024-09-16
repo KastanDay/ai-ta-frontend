@@ -1,21 +1,34 @@
 import React from 'react'
-import { Text, Switch, Card } from '@mantine/core'
+import { Text, Switch, Card, Skeleton } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
 import { APIKeyInput } from '../LLMsApiKeyInputForm'
 import { ModelToggles } from '../ModelToggles'
-import { AnthropicProvider, ProviderNames } from '~/types/LLMProvider'
+import {
+  AnthropicProvider,
+  ProviderNames,
+} from '~/utils/modelProviders/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function AnthropicProviderInput({
   provider,
   form,
+  isLoading,
 }: {
   provider: AnthropicProvider
   form: any
+  isLoading: boolean
 }) {
+  if (isLoading) {
+    return <Skeleton height={200} width={330} radius={'lg'} />
+  }
   return (
     <motion.div layout>
-      <Card shadow="sm" p="lg" radius="md" className="w-[330px] bg-[#15162c]">
+      <Card
+        shadow="sm"
+        p="lg"
+        radius="lg"
+        className="max-w-[330px] bg-[#15162c] md:w-[330px]"
+      >
         <div
           style={{
             display: 'flex',

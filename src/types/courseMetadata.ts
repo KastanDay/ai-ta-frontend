@@ -1,6 +1,6 @@
 // all values are email addresses
 
-import { LLMProvider, ProviderNames } from './LLMProvider'
+import { LLMProvider, ProviderNames } from '../utils/modelProviders/LLMProvider'
 
 // courseMetadata.ts
 export interface CourseMetadata {

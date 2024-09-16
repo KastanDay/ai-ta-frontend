@@ -1,7 +1,7 @@
 import React from 'react'
 import { IconCheck, IconX } from '@tabler/icons-react'
 import { Switch, Stack } from '@mantine/core'
-import { LLMProvider } from '~/types/LLMProvider'
+import { LLMProvider } from '~/utils/modelProviders/LLMProvider'
 
 export function ModelToggles({
   form,
@@ -10,8 +10,12 @@ export function ModelToggles({
   form: any
   provider: LLMProvider
 }) {
-  const providerModels =
-    form.state.values.providers[provider.provider]?.models || {}
+  const providerModels = provider?.provider
+    ? form.state.values.providers[provider.provider]?.models || {}
+    : {}
+
+  console.log(`${provider.provider} PROV Models`, providerModels)
+  console.log(`${provider.provider} PROV.models here`, provider.models)
 
   return (
     <Stack mt="md">
