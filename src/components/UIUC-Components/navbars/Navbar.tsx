@@ -169,11 +169,19 @@ const Navbar = ({
     },
     {
       name: (
-        <Indicator label='New' color='hsl(280,100%,70%)' size={12} styles={{ indicator: { top: '-4px !important' } }} > <span
-          className={`${montserrat_heading.variable} font-montserratHeading`}
+        <Indicator
+          label="New"
+          color="hsl(280,100%,70%)"
+          size={12}
+          styles={{ indicator: { top: '-4px !important' } }}
         >
-          LLMs
-        </span></Indicator>
+          {' '}
+          <span
+            className={`${montserrat_heading.variable} font-montserratHeading`}
+          >
+            LLMs
+          </span>
+        </Indicator>
       ),
       icon: <LLMIcon />,
       link: `/${getCurrentCourseName()}/llms`,
@@ -297,10 +305,14 @@ const Navbar = ({
                       width: '100%',
                     }}
                   >
-                    <MessageChatIcon
-                    />
+                    <MessageChatIcon />
                     <span
-                      style={{ whiteSpace: 'nowrap', marginRight: '-5px', paddingRight: '2px', padding: `4px 0` }}
+                      style={{
+                        whiteSpace: 'nowrap',
+                        marginRight: '-5px',
+                        paddingRight: '2px',
+                        padding: `4px 0`,
+                      }}
                       className={`${montserrat_heading.variable} font-montserratHeading`}
                     >
                       {/* Model: {modelName} */}
@@ -310,7 +322,10 @@ const Navbar = ({
                     {/* </span> */}
                   </div>
                 </button>
-                <Container className={classes.inner} style={{ paddingLeft: '0px' }}>
+                <Container
+                  className={classes.inner}
+                  style={{ paddingLeft: '0px' }}
+                >
                   <div className={classes.links}>
                     {items.map((item, index) => (
                       <Link
@@ -340,8 +355,8 @@ const Navbar = ({
             <GlobalHeader isNavbar={true} />
           </div>
         </div>
-      </Flex >
-    </div >
+      </Flex>
+    </div>
   )
 }
 

@@ -135,41 +135,41 @@ export const Chat = memo(
       // refetch: refetchTools,
     } = useFetchAllWorkflows(getCurrentPageName())
 
-  useEffect(() => {
-    if (
-      courseMetadata?.banner_image_s3 &&
-      courseMetadata.banner_image_s3 !== ''
-    ) {
-      fetchPresignedUrl(courseMetadata.banner_image_s3).then((url) => {
-        setBannerUrl(url)
-      })
-    }
-  }, [courseMetadata])
+    useEffect(() => {
+      if (
+        courseMetadata?.banner_image_s3 &&
+        courseMetadata.banner_image_s3 !== ''
+      ) {
+        fetchPresignedUrl(courseMetadata.banner_image_s3).then((url) => {
+          setBannerUrl(url)
+        })
+      }
+    }, [courseMetadata])
 
-  const {
-    state: {
-      selectedConversation,
-      conversations,
-      apiKey,
-      pluginKeys,
-      serverSideApiKeyIsSet,
-      messageIsStreaming,
-      modelError,
-      loading,
-      prompts,
-      showModelSettings,
-      isImg2TextLoading,
-      isRouting,
-      isRunningTool, // TODO change to isFunctionCallLoading
-      isRetrievalLoading,
-      documentGroups,
-      tools,
-      webLLMModelIdLoading,
-      llmProviders,
-    },
-    handleUpdateConversation,
-    dispatch: homeDispatch,
-  } = useContext(HomeContext)
+    const {
+      state: {
+        selectedConversation,
+        conversations,
+        apiKey,
+        pluginKeys,
+        serverSideApiKeyIsSet,
+        messageIsStreaming,
+        modelError,
+        loading,
+        prompts,
+        showModelSettings,
+        isImg2TextLoading,
+        isRouting,
+        isRunningTool, // TODO change to isFunctionCallLoading
+        isRetrievalLoading,
+        documentGroups,
+        tools,
+        webLLMModelIdLoading,
+        llmProviders,
+      },
+      handleUpdateConversation,
+      dispatch: homeDispatch,
+    } = useContext(HomeContext)
 
     useEffect(() => {
       const loadModel = async () => {
@@ -326,18 +326,18 @@ export const Chat = memo(
       homeDispatch({ field: 'isRetrievalLoading', value: undefined })
     }
 
-  // THIS IS WHERE MESSAGES ARE SENT.
-  const handleSend = useCallback(
-    async (
-      message: Message,
-      deleteCount = 0,
-      plugin: Plugin | null = null,
-      tools: UIUCTool[],
-      enabledDocumentGroups: string[],
-      llmProviders: AllLLMProviders,
-    ) => {
-      setCurrentMessage(message)
-      resetMessageStates()
+    // THIS IS WHERE MESSAGES ARE SENT.
+    const handleSend = useCallback(
+      async (
+        message: Message,
+        deleteCount = 0,
+        plugin: Plugin | null = null,
+        tools: UIUCTool[],
+        enabledDocumentGroups: string[],
+        llmProviders: AllLLMProviders,
+      ) => {
+        setCurrentMessage(message)
+        resetMessageStates()
 
         let searchQuery = Array.isArray(message.content)
           ? message.content.map((content) => content.text).join(' ')
@@ -439,33 +439,33 @@ export const Chat = memo(
               (content) => content.type === 'image_url',
             )
 
-          if (imageContent.length > 0) {
-            homeDispatch({ field: 'isImg2TextLoading', value: true })
-            try {
-              const { searchQuery: newSearchQuery, imgDesc: newImgDesc } =
-                await handleImageContent(
-                  message,
-                  courseName,
-                  updatedConversation,
-                  searchQuery,
-                  llmProviders,
-                  controller,
+            if (imageContent.length > 0) {
+              homeDispatch({ field: 'isImg2TextLoading', value: true })
+              try {
+                const { searchQuery: newSearchQuery, imgDesc: newImgDesc } =
+                  await handleImageContent(
+                    message,
+                    courseName,
+                    updatedConversation,
+                    searchQuery,
+                    llmProviders,
+                    controller,
+                  )
+                searchQuery = newSearchQuery
+                imgDesc = newImgDesc
+                imageUrls = imageContent.map(
+                  (content) => content.image_url?.url as string,
                 )
-              searchQuery = newSearchQuery
-              imgDesc = newImgDesc
-              imageUrls = imageContent.map(
-                (content) => content.image_url?.url as string,
-              )
-            } catch (error) {
-              console.error(
-                'Error in chat.tsx running handleImageContent():',
-                error,
-              )
-            } finally {
-              homeDispatch({ field: 'isImg2TextLoading', value: false })
+              } catch (error) {
+                console.error(
+                  'Error in chat.tsx running handleImageContent():',
+                  error,
+                )
+              } finally {
+                homeDispatch({ field: 'isImg2TextLoading', value: false })
+              }
             }
           }
-        }
 
           // Action 2: Context Retrieval: Vector Search
           homeDispatch({ field: 'isRetrievalLoading', value: true })
@@ -478,29 +478,29 @@ export const Chat = memo(
           )
           homeDispatch({ field: 'isRetrievalLoading', value: false })
 
-        // Action 3: Tool Execution
-        if (tools.length > 0) {
-          try {
-            homeDispatch({ field: 'isRouting', value: true })
-            // Check if any tools need to be run
-            const uiucToolsToRun = await handleFunctionCall(
-              message,
-              tools,
-              imageUrls,
-              imgDesc,
-              updatedConversation,
-              getOpenAIKey(courseMetadata, apiKey),
-            )
-            homeDispatch({ field: 'isRouting', value: false })
-            if (uiucToolsToRun.length > 0) {
-              homeDispatch({ field: 'isRunningTool', value: true })
-              // Run the tools
-              await handleToolCall(
-                uiucToolsToRun,
+          // Action 3: Tool Execution
+          if (tools.length > 0) {
+            try {
+              homeDispatch({ field: 'isRouting', value: true })
+              // Check if any tools need to be run
+              const uiucToolsToRun = await handleFunctionCall(
+                message,
+                tools,
+                imageUrls,
+                imgDesc,
                 updatedConversation,
-                courseName,
+                getOpenAIKey(courseMetadata, apiKey),
               )
-            }
+              homeDispatch({ field: 'isRouting', value: false })
+              if (uiucToolsToRun.length > 0) {
+                homeDispatch({ field: 'isRunningTool', value: true })
+                // Run the tools
+                await handleToolCall(
+                  uiucToolsToRun,
+                  updatedConversation,
+                  courseName,
+                )
+              }
 
               homeDispatch({ field: 'isRunningTool', value: false })
             } catch (error) {
@@ -513,24 +513,24 @@ export const Chat = memo(
             }
           }
 
-        const chatBody: ChatBody = constructChatBody(
-          updatedConversation,
-          getOpenAIKey(courseMetadata, apiKey),
-          courseName,
-          true,
-          courseMetadata,
-          llmProviders,
-        )
-        // Action 4: Build Prompt - Put everything together into a prompt
-        const buildPromptResponse = await fetch('/api/buildPrompt', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(chatBody),
-        })
-        chatBody.conversation = await buildPromptResponse.json()
-        updatedConversation = chatBody.conversation!
+          const chatBody: ChatBody = constructChatBody(
+            updatedConversation,
+            getOpenAIKey(courseMetadata, apiKey),
+            courseName,
+            true,
+            courseMetadata,
+            llmProviders,
+          )
+          // Action 4: Build Prompt - Put everything together into a prompt
+          const buildPromptResponse = await fetch('/api/buildPrompt', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(chatBody),
+          })
+          chatBody.conversation = await buildPromptResponse.json()
+          updatedConversation = chatBody.conversation!
 
           homeDispatch({
             field: 'selectedConversation',
@@ -872,17 +872,24 @@ export const Chat = memo(
           ]?.role === 'user'
         ) {
           // console.log('user')
-          handleSend(currentMessage, 1, null, tools, enabledDocumentGroups, llmProviders)
+          handleSend(
+            currentMessage,
+            1,
+            null,
+            tools,
+            enabledDocumentGroups,
+            llmProviders,
+          )
         } else {
           // console.log('assistant')
           handleSend(
-        currentMessage,
-        2,
-        null,
-        tools,
-        enabledDocumentGroups,
-        llmProviders,
-      )
+            currentMessage,
+            2,
+            null,
+            tools,
+            enabledDocumentGroups,
+            llmProviders,
+          )
         }
       }
     }, [currentMessage, handleSend])
@@ -1164,7 +1171,7 @@ export const Chat = memo(
                               tools,
                               enabledDocumentGroups,
                               llmProviders,
-                          )
+                            )
                           }}
                           onImageUrlsUpdate={onImageUrlsUpdate}
                         />
@@ -1184,13 +1191,13 @@ export const Chat = memo(
                   onSend={(message, plugin) => {
                     // setCurrentMessage(message)
                     handleSend(
-                    message,
-                    0,
-                    plugin,
-                    tools,
-                    enabledDocumentGroups,
-                    llmProviders,
-                  )
+                      message,
+                      0,
+                      plugin,
+                      tools,
+                      enabledDocumentGroups,
+                      llmProviders,
+                    )
                   }}
                   onScrollDownClick={handleScrollDown}
                   onRegenerate={handleRegenerate}

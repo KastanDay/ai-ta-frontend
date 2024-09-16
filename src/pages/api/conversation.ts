@@ -10,7 +10,10 @@ import {
 } from '@/types/chat'
 import { Database } from 'database.types'
 import { v4 as uuidv4 } from 'uuid'
-import { AllSupportedModels, GenericSupportedModel } from '~/types/LLMProvider'
+import {
+  AllSupportedModels,
+  GenericSupportedModel,
+} from '~/utils/modelProviders/LLMProvider'
 
 export const config = {
   api: {
