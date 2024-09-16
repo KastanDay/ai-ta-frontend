@@ -8,11 +8,17 @@ export const config = {
   runtime: 'edge',
 }
 
+// OMG azure sucks
+// the azureDeploymentID is require to make requests. Grab it from the /deployments list in getAzureModels()
+// The azureDeploymentModelName is the Azure-standardized model names, similar to OpenAI model IDs.
+
 export interface AzureModel {
   id: string
   name: string
   tokenLimit: number
   enabled: boolean
+  azureDeploymentModelName: string
+  azureDeploymentID?: string // Each deployment has a `model` and  `id`. The deployment ID is needed for making chat requests.
 }
 
 export enum AzureModelID {
@@ -23,34 +29,47 @@ export enum AzureModelID {
   GPT_3_5 = 'gpt-35-turbo-0125',
 }
 
+export enum AzureDeploymentModelName {
+  GPT_4o_mini = 'gpt-4o-mini',
+  GPT_4o = 'gpt-4o',
+  GPT_4 = 'gpt-4',
+  GPT_4_Turbo = 'gpt-4-turbo',
+  GPT_3_5 = 'gpt-35-turbo',
+}
+
 export const AzureModels: Record<AzureModelID, AzureModel> = {
   [AzureModelID.GPT_3_5]: {
     id: AzureModelID.GPT_3_5,
     name: 'GPT-3.5',
+    azureDeploymentModelName: AzureDeploymentModelName.GPT_3_5,
     tokenLimit: 16385,
     enabled: true,
   },
   [AzureModelID.GPT_4]: {
     id: AzureModelID.GPT_4,
     name: 'GPT-4',
+    azureDeploymentModelName: AzureDeploymentModelName.GPT_4,
     tokenLimit: 8192,
     enabled: true,
   },
   [AzureModelID.GPT_4_Turbo]: {
     id: AzureModelID.GPT_4_Turbo,
     name: 'GPT-4 Turbo',
+    azureDeploymentModelName: AzureDeploymentModelName.GPT_4_Turbo,
     tokenLimit: 128000,
     enabled: true,
   },
   [AzureModelID.GPT_4o]: {
     id: AzureModelID.GPT_4o,
     name: 'GPT-4o',
+    azureDeploymentModelName: AzureDeploymentModelName.GPT_4o,
     tokenLimit: 128000,
     enabled: true,
   },
   [AzureModelID.GPT_4o_mini]: {
     id: AzureModelID.GPT_4o_mini,
-    name: 'GPT-4o-mini',
+    name: 'GPT-4o mini',
+    azureDeploymentModelName: AzureDeploymentModelName.GPT_4o_mini,
     tokenLimit: 128000,
     enabled: true,
   },
@@ -68,11 +87,14 @@ export const getAzureModels = async (
       return azureProvider
     }
 
-    const url = `${azureProvider.AzureEndpoint}/openai/models?api-version=2024-02-01`
+    const baseUrl = azureProvider.AzureEndpoint.endsWith('/')
+      ? azureProvider.AzureEndpoint.slice(0, -1)
+      : azureProvider.AzureEndpoint
+    const url = `${baseUrl}/openai/deployments?api-version=2023-03-15-preview`
 
     const response = await fetch(url, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         'api-key': await decryptKeyIfNeeded(azureProvider.apiKey!),
       },
     })
@@ -83,18 +105,29 @@ export const getAzureModels = async (
       return azureProvider
     }
 
-    const data = await response.json()
-    const azureModels: AzureModel[] = data.data
-      .filter((model: any) => Object.values(AzureModelID).includes(model.id))
-      .map((model: any) => {
-        const azureModel = AzureModels[model.id as AzureModelID]
-        return {
-          id: model.id,
-          name: azureModel.name,
-          tokenLimit: azureModel.tokenLimit,
-          enabled: true,
-        } as AzureModel
-      })
+    const responseJson = await response.json()
+    const azureModels: AzureModel[] = responseJson.data.reduce(
+      (acc: AzureModel[], model: any) => {
+        const predefinedModel = Object.values(AzureModels).find(
+          (azureModel) =>
+            azureModel.azureDeploymentModelName.toLowerCase() ===
+            model.model.toLowerCase(),
+        )
+        if (predefinedModel) {
+          acc.push({
+            id: predefinedModel.id,
+            name: predefinedModel.name,
+            tokenLimit: predefinedModel.tokenLimit,
+            azureDeploymentModelName: predefinedModel.azureDeploymentModelName,
+            azureDeploymentID: model.id,
+            enabled: predefinedModel.enabled,
+          })
+        }
+        return acc
+      },
+      [],
+    )
+
     azureProvider.models = azureModels
     return azureProvider
   } catch (error: any) {

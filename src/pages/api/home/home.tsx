@@ -30,7 +30,6 @@ import {
   VisionCapableModels,
 } from '~/utils/modelProviders/LLMProvider'
 import { OpenAIModelID } from '~/utils/modelProviders/types/openai'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import {
   useDeleteFolder,
   useFetchFolders,

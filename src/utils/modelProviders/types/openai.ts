@@ -36,7 +36,7 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
   // },
   [OpenAIModelID.GPT_4o_mini]: {
     id: OpenAIModelID.GPT_4o_mini,
-    name: 'GPT-4o-mini',
+    name: 'GPT-4o mini',
     tokenLimit: 128000,
     enabled: true,
   },

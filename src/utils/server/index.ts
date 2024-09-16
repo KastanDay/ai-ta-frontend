@@ -16,7 +16,7 @@ import {
   type ReconnectInterval,
   createParser,
 } from 'eventsource-parser'
-import { decrypt, decryptKeyIfNeeded, isEncrypted } from '../crypto'
+import { decryptKeyIfNeeded } from '../crypto'
 import {
   AllLLMProviders,
   AzureProvider,
@@ -38,9 +38,6 @@ export class OpenAIError extends Error {
     this.code = code
   }
 }
-
-// missing course_name...
-// got search_query... from messages
 
 export const OpenAIStream = async (
   model: OpenAIModel,
@@ -74,9 +71,17 @@ export const OpenAIStream = async (
       provider.apiKey = await decryptKeyIfNeeded(provider.apiKey!)
 
       apiType = ProviderNames.Azure
-      url = `${provider!.AzureEndpoint}/openai/deployments/${provider.AzureDeployment}/chat/completions?api-version=${OPENAI_API_VERSION}`
+
+      provider.models?.forEach((m) => {
+        // find the model who's model.id matches model.id
+        if (m.id === model.id) {
+          url = `${provider!.AzureEndpoint}/openai/deployments/${m.azureDeploymentID}/chat/completions?api-version=${OPENAI_API_VERSION}`
+        }
+      })
     } else {
-      throw new Error('Unsupported model provider')
+      throw new Error(
+        'Unsupported OpenAI or Azure configuration. Try a different model, or re-configure your OpenAI/Azure API keys.',
+      )
     }
   }
 
@@ -93,8 +98,6 @@ export const OpenAIStream = async (
     temperature: temperature,
     stream: stream,
   })
-  // This could be logged and tracked better
-  // console.log("openai api body: ", body)
 
   if (!url) {
     throw new Error('URL is undefined')
