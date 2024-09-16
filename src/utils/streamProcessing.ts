@@ -18,6 +18,7 @@ import {
   AllLLMProviders,
   AllSupportedModels,
   GenericSupportedModel,
+  NCSAHostedProvider,
   OllamaProvider,
   VisionCapableModels,
 } from '~/utils/modelProviders/LLMProvider'
@@ -29,6 +30,7 @@ import { OpenAIModelID } from './modelProviders/types/openai'
 import { v4 as uuidv4 } from 'uuid'
 import { AzureModelID } from './modelProviders/azure'
 import { AnthropicModelID } from './modelProviders/types/anthropic'
+import { NCSAHostedModelID } from './modelProviders/NCSAHosted'
 
 export const config = {
   runtime: 'edge',
@@ -865,11 +867,36 @@ export const routeModelRequest = async (
 
   let response: Response
   if (
+    Object.values(NCSAHostedModelID).includes(
+      selectedConversation.model.id as any,
+    )
+  ) {
+    // NCSA Hosted LLMs
+
+    const newChatBody = chatBody!.llmProviders!.NCSAHosted as NCSAHostedProvider
+    newChatBody.baseUrl = process.env.OLLAMA_SERVER_URL // inject proper baseURL
+    console.log('IN NCSA hosted router....', newChatBody)
+
+    response = await fetch('/api/chat/ollama', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+
+      body: JSON.stringify({
+        conversation: selectedConversation,
+        ollamaProvider: newChatBody,
+      }),
+    })
+  } else if (
     Object.values(OllamaModelIDs).includes(selectedConversation.model.id as any)
   ) {
-    // Ollama model
-    console.log('Ollama provider in stream: ', chatBody!.llmProviders!.Ollama)
+    console.log(
+      'IN NCSA OLLAMA ROUTER SIDE....',
+      chatBody!.llmProviders!.Ollama,
+    )
 
+    // Ollama model
     response = await fetch('/api/chat/ollama', {
       method: 'POST',
       headers: {
@@ -885,7 +912,6 @@ export const routeModelRequest = async (
       selectedConversation.model.id as any,
     )
   ) {
-    console.log('Anthropic model: ', chatBody)
     const url = baseUrl
       ? `${baseUrl}/api/chat/anthropic`
       : '/api/chat/anthropic'

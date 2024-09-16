@@ -33,7 +33,7 @@ export const getOpenAIModels = async (
     }
 
     const client = new OpenAI({
-      apiKey: openAIProvider.apiKey,
+      apiKey: await decryptKeyIfNeeded(openAIProvider.apiKey),
     })
 
     const response = await client.models.list()

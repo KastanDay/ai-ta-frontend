@@ -3,6 +3,7 @@ import {
   NCSAHostedProvider,
   ProviderNames,
 } from '~/utils/modelProviders/LLMProvider'
+import { encryptKeyIfNeeded } from '../crypto'
 
 export interface OllamaModel {
   id: string
@@ -33,11 +34,7 @@ export const getNCSAHostedModels = async (
   delete ncsaHostedProvider.error // Remove the error property if it exists
   ncsaHostedProvider.provider = ProviderNames.NCSAHosted
   try {
-    if (!ncsaHostedProvider.baseUrl) {
-      ncsaHostedProvider.baseUrl = process.env.OLLAMA_SERVER_URL
-    }
-
-    const response = await fetch(ncsaHostedProvider.baseUrl + '/api/tags')
+    const response = await fetch(process.env.OLLAMA_SERVER_URL + '/api/tags')
 
     if (!response.ok) {
       ncsaHostedProvider.error = `HTTP error ${response.status} ${response.statusText}.`
