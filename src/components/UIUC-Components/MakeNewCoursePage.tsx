@@ -123,7 +123,7 @@ const MakeNewCoursePage = ({
           padding="none"
           radius="xl"
           // style={{ maxWidth: '85%', width: '100%', marginTop: '4%' }}
-          className="mt-[4%] w-[96%] md:w-[90%] 2xl:w-[75%]"
+          className="mt-[4%] w-[96%] md:w-[90%] lg:max-w-[750px]"
         >
           <Flex direction={isSmallScreen ? 'column' : 'row'}>
             <div
@@ -146,10 +146,10 @@ const MakeNewCoursePage = ({
                   w={isSmallScreen ? '80%' : '60%'}
                 >
                   <Title
-                    order={2}
+                    order={isSmallScreen ? 3 : 2}
                     variant="gradient"
                     gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                    className={`${montserrat_heading.variable} text-center font-montserratHeading`}
+                    className={`${montserrat_heading.variable} text-left font-montserratHeading`}
                   >
                     {!is_new_course ? `${projectName}` : 'Create a new project'}
                   </Title>
@@ -181,12 +181,12 @@ const MakeNewCoursePage = ({
                               ? 'green'
                               : 'red',
                         },
-                        fontSize: '16px', // Added text styling
+                        fontSize: isSmallScreen ? '12px' : '16px', // Added text styling
                         font: `${montserrat_paragraph.variable} font-montserratParagraph`,
                       },
                       label: {
                         fontWeight: 'bold',
-                        fontSize: '20px',
+                        fontSize: isSmallScreen ? '14px' : '20px',
                         color: 'white',
                         marginBottom: '1rem',
                       },
@@ -209,7 +209,7 @@ const MakeNewCoursePage = ({
                   <Flex direction="row" align="flex-end">
                     <label
                       className={`${montserrat_paragraph.variable} mt-4 font-montserratParagraph font-bold`}
-                      style={{ fontSize: '20px' }}
+                      style={{ fontSize: isSmallScreen ? '14px' : '20px' }}
                     >
                       What do you want to achieve?
                     </label>
@@ -229,7 +229,7 @@ const MakeNewCoursePage = ({
                     styles={{
                       input: {
                         backgroundColor: '#1A1B1E',
-                        fontSize: '16px', // Added text styling
+                        fontSize: isSmallScreen ? '12px' : '16px', // Added text styling
                         font: `${montserrat_paragraph.variable} font-montserratParagraph`,
                         // borderColor: '#8e44ad', // Grape color
                         '&:focus': {
@@ -245,7 +245,7 @@ const MakeNewCoursePage = ({
                   />
                   <Flex direction={'row'}>
                     <Title
-                      order={4}
+                      order={isSmallScreen ? 5 : 4}
                       className={`w-full pr-2 pr-7 text-right ${montserrat_paragraph.variable} mt-2 font-montserratParagraph`}
                     >
                       Next: let&apos;s upload some documents
@@ -265,11 +265,11 @@ const MakeNewCoursePage = ({
                             )
                           }}
                           size="md"
-                          radius={'sm'}
+                          radius={'md'}
                           className={`${isCourseAvailable && projectName !== '' ? 'bg-purple-800' : 'border-purple-800'}
                         overflow-ellipsis text-ellipsis p-2 ${isCourseAvailable && projectName !== '' ? 'text-white' : 'text-gray-500'}
-                        min-w-[8rem] transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none`}
-                          w={`${isSmallScreen ? '90%' : '50%'}`}
+                        mt-2 min-w-[5-rem] transform hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none lg:min-w-[8rem]`}
+                          // w={`${isSmallScreen ? '5rem' : '50%'}`}
                           style={{
                             alignSelf: 'flex-end',
                           }}
