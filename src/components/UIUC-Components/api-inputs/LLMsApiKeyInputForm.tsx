@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import {
   Button,
   Text,
+  Slider,
   Card,
   Flex,
   Title,
@@ -21,7 +22,9 @@ import {
 import {
   AllLLMProviders,
   AnthropicProvider,
+  AnySupportedModel,
   AzureProvider,
+  LLMProvider,
   NCSAHostedProvider,
   OllamaProvider,
   OpenAIProvider,
@@ -47,6 +50,7 @@ import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
 import NCSAHostedLLmsProviderInput from './providers/NCSAHostedProviderInput'
 import { getModelLogo, ModelItem } from '~/components/Chat/ModelSelect'
+import HomeContext from '~/pages/api/home/home.context'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -156,23 +160,9 @@ export const APIKeyInput = ({
 interface NewModelDropdownProps {
   value: string | undefined
   onChange: (value: string) => void
-  models: {
-    OpenAI?: { id: string; name: string; downloadSize?: string }[]
-    Ollama?: { id: string; name: string; downloadSize?: string }[]
-    Azure?: { id: string; name: string; downloadSize?: string }[]
-    WebLLM?: { id: string; name: string; downloadSize?: string }[]
-    Anthropic?: { id: string; name: string; downloadSize?: string }[]
-  }
+  llmProviders: AllLLMProviders
   isSmallScreen: boolean
   loadingModelId: string | null
-  state: {
-    webLLMModelIdLoading: {
-      id: string | null
-      isLoading: boolean
-    }
-    // Add other state properties as needed
-  }
-  showWebLLmModels: boolean
 }
 
 const NewModelDropdown: React.FC<
@@ -183,44 +173,58 @@ const NewModelDropdown: React.FC<
 > = ({
   value,
   onChange,
-  models,
+  llmProviders,
   isSmallScreen,
   loadingModelId,
   setLoadingModelId,
-  state,
-  showWebLLmModels,
 }) => {
-  const allModels = [
-    ...(models.Ollama || []).map((model: any) => ({
-      ...model,
-      provider: ProviderNames.Ollama,
-      group: 'NCSA Hosted Models, 100% free',
-    })),
-    ...(models.OpenAI || []).map((model: any) => ({
-      ...model,
-      provider: ProviderNames.OpenAI,
-      group: 'OpenAI',
-    })),
-    ...(models.Anthropic || []).map((model: any) => ({
-      ...model,
-      provider: ProviderNames.Anthropic,
-      group: 'Anthropic',
-    })),
-    ...(models.WebLLM && models.WebLLM.length > 0
-      ? models.WebLLM.map((model: any) => ({
-          ...model,
-          provider: ProviderNames.WebLLM,
-          group: 'Local in Browser LLMs, runs on your device',
-        }))
-      : []),
-  ]
+  console.log('llmProviders AT TOP model dropdown', llmProviders)
+
+  // Filter out providers that are not enabled and their models which are disabled
+  const { enabledProvidersAndModels, allModels } = Object.keys(
+    llmProviders,
+  ).reduce(
+    (
+      acc: {
+        enabledProvidersAndModels: Record<string, LLMProvider>
+        allModels: AnySupportedModel[]
+      },
+      key,
+    ) => {
+      const provider = llmProviders[key as keyof typeof llmProviders]
+      if (provider && provider.enabled) {
+        const enabledModels =
+          provider.models?.filter((model: { enabled: any }) => model.enabled) ||
+          []
+        if (enabledModels.length > 0) {
+          // @ts-ignore -- Can't figure out why the types aren't perfect.
+          acc.enabledProvidersAndModels[key as keyof typeof llmProviders] = {
+            ...provider,
+            models: enabledModels,
+          }
+          acc.allModels.push(
+            ...enabledModels.map((model: any) => ({
+              ...model,
+              provider: provider.provider,
+            })),
+          )
+        }
+      }
+      return acc
+    },
+    {
+      enabledProvidersAndModels: {} as Record<string, LLMProvider>,
+      allModels: [] as AnySupportedModel[],
+    },
+  )
+
   const selectedModel = allModels.find((model) => model.id === value)
 
   return (
     <>
       <div
         tabIndex={0}
-        className="relative flex w-full flex-col items-start px-2"
+        className="relative mt-4 flex w-full flex-col items-start px-4"
       >
         <Select
           className="menu z-[50] w-full"
@@ -228,33 +232,29 @@ const NewModelDropdown: React.FC<
           placeholder="Select a model"
           searchable
           value={value}
-          onChange={async (modelId: any) => {
-            if (state.webLLMModelIdLoading.isLoading) {
-              setLoadingModelId(modelId)
-              console.log('model id', modelId)
-              console.log('loading model id', loadingModelId)
-              console.log('model is loading', state.webLLMModelIdLoading.id)
-            } else if (!state.webLLMModelIdLoading.isLoading) {
-              setLoadingModelId(null)
-            }
+          onChange={async (modelId) => {
             await onChange(modelId!)
           }}
-          data={allModels.map((model: any) => ({
-            value: model.id,
-            label: model.name,
-            downloadSize: model.downloadSize,
-            modelId: model.id,
-            selectedModelId: value,
-            modelType: model.provider,
-            group: model.group,
-            vram_required_MB: model.vram_required_MB,
-          }))}
-          itemComponent={(props: any) => (
+          data={Object.values(enabledProvidersAndModels).flatMap(
+            (provider: LLMProvider) =>
+              provider.models?.map((model) => ({
+                value: model.id,
+                label: model.name,
+                // @ts-ignore -- this being missing is fine
+                downloadSize: model?.downloadSize,
+                modelId: model.id,
+                selectedModelId: value,
+                modelType: provider.provider,
+                group: provider.provider,
+                // @ts-ignore -- this being missing is fine
+                vram_required_MB: model.vram_required_MB,
+              })) || [],
+          )}
+          itemComponent={(props) => (
             <ModelItem
               {...props}
               loadingModelId={loadingModelId}
               setLoadingModelId={setLoadingModelId}
-              showWebLLmModels={showWebLLmModels}
             />
           )}
           maxDropdownHeight={480}
@@ -262,7 +262,9 @@ const NewModelDropdown: React.FC<
           icon={
             selectedModel ? (
               <Image
-                src={getModelLogo(selectedModel.provider) || ''}
+                // @ts-ignore -- this being missing is fine
+                src={getModelLogo(selectedModel.provider)}
+                // @ts-ignore -- this being missing is fine
                 alt={`${selectedModel.provider} logo`}
                 width={20}
                 height={20}
@@ -270,7 +272,7 @@ const NewModelDropdown: React.FC<
               />
             ) : null
           }
-          rightSection={<IconChevronDown size="1rem" />}
+          rightSection={<IconChevronDown size="1rem" className="mr-2" />}
           classNames={{
             root: 'w-full',
             wrapper: 'w-full',
@@ -278,11 +280,7 @@ const NewModelDropdown: React.FC<
             rightSection: 'pointer-events-none',
             item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
           }}
-          styles={(theme: {
-            radius: { md: any }
-            shadows: { xs: any }
-            white: any
-          }) => ({
+          styles={(theme) => ({
             input: {
               backgroundColor: 'rgb(107, 33, 168)',
               border: 'none',
@@ -405,6 +403,23 @@ export default function APIKeyInputForm() {
       )
     },
   })
+
+  const [loadingModelId, setLoadingModelId] = useState<string | null>(null)
+
+  // Add this context provider
+  const homeContextValue = {
+    state: {
+      selectedConversation: null,
+      llmProviders: llmProviders || {},
+      defaultModelId: form.getFieldValue('defaultModel'),
+      webLLMModelIdLoading: {
+        id: loadingModelId,
+        isLoading: !!loadingModelId,
+      },
+    },
+    handleUpdateConversation: () => {},
+    dispatch: () => {},
+  }
 
   // if (isLoadingLLMProviders) {
   //   return (
@@ -651,12 +666,62 @@ export default function APIKeyInputForm() {
                         </Text>
                         <br />
                         <div className="flex justify-center">
-                          <Text
-                            className={`label ${montserrat_paragraph.className}`}
-                            variant="gradient"
-                            gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                          >
-                            Coming Soon...
+                          {llmProviders && (
+                            <HomeContext.Provider value={homeContextValue}>
+                              <NewModelDropdown
+                                value={form.getFieldValue('defaultModel')}
+                                onChange={async (modelId: string) => {
+                                  form.setFieldValue('defaultModel', modelId)
+                                  await form.handleSubmit()
+                                }}
+                                llmProviders={{
+                                  Ollama: llmProviders.Ollama,
+                                  OpenAI: llmProviders.OpenAI,
+                                  Anthropic: llmProviders.Anthropic,
+                                  Azure: llmProviders.Azure,
+                                  WebLLM: llmProviders.WebLLM,
+                                  NCSAHosted: llmProviders.NCSAHosted,
+                                }}
+                                isSmallScreen={false}
+                                loadingModelId={'test'}
+                                setLoadingModelId={(id: string | null) => {}}
+                              ></NewModelDropdown>
+                            </HomeContext.Provider>
+                          )}
+                        </div>
+                        <div>
+                          <Text size="sm" weight={500} mb={4}>
+                            Default Temperature:{' '}
+                            {form.getFieldValue('defaultTemperature')}
+                          </Text>
+                          <form.Field name="defaultTemperature">
+                            {(field) => (
+                              <>
+                                <Slider
+                                  value={field.state.value}
+                                  onChange={(value) =>
+                                    field.handleChange(value)
+                                  }
+                                  min={0}
+                                  max={1}
+                                  step={0.1}
+                                  label={null}
+                                  styles={(theme) => ({
+                                    track: {
+                                      backgroundColor: theme.colors.gray[2],
+                                    },
+                                    thumb: {
+                                      borderWidth: 2,
+                                      padding: 3,
+                                    },
+                                  })}
+                                />
+                              </>
+                            )}
+                          </form.Field>
+                          <Text size="xs" color="dimmed" mt={4}>
+                            Higher values increase randomness, lower values
+                            increase focus and determinism.
                           </Text>
                         </div>
                         <div className="pt-2" />
