@@ -190,6 +190,9 @@ export default async function handler(
           dbConversation,
         )
 
+        if (conversation.messages.length === 0) {
+          throw new Error('No messages in conversation, not saving!')
+        }
         // Save conversation to Supabase
         const { data, error } = await supabase
           .from('conversations')

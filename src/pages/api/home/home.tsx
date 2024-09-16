@@ -74,14 +74,17 @@ const Home = ({
   const createFolderMutation = useCreateFolder(
     current_email as string,
     queryClient,
+    course_name,
   )
   const updateFolderMutation = useUpdateFolder(
     current_email as string,
     queryClient,
+    course_name,
   )
   const deleteFolderMutation = useDeleteFolder(
     current_email as string,
     queryClient,
+    course_name,
   )
 
   // const {

@@ -7,16 +7,30 @@ import HomeContext from '~/pages/api/home/home.context'
 import Folder from '@/components/Folder'
 
 import { ConversationComponent } from './Conversation'
+import { useQueryClient } from '@tanstack/react-query'
+import { useUpdateConversation } from '~/hooks/conversationQueries'
 
 interface Props {
   searchTerm: string
+  currentEmail: string
+  courseName: string
 }
 
-export const ChatFolders = ({ searchTerm }: Props) => {
+export const ChatFolders = ({
+  searchTerm,
+  currentEmail,
+  courseName,
+}: Props) => {
   const {
     state: { folders, conversations },
     handleUpdateConversation,
   } = useContext(HomeContext)
+  const queryClient = useQueryClient()
+  const updateConversationMutation = useUpdateConversation(
+    currentEmail as string,
+    queryClient,
+    courseName,
+  )
 
   const handleDrop = (e: any, folder: FolderInterface) => {
     console.log('drop triggered: ', e)
@@ -26,6 +40,8 @@ export const ChatFolders = ({ searchTerm }: Props) => {
         key: 'folderId',
         value: folder.id,
       })
+      conversation.folderId = folder.id
+      updateConversationMutation.mutate(conversation)
     }
   }
 

@@ -22,7 +22,11 @@ export function useFetchFolders(user_email: string) {
   })
 }
 
-export function useCreateFolder(user_email: string, queryClient: QueryClient) {
+export function useCreateFolder(
+  user_email: string,
+  queryClient: QueryClient,
+  course_name: string,
+) {
   return useMutation({
     mutationKey: ['createFolder', user_email],
     mutationFn: async (newFolder: FolderWithConversation) =>
@@ -54,7 +58,11 @@ export function useCreateFolder(user_email: string, queryClient: QueryClient) {
   })
 }
 
-export function useUpdateFolder(user_email: string, queryClient: QueryClient) {
+export function useUpdateFolder(
+  user_email: string,
+  queryClient: QueryClient,
+  course_name: string,
+) {
   return useMutation({
     mutationKey: ['updateFolder', user_email],
     mutationFn: async (folder: FolderWithConversation) =>
@@ -87,11 +95,18 @@ export function useUpdateFolder(user_email: string, queryClient: QueryClient) {
     },
     onSettled: (data, error, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['folders', user_email] })
+      queryClient.invalidateQueries({
+        queryKey: ['conversationHistory', user_email, course_name],
+      })
     },
   })
 }
 
-export function useDeleteFolder(user_email: string, queryClient: QueryClient) {
+export function useDeleteFolder(
+  user_email: string,
+  queryClient: QueryClient,
+  course_name: string,
+) {
   return useMutation({
     mutationKey: ['deleteFolder', user_email],
     mutationFn: async (deletedFolder: FolderWithConversation) =>
@@ -122,7 +137,7 @@ export function useDeleteFolder(user_email: string, queryClient: QueryClient) {
     onSettled: (data, error, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['folders', user_email] })
       queryClient.invalidateQueries({
-        queryKey: ['conversationHistory', user_email],
+        queryKey: ['conversationHistory', user_email, course_name],
       })
     },
   })

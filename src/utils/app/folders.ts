@@ -59,7 +59,7 @@ export const deleteFolderFromServer = async (
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ folder }),
+      body: JSON.stringify({ deletedFolderId: folder.id }),
     })
 
     if (!response.ok) {
