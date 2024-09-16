@@ -26,6 +26,8 @@ export enum OpenAIModelID {
 }
 
 export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
+  // NOTE: We use these as default values for enabled: true/false.
+
   // [OpenAIModelID.GPT_o1]: {
   //   id: OpenAIModelID.GPT_4o_mini,
   //   name: 'o1-preview',
@@ -48,18 +50,18 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
     id: OpenAIModelID.GPT_4_Turbo,
     name: 'GPT-4 Turbo',
     tokenLimit: 128000,
-    enabled: true,
+    enabled: false,
   },
   [OpenAIModelID.GPT_4]: {
     id: OpenAIModelID.GPT_4,
     name: 'GPT-4',
     tokenLimit: 8192,
-    enabled: true,
+    enabled: false,
   },
   [OpenAIModelID.GPT_3_5]: {
     id: OpenAIModelID.GPT_3_5,
     name: 'GPT-3.5',
     tokenLimit: 16385,
-    enabled: true,
+    enabled: false,
   },
 }

@@ -62,7 +62,7 @@ export const getAzureModels = async (
   azureProvider.provider = ProviderNames.Azure
   try {
     if (!azureProvider.AzureEndpoint || !azureProvider.AzureDeployment) {
-      azureProvider.error = `Azure OpenAI Endpoint or Deployment is not set. Endpoint: ${azureProvider.AzureEndpoint}, Deployment: ${azureProvider.AzureDeployment}`
+      // azureProvider.error = `Azure OpenAI Endpoint or Deployment is not set. Endpoint: ${azureProvider.AzureEndpoint}, Deployment: ${azureProvider.AzureDeployment}`
       azureProvider.models = [] // clear any previous models.
       return azureProvider
     }

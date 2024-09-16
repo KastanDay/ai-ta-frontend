@@ -16,14 +16,9 @@ import { getWebLLMModels } from '~/utils/modelProviders/WebLLM'
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
 import { getNCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
-// import { migrateAllKeys } from './UIUC-api/MIGRATEALLKEYS'
 import { getOpenAIModels } from '~/utils/modelProviders/routes/openai'
 import { decryptKeyIfNeeded } from '~/utils/crypto'
-import { migrateAllKeys } from './UIUC-api/MIGRATEALLKEYS'
-import {
-  OpenAIModelID,
-  OpenAIModels,
-} from '~/utils/modelProviders/types/openai'
+import { OpenAIModelID } from '~/utils/modelProviders/types/openai'
 
 export const config = {
   runtime: 'edge',
@@ -88,12 +83,7 @@ const handler = async (
 
         const typedProviderName = providerName as keyof AllLLMProviders
         const provider = llmProviders[typedProviderName] as LLMProvider
-        console.log('LOOP -- provider', provider)
-        if (
-          provider &&
-          'apiKey' in provider &&
-          provider.apiKey !== 'this key is defined, but hidden'
-        ) {
+        if (provider && 'apiKey' in provider) {
           llmProviders[typedProviderName] = {
             ...provider,
             apiKey:

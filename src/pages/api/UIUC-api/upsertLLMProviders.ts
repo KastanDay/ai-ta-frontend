@@ -71,11 +71,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
       for (const providerName in llmProviders) {
         const typedProviderName = providerName as keyof AllLLMProviders
         const provider = llmProviders[typedProviderName]
-        if (
-          provider &&
-          'apiKey' in provider &&
-          provider.apiKey !== 'this key is defined, but hidden'
-        ) {
+        if (provider && 'apiKey' in provider) {
           llmProviders[typedProviderName] = {
             ...provider,
             apiKey:
@@ -97,11 +93,11 @@ export default async function handler(req: NextRequest, res: NextResponse) {
       combined_llms.defaultTemp = defaultTemperature
     }
 
-    // console.debug('-----------------------------------------')
-    // console.debug('EXISTING LLM Providers:', existingLLMs)
-    // console.debug('passed into upsert LLM Providers:', llmProviders)
-    // console.debug('FINAL COMBINED LLM Providers:', combined_llms)
-    // console.debug('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+    console.debug('-----------------------------------------')
+    console.debug('EXISTING LLM Providers:', existingLLMs)
+    console.debug('passed into upsert LLM Providers:', llmProviders)
+    console.debug('FINAL COMBINED LLM Providers:', combined_llms)
+    console.debug('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 
     // Save the combined metadata
     await kv.set(redisKey, combined_llms)

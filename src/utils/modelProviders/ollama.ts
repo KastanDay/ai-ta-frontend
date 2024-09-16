@@ -33,7 +33,8 @@ export const getOllamaModels = async (
   ollamaProvider.provider = ProviderNames.Ollama
   try {
     if (!ollamaProvider.baseUrl) {
-      ollamaProvider.error = `Ollama Base Url is not defined, please set it to the URL that points to your Ollama instance.`
+      // Don't error here, too confusing for users.
+      // ollamaProvider.error = `Ollama Base Url is not defined, please set it to the URL that points to your Ollama instance.`
       ollamaProvider.models = [] // clear any previous models.
       return ollamaProvider as OllamaProvider
     }

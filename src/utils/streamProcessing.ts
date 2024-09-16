@@ -28,7 +28,7 @@ import { webLLMModels } from './modelProviders/WebLLM'
 import { OpenAIModelID } from './modelProviders/types/openai'
 import { v4 as uuidv4 } from 'uuid'
 import { AzureModelID } from './modelProviders/azure'
-import { AnthropicModelID } from './modelProviders/anthropic'
+import { AnthropicModelID } from './modelProviders/types/anthropic'
 
 export const config = {
   runtime: 'edge',

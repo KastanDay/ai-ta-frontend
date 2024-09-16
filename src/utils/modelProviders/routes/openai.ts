@@ -14,16 +14,20 @@ export const getOpenAIModels = async (
     openAIProvider.provider = ProviderNames.OpenAI
     // Priority #1: use passed in key
     // Priority #2: use the key from the course metadata
-    const { disabledModels, openaiAPIKey } = await getDisabledOpenAIModels({
-      projectName,
-    })
+    // const { disabledModels, openaiAPIKey } = await getDisabledOpenAIModels({
+    //   projectName,
+    // })
 
-    if (!openAIProvider.apiKey) {
-      openAIProvider.apiKey = openaiAPIKey
-    }
+    // if (!openAIProvider.apiKey) {
+    //   openAIProvider.apiKey = openaiAPIKey
+    // }
+
+    // 1. Use all passed-in models that are ALSO available from the endpoint...
+    // If no passed-in models, then use all. Enabled by default, following our types spec.
 
     if (!openAIProvider.apiKey || openAIProvider.apiKey === undefined) {
-      openAIProvider.error = 'OpenAI API Key is not set.'
+      // No error here, too confusing for users.
+      // openAIProvider.error = 'OpenAI API Key is not set.'
       openAIProvider.models = [] // clear any previous models.
       return openAIProvider
     }
@@ -46,7 +50,9 @@ export const getOpenAIModels = async (
           id: model.id,
           name: OpenAIModels[model.id as OpenAIModelID].name,
           tokenLimit: OpenAIModels[model.id as OpenAIModelID].tokenLimit,
-          enabled: !disabledModels.includes(model.id),
+          enabled:
+            openAIProvider.models?.find((m) => m.id === model.id)?.enabled ??
+            OpenAIModels[model.id as OpenAIModelID].enabled,
         }
       })
 
@@ -60,38 +66,38 @@ export const getOpenAIModels = async (
   }
 }
 
-type DisabledOpenAIModels = {
-  disabledModels: string[]
-  openaiAPIKey: string | undefined
-}
+// type DisabledOpenAIModels = {
+//   disabledModels: string[]
+//   openaiAPIKey: string | undefined
+// }
 
-const getDisabledOpenAIModels = async ({
-  projectName,
-}: {
-  projectName: string
-}): Promise<DisabledOpenAIModels> => {
-  /* 
-  returns just the model IDs.
-  */
+// const getDisabledOpenAIModels = async ({
+//   projectName,
+// }: {
+//   projectName: string
+// }): Promise<DisabledOpenAIModels> => {
+//   /*
+//   returns just the model IDs.
+//   */
 
-  const course_metadata = (await kv.hget(
-    'course_metadatas',
-    projectName,
-  )) as CourseMetadata
+//   const course_metadata = (await kv.hget(
+//     'course_metadatas',
+//     projectName,
+//   )) as CourseMetadata
 
-  let apiKey: string | undefined = undefined
-  if (course_metadata.openai_api_key) {
-    apiKey = await decryptKeyIfNeeded(course_metadata.openai_api_key)
-  }
+//   let apiKey: string | undefined = undefined
+//   if (course_metadata.openai_api_key) {
+//     apiKey = await decryptKeyIfNeeded(course_metadata.openai_api_key)
+//   }
 
-  if (course_metadata && course_metadata.disabled_models) {
-    // returns just the model IDs
-    return {
-      disabledModels: course_metadata.disabled_models,
-      openaiAPIKey: apiKey,
-    }
-  } else {
-    // All models are enabled
-    return { disabledModels: [], openaiAPIKey: apiKey }
-  }
-}
+//   if (course_metadata && course_metadata.disabled_models) {
+//     // returns just the model IDs
+//     return {
+//       disabledModels: course_metadata.disabled_models,
+//       openaiAPIKey: apiKey,
+//     }
+//   } else {
+//     // All models are enabled
+//     return { disabledModels: [], openaiAPIKey: apiKey }
+//   }
+// }

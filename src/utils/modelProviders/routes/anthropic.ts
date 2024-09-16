@@ -5,12 +5,21 @@ export const getAnthropicModels = async (
   anthropicProvider: AnthropicProvider,
 ): Promise<AnthropicProvider> => {
   anthropicProvider.provider = ProviderNames.Anthropic
-  if (!anthropicProvider.apiKey) {
-    anthropicProvider.error = 'Anthropic API key not set.'
+  delete anthropicProvider.error // Clear any previous errors
+
+  if (!anthropicProvider.apiKey || anthropicProvider.apiKey === '') {
+    // Don't show any error here... too confusing for users.
     anthropicProvider.models = []
     return anthropicProvider
   }
-  anthropicProvider.models = Object.values(AnthropicModels) as AnthropicModel[]
-  delete anthropicProvider.error // Clear any previous errors
+
+  // TODO: if no models, return default models
+  if (!anthropicProvider.models || anthropicProvider.models.length === 0) {
+    anthropicProvider.models = Object.values(
+      AnthropicModels,
+    ) as AnthropicModel[]
+  }
+
+  // Return these from API, not just all enabled...
   return anthropicProvider
 }
