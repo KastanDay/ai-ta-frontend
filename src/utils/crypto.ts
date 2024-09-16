@@ -74,7 +74,7 @@ export function isEncrypted(str: string) {
   return base64Regex.test(encryptedBase64!) && base64Regex.test(ivBase64!)
 }
 
-export const decryptKeyIfNeeded = async (key: string) => {
+export const decryptKeyIfNeeded = async (key: string): Promise<string> => {
   if (key && isEncrypted(key)) {
     try {
       const decryptedText = await decrypt(

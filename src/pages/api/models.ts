@@ -75,24 +75,24 @@ const handler = async (
     }
 
     // Decrypt API keys
-    const processProviders = async () => {
-      for (const providerName in llmProviders) {
-        if (providerName === 'defaultModel' || providerName === 'defaultTemp') {
-          continue
-        }
+    // const processProviders = async () => {
+    //   for (const providerName in llmProviders) {
+    //     if (providerName === 'defaultModel' || providerName === 'defaultTemp') {
+    //       continue
+    //     }
 
-        const typedProviderName = providerName as keyof AllLLMProviders
-        const provider = llmProviders[typedProviderName] as LLMProvider
-        if (provider && 'apiKey' in provider) {
-          llmProviders[typedProviderName] = {
-            ...provider,
-            apiKey:
-              (await decryptKeyIfNeeded(provider.apiKey!)) ?? provider.apiKey,
-          } as LLMProvider & { provider: typeof typedProviderName }
-        }
-      }
-    }
-    await processProviders()
+    //     const typedProviderName = providerName as keyof AllLLMProviders
+    //     const provider = llmProviders[typedProviderName] as LLMProvider
+    //     if (provider && 'apiKey' in provider) {
+    //       llmProviders[typedProviderName] = {
+    //         ...provider,
+    //         apiKey:
+    //           (await decryptKeyIfNeeded(provider.apiKey!)) ?? provider.apiKey,
+    //       } as LLMProvider & { provider: typeof typedProviderName }
+    //     }
+    //   }
+    // }
+    // await processProviders()
 
     // Cast llmProviders to AllLLMProviders now that we've ensured all providers are defined
     llmProviders = llmProviders as AllLLMProviders

@@ -16,6 +16,7 @@ export async function POST(req: Request) {
   /*
   Run Ollama chat, given a text string. Return a streaming response promise.
   */
+
   const {
     conversation,
     ollamaProvider,
@@ -23,6 +24,10 @@ export async function POST(req: Request) {
     conversation: Conversation
     ollamaProvider: OllamaProvider | NCSAHostedProvider
   } = await req.json()
+
+  if (!ollamaProvider.baseUrl || ollamaProvider.baseUrl === '') {
+    ollamaProvider.baseUrl = process.env.OLLAMA_SERVER_URL
+  }
 
   const ollama = createOllama({
     baseURL: `${(await decryptKeyIfNeeded(ollamaProvider!.baseUrl!)) as any}/api`,
