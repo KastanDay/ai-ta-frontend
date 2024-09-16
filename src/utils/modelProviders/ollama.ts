@@ -13,14 +13,38 @@ export interface OllamaModel {
 
 export enum OllamaModelIDs {
   // Use "official" IDs from the Ollama API. Human-readable names in 'OllamaModels' below.
+  LLAMA31_8b = 'llama3.1:8b',
+  LLAMA31_latest = 'llama3.1:latest', // maps to LLAMA31_8b
   LLAMA31_70b = 'llama3.1:70b',
+  LLAMA31_405b = 'llama3.1:405b',
 }
 
 export const OllamaModels: Record<OllamaModelIDs, OllamaModel> = {
+  [OllamaModelIDs.LLAMA31_8b]: {
+    id: OllamaModelIDs.LLAMA31_8b,
+    name: 'Llama 3.1 8b',
+    parameterSize: '8b',
+    tokenLimit: 128000,
+    enabled: true,
+  },
+  [OllamaModelIDs.LLAMA31_latest]: {
+    id: OllamaModelIDs.LLAMA31_latest,
+    name: 'Llama 3.1 (Latest)',
+    parameterSize: '8b',
+    tokenLimit: 128000,
+    enabled: true,
+  },
   [OllamaModelIDs.LLAMA31_70b]: {
     id: OllamaModelIDs.LLAMA31_70b,
     name: 'Llama 3.1 70b',
     parameterSize: '70b',
+    tokenLimit: 128000,
+    enabled: true,
+  },
+  [OllamaModelIDs.LLAMA31_405b]: {
+    id: OllamaModelIDs.LLAMA31_405b,
+    name: 'Llama 3.1 405b',
+    parameterSize: '405b',
     tokenLimit: 128000,
     enabled: true,
   },
@@ -42,7 +66,7 @@ export const getOllamaModels = async (
     const response = await fetch(ollamaProvider.baseUrl + '/api/tags')
 
     if (!response.ok) {
-      ollamaProvider.error = `HTTP error! status: ${response.status}`
+      ollamaProvider.error = `HTTP error ${response.status} ${response.statusText}.`
       ollamaProvider.models = [] // clear any previous models.
       return ollamaProvider as OllamaProvider
     }

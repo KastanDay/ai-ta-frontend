@@ -40,7 +40,7 @@ export const getNCSAHostedModels = async (
     const response = await fetch(ncsaHostedProvider.baseUrl + '/api/tags')
 
     if (!response.ok) {
-      ncsaHostedProvider.error = `HTTP error! status: ${response.status}`
+      ncsaHostedProvider.error = `HTTP error ${response.status} ${response.statusText}.`
       ncsaHostedProvider.models = [] // clear any previous models.
       return ncsaHostedProvider as NCSAHostedProvider
     }
