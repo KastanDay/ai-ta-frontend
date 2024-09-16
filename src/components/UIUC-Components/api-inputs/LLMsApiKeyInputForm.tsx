@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Button,
   Text,
@@ -50,13 +50,8 @@ import AzureProviderInput from './providers/AzureProviderInput'
 import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
 import NCSAHostedLLmsProviderInput from './providers/NCSAHostedProviderInput'
-import {
-  getModelLogo,
-  ModelItem,
-  ModelSelect,
-} from '~/components/Chat/ModelSelect'
+import { getModelLogo, ModelItem } from '~/components/Chat/ModelSelect'
 import { LoadingSpinner } from '../LoadingSpinner'
-import HomeContext from '~/pages/api/home/home.context'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -163,6 +158,183 @@ export const APIKeyInput = ({
   )
 }
 
+interface NewModelDropdownProps {
+  value: string | undefined
+  onChange: (value: string) => void
+  models: {
+    OpenAI?: { id: string; name: string; downloadSize?: string }[]
+    Ollama?: { id: string; name: string; downloadSize?: string }[]
+    Azure?: { id: string; name: string; downloadSize?: string }[]
+    WebLLM?: { id: string; name: string; downloadSize?: string }[]
+    Anthropic?: { id: string; name: string; downloadSize?: string }[]
+  }
+  isSmallScreen: boolean
+  loadingModelId: string | null
+  state: {
+    webLLMModelIdLoading: {
+      id: string | null
+      isLoading: boolean
+    }
+    // Add other state properties as needed
+  }
+  showWebLLmModels: boolean
+}
+
+const NewModelDropdown: React.FC<
+  NewModelDropdownProps & {
+    setLoadingModelId: (id: string | null) => void
+    onChange: (modelId: string) => Promise<void>
+  }
+> = ({
+  value,
+  onChange,
+  models,
+  isSmallScreen,
+  loadingModelId,
+  setLoadingModelId,
+  state,
+  showWebLLmModels,
+}) => {
+  const allModels = [
+    ...(models.Ollama || []).map((model: any) => ({
+      ...model,
+      provider: ProviderNames.Ollama,
+      group: 'NCSA Hosted Models, 100% free',
+    })),
+    ...(models.OpenAI || []).map((model: any) => ({
+      ...model,
+      provider: ProviderNames.OpenAI,
+      group: 'OpenAI',
+    })),
+    ...(models.Anthropic || []).map((model: any) => ({
+      ...model,
+      provider: ProviderNames.Anthropic,
+      group: 'Anthropic',
+    })),
+    ...(models.WebLLM && models.WebLLM.length > 0
+      ? models.WebLLM.map((model: any) => ({
+          ...model,
+          provider: ProviderNames.WebLLM,
+          group: 'Local in Browser LLMs, runs on your device',
+        }))
+      : []),
+  ]
+  const selectedModel = allModels.find((model) => model.id === value)
+
+  return (
+    <>
+      <div
+        tabIndex={0}
+        className="relative flex w-full flex-col items-start px-2"
+      >
+        <Select
+          className="menu z-[50] w-full"
+          size="md"
+          placeholder="Select a model"
+          searchable
+          value={value}
+          onChange={async (modelId: any) => {
+            if (state.webLLMModelIdLoading.isLoading) {
+              setLoadingModelId(modelId)
+              console.log('model id', modelId)
+              console.log('loading model id', loadingModelId)
+              console.log('model is loading', state.webLLMModelIdLoading.id)
+            } else if (!state.webLLMModelIdLoading.isLoading) {
+              setLoadingModelId(null)
+            }
+            await onChange(modelId!)
+          }}
+          data={allModels.map((model: any) => ({
+            value: model.id,
+            label: model.name,
+            downloadSize: model.downloadSize,
+            modelId: model.id,
+            selectedModelId: value,
+            modelType: model.provider,
+            group: model.group,
+            vram_required_MB: model.vram_required_MB,
+          }))}
+          itemComponent={(props: any) => (
+            <ModelItem
+              {...props}
+              loadingModelId={loadingModelId}
+              setLoadingModelId={setLoadingModelId}
+              showWebLLmModels={showWebLLmModels}
+            />
+          )}
+          maxDropdownHeight={480}
+          rightSectionWidth="auto"
+          icon={
+            selectedModel ? (
+              <Image
+                src={getModelLogo(selectedModel.provider) || ''}
+                alt={`${selectedModel.provider} logo`}
+                width={20}
+                height={20}
+                style={{ marginLeft: '4px', borderRadius: '4px' }}
+              />
+            ) : null
+          }
+          rightSection={<IconChevronDown size="1rem" />}
+          classNames={{
+            root: 'w-full',
+            wrapper: 'w-full',
+            input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'} w-full`,
+            rightSection: 'pointer-events-none',
+            item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
+          }}
+          styles={(theme: {
+            radius: { md: any }
+            shadows: { xs: any }
+            white: any
+          }) => ({
+            input: {
+              backgroundColor: 'rgb(107, 33, 168)',
+              border: 'none',
+              // color: theme.white,
+              // borderRadius: theme.radius.md,
+              // width: '24rem',
+              // [`@media (max-width: 960px)`]: {
+              //   width: '17rem', // Smaller width for small screens
+              // },
+            },
+            dropdown: {
+              backgroundColor: '#1d1f33',
+              border: '1px solid rgba(42,42,120,1)',
+              borderRadius: theme.radius.md,
+              marginTop: '2px',
+              boxShadow: theme.shadows.xs,
+              width: '100%',
+              maxWidth: '100%',
+              position: 'absolute',
+            },
+            item: {
+              backgroundColor: '#1d1f33',
+              borderRadius: theme.radius.md,
+              margin: '2px',
+              '&[data-selected]': {
+                '&': {
+                  backgroundColor: 'transparent',
+                },
+                '&:hover': {
+                  backgroundColor: 'rgb(107, 33, 168)',
+                  color: theme.white,
+                },
+              },
+              '&[data-hovered]': {
+                backgroundColor: 'rgb(107, 33, 168)',
+                color: theme.white,
+              },
+            },
+          })}
+          dropdownPosition="bottom"
+          withinPortal
+        />
+      </div>
+    </>
+  )
+}
+
 export default function APIKeyInputForm() {
   const projectName = GetCurrentPageName()
 
@@ -257,23 +429,6 @@ export default function APIKeyInputForm() {
   //     </div>
   //   )
   // }
-
-  const [loadingModelId, setLoadingModelId] = useState<string | null>(null)
-
-  // Add this context provider
-  const homeContextValue = {
-    state: {
-      selectedConversation: null,
-      llmProviders: llmProviders || {},
-      defaultModelId: form.getFieldValue('defaultModel'),
-      webLLMModelIdLoading: {
-        id: loadingModelId,
-        isLoading: !!loadingModelId,
-      },
-    },
-    handleUpdateConversation: () => {},
-    dispatch: () => {},
-  }
 
   return (
     <>
@@ -453,100 +608,170 @@ export default function APIKeyInputForm() {
                     </Stack>
                   </Flex>
                 </div>
-                {
-                  <div
-                    className="flex flex-[1_1_100%] md:flex-[1_1_40%]"
-                    style={{
-                      // flex: isSmallScreen ? '1 1 100%' : '1 1 40%',
-                      padding: '1rem',
-                      backgroundColor: '#15162c',
-                      color: 'white',
-                    }}
-                  >
-                    <div className="card flex h-full flex-col justify-center">
-                      <div className="card-body">
-                        <div className="pb-4">
-                          <Title
-                            // className={`label ${montserrat.className}`}
-                            className={`label ${montserrat_heading.variable} font-montserratHeading`}
-                            variant="gradient"
-                            gradient={{ from: 'gold', to: 'white', deg: 170 }}
-                            order={3}
-                          >
-                            Default Model
-                          </Title>
-                          <div
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: 16,
-                            }}
-                          >
-                            <div>
-                              {llmProviders && (
-                                <HomeContext.Provider value={homeContextValue}>
-                                  <div>
-                                    <ModelSelect
-                                      chat_ui={{}}
-                                      props={{
-                                        setLoadingModelId: setLoadingModelId,
-                                        onChange: async (modelId: string) => {
-                                          form.setFieldValue(
-                                            'defaultModel',
-                                            modelId,
-                                          )
-                                          await form.handleSubmit()
-                                        },
-                                      }}
-                                    />
-                                  </div>
-                                </HomeContext.Provider>
-                              )}
-                            </div>
-
-                            <div>
-                              <Text size="sm" weight={500} mb={4}>
-                                Default Temperature:{' '}
-                                {form.getFieldValue('defaultTemperature')}
-                              </Text>
-                              <form.Field name="defaultTemperature">
-                                {(field) => (
-                                  <>
-                                    <Slider
-                                      value={field.state.value}
-                                      onChange={(value) =>
-                                        field.handleChange(value)
-                                      }
-                                      min={0}
-                                      max={1}
-                                      step={0.1}
-                                      label={null}
-                                      styles={(theme) => ({
-                                        track: {
-                                          backgroundColor: theme.colors.gray[2],
-                                        },
-                                        thumb: {
-                                          borderWidth: 2,
-                                          padding: 3,
-                                        },
-                                      })}
-                                    />
-                                  </>
-                                )}
-                              </form.Field>
-                              <Text size="xs" color="dimmed" mt={4}>
-                                Higher values increase randomness, lower values
-                                increase focus and determinism.
-                              </Text>
-                            </div>
+                {/* <div
+                  className="flex flex-[1_1_100%] md:flex-[1_1_40%]"
+                  style={{
+                    // flex: isSmallScreen ? '1 1 100%' : '1 1 40%',
+                    padding: '1rem',
+                    backgroundColor: '#15162c',
+                    color: 'white',
+                  }}
+                >
+                  <div className="card flex h-full flex-col justify-center">
+                    <div className="card-body">
+                      <div className="pb-4">
+                        <Title
+                          // className={`label ${montserrat.className}`}
+                          className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                          variant="gradient"
+                          gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                          order={3}
+                        >
+                          Default Model
+                        </Title>
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 16,
+                          }}
+                        >
+                          <div>
+                            {llmProviders && (
+                              //     <ModelDropdown
+                              //       value={form.getFieldValue('defaultModel')}
+                              //       onChange={
+                              //         // async (modelId) => {
+                              //         // // if (state.webLLMModelIdLoading) {
+                              //         // //   setLoadingModelId(modelId)
+                              //         // //   console.log('model is loading', state.webLLMModelIdLoading.id)
+                              //         // // }
+                              //         // await handleModelClick(modelId)
+                              //         async (modelId) => {
+                              //           // TODO
+                              //           // handleModelClick(modelId)
+                              //         }
+                              //       }
+                              //       models={{
+                              //         Ollama: llmProviders.Ollama?.models?.filter(
+                              //           (model) => model.enabled,
+                              //         ),
+                              //         OpenAI: llmProviders.OpenAI?.models?.filter(
+                              //           (model) => model.enabled,
+                              //         ),
+                              //         Anthropic:
+                              //           llmProviders.Anthropic?.models?.filter(
+                              //             (model) => model.enabled,
+                              //           ),
+                              //         Azure: llmProviders.Azure?.models?.filter(
+                              //           (model) => model.enabled,
+                              //         ),
+                              //       }}
+                              //       // isSmallScreen={isSmallScreen}
+                              //       // loadingModelId={loadingModelId}
+                              //       // setLoadingModelId={setLoadingModelId}
+                              //       // chat_ui={chat_ui}
+                              //       isSmallScreen={false}
+                              //       loadingModelId={'test'}
+                              //       setLoadingModelId={(id: string | null) => {
+                              // }}
+                              // state={{
+                              //   webLLMModelIdLoading: {
+                              //     id: 'test',
+                              //     isLoading: false,
+                              //   },
+                              // }}
+                              // showWebLLmModels={false}
+                              //     />
+                              <NewModelDropdown
+                                value={form.getFieldValue('defaultModel')}
+                                onChange={
+                                  // async (modelId) => {
+                                  // // if (state.webLLMModelIdLoading) {
+                                  // //   setLoadingModelId(modelId)
+                                  // //   console.log('model is loading', state.webLLMModelIdLoading.id)
+                                  // // }
+                                  // await handleModelClick(modelId)
+                                  async (modelId) => {
+                                    // TODO
+                                    // handleModelClick(modelId)
+                                  }
+                                }
+                                models={{
+                                  Ollama: llmProviders.Ollama?.models?.filter(
+                                    (model) => model.enabled,
+                                  ),
+                                  OpenAI: llmProviders.OpenAI?.models?.filter(
+                                    (model) => model.enabled,
+                                  ),
+                                  Anthropic:
+                                    llmProviders.Anthropic?.models?.filter(
+                                      (model) => model.enabled,
+                                    ),
+                                  Azure: llmProviders.Azure?.models?.filter(
+                                    (model) => model.enabled,
+                                  ),
+                                }}
+                                // isSmallScreen={isSmallScreen}
+                                // loadingModelId={loadingModelId}
+                                // setLoadingModelId={setLoadingModelId}
+                                // chat_ui={chat_ui}
+                                isSmallScreen={false}
+                                loadingModelId={'test'}
+                                setLoadingModelId={(id: string | null) => {}}
+                                state={{
+                                  webLLMModelIdLoading: {
+                                    id: 'test',
+                                    isLoading: false,
+                                  },
+                                }}
+                                showWebLLmModels={false}
+                              ></NewModelDropdown>
+                            )}
                           </div>
 
-                          <div className="pt-2" />
+                          <div>
+                            <Text size="sm" weight={500} mb={4}>
+                              Default Temperature:{' '}
+                              {form.getFieldValue('defaultTemperature')}
+                            </Text>
+                            <form.Field name="defaultTemperature">
+                              {(field) => (
+                                <>
+                                  <Slider
+                                    value={field.state.value}
+                                    onChange={(value) =>
+                                      field.handleChange(value)
+                                    }
+                                    min={0}
+                                    max={1}
+                                    step={0.1}
+                                    label={null}
+                                    styles={(theme) => ({
+                                      track: {
+                                        backgroundColor: theme.colors.gray[2],
+                                      },
+                                      thumb: {
+                                        borderWidth: 2,
+                                        padding: 3,
+                                      },
+                                    })}
+                                  />
+                                </>
+                              )}
+                            </form.Field>
+                            <Text size="xs" color="dimmed" mt={4}>
+                              Higher values increase randomness, lower values
+                              increase focus and determinism.
+                            </Text>
+                          </div>
                         </div>
+
+                        <div className="pt-2" />
                       </div>
                     </div>
-                  </div>
-                }
+                  </div> 
+                </div> */}
               </Flex>
             </Card>
 
