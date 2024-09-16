@@ -26,6 +26,7 @@ import fetchContexts from '~/pages/api/getContexts'
 import { OllamaModelIDs } from './modelProviders/ollama'
 import { webLLMModels } from './modelProviders/WebLLM'
 import { OpenAIModelID } from './modelProviders/openai'
+import { v4 as uuidv4 } from 'uuid'
 
 export const config = {
   runtime: 'edge',
@@ -630,6 +631,7 @@ export async function handleStreamingResponse(
       }
       // Append the processed response to the conversation
       conversation.messages.push({
+        id: uuidv4(),
         role: 'assistant',
         content: fullAssistantResponse,
       })
@@ -758,7 +760,7 @@ export async function updateConversationInDatabase(
   posthog.capture('stream_api_conversation_updated', {
     distinct_id: req.headers.get('x-forwarded-for') || req.ip,
     conversation_id: conversation.id,
-    user_id: conversation.user_email,
+    user_id: conversation.userEmail,
   })
 }
 
@@ -847,11 +849,11 @@ export const routeModelRequest = async (
   const selectedConversation = chatBody.conversation!
 
   posthog.capture('LLM Invoked', {
-    distinct_id: selectedConversation.user_email
-      ? selectedConversation.user_email
+    distinct_id: selectedConversation.userEmail
+      ? selectedConversation.userEmail
       : 'anonymous',
-    user_id: selectedConversation.user_email
-      ? selectedConversation.user_email
+    user_id: selectedConversation.userEmail
+      ? selectedConversation.userEmail
       : 'anonymous',
     conversation_id: selectedConversation.id,
     model_id: selectedConversation.model.id,

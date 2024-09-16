@@ -140,9 +140,8 @@ import { useTranslation } from 'next-i18next'
 
 import { getEndpoint } from '@/utils/app/api'
 import {
-  saveConversation,
+  saveConversationToLocalStorage,
   saveConversations,
-  updateConversation,
 } from '@/utils/app/conversation'
 import { throttle } from '@/utils/data/throttle'
 
@@ -446,6 +445,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               const updatedMessages: Message[] = [
                 ...updatedConversation.messages,
                 {
+                  id: message.id,
                   role: 'assistant',
                   content: chunkValue,
                   contexts: message.contexts,
@@ -481,11 +481,11 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
               })
             }
           }
-          saveConversation(updatedConversation)
+          saveConversationToLocalStorage(updatedConversation)
           // todo: add clerk user info to onMessagereceived for logging.
           if (clerk_obj.isLoaded && clerk_obj.isSignedIn) {
             const emails = extractEmailsFromClerk(clerk_obj.user)
-            updatedConversation.user_email = emails[0]
+            updatedConversation.userEmail = emails[0]
             onMessageReceived(updatedConversation) // kastan here, trying to save message AFTER done streaming. This only saves the user message...
           } else {
             onMessageReceived(updatedConversation)
@@ -509,7 +509,12 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
           const { answer } = await response.json()
           const updatedMessages: Message[] = [
             ...updatedConversation.messages,
-            { role: 'assistant', content: answer, contexts: message.contexts },
+            {
+              id: message.id,
+              role: 'assistant',
+              content: answer,
+              contexts: message.contexts,
+            },
           ]
           updatedConversation = {
             ...updatedConversation,
@@ -519,7 +524,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
             field: 'selectedConversation',
             value: updatedConversation,
           })
-          saveConversation(updatedConversation)
+          saveConversationToLocalStorage(updatedConversation)
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {

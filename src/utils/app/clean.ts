@@ -1,4 +1,4 @@
-import { Conversation } from '@/types/chat'
+import { Conversation, ConversationPage } from '@/types/chat'
 import { OpenAIModelID, OpenAIModels } from '~/utils/modelProviders/openai'
 
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from './const'
@@ -52,7 +52,7 @@ export const cleanSelectedConversation = (conversation: Conversation) => {
   return updatedConversation
 }
 
-export const cleanConversationHistory = (history: any[]): Conversation[] => {
+export const cleanConversationHistory = (history: any[]): ConversationPage => {
   // added model for each conversation (3/20/23)
   // added system prompt for each conversation (3/21/23)
   // added folders (3/23/23)
@@ -61,10 +61,13 @@ export const cleanConversationHistory = (history: any[]): Conversation[] => {
 
   if (!Array.isArray(history)) {
     console.warn('history is not an array. Returning an empty array.')
-    return []
+    return {
+      conversations: [],
+      nextCursor: null,
+    }
   }
 
-  return history.reduce((acc: any[], conversation) => {
+  return history.reduce((acc: Conversation[], conversation) => {
     try {
       if (!conversation.model) {
         conversation.model = OpenAIModels[OpenAIModelID.GPT_4]
@@ -94,6 +97,8 @@ export const cleanConversationHistory = (history: any[]): Conversation[] => {
         error,
       )
     }
-    return acc
+    return {
+      conversations: acc,
+    }
   }, [])
 }
