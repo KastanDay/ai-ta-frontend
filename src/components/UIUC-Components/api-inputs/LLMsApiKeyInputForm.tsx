@@ -3,7 +3,6 @@ import {
   Button,
   Text,
   Card,
-  Slider,
   Flex,
   Title,
   Stack,
@@ -34,13 +33,9 @@ import {
   IconAlertCircle,
   IconCheck,
   IconChevronDown,
-  IconCopy,
-  IconEye,
-  IconEyeOff,
   IconX,
 } from '@tabler/icons-react'
 import { GetCurrentPageName } from '../CanViewOnlyCourse'
-import { AnimatePresence, motion } from 'framer-motion'
 import GlobalFooter from '../GlobalFooter'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import Navbar from '../navbars/Navbar'
@@ -52,7 +47,6 @@ import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
 import NCSAHostedLLmsProviderInput from './providers/NCSAHostedProviderInput'
 import { getModelLogo, ModelItem } from '~/components/Chat/ModelSelect'
-import { LoadingSpinner } from '../LoadingSpinner'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
