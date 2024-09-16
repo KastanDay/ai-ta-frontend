@@ -6,6 +6,11 @@ import {
   AllLLMProviders,
 } from '../utils/modelProviders/LLMProvider'
 
+export interface ConversationPage {
+  conversations: Conversation[]
+  nextCursor: number | null
+}
+
 export interface Conversation {
   // NO KEY
   id: string
@@ -15,11 +20,14 @@ export interface Conversation {
   prompt: string
   temperature: number
   folderId: string | null
-  user_email?: string
+  userEmail?: string
+  projectName?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface Message {
-  // id: string;
+  id: string
   role: Role
   content: string | Content[]
   contexts?: ContextWithMetadata[]
@@ -27,6 +35,9 @@ export interface Message {
   latestSystemMessage?: string
   finalPromtEngineeredMessage?: string // after all prompt enginering, to generate final response.
   responseTimeSec?: number
+  conversation_id?: string
+  created_at?: string
+  updated_at?: string
 }
 
 export interface UIUCTool {

@@ -28,7 +28,7 @@ const Promptbar = () => {
   })
 
   const {
-    state: { prompts, defaultModelId, showPromptbar },
+    state: { prompts, defaultModelId, showPromptbar, folders },
     dispatch: homeDispatch,
     handleCreateFolder,
   } = useContext(HomeContext)
@@ -135,6 +135,7 @@ const Promptbar = () => {
           />
         }
         folderComponent={<PromptFolders />}
+        folders={folders}
         items={filteredPrompts}
         searchTerm={searchTerm}
         handleSearchTerm={(searchTerm: string) =>
@@ -144,8 +145,7 @@ const Promptbar = () => {
         handleCreateItem={handleCreatePrompt}
         handleCreateFolder={() => handleCreateFolder(t('New folder'), 'prompt')}
         handleDrop={handleDrop}
-        showCurrentCourseOnly={false}
-        onToggleCurrentCourseOnly={() => {}}
+        onScroll={() => {}}
       />
     </PromptbarContext.Provider>
   )

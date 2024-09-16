@@ -18,7 +18,7 @@ import {
   useRef,
   useState,
 } from 'react'
-
+import { v4 as uuidv4 } from 'uuid'
 import { useTranslation } from 'next-i18next'
 import { Content, Message, MessageType } from '@/types/chat'
 import { Plugin } from '@/types/plugin'
@@ -247,6 +247,7 @@ export const ChatInput = ({
 
     // Create a structured message for GPT-4 Vision
     const messageForGPT4Vision: Message = {
+      id: uuidv4(),
       role: 'user',
       content: contentArray,
     }
