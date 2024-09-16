@@ -25,9 +25,6 @@ import { type HomeInitialState, initialState } from './home.state'
 
 import { v4 as uuidv4 } from 'uuid'
 import { type CourseMetadata } from '~/types/courseMetadata'
-import { useUser } from '@clerk/nextjs'
-import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
-import { useRouter } from 'next/router'
 import {
   selectBestModel,
   VisionCapableModels,
@@ -39,12 +36,9 @@ import {
   useFetchFolders,
   useUpdateFolder,
 } from '~/hooks/folderQueries'
-import {
-  useFetchConversationHistory,
-  useUpdateConversation,
-} from '~/hooks/conversationQueries'
+import { useUpdateConversation } from '~/hooks/conversationQueries'
 import { FolderType, FolderWithConversation } from '~/types/folder'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCreateFolder } from '~/hooks/folderQueries'
 
 const Home = ({
@@ -159,7 +153,7 @@ const Home = ({
   useEffect(() => {
     // Set model after we fetch available models
     if (!llmProviders || Object.keys(llmProviders).length === 0) return
-    const model = selectBestModel(llmProviders, selectedConversation)
+    const model = selectBestModel(llmProviders)
 
     dispatch({
       field: 'defaultModelId',
@@ -325,7 +319,7 @@ const Home = ({
     const lastConversation = conversations[conversations.length - 1]
 
     // Determine the model to use for the new conversation
-    const model = selectBestModel(llmProviders, lastConversation)
+    const model = selectBestModel(llmProviders)
 
     const newConversation: Conversation = {
       id: uuidv4(),
