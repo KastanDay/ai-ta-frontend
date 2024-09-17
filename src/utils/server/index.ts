@@ -67,10 +67,9 @@ export const OpenAIStream = async (
       Object.values(AzureModels).some((oaiModel) => oaiModel.id === model.id)
     ) {
       // AZURE
+      apiType = ProviderNames.Azure
       provider = llmProviders[ProviderNames.Azure] as AzureProvider
       provider.apiKey = await decryptKeyIfNeeded(provider.apiKey!)
-
-      apiType = ProviderNames.Azure
 
       provider.models?.forEach((m) => {
         // find the model who's model.id matches model.id
@@ -94,7 +93,7 @@ export const OpenAIStream = async (
       },
       ...messages,
     ],
-    max_tokens: 1000,
+    max_tokens: 4000,
     temperature: temperature,
     stream: stream,
   })
