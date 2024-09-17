@@ -58,6 +58,8 @@ const MyApp: AppType = ({ Component, pageProps: { ...pageProps } }) => {
     return (
       <PostHogProvider client={posthog}>
         <ClerkProvider
+          // isSatellite={true}
+          allowedRedirectOrigins={['https://chat.illinois.edu']}
           appearance={{
             baseTheme: dark,
             variables: {
