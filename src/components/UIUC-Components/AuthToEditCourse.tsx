@@ -48,8 +48,10 @@ export const AuthComponent = ({ course_name }: { course_name: string }) => {
             {/* Wrapping a button makes it easy to style the sign-in link. */}
             <SignInButton
               mode="modal"
-              fallbackRedirectUrl={
-                course_name === 'new' ? '/new' : `/${course_name}/materials`
+              forceRedirectUrl={
+                course_name === 'new'
+                  ? 'https://chat.illinois.edu/new'
+                  : `https://chat.illinois.edu/${course_name}/materials`
               }
               // redirectUrl={
               //   course_name === 'new' ? '/new' : `/${course_name}/materials`
