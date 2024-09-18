@@ -348,8 +348,8 @@ export default function APIKeyInputForm() {
   }, [llmProviders])
 
   // TODO: TEMP HACK
-  const defaultModel = 'tmp' // don't default... stay undefined
-  const defaultTemp = 1.0 // default to 0.1
+  const defaultModel = undefined // don't default... stay undefined
+  const defaultTemp = 0.1 // default to 0.1
 
   useEffect(() => {
     // handle errors
