@@ -89,7 +89,7 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
       queryClient.setQueryData(['projectLLMProviders', variables.projectName], {
         ...variables.llmProviders,
         defaultModel: variables.defaultModelID,
-        defaultTemp: parseFloat(variables.defaultTemperature),
+        defaultTemp: parseFloat(variables.defaultTemp),
       })
 
       // Return a context object with the snapshotted value

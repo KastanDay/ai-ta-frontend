@@ -46,8 +46,6 @@ const handler = async (
       defaultTemp?: number
     }
 
-    console.log('INITIAL -- llmProviders', llmProviders)
-
     // Define a function to create a placeholder provider
     const createPlaceholderProvider = (
       providerName: ProviderNames,
@@ -120,7 +118,7 @@ const handler = async (
       }
     }
 
-    console.log('FINAL -- allLLMProviders', allLLMProviders)
+    // console.log('FINAL -- allLLMProviders', allLLMProviders)
     return NextResponse.json(allLLMProviders as ProjectWideLLMProviders, {
       status: 200,
     })

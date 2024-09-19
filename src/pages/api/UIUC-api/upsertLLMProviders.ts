@@ -62,18 +62,13 @@ export default async function handler(req: NextRequest, res: NextResponse) {
   }
 
   try {
-    console.debug('llmProviders BEFORE being cleaned and such', llmProviders)
-
     const redisKey = `${courseName}-llms`
     const existingLLMs = (await kv.get(redisKey)) as ProjectWideLLMProviders
 
     // Ensure all keys are encrypted, then save to DB.
     const processProviders = async () => {
       for (const providerName in llmProviders) {
-        if (
-          providerName === 'defaultModel' ||
-          providerName === 'defaultTemperature'
-        ) {
+        if (providerName === 'defaultModel' || providerName === 'defaultTemp') {
           continue
         }
 

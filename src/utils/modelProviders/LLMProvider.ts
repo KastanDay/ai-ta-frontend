@@ -146,7 +146,7 @@ export type AllLLMProviders = {
 export type ProjectWideLLMProviders = {
   [P in ProviderNames]?: LLMProvider & { provider: P }
 } & {
-  llmProviders?: LLMProvider[]
+  // llmProviders?: LLMProvider[]
   defaultModel?: string
   defaultTemp?: number
 }

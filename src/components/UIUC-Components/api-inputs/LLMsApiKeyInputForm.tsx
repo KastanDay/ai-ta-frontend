@@ -35,12 +35,8 @@ import {
 import { notifications } from '@mantine/notifications'
 import {
   IconAlertCircle,
-  IconAlertTriangleFilled,
   IconCheck,
   IconChevronDown,
-  IconCircleCheck,
-  IconDownload,
-  IconSparkles,
   IconX,
 } from '@tabler/icons-react'
 import { GetCurrentPageName } from '../CanViewOnlyCourse'
@@ -55,14 +51,7 @@ import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
 import NCSAHostedLLmsProviderInput from './providers/NCSAHostedProviderInput'
 import { getModelLogo } from '~/components/Chat/ModelSelect'
-import HomeContext from '~/pages/api/home/home.context'
 import { t } from 'i18next'
-import { modelCached } from '~/components/Chat/UserSettings'
-import {
-  recommendedModelIds,
-  warningLargeModelIds,
-} from '~/utils/modelProviders/ConfigWebLLM'
-import { LoadingSpinner } from '../LoadingSpinner'
 
 const isSmallScreen = false
 
@@ -93,10 +82,6 @@ export const APIKeyInput = ({
   useEffect(() => {
     setError(null)
   }, [field.state.value])
-
-  // const handleSubmit = () => {
-  //   field.form.handleSubmit()
-  // }
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
@@ -132,7 +117,6 @@ export const APIKeyInput = ({
               e.preventDefault()
               field.handleChange('')
               field.form.handleSubmit()
-              console.log('field.state in onclick for delete', field.state)
             }}
             type="submit"
             style={{ marginLeft: '8px' }}
@@ -426,10 +410,6 @@ export default function APIKeyInputForm() {
     llmProviders?.defaultModel || undefined,
   )
 
-  // TODO: TEMP HACK
-  // const defaultModel = undefined // don't default... stay undefined
-  // const defaultTemp = 0.1 // default to 0.1
-
   useEffect(() => {
     // handle errors
     if (isErrorLLMProviders) {
@@ -453,7 +433,6 @@ export default function APIKeyInputForm() {
     },
     onSubmit: async ({ value }) => {
       const llmProviders = value.providers as AllLLMProviders
-      console.log('onSubmit', value.defaultModel)
       mutation.mutate(
         {
           projectName,
@@ -464,7 +443,9 @@ export default function APIKeyInputForm() {
         },
         {
           onSuccess: (data, variables, context) => {
-            queryClient.invalidateQueries(['projectLLMProviders', projectName])
+            queryClient.invalidateQueries({
+              queryKey: ['projectLLMProviders', projectName],
+            })
             showConfirmationToast({
               title: 'Updated LLM providers',
               message: `Now your project's users can use the supplied LLMs!`,
@@ -499,8 +480,8 @@ export default function APIKeyInputForm() {
     dispatch: () => {},
   }
 
-  console.log('Form just before return', form.state.values)
-  console.log('LLMProviders just before return', llmProviders)
+  // console.log('Form just before return', form.state.values)
+  // console.log('LLMProviders just before return', llmProviders)
 
   return (
     <>
@@ -736,11 +717,17 @@ export default function APIKeyInputForm() {
                                 await form.handleSubmit()
                               }}
                               llmProviders={{
+                                // @ts-ignore - todo KASTAN FIGURE THIS OUT
                                 Ollama: llmProviders?.Ollama,
+                                // @ts-ignore - todo KASTAN FIGURE THIS OUT
                                 OpenAI: llmProviders?.OpenAI,
+                                // @ts-ignore - todo KASTAN FIGURE THIS OUT
                                 Anthropic: llmProviders?.Anthropic,
+                                // @ts-ignore - todo KASTAN FIGURE THIS OUT
                                 Azure: llmProviders?.Azure,
+                                // @ts-ignore - todo KASTAN FIGURE THIS OUT
                                 WebLLM: llmProviders?.WebLLM,
+                                // @ts-ignore - todo KASTAN FIGURE THIS OUT
                                 NCSAHosted: llmProviders?.NCSAHosted,
                               }}
                               isSmallScreen={false}
@@ -858,8 +845,6 @@ export const showConfirmationToast = ({
     notifications.show({
       id: 'confirmation-toast',
       withCloseButton: true,
-      onClose: () => console.log('unmounted'),
-      onOpen: () => console.log('mounted'),
       autoClose: 6000,
       title: title,
       message: message,
@@ -890,3 +875,4 @@ export const showConfirmationToast = ({
     })
   )
 }
+ModelItem.displayName = 'ModelItem'
