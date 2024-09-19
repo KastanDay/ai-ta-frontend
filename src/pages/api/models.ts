@@ -18,8 +18,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
 import { getNCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
 import { getOpenAIModels } from '~/utils/modelProviders/routes/openai'
-import { decryptKeyIfNeeded } from '~/utils/crypto'
-import { OpenAIModelID } from '~/utils/modelProviders/types/openai'
 
 export const config = {
   runtime: 'edge',
@@ -67,38 +65,19 @@ const handler = async (
       }
     }
 
-    // Ensure defaultModel and defaultTemp are set
-    if (!llmProviders.defaultModel) {
-      llmProviders.defaultModel = OpenAIModelID.GPT_4o_mini
-    }
-    if (!llmProviders.defaultTemp) {
-      llmProviders.defaultTemp = 0.1
-    }
-
-    // Decrypt API keys
-    const processProviders = async () => {
-      for (const providerName in llmProviders) {
-        if (providerName === 'defaultModel' || providerName === 'defaultTemp') {
-          continue
-        }
-
-        const typedProviderName = providerName as keyof AllLLMProviders
-        const provider = llmProviders[typedProviderName] as LLMProvider
-        if (provider && 'apiKey' in provider) {
-          llmProviders[typedProviderName] = {
-            ...provider,
-            apiKey:
-              (await decryptKeyIfNeeded(provider.apiKey!)) ?? provider.apiKey,
-          } as LLMProvider & { provider: typeof typedProviderName }
-        }
-      }
-    }
-    await processProviders()
-
     // Cast llmProviders to AllLLMProviders now that we've ensured all providers are defined
     llmProviders = llmProviders as AllLLMProviders
 
-    const allLLMProviders: Partial<AllLLMProviders> = {}
+    const allLLMProviders: Partial<ProjectWideLLMProviders> = {}
+
+    // Ensure defaultModel and defaultTemp are set
+    if (llmProviders.defaultModel) {
+      allLLMProviders.defaultModel = llmProviders.defaultModel
+    }
+
+    if (llmProviders.defaultTemp) {
+      allLLMProviders.defaultTemp = llmProviders.defaultTemp
+    }
 
     // Iterate through all possible providers
     for (const providerName of Object.values(ProviderNames)) {
@@ -140,17 +119,6 @@ const handler = async (
           console.warn(`Unhandled provider: ${providerName}`)
       }
     }
-
-    // Call MIGRATEALLKEYS.ts
-    // try {
-    //   await migrateAllKeys()
-    //   console.log('DONE MIGRATEALLKEYS:');
-    // } catch (error) {
-    //   console.error('Error calling MIGRATEALLKEYS:', error);
-    // }
-
-    // const openAIModels = Object.values(OpenAIModels)
-    // console.log("openAIModels", openAIModels)
 
     console.log('FINAL -- allLLMProviders', allLLMProviders)
     return NextResponse.json(allLLMProviders as ProjectWideLLMProviders, {
