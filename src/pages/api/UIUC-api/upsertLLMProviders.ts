@@ -12,6 +12,7 @@ export const runtime = 'edge'
 
 export default async function handler(req: NextRequest, res: NextResponse) {
   // Ensure it's a POST request
+  console.log('inside the upsert llm providers')
   if (req.method !== 'POST') {
     return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
   }
@@ -69,6 +70,13 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     // Ensure all keys are encrypted, then save to DB.
     const processProviders = async () => {
       for (const providerName in llmProviders) {
+        if (
+          providerName === 'defaultModel' ||
+          providerName === 'defaultTemperature'
+        ) {
+          continue
+        }
+
         const typedProviderName = providerName as keyof AllLLMProviders
         const provider = llmProviders[typedProviderName]
         if (provider && 'apiKey' in provider) {

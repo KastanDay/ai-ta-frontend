@@ -48,13 +48,13 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
       projectName,
       llmProviders,
       defaultModelID,
-      defaultTemperature,
+      defaultTemp,
     }: {
       projectName: string
       queryClient: QueryClient
       llmProviders: AllLLMProviders
       defaultModelID: string
-      defaultTemperature: string
+      defaultTemp: string
     }) => {
       const response = await fetch('/api/UIUC-api/upsertLLMProviders', {
         method: 'POST',
@@ -65,7 +65,7 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
           projectName: projectName,
           llmProviders: llmProviders,
           defaultModelID: defaultModelID,
-          defaultTemperature: defaultTemperature,
+          defaultTemperature: defaultTemp,
         }),
       })
       if (!response.ok) {

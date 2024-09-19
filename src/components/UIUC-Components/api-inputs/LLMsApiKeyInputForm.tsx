@@ -419,7 +419,7 @@ export default function APIKeyInputForm() {
     }
   }, [llmProviders])
 
-  const [defaultTemperature, setDefaultTemperature] = useState(
+  const [defaultTemp, setDefaultTemp] = useState(
     llmProviders?.defaultTemp || 0.1,
   )
   const [defaultModel, setDefaultModel] = useState(
@@ -449,17 +449,18 @@ export default function APIKeyInputForm() {
     defaultValues: {
       providers: llmProviders,
       defaultModel: llmProviders?.defaultModel,
-      defaultTemperature: llmProviders?.defaultTemp,
+      defaultTemp: llmProviders?.defaultTemp,
     },
     onSubmit: async ({ value }) => {
       const llmProviders = value.providers as AllLLMProviders
+      console.log('onSubmit', value.defaultModel)
       mutation.mutate(
         {
           projectName,
           queryClient,
           llmProviders,
           defaultModelID: (value.defaultModel || '').toString(),
-          defaultTemperature: (value.defaultTemperature || '').toString(),
+          defaultTemp: (value.defaultTemp || '').toString(),
         },
         {
           onSuccess: (data, variables, context) => {
@@ -751,15 +752,14 @@ export default function APIKeyInputForm() {
                         <div>
                           <Text size="sm" weight={500} mb={4}>
                             Default Temperature:{' '}
-                            {form.getFieldValue('defaultTemperature')}
+                            {form.getFieldValue('defaultTemp')}
                           </Text>
-                          <form.Field name="defaultTemperature">
+                          <form.Field name="defaultTemp">
                             {(field) => (
                               <>
                                 <Slider
-                                  value={defaultTemperature}
+                                  value={defaultTemp}
                                   onChange={async (newTemperature) => {
-                                    setDefaultTemperature(newTemperature)
                                     field.handleChange(newTemperature)
                                     await form.handleSubmit()
                                   }}
