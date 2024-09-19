@@ -143,6 +143,14 @@ export type AllLLMProviders = {
   [key in ProviderNames]: LLMProvider
 }
 
+export type ProjectWideLLMProviders = {
+  [P in ProviderNames]?: LLMProvider & { provider: P }
+} & {
+  llmProviders?: LLMProvider[]
+  defaultModel?: string
+  defaultTemp?: number
+}
+
 // Ordered list of preferred model IDs -- the first available model will be used as default
 export const preferredModelIds = [
   AnthropicModelID.Claude_3_5_Sonnet,

@@ -6,6 +6,7 @@ import {
   NCSAHostedProvider,
   OllamaProvider,
   OpenAIProvider,
+  ProjectWideLLMProviders,
   ProviderNames,
   WebLLMProvider,
 } from '~/utils/modelProviders/LLMProvider'
@@ -26,7 +27,7 @@ export const config = {
 
 const handler = async (
   req: NextRequest,
-): Promise<NextResponse<AllLLMProviders | { error: string }>> => {
+): Promise<NextResponse<ProjectWideLLMProviders | { error: string }>> => {
   try {
     const { projectName } = (await req.json()) as {
       projectName: string
@@ -152,7 +153,7 @@ const handler = async (
     // console.log("openAIModels", openAIModels)
 
     console.log('FINAL -- allLLMProviders', allLLMProviders)
-    return NextResponse.json(allLLMProviders as AllLLMProviders, {
+    return NextResponse.json(allLLMProviders as ProjectWideLLMProviders, {
       status: 200,
     })
   } catch (error) {
