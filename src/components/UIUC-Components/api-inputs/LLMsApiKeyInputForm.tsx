@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react'
+import React, { useEffect, useState, forwardRef } from 'react'
 import {
   Button,
   Text,
@@ -11,6 +11,7 @@ import {
   ActionIcon,
   TextInput,
   Select,
+  Group,
 } from '@mantine/core'
 import Image from 'next/image'
 import { useQueryClient } from '@tanstack/react-query'
@@ -34,8 +35,12 @@ import {
 import { notifications } from '@mantine/notifications'
 import {
   IconAlertCircle,
+  IconAlertTriangleFilled,
   IconCheck,
   IconChevronDown,
+  IconCircleCheck,
+  IconDownload,
+  IconSparkles,
   IconX,
 } from '@tabler/icons-react'
 import { GetCurrentPageName } from '../CanViewOnlyCourse'
@@ -49,8 +54,17 @@ import AzureProviderInput from './providers/AzureProviderInput'
 import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
 import NCSAHostedLLmsProviderInput from './providers/NCSAHostedProviderInput'
-import { getModelLogo, ModelItem } from '~/components/Chat/ModelSelect'
+import { getModelLogo } from '~/components/Chat/ModelSelect'
 import HomeContext from '~/pages/api/home/home.context'
+import { t } from 'i18next'
+import { modelCached } from '~/components/Chat/UserSettings'
+import {
+  recommendedModelIds,
+  warningLargeModelIds,
+} from '~/utils/modelProviders/ConfigWebLLM'
+import { LoadingSpinner } from '../LoadingSpinner'
+
+const isSmallScreen = false
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -178,8 +192,6 @@ const NewModelDropdown: React.FC<
   loadingModelId,
   setLoadingModelId,
 }) => {
-  console.log('llmProviders AT TOP model dropdown', llmProviders)
-
   // Filter out providers that are not enabled and their models which are disabled
   const { enabledProvidersAndModels, allModels } = Object.keys(
     llmProviders,
@@ -222,111 +234,171 @@ const NewModelDropdown: React.FC<
 
   return (
     <>
-      <div
-        tabIndex={0}
-        className="relative mt-4 flex w-full flex-col items-start px-4"
-      >
-        <Select
-          className="menu z-[50] w-full"
-          size="md"
-          placeholder="Select a model"
-          searchable
-          value={value}
-          onChange={async (modelId) => {
-            await onChange(modelId!)
-          }}
-          data={Object.values(enabledProvidersAndModels).flatMap(
-            (provider: LLMProvider) =>
-              provider.models?.map((model) => ({
-                value: model.id,
-                label: model.name,
-                // @ts-ignore -- this being missing is fine
-                downloadSize: model?.downloadSize,
-                modelId: model.id,
-                selectedModelId: value,
-                modelType: provider.provider,
-                group: provider.provider,
-                // @ts-ignore -- this being missing is fine
-                vram_required_MB: model.vram_required_MB,
-              })) || [],
-          )}
-          itemComponent={(props) => (
-            <ModelItem
-              {...props}
-              loadingModelId={loadingModelId}
-              setLoadingModelId={setLoadingModelId}
+      <Select
+        className="menu z-[50] w-full"
+        size="md"
+        placeholder="Select a model"
+        searchable
+        value={value}
+        onChange={async (modelId) => {
+          await onChange(modelId!)
+        }}
+        data={Object.values(enabledProvidersAndModels).flatMap(
+          (provider: LLMProvider) =>
+            provider.models?.map((model) => ({
+              value: model.id,
+              label: model.name,
+              // @ts-ignore -- this being missing is fine
+              downloadSize: model?.downloadSize,
+              modelId: model.id,
+              selectedModelId: value,
+              modelType: provider.provider,
+              group: provider.provider,
+              // @ts-ignore -- this being missing is fine
+              vram_required_MB: model.vram_required_MB,
+            })) || [],
+        )}
+        itemComponent={(props) => (
+          <ModelItem
+            {...props}
+            loadingModelId={loadingModelId}
+            setLoadingModelId={setLoadingModelId}
+          />
+        )}
+        maxDropdownHeight={480}
+        rightSectionWidth="auto"
+        icon={
+          selectedModel ? (
+            <Image
+              // @ts-ignore -- this being missing is fine
+              src={getModelLogo(selectedModel.provider)}
+              // @ts-ignore -- this being missing is fine
+              alt={`${selectedModel.provider} logo`}
+              width={20}
+              height={20}
+              style={{ marginLeft: '4px', borderRadius: '4px' }}
             />
-          )}
-          maxDropdownHeight={480}
-          rightSectionWidth="auto"
-          icon={
-            selectedModel ? (
-              <Image
-                // @ts-ignore -- this being missing is fine
-                src={getModelLogo(selectedModel.provider)}
-                // @ts-ignore -- this being missing is fine
-                alt={`${selectedModel.provider} logo`}
-                width={20}
-                height={20}
-                style={{ marginLeft: '4px', borderRadius: '4px' }}
-              />
-            ) : null
-          }
-          rightSection={<IconChevronDown size="1rem" className="mr-2" />}
-          classNames={{
-            root: 'w-full',
-            wrapper: 'w-full',
-            input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'} w-full`,
-            rightSection: 'pointer-events-none',
-            item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
-          }}
-          styles={(theme) => ({
-            input: {
-              backgroundColor: 'rgb(107, 33, 168)',
-              border: 'none',
-              // color: theme.white,
-              // borderRadius: theme.radius.md,
-              // width: '24rem',
-              // [`@media (max-width: 960px)`]: {
-              //   width: '17rem', // Smaller width for small screens
-              // },
-            },
-            dropdown: {
-              backgroundColor: '#1d1f33',
-              border: '1px solid rgba(42,42,120,1)',
-              borderRadius: theme.radius.md,
-              marginTop: '2px',
-              boxShadow: theme.shadows.xs,
-              width: '100%',
-              maxWidth: '100%',
-              position: 'absolute',
-            },
-            item: {
-              backgroundColor: '#1d1f33',
-              borderRadius: theme.radius.md,
-              margin: '2px',
-              '&[data-selected]': {
-                '&': {
-                  backgroundColor: 'transparent',
-                },
-                '&:hover': {
-                  backgroundColor: 'rgb(107, 33, 168)',
-                  color: theme.white,
-                },
+          ) : null
+        }
+        rightSection={<IconChevronDown size="1rem" className="mr-2" />}
+        classNames={{
+          root: 'w-full',
+          wrapper: 'w-full',
+          input: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'} w-full`,
+          rightSection: 'pointer-events-none',
+          item: `${montserrat_paragraph.variable} font-montserratParagraph ${isSmallScreen ? 'text-xs' : 'text-sm'}`,
+        }}
+        styles={(theme) => ({
+          input: {
+            backgroundColor: 'rgb(107, 33, 168)',
+            border: 'none',
+            // color: theme.white,
+            // borderRadius: theme.radius.md,
+            // width: '24rem',
+            // [`@media (max-width: 960px)`]: {
+            //   width: '17rem', // Smaller width for small screens
+            // },
+          },
+          dropdown: {
+            backgroundColor: '#1d1f33',
+            border: '1px solid rgba(42,42,120,1)',
+            borderRadius: theme.radius.md,
+            marginTop: '2px',
+            boxShadow: theme.shadows.xs,
+            width: '100%',
+            maxWidth: '100%',
+            position: 'absolute',
+          },
+          item: {
+            backgroundColor: '#1d1f33',
+            borderRadius: theme.radius.md,
+            margin: '2px',
+            '&[data-selected]': {
+              '&': {
+                backgroundColor: 'transparent',
               },
-              '&[data-hovered]': {
+              '&:hover': {
                 backgroundColor: 'rgb(107, 33, 168)',
                 color: theme.white,
               },
             },
-          })}
-          dropdownPosition="bottom"
-          withinPortal
-        />
-      </div>
+            '&[data-hovered]': {
+              backgroundColor: 'rgb(107, 33, 168)',
+              color: theme.white,
+            },
+          },
+        })}
+        dropdownPosition="bottom"
+        withinPortal
+      />
     </>
   )
 }
+
+interface ModelItemProps extends React.ComponentPropsWithoutRef<'div'> {
+  label: string
+  downloadSize?: string
+  isDownloaded?: boolean
+  modelId: string
+  selectedModelId: string | undefined
+  modelType: string
+  vram_required_MB: number
+}
+
+export const ModelItem = forwardRef<
+  HTMLDivElement,
+  ModelItemProps & {
+    loadingModelId: string | null
+    setLoadingModelId: (id: string | null) => void
+  }
+>(
+  (
+    {
+      label,
+      downloadSize,
+      isDownloaded,
+      modelId,
+      selectedModelId,
+      modelType,
+      vram_required_MB,
+      loadingModelId,
+      setLoadingModelId,
+      ...others
+    }: ModelItemProps & {
+      loadingModelId: string | null
+      setLoadingModelId: (id: string | null) => void
+    },
+    ref,
+  ) => {
+    return (
+      <>
+        <div ref={ref} {...others}>
+          <Group noWrap>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Image
+                  src={getModelLogo(modelType) || ''}
+                  alt={`${modelType} logo`}
+                  width={20}
+                  height={20}
+                  style={{ marginRight: '8px', borderRadius: '4px' }}
+                />
+                {/* {selectedModelId === modelId ? (
+                <IconCircleCheck stroke={2} />
+              ) : (
+                <IconCircleDashed stroke={2} />
+              )} */}
+                <Text size="sm" style={{ marginLeft: '8px' }}>
+                  {label}
+                </Text>
+              </div>
+            </div>
+          </Group>
+        </div>
+      </>
+    )
+  },
+)
 
 export default function APIKeyInputForm() {
   const projectName = GetCurrentPageName()
@@ -347,9 +419,16 @@ export default function APIKeyInputForm() {
     }
   }, [llmProviders])
 
+  const [defaultTemperature, setDefaultTemperature] = useState(
+    llmProviders?.defaultTemp || 0.1,
+  )
+  const [defaultModel, setDefaultModel] = useState(
+    llmProviders?.defaultModel || undefined,
+  )
+
   // TODO: TEMP HACK
-  const defaultModel = undefined // don't default... stay undefined
-  const defaultTemp = 0.1 // default to 0.1
+  // const defaultModel = undefined // don't default... stay undefined
+  // const defaultTemp = 0.1 // default to 0.1
 
   useEffect(() => {
     // handle errors
@@ -369,8 +448,8 @@ export default function APIKeyInputForm() {
   const form = useForm({
     defaultValues: {
       providers: llmProviders,
-      defaultModel: defaultModel,
-      defaultTemperature: defaultTemp,
+      defaultModel: llmProviders?.defaultModel,
+      defaultTemperature: llmProviders?.defaultTemp,
     },
     onSubmit: async ({ value }) => {
       const llmProviders = value.providers as AllLLMProviders
@@ -384,14 +463,11 @@ export default function APIKeyInputForm() {
         },
         {
           onSuccess: (data, variables, context) => {
-            // queryClient.invalidateQueries(['projectLLMProviders', projectName])
-            // queryClient.invalidateQueries({
-            //   queryKey: ['projectLLMProviders', projectName],
-            // })
-            // showConfirmationToast({
-            //   title: 'Updated LLM providers',
-            //   message: `Now your project's users can use the supplied LLMs!`,
-            // })
+            queryClient.invalidateQueries(['projectLLMProviders', projectName])
+            showConfirmationToast({
+              title: 'Updated LLM providers',
+              message: `Now your project's users can use the supplied LLMs!`,
+            })
           },
           onError: (error, variables, context) =>
             showConfirmationToast({
@@ -416,29 +492,14 @@ export default function APIKeyInputForm() {
         id: loadingModelId,
         isLoading: !!loadingModelId,
       },
+      conversations: [],
     },
     handleUpdateConversation: () => {},
     dispatch: () => {},
   }
 
-  // if (isLoadingLLMProviders) {
-  //   return (
-  //     <div className="flex h-screen items-center justify-center">
-  //       <Text>Loading...</Text>
-  //     </div>
-  //   )
-  // }
-
-  // if (isErrorLLMProviders) {
-  //   return (
-  //     <div className="flex h-screen items-center justify-center">
-  //       <Text>
-  //         Failed to load API keys. Please try again later.{' '}
-  //         {errorLLMProviders?.message}
-  //       </Text>
-  //     </div>
-  //   )
-  // }
+  console.log('Form just before return', form.state.values)
+  console.log('LLMProviders just before return', llmProviders)
 
   return (
     <>
@@ -667,26 +728,24 @@ export default function APIKeyInputForm() {
                         <br />
                         <div className="flex justify-center">
                           {llmProviders && (
-                            <HomeContext.Provider value={homeContextValue}>
-                              <NewModelDropdown
-                                value={form.getFieldValue('defaultModel')}
-                                onChange={async (modelId: string) => {
-                                  form.setFieldValue('defaultModel', modelId)
-                                  await form.handleSubmit()
-                                }}
-                                llmProviders={{
-                                  Ollama: llmProviders.Ollama,
-                                  OpenAI: llmProviders.OpenAI,
-                                  Anthropic: llmProviders.Anthropic,
-                                  Azure: llmProviders.Azure,
-                                  WebLLM: llmProviders.WebLLM,
-                                  NCSAHosted: llmProviders.NCSAHosted,
-                                }}
-                                isSmallScreen={false}
-                                loadingModelId={'test'}
-                                setLoadingModelId={(id: string | null) => {}}
-                              ></NewModelDropdown>
-                            </HomeContext.Provider>
+                            <NewModelDropdown
+                              value={llmProviders.defaultModel}
+                              onChange={async (modelId) => {
+                                form.setFieldValue('defaultModel', modelId)
+                                await form.handleSubmit()
+                              }}
+                              llmProviders={{
+                                Ollama: llmProviders?.Ollama,
+                                OpenAI: llmProviders?.OpenAI,
+                                Anthropic: llmProviders?.Anthropic,
+                                Azure: llmProviders?.Azure,
+                                WebLLM: llmProviders?.WebLLM,
+                                NCSAHosted: llmProviders?.NCSAHosted,
+                              }}
+                              isSmallScreen={false}
+                              loadingModelId={loadingModelId}
+                              setLoadingModelId={setLoadingModelId}
+                            />
                           )}
                         </div>
                         <div>
@@ -698,24 +757,29 @@ export default function APIKeyInputForm() {
                             {(field) => (
                               <>
                                 <Slider
-                                  value={field.state.value}
-                                  onChange={(value) =>
-                                    field.handleChange(value)
-                                  }
+                                  value={defaultTemperature}
+                                  onChange={async (newTemperature) => {
+                                    setDefaultTemperature(newTemperature)
+                                    field.handleChange(newTemperature)
+                                    await form.handleSubmit()
+                                  }}
                                   min={0}
                                   max={1}
                                   step={0.1}
-                                  label={null}
-                                  styles={(theme) => ({
-                                    track: {
-                                      backgroundColor: theme.colors.gray[2],
-                                    },
-                                    thumb: {
-                                      borderWidth: 2,
-                                      padding: 3,
-                                    },
-                                  })}
+                                  marks={[
+                                    { value: 0, label: t('Precise') },
+                                    { value: 0.5, label: t('Neutral') },
+                                    { value: 1, label: t('Creative') },
+                                  ]}
+                                  showLabelOnHover
+                                  color="grape"
+                                  className="m-2"
+                                  size={isSmallScreen ? 'xs' : 'md'}
+                                  classNames={{
+                                    markLabel: `mx-2 text-neutral-300 ${montserrat_paragraph.variable} font-montserratParagraph mt-2 ${isSmallScreen ? 'text-xs' : ''}`,
+                                  }}
                                 />
+                                <FieldInfo field={field} />
                               </>
                             )}
                           </form.Field>
