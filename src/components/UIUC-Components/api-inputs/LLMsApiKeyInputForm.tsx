@@ -403,13 +403,6 @@ export default function APIKeyInputForm() {
     }
   }, [llmProviders])
 
-  const [defaultTemp, setDefaultTemp] = useState(
-    llmProviders?.defaultTemp || 0.1,
-  )
-  const [defaultModel, setDefaultModel] = useState(
-    llmProviders?.defaultModel || undefined,
-  )
-
   useEffect(() => {
     // handle errors
     if (isErrorLLMProviders) {
@@ -428,8 +421,8 @@ export default function APIKeyInputForm() {
   const form = useForm({
     defaultValues: {
       providers: llmProviders,
-      defaultModel: llmProviders?.defaultModel,
-      defaultTemp: llmProviders?.defaultTemp,
+      defaultModel: llmProviders?.defaultModel ?? undefined,
+      defaultTemp: llmProviders?.defaultTemp ?? undefined,
     },
     onSubmit: async ({ value }) => {
       const llmProviders = value.providers as AllLLMProviders
@@ -461,24 +454,6 @@ export default function APIKeyInputForm() {
       )
     },
   })
-
-  const [loadingModelId, setLoadingModelId] = useState<string | null>(null)
-
-  // Add this context provider
-  const homeContextValue = {
-    state: {
-      selectedConversation: null,
-      llmProviders: llmProviders || {},
-      defaultModelId: form.getFieldValue('defaultModel'),
-      webLLMModelIdLoading: {
-        id: loadingModelId,
-        isLoading: !!loadingModelId,
-      },
-      conversations: [],
-    },
-    handleUpdateConversation: () => {},
-    dispatch: () => {},
-  }
 
   // console.log('Form just before return', form.state.values)
   // console.log('LLMProviders just before return', llmProviders)
@@ -731,28 +706,30 @@ export default function APIKeyInputForm() {
                                 NCSAHosted: llmProviders?.NCSAHosted,
                               }}
                               isSmallScreen={false}
-                              loadingModelId={loadingModelId}
-                              setLoadingModelId={setLoadingModelId}
                             />
                           )}
                         </div>
                         <div>
-                          <Text size="sm" weight={500} mb={4}>
-                            Default Temperature:{' '}
-                            {form.getFieldValue('defaultTemp')}
-                          </Text>
                           <form.Field name="defaultTemp">
                             {(field) => (
                               <>
+                                <Text size="sm" weight={500} mb={4}>
+                                  Default Temperature:{' '}
+                                  {form.getFieldValue('defaultTemp')}
+                                </Text>
                                 <Slider
-                                  value={defaultTemp}
+                                  value={form.getFieldValue('defaultTemp')}
                                   onChange={async (newTemperature) => {
+                                    field.handleChange(newTemperature)
+                                  }}
+                                  onChangeEnd={async (newTemperature) => {
                                     field.handleChange(newTemperature)
                                     await form.handleSubmit()
                                   }}
                                   min={0}
                                   max={1}
                                   step={0.1}
+                                  precision={1}
                                   marks={[
                                     { value: 0, label: t('Precise') },
                                     { value: 0.5, label: t('Neutral') },
