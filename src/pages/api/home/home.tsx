@@ -29,6 +29,7 @@ import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
 import {
+  LLMProvider,
   selectBestModel,
   VisionCapableModels,
 } from '~/utils/modelProviders/LLMProvider'
@@ -46,6 +47,8 @@ import {
 import { FolderType, FolderWithConversation } from '~/types/folder'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCreateFolder } from '~/hooks/folderQueries'
+import { useGetProjectLLMProviders } from '~/hooks/useProjectAPIKeys'
+import { GetCurrentPageName } from '~/components/UIUC-Components/CanViewOnlyCourse'
 
 const Home = ({
   current_email,
@@ -139,7 +142,6 @@ const Home = ({
       selectedConversation,
       prompts,
       temperature,
-      llmProviders,
       documentGroups,
       tools,
       searchTerm,
@@ -152,21 +154,34 @@ const Home = ({
     queryClient,
     course_name,
   )
+  const projectName = GetCurrentPageName()
+
+  const {
+    data: llmProviders,
+    isLoading: isLoadingLLMProviders,
+    isError: isErrorLLMProviders,
+    error: errorLLMProviders,
+    // enabled: !!projectName // Only run the query when projectName is available
+  } = useGetProjectLLMProviders({ projectName: projectName })
+
   // Use effects for setting up the course metadata and models depending on the course/project
   useEffect(() => {
     // Set model after we fetch available models
     if (!llmProviders || Object.keys(llmProviders).length === 0) return
-    const model = selectBestModel(llmProviders, selectedConversation)
+    const model = llmProviders.defaultModel
 
-    dispatch({
-      field: 'defaultModelId',
-      value: model.id,
-    })
+    if (llmProviders.defaultModel) {
+      dispatch({
+        field: 'defaultModelId',
+        value: llmProviders.defaultModel,
+      })
+    }
 
+    // THIS IS ERRORING DUE TO TYPES
     // Ensure current convo has a valid model
-    if (selectedConversation) {
+    if (selectedConversation && llmProviders.defaultModel) {
       const convo_with_valid_model = selectedConversation
-      convo_with_valid_model.model = model
+      convo_with_valid_model.model = llmProviders.defaultModel
       dispatch({
         field: 'selectedConversation',
         value: convo_with_valid_model,
@@ -322,7 +337,7 @@ const Home = ({
     const lastConversation = conversations[conversations.length - 1]
 
     // Determine the model to use for the new conversation
-    const model = selectBestModel(llmProviders, lastConversation)
+    const model = llmProviders?.defaultModel | selectBestModel(llmProviders)
 
     const newConversation: Conversation = {
       id: uuidv4(),

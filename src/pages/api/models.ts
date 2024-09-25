@@ -1,6 +1,7 @@
 import {
   AllLLMProviders,
   AnthropicProvider,
+  AnySupportedModel,
   AzureProvider,
   LLMProvider,
   NCSAHostedProvider,
@@ -42,7 +43,7 @@ const handler = async (
     let llmProviders = (await kv.get(
       `${projectName}-llms`,
     )) as Partial<AllLLMProviders> & {
-      defaultModel?: string
+      defaultModel?: AnySupportedModel
       defaultTemp?: number
     }
 

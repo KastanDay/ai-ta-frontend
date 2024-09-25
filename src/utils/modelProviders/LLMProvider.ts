@@ -72,13 +72,13 @@ export const AllSupportedModels: Set<GenericSupportedModel> = new Set([
 //   enabled: false
 // },
 
-export interface GenericSupportedModel {
-  id: string
-  name: string
-  tokenLimit: number
-  enabled: boolean
-  parameterSize?: string
-}
+// export interface GenericSupportedModel {
+//   id: string
+//   name: string
+//   tokenLimit: number
+//   enabled: boolean
+//   parameterSize?: string
+// }
 
 export interface BaseLLMProvider {
   provider: ProviderNames
@@ -147,7 +147,7 @@ export type ProjectWideLLMProviders = {
   [P in ProviderNames]?: LLMProvider & { provider: P }
 } & {
   // llmProviders?: LLMProvider[]
-  defaultModel?: string
+  defaultModel?: AnySupportedModel
   defaultTemp?: number
 }
 
@@ -175,9 +175,9 @@ export const preferredModelIds = [
 ]
 
 export const selectBestModel = (
-  allLLMProviders: AllLLMProviders,
+  allLLMProviders: ProjectWideLLMProviders,
   convo?: Conversation,
-): GenericSupportedModel => {
+): AnySupportedModel => {
   const allModels = Object.values(allLLMProviders)
     .filter((provider) => provider!.enabled)
     .flatMap((provider) => provider!.models || [])
