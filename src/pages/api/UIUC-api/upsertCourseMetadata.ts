@@ -4,6 +4,7 @@ import { type CourseMetadataOptionalForUpsert } from '~/types/courseMetadata'
 import { type NextRequest, NextResponse } from 'next/server'
 import { encrypt, isEncrypted } from '~/utils/crypto'
 import { getCourseMetadata } from './getCourseMetadata'
+import { redisClient } from '~/utils/redisClient'
 
 export const runtime = 'edge'
 
@@ -67,7 +68,9 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     }
 
     // Save the combined metadata
-    await kv.hset('course_metadatas', { [courseName]: combined_metadata })
+    await redisClient.hSet('course_metadatas', {
+      [courseName]: JSON.stringify(combined_metadata),
+    })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error setting course metadata:', error)

@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv'
 import { NextResponse } from 'next/server'
 import { type CourseMetadata } from '~/types/courseMetadata'
+import { redisClient } from '~/utils/redisClient'
 
 const setCourseMetadata = async (req: any, res: any) => {
   if (req.method !== 'POST') {
@@ -52,7 +53,9 @@ const setCourseMetadata = async (req: any, res: any) => {
       project_description: project_description,
     }
     console.log('Right before setting course_metadata with: ', course_metadata)
-    await kv.hset('course_metadatas', { [course_name]: course_metadata })
+    await redisClient.hSet('course_metadatas', {
+      [course_name]: JSON.stringify(course_metadata),
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {

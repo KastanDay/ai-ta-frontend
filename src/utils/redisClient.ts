@@ -1,10 +1,9 @@
 import { createClient } from 'redis'
-import { ProjectWideLLMProviders } from '~/types/courseMetadata'
 
 // Create a Redis client
 export const redisClient = createClient({
   // url: 'redis://dankchat:5438',
-  url: 'redis://100.120.19.97:5438',
+  url: process.env.REDIS_URL,
   password: process.env.REDIS_PASSWORD,
 })
 
