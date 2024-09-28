@@ -29,6 +29,11 @@ export const config = {
 }
 export const maxDuration = 60
 
+/**
+ * Handles requests to the chat API.
+ * @param {Request} req - The request object containing the chat details.
+ * @returns {Promise<NextResponse>} - A promise that resolves to the response from the OpenAI model.
+ */
 const handler = async (req: Request): Promise<NextResponse> => {
   try {
     const {
