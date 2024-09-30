@@ -92,6 +92,7 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
     course_name,
     stream,
     api_key,
+    contexts_only,
   }: {
     model: string
     messages: Message[]
@@ -100,6 +101,7 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
     course_name: string
     stream: boolean
     api_key: string
+    contexts_only: boolean
   } = body
 
   // Validate the API key and retrieve user data
@@ -293,6 +295,10 @@ export default async function chat(req: NextRequest): Promise<NextResponse> {
       user_id: email,
     })
     return NextResponse.json({ error: 'No contexts found' }, { status: 500 })
+  }
+
+  if (contexts_only) {
+    return NextResponse.json({ contexts: contexts }, { status: 200 })
   }
 
   // Attach contexts to the last message
