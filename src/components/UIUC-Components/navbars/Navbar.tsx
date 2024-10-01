@@ -169,6 +169,17 @@ const Navbar = ({
     },
     {
       name: (
+        <span
+          className={`${montserrat_heading.variable} font-montserratHeading`}
+        >
+          Upload
+        </span>
+      ),
+      icon: <ApiIcon />,
+      link: `/${getCurrentCourseName()}/upload`,
+    },
+    {
+      name: (
         <Indicator
           label="New"
           color="hsl(280,100%,70%)"
