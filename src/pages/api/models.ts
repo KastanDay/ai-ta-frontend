@@ -42,10 +42,7 @@ const handler = async (
     // Fetch the project's API keys, filtering out all keys if requested
     let llmProviders = (await kv.get(
       `${projectName}-llms`,
-    )) as Partial<AllLLMProviders> & {
-      defaultModel?: AnySupportedModel
-      defaultTemp?: number
-    }
+    )) as ProjectWideLLMProviders
 
     // Define a function to create a placeholder provider
     const createPlaceholderProvider = (
@@ -59,8 +56,9 @@ const handler = async (
     // Ensure all providers are defined
     const allProviderNames = Object.values(ProviderNames)
     for (const providerName of allProviderNames) {
-      if (!llmProviders[providerName]) {
-        llmProviders[providerName] = createPlaceholderProvider(providerName)
+      if (!llmProviders.providers[providerName]) {
+        llmProviders.providers[providerName] =
+          createPlaceholderProvider(providerName)
       }
     }
 
