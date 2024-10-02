@@ -17,7 +17,7 @@ import posthog from 'posthog-js'
 import {
   AllLLMProviders,
   AllSupportedModels,
-  GenericSupportedModel,
+  AnySupportedModel,
   OllamaProvider,
   VisionCapableModels,
 } from '~/utils/modelProviders/LLMProvider'
@@ -335,7 +335,7 @@ export async function determineAndValidateModel(
   keyToUse: string,
   modelId: string,
   projectName: string,
-): Promise<GenericSupportedModel> {
+): Promise<AnySupportedModel> {
   // const availableModels = await fetchAvailableModels(
   //   keyToUse,
   //   projectName,
@@ -370,7 +370,7 @@ export async function determineAndValidateModel(
   if (availableModels.find((model) => model.id === modelId)) {
     return availableModels.find(
       (model) => model.id === modelId,
-    ) as GenericSupportedModel
+    ) as AnySupportedModel
   } else {
     // ❌ Model unavailable, tell them the available ones
     throw new Error(
