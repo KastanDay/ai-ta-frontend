@@ -11,8 +11,11 @@ export default async function handler(
     // Initialize encoding before using it
     await initializeWasm();
 
-    const { conversation, key, course_name, courseMetadata } = req.body as ChatBody;
+    const chatBody = req.body as ChatBody;
+    console.log('Received ChatBody:', JSON.stringify(chatBody, null, 2));
 
+    const { conversation, key, course_name, courseMetadata } = chatBody;
+    
     if (!conversation) {
       console.error('No conversation provided');
       return res.status(400).json({ error: 'No conversation provided' });
