@@ -1,35 +1,27 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { ChatBody } from '@/types/chat';
 import { buildPrompt } from './chat';
-import { initializeWasm } from '@/utils/encoding';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   try {
-    // Initialize encoding before using it
-    await initializeWasm();
-
     const chatBody = req.body as ChatBody;
-    console.log('Received ChatBody:', JSON.stringify(chatBody, null, 2));
 
-    const { conversation, key, course_name, courseMetadata } = chatBody;
-    
+    const { conversation, course_name, courseMetadata } = chatBody;
+
+    // **Add a nullish check for 'conversation'**
     if (!conversation) {
-      console.error('No conversation provided');
-      return res.status(400).json({ error: 'No conversation provided' });
+      console.error('Conversation is undefined.');
+      return res.status(400).json({ error: 'Conversation is required.' });
     }
 
-    if (!conversation.messages || !Array.isArray(conversation.messages)) {
-      console.error('Invalid or missing messages in conversation');
-      return res.status(400).json({ error: 'Invalid conversation structure' });
-    }
-
+    // Ensure the handler is async and awaits buildPrompt
     const updatedConversation = await buildPrompt({
-      conversation,
+      conversation: conversation, // Now TypeScript knows 'conversation' is not undefined
       projectName: course_name,
-      courseMetadata,
+      courseMetadata: courseMetadata,
     });
 
     return res.status(200).json(updatedConversation);

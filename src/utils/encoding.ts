@@ -1,34 +1,24 @@
-import fs from 'fs';
-import { Tiktoken, init } from '@dqbd/tiktoken/lite/init';
-import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json';
-import path from 'path';
+import { Tiktoken } from '@dqbd/tiktoken';
+import cl100k_base from '@dqbd/tiktoken/encoders/cl100k_base.json';
 
-export let encoding: Tiktoken | null = null;
+// Use 'let' instead of 'const' since 'encoding' will be reassigned
+let encoding: Tiktoken | null = null;
 
-export const initializeWasm = async (): Promise<void> => {
+export const initializeEncoding = (): void => {
   if (!encoding) {
     try {
-      // Resolve the path to the WASM file
-      const wasmPath = path.join(process.cwd(), 'node_modules', '@dqbd', 'tiktoken', 'lite', 'tiktoken_bg.wasm');
-
-      // Read the WASM file asynchronously
-      const wasm = await fs.promises.readFile(wasmPath);
-
-      // Initialize Tiktoken with the instantiated WASM module
-      await init((imports) => WebAssembly.instantiate(wasm, imports));
-
       // Create a new encoding instance
       encoding = new Tiktoken(
-        tiktokenModel.bpe_ranks,
-        tiktokenModel.special_tokens,
-        tiktokenModel.pat_str
+        cl100k_base.bpe_ranks,
+        cl100k_base.special_tokens,
+        cl100k_base.pat_str
       );
     } catch (error) {
-      console.error('Failed to initialize WASM module:', error);
+      console.error('Failed to initialize encoding:', error);
       throw error;
     }
   }
 };
 
-// Export Tiktoken type for use in other modules
-export { Tiktoken };
+// Export Tiktoken type and encoding instance for use in other modules
+export { Tiktoken, encoding };

@@ -1,7 +1,7 @@
 // src/pages/api/chat.ts
 import { CourseMetadata } from '~/types/courseMetadata'
 import { getCourseMetadata } from '~/pages/api/UIUC-api/getCourseMetadata'
-import { encoding, initializeWasm, Tiktoken } from '@/utils/encoding'
+import { initializeEncoding, encoding, Tiktoken } from '@/utils/encoding'
 import { OpenAIError, OpenAIStream } from '@/utils/server'
 import {
   ChatBody,
@@ -20,8 +20,8 @@ export const maxDuration = 60
 
 export const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    // Initialize WASM if not already done
-    await initializeWasm();
+    // Ensure encoding is initialized before usage
+    await initializeEncoding();
 
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method Not Allowed' });
@@ -191,9 +191,7 @@ export const buildPrompt = async ({
 
   try {
     // Ensure 'encoding' is initialized
-    if (!encoding) {
-      throw new Error('Encoding is not initialized.');
-    }
+    await initializeEncoding();
 
     // Do these things in parallel -- await at the end
     const allPromises = []
@@ -236,17 +234,25 @@ export const buildPrompt = async ({
     if (contexts && contexts.length > 0) {
       // Documents are present, maintain all existing processes as normal
       // P5: query_topContext
+
+      // Check if encoding is initialized
+      if (!encoding) {
+        console.error('Encoding is not initialized.');
+        throw new Error('Encoding initialization failed.');
+      }
+
       const query_topContext = _buildQueryTopContext({
-        conversation: conversation,
+        conversation: conversation, // Now TypeScript knows 'conversation' is not undefined
         encoding: encoding,
         tokenLimit: remainingTokenBudget - tokensInLastTwoMessages, // Keep room for convo history
-      })
+      });
+
       if (query_topContext) {
-        const queryContextMsg = `\nHere's high quality passages from the user's documents. Use these, and cite them carefully in the format previously described, to construct your answer:\n<Potentially Relevant Documents>\n${query_topContext}\n</Potentially Relevant Documents>\n`
-        if (encoding) {
-          remainingTokenBudget -= encoding.encode(queryContextMsg).length
-        }
-        userPrompt += queryContextMsg
+        const queryContextMsg = `\nHere's high quality passages from the user's documents. Use these, and cite them carefully in the format previously described, to construct your answer:\n<Potentially Relevant Documents>\n${query_topContext}\n</Potentially Relevant Documents>\n`;
+        
+        // Since we've ensured encoding is not null, this is safe
+        remainingTokenBudget -= encoding.encode(queryContextMsg).length;
+        userPrompt += queryContextMsg;
       }
     }
 
@@ -273,13 +279,6 @@ export const buildPrompt = async ({
 
     // Add the user's query
     userPrompt += userQuery
-
-    // P8: Conversation history
-    const convoHistory = _buildConvoHistory({
-      conversation,
-      encoding,
-      tokenLimit: remainingTokenBudget,
-    })
 
     // Set final system and user prompts
     conversation.messages[
@@ -588,10 +587,9 @@ Relevant Sources:
 28. [www.osd](#)
 29. [pdf.www, page: 11](#)
 """
-ONLY return the documents with relevant information and cited in the response. If there are no relevant sources, don't include the "Relevant Sources" section in response.
-The user message will include excerpts from the high-quality documents, APIs/tools, and image descriptions to construct your answer. Each will be labeled with XML-style tags, like <Potentially Relevant Documents> and <Tool Outputs>. Make use of that information when writing your response.`,
+ONLY return the documents with relevant information and cited in the response. If there are no relevant sources, don't include the "Relevant Sources" section in response.`,
   )
-  
+
   // Combine the lines to form the PostPrompt
   const PostPrompt = PostPromptLines.join('\n')
 
