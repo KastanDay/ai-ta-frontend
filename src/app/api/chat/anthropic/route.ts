@@ -27,8 +27,6 @@ export async function POST(req: Request) {
       throw new Error('Conversation is missing from the chat body')
     }
 
-    console.log('conversation', conversation)
-
     const apiKey = chatBody.llmProviders?.Anthropic?.apiKey
     if (!apiKey) {
       throw new Error('Anthropic API key is missing')
@@ -42,8 +40,6 @@ export async function POST(req: Request) {
       throw new Error('Conversation messages array is empty')
     }
 
-    console.log('model', conversation.model.id)
-
     const model = anthropic(conversation.model.id)
 
     const result = await streamText({
@@ -54,11 +50,30 @@ export async function POST(req: Request) {
     })
     return result.toTextStreamResponse()
   } catch (error) {
-    console.error('Error in Anthropic chat route:', error)
-    return NextResponse.json(
-      { error: 'An error occurred while processing the chat request' },
-      { status: 500 },
-    )
+    if (
+      error &&
+      typeof error === 'object' &&
+      'data' in error &&
+      error.data &&
+      typeof error.data === 'object' &&
+      'error' in error.data
+    ) {
+      console.error('error.data.error', error.data.error)
+      return new Response(JSON.stringify({ error: error.data.error }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    } else {
+      return new Response(
+        JSON.stringify({
+          error: 'An error occurred while processing the chat request',
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
+    }
   }
 }
 
