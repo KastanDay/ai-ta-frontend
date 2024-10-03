@@ -858,6 +858,7 @@ export const routeModelRequest = async (
 
   // Add this check at the beginning of the function
   if (!selectedConversation.model || !selectedConversation.model.id) {
+    console.error('Conversation model error:', JSON.stringify(selectedConversation, null, 2));
     throw new Error(
       'Conversation model is undefined or missing "id" property.',
     )
