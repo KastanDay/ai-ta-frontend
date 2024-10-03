@@ -292,13 +292,8 @@ export const buildPrompt = async ({
   } catch (error) {
     console.error('Error in buildPrompt:', error)
     throw error
-  } finally {
-    // Clean up the encoding
-    if (encoding) {
-      encoding.free();
-    }
   }
-}
+};
 
 const _getRecentConvoTokens = ({
   conversation,
