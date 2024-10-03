@@ -898,7 +898,7 @@ The final prompt you output should adhere to the following structure below. Do n
                                       prompt mode.
                                     </Text>
                                   }
-                                  position="right"
+                                  position="bottom" // Changed from "right" to "top"
                                   withArrow
                                   multiline
                                   width={220}
