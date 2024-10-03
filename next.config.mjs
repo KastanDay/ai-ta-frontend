@@ -5,7 +5,6 @@
  */
 await import('./src/env.mjs')
 import nextI18NextConfig from './next-i18next.config.mjs'
-import path from 'path'
 import withBundleAnalyzer from '@next/bundle-analyzer'
 import { withAxiom } from 'next-axiom'
 
@@ -18,6 +17,7 @@ const config = {
   i18n: nextI18NextConfig.i18n,
   webpack(config, { isServer, dev }) {
     config.experiments = {
+      ...config.experiments,
       asyncWebAssembly: true,
       layers: true,
     }
