@@ -1,8 +1,7 @@
 // src/pages/api/chat.ts
 import { CourseMetadata } from '~/types/courseMetadata'
 import { getCourseMetadata } from '~/pages/api/UIUC-api/getCourseMetadata'
-import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
-import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
+import { encoding, initializeWasm, Tiktoken } from '@/utils/encoding'
 import { OpenAIError, OpenAIStream } from '@/utils/server'
 import {
   ChatBody,
@@ -14,16 +13,20 @@ import {
   OpenAIChatMessage,
   UIUCTool,
 } from '@/types/chat'
-import { NextResponse } from 'next/server'
+import { NextApiRequest, NextApiResponse } from 'next'
 import { AnySupportedModel } from '~/utils/modelProviders/LLMProvider'
 
-export const config = {
-  runtime: 'edge',
-}
 export const maxDuration = 60
 
-const handler = async (req: Request): Promise<NextResponse> => {
+export const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
+    // Initialize WASM if not already done
+    await initializeWasm();
+
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method Not Allowed' });
+    }
+
     const {
       conversation,
       key,
@@ -31,73 +34,75 @@ const handler = async (req: Request): Promise<NextResponse> => {
       courseMetadata,
       stream,
       llmProviders,
-    } = (await req.json()) as ChatBody
+    } = req.body as ChatBody;
 
     if (!conversation) {
       console.error(
         'No conversation provided. It seems the `messages` array was empty.',
-      )
-      return new NextResponse(
-        JSON.stringify({
-          error:
-            'No conversation provided. It seems the `messages` array was empty.',
-        }),
-        { status: 400 },
-      )
+      );
+      return res.status(400).json({
+        error:
+          'No conversation provided. It seems the `messages` array was empty.',
+      });
     }
 
-    // const messagesToSend = [latestMessage, ...convoHistory] // BUG: REPLACE (not append to) latest user message. RN we have dupliacates.
-    // Strip internal messages to send to OpenAI
-    // console.log('Messages to send before refactor:', conversation.messages)
     const messagesToSend = convertConversationToOpenAIMessages(
       conversation.messages,
-    )
-    // console.log('Messages to send: ', messagesToSend)
+    );
 
-    console.log(
-      'System prompt: ',
-      conversation.messages[conversation.messages.length - 1]!
-        .latestSystemMessage,
-    )
+    // Get the latest system message
+    const latestSystemMessage = conversation.messages[conversation.messages.length - 1]?.latestSystemMessage;
+
+    console.log('System prompt: ', latestSystemMessage);
+
+    if (!latestSystemMessage) {
+      console.error('No system message found in the conversation.');
+      return res.status(400).json({
+        error: 'No system message found in the conversation.',
+      });
+    }
 
     const apiStream = await OpenAIStream(
       conversation.model,
-      conversation.messages[conversation.messages.length - 1]!
-        .latestSystemMessage!,
+      latestSystemMessage,
       conversation.temperature,
       llmProviders!,
       // openAIKey,
       // @ts-ignore -- I think the types are fine.
       messagesToSend, //old: conversation.messages
       stream,
-    )
+    );
+
     if (stream) {
-      return new NextResponse(apiStream)
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache, no-transform',
+        Connection: 'keep-alive',
+      });
+
+      for await (const chunk of apiStream) {
+        res.write(chunk);
+      }
+
+      res.end();
     } else {
-      return new NextResponse(JSON.stringify(apiStream))
+      return new Response(JSON.stringify(apiStream))
     }
   } catch (error) {
     if (error instanceof OpenAIError) {
-      const { name, message } = error
-      console.error('OpenAI Completion Error', message)
-      const resp = NextResponse.json(
-        {
-          statusCode: 400,
-          name: name,
-          message: message,
-        },
-        { status: 400 },
-      )
-      console.log('Final OpenAIError resp: ', resp)
-      return resp
+      const { name, message } = error;
+      console.error('OpenAI Completion Error', message);
+      res.status(400).json({
+        statusCode: 400,
+        name: name,
+        message: message,
+      });
     } else {
-      console.error('Unexpected Error', error)
-      const resp = NextResponse.json({ name: 'Error' }, { status: 500 })
-      console.log('Final Error resp: ', resp)
-      return resp
+      console.error('Unexpected Error', error);
+      res.status(500).json({ name: 'Error', message: 'An unexpected error occurred' });
     }
   }
-}
+};
 
 const convertConversationToOpenAIMessages = (
   messages: Message[],
@@ -133,7 +138,6 @@ const convertConversationToOpenAIMessages = (
               text: strippedMessage.finalPromtEngineeredMessage,
             },
           ]
-          // Add system prompt to message with role system
         } else if (strippedMessage.role === 'system') {
           strippedMessage.content = [
             {
@@ -185,17 +189,12 @@ export const buildPrompt = async ({
   */
   let remainingTokenBudget = conversation.model.tokenLimit - 1500 // save space for images, OpenAI's handling, etc.
 
-  const wasm = await import('@dqbd/tiktoken/lite/tiktoken_bg.wasm')
-  await init((imports) => WebAssembly.instantiate(wasm.default, imports))
-
-  await init((imports) => WebAssembly.instantiate(wasm, imports))
-  const encoding = new Tiktoken(
-    tiktokenModel.bpe_ranks,
-    tiktokenModel.special_tokens,
-    tiktokenModel.pat_str,
-  )
-
   try {
+    // Ensure 'encoding' is initialized
+    if (!encoding) {
+      throw new Error('Encoding is not initialized.');
+    }
+
     // Do these things in parallel -- await at the end
     const allPromises = []
     allPromises.push(_getLastUserTextInput({ conversation }))
@@ -207,14 +206,10 @@ export const buildPrompt = async ({
     console.log('LATEST USER Text Input: ', lastUserTextInput)
 
     // Adjust remaining token budget
-    try {
-      remainingTokenBudget -= encoding.encode(finalSystemPrompt).length
-    } catch (encodeError) {
-      console.error('Error during encoding of finalSystemPrompt:', encodeError)
-      console.log(
-        'String being encoded (finalSystemPrompt):',
-        finalSystemPrompt,
-      )
+    if (encoding) {
+      // Example usage of encoding
+      const tokenCount = encoding.encode(finalSystemPrompt).length
+      remainingTokenBudget -= tokenCount
     }
 
     // --------- <USER PROMPT> ----------
@@ -222,17 +217,13 @@ export const buildPrompt = async ({
 
     // P1: Most recent user text input
     const userQuery = `\nFinally, please respond to the user's query to the best of your ability:\n<User Query>\n${lastUserTextInput}\n</User Query>`
-    try {
+    if (encoding) {
       remainingTokenBudget -= encoding.encode(userQuery).length
-    } catch (encodeError) {
-      console.error('Error during encoding of userQuery:', encodeError)
-      console.log('String being encoded (userQuery):', userQuery)
     }
 
     // P2: Latest 2 conversation messages (Reserved tokens)
     const tokensInLastTwoMessages = _getRecentConvoTokens({
       conversation,
-      encoding,
     })
     console.log('Tokens in last two messages: ', tokensInLastTwoMessages)
     remainingTokenBudget -= tokensInLastTwoMessages
@@ -252,17 +243,8 @@ export const buildPrompt = async ({
       })
       if (query_topContext) {
         const queryContextMsg = `\nHere's high quality passages from the user's documents. Use these, and cite them carefully in the format previously described, to construct your answer:\n<Potentially Relevant Documents>\n${query_topContext}\n</Potentially Relevant Documents>\n`
-        try {
+        if (encoding) {
           remainingTokenBudget -= encoding.encode(queryContextMsg).length
-        } catch (encodeError) {
-          console.error(
-            'Error during encoding of queryContextMsg:',
-            encodeError,
-          )
-          console.log(
-            'String being encoded (queryContextMsg):',
-            queryContextMsg,
-          )
         }
         userPrompt += queryContextMsg
       }
@@ -282,17 +264,8 @@ export const buildPrompt = async ({
       userPrompt += toolInstructions
 
       // Ensure tool outputs are counted in the token budget
-      try {
+      if (encoding) {
         remainingTokenBudget -= encoding.encode(toolsOutputResults).length
-      } catch (encodeError) {
-        console.error(
-          'Error during encoding of toolsOutputResults:',
-          encodeError,
-        )
-        console.log(
-          'String being encoded (toolsOutputResults):',
-          toolsOutputResults,
-        )
       }
 
       userPrompt += toolsOutputResults
@@ -322,33 +295,38 @@ export const buildPrompt = async ({
     console.error('Error in buildPrompt:', error)
     throw error
   } finally {
-    encoding.free() // Clean up the encoding
+    // Clean up the encoding
+    if (encoding) {
+      encoding.free();
+    }
   }
 }
 
 const _getRecentConvoTokens = ({
   conversation,
-  encoding,
 }: {
-  conversation: Conversation
-  encoding: Tiktoken
+  conversation: Conversation;
 }): number => {
-  // TODO: This is not counting the last 2/4 messages properly. I think it only counts assistant messages, not user. Not sure.
+  if (!encoding) {
+    throw new Error('Encoding is not initialized.');
+  }
 
+  // Your existing logic using 'encoding'
   return conversation.messages.slice(-4).reduce((acc, message) => {
-    let content: string
+    let content: string;
     if (typeof message.content === 'string') {
-      content = message.content
-      console.log('Message content: ', content)
+      content = message.content;
     } else {
-      content = ''
+      content = '';
     }
 
-    console.log('Encoding content: ', content, encoding.encode(content).length)
-    const tokens = encoding.encode(content).length
-    return acc + tokens
-  }, 0)
-}
+    if (!encoding) {
+      throw new Error("Encoding is null");
+    }
+    const tokens = encoding.encode(content).length;
+    return acc + tokens;
+  }, 0);
+};
 
 const _buildToolsOutputResults = ({
   conversation,
@@ -610,8 +588,7 @@ Relevant Sources:
 28. [www.osd](#)
 29. [pdf.www, page: 11](#)
 """
-ONLY return the documents with relevant information and cited in the response. If there are no relevant sources, don't include the "Relevant Sources" section in response.
-The user message will include excerpts from the high-quality documents, APIs/tools, and image descriptions to construct your answer. Each will be labeled with XML-style tags, like <Potentially Relevant Documents> and <Tool Outputs>. Make use of that information when writing your response.`,
+ONLY return the documents with relevant information and cited in the response. If there are no relevant sources, don't include the "Relevant Sources" section in response.`,
   )
 
   // Combine the lines to form the PostPrompt
