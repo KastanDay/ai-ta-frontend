@@ -53,8 +53,6 @@ export const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     // Get the latest system message
     const latestSystemMessage = conversation.messages[conversation.messages.length - 1]?.latestSystemMessage;
 
-    console.log('System prompt: ', latestSystemMessage);
-
     if (!latestSystemMessage) {
       console.error('No system message found in the conversation.');
       return res.status(400).json({
@@ -200,8 +198,6 @@ export const buildPrompt = async ({
     allPromises.push(_getSystemPrompt({ courseMetadata, conversation }))
     const [lastUserTextInput, lastToolResult, finalSystemPrompt] =
       (await Promise.all(allPromises)) as [string, UIUCTool[], string]
-
-    console.log('LATEST USER Text Input: ', lastUserTextInput)
 
     // Adjust remaining token budget
     if (encoding) {
@@ -587,7 +583,8 @@ Relevant Sources:
 28. [www.osd](#)
 29. [pdf.www, page: 11](#)
 """
-ONLY return the documents with relevant information and cited in the response. If there are no relevant sources, don't include the "Relevant Sources" section in response.`,
+ONLY return the documents with relevant information and cited in the response. If there are no relevant sources, don't include the "Relevant Sources" section in response.
+The user message will include excerpts from the high-quality documents, APIs/tools, and image descriptions to construct your answer. Each will be labeled with XML-style tags, like <Potentially Relevant Documents> and <Tool Outputs>. Make use of that information when writing your response.`,
   )
 
   // Combine the lines to form the PostPrompt
