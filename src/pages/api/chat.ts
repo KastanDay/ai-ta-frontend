@@ -15,6 +15,7 @@ import {
 } from '@/types/chat'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { AnySupportedModel } from '~/utils/modelProviders/LLMProvider'
+import { DEFAULT_SYSTEM_PROMPT } from '@/utils/app/const'
 
 export const maxDuration = 60
 
@@ -196,8 +197,12 @@ export const buildPrompt = async ({
     allPromises.push(_getLastUserTextInput({ conversation }))
     allPromises.push(_getLastToolResult({ conversation }))
     allPromises.push(_getSystemPrompt({ courseMetadata, conversation }))
-    const [lastUserTextInput, lastToolResult, finalSystemPrompt] =
+    let [lastUserTextInput, lastToolResult, finalSystemPrompt] =
       (await Promise.all(allPromises)) as [string, UIUCTool[], string]
+    
+    if (!finalSystemPrompt) {
+      finalSystemPrompt = DEFAULT_SYSTEM_PROMPT
+    }
 
     // Adjust remaining token budget
     if (encoding) {
