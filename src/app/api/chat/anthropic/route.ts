@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   console.log('conversation', conversation)
 
   const anthropic = createAnthropic({
-    apiKey: chatBody.llmProviders?.Anthropic?.apiKey,
+    apiKey: await decryptKeyIfNeeded(chatBody.llmProviders?.Anthropic?.apiKey!),
   })
 
   if (conversation.messages.length === 0) {
@@ -86,6 +86,7 @@ import {
   AnthropicModel,
 } from '~/utils/modelProviders/types/anthropic'
 import { ProviderNames } from '~/utils/modelProviders/LLMProvider'
+import { decryptKeyIfNeeded } from '~/utils/crypto'
 
 export async function GET(req: Request) {
   const apiKey = process.env.ANTHROPIC_API_KEY
