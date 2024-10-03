@@ -160,22 +160,13 @@ interface NewModelDropdownProps {
   onChange: (value: string) => void
   llmProviders: AllLLMProviders
   isSmallScreen: boolean
-  loadingModelId: string | null
 }
 
 const NewModelDropdown: React.FC<
   NewModelDropdownProps & {
-    setLoadingModelId: (id: string | null) => void
     onChange: (modelId: string) => Promise<void>
   }
-> = ({
-  value,
-  onChange,
-  llmProviders,
-  isSmallScreen,
-  loadingModelId,
-  setLoadingModelId,
-}) => {
+> = ({ value, onChange, llmProviders, isSmallScreen }) => {
   // Filter out providers that are not enabled and their models which are disabled
   const { enabledProvidersAndModels, allModels } = Object.keys(
     llmProviders,
@@ -243,11 +234,7 @@ const NewModelDropdown: React.FC<
             })) || [],
         )}
         itemComponent={(props) => (
-          <ModelItem
-            {...props}
-            loadingModelId={loadingModelId}
-            setLoadingModelId={setLoadingModelId}
-          />
+          <ModelItem {...props} setLoadingModelId={() => {}} />
         )}
         maxDropdownHeight={480}
         rightSectionWidth="auto"
@@ -333,7 +320,6 @@ export const ModelItem = forwardRef<
   HTMLDivElement,
   ModelItemProps & {
     loadingModelId: string | null
-    setLoadingModelId: (id: string | null) => void
   }
 >(
   (
@@ -346,11 +332,9 @@ export const ModelItem = forwardRef<
       modelType,
       vram_required_MB,
       loadingModelId,
-      setLoadingModelId,
       ...others
     }: ModelItemProps & {
       loadingModelId: string | null
-      setLoadingModelId: (id: string | null) => void
     },
     ref,
   ) => {
@@ -425,7 +409,7 @@ export default function APIKeyInputForm() {
       defaultTemp: llmProviders?.defaultTemp ?? undefined,
     },
     onSubmit: async ({ value }) => {
-      const llmProviders = value.providers as AllLLMProviders
+      const llmProviders = value.providers?.providers as AllLLMProviders
       mutation.mutate(
         {
           projectName,
@@ -580,20 +564,24 @@ export default function APIKeyInputForm() {
                             >
                               <AnthropicProviderInput
                                 provider={
-                                  llmProviders?.Anthropic as AnthropicProvider
+                                  llmProviders?.providers
+                                    .Anthropic as AnthropicProvider
                                 }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}
                               />
                               <OpenAIProviderInput
                                 provider={
-                                  llmProviders?.OpenAI as OpenAIProvider
+                                  llmProviders?.providers
+                                    .OpenAI as OpenAIProvider
                                 }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}
                               />
                               <AzureProviderInput
-                                provider={llmProviders?.Azure as AzureProvider}
+                                provider={
+                                  llmProviders?.providers.Azure as AzureProvider
+                                }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}
                               />
@@ -628,21 +616,24 @@ export default function APIKeyInputForm() {
                               {' '}
                               <NCSAHostedLLmsProviderInput
                                 provider={
-                                  llmProviders?.NCSAHosted as NCSAHostedProvider
+                                  llmProviders?.providers
+                                    .NCSAHosted as NCSAHostedProvider
                                 }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}
                               />
                               <OllamaProviderInput
                                 provider={
-                                  llmProviders?.Ollama as OllamaProvider
+                                  llmProviders?.providers
+                                    .Ollama as OllamaProvider
                                 }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}
                               />
                               <WebLLMProviderInput
                                 provider={
-                                  llmProviders?.WebLLM as WebLLMProvider
+                                  llmProviders?.providers
+                                    .WebLLM as WebLLMProvider
                                 }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}
@@ -686,24 +677,23 @@ export default function APIKeyInputForm() {
                         <div className="flex justify-center">
                           {llmProviders && (
                             <NewModelDropdown
-                              value={llmProviders.defaultModel}
+                              value={llmProviders.defaultModel?.name}
                               onChange={async (modelId) => {
-                                form.setFieldValue('defaultModel', modelId)
                                 await form.handleSubmit()
                               }}
                               llmProviders={{
-                                // @ts-ignore - todo KASTAN FIGURE THIS OUT
-                                Ollama: llmProviders?.Ollama,
-                                // @ts-ignore - todo KASTAN FIGURE THIS OUT
-                                OpenAI: llmProviders?.OpenAI,
-                                // @ts-ignore - todo KASTAN FIGURE THIS OUT
-                                Anthropic: llmProviders?.Anthropic,
-                                // @ts-ignore - todo KASTAN FIGURE THIS OUT
-                                Azure: llmProviders?.Azure,
-                                // @ts-ignore - todo KASTAN FIGURE THIS OUT
-                                WebLLM: llmProviders?.WebLLM,
-                                // @ts-ignore - todo KASTAN FIGURE THIS OUT
-                                NCSAHosted: llmProviders?.NCSAHosted,
+                                Ollama: llmProviders?.providers
+                                  .Ollama as OllamaProvider,
+                                OpenAI: llmProviders?.providers
+                                  .OpenAI as OpenAIProvider,
+                                Anthropic: llmProviders?.providers
+                                  .Anthropic as AnthropicProvider,
+                                Azure: llmProviders?.providers
+                                  .Azure as AzureProvider,
+                                WebLLM: llmProviders?.providers
+                                  .WebLLM as WebLLMProvider,
+                                NCSAHosted: llmProviders?.providers
+                                  .NCSAHosted as NCSAHostedProvider,
                               }}
                               isSmallScreen={false}
                             />

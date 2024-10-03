@@ -156,7 +156,7 @@ export const preferredModelIds = [
 ]
 
 export const selectBestModel = (
-  allLLMProviders: ProjectWideLLMProviders,
+  allLLMProviders: AllLLMProviders,
   convo?: Conversation,
 ): AnySupportedModel => {
   const allModels = Object.values(allLLMProviders)

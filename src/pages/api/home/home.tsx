@@ -29,6 +29,7 @@ import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { useRouter } from 'next/router'
 import {
+  AnySupportedModel,
   LLMProvider,
   selectBestModel,
   VisionCapableModels,
@@ -335,15 +336,14 @@ const Home = ({
   const handleNewConversation = () => {
     if (selectedConversation?.messages.length === 0) return
     const lastConversation = conversations[conversations.length - 1]
-
     // Determine the model to use for the new conversation
-    const model = llmProviders?.defaultModel | selectBestModel(llmProviders)
+    const model = llmProviders?.defaultModel
 
     const newConversation: Conversation = {
       id: uuidv4(),
       name: t('New Conversation'),
       messages: [],
-      model: model,
+      model: (model as AnySupportedModel) ?? llmProviders?.defaultModel,
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
