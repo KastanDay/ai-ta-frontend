@@ -588,9 +588,9 @@ Relevant Sources:
 28. [www.osd](#)
 29. [pdf.www, page: 11](#)
 """
-ONLY return the documents with relevant information and cited in the response. If there are no relevant sources, don't include the "Relevant Sources" section in response.`,
+ONLY return the documents with relevant information and cited in the response. If there are no relevant sources, don't include the "Relevant Sources" section in response.
+The user message will include excerpts from the high-quality documents, APIs/tools, and image descriptions to construct your answer. Each will be labeled with XML-style tags, like <Potentially Relevant Documents> and <Tool Outputs>. Make use of that information when writing your response.`,  
   )
-
   // Combine the lines to form the PostPrompt
   const PostPrompt = PostPromptLines.join('\n')
 
