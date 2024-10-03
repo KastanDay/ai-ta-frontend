@@ -197,12 +197,10 @@ export const buildPrompt = async ({
     allPromises.push(_getLastUserTextInput({ conversation }))
     allPromises.push(_getLastToolResult({ conversation }))
     allPromises.push(_getSystemPrompt({ courseMetadata, conversation }))
-    let [lastUserTextInput, lastToolResult, finalSystemPrompt] =
-      (await Promise.all(allPromises)) as [string, UIUCTool[], string]
-    
-    if (!finalSystemPrompt) {
-      finalSystemPrompt = DEFAULT_SYSTEM_PROMPT
-    }
+    const [lastUserTextInput, lastToolResult, systemPrompt] =
+      (await Promise.all(allPromises)) as [string, UIUCTool[], string | undefined]
+
+    const finalSystemPrompt = systemPrompt ?? DEFAULT_SYSTEM_PROMPT
 
     // Adjust remaining token budget
     if (encoding) {
