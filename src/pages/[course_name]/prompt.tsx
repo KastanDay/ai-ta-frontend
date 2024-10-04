@@ -51,6 +51,7 @@ import { useChat } from 'ai/react'
 import GlobalFooter from '../../components/UIUC-Components/GlobalFooter'
 import { debounce } from 'lodash'
 import CustomSwitch from '~/components/Switches/CustomSwitch' // Import the CustomSwitch component
+import CustomCopyButton from '~/components/Buttons/CustomCopyButton' // Import the CustomCopyButton component
 
 const montserrat = Montserrat({
   weight: '700',
@@ -843,91 +844,11 @@ The final prompt you output should adhere to the following structure below. Do n
                               gap="xs"
                               className="mt-[-4px] pl-[82px]"
                             >
-                              <Flex align="center" gap="xs">
-                                <Button
-                                  className={`
-                                  relative flex items-center 
-                                  justify-center bg-purple-800 
-                                  px-3 py-2
-                                  text-center text-white transition-colors
-                                  duration-200
-                                  hover:bg-purple-700 active:bg-purple-900 
-                                  ${montserrat_paragraph.variable} font-montserratParagraph
-                                `}
-                                  onClick={handleCopyDefaultPrompt}
-                                  styles={(theme) => ({
-                                    root: {
-                                      height: 'auto',
-                                      minHeight: 36,
-                                    },
-                                    inner: {
-                                      display: 'flex',
-                                      flexDirection: 'row',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      flexWrap: 'nowrap',
-                                      gap: '4px',
-                                    },
-                                    label: {
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      '@media (max-width: 480px)': {
-                                        whiteSpace: 'normal',
-                                      },
-                                    },
-                                  })}
-                                >
-                                  <IconCopy size={18} className="" />
-                                </Button>
-                                <Text
-                                  className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-                                >
-                                  Copy UIUC.chat&apos;s internal prompt
-                                </Text>
-                                <Tooltip
-                                  label={
-                                    <Text size="sm" color="gray.1">
-                                      You can use and customize our default
-                                      internal prompting to suit your needs.
-                                      Note, only the specific citation
-                                      formatting described will work with our
-                                      citation &apos;find and replace&apos;
-                                      system. This provides a solid starting
-                                      point for defining AI behavior in raw
-                                      prompt mode.
-                                    </Text>
-                                  }
-                                  position="bottom"
-                                  withArrow
-                                  multiline
-                                  width={220}
-                                  styles={{
-                                    tooltip: {
-                                      backgroundColor: '#1A1B1E',
-                                      color: theme.colors.gray[2],
-                                      borderRadius: '4px',
-                                      wordWrap: 'break-word',
-                                    },
-                                    arrow: {
-                                      backgroundColor: '#1A1B1E',
-                                    },
-                                  }}
-                                >
-                                  <span
-                                    aria-label="More information"
-                                    style={{ cursor: 'pointer' }}
-                                  >
-                                    <IconInfoCircle
-                                      size={16}
-                                      className={'text-gray-400'}
-                                      style={{
-                                        transition: 'all 0.2s ease-in-out',
-                                      }}
-                                    />
-                                  </span>
-                                </Tooltip>
-                              </Flex>
+                              <CustomCopyButton
+                                label="Copy UIUC.chat's internal prompt"
+                                tooltip="You can use and customize our default internal prompting to suit your needs. Note, only the specific citation formatting described will work with our citation 'find and replace' system. This provides a solid starting point for defining AI behavior in raw prompt mode."
+                                onClick={handleCopyDefaultPrompt}
+                              />
                             </Flex>
                           )}
 
