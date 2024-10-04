@@ -19,23 +19,19 @@ export default async function handler(req: NextRequest, res: NextResponse) {
 
   const requestBody = await req.text()
   let courseName: string
-  let llmProviders: AllLLMProviders
-  let defaultModelID: string
-  let defaultTemperature: number
+  let llmProviders: ProjectWideLLMProviders
 
   try {
     const parsedBody = JSON.parse(requestBody)
     courseName = parsedBody.projectName as string
-    llmProviders = parsedBody.llmProviders as AllLLMProviders
-    defaultModelID = parsedBody.defaultModelID as string
-    defaultTemperature = parsedBody.defaultTemperature as number
+    llmProviders = parsedBody.llmProviders as ProjectWideLLMProviders
   } catch (error) {
     console.error('Error parsing request body:', error)
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
   // Check if all required variables are defined
-  if (!courseName || !llmProviders || !defaultModelID || !defaultTemperature) {
+  if (!courseName || !llmProviders || !llmProviders.providers) {
     console.error('Error: Missing required parameters')
     return NextResponse.json(
       { error: 'Missing required parameters' },
@@ -44,11 +40,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
   }
 
   // Type checking
-  if (
-    typeof courseName !== 'string' ||
-    typeof defaultModelID !== 'string' ||
-    typeof defaultTemperature !== 'string'
-  ) {
+  if (typeof courseName !== 'string') {
     console.error('Error: Invalid parameter types')
     return NextResponse.json(
       { error: 'Invalid parameter types' },
@@ -67,15 +59,11 @@ export default async function handler(req: NextRequest, res: NextResponse) {
 
     // Ensure all keys are encrypted, then save to DB.
     const processProviders = async () => {
-      for (const providerName in llmProviders) {
-        if (providerName === 'defaultModel' || providerName === 'defaultTemp') {
-          continue
-        }
-
+      for (const providerName in llmProviders.providers) {
         const typedProviderName = providerName as keyof AllLLMProviders
-        const provider = llmProviders[typedProviderName]
+        const provider = llmProviders.providers[typedProviderName]
         if (provider && 'apiKey' in provider) {
-          llmProviders[typedProviderName] = {
+          llmProviders.providers[typedProviderName] = {
             ...provider,
             apiKey:
               (await encryptKeyIfNeeded(provider.apiKey!)) ?? provider.apiKey,
@@ -88,12 +76,12 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     // Combine the existing metadata with the new metadata, prioritizing the new values
     const combined_llms = { ...existingLLMs, ...llmProviders }
 
-    if (defaultModelID) {
-      combined_llms.defaultModel = defaultModelID
+    if (llmProviders.defaultModel) {
+      combined_llms.defaultModel = llmProviders.defaultModel
     }
 
-    if (defaultTemperature) {
-      combined_llms.defaultTemp = defaultTemperature
+    if (llmProviders.defaultTemp) {
+      combined_llms.defaultTemp = llmProviders.defaultTemp
     }
 
     console.debug('-----------------------------------------')

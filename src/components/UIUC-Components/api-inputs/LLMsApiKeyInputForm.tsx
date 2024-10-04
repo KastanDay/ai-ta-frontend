@@ -405,8 +405,6 @@ export default function APIKeyInputForm() {
   const form = useForm({
     defaultValues: {
       providers: llmProviders,
-      defaultModel: llmProviders?.defaultModel ?? undefined,
-      defaultTemp: llmProviders?.defaultTemp ?? undefined,
     },
     onSubmit: async ({ value }) => {
       const llmProviders = value.providers?.providers as AllLLMProviders
@@ -415,8 +413,6 @@ export default function APIKeyInputForm() {
           projectName,
           queryClient,
           llmProviders,
-          defaultModelID: (value.defaultModel || '').toString(),
-          defaultTemp: (value.defaultTemp || '').toString(),
         },
         {
           onSuccess: (data, variables, context) => {
@@ -700,15 +696,15 @@ export default function APIKeyInputForm() {
                           )}
                         </div>
                         <div>
-                          <form.Field name="defaultTemp">
+                          <form.Field name="providers.defaultTemp">
                             {(field) => (
                               <>
                                 <Text size="sm" weight={500} mb={4}>
                                   Default Temperature:{' '}
-                                  {form.getFieldValue('defaultTemp')}
+                                  {llmProviders?.defaultTemp}
                                 </Text>
                                 <Slider
-                                  value={form.getFieldValue('defaultTemp')}
+                                  value={llmProviders?.defaultTemp}
                                   onChange={async (newTemperature) => {
                                     field.handleChange(newTemperature)
                                   }}
