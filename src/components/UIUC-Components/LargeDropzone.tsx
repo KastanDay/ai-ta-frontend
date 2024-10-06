@@ -75,7 +75,7 @@ export function UploadProgressBar({
       <Group position="left">
         {isComplete ? <IconCheck size={rem(24)} color="green" /> : null}
         <Text>
-          {numFiles} out of {totalFiles} uploaded.
+          {numFiles} of {totalFiles} uploaded.
         </Text>
       </Group>
       {!isComplete && (
@@ -92,9 +92,20 @@ export function UploadProgressBar({
   )
 }
 
-function IngestProgressBar({ courseName }: { courseName: string }) {
+function UploadAndIngestProgressBars({
+  courseName,
+  successfulUploads,
+  uploadInProgress,
+  uploadComplete,
+}: {
+  courseName: string
+  successfulUploads: number
+  uploadInProgress: boolean
+  uploadComplete: boolean
+}) {
   const [progress, setProgress] = useState(0)
   const [hasDocuments, setHasDocuments] = useState(false) // State to track if there are documents
+  const [ingestComplete, setingestComplete] = useState(false) // State to track if there are documents
   const [totalDocuments, setTotalDocuments] = useState(0) // State to track the total number of documents
   const [dataLength, setDataLength] = useState(0)
 
@@ -111,12 +122,20 @@ function IngestProgressBar({ courseName }: { courseName: string }) {
         )
         setTotalDocuments(newTotalDocuments) // Set total documents from the initial API call
         setDataLength(newTotalDocuments - data.documents.length)
+        if (!hasDocuments) {
+          // When hasDocs goes from false to true
+          setingestComplete(false)
+        }
         setHasDocuments(data.documents.length > 0)
         setProgress(
           ((newTotalDocuments - data.documents.length) / newTotalDocuments) *
             100,
         )
       } else {
+        if (hasDocuments) {
+          // Done ingest (when hasDocs goes from true to false)
+          setingestComplete(true)
+        }
         setHasDocuments(false)
       }
     }
@@ -125,35 +144,56 @@ function IngestProgressBar({ courseName }: { courseName: string }) {
     return () => clearInterval(intervalId)
   }, [courseName, totalDocuments])
 
-  if (!hasDocuments) {
+  if (!hasDocuments && !ingestComplete) {
     return null
   }
 
   return (
-    <Paper
-      shadow="lg"
-      radius="md"
-      p="md"
-      withBorder
-      style={{
-        borderWidth: rem(1.5),
-        backgroundColor: '#25262b',
-        width: rem(330),
-        borderStyle: 'dashed',
-      }}
-    >
-      <Text>
-        {dataLength} out of {totalDocuments} ingested into AI Database
-      </Text>
-      <Progress
-        color="violet"
+    <>
+      {(uploadInProgress || uploadComplete) && (
+        <div className="pb-4">
+          <UploadProgressBar
+            numFiles={successfulUploads}
+            totalFiles={totalDocuments}
+            isComplete={uploadComplete}
+          />
+        </div>
+      )}
+      <Paper
+        shadow="lg"
         radius="md"
-        size="lg"
-        value={progress}
-        striped
-        animate
-      />
-    </Paper>
+        p="md"
+        withBorder
+        style={{
+          borderWidth: rem(1.5),
+          backgroundColor: '#25262b',
+          width: rem(330),
+          borderStyle: 'dashed',
+        }}
+      >
+        <Group position="left">
+          {ingestComplete ? (
+            <div>
+              <IconCheck size={rem(24)} color="green" />
+            </div>
+          ) : null}
+          <Text>
+            {ingestComplete ? totalDocuments : dataLength} of {totalDocuments}{' '}
+            ingested into AI Database
+          </Text>
+        </Group>
+        {!ingestComplete && (
+          <Progress
+            color="violet"
+            radius="md"
+            size="lg"
+            value={progress}
+            striped
+            animate
+          />
+        )}
+      </Paper>
+    </>
   )
 }
 
@@ -384,15 +424,23 @@ export function LargeDropzone({
             paddingTop: rem(24),
           }}
         >
-          {(uploadInProgress || uploadComplete) && (
+          {/* {(uploadInProgress || uploadComplete) && (
             <UploadProgressBar
               numFiles={successfulUploads}
               totalFiles={files.length}
               isComplete={uploadComplete}
             />
-          )}
+          )} */}
           <div className={courseName ? 'pb-4 pt-3' : ''}>
-            {courseName && <IngestProgressBar courseName={courseName} />}
+            {/* {courseName && <IngestProgressBar courseName={courseName} />} */}
+            {courseName && (
+              <UploadAndIngestProgressBars
+                courseName={courseName}
+                successfulUploads={successfulUploads}
+                uploadInProgress={uploadInProgress}
+                uploadComplete={uploadComplete}
+              />
+            )}
           </div>
           <Dropzone
             openRef={openRef}
