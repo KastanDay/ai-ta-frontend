@@ -23,6 +23,7 @@ import { getOpenAIModels } from '~/utils/modelProviders/routes/openai'
 export const config = {
   runtime: 'edge',
 }
+export const maxDuration = 60;
 
 const handler = async (
   req: NextRequest,
@@ -39,11 +40,6 @@ const handler = async (
       )
     }
 
-    // Fetch the project's API keys, filtering out all keys if requested
-    let llmProviders = (await kv.get(
-      `${projectName}-llms`,
-    )) as ProjectWideLLMProviders
-
     // Define a function to create a placeholder provider
     const createPlaceholderProvider = (
       providerName: ProviderNames,
@@ -53,62 +49,86 @@ const handler = async (
       models: [],
     })
 
+    // Fetch the project's API keys, filtering out all keys if requested
+    let llmProviders = (await kv.get(
+      `${projectName}-llms`,
+    )) as unknown as ProjectWideLLMProviders
+
+    console.log("llmProviders first fetch:", llmProviders);
+
+
     // Ensure all providers are defined
     const allProviderNames = Object.values(ProviderNames)
     for (const providerName of allProviderNames) {
+      console.log("providerName:", providerName);
+
+      if (!llmProviders.providers) {
+        llmProviders.providers = {} as any
+      }
+
       if (!llmProviders.providers[providerName]) {
-        llmProviders.providers[providerName] =
-          createPlaceholderProvider(providerName)
+        console.log("creating placeholder provider:", providerName);
+        // @ts-ignore - ignored for now
+        if (llmProviders[providerName]) {
+          // @ts-ignore - ignored for now
+          llmProviders.providers[providerName] = llmProviders[providerName]
+          console.log("adding pre-existing provider:", llmProviders.providers[providerName]);
+        } else {
+          llmProviders.providers[providerName] = createPlaceholderProvider(providerName) as any
+        }
       }
     }
 
-    // Cast llmProviders to AllLLMProviders now that we've ensured all providers are defined
-    llmProviders = llmProviders as AllLLMProviders
+    // After the loop, assert the type again
+    llmProviders = llmProviders as ProjectWideLLMProviders
 
-    const allLLMProviders: Partial<ProjectWideLLMProviders> = {}
+    // Cast llmProviders to AllLLMProviders now that we've ensured all providers are defined
+    llmProviders = llmProviders as ProjectWideLLMProviders
+
+    // const allLLMProviders: Partial<ProjectWideLLMProviders> = { providers: {} }
 
     // Ensure defaultModel and defaultTemp are set
     if (llmProviders.defaultModel) {
-      allLLMProviders.defaultModel = llmProviders.defaultModel
+      llmProviders.defaultModel = llmProviders.defaultModel
     }
 
     if (llmProviders.defaultTemp) {
-      allLLMProviders.defaultTemp = llmProviders.defaultTemp
+      llmProviders.defaultTemp = llmProviders.defaultTemp
     }
 
     // Iterate through all possible providers
     for (const providerName of Object.values(ProviderNames)) {
-      const llmProvider = llmProviders[providerName]
+      const llmProvider = llmProviders.providers[providerName]
 
       switch (providerName) {
         case ProviderNames.Ollama:
-          allLLMProviders[providerName] = (await getOllamaModels(
+          llmProviders.providers[providerName] = (await getOllamaModels(
             llmProvider as OllamaProvider,
           )) as OllamaProvider
           break
         case ProviderNames.OpenAI:
-          allLLMProviders[providerName] = await getOpenAIModels(
+          llmProviders.providers[providerName] = await getOpenAIModels(
             llmProvider as OpenAIProvider,
             projectName,
           )
           break
         case ProviderNames.Azure:
-          allLLMProviders[providerName] = await getAzureModels(
+          llmProviders.providers[providerName] = await getAzureModels(
             llmProvider as AzureProvider,
           )
           break
         case ProviderNames.Anthropic:
-          allLLMProviders[providerName] = await getAnthropicModels(
+          llmProviders.providers[providerName] = await getAnthropicModels(
             llmProvider as AnthropicProvider,
           )
           break
         case ProviderNames.WebLLM:
-          allLLMProviders[providerName] = await getWebLLMModels(
+          llmProviders.providers[providerName] = await getWebLLMModels(
             llmProvider as WebLLMProvider,
           )
           break
         case ProviderNames.NCSAHosted:
-          allLLMProviders[providerName] = await getNCSAHostedModels(
+          llmProviders.providers[providerName] = await getNCSAHostedModels(
             llmProvider as NCSAHostedProvider,
           )
           break
@@ -117,8 +137,8 @@ const handler = async (
       }
     }
 
-    // console.log('FINAL -- allLLMProviders', allLLMProviders)
-    return NextResponse.json(allLLMProviders as ProjectWideLLMProviders, {
+    console.log('FINAL -- llmProviders', llmProviders)
+    return NextResponse.json(llmProviders as ProjectWideLLMProviders, {
       status: 200,
     })
   } catch (error) {

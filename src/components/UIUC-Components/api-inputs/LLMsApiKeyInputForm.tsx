@@ -29,6 +29,7 @@ import {
   NCSAHostedProvider,
   OllamaProvider,
   OpenAIProvider,
+  ProjectWideLLMProviders,
   ProviderNames,
   WebLLMProvider,
 } from '~/utils/modelProviders/LLMProvider'
@@ -155,18 +156,13 @@ export const APIKeyInput = ({
   )
 }
 
-interface NewModelDropdownProps {
-  value: string | undefined
-  onChange: (value: string) => void
+const NewModelDropdown: React.FC<{
+  value: AnySupportedModel
+  onChange: (model: AnySupportedModel) => Promise<void>
   llmProviders: AllLLMProviders
   isSmallScreen: boolean
-}
+}> = ({ value, onChange, llmProviders, isSmallScreen }) => {
 
-const NewModelDropdown: React.FC<
-  NewModelDropdownProps & {
-    onChange: (modelId: string) => Promise<void>
-  }
-> = ({ value, onChange, llmProviders, isSmallScreen }) => {
   // Filter out providers that are not enabled and their models which are disabled
   const { enabledProvidersAndModels, allModels } = Object.keys(
     llmProviders,
@@ -205,7 +201,7 @@ const NewModelDropdown: React.FC<
     },
   )
 
-  const selectedModel = allModels.find((model) => model.id === value)
+  const selectedModel = allModels.find((model) => model.id === value.id)
 
   return (
     <>
@@ -214,10 +210,15 @@ const NewModelDropdown: React.FC<
         size="md"
         placeholder="Select a model"
         searchable
-        value={value}
+        value={value.id}
         onChange={async (modelId) => {
-          await onChange(modelId!)
-        }}
+          const selectedModel = allModels.find((model) => model.id === modelId);
+          // console.log("selectedModel on change:", selectedModel);
+          if (selectedModel) {
+            await onChange(selectedModel)
+          }
+        }
+        }
         data={Object.values(enabledProvidersAndModels).flatMap(
           (provider: LLMProvider) =>
             provider.models?.map((model) => ({
@@ -234,7 +235,7 @@ const NewModelDropdown: React.FC<
             })) || [],
         )}
         itemComponent={(props) => (
-          <ModelItem {...props} setLoadingModelId={() => {}} />
+          <ModelItem {...props} setLoadingModelId={() => { }} />
         )}
         maxDropdownHeight={480}
         rightSectionWidth="auto"
@@ -407,7 +408,7 @@ export default function APIKeyInputForm() {
       providers: llmProviders,
     },
     onSubmit: async ({ value }) => {
-      const llmProviders = value.providers?.providers as AllLLMProviders
+      const llmProviders = value.providers as ProjectWideLLMProviders
       mutation.mutate(
         {
           projectName,
@@ -673,8 +674,11 @@ export default function APIKeyInputForm() {
                         <div className="flex justify-center">
                           {llmProviders && (
                             <NewModelDropdown
-                              value={llmProviders.defaultModel?.name}
-                              onChange={async (modelId) => {
+                              value={llmProviders.defaultModel as AnySupportedModel}
+                              onChange={async (newDefaultModel) => {
+                                // TODO: parse the string into the full model object
+                                llmProviders.defaultModel = newDefaultModel as AnySupportedModel
+                                form.setFieldValue('providers', llmProviders as ProjectWideLLMProviders)
                                 await form.handleSubmit()
                               }}
                               llmProviders={{

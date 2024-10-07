@@ -51,7 +51,7 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
     }: {
       projectName: string
       queryClient: QueryClient
-      llmProviders: AllLLMProviders
+      llmProviders: ProjectWideLLMProviders
     }) => {
       const response = await fetch('/api/UIUC-api/upsertLLMProviders', {
         method: 'POST',

@@ -274,8 +274,8 @@ const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
                   order={6}
                   className={`w-full px-8 pl-16 ${montserrat_heading.variable} mt-2 font-montserratHeading`}
                 >
-                  This feature is disabled. I'm re-negotiating our enterprise
-                  contract with{' '}
+                  This feature is disabled. I&apos;m re-negotiating our
+                  enterprise contract with{' '}
                   <a
                     className={'text-purple-600'}
                     href="https://atlas.nomic.ai/"
@@ -286,8 +286,8 @@ const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
                     Nomic Atlas
                   </a>
                   , who we partner with to display beautiful visualizations of
-                  chatbot's LLM usage. You can still export your Conversation
-                  history via the button above. Or read the{' '}
+                  chatbot&apos;s LLM usage. You can still export your
+                  Conversation history via the button above. Or read the{' '}
                   <a
                     className={'text-purple-600'}
                     href="https://docs.uiuc.chat/features/bulk-export-documents-or-conversation-history#export-all-conversations-from-your-project"

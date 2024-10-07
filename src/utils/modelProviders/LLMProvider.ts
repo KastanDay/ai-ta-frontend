@@ -109,21 +109,13 @@ export type LLMProvider =
   | WebLLMProvider
   | NCSAHostedProvider
 
-// export type AllLLMProviders = {
-//   [P in ProviderNames]?: LLMProvider & { provider: P }
-// }
-
-// export interface AllLLMProviders {
-//   [key: string]: LLMProvider & { provider: ProviderNames } | undefined;
-// }
-
 export type AllLLMProviders = {
   [key in ProviderNames]: LLMProvider
 }
 
 export type ProjectWideLLMProviders = {
   providers: {
-    [P in ProviderNames]?: LLMProvider & { provider: P }
+    [P in ProviderNames]: LLMProvider & { provider: P }
   }
   defaultModel?: AnySupportedModel
   defaultTemp?: number

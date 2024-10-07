@@ -172,6 +172,10 @@ export const Chat = memo(
     } = useContext(HomeContext)
 
     useEffect(() => {
+      console.log("selectedConversation CHANGED", selectedConversation)
+    }, [selectedConversation])
+
+    useEffect(() => {
       const loadModel = async () => {
         if (selectedConversation && !chat_ui.isModelLoading()) {
           homeDispatch({
@@ -190,11 +194,11 @@ export const Chat = memo(
       }
       if (
         selectedConversation &&
-        webLLMModels.some((m) => m.name === selectedConversation.model.name)
+        webLLMModels.some((m) => m.name === selectedConversation?.model?.name)
       ) {
         loadModel()
       }
-    }, [selectedConversation?.model.name, chat_ui])
+    }, [selectedConversation?.model?.name, chat_ui])
 
     const [currentMessage, setCurrentMessage] = useState<Message>()
     const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true)
@@ -351,8 +355,8 @@ export const Chat = memo(
             message.contexts = []
             message.content = Array.isArray(message.content)
               ? message.content.filter(
-                  (content) => content.type !== 'tool_image_url',
-                )
+                (content) => content.type !== 'tool_image_url',
+              )
               : message.content
 
             const updatedMessages = [...selectedConversation.messages]
@@ -864,7 +868,7 @@ export const Chat = memo(
 
         if (imgDescIndex !== -1) {
           // Remove the existing image description
-          ;(currentMessage.content as Content[]).splice(imgDescIndex, 1)
+          ; (currentMessage.content as Content[]).splice(imgDescIndex, 1)
         }
         if (
           selectedConversation?.messages[
@@ -993,13 +997,13 @@ export const Chat = memo(
 
     const statements =
       courseMetadata?.example_questions &&
-      courseMetadata.example_questions.length > 0
+        courseMetadata.example_questions.length > 0
         ? courseMetadata.example_questions
         : [
-            'Make a bullet point list of key takeaways from this project.',
-            'What are the best practices for [Activity or Process] in [Context or Field]?',
-            'Can you explain the concept of [Specific Concept] in simple terms?',
-          ]
+          'Make a bullet point list of key takeaways from this project.',
+          'What are the best practices for [Activity or Process] in [Context or Field]?',
+          'Can you explain the concept of [Specific Concept] in simple terms?',
+        ]
 
     // Add this function to create dividers with statements
     const renderIntroductoryStatements = () => {

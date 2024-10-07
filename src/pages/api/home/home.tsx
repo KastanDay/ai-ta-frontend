@@ -31,6 +31,7 @@ import { useRouter } from 'next/router'
 import {
   AnySupportedModel,
   LLMProvider,
+  ProjectWideLLMProviders,
   selectBestModel,
   VisionCapableModels,
 } from '~/utils/modelProviders/LLMProvider'
@@ -122,7 +123,7 @@ const Home = ({
         throw new Error('Failed to fetch models')
       }
 
-      return response.json()
+      return response.json() as unknown as ProjectWideLLMProviders
     },
     [],
   )
@@ -232,10 +233,11 @@ const Home = ({
       try {
         if (!course_metadata) return
 
-        const models = await getModels({
+        const llmProviders = await getModels({
           projectName: course_name,
         })
-        dispatch({ field: 'llmProviders', value: models })
+
+        dispatch({ field: 'llmProviders', value: llmProviders.providers })
       } catch (error) {
         console.error('Error fetching models user has access to: ', error)
         dispatch({ field: 'modelError', value: getModelsError(error) })

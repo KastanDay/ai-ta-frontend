@@ -205,10 +205,10 @@ export const ChatInput = ({
           imageUrls.length > 0
             ? imageUrls
             : await Promise.all(
-                imageFiles.map((file) =>
-                  uploadImageAndGetUrl(file, courseName),
-                ),
-              )
+              imageFiles.map((file) =>
+                uploadImageAndGetUrl(file, courseName),
+              ),
+            )
 
         // Construct image content for the message
         imageContent = imageUrlsToUse
@@ -556,7 +556,7 @@ export const ChatInput = ({
 
   useEffect(() => {
     if (
-      !VisionCapableModels.has(selectedConversation?.model.id as OpenAIModelID)
+      !VisionCapableModels.has(selectedConversation?.model?.id as any)
     ) {
       return // Exit early if the model is not GPT-4 Vision
     }
@@ -598,7 +598,7 @@ export const ChatInput = ({
       document.removeEventListener('drop', handleDocumentDrop)
       document.removeEventListener('dragleave', handleDocumentDragLeave)
     }
-  }, [handleImageUpload, selectedConversation?.model.id])
+  }, [handleImageUpload, selectedConversation?.model?.id])
 
   useEffect(() => {
     if (imageError) {
@@ -617,9 +617,8 @@ export const ChatInput = ({
     if (textareaRef && textareaRef.current) {
       textareaRef.current.style.height = 'inherit'
       textareaRef.current.style.height = `${textareaRef.current?.scrollHeight}px`
-      textareaRef.current.style.overflow = `${
-        textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
-      }`
+      textareaRef.current.style.overflow = `${textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
+        }`
     }
   }, [content])
 
@@ -730,9 +729,9 @@ export const ChatInput = ({
           className="absolute bottom-0 mx-4 flex w-[80%] flex-col self-center rounded-t-3xl border border-black/10 bg-[#070712] px-4 pb-8 pt-4 shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:border-gray-900/50 dark:text-white dark:shadow-[0_0_15px_rgba(0,0,0,0.10)] md:mx-20 md:w-[70%]"
         >
           {/* BUTTON 2: Image Icon and Input */}
-          {selectedConversation?.model.id &&
+          {selectedConversation?.model?.id &&
             VisionCapableModels.has(
-              selectedConversation.model.id as OpenAIModelID,
+              selectedConversation.model.id as any,
             ) && (
               <button
                 className="absolute bottom-11 left-5 rounded-full p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
@@ -847,12 +846,11 @@ export const ChatInput = ({
             {/* Button 3: main input text area  */}
             <div
               className={`
-                ${
-                  VisionCapableModels.has(
-                    selectedConversation?.model.id as OpenAIModelID,
-                  )
-                    ? 'pl-8'
-                    : 'pl-1'
+                ${VisionCapableModels.has(
+                selectedConversation?.model?.id as any,
+              )
+                  ? 'pl-8'
+                  : 'pl-1'
                 }
                   `}
             >
@@ -934,7 +932,7 @@ export const ChatInput = ({
             onClick={handleTextClick}
             style={{ cursor: 'pointer' }}
           >
-            {selectedConversation?.model.name}
+            {selectedConversation?.model?.name}
             {selectedConversation?.model &&
               webLLMModels.some(
                 (m) => m.name === selectedConversation.model.name,

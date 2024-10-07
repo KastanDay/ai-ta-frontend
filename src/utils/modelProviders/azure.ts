@@ -2,6 +2,7 @@ import {
   AzureProvider,
   ProviderNames,
 } from '~/utils/modelProviders/LLMProvider'
+import { decryptKeyIfNeeded } from '../crypto'
 
 export const config = {
   runtime: 'edge',
@@ -72,7 +73,7 @@ export const getAzureModels = async (
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
-        'api-key': azureProvider.apiKey!,
+        'api-key': await decryptKeyIfNeeded(azureProvider.apiKey!),
       },
     })
 
