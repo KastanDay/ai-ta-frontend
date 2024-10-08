@@ -85,11 +85,11 @@ const ApiKeyManagement = ({
 			}
 		],
 		"openai_key": "YOUR-OPENAI-KEY-HERE",
-        "api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder}
-        "retrieval_only": false,
+    "api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder},
+    "retrieval_only": false,
 		"course_name": "${course_name}",
 		"stream": true,
-		"temperature": 0.1,
+		"temperature": 0.1
 	}'`,
     python: `import requests
 	
@@ -114,7 +114,7 @@ data = {
   "retrieval_only": False, # If true, the LLM will not be invoked (thus, zero cost). Only relevant documents will be returned.
   "course_name": "${course_name}",
   "stream": True,
-  "temperature": 0.1,
+  "temperature": 0.1
 }
 
 response = requests.post(url, headers=headers, json=data)
@@ -137,8 +137,8 @@ const data = {
   "api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder},
   "course_name": "${course_name}",
   "stream": true,
-  "retrieval_only": false // If true, the LLM will not be invoked (thus, zero cost). Only relevant documents will be returned.
-  "temperature": 0.1,
+  "retrieval_only": false, // If true, the LLM will not be invoked (thus, zero cost). Only relevant documents will be returned.
+  "temperature": 0.1
 };
 
 axios.post('${baseUrl}/api/chat-api/chat', data, {
