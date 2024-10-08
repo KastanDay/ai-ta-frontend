@@ -305,7 +305,7 @@ axios.post('${baseUrl}/api/chat-api/chat', data, {
                   rel="noopener noreferrer"
                   className={`text-purple-500 hover:underline ${montserrat_heading.variable} font-montserratHeading`}
                 >
-                  OpenAI API documentation
+                  OpenAI API documentation{' '}
                   <IconExternalLink
                     className="mr-2 inline-block"
                     style={{ position: 'relative', top: '-3px' }}
@@ -353,6 +353,21 @@ axios.post('${baseUrl}/api/chat-api/chat', data, {
                   openai_key
                 </code>{' '}
                 to the request.
+              </Title>
+              <Title order={4} w={'90%'}>
+                Read our UIUC.chat API docs:{' '}
+                <a
+                  href="https://docs.uiuc.chat/api"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`text-purple-500 hover:underline ${montserrat_heading.variable} font-montserratHeading`}
+                >
+                  docs.uiuc.chat/api{' '}
+                  <IconExternalLink
+                    className="mr-2 inline-block"
+                    style={{ position: 'relative', top: '-3px' }}
+                  />
+                </a>
               </Title>
               <div
                 style={{
