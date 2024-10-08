@@ -73,7 +73,7 @@ const ApiKeyManagement = ({
     curl: `curl -X POST ${baseUrl}/api/chat-api/chat \\
 	-H "Content-Type: application/json" \\
 	-d '{
-		"model": "gpt-4o-mini",
+		"model": "llama3.1:70b",
 		"messages": [
 			{
 				"role": "system",
@@ -85,70 +85,73 @@ const ApiKeyManagement = ({
 			}
 		],
 		"openai_key": "YOUR-OPENAI-KEY-HERE",
-		"temperature": 0.7,
+        "api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder}
+        "retrieval_only": false,
 		"course_name": "${course_name}",
 		"stream": true,
-		"api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder}
+		"temperature": 0.1,
 	}'`,
     python: `import requests
 	
-	url = "${baseUrl}/api/chat-api/chat"
-	headers = {
-		'Content-Type': 'application/json'
-	}
-	data = {
-		"model": "gpt-4o-mini",
-		"messages": [
-			{
-				"role": "system",
-				"content": "Your system prompt here"
-			},
-			{
-				"role": "user",
-				"content": "What is in these documents?"
-			}
-		],
-		"openai_key": "YOUR-OPENAI-KEY-HERE",
-		"temperature": 0.7,
-		"course_name": "${course_name}",
-		"stream": true,
-		"api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder}
-	}
-	
-	response = requests.post(url, headers=headers, json=data)
-	print(response.text)`,
+url = "${baseUrl}/api/chat-api/chat"
+headers = {
+  'Content-Type': 'application/json'
+}
+data = {
+  "model": "llama3.1:70b",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Your system prompt here"
+    },
+    {
+      "role": "user",
+      "content": "What is in these documents?"
+    }
+  ],
+  "openai_key": "YOUR-OPENAI-KEY-HERE", # only necessary for OpenAI models
+  "api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder},
+  "retrieval_only": False, # If true, the LLM will not be invoked (thus, zero cost). Only relevant documents will be returned.
+  "course_name": "${course_name}",
+  "stream": True,
+  "temperature": 0.1,
+}
+
+response = requests.post(url, headers=headers, json=data)
+print(response.text)`,
     node: `const axios = require('axios');
 	
-	const data = {
-		"model": "gpt-4o-mini",
-		"messages": [
-			{
-				"role": "system",
-				"content": "Your system prompt here"
-			},
-			{
-				"role": "user",
-				"content": "What is in these documents?"
-			}
-		],
-		"openai_key": "YOUR-OPENAI-KEY-HERE",
-		"temperature": 0.7,
-		"course_name": "${course_name}",
-		"stream": true,
-		"api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder}
-	};
-	
-	axios.post('${baseUrl}/api/chat-api/chat', data, {
-		headers: {
-			'Content-Type': 'application/json'
-		}
-	})
-	.then((response) => {
-		console.log(response.data);
-	})
-	.catch((error) => {
-		console.error(error);
-	});`,
+const data = {
+  "model": "llama3.1:70b",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Your system prompt here"
+    },
+    {
+      "role": "user",
+      "content": "What is in these documents?"
+    }
+  ],
+  "openai_key": "YOUR-OPENAI-KEY-HERE", // only necessary for OpenAI models
+  "api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder},
+  "course_name": "${course_name}",
+  "stream": true,
+  "retrieval_only": false // If true, the LLM will not be invoked (thus, zero cost). Only relevant documents will be returned.
+  "temperature": 0.1,
+};
+
+axios.post('${baseUrl}/api/chat-api/chat', data, {
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+.then((response) => {
+  console.log(response.data);
+})
+.catch((error) => {
+  console.error(error);
+});`,
   }
 
   useEffect(() => {
@@ -310,7 +313,33 @@ const ApiKeyManagement = ({
                 </a>
               </Title>
               <Title order={4} w={'90%'}>
-                Just add your{' '}
+                <code
+                  style={{
+                    backgroundColor: '#020307',
+                    borderRadius: '5px',
+                    padding: '1px 5px',
+                    fontFamily: 'monospace',
+                    alignItems: 'center',
+                    justifyItems: 'center',
+                  }}
+                >
+                  llama3.1:70b
+                </code>{' '}
+                is hosted by NCSA and it&apos;s free. However the best
+                price/performance LLM is{' '}
+                <code
+                  style={{
+                    backgroundColor: '#020307',
+                    borderRadius: '5px',
+                    padding: '1px 5px',
+                    fontFamily: 'monospace',
+                    alignItems: 'center',
+                    justifyItems: 'center',
+                  }}
+                >
+                  GPT-4o-mini
+                </code>
+                . For OpenAI models, just add your{' '}
                 <code
                   style={{
                     backgroundColor: '#020307',
