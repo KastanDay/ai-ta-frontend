@@ -16,6 +16,7 @@ import {
 import { NextApiRequest, NextApiResponse } from 'next'
 import { AnySupportedModel } from '~/utils/modelProviders/LLMProvider'
 import { DEFAULT_SYSTEM_PROMPT } from '@/utils/app/const'
+import { log } from 'next-axiom'
 
 export const maxDuration = 60
 
@@ -491,19 +492,22 @@ const _getSystemPrompt = async ({
       })
   }
 
+  // If userDefinedSystemPrompt is null or undefined, use DEFAULT_SYSTEM_PROMPT
+  const systemPrompt = userDefinedSystemPrompt ?? DEFAULT_SYSTEM_PROMPT ?? ''
+
   // Check if contexts are present
   const contexts = conversation.messages[conversation.messages.length - 1]?.contexts as ContextWithMetadata[] || []
 
   if (!contexts || contexts.length === 0) {
-    // No documents retrieved, return only user-defined system prompt (if it exists and is not empty)
-    return userDefinedSystemPrompt?.trim() || ''
+    // No documents retrieved, return only system prompt
+    return systemPrompt.trim()
   } else {
-    // Documents are present, combine user-defined prompt (if it exists and is not empty) with system post prompt
+    // Documents are present, combine system prompt with system post prompt
     const systemPostPrompt = getSystemPostPrompt({ 
       conversation, 
       courseMetadata: courseMetadata ?? {} as CourseMetadata 
     })
-    return [userDefinedSystemPrompt, systemPostPrompt]
+    return [systemPrompt, systemPostPrompt]
       .filter(prompt => prompt?.trim())
       .join('\n\n')
   }
