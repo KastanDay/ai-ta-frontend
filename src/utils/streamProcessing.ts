@@ -674,11 +674,12 @@ async function processResponseData(
 
 /**
  * Handles the non-streaming response from the chat handler.
- * @param {NextResponse} apiResponse - The response from the chat handler.
+ * @param {Response} apiResponse - The response from the chat handler.
  * @param {Conversation} conversation - The conversation object for logging purposes.
- * @param {NextRequest} req - The incoming Next.js API request object.
+ * @param {NextApiRequest} req - The incoming Next.js API request object.
+ * @param {NextApiResponse} res - The Next.js API response object.
  * @param {string} course_name - The name of the course associated with the conversation.
- * @returns {Promise<NextResponse>} A NextResponse object representing the JSON response.
+ * @returns {Promise<void>} A promise that resolves when the response is sent.
  */
 export async function handleNonStreamingResponse(
   apiResponse: Response,
@@ -702,8 +703,10 @@ export async function handleNonStreamingResponse(
       req,
       course_name,
     )
-
-    res.status(200).json({ message: processedResponse })
+    const contexts =
+      conversation.messages[conversation.messages.length - 1]?.contexts
+    res.status(200).json({ message: processedResponse, contexts: contexts })
+    return
   } catch (error) {
     console.error('Error handling non-streaming response:', error)
     res.status(500).json({ error: 'Failed to process response' })

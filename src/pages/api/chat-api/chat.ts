@@ -1,4 +1,4 @@
-// src/pages/api/chat-api/stream.ts
+// src/pages/api/chat-api/chat.ts
 
 import { ChatBody, Content, Conversation, Message } from '~/types/chat'
 import { fetchCourseMetadata } from '~/utils/apiUtils'
@@ -90,6 +90,7 @@ export default async function chat(
     course_name,
     stream,
     api_key,
+    retrieval_only,
   }: {
     model: string
     messages: Message[]
@@ -98,6 +99,7 @@ export default async function chat(
     course_name: string
     stream: boolean
     api_key: string
+    retrieval_only: boolean
   } = body
 
   // Validate the API key and retrieve user data
@@ -131,7 +133,7 @@ export default async function chat(
   // Fetch the final key to use
   const key = await fetchKeyToUse(openai_key, courseMetadata)
 
-  // // Determine and validate the model to use
+  // Determine and validate the model to use
   let selectedModel: GenericSupportedModel
   let llmProviders: AllLLMProviders
   try {
@@ -177,20 +179,22 @@ export default async function chat(
 
   // Fetch tools
   let availableTools
-  try {
-    availableTools = await fetchTools(
-      course_name!,
-      '',
-      20,
-      'true',
-      false,
-      getBaseUrl(),
-    )
-  } catch (error) {
-    console.error('Error fetching tools.', error)
-    availableTools = []
-    res.status(500).json({ error: `Error fetching tools. ${error}` })
-    return
+  if (!retrieval_only) {
+    try {
+      availableTools = await fetchTools(
+        course_name!,
+        '',
+        20,
+        'true',
+        false,
+        getBaseUrl(),
+      )
+    } catch (error) {
+      console.error('Error fetching tools.', error)
+      availableTools = []
+      res.status(500).json({ error: `Error fetching tools. ${(error as Error).message}` })
+      return
+    }
   }
 
   // Fetch document groups
@@ -239,7 +243,7 @@ export default async function chat(
     (content) => content.image_url?.url as string,
   )
 
-  if (imageContent.length > 0) {
+  if (imageContent.length > 0 && !retrieval_only) {
     // convert the provided key into an OpenAI provider.
     const llmProviders = {
       [ProviderNames.OpenAI]: {
@@ -271,7 +275,6 @@ export default async function chat(
   )
   console.log('After context search:', { contextsLength: contexts.length })
 
-  // Do we need this?
   // Check if contexts were found
   if (contexts.length === 0) {
     console.error('No contexts found')
@@ -280,6 +283,11 @@ export default async function chat(
       user_id: email,
     })
     res.status(500).json({ error: 'No contexts found' })
+    return
+  }
+
+  if (retrieval_only) {
+    res.status(200).json({ contexts: contexts })
     return
   }
 
@@ -292,9 +300,9 @@ export default async function chat(
   if (availableTools.length > 0) {
     updatedConversation = await handleToolsServer(
       lastMessage,
-      availableTools, // You need to define availableTools somewhere in your code
-      imageUrls, // You need to define imageUrls somewhere in your code
-      imgDesc, // You need to define imageDescription somewhere in your code
+      availableTools,
+      imageUrls,
+      imgDesc,
       conversation,
       key,
       course_name,
@@ -324,7 +332,6 @@ export default async function chat(
 
   // Make the API request to the chat handler
   const baseUrl = getBaseUrl()
-  // console.log('baseUrl:', baseUrl);
   const apiResponse = await routeModelRequest(chatBody, controller, baseUrl)
 
   // Handle errors from the chat handler API
