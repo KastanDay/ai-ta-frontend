@@ -200,7 +200,7 @@ export const buildPrompt = async ({
     const [lastUserTextInput, lastToolResult, systemPrompt] =
       (await Promise.all(allPromises)) as [string, UIUCTool[], string | undefined];
 
-    const finalSystemPrompt = systemPrompt ?? DEFAULT_SYSTEM_PROMPT;
+    const finalSystemPrompt = systemPrompt ?? DEFAULT_SYSTEM_PROMPT ?? '';
 
     // Adjust remaining token budget based on the system prompt length
     if (encoding) {
