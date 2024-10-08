@@ -148,12 +148,12 @@ const CourseMain: NextPage = () => {
     setInput(baseSystemPrompt)
   }, [baseSystemPrompt, setInput])
 
-  const handleSystemPromptSubmit = async (newSystemPrompt: string) => {
+  const handleSystemPromptSubmit = async (newSystemPrompt: string | undefined) => {
     let success = false
     if (courseMetadata && course_name) {
       const updatedCourseMetadata = {
         ...courseMetadata,
-        system_prompt: newSystemPrompt,
+        system_prompt: newSystemPrompt, // Keep as is, whether it's an empty string or undefined
         guidedLearning,
         documentsOnly,
         systemPromptOnly,
@@ -175,7 +175,7 @@ const CourseMain: NextPage = () => {
     if (courseMetadata && course_name) {
       const updatedCourseMetadata = {
         ...courseMetadata,
-        system_prompt: undefined,
+        system_prompt: null,  // Explicitly set to undefined
         guidedLearning: false,
         documentsOnly: false,
         systemPromptOnly: false,
@@ -188,8 +188,7 @@ const CourseMain: NextPage = () => {
         alert('Error resetting system prompt')
         showToastOnPromptUpdate(theme, true, true)
       } else {
-        // Reset the base system prompt and checkbox states
-        setBaseSystemPrompt(DEFAULT_SYSTEM_PROMPT)
+        setBaseSystemPrompt(DEFAULT_SYSTEM_PROMPT ?? '')
         setCourseMetadata(updatedCourseMetadata)
         setGuidedLearning(false)
         setDocumentsOnly(false)

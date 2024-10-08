@@ -479,7 +479,7 @@ const _getSystemPrompt = async ({
   courseMetadata: CourseMetadata | undefined
   conversation: Conversation
 }): Promise<string> => {
-  let userDefinedSystemPrompt: string | undefined
+  let userDefinedSystemPrompt: string | undefined | null
   if (courseMetadata?.system_prompt) {
     userDefinedSystemPrompt = courseMetadata.system_prompt
   } else {
