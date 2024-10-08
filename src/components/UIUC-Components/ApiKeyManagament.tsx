@@ -97,6 +97,7 @@ url = "${baseUrl}/api/chat-api/chat"
 headers = {
   'Content-Type': 'application/json'
 }
+stream = True
 data = {
   "model": "gpt-4o-mini",
   "messages": [
@@ -113,12 +114,22 @@ data = {
   "api_key": ${apiKey ? `"${apiKey}"` : apiKeyPlaceholder},
   "retrieval_only": False, # If true, the LLM will not be invoked (thus, zero cost). Only relevant documents will be returned.
   "course_name": "${course_name}",
-  "stream": True,
+  "stream": stream,
   "temperature": 0.1
 }
 
-response = requests.post(url, headers=headers, json=data)
-print(response.text)`,
+response = requests.post(url, headers=headers, json=data, stream=stream)
+# ⚡️ Stream
+if stream: 
+  for chunk in response.iter_content(chunk_size=None):
+    if chunk:
+      print(chunk.decode('utf-8'), end='', flush=True)
+# 🐌 No stream, but it includes the retrieved contexts.
+else:
+  import json
+  res = json.loads(response.text)
+  print(res['message'])
+  print("The contexts used to answer this question:", res['contexts'])`,
     node: `const axios = require('axios');
 	
 const data = {
