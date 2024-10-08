@@ -131,7 +131,7 @@ const CourseMain: NextPage = () => {
       const fetchedMetadata = (await response_metadata.json()).course_metadata
       setCourseMetadata(fetchedMetadata)
       setBaseSystemPrompt(
-        fetchedMetadata.system_prompt || DEFAULT_SYSTEM_PROMPT,
+        fetchedMetadata.system_prompt,
       )
 
       // Initialize checkbox states
@@ -150,7 +150,7 @@ const CourseMain: NextPage = () => {
 
   const handleSystemPromptSubmit = async (newSystemPrompt: string) => {
     let success = false
-    if (courseMetadata && course_name && newSystemPrompt) {
+    if (courseMetadata && course_name) {
       const updatedCourseMetadata = {
         ...courseMetadata,
         system_prompt: newSystemPrompt,
