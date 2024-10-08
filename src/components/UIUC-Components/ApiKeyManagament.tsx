@@ -73,7 +73,7 @@ const ApiKeyManagement = ({
     curl: `curl -X POST ${baseUrl}/api/chat-api/chat \\
 	-H "Content-Type: application/json" \\
 	-d '{
-		"model": "llama3.1:70b",
+		"model": "gpt-4o-mini",
 		"messages": [
 			{
 				"role": "system",
@@ -98,7 +98,7 @@ headers = {
   'Content-Type': 'application/json'
 }
 data = {
-  "model": "llama3.1:70b",
+  "model": "gpt-4o-mini",
   "messages": [
     {
       "role": "system",
@@ -122,7 +122,7 @@ print(response.text)`,
     node: `const axios = require('axios');
 	
 const data = {
-  "model": "llama3.1:70b",
+  "model": "gpt-4o-mini",
   "messages": [
     {
       "role": "system",
