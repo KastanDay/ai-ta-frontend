@@ -331,7 +331,6 @@ const Home = ({
       value: conversation,
     })
     localStorage.setItem('selectedConversation', JSON.stringify(conversation))
-    // await saveConversationToServer(conversation)
   }
 
   // This will ONLY update the react context and not the server
