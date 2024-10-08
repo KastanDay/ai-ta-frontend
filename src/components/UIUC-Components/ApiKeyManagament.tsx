@@ -357,7 +357,7 @@ axios.post('${baseUrl}/api/chat-api/chat', data, {
               <Title order={4} w={'90%'}>
                 Read our UIUC.chat API docs:{' '}
                 <a
-                  href="https://docs.uiuc.chat/api"
+                  href="https://docs.uiuc.chat/api/endpoints"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`text-purple-500 hover:underline ${montserrat_heading.variable} font-montserratHeading`}
