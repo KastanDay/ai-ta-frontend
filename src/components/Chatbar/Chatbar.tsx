@@ -329,7 +329,13 @@ export const Chatbar = ({
             </motion.div>
           </Suspense>
         }
-        folderComponent={<ChatFolders searchTerm={searchTerm} />}
+        folderComponent={
+          <ChatFolders
+            searchTerm={searchTerm}
+            currentEmail={current_email}
+            courseName={courseName}
+          />
+        }
         folders={folders}
         items={conversations}
         searchTerm={searchTerm}

@@ -436,9 +436,6 @@ export default function APIKeyInputForm() {
     },
   })
 
-  // console.log('Form just before return', form.state.values)
-  // console.log('LLMProviders just before return', llmProviders)
-
   return (
     <>
       <Navbar course_name={projectName} />

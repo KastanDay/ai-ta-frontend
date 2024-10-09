@@ -7,7 +7,7 @@ import {
   Message,
 } from '~/types/chat'
 import { CourseMetadata } from '~/types/courseMetadata'
-import { decrypt } from './crypto'
+import { decrypt, decryptKeyIfNeeded } from './crypto'
 import { OpenAIError } from './server'
 import { NextRequest, NextResponse } from 'next/server'
 import { replaceCitationLinks } from './citations'
@@ -18,6 +18,7 @@ import {
   AllLLMProviders,
   AllSupportedModels,
   AnySupportedModel,
+  NCSAHostedProvider,
   OllamaProvider,
   VisionCapableModels,
 } from '~/utils/modelProviders/LLMProvider'
@@ -29,10 +30,9 @@ import { OpenAIModelID } from './modelProviders/types/openai'
 import { v4 as uuidv4 } from 'uuid'
 import { AzureModelID } from './modelProviders/azure'
 import { AnthropicModelID } from './modelProviders/types/anthropic'
+import { NCSAHostedModelID } from './modelProviders/NCSAHosted'
+import { NextApiRequest, NextApiResponse } from 'next'
 
-export const config = {
-  runtime: 'edge',
-}
 export const maxDuration = 60
 
 /**
@@ -317,9 +317,8 @@ export async function fetchKeyToUse(
 ): Promise<string> {
   return (
     openai_key ||
-    ((await decrypt(
+    ((await decryptKeyIfNeeded(
       courseMetadata.openai_api_key as string,
-      process.env.NEXT_PUBLIC_SIGNING_KEY as string,
     )) as string)
   )
 }
@@ -329,21 +328,19 @@ export async function fetchKeyToUse(
  * @param {string | undefined} openai_key - The OpenAI key provided in the request.
  * @param {CourseMetadata} courseMetadata - The course metadata containing the fallback OpenAI key.
  * @param {string} modelId - The model identifier to validate against the available models.
- * @returns {Promise<string>} The validated OpenAI key.
+ * @returns {Promise<{ activeModel: GenericSupportedModel, modelsWithProviders: AllLLMProviders }>} The validated OpenAI key and available models.
  */
 export async function determineAndValidateModel(
   keyToUse: string,
   modelId: string,
   projectName: string,
-): Promise<AnySupportedModel> {
-  // const availableModels = await fetchAvailableModels(
-  //   keyToUse,
-  //   projectName,
-  // )
+): Promise<{
+  activeModel: AnySupportedModel
+  modelsWithProviders: AllLLMProviders
+}> {
   const baseUrl = getBaseUrl()
   console.log('baseUrl:', baseUrl)
 
-  // TODO refactor into a react query hook.
   const response = await fetch(baseUrl + '/api/models', {
     method: 'POST',
     headers: {
@@ -366,18 +363,20 @@ export async function determineAndValidateModel(
     .flatMap((provider) => provider?.models || [])
     .filter((model) => model.enabled)
 
-  // Check if availableModels doesn't contain modelId then return error otherwise Return model to use
-  if (availableModels.find((model) => model.id === modelId)) {
-    return availableModels.find(
-      (model) => model.id === modelId,
-    ) as AnySupportedModel
-  } else {
-    // ❌ Model unavailable, tell them the available ones
+  if (availableModels.length === 0) {
+    throw new Error('No models are available or enabled for this project.')
+  }
+
+  const activeModel = availableModels.find(
+    (model) => model.id === modelId,
+  ) as AnySupportedModel
+
+  if (!activeModel) {
+    console.error(`Model with ID ${modelId} not found in available models.`)
     throw new Error(
       `The requested model '${modelId}' is not available in this project. It has likely been restricted by the project's admins. You can enable this model on the admin page here: https://uiuc.chat/${projectName}/materials. These models are available to use: ${Array.from(
         availableModels,
       )
-        // Filter out WebLLM models, those are In-Web-Browser only (not in API)
         .filter(
           (model) =>
             !webLLMModels.some((webLLMModel) => webLLMModel.id === model.id),
@@ -386,6 +385,8 @@ export async function determineAndValidateModel(
         .join(', ')}`,
     )
   }
+
+  return { activeModel, modelsWithProviders }
 }
 
 /**
@@ -460,7 +461,6 @@ export async function validateRequestBody(body: ChatApiBody): Promise<void> {
   }
 
   // Additional validation for other fields can be added here if needed
-  console.debug('API body validation passed')
 }
 
 /**
@@ -566,15 +566,14 @@ export function constructChatBody(
 export async function handleStreamingResponse(
   apiResponse: Response,
   conversation: Conversation,
-  req: NextRequest,
+  req: NextApiRequest,
+  res: NextApiResponse,
   course_name: string,
-): Promise<NextResponse> {
+): Promise<void> {
   if (!apiResponse.body) {
     console.error('API response body is null')
-    return new NextResponse(
-      JSON.stringify({ error: 'API response body is null' }),
-      { status: 500 },
-    )
+    res.status(500).json({ error: 'API response body is null' })
+    return
   }
 
   const lastMessage = conversation.messages[
@@ -584,70 +583,58 @@ export async function handleStreamingResponse(
   const citationLinkCache = new Map<number, string>()
   let fullAssistantResponse = ''
 
-  const transformer = new TransformStream({
-    async transform(chunk, controller) {
-      const textDecoder = new TextDecoder()
-      let decodedChunk = textDecoder.decode(chunk, { stream: true })
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.flushHeaders()
 
-      try {
-        decodedChunk = await processChunkWithStateMachine(
-          decodedChunk,
-          lastMessage,
-          stateMachineContext,
-          citationLinkCache,
-        )
-        fullAssistantResponse += decodedChunk
-      } catch (error) {
-        console.error('Error processing chunk with state machine:', error)
-        controller.error(error)
-        return
-      }
+  try {
+    const decoder = new TextDecoder()
+    const reader = apiResponse.body.getReader()
 
-      const textEncoder = new TextEncoder()
-      const encodedChunk = textEncoder.encode(decodedChunk)
-      controller.enqueue(encodedChunk)
+    while (true) {
+      const { done, value } = await reader.read()
 
-      if (chunk.done) {
-        controller.terminate()
-      }
-    },
-    flush(controller) {
-      const textEncoder = new TextEncoder()
-      if (stateMachineContext.buffer.length > 0) {
-        processChunkWithStateMachine(
-          '',
-          lastMessage,
-          stateMachineContext,
-          citationLinkCache,
-        )
-          .then((finalChunk) => {
-            controller.enqueue(textEncoder.encode(finalChunk))
-            controller.terminate()
-          })
-          .catch((error) => {
-            console.error(
-              'Error processing final chunk with state machine:',
-              error,
-            )
-            controller.error(error)
-          })
-      } else {
-        controller.terminate()
-      }
-      // Append the processed response to the conversation
-      conversation.messages.push({
-        id: uuidv4(),
-        role: 'assistant',
-        content: fullAssistantResponse,
-      })
+      if (done) break
 
-      // Log the conversation to the database
-      updateConversationInDatabase(conversation, course_name, req)
-    },
-  })
+      let decodedChunk = decoder.decode(value, { stream: true })
+      decodedChunk = await processChunkWithStateMachine(
+        decodedChunk,
+        lastMessage,
+        stateMachineContext,
+        citationLinkCache,
+      )
+      fullAssistantResponse += decodedChunk
+      res.write(decodedChunk)
+    }
 
-  const transformedStream = apiResponse.body.pipeThrough(transformer)
-  return new NextResponse(transformedStream)
+    // Handle any remaining buffer
+    if (stateMachineContext.buffer.length > 0) {
+      const finalChunk = await processChunkWithStateMachine(
+        '',
+        lastMessage,
+        stateMachineContext,
+        citationLinkCache,
+      )
+      fullAssistantResponse += finalChunk
+      res.write(finalChunk)
+    }
+
+    // Append the processed response to the conversation
+    conversation.messages.push({
+      id: uuidv4(),
+      role: 'assistant',
+      content: fullAssistantResponse,
+    })
+
+    // Log the conversation to the database
+    await updateConversationInDatabase(conversation, course_name, req)
+  } catch (error) {
+    console.error('Error processing streaming response:', error)
+    res.status(500).json({ error: 'Error processing streaming response' })
+  } finally {
+    res.end()
+  }
 }
 
 /**
@@ -661,7 +648,7 @@ export async function handleStreamingResponse(
 async function processResponseData(
   data: string,
   conversation: Conversation,
-  req: NextRequest,
+  req: NextApiRequest,
   course_name: string,
 ): Promise<string> {
   const lastMessage = conversation.messages[
@@ -687,24 +674,24 @@ async function processResponseData(
 
 /**
  * Handles the non-streaming response from the chat handler.
- * @param {NextResponse} apiResponse - The response from the chat handler.
+ * @param {Response} apiResponse - The response from the chat handler.
  * @param {Conversation} conversation - The conversation object for logging purposes.
- * @param {NextRequest} req - The incoming Next.js API request object.
+ * @param {NextApiRequest} req - The incoming Next.js API request object.
+ * @param {NextApiResponse} res - The Next.js API response object.
  * @param {string} course_name - The name of the course associated with the conversation.
- * @returns {Promise<NextResponse>} A NextResponse object representing the JSON response.
+ * @returns {Promise<void>} A promise that resolves when the response is sent.
  */
 export async function handleNonStreamingResponse(
   apiResponse: Response,
   conversation: Conversation,
-  req: NextRequest,
+  req: NextApiRequest,
+  res: NextApiResponse,
   course_name: string,
-): Promise<NextResponse> {
+): Promise<void> {
   if (!apiResponse.body) {
     console.error('API response body is null')
-    return new NextResponse(
-      JSON.stringify({ error: 'API response body is null' }),
-      { status: 500 },
-    )
+    res.status(500).json({ error: 'API response body is null' })
+    return
   }
 
   try {
@@ -716,15 +703,13 @@ export async function handleNonStreamingResponse(
       req,
       course_name,
     )
-    return new NextResponse(JSON.stringify({ message: processedResponse }), {
-      status: 200,
-    })
+    const contexts =
+      conversation.messages[conversation.messages.length - 1]?.contexts
+    res.status(200).json({ message: processedResponse, contexts: contexts })
+    return
   } catch (error) {
     console.error('Error handling non-streaming response:', error)
-    return new NextResponse(
-      JSON.stringify({ error: 'Failed to process response' }),
-      { status: 500 },
-    )
+    res.status(500).json({ error: 'Failed to process response' })
   }
 }
 
@@ -737,7 +722,7 @@ export async function handleNonStreamingResponse(
 export async function updateConversationInDatabase(
   conversation: Conversation,
   course_name: string,
-  req: NextRequest,
+  req: NextApiRequest,
 ) {
   // Log conversation to Supabase
   try {
@@ -763,7 +748,7 @@ export async function updateConversationInDatabase(
   }
 
   posthog.capture('stream_api_conversation_updated', {
-    distinct_id: req.headers.get('x-forwarded-for') || req.ip,
+    distinct_id: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
     conversation_id: conversation.id,
     user_id: conversation.userEmail,
   })
@@ -852,6 +837,13 @@ export const routeModelRequest = async (
   */
   const selectedConversation = chatBody.conversation!
 
+  // Add this check at the beginning of the function
+  if (!selectedConversation.model || !selectedConversation.model.id) {
+    throw new Error(
+      'Conversation model is undefined or missing "id" property.',
+    )
+  }
+
   posthog.capture('LLM Invoked', {
     distinct_id: selectedConversation.userEmail
       ? selectedConversation.userEmail
@@ -865,7 +857,9 @@ export const routeModelRequest = async (
 
   let response: Response
   if (
-    Object.values(OllamaModelIDs).includes(selectedConversation.model.id as any)
+    Object.values(NCSAHostedModelID).includes(
+      selectedConversation.model.id as any,
+    )
   ) {
     // Ollama model
     console.log('Ollama provider in stream: ', chatBody!.llmProviders!.Ollama)
@@ -894,8 +888,67 @@ export const routeModelRequest = async (
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ chatBody }),
+
+      body: JSON.stringify({
+        conversation: selectedConversation,
+        ollamaProvider: chatBody,
+        stream: chatBody.stream,
+      }),
     })
+  } else if (
+    Object.values(OllamaModelIDs).includes(selectedConversation.model.id as any)
+  ) {
+    console.log(
+      'IN NCSA OLLAMA ROUTER SIDE....',
+      chatBody!.llmProviders!.Ollama,
+    )
+
+    // Ollama model
+    const url = baseUrl ? `${baseUrl}/api/chat/ollama` : '/api/chat/ollama'
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        conversation: selectedConversation,
+        ollamaProvider: chatBody!.llmProviders!.Ollama as OllamaProvider,
+      }),
+    })
+  } else if (
+    Object.values(AnthropicModelID).includes(
+      selectedConversation.model.id as any,
+    )
+  ) {
+    const url = baseUrl
+      ? `${baseUrl}/api/chat/anthropic`
+      : '/api/chat/anthropic'
+
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ chatBody }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(JSON.stringify(errorData) || 'Unknown error occurred')
+      }
+    } catch (error) {
+      return new Response(
+        JSON.stringify({
+          error:
+            error instanceof Error ? error.message : 'Unknown error occurred',
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
+    }
   } else if (
     Object.values(OpenAIModelID).includes(
       selectedConversation.model.id as any,

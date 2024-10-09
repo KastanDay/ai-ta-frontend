@@ -170,7 +170,7 @@ export const ChatInput = ({
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     // TODO: Update this to use tokens, instead of characters
     const value = e.target.value
-    const maxLength = selectedConversation?.model.tokenLimit
+    const maxLength = selectedConversation?.model?.tokenLimit
 
     if (maxLength && value.length > maxLength) {
       alert(
@@ -556,7 +556,7 @@ export const ChatInput = ({
 
   useEffect(() => {
     if (
-      !VisionCapableModels.has(selectedConversation?.model?.id as any)
+      !VisionCapableModels.has(selectedConversation?.model?.id as OpenAIModelID)
     ) {
       return // Exit early if the model is not GPT-4 Vision
     }
@@ -715,7 +715,8 @@ export const ChatInput = ({
 
         {!messageIsStreaming &&
           selectedConversation &&
-          selectedConversation.messages.length > 0 && (
+          selectedConversation.messages &&
+          selectedConversation.messages?.length > 0 && (
             <button
               className={`absolute ${isSmallScreen ? '-top-28' : '-top-20'} left-0 right-0 mx-auto mb-24 flex w-fit items-center gap-3 rounded border border-neutral-200 bg-white px-4 py-2 text-black hover:opacity-50 dark:border-neutral-600 dark:bg-[#343541] dark:text-white md:mb-0 md:mt-2`}
               onClick={onRegenerate}
@@ -935,7 +936,7 @@ export const ChatInput = ({
             {selectedConversation?.model?.name}
             {selectedConversation?.model &&
               webLLMModels.some(
-                (m) => m.name === selectedConversation.model.name,
+                (m) => m.name === selectedConversation?.model?.name,
               ) &&
               chat_ui?.isModelLoading() &&
               '  Please wait while the model is loading...'}

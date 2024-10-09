@@ -67,8 +67,7 @@ export default function AzureProviderInput({
                 checked={field.state.value}
                 onChange={(event) => {
                   field.handleChange(event.currentTarget.checked)
-                  // Trigger form submission
-                  setTimeout(() => form.handleSubmit(), 0)
+                  form.handleSubmit() // Trigger form submission
                 }}
                 thumbIcon={
                   field.state.value ? (
@@ -142,7 +141,7 @@ export default function AzureProviderInput({
                       />
                     )}
                   </form.Field>
-                  <form.Field
+                  {/* <form.Field
                     name={`providers.${ProviderNames.Azure}.AzureDeployment`}
                   >
                     {(field: any) => (
@@ -155,7 +154,7 @@ export default function AzureProviderInput({
                         }
                       />
                     )}
-                  </form.Field>
+                  </form.Field> */}
                   <ModelToggles form={form} provider={provider} />
                 </motion.div>
               )}

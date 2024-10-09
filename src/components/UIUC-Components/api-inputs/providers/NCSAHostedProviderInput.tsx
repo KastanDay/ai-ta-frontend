@@ -92,10 +92,11 @@ export default function NCSAHostedLLmsProviderInput({
         </div>
         <Text size="sm" color="dimmed" mb="md">
           These models are hosted by the Center for AI Innovation at the
-          National Center for Supercomputing Applications. They`&apos;re free.
+          National Center for Supercomputing Applications. They&apos;re free.
         </Text>
         {provider?.error &&
-          form.state.values?.providers?.NCSAHosted?.enabled && (
+          (form.state.values?.providers?.NCSAHosted?.enabled ||
+            provider.enabled) && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}

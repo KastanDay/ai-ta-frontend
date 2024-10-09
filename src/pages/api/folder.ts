@@ -142,34 +142,35 @@ export default async function handler(
       }
       break
     case 'DELETE':
-      const { deletedFolder } = req.body as {
-        deletedFolder: FolderWithConversation
+      const { deletedFolderId } = req.body as {
+        deletedFolderId: string
       }
       try {
         // Delete folder
         const { data, error } = await supabase
           .from('folders')
           .delete()
-          .eq('id', deletedFolder.id)
+          .eq('id', deletedFolderId)
         if (error) throw error
 
-        if (deletedFolder.type === 'chat') {
-          // Remove folder_id from conversations
-          const { data: convData, error: convError } = await supabase
-            .from('conversations')
-            .update({ folder_id: null })
-            .eq('folder_id', deletedFolder.id)
+        // if (type === 'chat') {
+        //   console.log('type is chat, removing folder_id from conversations')
+        //   // Remove folder_id from conversations
+        //   const { data: convData, error: convError } = await supabase
+        //     .from('conversations')
+        //     .update({ folder_id: null })
+        //     .eq('folder_id', deletedFolderId)
 
-          if (convError) throw convError
-        } else if (deletedFolder.type === 'prompt') {
-          // Remove folder_id from prompts
-          const { data: promptData, error: promptError } = await supabase
-            .from('prompts')
-            .update({ folder_id: null })
-            .eq('folder_id', deletedFolder.id)
+        //   if (convError) throw convError
+        // } else if (type === 'prompt') {
+        //   // Remove folder_id from prompts
+        //   const { data: promptData, error: promptError } = await supabase
+        //     .from('prompts')
+        //     .update({ folder_id: null })
+        //     .eq('folder_id', deletedFolderId)
 
-          if (promptError) throw promptError
-        }
+        //   if (promptError) throw promptError
+        // }
 
         res.status(200).json({ message: 'Folder deleted successfully' })
       } catch (error) {

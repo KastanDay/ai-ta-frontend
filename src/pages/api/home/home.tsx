@@ -24,33 +24,25 @@ import HomeContext from './home.context'
 import { type HomeInitialState, initialState } from './home.state'
 
 import { v4 as uuidv4 } from 'uuid'
-import { type CourseMetadata } from '~/types/courseMetadata'
-import { useUser } from '@clerk/nextjs'
-import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
-import { useRouter } from 'next/router'
+import {type CourseMetadata } from '~/types/courseMetadata'
 import {
   AnySupportedModel,
-  LLMProvider,
   ProjectWideLLMProviders,
   selectBestModel,
   VisionCapableModels,
 } from '~/utils/modelProviders/LLMProvider'
 import { OpenAIModelID } from '~/utils/modelProviders/types/openai'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import {
   useDeleteFolder,
   useFetchFolders,
   useUpdateFolder,
 } from '~/hooks/folderQueries'
-import {
-  useFetchConversationHistory,
-  useUpdateConversation,
-} from '~/hooks/conversationQueries'
+import { useUpdateConversation } from '~/hooks/conversationQueries'
 import { FolderType, FolderWithConversation } from '~/types/folder'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCreateFolder } from '~/hooks/folderQueries'
-import { useGetProjectLLMProviders } from '~/hooks/useProjectAPIKeys'
 import { GetCurrentPageName } from '~/components/UIUC-Components/CanViewOnlyCourse'
+import { useGetProjectLLMProviders } from '~/hooks/useProjectAPIKeys'
 
 const Home = ({
   current_email,
@@ -79,14 +71,17 @@ const Home = ({
   const createFolderMutation = useCreateFolder(
     current_email as string,
     queryClient,
+    course_name,
   )
   const updateFolderMutation = useUpdateFolder(
     current_email as string,
     queryClient,
+    course_name,
   )
   const deleteFolderMutation = useDeleteFolder(
     current_email as string,
     queryClient,
+    course_name,
   )
 
   // const {
@@ -170,14 +165,18 @@ const Home = ({
   useEffect(() => {
     // Set model after we fetch available models
     if (!llmProviders || Object.keys(llmProviders).length === 0) return
-    const model = llmProviders.defaultModel
 
-    if (llmProviders.defaultModel) {
-      dispatch({
-        field: 'defaultModelId',
-        value: llmProviders.defaultModel,
-      })
+    let model;
+    if (!llmProviders.defaultModel) {
+      model = selectBestModel(llmProviders.providers)
+    } else {
+      model = llmProviders.defaultModel
     }
+
+    dispatch({
+      field: 'defaultModelId',
+      value: llmProviders.defaultModel,
+    })
 
     // THIS IS ERRORING DUE TO TYPES
     // Ensure current convo has a valid model
@@ -249,17 +248,17 @@ const Home = ({
   }, [course_metadata, apiKey])
 
   // ---- Set up conversations and folders ----
-  useEffect(() => {
-    // console.log("In useEffect for selectedConversation, home.tsx, selectedConversation: ", selectedConversation)
-    // ALWAYS make a new convo if current one isn't empty
-    if (!selectedConversation) return
-    if (hasMadeNewConvoAlready) return
-    setHasMadeNewConvoAlready(true)
+  // useEffect(() => {
+  //   // console.log("In useEffect for selectedConversation, home.tsx, selectedConversation: ", selectedConversation)
+  //   // ALWAYS make a new convo if current one isn't empty
+  //   if (!selectedConversation) return
+  //   if (hasMadeNewConvoAlready) return
+  //   setHasMadeNewConvoAlready(true)
 
-    // if (selectedConversation?.messages.length > 0) {
-    handleNewConversation()
-    // }
-  }, [selectedConversation, conversations])
+  //   // if (selectedConversation?.messages.length > 0) {
+  //   handleNewConversation()
+  //   // }
+  // }, [selectedConversation, conversations])
 
   // useEffect(() => {
   //   if (isConversationHistoryFetched && !isLoadingConversationHistory) {
@@ -331,6 +330,12 @@ const Home = ({
       value: conversation,
     })
     localStorage.setItem('selectedConversation', JSON.stringify(conversation))
+    // await saveConversationToServer(conversation)
+  }
+
+  // This will ONLY update the react context and not the server
+  const handleDuplicateRequest = () => {
+    if (selectedConversation?.messages.length === 0) return
   }
 
   // This will ONLY update the react context and not the server
@@ -338,7 +343,16 @@ const Home = ({
     if (selectedConversation?.messages.length === 0) return
     const lastConversation = conversations[conversations.length - 1]
     // Determine the model to use for the new conversation
-    const model = llmProviders?.defaultModel
+    
+    let model;
+    if (llmProviders && !llmProviders.defaultModel) {
+      model = selectBestModel(llmProviders.providers)
+    } else if (llmProviders) {  
+      model = llmProviders.defaultModel
+    } else {
+      // @ts-ignore - this is a hack to get the default model
+      model = selectBestModel({})
+    }
 
     const newConversation: Conversation = {
       id: uuidv4(),
@@ -366,6 +380,10 @@ const Home = ({
     // })
 
     dispatch({ field: 'loading', value: false })
+    localStorage.setItem(
+      'selectedConversation',
+      JSON.stringify(newConversation),
+    )
   }
 
   const handleUpdateConversation = (
@@ -605,14 +623,26 @@ const Home = ({
       if (selectedConversation) {
         const parsedSelectedConversation: Conversation =
           JSON.parse(selectedConversation)
-        const cleanedSelectedConversation = cleanSelectedConversation(
-          parsedSelectedConversation,
-        )
-
-        dispatch({
-          field: 'selectedConversation',
-          value: cleanedSelectedConversation,
-        })
+        if (parsedSelectedConversation.projectName === course_name) {
+          const cleanedSelectedConversation = cleanSelectedConversation(
+            parsedSelectedConversation,
+          )
+          const oneHourAgo = new Date(Date.now() - 3600 * 1000).toISOString()
+          if (
+            cleanedSelectedConversation &&
+            cleanedSelectedConversation.updatedAt &&
+            cleanedSelectedConversation.updatedAt > oneHourAgo
+          ) {
+            dispatch({
+              field: 'selectedConversation',
+              value: cleanedSelectedConversation,
+            })
+          } else {
+            handleNewConversation()
+          }
+        } else {
+          handleNewConversation()
+        }
       } else {
         if (!llmProviders || Object.keys(llmProviders).length === 0) return
         handleNewConversation()
@@ -666,7 +696,7 @@ const Home = ({
             <div className="fixed top-0 w-full sm:hidden">
               <Navbar
                 selectedConversation={selectedConversation}
-                onNewConversation={handleNewConversation}
+                onNewConversation={handleDuplicateRequest}
               />
             </div>
 

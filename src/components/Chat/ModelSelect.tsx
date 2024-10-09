@@ -14,7 +14,7 @@ import { Group, Select, Title, Text } from '@mantine/core'
 import Link from 'next/link'
 import React from 'react'
 import { OpenAIModel } from '~/utils/modelProviders/types/openai'
-import ChatUI, { webLLMModels } from '~/utils/modelProviders/WebLLM'
+import ChatUI from '~/utils/modelProviders/WebLLM'
 import { modelCached } from './UserSettings'
 import Image from 'next/image'
 import {
@@ -24,7 +24,6 @@ import {
   ProviderNames,
   selectBestModel,
 } from '~/utils/modelProviders/LLMProvider'
-import { SelectItemProps } from '@mantine/core'
 import {
   recommendedModelIds,
   warningLargeModelIds,
@@ -280,8 +279,6 @@ const ModelDropdown: React.FC<
 }) => {
   const { state, dispatch: homeDispatch } = useContext(HomeContext)
 
-  console.log('llmProviders AT TOP model dropdown', llmProviders)
-
   // Filter out providers that are not enabled and their models which are disabled
   const { enabledProvidersAndModels, allModels } = Object.keys(
     llmProviders,
@@ -453,7 +450,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
       dispatch: homeDispatch,
     } = useContext(HomeContext)
     const isSmallScreen = useMediaQuery('(max-width: 960px)')
-    const defaultModel = selectBestModel(llmProviders, selectedConversation).id
+    const defaultModel = selectBestModel(llmProviders).id
     const [loadingModelId, setLoadingModelId] = useState<string | null>(null)
 
     const handleModelClick = (modelId: string) => {
@@ -641,7 +638,7 @@ export const ModelSelect = React.forwardRef<HTMLDivElement, any>(
                 className={`ms-4 text-gray-400 ${montserrat_paragraph.variable} font-montserratParagraph`}
               >
                 Anthropic, Google Gemini, Azure OpenAI, customizable OpenAI
-                compaitble servers.
+                compatible servers.
               </Text>
             </div>
           </div>

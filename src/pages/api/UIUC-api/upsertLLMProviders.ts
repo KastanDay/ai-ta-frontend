@@ -3,6 +3,8 @@ import { kv } from '@vercel/kv'
 import { type NextRequest, NextResponse } from 'next/server'
 import { encryptKeyIfNeeded } from '~/utils/crypto'
 import {
+  AllLLMProviders,
+  LLMProvider,
   ProjectWideLLMProviders,
 } from '~/utils/modelProviders/LLMProvider'
 
@@ -10,7 +12,6 @@ export const runtime = 'edge'
 
 export default async function handler(req: NextRequest, res: NextResponse) {
   // Ensure it's a POST request
-  console.log('inside the upsert llm providers')
   if (req.method !== 'POST') {
     return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
   }

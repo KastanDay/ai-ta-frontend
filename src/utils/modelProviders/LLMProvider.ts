@@ -176,7 +176,6 @@ export const selectBestModel = (
     const defaultModel = allModels
       .filter((model) => model.enabled)
       .find((m) => m.id === defaultModelId)
-    // console.log('FOUND DEFAULT MODEL in localStorage: ', defaultModel)
     if (defaultModel) {
       return defaultModel
     }
@@ -188,14 +187,12 @@ export const selectBestModel = (
       .filter((model) => model.enabled)
       .find((m) => m.id === preferredId)
     if (model) {
-      // console.log('FOUND PREFERRED MODEL from hardcoded list: ', model)
       localStorage.setItem('defaultModel', preferredId)
       return model
     }
   }
 
   // If no preferred models are available, fallback to Llama 3.1 70b
-  // console.log('NO PREFERRED MODEL FOUND, USING FALLBACK MODEL')
   localStorage.setItem('defaultModel', 'llama3.1:70b')
   return {
     id: 'llama3.1:70b',

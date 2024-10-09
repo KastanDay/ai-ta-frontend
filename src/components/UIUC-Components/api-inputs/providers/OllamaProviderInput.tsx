@@ -91,31 +91,36 @@ export default function OllamaProviderInput({
           </form.Field>
         </div>
         <Text size="sm" color="dimmed" mb="md">
-          Ollama allows you to run large language models locally. Set up Ollama
-          on your machine and provide the base URL.
+          Ollama allows you easily self host LLMs. Set up Ollama on your machine
+          and provide the base URL. Note that only the following models are
+          supported, email us if you&apos;d like any others:{' '}
+          <code>llama3.1:8b</code>, <code>llama3.1:70b</code>,{' '}
+          <code>llama3.1:405b</code>.
         </Text>
-        {provider?.error && form.state.values?.providers?.Ollama?.enabled && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Text
-              size="sm"
-              color="red"
-              mb="md"
-              style={{
-                padding: '8px',
-                borderRadius: '4px',
-                backgroundColor: 'rgba(255, 0, 0, 0.1)',
-                border: '1px solid rgba(255, 0, 0, 0.2)',
-              }}
+        {provider?.error &&
+          (form.state.values?.providers?.Ollama?.enabled ||
+            provider.enabled) && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
             >
-              {provider.error}
-            </Text>
-          </motion.div>
-        )}
+              <Text
+                size="sm"
+                color="red"
+                mb="md"
+                style={{
+                  padding: '8px',
+                  borderRadius: '4px',
+                  backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                  border: '1px solid rgba(255, 0, 0, 0.2)',
+                }}
+              >
+                {provider.error}
+              </Text>
+            </motion.div>
+          )}
         <form.Field name={`providers.${ProviderNames.Ollama}.enabled`}>
           {(field: any) => (
             <AnimatePresence>

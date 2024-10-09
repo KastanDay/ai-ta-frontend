@@ -3,7 +3,7 @@ import { decryptKeyIfNeeded } from '~/utils/crypto'
 import { OpenAIModelID, OpenAIModels, OpenAIProvider } from '../types/openai'
 import OpenAI from 'openai'
 import { kv } from '@vercel/kv'
-import { ProviderNames } from '../LLMProvider'
+import { preferredModelIds, ProviderNames } from '../LLMProvider'
 
 export const getOpenAIModels = async (
   openAIProvider: OpenAIProvider,
@@ -12,15 +12,6 @@ export const getOpenAIModels = async (
   try {
     delete openAIProvider.error // Remove the error property if it exists
     openAIProvider.provider = ProviderNames.OpenAI
-    // Priority #1: use passed in key
-    // Priority #2: use the key from the course metadata
-    // const { disabledModels, openaiAPIKey } = await getDisabledOpenAIModels({
-    //   projectName,
-    // })
-
-    // if (!openAIProvider.apiKey) {
-    //   openAIProvider.apiKey = openaiAPIKey
-    // }
 
     // 1. Use all passed-in models that are ALSO available from the endpoint...
     // If no passed-in models, then use all. Enabled by default, following our types spec.
@@ -42,18 +33,24 @@ export const getOpenAIModels = async (
       openAIProvider.error = `Error fetching models from OpenAI, unexpected response format. Response: ${response}`
     }
 
-    // Iterate through the models
+    // Iterate through the models and sort them based on preferredModelIds
     const openAIModels = response.data
       .filter((model: any) => Object.values(OpenAIModelID).includes(model.id))
-      .map((model: any) => {
-        return {
-          id: model.id,
-          name: OpenAIModels[model.id as OpenAIModelID].name,
-          tokenLimit: OpenAIModels[model.id as OpenAIModelID].tokenLimit,
-          enabled:
-            openAIProvider.models?.find((m) => m.id === model.id)?.enabled ??
-            OpenAIModels[model.id as OpenAIModelID].enabled,
-        }
+      .map((model: any) => ({
+        id: model.id,
+        name: OpenAIModels[model.id as OpenAIModelID].name,
+        tokenLimit: OpenAIModels[model.id as OpenAIModelID].tokenLimit,
+        enabled:
+          openAIProvider.models?.find((m) => m.id === model.id)?.enabled ??
+          OpenAIModels[model.id as OpenAIModelID].enabled,
+      }))
+      .sort((a, b) => {
+        const indexA = preferredModelIds.indexOf(a.id as OpenAIModelID)
+        const indexB = preferredModelIds.indexOf(b.id as OpenAIModelID)
+        return (
+          (indexA === -1 ? Infinity : indexA) -
+          (indexB === -1 ? Infinity : indexB)
+        )
       })
 
     openAIProvider.models = openAIModels
