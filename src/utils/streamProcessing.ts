@@ -873,7 +873,7 @@ export const routeModelRequest = async (
       },
 
       body: JSON.stringify({
-        messages: selectedConversation.messages,
+        conversation: selectedConversation,
         // ollamaProvider: newChatBody,
         stream: chatBody.stream,
       }),
