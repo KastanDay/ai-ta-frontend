@@ -13,6 +13,7 @@ import {
 import { OllamaModel } from '~/utils/modelProviders/ollama'
 import { decryptKeyIfNeeded } from '~/utils/crypto'
 import { NextResponse } from 'next/server'
+import { convertConversatonToVercelAISDKv3 } from '~/utils/apiUtils'
 
 // export const runtime = 'edge' // Does NOT work
 export const dynamic = 'force-dynamic' // known bug with Vercel: https://sdk.vercel.ai/docs/troubleshooting/common-issues/streaming-not-working-on-vercel
@@ -67,57 +68,6 @@ export async function POST(req: Request) {
       headers: { 'Content-Type': 'application/json' },
     })
   }
-}
-
-function convertConversatonToVercelAISDKv3(
-  conversation: Conversation,
-): CoreMessage[] {
-  const coreMessages: CoreMessage[] = []
-
-  // Add system message as the first message
-  const systemMessage = conversation.messages.findLast(
-    (msg) => msg.latestSystemMessage !== undefined,
-  )
-  if (systemMessage) {
-    console.log(
-      'Found system message, latestSystemMessage: ',
-      systemMessage.latestSystemMessage,
-    )
-    coreMessages.push({
-      role: 'system',
-      content: systemMessage.latestSystemMessage || '',
-    })
-  }
-
-  // Convert other messages
-  conversation.messages.forEach((message, index) => {
-    if (message.role === 'system') return // Skip system message as it's already added
-
-    let content: string
-    if (index === conversation.messages.length - 1 && message.role === 'user') {
-      // Use finalPromtEngineeredMessage for the most recent user message
-      content = message.finalPromtEngineeredMessage || ''
-
-      // just for Llama 3.1 70b, remind it to use proper citation format.
-      content +=
-        '\n\nIf you use the <Potentially Relevant Documents> in your response, please remember cite your sources using the required formatting, e.g. "The grass is green. [29, page: 11]'
-    } else if (Array.isArray(message.content)) {
-      // Combine text content from array
-      content = message.content
-        .filter((c) => c.type === 'text')
-        .map((c) => c.text)
-        .join('\n')
-    } else {
-      content = message.content as string
-    }
-
-    coreMessages.push({
-      role: message.role as 'user' | 'assistant',
-      content: content,
-    })
-  })
-
-  return coreMessages
 }
 
 export async function GET(req: Request) {
