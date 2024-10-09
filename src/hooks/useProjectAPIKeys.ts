@@ -1,6 +1,10 @@
 import { QueryClient, useMutation, useQuery } from '@tanstack/react-query'
 import { showConfirmationToast } from '~/components/UIUC-Components/api-inputs/LLMsApiKeyInputForm'
-import { AllLLMProviders } from '~/utils/modelProviders/LLMProvider'
+import {
+  AllLLMProviders,
+  AnySupportedModel,
+  ProjectWideLLMProviders,
+} from '~/utils/modelProviders/LLMProvider'
 
 export function useGetProjectLLMProviders({
   projectName,
@@ -33,7 +37,7 @@ export function useGetProjectLLMProviders({
       }
 
       const data = await response.json()
-      return data as AllLLMProviders
+      return data as ProjectWideLLMProviders
     },
     retry: 1, // Limit retries to 1
   })
@@ -44,14 +48,10 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
     mutationFn: async ({
       projectName,
       llmProviders,
-      defaultModelID,
-      defaultTemperature,
     }: {
       projectName: string
       queryClient: QueryClient
-      llmProviders: AllLLMProviders
-      defaultModelID: string
-      defaultTemperature: string
+      llmProviders: ProjectWideLLMProviders
     }) => {
       const response = await fetch('/api/UIUC-api/upsertLLMProviders', {
         method: 'POST',
@@ -61,8 +61,6 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
         body: JSON.stringify({
           projectName: projectName,
           llmProviders: llmProviders,
-          defaultModelID: defaultModelID,
-          defaultTemperature: defaultTemperature,
         }),
       })
       if (!response.ok) {
@@ -85,8 +83,6 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
       // Optimistically update to the new value
       queryClient.setQueryData(['projectLLMProviders', variables.projectName], {
         ...variables.llmProviders,
-        defaultModel: variables.defaultModelID,
-        defaultTemp: parseFloat(variables.defaultTemperature),
       })
 
       // Return a context object with the snapshotted value
