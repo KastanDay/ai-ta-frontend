@@ -1,7 +1,7 @@
-import { generateText, streamText } from 'ai'
+import { convertToCoreMessages, generateText, streamText } from 'ai'
 import { NextResponse } from 'next/server'
 import { createOpenAI } from '@ai-sdk/openai'
-import { convertConversatonToVercelAISDKv4 } from '~/utils/apiUtils'
+import { convertConversatonToLlamaVisionNoSystemMessage } from '~/utils/apiUtils'
 
 export async function POST(req: Request) {
   try {
@@ -15,7 +15,9 @@ export async function POST(req: Request) {
       compatibility: 'compatible', // strict/compatible - enable 'strict' when using the OpenAI API
     })
 
-    const messages = convertConversatonToVercelAISDKv4(conversation)
+    const messages =
+      convertConversatonToLlamaVisionNoSystemMessage(conversation)
+    // const messages = convertToCoreMessages(conversation)
     console.log('⭐️ messages', JSON.stringify(messages, null, 2))
 
     if (stream) {

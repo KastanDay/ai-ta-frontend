@@ -221,7 +221,7 @@ export function convertConversatonToVercelAISDKv3(
   return coreMessages
 }
 
-export function convertConversatonToVercelAISDKv4(
+export function convertConversatonToLlamaVisionNoSystemMessage(
   conversation: Conversation,
 ): CoreMessage[] {
   const coreMessages: CoreMessage[] = []

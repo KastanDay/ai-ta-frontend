@@ -52,7 +52,7 @@
     "@vercel/analytics": "^1.0.1",
     "@vercel/edge-config": "^0.2.0",
     "@vercel/kv": "^0.2.1",
-    "ai": "^3.3.37",
+    "ai": "^3.4.9",
     "aws-sdk": "^2.1380.0",
     "axios": "^1.6.0",
     "dayjs": "^1.11.7",
