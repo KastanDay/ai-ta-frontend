@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^0.0.50",
-    "@ai-sdk/openai": "^0.0.34",
+    "@ai-sdk/openai": "^0.0.66",
     "@aws-sdk/client-s3": "3.338.0",
     "@aws-sdk/s3-presigned-post": "3.338.0",
     "@aws-sdk/s3-request-presigner": "3.338.0",

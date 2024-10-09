@@ -23,6 +23,7 @@ import {
   AnthropicProvider,
   AzureProvider,
   NCSAHostedProvider,
+  NCSAHostedVLLMProvider,
   OllamaProvider,
   OpenAIProvider,
   ProviderNames,
@@ -47,6 +48,7 @@ import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
 import NCSAHostedLLmsProviderInput from './providers/NCSAHostedProviderInput'
 import { getModelLogo, ModelItem } from '~/components/Chat/ModelSelect'
+import NCSAHostedVLLMProviderInput from './providers/NCSAHostedVLLMProviderInput'
 
 function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
@@ -600,6 +602,13 @@ export default function APIKeyInputForm() {
                               <NCSAHostedLLmsProviderInput
                                 provider={
                                   llmProviders?.NCSAHosted as NCSAHostedProvider
+                                }
+                                form={form}
+                                isLoading={isLoadingLLMProviders}
+                              />
+                              <NCSAHostedVLLMProviderInput
+                                provider={
+                                  llmProviders?.NCSAHostedVLLM as NCSAHostedVLLMProvider
                                 }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}

@@ -15,8 +15,12 @@ import {
   AzureModelID,
   AzureModels,
 } from '~/utils/modelProviders/azure'
-import { Conversation } from '../../types/chat'
 import { NCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
+import {
+  NCSAHostedVLLMModel,
+  NCSAHostedVLLMModelID,
+  NCSAHostedVLLMModels,
+} from '~/app/api/chat/vllm/route'
 
 export enum ProviderNames {
   Ollama = 'Ollama',
@@ -25,6 +29,7 @@ export enum ProviderNames {
   Anthropic = 'Anthropic',
   WebLLM = 'WebLLM',
   NCSAHosted = 'NCSAHosted',
+  NCSAHostedVLLM = 'NCSAHostedVLLM',
 }
 
 export type AnySupportedModel =
@@ -33,10 +38,11 @@ export type AnySupportedModel =
   | WebllmModel
   | AnthropicModel
   | AzureModel
+  | NCSAHostedVLLMModel
 
 // Add other vision capable models as needed
 export const VisionCapableModels: Set<
-  OpenAIModelID | AzureModelID | AnthropicModelID
+  OpenAIModelID | AzureModelID | AnthropicModelID | NCSAHostedVLLMModelID
 > = new Set([
   OpenAIModelID.GPT_4_Turbo,
   OpenAIModelID.GPT_4o,
@@ -47,6 +53,9 @@ export const VisionCapableModels: Set<
   AzureModelID.GPT_4o_mini,
   // claude-3.5....
   AnthropicModelID.Claude_3_5_Sonnet,
+
+  // VLLM
+  NCSAHostedVLLMModelID.Llama_3_2_11B_Vision_Instruct,
 ])
 
 export const AllSupportedModels: Set<GenericSupportedModel> = new Set([
@@ -55,6 +64,7 @@ export const AllSupportedModels: Set<GenericSupportedModel> = new Set([
   ...Object.values(AzureModels),
   ...Object.values(OllamaModels),
   ...Object.values(NCSAHostedModels),
+  ...Object.values(NCSAHostedVLLMModels),
   // ...webLLMModels,
 ])
 // e.g. Easily validate ALL POSSIBLE models that we support. They may be offline or disabled, but they are supported.
@@ -86,6 +96,11 @@ export interface BaseLLMProvider {
   baseUrl?: string
   apiKey?: string
   error?: string
+}
+
+export interface NCSAHostedVLLMProvider extends BaseLLMProvider {
+  provider: ProviderNames.NCSAHostedVLLM
+  models?: NCSAHostedVLLMModel[]
 }
 
 export interface OllamaProvider extends BaseLLMProvider {
@@ -130,6 +145,7 @@ export type LLMProvider =
   | AnthropicProvider
   | WebLLMProvider
   | NCSAHostedProvider
+  | NCSAHostedVLLMProvider
 
 // export type AllLLMProviders = {
 //   [P in ProviderNames]?: LLMProvider & { provider: P }

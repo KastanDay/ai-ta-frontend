@@ -4,6 +4,7 @@ import {
   AzureProvider,
   LLMProvider,
   NCSAHostedProvider,
+  NCSAHostedVLLMProvider,
   OllamaProvider,
   OpenAIProvider,
   ProviderNames,
@@ -19,6 +20,7 @@ import { getNCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
 import { getOpenAIModels } from '~/utils/modelProviders/routes/openai'
 import { OpenAIModelID } from '~/utils/modelProviders/types/openai'
 import { ProjectWideLLMProviders } from '~/types/courseMetadata'
+import { getNCSAHostedVLLMModels } from '~/app/api/chat/vllm/route'
 
 export const config = {
   runtime: 'edge',
@@ -54,8 +56,11 @@ const handler = async (
     const createPlaceholderProvider = (
       providerName: ProviderNames,
     ): LLMProvider => ({
+      // Enable by default NCSA Hosted models. All others disabled by default.
       provider: providerName,
-      enabled: false,
+      enabled:
+        providerName === ProviderNames.NCSAHostedVLLM ||
+        providerName === ProviderNames.NCSAHosted,
       models: [],
     })
 
@@ -112,6 +117,12 @@ const handler = async (
         case ProviderNames.NCSAHosted:
           allLLMProviders[providerName] = await getNCSAHostedModels(
             llmProvider as NCSAHostedProvider,
+          )
+          break
+        case ProviderNames.NCSAHostedVLLM:
+          console.log('Getting VLLM models')
+          allLLMProviders[providerName] = await getNCSAHostedVLLMModels(
+            llmProvider as NCSAHostedVLLMProvider,
           )
           break
         default:
