@@ -20,7 +20,7 @@ import { getNCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
 import { getOpenAIModels } from '~/utils/modelProviders/routes/openai'
 import { OpenAIModelID } from '~/utils/modelProviders/types/openai'
 import { ProjectWideLLMProviders } from '~/types/courseMetadata'
-import { getNCSAHostedVLLMModels } from '~/app/api/chat/vllm/route'
+import { getNCSAHostedVLLMModels } from '~/utils/modelProviders/types/NCSAHostedVLLM'
 
 export const config = {
   runtime: 'edge',
@@ -120,7 +120,6 @@ const handler = async (
           )
           break
         case ProviderNames.NCSAHostedVLLM:
-          console.log('Getting VLLM models')
           allLLMProviders[providerName] = await getNCSAHostedVLLMModels(
             llmProvider as NCSAHostedVLLMProvider,
           )

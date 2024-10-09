@@ -20,7 +20,7 @@ import {
   NCSAHostedVLLMModel,
   NCSAHostedVLLMModelID,
   NCSAHostedVLLMModels,
-} from '~/app/api/chat/vllm/route'
+} from '~/utils/modelProviders/types/NCSAHostedVLLM'
 
 export enum ProviderNames {
   Ollama = 'Ollama',
