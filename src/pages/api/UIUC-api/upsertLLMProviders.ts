@@ -7,6 +7,7 @@ import {
   AllLLMProviders,
   LLMProvider,
 } from '~/utils/modelProviders/LLMProvider'
+import { redisClient } from '~/utils/redisClient'
 
 export const runtime = 'edge'
 
@@ -64,7 +65,9 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     console.debug('llmProviders BEFORE being cleaned and such', llmProviders)
 
     const redisKey = `${courseName}-llms`
-    const existingLLMs = (await kv.get(redisKey)) as ProjectWideLLMProviders
+    const existingLLMs = (await redisClient.get(
+      redisKey,
+    )) as ProjectWideLLMProviders
 
     // Ensure all keys are encrypted, then save to DB.
     const processProviders = async () => {
@@ -100,7 +103,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     console.debug('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 
     // Save the combined metadata
-    await kv.set(redisKey, combined_llms)
+    await redisClient.set(redisKey, JSON.stringify(combined_llms))
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error setting course metadata:', error)

@@ -14,11 +14,11 @@ import { getAzureModels } from '~/utils/modelProviders/azure'
 import { getAnthropicModels } from '~/utils/modelProviders/routes/anthropic'
 import { getWebLLMModels } from '~/utils/modelProviders/WebLLM'
 import { NextRequest, NextResponse } from 'next/server'
-import { kv } from '@vercel/kv'
 import { getNCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
 import { getOpenAIModels } from '~/utils/modelProviders/routes/openai'
 import { OpenAIModelID } from '~/utils/modelProviders/types/openai'
 import { ProjectWideLLMProviders } from '~/types/courseMetadata'
+import { redisClient } from '~/utils/redisClient'
 
 export const config = {
   runtime: 'edge',
@@ -40,9 +40,11 @@ const handler = async (
     }
 
     // Fetch the project's API keys
-    let llmProviders = (await kv.get(
+    let llmProviders = (await redisClient.get(
       `${projectName}-llms`,
     )) as ProjectWideLLMProviders | null
+
+    console.log('llmProviders in getModels', llmProviders)
 
     if (!llmProviders) {
       llmProviders = {} as ProjectWideLLMProviders
