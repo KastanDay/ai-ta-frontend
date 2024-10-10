@@ -656,50 +656,56 @@ export default function APIKeyInputForm() {
                         <br />
                         <div className="flex justify-center">
                           {llmProviders && (
-                            <NewModelDropdown
-                              value={
-                                llmProviders.defaultModel as AnySupportedModel
-                              }
-                              onChange={async (newDefaultModel) => {
-                                let new_llmProviders =
-                                  form.getFieldValue('providers')
-                                if (new_llmProviders) {
-                                  const isModelEnabled = Object.values(
-                                    new_llmProviders.providers,
-                                  ).find(
-                                    (provider) =>
-                                      provider.provider ===
-                                      newDefaultModel.name,
-                                  )?.enabled
-                                  if (isModelEnabled) {
-                                    new_llmProviders.defaultModel =
-                                      newDefaultModel as AnySupportedModel
-                                  } else {
-                                    new_llmProviders.defaultModel = undefined
+                            <form.Field name="providers.defaultModel">
+                              {(field) => (
+                                <NewModelDropdown
+                                  value={
+                                    llmProviders.defaultModel as AnySupportedModel
                                   }
-                                }
-                                form.setFieldValue(
-                                  'providers',
-                                  new_llmProviders as ProjectWideLLMProviders,
-                                )
-                                await form.handleSubmit()
-                              }}
-                              llmProviders={{
-                                Ollama: llmProviders?.providers
-                                  .Ollama as OllamaProvider,
-                                OpenAI: llmProviders?.providers
-                                  .OpenAI as OpenAIProvider,
-                                Anthropic: llmProviders?.providers
-                                  .Anthropic as AnthropicProvider,
-                                Azure: llmProviders?.providers
-                                  .Azure as AzureProvider,
-                                WebLLM: llmProviders?.providers
-                                  .WebLLM as WebLLMProvider,
-                                NCSAHosted: llmProviders?.providers
-                                  .NCSAHosted as NCSAHostedProvider,
-                              }}
-                              isSmallScreen={false}
-                            />
+                                  onChange={async (newDefaultModel) => {
+                                    let new_llmProviders =
+                                      form.getFieldValue('providers')
+                                    if (new_llmProviders) {
+                                      const isModelEnabled = Object.values(
+                                        new_llmProviders.providers,
+                                      ).find(
+                                        (provider) =>
+                                          provider.provider ===
+                                          newDefaultModel.name,
+                                      )?.enabled
+                                      if (isModelEnabled) {
+                                        new_llmProviders.defaultModel =
+                                          newDefaultModel as AnySupportedModel
+                                      } else {
+                                        new_llmProviders.defaultModel =
+                                          undefined
+                                      }
+                                    }
+                                    form.setFieldValue(
+                                      'providers',
+                                      new_llmProviders as ProjectWideLLMProviders,
+                                    )
+                                    field.handleChange(newDefaultModel)
+                                    await form.handleSubmit()
+                                  }}
+                                  llmProviders={{
+                                    Ollama: llmProviders?.providers
+                                      .Ollama as OllamaProvider,
+                                    OpenAI: llmProviders?.providers
+                                      .OpenAI as OpenAIProvider,
+                                    Anthropic: llmProviders?.providers
+                                      .Anthropic as AnthropicProvider,
+                                    Azure: llmProviders?.providers
+                                      .Azure as AzureProvider,
+                                    WebLLM: llmProviders?.providers
+                                      .WebLLM as WebLLMProvider,
+                                    NCSAHosted: llmProviders?.providers
+                                      .NCSAHosted as NCSAHostedProvider,
+                                  }}
+                                  isSmallScreen={false}
+                                />
+                              )}
+                            </form.Field>
                           )}
                         </div>
                         <div className="pt-6"></div>
