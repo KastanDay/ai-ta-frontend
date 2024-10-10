@@ -661,23 +661,26 @@ export default function APIKeyInputForm() {
                                 llmProviders.defaultModel as AnySupportedModel
                               }
                               onChange={async (newDefaultModel) => {
-                                const isModelEnabled = Object.values(
-                                  llmProviders.providers,
-                                ).find(
-                                  (provider) =>
-                                    provider.provider === newDefaultModel.name,
-                                )?.enabled
-
-                                if (isModelEnabled) {
-                                  llmProviders.defaultModel =
-                                    newDefaultModel as AnySupportedModel
-                                } else {
-                                  llmProviders.defaultModel = undefined
+                                let new_llmProviders =
+                                  form.getFieldValue('providers')
+                                if (new_llmProviders) {
+                                  const isModelEnabled = Object.values(
+                                    new_llmProviders.providers,
+                                  ).find(
+                                    (provider) =>
+                                      provider.provider ===
+                                      newDefaultModel.name,
+                                  )?.enabled
+                                  if (isModelEnabled) {
+                                    new_llmProviders.defaultModel =
+                                      newDefaultModel as AnySupportedModel
+                                  } else {
+                                    new_llmProviders.defaultModel = undefined
+                                  }
                                 }
-
                                 form.setFieldValue(
                                   'providers',
-                                  llmProviders as ProjectWideLLMProviders,
+                                  new_llmProviders as ProjectWideLLMProviders,
                                 )
                                 await form.handleSubmit()
                               }}
