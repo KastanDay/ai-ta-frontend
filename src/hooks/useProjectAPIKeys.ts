@@ -63,6 +63,7 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
           llmProviders: llmProviders,
         }),
       })
+
       if (!response.ok) {
         throw new Error('Failed to set LLM providers')
       }

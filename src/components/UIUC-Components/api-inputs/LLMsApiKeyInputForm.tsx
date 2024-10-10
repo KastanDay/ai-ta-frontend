@@ -200,7 +200,8 @@ const NewModelDropdown: React.FC<{
     },
   )
 
-  const selectedModel = allModels.find((model) => model.id === value.id)
+  const selectedModel =
+    allModels.find((model) => model.id === value?.id) || undefined
 
   return (
     <>
@@ -209,7 +210,7 @@ const NewModelDropdown: React.FC<{
         size="md"
         placeholder="Select a model"
         searchable
-        value={value.id}
+        value={value?.id || ''}
         onChange={async (modelId) => {
           const selectedModel = allModels.find((model) => model.id === modelId)
           // console.log("selectedModel on change:", selectedModel);
@@ -648,7 +649,9 @@ export default function APIKeyInputForm() {
                         <Text
                           className={`label ${montserrat_paragraph.className}`}
                         >
-                          You can choose the default model for your chatbot.
+                          Choose the default model for your chatbot. Users can
+                          still override this default to use any of the
+                          available models enabled on the left.
                         </Text>
                         <br />
                         <div className="flex justify-center">
@@ -658,9 +661,20 @@ export default function APIKeyInputForm() {
                                 llmProviders.defaultModel as AnySupportedModel
                               }
                               onChange={async (newDefaultModel) => {
-                                // TODO: parse the string into the full model object
-                                llmProviders.defaultModel =
-                                  newDefaultModel as AnySupportedModel
+                                const isModelEnabled = Object.values(
+                                  llmProviders.providers,
+                                ).find(
+                                  (provider) =>
+                                    provider.provider === newDefaultModel.name,
+                                )?.enabled
+
+                                if (isModelEnabled) {
+                                  llmProviders.defaultModel =
+                                    newDefaultModel as AnySupportedModel
+                                } else {
+                                  llmProviders.defaultModel = undefined
+                                }
+
                                 form.setFieldValue(
                                   'providers',
                                   llmProviders as ProjectWideLLMProviders,
@@ -685,6 +699,7 @@ export default function APIKeyInputForm() {
                             />
                           )}
                         </div>
+                        <div className="pt-6"></div>
                         <div>
                           <form.Field name="providers.defaultTemp">
                             {(field) => (
