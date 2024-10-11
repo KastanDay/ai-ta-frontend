@@ -23,7 +23,7 @@ export default function AnthropicProviderInput({
   }
   return (
     <motion.div layout>
-      <Card shadow="sm" p="lg" radius="lg" className="w-[330px] bg-[#15162c]">
+      <Card shadow="sm" p="lg" radius="lg" className="w-[310px] bg-[#15162c]">
         <div
           style={{
             display: 'flex',
