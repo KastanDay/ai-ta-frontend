@@ -62,6 +62,11 @@ export default function AzureProviderInput({
                 checked={field.state.value}
                 onChange={(event) => {
                   field.handleChange(event.currentTarget.checked)
+
+                  const newValue = event.currentTarget.checked
+                  field.handleChange(newValue)
+                  provider.enabled = newValue
+
                   form.handleSubmit() // Trigger form submission
                 }}
                 thumbIcon={

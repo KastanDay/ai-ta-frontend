@@ -60,7 +60,10 @@ export default function NCSAHostedLLmsProviderInput({
                 aria-label="Enable NCSA Hosted LLMs provider"
                 checked={field.state.value}
                 onChange={(event) => {
-                  field.handleChange(event.currentTarget.checked)
+                  const newValue = event.currentTarget.checked
+                  field.handleChange(newValue)
+                  provider.enabled = newValue
+
                   // Trigger form submission
                   setTimeout(() => form.handleSubmit(), 0)
                 }}

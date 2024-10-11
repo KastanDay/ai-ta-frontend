@@ -200,6 +200,8 @@ const NewModelDropdown: React.FC<{
     },
   )
 
+  console.log('enabledProvidersAndModels', enabledProvidersAndModels)
+
   const selectedModel =
     allModels.find((model) => model.id === value?.id) || undefined
 
@@ -663,51 +665,12 @@ export default function APIKeyInputForm() {
                                     llmProviders.defaultModel as AnySupportedModel
                                   }
                                   onChange={(newDefaultModel) => {
-                                    let new_llmProviders =
-                                      form.getFieldValue('providers')
-                                    console.log(
-                                      'newLLMProviders',
-                                      new_llmProviders?.defaultModel,
-                                    )
-                                    console.log(
-                                      'provider.provider',
-                                      new_llmProviders?.providers.Ollama
-                                        .provider,
-                                    )
-                                    console.log(
-                                      'newDefaultModel',
-                                      typeof newDefaultModel,
-                                    )
-                                    if (new_llmProviders) {
-                                      const matchingProvider = Object.values(
-                                        new_llmProviders.providers,
-                                      ).find(
-                                        (provider) =>
-                                          typeof provider.provider ===
-                                          typeof newDefaultModel,
-                                      )
-                                      console.log(
-                                        'matchingProvider',
-                                        matchingProvider,
-                                      )
-                                      // console.log("isModelEnabled", isModelEnabled)
-                                      // if (isModelEnabled) {
-                                      //   new_llmProviders.defaultModel =
-                                      //     newDefaultModel as AnySupportedModel
-                                      // } else {
-                                      //   new_llmProviders.defaultModel =
-                                      //     undefined
-                                      // }
-                                    }
-                                    console.log(
-                                      'Default Model',
-                                      new_llmProviders?.defaultModel,
-                                    )
+                                    llmProviders.defaultModel =
+                                      newDefaultModel as AnySupportedModel
                                     form.setFieldValue(
                                       'providers',
-                                      new_llmProviders as ProjectWideLLMProviders,
+                                      llmProviders as ProjectWideLLMProviders,
                                     )
-                                    field.handleChange(newDefaultModel)
                                     return form.handleSubmit()
                                   }}
                                   llmProviders={llmProviders.providers}

@@ -62,7 +62,9 @@ export default function AnthropicProviderInput({
                 checked={field.state.value}
                 onChange={(event) => {
                   event.preventDefault()
-                  field.handleChange(event.currentTarget.checked)
+                  const newValue = event.currentTarget.checked
+                  field.handleChange(newValue)
+                  provider.enabled = newValue
                   form.handleSubmit()
                 }}
                 thumbIcon={

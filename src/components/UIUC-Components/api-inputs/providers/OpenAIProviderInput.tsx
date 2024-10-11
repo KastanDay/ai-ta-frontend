@@ -64,7 +64,9 @@ export default function OpenAIProviderInput({
                 aria-label="Enable OpenAI provider"
                 checked={field.state.value}
                 onChange={(event) => {
-                  field.handleChange(event.currentTarget.checked)
+                  const newValue = event.currentTarget.checked
+                  field.handleChange(newValue)
+                  provider.enabled = newValue
                   // Trigger form submission
                   form.handleSubmit()
                 }}

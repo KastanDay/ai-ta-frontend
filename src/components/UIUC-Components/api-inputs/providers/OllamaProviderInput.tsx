@@ -60,7 +60,9 @@ export default function OllamaProviderInput({
                 aria-label="Enable Ollama provider"
                 checked={field.state.value}
                 onChange={(event) => {
-                  field.handleChange(event.currentTarget.checked)
+                  const newValue = event.currentTarget.checked
+                  field.handleChange(newValue)
+                  provider.enabled = newValue
                   // Trigger form submission
                   form.handleSubmit()
                 }}
