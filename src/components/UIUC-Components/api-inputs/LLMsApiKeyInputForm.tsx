@@ -162,7 +162,6 @@ const NewModelDropdown: React.FC<{
   llmProviders: AllLLMProviders
   isSmallScreen: boolean
 }> = ({ value, onChange, llmProviders, isSmallScreen }) => {
-
   // Filter out providers that are not enabled and their models which are disabled
   const { enabledProvidersAndModels, allModels } = Object.keys(
     llmProviders,
@@ -212,13 +211,12 @@ const NewModelDropdown: React.FC<{
         searchable
         value={value.id}
         onChange={async (modelId) => {
-          const selectedModel = allModels.find((model) => model.id === modelId);
+          const selectedModel = allModels.find((model) => model.id === modelId)
           // console.log("selectedModel on change:", selectedModel);
           if (selectedModel) {
             await onChange(selectedModel)
           }
-        }
-        }
+        }}
         data={Object.values(enabledProvidersAndModels).flatMap(
           (provider: LLMProvider) =>
             provider.models?.map((model) => ({
@@ -235,7 +233,7 @@ const NewModelDropdown: React.FC<{
             })) || [],
         )}
         itemComponent={(props) => (
-          <ModelItem {...props} setLoadingModelId={() => { }} />
+          <ModelItem {...props} setLoadingModelId={() => {}} />
         )}
         maxDropdownHeight={480}
         rightSectionWidth="auto"
@@ -515,18 +513,6 @@ export default function APIKeyInputForm() {
                             gap: 16,
                           }}
                         >
-                          {/* {isLoadingLLMProviders && (
-                            <Flex
-                              justify="center"
-                              align="center"
-                              className={`${montserrat_heading.variable} font-montserratHeading`}
-                            >
-                              Synchronizing LLM providers… smart settings
-                              inbound! <LoadingSpinner size="sm" />
-                            </Flex>
-                          )} */}
-
-                          {/* {llmProviders && ( */}
                           <>
                             <Title
                               className={`${montserrat_heading.variable} mt-4 font-montserratHeading`}
@@ -548,7 +534,6 @@ export default function APIKeyInputForm() {
                               prices and follow their rules.
                             </Text>
                             <Flex
-                              // direction={{ base: 'column', '130rem': 'row' }} // good for split screen card.
                               direction={{ base: 'column', '75rem': 'row' }}
                               wrap="wrap"
                               justify="space-between"
@@ -556,6 +541,7 @@ export default function APIKeyInputForm() {
                               className="gap-4"
                               w={'100%'}
                             >
+                              {' '}
                               <AnthropicProviderInput
                                 provider={
                                   llmProviders?.providers
@@ -599,7 +585,6 @@ export default function APIKeyInputForm() {
                               Your weights, your rules.
                             </Text>
                             <Flex
-                              // direction={{ base: 'column', '130rem': 'row' }} // good for split screen card.
                               direction={{ base: 'column', '75rem': 'row' }}
                               wrap="wrap"
                               justify="space-between"
@@ -634,8 +619,6 @@ export default function APIKeyInputForm() {
                               />
                             </Flex>
                           </>
-
-                          {/* } */}
                         </div>
                       </form>
                     </Stack>
@@ -671,11 +654,17 @@ export default function APIKeyInputForm() {
                         <div className="flex justify-center">
                           {llmProviders && (
                             <NewModelDropdown
-                              value={llmProviders.defaultModel as AnySupportedModel}
+                              value={
+                                llmProviders.defaultModel as AnySupportedModel
+                              }
                               onChange={async (newDefaultModel) => {
                                 // TODO: parse the string into the full model object
-                                llmProviders.defaultModel = newDefaultModel as AnySupportedModel
-                                form.setFieldValue('providers', llmProviders as ProjectWideLLMProviders)
+                                llmProviders.defaultModel =
+                                  newDefaultModel as AnySupportedModel
+                                form.setFieldValue(
+                                  'providers',
+                                  llmProviders as ProjectWideLLMProviders,
+                                )
                                 await form.handleSubmit()
                               }}
                               llmProviders={{

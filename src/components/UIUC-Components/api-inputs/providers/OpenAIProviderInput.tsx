@@ -25,12 +25,7 @@ export default function OpenAIProviderInput({
 
   return (
     <motion.div layout>
-      <Card
-        shadow="sm"
-        p="lg"
-        radius="lg"
-        className="max-w-[330px] bg-[#15162c] md:w-[330px]"
-      >
+      <Card shadow="sm" p="lg" radius="lg" className="w-[330px] bg-[#15162c]">
         <div
           style={{
             display: 'flex',
@@ -70,9 +65,8 @@ export default function OpenAIProviderInput({
                 checked={field.state.value}
                 onChange={(event) => {
                   field.handleChange(event.currentTarget.checked)
-
                   // Trigger form submission
-                  setTimeout(() => form.handleSubmit(), 0)
+                  form.handleSubmit()
                 }}
                 thumbIcon={
                   field.state.value ? (

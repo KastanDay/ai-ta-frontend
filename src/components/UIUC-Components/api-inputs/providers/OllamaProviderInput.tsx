@@ -67,7 +67,7 @@ export default function OllamaProviderInput({
                 onChange={(event) => {
                   field.handleChange(event.currentTarget.checked)
                   // Trigger form submission
-                  setTimeout(() => form.handleSubmit(), 0)
+                  form.handleSubmit()
                 }}
                 thumbIcon={
                   field.state.value ? (
