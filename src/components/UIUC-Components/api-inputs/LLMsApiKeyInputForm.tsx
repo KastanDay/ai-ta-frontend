@@ -662,46 +662,55 @@ export default function APIKeyInputForm() {
                                   value={
                                     llmProviders.defaultModel as AnySupportedModel
                                   }
-                                  onChange={async (newDefaultModel) => {
+                                  onChange={(newDefaultModel) => {
                                     let new_llmProviders =
                                       form.getFieldValue('providers')
+                                    console.log(
+                                      'newLLMProviders',
+                                      new_llmProviders?.defaultModel,
+                                    )
+                                    console.log(
+                                      'provider.provider',
+                                      new_llmProviders?.providers.Ollama
+                                        .provider,
+                                    )
+                                    console.log(
+                                      'newDefaultModel',
+                                      typeof newDefaultModel,
+                                    )
                                     if (new_llmProviders) {
-                                      const isModelEnabled = Object.values(
+                                      const matchingProvider = Object.values(
                                         new_llmProviders.providers,
                                       ).find(
                                         (provider) =>
-                                          provider.provider ===
-                                          newDefaultModel.name,
-                                      )?.enabled
-                                      if (isModelEnabled) {
-                                        new_llmProviders.defaultModel =
-                                          newDefaultModel as AnySupportedModel
-                                      } else {
-                                        new_llmProviders.defaultModel =
-                                          undefined
-                                      }
+                                          typeof provider.provider ===
+                                          typeof newDefaultModel,
+                                      )
+                                      console.log(
+                                        'matchingProvider',
+                                        matchingProvider,
+                                      )
+                                      // console.log("isModelEnabled", isModelEnabled)
+                                      // if (isModelEnabled) {
+                                      //   new_llmProviders.defaultModel =
+                                      //     newDefaultModel as AnySupportedModel
+                                      // } else {
+                                      //   new_llmProviders.defaultModel =
+                                      //     undefined
+                                      // }
                                     }
+                                    console.log(
+                                      'Default Model',
+                                      new_llmProviders?.defaultModel,
+                                    )
                                     form.setFieldValue(
                                       'providers',
                                       new_llmProviders as ProjectWideLLMProviders,
                                     )
                                     field.handleChange(newDefaultModel)
-                                    await form.handleSubmit()
+                                    return form.handleSubmit()
                                   }}
-                                  llmProviders={{
-                                    Ollama: llmProviders?.providers
-                                      .Ollama as OllamaProvider,
-                                    OpenAI: llmProviders?.providers
-                                      .OpenAI as OpenAIProvider,
-                                    Anthropic: llmProviders?.providers
-                                      .Anthropic as AnthropicProvider,
-                                    Azure: llmProviders?.providers
-                                      .Azure as AzureProvider,
-                                    WebLLM: llmProviders?.providers
-                                      .WebLLM as WebLLMProvider,
-                                    NCSAHosted: llmProviders?.providers
-                                      .NCSAHosted as NCSAHostedProvider,
-                                  }}
+                                  llmProviders={llmProviders.providers}
                                   isSmallScreen={false}
                                 />
                               )}
