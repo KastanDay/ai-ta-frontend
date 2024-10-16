@@ -1,8 +1,12 @@
 import React from 'react'
 import { IconCheck, IconX } from '@tabler/icons-react'
 import { Switch, Stack } from '@mantine/core'
-import { AnySupportedModel, LLMProvider } from '~/utils/modelProviders/LLMProvider'
+import {
+  AnySupportedModel,
+  LLMProvider,
+} from '~/utils/modelProviders/LLMProvider'
 
+// Add this type guard function at the top of the file
 function isProviderWithModels(
   provider: LLMProvider,
 ): provider is LLMProvider & { models: Record<string, AnySupportedModel> } {
@@ -42,7 +46,7 @@ export function ModelToggles({
                     isProviderWithModels(provider) &&
                     modelId in provider.models
                   ) {
-                    ;(provider.models[modelId] as AnySupportedModel).enabled =
+                    ; (provider.models[modelId] as AnySupportedModel).enabled =
                       newValue
                   }
                   form.handleSubmit()

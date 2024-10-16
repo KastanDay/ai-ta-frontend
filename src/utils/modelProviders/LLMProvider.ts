@@ -176,9 +176,8 @@ export const selectBestModel = (
     .flatMap((provider) => provider!.models || [])
     .filter((model) => model.enabled)
 
-
   const defaultModelId = localStorage.getItem('defaultModel')
-
+  // console.log('defaultModelId from localstorage: ', defaultModelId)
   if (defaultModelId && allModels.find((m) => m.id === defaultModelId)) {
     const defaultModel = allModels
       .filter((model) => model.enabled)

@@ -68,7 +68,7 @@ export default function NCSAHostedVLLMProviderInput({
                   if (form.state.values.defaultModel && form.state.values.defaultModel.provider === ProviderNames.NCSAHostedVLLM) {
                     form.setFieldValue('defaultModel', event.currentTarget.checked ? form.state.values.defaultModel : null)
                   }
-                  
+
                   form.handleSubmit()
                 }}
                 thumbIcon={

@@ -170,10 +170,6 @@ const Home = ({
     if (!llmProviders.defaultModel) {
       model = selectBestModel(llmProviders.providers)
     } else {
-      console.log(
-        'Setting default model from llmProviders.defaultModel:',
-        llmProviders.defaultModel,
-      )
       // if model not in llmProviders.providers, use default model
       // @ts-ignore - these types are fine.
       if (!llmProviders.providers[llmProviders.defaultModel.provider]) {

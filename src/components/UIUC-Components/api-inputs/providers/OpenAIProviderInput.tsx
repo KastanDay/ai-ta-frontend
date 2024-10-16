@@ -134,7 +134,7 @@ export default function OpenAIProviderInput({
                       <APIKeyInput
                         field={apiKeyField}
                         placeholder="OpenAI API Key"
-                        // onValidate={validateApiKey}
+                      // onValidate={validateApiKey}
                       />
                     )}
                   </form.Field>
