@@ -1,7 +1,13 @@
 import React from 'react'
 import { IconCheck, IconX } from '@tabler/icons-react'
 import { Switch, Stack } from '@mantine/core'
-import { LLMProvider } from '~/utils/modelProviders/LLMProvider'
+import { AnySupportedModel, LLMProvider } from '~/utils/modelProviders/LLMProvider'
+
+function isProviderWithModels(
+  provider: LLMProvider,
+): provider is LLMProvider & { models: Record<string, AnySupportedModel> } {
+  return 'models' in provider && provider.models !== undefined
+}
 
 export function ModelToggles({
   form,
@@ -13,7 +19,6 @@ export function ModelToggles({
   const providerModels = provider?.provider
     ? form.state.values.providers[provider.provider]?.models || {}
     : {}
-
   console.log(`${provider.provider} PROV Models`, providerModels)
   console.log(`${provider.provider} PROV.models here`, provider.models)
 
@@ -41,9 +46,6 @@ export function ModelToggles({
                   ) {
                     ;(provider.models[modelId] as AnySupportedModel).enabled =
                       newValue
-                    if (modelId === form.state.values.defaultModel) {
-                      form.setFieldValue('defaultModel', newValue ? modelId : null)
-                    }
                   }
                   form.handleSubmit()
                 }}

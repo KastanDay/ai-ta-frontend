@@ -6,7 +6,6 @@
     "build": "next build",
     "bd": "infisical run --env=dev -- next build",
     "dev": "infisical run --env=dev -- next dev",
-    "dv": "next dev",
     "lint": "next lint",
     "start": "next start",
     "format": "prettier --check --ignore-path .gitignore .",
