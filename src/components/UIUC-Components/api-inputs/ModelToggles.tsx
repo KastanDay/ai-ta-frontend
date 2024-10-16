@@ -1,7 +1,17 @@
 import React from 'react'
 import { IconCheck, IconX } from '@tabler/icons-react'
 import { Switch, Stack } from '@mantine/core'
-import { LLMProvider } from '~/utils/modelProviders/LLMProvider'
+import {
+  AnySupportedModel,
+  LLMProvider,
+} from '~/utils/modelProviders/LLMProvider'
+
+// Add this type guard function at the top of the file
+function isProviderWithModels(
+  provider: LLMProvider,
+): provider is LLMProvider & { models: Record<string, AnySupportedModel> } {
+  return 'models' in provider && provider.models !== undefined
+}
 
 export function ModelToggles({
   form,
@@ -29,7 +39,23 @@ export function ModelToggles({
                 onLabel="ON"
                 offLabel="OFF"
                 onChange={(event) => {
-                  field.handleChange(event.currentTarget.checked)
+                  const newValue = event.currentTarget.checked
+                  field.handleChange(newValue)
+                  // Update the provider's model state
+                  console.log(
+                    'enabled or not',
+                    (form.state.values.providers[provider.provider].models[
+                      modelId
+                    ].enabled = newValue),
+                  )
+                  // Update the provider's model state
+                  if (
+                    isProviderWithModels(provider) &&
+                    modelId in provider.models
+                  ) {
+                    ; (provider.models[modelId] as AnySupportedModel).enabled =
+                      newValue
+                  }
                   // Trigger form submission
                   setTimeout(() => form.handleSubmit(), 0)
                 }}
