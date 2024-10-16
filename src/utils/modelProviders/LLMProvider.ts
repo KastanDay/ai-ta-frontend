@@ -171,18 +171,13 @@ export const selectBestModel = (
   allLLMProviders: AllLLMProviders,
   convo?: Conversation,
 ): AnySupportedModel => {
-  console.log('In select best model ')
-  console.log('allLLMProviders:', JSON.stringify(allLLMProviders))
-
   const allModels = Object.values(allLLMProviders)
     .filter((provider) => provider!.enabled)
     .flatMap((provider) => provider!.models || [])
     .filter((model) => model.enabled)
 
-  console.log('Filtered and enabled models:', JSON.stringify(allModels))
 
   const defaultModelId = localStorage.getItem('defaultModel')
-  console.log('defaultModelId from localStorage:', defaultModelId)
 
   if (defaultModelId && allModels.find((m) => m.id === defaultModelId)) {
     const defaultModel = allModels
@@ -197,17 +192,11 @@ export const selectBestModel = (
     }
   }
 
-  console.log(
-    'Searching through preferredModelIds:',
-    JSON.stringify(preferredModelIds),
-  )
   for (const preferredId of preferredModelIds) {
-    console.log('Checking for model with id:', preferredId)
     const model = allModels
       .filter((model) => model.enabled)
       .find((m) => m.id === preferredId)
     if (model) {
-      console.log('Found preferred model:', JSON.stringify(model))
       localStorage.setItem('defaultModel', preferredId)
       return model
     }

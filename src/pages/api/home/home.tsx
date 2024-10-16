@@ -168,10 +168,6 @@ const Home = ({
 
     let model
     if (!llmProviders.defaultModel) {
-      console.log(
-        'NO DEFAULT MODEL running select best:',
-        llmProviders.defaultModel,
-      )
       model = selectBestModel(llmProviders.providers)
     } else {
       console.log(
@@ -181,15 +177,7 @@ const Home = ({
       // if model not in llmProviders.providers, use default model
       // @ts-ignore - these types are fine.
       if (!llmProviders.providers[llmProviders.defaultModel.provider]) {
-        console.log(
-          'Default model not in llmProviders.providers, using default model from llmProviders.defaultModel:',
-          llmProviders.defaultModel,
-        )
         model = selectBestModel(llmProviders.providers)
-        console.log(
-          'Selected model after not in llmProviders.providers:',
-          model,
-        )
       }
       llmProviders.defaultModel = model
     }
