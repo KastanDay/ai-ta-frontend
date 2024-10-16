@@ -54,13 +54,9 @@ const handler = async (
       `${projectName}-llms`,
     )) as unknown as ProjectWideLLMProviders
 
-    console.log('llmProviders first fetch:', llmProviders)
-
     // Ensure all providers are defined
     const allProviderNames = Object.values(ProviderNames)
     for (const providerName of allProviderNames) {
-      console.log('providerName:', providerName)
-
       if (!llmProviders.providers) {
         llmProviders.providers = {} as any
       }
@@ -121,7 +117,7 @@ const handler = async (
       }
     }
 
-    console.log('FINAL -- llmProviders', llmProviders)
+    // console.log('FINAL -- llmProviders', llmProviders)
     return NextResponse.json(llmProviders as ProjectWideLLMProviders, {
       status: 200,
     })
