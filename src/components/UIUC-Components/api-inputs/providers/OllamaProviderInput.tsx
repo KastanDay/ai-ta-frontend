@@ -22,12 +22,7 @@ export default function OllamaProviderInput({
   }
   return (
     <motion.div layout>
-      <Card
-        shadow="sm"
-        p="lg"
-        radius="lg"
-        className="max-w-[330px] bg-[#15162c] md:w-[330px]"
-      >
+      <Card shadow="sm" p="lg" radius="lg" className="w-[310px] bg-[#15162c]">
         <div
           style={{
             display: 'flex',
@@ -74,7 +69,7 @@ export default function OllamaProviderInput({
                   }
 
                   // Trigger form submission
-                  setTimeout(() => form.handleSubmit(), 0)
+                  form.handleSubmit()
                 }}
                 thumbIcon={
                   field.state.value ? (
