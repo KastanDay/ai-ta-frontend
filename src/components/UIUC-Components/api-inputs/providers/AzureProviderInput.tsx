@@ -67,6 +67,15 @@ export default function AzureProviderInput({
                 checked={field.state.value}
                 onChange={(event) => {
                   field.handleChange(event.currentTarget.checked)
+
+                  const newValue = event.currentTarget.checked
+                  field.handleChange(newValue)
+                  provider.enabled = newValue
+
+                  if (form.state.values.defaultModel && form.state.values.defaultModel.provider === ProviderNames.Azure) {
+                    form.setFieldValue('defaultModel', newValue ? form.state.values.defaultModel : null)
+                  }
+
                   form.handleSubmit() // Trigger form submission
                 }}
                 thumbIcon={

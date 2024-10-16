@@ -65,7 +65,14 @@ export default function WebLLMProviderInput({
                 aria-label="Enable WebLLM provider"
                 checked={field.state.value}
                 onChange={(event) => {
-                  field.handleChange(event.currentTarget.checked)
+                  const newValue = event.currentTarget.checked
+                  field.handleChange(newValue)
+                  provider.enabled = newValue
+
+                  if (form.state.values.defaultModel && form.state.values.defaultModel.provider === ProviderNames.WebLLM) {
+                    form.setFieldValue('defaultModel', newValue ? form.state.values.defaultModel : null)
+                  }
+                  
                   // Trigger form submission
                   setTimeout(() => form.handleSubmit(), 0)
                 }}

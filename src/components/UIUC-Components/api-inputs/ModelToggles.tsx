@@ -32,9 +32,20 @@ export function ModelToggles({
                 onLabel="ON"
                 offLabel="OFF"
                 onChange={(event) => {
-                  field.handleChange(event.currentTarget.checked)
-                  // Trigger form submission
-                  setTimeout(() => form.handleSubmit(), 0)
+                  const newValue = event.currentTarget.checked
+                  field.handleChange(newValue)
+                  // Update the provider's model state
+                  if (
+                    isProviderWithModels(provider) &&
+                    modelId in provider.models
+                  ) {
+                    ;(provider.models[modelId] as AnySupportedModel).enabled =
+                      newValue
+                    if (modelId === form.state.values.defaultModel) {
+                      form.setFieldValue('defaultModel', newValue ? modelId : null)
+                    }
+                  }
+                  form.handleSubmit()
                 }}
                 thumbIcon={
                   field.state.value ? (

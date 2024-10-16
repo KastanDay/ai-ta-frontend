@@ -1,21 +1,19 @@
 import React from 'react'
-import { Text, Switch, Card, Skeleton } from '@mantine/core'
+import { Text, Switch, Card, Skeleton, Badge } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
-import { APIKeyInput } from '../LLMsApiKeyInputForm'
 import { ModelToggles } from '../ModelToggles'
 import {
-  AnthropicProvider,
+  NCSAHostedVLLMProvider,
   ProviderNames,
-  selectBestModel,
 } from '~/utils/modelProviders/LLMProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export default function AnthropicProviderInput({
+export default function NCSAHostedVLLMProviderInput({
   provider,
   form,
   isLoading,
 }: {
-  provider: AnthropicProvider
+  provider: NCSAHostedVLLMProvider
   form: any
   isLoading: boolean
 }) {
@@ -24,12 +22,7 @@ export default function AnthropicProviderInput({
   }
   return (
     <motion.div layout>
-      <Card
-        shadow="sm"
-        p="lg"
-        radius="lg"
-        className="max-w-[330px] bg-[#15162c] md:w-[330px]"
-      >
+      <Card shadow="sm" p="lg" radius="lg" className="w-[310px] bg-[#15162c]">
         <div
           style={{
             display: 'flex',
@@ -40,7 +33,7 @@ export default function AnthropicProviderInput({
           <div>
             <a
               className="mb-3"
-              href="https://console.anthropic.com/settings/keys"
+              href="https://ai.ncsa.illinois.edu/"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -51,29 +44,31 @@ export default function AnthropicProviderInput({
                   mb="xs"
                   style={{ paddingRight: '8px' }}
                 >
-                  Anthropic
+                  NCSA Hosted VLMs
                 </Text>
                 <IconExternalLink size={16} className="mb-3" />
               </div>
             </a>
           </div>
-          <form.Field name={`providers.${ProviderNames.Anthropic}.enabled`}>
+          <form.Field
+            name={`providers.${ProviderNames.NCSAHostedVLLM}.enabled`}
+          >
             {(field: any) => (
               <Switch
                 size="md"
                 labelPosition="left"
                 onLabel="ON"
                 offLabel="OFF"
-                aria-label="Enable Anthropic provider"
+                aria-label="Enable NCSA Hosted VLM provider"
                 checked={field.state.value}
                 onChange={(event) => {
-                  event.preventDefault()
-                  const newValue = event.currentTarget.checked
-                  field.handleChange(newValue)
-                  provider.enabled = newValue
-                  if (form.state.values.defaultModel && form.state.values.defaultModel.provider === ProviderNames.Anthropic) {
-                    form.setFieldValue('defaultModel', newValue ? form.state.values.defaultModel : null)
+                  field.handleChange(event.currentTarget.checked)
+                  provider.enabled = event.currentTarget.checked
+
+                  if (form.state.values.defaultModel && form.state.values.defaultModel.provider === ProviderNames.NCSAHostedVLLM) {
+                    form.setFieldValue('defaultModel', event.currentTarget.checked ? form.state.values.defaultModel : null)
                   }
+                  
                   form.handleSubmit()
                 }}
                 thumbIcon={
@@ -97,28 +92,39 @@ export default function AnthropicProviderInput({
             )}
           </form.Field>
         </div>
-        {/* <Text size="sm" color="dimmed" mb="md">
-          Anthropic provides advanced AI models like Claude. Sign up on their
-          website to get an API key.
-        </Text> */}
+        <Badge color="red">Experimental</Badge>
+        <div className="pb-2"></div>
+        <Text size="sm" color="dimmed" mb="md">
+          Llama 3.2 Vision has certain limitations, like no native support for a
+          System Message. So we hack a system message into the user&apos;s
+          message. It may struggle with following instructions. Furthermore,
+          sometimes the model can go offline.
+        </Text>
         {provider?.error &&
-          (form.state.values?.providers?.Anthropic?.enabled ||
+          (form.state.values?.providers?.NCSAHostedVLLM?.enabled ||
             provider.enabled) && (
-            <Text
-              size="sm"
-              color="red"
-              mb="md"
-              style={{
-                padding: '8px',
-                borderRadius: '4px',
-                backgroundColor: 'rgba(255, 0, 0, 0.1)',
-                border: '1px solid rgba(255, 0, 0, 0.2)',
-              }}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
             >
-              {provider.error}
-            </Text>
+              <Text
+                size="sm"
+                color="red"
+                mb="md"
+                style={{
+                  padding: '8px',
+                  borderRadius: '4px',
+                  backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                  border: '1px solid rgba(255, 0, 0, 0.2)',
+                }}
+              >
+                {provider.error}
+              </Text>
+            </motion.div>
           )}
-        <form.Field name={`providers.${ProviderNames.Anthropic}.enabled`}>
+        <form.Field name={`providers.${ProviderNames.NCSAHostedVLLM}.enabled`}>
           {(field: any) => (
             <AnimatePresence>
               {field.state.value && (
@@ -128,17 +134,6 @@ export default function AnthropicProviderInput({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <form.Field
-                    name={`providers.${ProviderNames.Anthropic}.apiKey`}
-                  >
-                    {(field: any) => (
-                      <APIKeyInput
-                        field={field}
-                        placeholder="Anthropic API Key"
-                        // onValidate={validateApiKey}
-                      />
-                    )}
-                  </form.Field>
                   <ModelToggles form={form} provider={provider} />
                 </motion.div>
               )}
