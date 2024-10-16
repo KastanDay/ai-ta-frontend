@@ -23,7 +23,7 @@ import { getOpenAIModels } from '~/utils/modelProviders/routes/openai'
 export const config = {
   runtime: 'edge',
 }
-export const maxDuration = 60;
+export const maxDuration = 60
 
 const handler = async (
   req: NextRequest,
@@ -50,50 +50,34 @@ const handler = async (
     })
 
     // Fetch the project's API keys, filtering out all keys if requested
-    let llmProviders = (await kv.get(
+    const llmProviders = (await kv.get(
       `${projectName}-llms`,
     )) as unknown as ProjectWideLLMProviders
 
-    console.log("llmProviders first fetch:", llmProviders);
-
+    console.log('llmProviders first fetch:', llmProviders)
 
     // Ensure all providers are defined
     const allProviderNames = Object.values(ProviderNames)
     for (const providerName of allProviderNames) {
-      console.log("providerName:", providerName);
+      console.log('providerName:', providerName)
 
       if (!llmProviders.providers) {
         llmProviders.providers = {} as any
       }
 
       if (!llmProviders.providers[providerName]) {
-        console.log("creating placeholder provider:", providerName);
+        // console.log("creating placeholder provider:", providerName);
         // @ts-ignore - ignored for now
         if (llmProviders[providerName]) {
           // @ts-ignore - ignored for now
           llmProviders.providers[providerName] = llmProviders[providerName]
-          console.log("adding pre-existing provider:", llmProviders.providers[providerName]);
+          // console.log("adding pre-existing provider:", llmProviders.providers[providerName]);
         } else {
-          llmProviders.providers[providerName] = createPlaceholderProvider(providerName) as any
+          llmProviders.providers[providerName] = createPlaceholderProvider(
+            providerName,
+          ) as any
         }
       }
-    }
-
-    // After the loop, assert the type again
-    llmProviders = llmProviders as ProjectWideLLMProviders
-
-    // Cast llmProviders to AllLLMProviders now that we've ensured all providers are defined
-    llmProviders = llmProviders as ProjectWideLLMProviders
-
-    // const allLLMProviders: Partial<ProjectWideLLMProviders> = { providers: {} }
-
-    // Ensure defaultModel and defaultTemp are set
-    if (llmProviders.defaultModel) {
-      llmProviders.defaultModel = llmProviders.defaultModel
-    }
-
-    if (llmProviders.defaultTemp) {
-      llmProviders.defaultTemp = llmProviders.defaultTemp
     }
 
     // Iterate through all possible providers

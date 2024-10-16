@@ -2,11 +2,7 @@
 import { kv } from '@vercel/kv'
 import { type NextRequest, NextResponse } from 'next/server'
 import { encryptKeyIfNeeded } from '~/utils/crypto'
-import {
-  AllLLMProviders,
-  LLMProvider,
-  ProjectWideLLMProviders,
-} from '~/utils/modelProviders/LLMProvider'
+import { ProjectWideLLMProviders } from '~/utils/modelProviders/LLMProvider'
 
 export const runtime = 'edge'
 
@@ -58,19 +54,25 @@ export default async function handler(req: NextRequest, res: NextResponse) {
 
     // Ensure all keys are encrypted, then save to DB.
     const processProviders = async () => {
-      for (const [providerName, provider] of Object.entries(llmProviders.providers)) {
-        console.log("providerName:", providerName);
-        console.log("provider:", provider);
+      for (const [providerName, provider] of Object.entries(
+        llmProviders.providers,
+      )) {
+        console.log('providerName:', providerName)
+        console.log('provider:', provider)
 
         if (provider && 'apiKey' in provider) {
-          llmProviders.providers[providerName as keyof typeof llmProviders.providers] = {
+          llmProviders.providers[
+            providerName as keyof typeof llmProviders.providers
+          ] = {
             ...provider,
             // @ts-ignore - it's because this function could throw an error. But we don't care about it here.
-            apiKey: await encryptKeyIfNeeded(provider.apiKey!) ?? provider.apiKey,
-          };
+            apiKey:
+              (await encryptKeyIfNeeded(provider.apiKey!)) ?? provider.apiKey,
+          }
         } else {
-          llmProviders.providers[providerName as keyof typeof llmProviders.providers] = provider as any;
-
+          llmProviders.providers[
+            providerName as keyof typeof llmProviders.providers
+          ] = provider as any
         }
       }
     }
@@ -78,8 +80,6 @@ export default async function handler(req: NextRequest, res: NextResponse) {
 
     // Combine the existing metadata with the new metadata, prioritizing the new values
     const combined_llms = { ...existingLLMs, ...llmProviders }
-
-    console.log("input default model", llmProviders.defaultModel)
 
     if (llmProviders.defaultModel) {
       combined_llms.defaultModel = llmProviders.defaultModel

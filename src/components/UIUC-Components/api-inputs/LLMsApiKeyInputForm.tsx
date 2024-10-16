@@ -649,11 +649,12 @@ export default function APIKeyInputForm() {
                         </Title>
                         <br />
                         <Text
-                          className={`label ${montserrat_paragraph.className}`}
+                          className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                          size="md"
                         >
                           Choose the default model for your chatbot. Users can
-                          still override this default to use any of the
-                          available models enabled on the left.
+                          still override this default to use any of the models
+                          enabled on the left.
                         </Text>
                         <br />
                         <div className="flex justify-center">
@@ -685,9 +686,25 @@ export default function APIKeyInputForm() {
                           <form.Field name="providers.defaultTemp">
                             {(field) => (
                               <>
-                                <Text size="sm" weight={500} mb={4}>
+                                <Text
+                                  size="sm"
+                                  weight={500}
+                                  mb={4}
+                                  className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                >
                                   Default Temperature:{' '}
                                   {llmProviders?.defaultTemp}
+                                </Text>
+                                <Text
+                                  size="xs"
+                                  color="dimmed"
+                                  mt={4}
+                                  className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                >
+                                  We recommended using 0.1. Higher values
+                                  increase randomness or &apos;creativity&apos;,
+                                  lower force the model to stick to its normal
+                                  behavior.
                                 </Text>
                                 <Slider
                                   value={llmProviders?.defaultTemp}
@@ -719,10 +736,6 @@ export default function APIKeyInputForm() {
                               </>
                             )}
                           </form.Field>
-                          <Text size="xs" color="dimmed" mt={4}>
-                            Higher values increase randomness, lower values
-                            increase focus and determinism.
-                          </Text>
                         </div>
                         <div className="pt-2" />
                       </div>
