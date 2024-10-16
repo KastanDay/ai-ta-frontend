@@ -171,48 +171,49 @@ export const selectBestModel = (
   allLLMProviders: AllLLMProviders,
   convo?: Conversation,
 ): AnySupportedModel => {
+  console.log('In select best model ')
+  console.log('allLLMProviders:', JSON.stringify(allLLMProviders))
+
   const allModels = Object.values(allLLMProviders)
     .filter((provider) => provider!.enabled)
     .flatMap((provider) => provider!.models || [])
     .filter((model) => model.enabled)
 
-  // console.log('in selectBestModel with models: ', allModels)
-  // TODO: if project has global default model, use it.
-  // First, try to use the model from the conversation if it exists and is valid
-  // if (
-  //   convo &&
-  //   convo.model &&
-  //   typeof convo.model === 'object' &&
-  //   'id' in convo.model
-  // ) {
-  //   const conversationModel = allModels.find((m) => m.id === convo.model.id)
-  //   if (conversationModel) {
-  //     return conversationModel
-  //   }
-  // }
+  console.log('Filtered and enabled models:', JSON.stringify(allModels))
+
   const defaultModelId = localStorage.getItem('defaultModel')
-  // console.log('defaultModelId from localstorage: ', defaultModelId)
+  console.log('defaultModelId from localStorage:', defaultModelId)
+
   if (defaultModelId && allModels.find((m) => m.id === defaultModelId)) {
     const defaultModel = allModels
       .filter((model) => model.enabled)
       .find((m) => m.id === defaultModelId)
     if (defaultModel) {
+      console.log(
+        'Using default model from localStorage:',
+        JSON.stringify(defaultModel),
+      )
       return defaultModel
     }
   }
 
-  // If the conversation model is not available or invalid, use the preferredModelIds
+  console.log(
+    'Searching through preferredModelIds:',
+    JSON.stringify(preferredModelIds),
+  )
   for (const preferredId of preferredModelIds) {
+    console.log('Checking for model with id:', preferredId)
     const model = allModels
       .filter((model) => model.enabled)
       .find((m) => m.id === preferredId)
     if (model) {
+      console.log('Found preferred model:', JSON.stringify(model))
       localStorage.setItem('defaultModel', preferredId)
       return model
     }
   }
 
-  // If no preferred models are available, fallback to Llama 3.1 70b
+  console.log('No preferred models found, falling back to Llama 3.1 70b')
   localStorage.setItem('defaultModel', NCSAHostedModelID.LLAMA31_70b)
   return NCSAHostedModels['llama3.1:70b']
 }
