@@ -1,9 +1,8 @@
 import React from 'react'
-import { Text, Switch, Card, Skeleton } from '@mantine/core'
+import { Text, Switch, Card, Skeleton, Badge } from '@mantine/core'
 import { IconCheck, IconExternalLink, IconX } from '@tabler/icons-react'
 import { ModelToggles } from '../ModelToggles'
 import {
-  NCSAHostedProvider,
   NCSAHostedVLLMProvider,
   ProviderNames,
 } from '~/utils/modelProviders/LLMProvider'
@@ -23,12 +22,7 @@ export default function NCSAHostedVLLMProviderInput({
   }
   return (
     <motion.div layout>
-      <Card
-        shadow="sm"
-        p="lg"
-        radius="lg"
-        className="max-w-[330px] bg-[#15162c] md:w-[330px]"
-      >
+      <Card shadow="sm" p="lg" radius="lg" className="w-[310px] bg-[#15162c]">
         <div
           style={{
             display: 'flex',
@@ -50,7 +44,7 @@ export default function NCSAHostedVLLMProviderInput({
                   mb="xs"
                   style={{ paddingRight: '8px' }}
                 >
-                  NCSA Hosted LLMs
+                  NCSA Hosted VLMs
                 </Text>
                 <IconExternalLink size={16} className="mb-3" />
               </div>
@@ -65,12 +59,11 @@ export default function NCSAHostedVLLMProviderInput({
                 labelPosition="left"
                 onLabel="ON"
                 offLabel="OFF"
-                aria-label="Enable NCSA Hosted LLMs provider"
+                aria-label="Enable NCSA Hosted VLM provider"
                 checked={field.state.value}
                 onChange={(event) => {
                   field.handleChange(event.currentTarget.checked)
-                  // Trigger form submission
-                  setTimeout(() => form.handleSubmit(), 0)
+                  form.handleSubmit()
                 }}
                 thumbIcon={
                   field.state.value ? (
@@ -93,9 +86,13 @@ export default function NCSAHostedVLLMProviderInput({
             )}
           </form.Field>
         </div>
+        <Badge color="red">Experimental</Badge>
+        <div className="pb-2"></div>
         <Text size="sm" color="dimmed" mb="md">
-          These models are hosted by the Center for AI Innovation at the
-          National Center for Supercomputing Applications. They&apos;re free.
+          Llama 3.2 Vision has certain limitations, like no native support for a
+          System Message. So we hack a system message into the user&apos;s
+          message. It may struggle with following instructions. Furthermore,
+          sometimes the model can go offline.
         </Text>
         {provider?.error &&
           (form.state.values?.providers?.NCSAHostedVLLM?.enabled ||

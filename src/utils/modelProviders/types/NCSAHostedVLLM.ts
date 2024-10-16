@@ -29,20 +29,15 @@ export const getNCSAHostedVLLMModels = async (
   delete vllmProvider.error // Clear any previous errors
   vllmProvider.provider = ProviderNames.NCSAHostedVLLM
   try {
-    // if (!vllmProvider.baseUrl || vllmProvider.baseUrl === '') {
-    //   vllmProvider.error = `VLLM baseUrl is not defined, please set it to the URL that points to your VLLM instance.`
-    //   return vllmProvider
-    // }
     vllmProvider.baseUrl = process.env.NCSA_HOSTED_VLLM_BASE_URL
 
-    const response = await fetch(`${vllmProvider.baseUrl}/models`, {
-      // headers: {
-      //   'Authorization': `Bearer non-empty`, // any non-empty string will work
-      // },
-    })
+    const response = await fetch(`${vllmProvider.baseUrl}/models`, {})
 
     if (!response.ok) {
-      vllmProvider.error = `HTTP error ${response.status} ${response.statusText}.`
+      vllmProvider.error =
+        response.status === 530
+          ? 'Model is offline'
+          : `HTTP error ${response.status} ${response.statusText}`
       vllmProvider.models = [] // clear any previous models.
       return vllmProvider as NCSAHostedVLLMProvider
     }

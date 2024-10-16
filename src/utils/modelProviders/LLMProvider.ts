@@ -15,12 +15,16 @@ import {
   AzureModelID,
   AzureModels,
 } from '~/utils/modelProviders/azure'
-import { NCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
+import {
+  NCSAHostedModelID,
+  NCSAHostedModels,
+} from '~/utils/modelProviders/NCSAHosted'
 import {
   NCSAHostedVLLMModel,
   NCSAHostedVLLMModelID,
   NCSAHostedVLLMModels,
 } from '~/utils/modelProviders/types/NCSAHostedVLLM'
+import { Conversation } from '~/types/chat'
 
 export enum ProviderNames {
   Ollama = 'Ollama',
@@ -209,11 +213,6 @@ export const selectBestModel = (
   }
 
   // If no preferred models are available, fallback to Llama 3.1 70b
-  localStorage.setItem('defaultModel', 'llama3.1:70b')
-  return {
-    id: 'llama3.1:70b',
-    name: 'Llama 3.1 70b',
-    tokenLimit: 128000,
-    enabled: true,
-  }
+  localStorage.setItem('defaultModel', NCSAHostedModelID.LLAMA31_70b)
+  return NCSAHostedModels['llama3.1:70b']
 }

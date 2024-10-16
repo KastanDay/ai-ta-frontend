@@ -127,10 +127,8 @@ const handler = async (
       }
     }
 
-    // console.log('FINAL -- llmProviders', llmProviders)
-    return NextResponse.json(llmProviders as ProjectWideLLMProviders, {
-      status: 200,
-    })
+    // console.log('FINAL -- llmProviders', llmProviders.providers.NCSAHostedVLLM)
+    return NextResponse.json(llmProviders, { status: 200 })
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: JSON.stringify(error) }, { status: 500 })

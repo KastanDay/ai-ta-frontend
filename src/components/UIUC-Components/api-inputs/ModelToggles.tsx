@@ -42,22 +42,14 @@ export function ModelToggles({
                   const newValue = event.currentTarget.checked
                   field.handleChange(newValue)
                   // Update the provider's model state
-                  console.log(
-                    'enabled or not',
-                    (form.state.values.providers[provider.provider].models[
-                      modelId
-                    ].enabled = newValue),
-                  )
-                  // Update the provider's model state
                   if (
                     isProviderWithModels(provider) &&
                     modelId in provider.models
                   ) {
-                    ; (provider.models[modelId] as AnySupportedModel).enabled =
+                    ;(provider.models[modelId] as AnySupportedModel).enabled =
                       newValue
                   }
-                  // Trigger form submission
-                  setTimeout(() => form.handleSubmit(), 0)
+                  form.handleSubmit()
                 }}
                 thumbIcon={
                   field.state.value ? (

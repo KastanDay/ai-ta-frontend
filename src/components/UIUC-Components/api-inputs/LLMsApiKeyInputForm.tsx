@@ -202,8 +202,6 @@ const NewModelDropdown: React.FC<{
     },
   )
 
-  console.log('enabledProvidersAndModels', enabledProvidersAndModels)
-
   const selectedModel =
     allModels.find((model) => model.id === value?.id) || undefined
 
@@ -238,7 +236,7 @@ const NewModelDropdown: React.FC<{
             })) || [],
         )}
         itemComponent={(props) => (
-          <ModelItem {...props} setLoadingModelId={() => { }} />
+          <ModelItem {...props} setLoadingModelId={() => {}} />
         )}
         maxDropdownHeight={480}
         rightSectionWidth="auto"
@@ -408,10 +406,10 @@ export default function APIKeyInputForm() {
 
   const form = useForm({
     defaultValues: {
-      providers: llmProviders,
+      ...llmProviders,
     },
     onSubmit: async ({ value }) => {
-      const llmProviders = value.providers as ProjectWideLLMProviders
+      const llmProviders = value as ProjectWideLLMProviders
       mutation.mutate(
         {
           projectName,
@@ -423,10 +421,10 @@ export default function APIKeyInputForm() {
             queryClient.invalidateQueries({
               queryKey: ['projectLLMProviders', projectName],
             })
-            showConfirmationToast({
-              title: 'Updated LLM providers',
-              message: `Now your project's users can use the supplied LLMs!`,
-            })
+            // showConfirmationToast({
+            //   title: 'Updated LLM providers',
+            //   message: `Now your project's users can use the supplied LLMs!`,
+            // })
           },
           onError: (error, variables, context) =>
             showConfirmationToast({
@@ -608,7 +606,8 @@ export default function APIKeyInputForm() {
                               />
                               <NCSAHostedVLLMProviderInput
                                 provider={
-                                  llmProviders?.providers.NCSAHostedVLLM as NCSAHostedVLLMProvider
+                                  llmProviders?.providers
+                                    .NCSAHostedVLLM as NCSAHostedVLLMProvider
                                 }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}
@@ -668,7 +667,7 @@ export default function APIKeyInputForm() {
                         <br />
                         <div className="flex justify-center">
                           {llmProviders && (
-                            <form.Field name="providers.defaultModel">
+                            <form.Field name="defaultModel">
                               {(field) => (
                                 <NewModelDropdown
                                   value={
@@ -678,8 +677,8 @@ export default function APIKeyInputForm() {
                                     llmProviders.defaultModel =
                                       newDefaultModel as AnySupportedModel
                                     form.setFieldValue(
-                                      'providers',
-                                      llmProviders as ProjectWideLLMProviders,
+                                      'defaultModel',
+                                      newDefaultModel as AnySupportedModel,
                                     )
                                     return form.handleSubmit()
                                   }}
@@ -692,7 +691,7 @@ export default function APIKeyInputForm() {
                         </div>
                         <div className="pt-6"></div>
                         <div>
-                          <form.Field name="providers.defaultTemp">
+                          <form.Field name="defaultTemp">
                             {(field) => (
                               <>
                                 <Text
