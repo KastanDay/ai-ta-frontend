@@ -47,7 +47,7 @@ export async function POST(req: Request) {
 
   if (stream) {
     const result = await streamText({
-      model: ollama(conversation.model.id),
+      model: ollama(conversation.model.id) as any,
       messages: convertConversatonToVercelAISDKv3(conversation),
       temperature: conversation.temperature,
       maxTokens: 4096, // output tokens
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     return result.toTextStreamResponse()
   } else {
     const result = await generateText({
-      model: ollama(conversation.model.id),
+      model: ollama(conversation.model.id) as any,
       messages: convertConversatonToVercelAISDKv3(conversation),
       temperature: conversation.temperature,
       maxTokens: 4096, // output tokens
