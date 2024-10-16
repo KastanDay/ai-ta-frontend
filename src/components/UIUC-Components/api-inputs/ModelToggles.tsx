@@ -48,6 +48,9 @@ export function ModelToggles({
                   ) {
                     ;(provider.models[modelId] as AnySupportedModel).enabled =
                       newValue
+                    if (modelId === form.state.values.defaultModel) {
+                      form.setFieldValue('defaultModel', newValue ? modelId : null)
+                    }
                   }
                   form.handleSubmit()
                 }}
