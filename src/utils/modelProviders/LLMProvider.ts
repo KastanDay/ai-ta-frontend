@@ -234,5 +234,5 @@ export const selectBestModel = ({
   // 4. Fallback: Llama 3.1 70b (poor quality model)
   // console.log("selectBestModel -- 4. falling back to Llama 3.1 70b")
   // localStorage.setItem('defaultModel', NCSAHostedModelID.LLAMA31_70b) // Don't set llama in local storage, it's too bad to be using anywhere.
-  return NCSAHostedModels['llama3.1:70b']
+  return NCSAHostedModels['llama3.1:70b-instruct-fp16']
 }
