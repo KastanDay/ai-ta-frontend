@@ -46,6 +46,9 @@ const setCourseMetadata = async (req: any, res: any) => {
   const systemPromptOnly = JSON.parse(
     req.nextUrl.searchParams.get('systemPromptOnly') || 'false',
   )
+  
+  const project_name = req.nextUrl.searchParams.get('project_name') || ''
+
   try {
     const course_metadata: CourseMetadata = {
       is_private,
@@ -62,6 +65,7 @@ const setCourseMetadata = async (req: any, res: any) => {
       documentsOnly,
       guidedLearning,
       systemPromptOnly,
+      project_name,
     }
     console.log('Right before setting course_metadata with: ', course_metadata)
     await kv.hset('course_metadatas', { [course_name]: course_metadata })

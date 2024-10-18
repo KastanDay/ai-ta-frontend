@@ -25,35 +25,42 @@ export const getBaseUrl = () => {
  * @param {CourseMetadata | CourseMetadataOptionalForUpsert} courseMetadata - The metadata of the course.
  * @returns {Promise<boolean>} - A promise that resolves to a boolean indicating success or failure.
  */
-export const callSetCourseMetadata = async (
-  courseName: string,
-  courseMetadata: CourseMetadata | CourseMetadataOptionalForUpsert,
-): Promise<boolean> => {
+export async function callSetCourseMetadata(
+  course_name: string,
+  courseMetadata: CourseMetadataOptionalForUpsert
+): Promise<boolean> {
   try {
-    const endpoint = '/api/UIUC-api/upsertCourseMetadata'
-    const response = await fetch(endpoint, {
+    const response = await fetch('/api/UIUC-api/setCourseMetadata', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ courseName, courseMetadata }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        course_name,
+        course_metadata: {
+          ...courseMetadata,
+          project_name: courseMetadata.project_name, // Add this line
+        },
+      }),
     })
     const data = await response.json()
 
     if (data.success) {
       log.debug('Course metadata updated successfully', {
-        course_name: courseName,
+        course_name: course_name,
         course_metadata: courseMetadata,
       })
       return true
     } else {
       log.error('Error setting course metadata', {
-        course_name: courseName,
+        course_name: course_name,
         error: data.error,
       })
       return false
     }
   } catch (error) {
     log.error('Error setting course metadata', {
-      course_name: courseName,
+      course_name: course_name,
       error,
     })
     return false
