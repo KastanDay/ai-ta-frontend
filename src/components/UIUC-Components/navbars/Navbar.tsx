@@ -25,6 +25,7 @@ import {
 } from 'tabler-icons-react'
 import { useRouter } from 'next/router'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { CourseMetadata } from '~/types/courseMetadata'
 
 const styles: Record<string, React.CSSProperties> = {
   logoContainerBox: {
@@ -119,12 +120,13 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-const Navbar = ({
+const Navbar = ({ 
+  courseMetadata,
   course_name = '',
   bannerUrl = '',
   isgpt4 = true,
   isPlain = false,
-}) => {
+}: { courseMetadata?: CourseMetadata, course_name: string, bannerUrl: string, isgpt4: boolean, isPlain: boolean }) => {
   const { classes, theme } = useStyles()
   const router = useRouter()
   const [activeLink, setActiveLink] = useState<null | string>(null)
@@ -238,14 +240,19 @@ const Navbar = ({
           <div className="navbar rounded-badge h-20 bg-[#15162c] shadow-lg shadow-purple-800">
             <div className="flex-1">
               <Link href="/">
-                <h2 className="ms-4 cursor-pointer text-2xl font-extrabold tracking-tight text-white sm:text-[1.8rem] ">
-                  UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
-                </h2>
+                <div className="ms-4 cursor-pointer">
+                  <h2 className="text-xl font-extrabold tracking-tight text-white sm:text-[1.4rem]">
+                    UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
+                  </h2>
+                  {courseMetadata?.project_name !== undefined && (
+                    <p className="text-sm text-gray-300">{courseMetadata.project_name}</p>
+                  )}
+                </div>
               </Link>
             </div>
 
-            {bannerUrl && (
-              <div style={{ ...styles.logoContainerBox }}>
+            { bannerUrl && (
+            <div style={{ ...styles.logoContainerBox }}>
                 <Image
                   src={bannerUrl}
                   style={{ ...styles.thumbnailImage }}
@@ -258,7 +265,7 @@ const Navbar = ({
               </div>
             )}
 
-            {!isPlain && (
+            { !isPlain && (
               <>
                 <Transition
                   transition="pop-top-right"
