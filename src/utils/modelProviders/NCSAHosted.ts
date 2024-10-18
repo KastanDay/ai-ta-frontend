@@ -39,7 +39,7 @@ export const NCSAHostedModels: Record<NCSAHostedModelID, OllamaModel> = {
   },
   [NCSAHostedModelID.LLAMA31_8b_instruct_fp16]: {
     id: NCSAHostedModelID.LLAMA31_8b_instruct_fp16,
-    name: 'Llama 3.1 8b (FP16)',
+    name: 'Llama 3.1 8b (full precision)',
     parameterSize: '8b',
     tokenLimit: 128000,
     enabled: true,
