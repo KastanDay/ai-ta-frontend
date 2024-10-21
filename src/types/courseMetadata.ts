@@ -18,6 +18,7 @@ export interface CourseMetadata {
   documentsOnly: boolean | undefined
   guidedLearning: boolean | undefined
   systemPromptOnly: boolean | undefined
+  project_name: string | undefined
 }
 
 export interface CourseMetadataOptionalForUpsert {
@@ -35,4 +36,5 @@ export interface CourseMetadataOptionalForUpsert {
   documentsOnly: boolean | undefined
   guidedLearning: boolean | undefined
   systemPromptOnly: boolean | undefined
+  project_name: string | undefined
 }

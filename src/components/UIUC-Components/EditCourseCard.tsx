@@ -110,6 +110,10 @@ const EditCourseCard = ({
   const [projectDescription, setProjectDescription] = useState(
     courseMetadata?.project_description || '',
   )
+  const [projectName, setProjectName] = useState(
+    courseMetadata?.project_name || ''
+  )
+  const [isProjectNameUpdated, setIsProjectNameUpdated] = useState(false)
 
   const checkCourseAvailability = () => {
     const courseExists =
@@ -267,7 +271,62 @@ const EditCourseCard = ({
               <div className="card-body">
                 <div className="form-control relative">
                   <Title
-                    // className={`label ${montserrat.className}`}
+                    className={`label ${montserrat_heading.variable} font-montserratHeading`}
+                    variant="gradient"
+                    gradient={{ from: 'gold', to: 'white', deg: 170 }}
+                    order={3}
+                  >
+                    Project Name
+                  </Title>
+                  <Textarea
+                    placeholder="Enter the public-facing name for your project"
+                    radius={'sm'}
+                    value={projectName}
+                    onChange={(e) => {
+                      setProjectName(e.target.value)
+                      setIsProjectNameUpdated(true)
+                    }}
+                    size={'lg'}
+                    minRows={2}
+                    styles={{
+                      input: {
+                        backgroundColor: '#1A1B1E',
+                        fontSize: '16px',
+                        font: `${montserrat_paragraph.variable} font-montserratParagraph`,
+                      },
+                      label: {
+                        fontWeight: 'bold',
+                        color: 'white',
+                      },
+                    }}
+                    className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                  />
+                  <Button
+                    className={`w-1rem relative m-1 mt-3 self-end bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600`}
+                    type="submit"
+                    onClick={async () => {
+                      setIsProjectNameUpdated(false)
+                      if (courseMetadata) {
+                        courseMetadata.project_name = projectName
+                        const resp = await callSetCourseMetadata(
+                          course_name,
+                          courseMetadata
+                        )
+                        if (!resp) {
+                          console.log(
+                            'Error upserting course metadata for course: ',
+                            course_name
+                          )
+                        }
+                      }
+                    }}
+                  >
+                    Update
+                  </Button>
+                </div>
+
+                <div className="form-control relative">
+                  <Title
                     className={`label ${montserrat_heading.variable} font-montserratHeading`}
                     variant="gradient"
                     gradient={{ from: 'gold', to: 'white', deg: 170 }}
@@ -285,7 +344,7 @@ const EditCourseCard = ({
                     styles={{
                       input: {
                         backgroundColor: '#1A1B1E',
-                        fontSize: '16px', // Added text styling
+                        fontSize: '16px',
                         font: `${montserrat_paragraph.variable} font-montserratParagraph`,
                       },
                       label: {
@@ -301,16 +360,14 @@ const EditCourseCard = ({
                     onClick={async () => {
                       if (courseMetadata) {
                         courseMetadata.project_description = projectDescription
-                        // Update the courseMetadata object
-
                         const resp = await callSetCourseMetadata(
                           course_name,
-                          courseMetadata,
+                          courseMetadata
                         )
                         if (!resp) {
                           console.log(
                             'Error upserting course metadata for course: ',
-                            course_name,
+                            course_name
                           )
                         }
                       }
