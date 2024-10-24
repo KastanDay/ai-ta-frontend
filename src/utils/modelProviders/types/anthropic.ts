@@ -3,6 +3,8 @@ export interface AnthropicModel {
   name: string
   tokenLimit: number
   enabled: boolean
+  default?: boolean
+  temperature?: number
 }
 
 export enum AnthropicModelID {
@@ -20,17 +22,17 @@ export const AnthropicModels: Record<AnthropicModelID, AnthropicModel> = {
     tokenLimit: 200000,
     enabled: true,
   },
-  [AnthropicModelID.Claude_3_Opus]: {
-    id: AnthropicModelID.Claude_3_Opus,
-    name: 'Claude 3 Opus',
-    tokenLimit: 200000,
-    enabled: false, // NOTE: disabled by default!
-  },
   [AnthropicModelID.Claude_3_Haiku]: {
     id: AnthropicModelID.Claude_3_Haiku,
     name: 'Claude 3 Haiku',
     tokenLimit: 200000,
     enabled: true,
+  },
+  [AnthropicModelID.Claude_3_Opus]: {
+    id: AnthropicModelID.Claude_3_Opus,
+    name: 'Claude 3 Opus',
+    tokenLimit: 200000,
+    enabled: false, // NOTE: disabled by default!
   },
   // [AnthropicModelID.Claude_3_Sonnet]: {
   //   id: AnthropicModelID.Claude_3_Sonnet,

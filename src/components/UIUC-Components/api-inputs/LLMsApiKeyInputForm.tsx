@@ -27,10 +27,8 @@ import {
   AzureProvider,
   LLMProvider,
   NCSAHostedProvider,
-  NCSAHostedVLLMProvider,
   OllamaProvider,
   OpenAIProvider,
-  ProjectWideLLMProviders,
   ProviderNames,
   WebLLMProvider,
 } from '~/utils/modelProviders/LLMProvider'
@@ -52,7 +50,6 @@ import AzureProviderInput from './providers/AzureProviderInput'
 import OllamaProviderInput from './providers/OllamaProviderInput'
 import WebLLMProviderInput from './providers/WebLLMProviderInput'
 import NCSAHostedLLmsProviderInput from './providers/NCSAHostedProviderInput'
-import NCSAHostedVLLMProviderInput from './providers/NCSAHostedVLLMProviderInput'
 import { getModelLogo } from '~/components/Chat/ModelSelect'
 import { t } from 'i18next'
 
@@ -201,6 +198,8 @@ const NewModelDropdown: React.FC<{
       allModels: [] as AnySupportedModel[],
     },
   )
+
+  console.log('enabledProvidersAndModels', enabledProvidersAndModels)
 
   const selectedModel =
     allModels.find((model) => model.id === value?.id) || undefined
@@ -373,6 +372,19 @@ export const ModelItem = forwardRef<
 export default function APIKeyInputForm() {
   const projectName = GetCurrentPageName()
 
+  function findDefaultModel(providers: AllLLMProviders): (AnySupportedModel & { provider: ProviderNames }) | undefined {
+    for (const providerKey in providers) {
+      const provider = providers[providerKey as keyof typeof providers]
+      if (provider && provider.models) {
+        const defaultModel = provider.models.find(model => model.default === true)
+        if (defaultModel) {
+          return { ...defaultModel, provider: providerKey as ProviderNames }
+        }
+      }
+    }
+    return undefined
+  }
+
   // ------------ <TANSTACK QUERIES> ------------
   const queryClient = useQueryClient()
   const {
@@ -402,29 +414,73 @@ export default function APIKeyInputForm() {
   }, [isErrorLLMProviders])
 
   const mutation = useSetProjectLLMProviders(queryClient)
+
+  const setDefaultModelAndUpdateProviders = (newDefaultModel: AnySupportedModel & { provider: ProviderNames }) => {
+    setDefaultModel(newDefaultModel);
+
+    // Update the llmProviders state
+    form.setFieldValue('providers', (prevProviders: AllLLMProviders | undefined) => {
+      if (!prevProviders) return prevProviders;
+      const updatedProviders = { ...prevProviders };
+      
+      // Reset default for all models
+      Object.keys(updatedProviders).forEach(providerKey => {
+        const provider = updatedProviders[providerKey as keyof AllLLMProviders];
+        if (provider && provider.models) {
+          provider.models = provider.models.map(model => ({ ...model, default: false }));
+        }
+      });
+
+      // Set the new default model
+      const provider = updatedProviders[newDefaultModel.provider];
+      if (provider && provider.models) {
+        const modelIndex = provider.models.findIndex(model => model.id === newDefaultModel.id);
+        if (modelIndex !== -1) {
+          (provider.models as any[])[modelIndex] = { ...(provider.models as any[])[modelIndex], default: true };
+        }
+      }
+
+      return updatedProviders;
+    });
+  };
+
+  const [defaultModel, setDefaultModel] = useState<(AnySupportedModel & { provider: ProviderNames }) | undefined>(undefined)
+  useEffect(() => {
+    if (llmProviders) {
+      const calculatedDefaultModel = findDefaultModel(llmProviders)
+      setDefaultModel(calculatedDefaultModel)
+    }
+  }, [llmProviders])
+
   // ------------ </TANSTACK QUERIES> ------------
 
   const form = useForm({
     defaultValues: {
-      ...llmProviders,
+      providers: llmProviders,
+      defaultModel: defaultModel,
+      defaultTemperature: defaultModel?.temperature,
     },
     onSubmit: async ({ value }) => {
-      const llmProviders = value as ProjectWideLLMProviders
+      const llmProviders = value.providers as AllLLMProviders
+      let defaultModel = findDefaultModel(llmProviders)   
+      let defaultTemp = defaultModel?.temperature
       mutation.mutate(
         {
           projectName,
           queryClient,
           llmProviders,
+          defaultModelID: (value.defaultModel || '').toString(),
+          defaultTemperature: (value.defaultTemperature || '').toString()
         },
         {
           onSuccess: (data, variables, context) => {
             queryClient.invalidateQueries({
               queryKey: ['projectLLMProviders', projectName],
             })
-            // showConfirmationToast({
-            //   title: 'Updated LLM providers',
-            //   message: `Now your project's users can use the supplied LLMs!`,
-            // })
+            showConfirmationToast({
+              title: 'Updated LLM providers',
+              message: `Now your project's users can use the supplied LLMs!`,
+            })
           },
           onError: (error, variables, context) =>
             showConfirmationToast({
@@ -547,23 +603,21 @@ export default function APIKeyInputForm() {
                               {' '}
                               <AnthropicProviderInput
                                 provider={
-                                  llmProviders?.providers
-                                    .Anthropic as AnthropicProvider
+                                  llmProviders?.Anthropic as AnthropicProvider
                                 }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}
                               />
                               <OpenAIProviderInput
                                 provider={
-                                  llmProviders?.providers
-                                    .OpenAI as OpenAIProvider
+                                  llmProviders?.OpenAI as OpenAIProvider
                                 }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}
                               />
                               <AzureProviderInput
                                 provider={
-                                  llmProviders?.providers.Azure as AzureProvider
+                                  llmProviders?.Azure as AzureProvider
                                 }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}
@@ -598,32 +652,21 @@ export default function APIKeyInputForm() {
                               {' '}
                               <NCSAHostedLLmsProviderInput
                                 provider={
-                                  llmProviders?.providers
-                                    .NCSAHosted as NCSAHostedProvider
-                                }
-                                form={form}
-                                isLoading={isLoadingLLMProviders}
-                              />
-                              <NCSAHostedVLLMProviderInput
-                                provider={
-                                  llmProviders?.providers
-                                    .NCSAHostedVLLM as NCSAHostedVLLMProvider
+                                  llmProviders?.NCSAHosted as NCSAHostedProvider
                                 }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}
                               />
                               <OllamaProviderInput
                                 provider={
-                                  llmProviders?.providers
-                                    .Ollama as OllamaProvider
+                                  llmProviders?.Ollama as OllamaProvider
                                 }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}
                               />
                               <WebLLMProviderInput
                                 provider={
-                                  llmProviders?.providers
-                                    .WebLLM as WebLLMProvider
+                                  llmProviders?.WebLLM as WebLLMProvider
                                 }
                                 form={form}
                                 isLoading={isLoadingLLMProviders}
@@ -666,32 +709,30 @@ export default function APIKeyInputForm() {
                         </Text>
                         <br />
                         <div className="flex justify-center">
-                          {llmProviders && (
+                          {(llmProviders) && (
                             <form.Field name="defaultModel">
                               {(field) => (
                                 <NewModelDropdown
-                                  value={
-                                    llmProviders.defaultModel as AnySupportedModel
-                                  }
-                                  onChange={(newDefaultModel) => {
-                                    llmProviders.defaultModel =
-                                      newDefaultModel as AnySupportedModel
-                                    form.setFieldValue(
-                                      'defaultModel',
-                                      newDefaultModel as AnySupportedModel,
-                                    )
-                                    return form.handleSubmit()
-                                  }}
-                                  llmProviders={llmProviders.providers}
-                                  isSmallScreen={false}
-                                />
+                                value={defaultModel as AnySupportedModel}
+                                onChange={(newDefaultModel) => {
+                                  const modelWithProvider = { 
+                                    ...newDefaultModel, 
+                                    provider: (newDefaultModel as any).provider || defaultModel?.provider 
+                                  };
+                                  field.setValue(modelWithProvider);
+                                  setDefaultModelAndUpdateProviders(modelWithProvider as AnySupportedModel & { provider: ProviderNames });
+                                  return form.handleSubmit()
+                                }}
+                                llmProviders={llmProviders}
+                                isSmallScreen={false}
+                              />
                               )}
                             </form.Field>
                           )}
                         </div>
                         <div className="pt-6"></div>
                         <div>
-                          <form.Field name="defaultTemp">
+                          <form.Field name="defaultTemperature">
                             {(field) => (
                               <>
                                 <Text
@@ -701,7 +742,7 @@ export default function APIKeyInputForm() {
                                   className={`pl-1 ${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
                                   Default Temperature:{' '}
-                                  {llmProviders?.defaultTemp}
+                                  {defaultModel?.temperature}
                                 </Text>
                                 <Text
                                   size="xs"
@@ -715,7 +756,7 @@ export default function APIKeyInputForm() {
                                   behavior.
                                 </Text>
                                 <Slider
-                                  value={llmProviders?.defaultTemp}
+                                  value={defaultModel?.temperature}
                                   onChange={async (newTemperature) => {
                                     field.handleChange(newTemperature)
                                   }}

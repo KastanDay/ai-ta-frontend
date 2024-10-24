@@ -9,6 +9,8 @@ export interface OllamaModel {
   parameterSize: string
   tokenLimit: number
   enabled: boolean
+  default?: boolean
+  temperature?: number
 }
 
 export enum OllamaModelIDs {
@@ -36,7 +38,7 @@ export const OllamaModels: Record<OllamaModelIDs, OllamaModel> = {
   },
   [OllamaModelIDs.LLAMA31_70b]: {
     id: OllamaModelIDs.LLAMA31_70b,
-    name: 'Llama 3.1 70b Quantized (poor quality model!)',
+    name: 'Llama 3.1 70b',
     parameterSize: '70b',
     tokenLimit: 128000,
     enabled: true,
@@ -83,7 +85,7 @@ export const getOllamaModels = async (
     return ollamaProvider as OllamaProvider
   } catch (error: any) {
     ollamaProvider.error = error.message
-    // console.warn('ERROR in getOllamaModels', error)
+    console.warn('ERROR in getOllamaModels', error)
     ollamaProvider.models = [] // clear any previous models.
     return ollamaProvider as OllamaProvider
   }
