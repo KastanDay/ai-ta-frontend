@@ -17,7 +17,6 @@ import {
   createStyles,
   // Divider,
   MantineTheme,
-  Divider,
   // TextInput,
   // Tooltip,
 } from '@mantine/core'
@@ -27,10 +26,6 @@ import axios from 'axios'
 import { useRouter } from 'next/router'
 import { LoadingSpinner } from './LoadingSpinner'
 import { downloadConversationHistory } from '../../pages/api/UIUC-api/downloadConvoHistory'
-import ConversationsPerDayChart from './ConversationsPerDayChart'
-import ConversationsPerHourChart from './ConversationsPerHourChart'
-import ConversationsPerDayOfWeekChart from './ConversationsPerDayOfWeekChart'
-import ConversationsHeatmapByHourChart from './ConversationsHeatmapByHourChart'
 
 const useStyles = createStyles((theme: MantineTheme) => ({
   downloadButton: {
@@ -194,7 +189,7 @@ const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
       <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center">
         <div className="items-left flex w-full flex-col justify-center py-0">
           <Flex direction="column" align="center" w="100%">
-            {/* <div
+            <div
               // Course files header/background
               className="mx-auto mt-[2%] w-[90%] items-start rounded-2xl shadow-md shadow-purple-600"
               style={{ zIndex: 1, background: '#15162c' }}
@@ -221,135 +216,29 @@ const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
                     What questions are people asking?
                   </Title>
                 </div>
-              </Flex>
-            </div> */}
-            <div className="pt-5"></div>
-            <div
-              style={{
-                width: '90%',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                background: '#15162c',
-                paddingTop: '1rem',
-                borderRadius: '1rem',
-              }}
-            >
-              <div
-                style={{
-                  width: '95%',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  background: '#15162c',
-                  paddingBottom: '1rem',
-                }}
-              >
-                <Title
-                  order={3}
-                  align="left"
-                  variant="gradient"
-                  gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                  style={{ flexGrow: 2, marginLeft: '1rem' }}
-                >
-                  Analyze Conversations
-                </Title>
                 <div className="me-6 flex flex-row items-center justify-end">
                   {/* Can add more buttons here */}
                   <Button
-                    className={`${montserrat_paragraph.variable} font-montserratParagraph ${classes.downloadButton} w-full px-2 text-sm sm:w-auto sm:px-4 sm:text-base`}
+                    className={`${montserrat_paragraph.variable} font-montserratParagraph ${classes.downloadButton}`}
                     rightIcon={
                       isLoading ? (
                         <LoadingSpinner size="sm" />
                       ) : (
-                        <IconCloudDownload className="hidden sm:block" />
+                        <IconCloudDownload />
                       )
                     }
                     onClick={() => handleDownload(course_name)}
                   >
-                    <span className="truncate">
-                      Download Conversation History
-                    </span>
+                    Download Conversation History
                   </Button>
                 </div>
-
-                {/* <Select
-                    placeholder="Select an option"
-                    data={languageOptions}
-                    value={selectedLanguage}
-                    style={{ width: '7rem' }} // Ensures the button is wide enough to show all text and does not shrink
-                    onChange={(value: string | null) => {
-                      if (
-                        value === 'curl' ||
-                        value === 'python' ||
-                        value === 'node'
-                      ) {
-                        setSelectedLanguage(value)
-                      }
-                    }} */}
-                {/* // style={{ width: '30%', minWidth: '20px' }} */}
-                {/* /> */}
-                {/* <Button
-                    onClick={() =>
-                      handleCopyCodeSnippet(codeSnippets[selectedLanguage])
-                    }
-                    variant="subtle"
-                    size="xs"
-                    className="ms-2 min-h-[2.5rem] transform rounded-bl-xl rounded-br-md rounded-tl-md rounded-tr-xl bg-purple-800 text-white hover:border-indigo-600 hover:bg-indigo-600 hover:text-white focus:shadow-none focus:outline-none"
-                  >
-                    {copiedCodeSnippet ? <IconCheck /> : <IconCopy />}
-                  </Button> */}
-              </div>
-
-              <div className="grid w-full grid-cols-1 gap-6 border-t-2 border-gray-400 px-8 pt-10 lg:grid-cols-2">
-                {/* Chart 1 */}
-                <div className="rounded-xl bg-[#1a1b30] p-6 shadow-lg shadow-purple-900/20">
-                  <Title order={4} mb="xl" align="left" className="text-white">
-                    Conversations Per Day
-                  </Title>
-                  <ConversationsPerDayChart course_name={course_name} />
-                </div>
-
-                {/* Chart 2 */}
-                <div className="rounded-xl bg-[#1a1b30] p-6 shadow-lg shadow-purple-900/20">
-                  <Title order={4} mb="xl" align="left" className="text-white">
-                    Conversations Per Hour
-                  </Title>
-                  <ConversationsPerHourChart course_name={course_name} />
-                </div>
-
-                {/* Chart 3 */}
-                <div className="rounded-xl bg-[#1a1b30] p-6 shadow-lg shadow-purple-900/20">
-                  <Title order={4} mb="xl" align="left" className="text-white">
-                    Conversations Per Day of the Week
-                  </Title>
-                  <ConversationsPerDayOfWeekChart course_name={course_name} />
-                </div>
-
-                {/* Chart 4 */}
-                <div className="rounded-xl bg-[#1a1b30] p-6 shadow-lg shadow-purple-900/20">
-                  <Title order={4} mb="xl" align="left" className="text-white">
-                    Conversations Per Day and Hour
-                  </Title>
-                  <ConversationsHeatmapByHourChart course_name={course_name} />
-                </div>
-              </div>
-
-              {/* <Textarea
-                  value={codeSnippets[selectedLanguage] as string}
-                  autosize
-                  variant="unstyled"
-                  wrapperProps={{ overflow: 'hidden' }}
-                  className="relative w-[100%] min-w-[20rem] overflow-hidden rounded-b-xl border-t-2 border-gray-400 bg-[#0c0c27] pl-8 text-white"
-                  readOnly
-                /> */}
+              </Flex>
             </div>
-          </Flex>
-        </div>
-        {/* NOMIC VISUALIZATION  */}
-        {/* {false ? ( */}
-        {/* {true ? ( */}
-        {/* {nomicIsLoading ? (
+            <div className="pt-5"></div>
+            {/* NOMIC VISUALIZATION  */}
+            {/* {false ? ( */}
+            {/* {true ? ( */}
+            {nomicIsLoading ? (
               <>
                 <span className="nomic-iframe skeleton-box pl-7 pr-7 pt-4"></span>
               </>
@@ -422,9 +311,11 @@ const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
                   >
                     semantic similarity visualizations
                   </a> */}
-        {/* </Title> */}
-        {/* </> */}
-        {/* )}  */}
+                </Title>
+              </>
+            )}
+          </Flex>
+        </div>
         <GlobalFooter />
       </main>
     </>
@@ -463,7 +354,6 @@ import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
 import Navbar from './navbars/Navbar'
 import Link from 'next/link'
-import { Separator } from 'tabler-icons-react'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
