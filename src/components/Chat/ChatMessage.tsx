@@ -7,6 +7,10 @@ import {
   IconRobot,
   IconTrash,
   IconUser,
+  IconThumbUp,
+  IconThumbDown,
+  IconThumbUpFilled,
+  IconThumbDownFilled,
 } from '@tabler/icons-react'
 import { FC, memo, useContext, useEffect, useRef, useState } from 'react'
 
@@ -27,6 +31,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import { IntermediateStateAccordion } from '../UIUC-Components/IntermediateStateAccordion'
+import { FeedbackModal } from './FeedbackModal'
 
 const useStyles = createStyles((theme) => ({
   imageContainerStyle: {
@@ -114,6 +119,11 @@ export const ChatMessage: FC<Props> = memo(
     // SET TIMER for message writing (from gpt-4)
     const [timerVisible, setTimerVisible] = useState(false)
     const { classes } = useStyles() // for Accordion
+
+    const [isThumbsUp, setIsThumbsUp] = useState(false)
+    const [isThumbsDown, setIsThumbsDown] = useState(false)
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false)
+    const [isPositiveFeedback, setIsPositiveFeedback] = useState(true)
 
     useEffect(() => {
       if (message.role === 'assistant') {
@@ -310,6 +320,30 @@ export const ChatMessage: FC<Props> = memo(
           setMessageCopied(false)
         }, 2000)
       })
+    }
+
+    const handleThumbsUp = () => {
+      setIsThumbsUp(true)
+      setIsThumbsDown(false)
+    }
+
+    const handleThumbsDown = () => {
+      if (!isThumbsDown) {
+        setIsPositiveFeedback(false)
+        setIsFeedbackModalOpen(true)
+      }
+    }
+
+    const handleFeedbackSubmit = (feedback: string, category?: string) => {
+      if (isPositiveFeedback) {
+        setIsThumbsUp(true)
+        setIsThumbsDown(false)
+      } else {
+        setIsThumbsDown(true)
+        setIsThumbsUp(false)
+      }
+      // Here you can add logic to send this feedback to your backend
+      console.log('Feedback:', feedback, 'Category:', category)
     }
 
     useEffect(() => {
@@ -1133,28 +1167,52 @@ export const ChatMessage: FC<Props> = memo(
                   </MemoizedReactMarkdown>
                 </div>
                 {/* <div className="ml-1 flex flex-col items-center justify-end gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-start md:gap-1"> */}
-                <div className="w-1/10 mb-10 ml-1 flex flex-col items-end justify-start gap-4 md:-mr-8 md:ml-0 md:flex-row md:items-start md:justify-end md:gap-1">
-                  {messagedCopied ? (
-                    <IconCheck
-                      size={20}
-                      className="text-green-500 dark:text-green-400"
-                    />
-                  ) : (
-                    <button
-                      className="invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300"
-                      onClick={copyOnClick}
-                    >
+                <div className="w-1/10 mb-10 ml-1 flex flex-row items-center justify-end gap-2 md:-mr-8 md:ml-0 md:items-start md:justify-end">
+                  <button
+                    className="invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300"
+                    onClick={copyOnClick}
+                  >
+                    {messagedCopied ? (
+                      <IconCheck
+                        size={20}
+                        className="text-green-500 dark:text-green-400"
+                      />
+                    ) : (
                       <IconCopy size={20} />
-                    </button>
-                  )}
+                    )}
+                  </button>
+                  <button
+                    className="invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300"
+                    onClick={handleThumbsUp}
+                  >
+                    <div className="invisible group-hover:visible">
+                      {isThumbsUp ? <IconThumbUpFilled size={20} /> : <IconThumbUp size={20} />}
+                    </div>
+                  </button>
+                  <button
+                    className="invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300"
+                    onClick={handleThumbsDown}
+                  >
+                    {isThumbsDown ? (
+                      <IconThumbDownFilled size={20} />
+                    ) : (
+                      <IconThumbDown size={20} />
+                    )}
+                  </button>
                 </div>
               </div>
             )}
             {/* {message.role === 'assistant' && <Timer timerVisible={timerVisible} />} */}
           </div>
         </div>
+        <FeedbackModal
+          isOpen={isFeedbackModalOpen}
+          onClose={() => setIsFeedbackModalOpen(false)}
+          onSubmit={handleFeedbackSubmit}
+        />
       </div>
     )
   },
 )
 ChatMessage.displayName = 'ChatMessage'
+
