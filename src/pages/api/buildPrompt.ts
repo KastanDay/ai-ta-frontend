@@ -5,7 +5,7 @@ import { buildPrompt } from './chat';
 export const config = {
   api: {
       bodyParser: {
-          sizeLimit: '5mb' 
+          sizeLimit: '4mb' 
       }
   }
 }
