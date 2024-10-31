@@ -26,6 +26,15 @@ import { log } from 'next-axiom'
 
 export const maxDuration = 60
 
+export const config = {
+  api: {
+      bodyParser: {
+          sizeLimit: '5mb' 
+      }
+  }
+}
+
+
 export const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     // Ensure encoding is initialized before usage
