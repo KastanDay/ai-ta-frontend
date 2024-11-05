@@ -1193,6 +1193,9 @@ export const Chat = memo(
         };
 
         try {
+          // Update localStorage
+          localStorage.setItem('selectedConversation', JSON.stringify(updatedConversation));
+
           // Update the conversation using handleUpdateConversation
           handleFeedbackUpdate(updatedConversation, { 
             key: 'messages', 
@@ -1214,8 +1217,6 @@ export const Chat = memo(
             }),
           });
 
-          // Update localStorage with the new state
-          localStorage.setItem('selectedConversation', JSON.stringify(updatedConversation));
         } catch (error) {
           homeDispatch({
             field: 'conversations',
@@ -1223,7 +1224,7 @@ export const Chat = memo(
           });
           homeDispatch({
             field: 'selectedConversation',
-            value: sourceConversation, // Use sourceConversation for revert
+            value: sourceConversation,
           });
           errorToast({
             title: 'Error updating feedback',

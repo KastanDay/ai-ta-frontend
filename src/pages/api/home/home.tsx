@@ -400,39 +400,22 @@ const Home = ({
   ) => {
     if (!conversation?.messages) return;
 
-    // Create new messages array with updated feedback
-    const updatedMessages = conversation.messages.map(msg => {
-      if (msg.id === data.key) {
-        console.log('Updating message:', msg.id);
-        return {
-          ...msg,
-          feedback: data.value
-        };
-      }
-      return msg;
-    });
-
+    // Create updated conversation object
     const updatedConversation = {
       ...conversation,
-      messages: updatedMessages,
-    }
-
-    // Save to localStorage
-    localStorage.setItem(
-      'selectedConversation',
-      JSON.stringify(updatedConversation),
-    )
+      [data.key]: data.value,
+    };
 
     // Update state
-    dispatch({ field: 'selectedConversation', value: updatedConversation })
+    dispatch({ field: 'selectedConversation', value: updatedConversation });
 
     // Update conversations list
     const updatedConversations = conversations.map((c) => 
       c.id === conversation.id ? updatedConversation : c
-    )
+    );
 
-    dispatch({ field: 'conversations', value: updatedConversations })
-  }
+    dispatch({ field: 'conversations', value: updatedConversations });
+  };
 
   // Other context actions --------------------------------------------
 
