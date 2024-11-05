@@ -359,17 +359,12 @@ const Home = ({
     conversation: Conversation,
     data: KeyValuePair,
   ) => {
-    // If there is data that means only update selectedConversation and local storage, irrespective of user email
-    // If there is no data, update the selectedConversation, local storage if user email is not set, and selectedConversation, local storage and server if user email is set
-
-    let updatedConversation = conversation
-    console.log('updating conversation with data: ', data)
-    updatedConversation = {
+    const updatedConversation = {
       ...conversation,
       [data.key]: data.value,
     }
 
-    console.log('updating conversation in local storage: ', updatedConversation)
+    // Save to localStorage immediately
     localStorage.setItem(
       'selectedConversation',
       JSON.stringify(updatedConversation),
@@ -377,43 +372,66 @@ const Home = ({
 
     dispatch({ field: 'selectedConversation', value: updatedConversation })
 
-    const updatedConversations = conversations.map((c) => {
-      if (c.id === updatedConversation.id) {
-        return updatedConversation
-      }
+    let updatedConversations
 
-      return c
-    })
+    const existingConversationIndex = conversations.findIndex(
+      (c) => c.id === updatedConversation.id,
+    )
+
+    if (existingConversationIndex >= 0) {
+      // Update existing conversation
+      updatedConversations = conversations.map((c) => {
+        if (c.id === updatedConversation.id) {
+          return updatedConversation
+        }
+        return c
+      })
+    } else {
+      // Add new conversation to the list
+      updatedConversations = [updatedConversation, ...conversations]
+    }
+
     dispatch({ field: 'conversations', value: updatedConversations })
-    // localStorage.setItem(
-    //   'conversationHistory',
-    //   JSON.stringify(updatedConversations),
-    // )
+  }
 
-    // if (data) {
-    //   updatedConversation = {
-    //     ...conversation,
-    //     [data.key]: data.value,
-    //   }
+  const handleFeedbackUpdate = (
+    conversation: Conversation,
+    data: KeyValuePair,
+  ) => {
+    if (!conversation?.messages) return;
 
-    //   localStorage.setItem(
-    //     'selectedConversation',
-    //     JSON.stringify(updatedConversation),
-    //   )
-    //   const updatedConversations = conversations.map((c) => {
-    //     if (c.id === updatedConversation.id) {
-    //       return updatedConversation
-    //     }
-    //   }
-    //   )
-    //   localStorage.setItem('conversations', JSON.stringify(updatedConversations))
-    //   dispatch({ field: 'conversations', value: updatedConversations })
-    // } else if() {
+    // Create new messages array with updated feedback
+    const updatedMessages = conversation.messages.map(msg => {
+      if (msg.id === data.key) {
+        console.log('Updating message:', msg.id);
+        return {
+          ...msg,
+          feedback: data.value
+        };
+      }
+      return msg;
+    });
 
-    // }
-    // updateConversationMutation.mutate(updatedConversation)
-    // updateConversation(updatedConversation)
-    // dispatch({ field: 'selectedConversation', value: updatedConversation })
+    const updatedConversation = {
+      ...conversation,
+      messages: updatedMessages,
+    }
+
+    // Save to localStorage
+    localStorage.setItem(
+      'selectedConversation',
+      JSON.stringify(updatedConversation),
+    )
+
+    // Update state
+    dispatch({ field: 'selectedConversation', value: updatedConversation })
+
+    // Update conversations list
+    const updatedConversations = conversations.map((c) => 
+      c.id === conversation.id ? updatedConversation : c
+    )
+
+    dispatch({ field: 'conversations', value: updatedConversations })
   }
 
   // Other context actions --------------------------------------------
@@ -641,6 +659,7 @@ const Home = ({
           handleUpdateFolder,
           handleSelectConversation,
           handleUpdateConversation,
+          handleFeedbackUpdate,
           setIsImg2TextLoading,
           setIsRouting,
           // setRoutingResponse,

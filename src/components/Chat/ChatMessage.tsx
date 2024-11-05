@@ -12,7 +12,7 @@ import {
   IconThumbUpFilled,
   IconThumbDownFilled,
 } from '@tabler/icons-react'
-import { FC, memo, useContext, useEffect, useRef, useState } from 'react'
+import { FC, memo, useContext, useEffect, useRef, useState, useCallback } from 'react'
 
 import { useTranslation } from 'next-i18next'
 import { Content, ContextWithMetadata, Message } from '@/types/chat'
@@ -83,13 +83,14 @@ export interface Props {
   message: Message
   messageIndex: number
   onEdit?: (editedMessage: Message) => void
+  onFeedback?: (message: Message, isPositive: boolean, category?: string, details?: string) => void
   context?: ContextWithMetadata[]
   contentRenderer?: (message: Message) => JSX.Element
   onImageUrlsUpdate?: (message: Message, messageIndex: number) => void
 }
 
 export const ChatMessage: FC<Props> = memo(
-  ({ message, messageIndex, onEdit, onImageUrlsUpdate }) => {
+  ({ message, messageIndex, onEdit, onFeedback, onImageUrlsUpdate }) => {
     const { t } = useTranslation('chat')
 
     const {
@@ -120,10 +121,17 @@ export const ChatMessage: FC<Props> = memo(
     const [timerVisible, setTimerVisible] = useState(false)
     const { classes } = useStyles() // for Accordion
 
-    const [isThumbsUp, setIsThumbsUp] = useState(false)
-    const [isThumbsDown, setIsThumbsDown] = useState(false)
-    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false)
-    const [isPositiveFeedback, setIsPositiveFeedback] = useState(true)
+    const [isThumbsUp, setIsThumbsUp] = useState<boolean>(false);
+    const [isThumbsDown, setIsThumbsDown] = useState<boolean>(false);
+    const [isPositiveFeedback, setIsPositiveFeedback] = useState<boolean>(false);
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState<boolean>(false);
+
+    // Cleanup effect for modal
+    useEffect(() => {
+      return () => {
+        setIsFeedbackModalOpen(false);
+      };
+    }, [message.id]);
 
     useEffect(() => {
       if (message.role === 'assistant') {
@@ -322,29 +330,52 @@ export const ChatMessage: FC<Props> = memo(
       })
     }
 
-    const handleThumbsUp = () => {
-      setIsThumbsUp(true)
-      setIsThumbsDown(false)
-    }
-
-    const handleThumbsDown = () => {
-      if (!isThumbsDown) {
-        setIsPositiveFeedback(false)
-        setIsFeedbackModalOpen(true)
-      }
-    }
-
-    const handleFeedbackSubmit = (feedback: string, category?: string) => {
-      if (isPositiveFeedback) {
-        setIsThumbsUp(true)
-        setIsThumbsDown(false)
+    useEffect(() => {      
+      if (message.feedback && message.feedback.isPositive !== undefined && message.feedback.isPositive !== null) {
+        setIsThumbsUp(message.feedback.isPositive);
+        setIsThumbsDown(!message.feedback.isPositive);
       } else {
-        setIsThumbsDown(true)
-        setIsThumbsUp(false)
+        setIsThumbsUp(false);
+        setIsThumbsDown(false);
       }
-      // Here you can add logic to send this feedback to your backend
-      console.log('Feedback:', feedback, 'Category:', category)
-    }
+    }, [message]);
+
+    const handleThumbsUp = useCallback(() => {
+      if (isThumbsUp) return;
+      
+      setIsThumbsUp(true);
+      setIsThumbsDown(false);
+      setIsPositiveFeedback(true);
+      
+      if (onFeedback) {
+        onFeedback(message, true);
+      }
+    }, [isThumbsUp, onFeedback, message]);
+
+    const handleThumbsDown = useCallback(() => {
+      if (isThumbsDown) return;
+      
+      setIsThumbsUp(false);
+      setIsThumbsDown(false); // Don't set to true until feedback is submitted
+      setIsPositiveFeedback(false);
+      setIsFeedbackModalOpen(true);
+    }, [isThumbsDown]);
+
+    const handleFeedbackSubmit = useCallback(
+      (feedback: string, category?: string) => {
+        // Create a deep copy of just the message
+        const messageCopy = JSON.parse(JSON.stringify(message));
+        
+        setIsThumbsUp(isPositiveFeedback);
+        setIsThumbsDown(!isPositiveFeedback);
+
+        if (onFeedback) {
+          onFeedback(messageCopy, isPositiveFeedback, category, feedback);
+        }
+        setIsFeedbackModalOpen(false);
+      },
+      [isPositiveFeedback]
+    );
 
     useEffect(() => {
       // setMessageContent(message.content)
@@ -1205,11 +1236,13 @@ export const ChatMessage: FC<Props> = memo(
             {/* {message.role === 'assistant' && <Timer timerVisible={timerVisible} />} */}
           </div>
         </div>
-        <FeedbackModal
-          isOpen={isFeedbackModalOpen}
-          onClose={() => setIsFeedbackModalOpen(false)}
-          onSubmit={handleFeedbackSubmit}
-        />
+        {isFeedbackModalOpen && (
+          <FeedbackModal
+            isOpen={isFeedbackModalOpen}
+            onClose={() => setIsFeedbackModalOpen(false)}
+            onSubmit={handleFeedbackSubmit}
+          />
+        )}
       </div>
     )
   },
