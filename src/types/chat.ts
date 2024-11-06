@@ -41,10 +41,10 @@ export interface Message {
   feedback?: MessageFeedback
 }
 
-export interface MessageFeedback {
-  isPositive: boolean;
-  category?: string | null;
-  details?: string | null;
+export type MessageFeedback = {
+  isPositive: boolean | null
+  category: string | null
+  details: string | null
 }
 
 export interface UIUCTool {

@@ -12,7 +12,15 @@ import {
   IconThumbUpFilled,
   IconThumbDownFilled,
 } from '@tabler/icons-react'
-import { FC, memo, useContext, useEffect, useRef, useState, useCallback } from 'react'
+import {
+  FC,
+  memo,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from 'react'
 
 import { useTranslation } from 'next-i18next'
 import { Content, ContextWithMetadata, Message } from '@/types/chat'
@@ -83,7 +91,12 @@ export interface Props {
   message: Message
   messageIndex: number
   onEdit?: (editedMessage: Message) => void
-  onFeedback?: (message: Message, isPositive: boolean, category?: string, details?: string) => void
+  onFeedback?: (
+    message: Message,
+    isPositive: boolean,
+    category?: string,
+    details?: string,
+  ) => void
   context?: ContextWithMetadata[]
   contentRenderer?: (message: Message) => JSX.Element
   onImageUrlsUpdate?: (message: Message, messageIndex: number) => void
@@ -121,17 +134,18 @@ export const ChatMessage: FC<Props> = memo(
     const [timerVisible, setTimerVisible] = useState(false)
     const { classes } = useStyles() // for Accordion
 
-    const [isThumbsUp, setIsThumbsUp] = useState<boolean>(false);
-    const [isThumbsDown, setIsThumbsDown] = useState<boolean>(false);
-    const [isPositiveFeedback, setIsPositiveFeedback] = useState<boolean>(false);
-    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState<boolean>(false);
+    const [isThumbsUp, setIsThumbsUp] = useState<boolean>(false)
+    const [isThumbsDown, setIsThumbsDown] = useState<boolean>(false)
+    const [isPositiveFeedback, setIsPositiveFeedback] = useState<boolean>(false)
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] =
+      useState<boolean>(false)
 
     // Cleanup effect for modal
     useEffect(() => {
       return () => {
-        setIsFeedbackModalOpen(false);
-      };
-    }, [message.id]);
+        setIsFeedbackModalOpen(false)
+      }
+    }, [message.id])
 
     useEffect(() => {
       if (message.role === 'assistant') {
@@ -330,52 +344,56 @@ export const ChatMessage: FC<Props> = memo(
       })
     }
 
-    useEffect(() => {      
-      if (message.feedback && message.feedback.isPositive !== undefined && message.feedback.isPositive !== null) {
-        setIsThumbsUp(message.feedback.isPositive);
-        setIsThumbsDown(!message.feedback.isPositive);
+    useEffect(() => {
+      if (
+        message.feedback &&
+        message.feedback.isPositive !== undefined &&
+        message.feedback.isPositive !== null
+      ) {
+        setIsThumbsUp(message.feedback.isPositive)
+        setIsThumbsDown(!message.feedback.isPositive)
       } else {
-        setIsThumbsUp(false);
-        setIsThumbsDown(false);
+        setIsThumbsUp(false)
+        setIsThumbsDown(false)
       }
-    }, [message]);
+    }, [message])
 
     const handleThumbsUp = useCallback(() => {
-      if (isThumbsUp) return;
-      
-      setIsThumbsUp(true);
-      setIsThumbsDown(false);
-      setIsPositiveFeedback(true);
-      
+      if (isThumbsUp) return
+
+      setIsThumbsUp(true)
+      setIsThumbsDown(false)
+      setIsPositiveFeedback(true)
+
       if (onFeedback) {
-        onFeedback(message, true);
+        onFeedback(message, true)
       }
-    }, [isThumbsUp, onFeedback, message]);
+    }, [isThumbsUp, onFeedback, message])
 
     const handleThumbsDown = useCallback(() => {
-      if (isThumbsDown) return;
-      
-      setIsThumbsUp(false);
-      setIsThumbsDown(false); // Don't set to true until feedback is submitted
-      setIsPositiveFeedback(false);
-      setIsFeedbackModalOpen(true);
-    }, [isThumbsDown]);
+      if (isThumbsDown) return
+
+      setIsThumbsUp(false)
+      setIsThumbsDown(false) // Don't set to true until feedback is submitted
+      setIsPositiveFeedback(false)
+      setIsFeedbackModalOpen(true)
+    }, [isThumbsDown])
 
     const handleFeedbackSubmit = useCallback(
       (feedback: string, category?: string) => {
         // Create a deep copy of just the message
-        const messageCopy = JSON.parse(JSON.stringify(message));
-        
-        setIsThumbsUp(isPositiveFeedback);
-        setIsThumbsDown(!isPositiveFeedback);
+        const messageCopy = JSON.parse(JSON.stringify(message))
+
+        setIsThumbsUp(isPositiveFeedback)
+        setIsThumbsDown(!isPositiveFeedback)
 
         if (onFeedback) {
-          onFeedback(messageCopy, isPositiveFeedback, category, feedback);
+          onFeedback(messageCopy, isPositiveFeedback, category, feedback)
         }
-        setIsFeedbackModalOpen(false);
+        setIsFeedbackModalOpen(false)
       },
-      [isPositiveFeedback]
-    );
+      [isPositiveFeedback],
+    )
 
     useEffect(() => {
       // setMessageContent(message.content)
@@ -598,7 +616,7 @@ export const ChatMessage: FC<Props> = memo(
                   </div>
                 ) : (
                   <>
-                    <div className="dark:prose-invert w-full prose flex-1 whitespace-pre-wrap">
+                    <div className="dark:prose-invert prose w-full flex-1 whitespace-pre-wrap">
                       {Array.isArray(message.content) ? (
                         <>
                           <div className="mb-2 flex w-full flex-col items-start space-y-2">
@@ -757,7 +775,11 @@ export const ChatMessage: FC<Props> = memo(
                                   title={
                                     <>
                                       Routing the request to{' '}
-                                      <Badge color="grape" radius="md" size="sm">
+                                      <Badge
+                                        color="grape"
+                                        radius="md"
+                                        size="sm"
+                                      >
                                         {response.readableName}
                                       </Badge>
                                     </>
@@ -776,7 +798,8 @@ export const ChatMessage: FC<Props> = memo(
                                                 .image_urls,
                                             ).length > 0 ? (
                                               JSON.parse(
-                                                response.aiGeneratedArgumentValues
+                                                response
+                                                  .aiGeneratedArgumentValues
                                                   .image_urls,
                                               ).map(
                                                 (
@@ -826,7 +849,8 @@ export const ChatMessage: FC<Props> = memo(
                         {(messageIndex ===
                           (selectedConversation?.messages.length ?? 0) - 1 ||
                           messageIndex ===
-                            (selectedConversation?.messages.length ?? 0) - 2) && (
+                            (selectedConversation?.messages.length ?? 0) -
+                              2) && (
                           <>
                             {message.tools?.map((response, index) => (
                               <IntermediateStateAccordion
@@ -928,7 +952,8 @@ export const ChatMessage: FC<Props> = memo(
                           (messageIndex ===
                             (selectedConversation?.messages.length ?? 0) - 1 ||
                             messageIndex ===
-                              (selectedConversation?.messages.length ?? 0) - 2) &&
+                              (selectedConversation?.messages.length ?? 0) -
+                                2) &&
                           (!message.tools ||
                             message.tools.every(
                               (tool) =>
@@ -1196,9 +1221,10 @@ export const ChatMessage: FC<Props> = memo(
                     })()}
                   </MemoizedReactMarkdown>
                 </div>
-                <div className="-mt-2 flex items-center justify-start gap-2">
+                {/* FEEDBACK BUTTONS */}
+                <div className="-mt-1 flex items-center justify-start gap-2">
                   <button
-                    className="invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300"
+                    className="text-gray-500 opacity-0 transition-opacity duration-200 hover:text-gray-700 focus:opacity-100 group-hover:opacity-100 dark:text-gray-400 dark:hover:text-gray-300"
                     onClick={copyOnClick}
                   >
                     {messagedCopied ? (
@@ -1211,15 +1237,19 @@ export const ChatMessage: FC<Props> = memo(
                     )}
                   </button>
                   <button
-                    className="invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300"
+                    className="text-gray-500 opacity-0 transition-opacity duration-200 hover:text-gray-700 focus:opacity-100 group-hover:opacity-100 dark:text-gray-400 dark:hover:text-gray-300"
                     onClick={handleThumbsUp}
                   >
-                    <div className="invisible group-hover:visible">
-                      {isThumbsUp ? <IconThumbUpFilled size={20} /> : <IconThumbUp size={20} />}
+                    <div className="opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                      {isThumbsUp ? (
+                        <IconThumbUpFilled size={20} />
+                      ) : (
+                        <IconThumbUp size={20} />
+                      )}
                     </div>
                   </button>
                   <button
-                    className="invisible text-gray-500 hover:text-gray-700 focus:visible group-hover:visible dark:text-gray-400 dark:hover:text-gray-300"
+                    className="text-gray-500 opacity-0 transition-opacity duration-200 hover:text-gray-700 focus:opacity-100 group-hover:opacity-100 dark:text-gray-400 dark:hover:text-gray-300"
                     onClick={handleThumbsDown}
                   >
                     {isThumbsDown ? (

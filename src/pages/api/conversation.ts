@@ -84,13 +84,15 @@ export function convertDBToChatConversation(
           })
         }
       }
-      
-      const feedbackObj = msg.feedback ? {
-        isPositive: msg.feedback.feedback_is_positive,
-        category: msg.feedback.feedback_category,
-        details: msg.feedback.feedback_details
-      } : undefined;
-      
+
+      const feedbackObj = msg.feedback
+        ? {
+            isPositive: msg.feedback.feedback_is_positive,
+            category: msg.feedback.feedback_category,
+            details: msg.feedback.feedback_details,
+          }
+        : undefined
+
       const messageObj = {
         id: msg.id,
         role: msg.role as Role,
@@ -103,10 +105,10 @@ export function convertDBToChatConversation(
         responseTimeSec: msg.response_time_sec || undefined,
         created_at: msg.created_at || undefined,
         updated_at: msg.updated_at || undefined,
-        feedback: feedbackObj
-      };
+        feedback: feedbackObj,
+      }
 
-      return messageObj;
+      return messageObj
     }),
     createdAt: dbConversation.created_at || undefined,
     updatedAt: dbConversation.updated_at || undefined,
@@ -174,7 +176,7 @@ export function convertChatToDBMessage(
     updated_at: chatMessage.updated_at || new Date().toISOString(),
     feedback_is_positive: chatMessage.feedback?.isPositive ?? null,
     feedback_category: chatMessage.feedback?.category ?? null,
-    feedback_details: chatMessage.feedback?.details ?? null
+    feedback_details: chatMessage.feedback?.details ?? null,
   }
 }
 
@@ -358,10 +360,4 @@ export default async function handler(
       res.setHeader('Allow', ['GET', 'POST'])
       res.status(405).end(`Method ${method} Not Allowed`)
   }
-}
-
-export type MessageFeedback = {
-  isPositive: boolean | null
-  category: string | null
-  details: string | null
 }
