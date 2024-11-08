@@ -39,6 +39,16 @@ import {
 import { fetchEnabledDocGroups } from '~/utils/dbUtils'
 
 export const maxDuration = 60
+
+export const config = {
+  api: {
+      bodyParser: {
+          sizeLimit: '4mb' 
+      }
+  }
+}
+
+
 /**
  * The chat API endpoint for handling chat requests and streaming/non streaming responses.
  * This function orchestrates the validation of the request, user permissions,
