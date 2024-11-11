@@ -295,7 +295,6 @@ export default async function chat(
   attachContextsToLastMessage(lastMessage, contexts)
 
   // Handle tools
-  console.log('Tools start with openai_key:', key)
   let updatedConversation = conversation
   if (availableTools.length > 0) {
     updatedConversation = await handleToolsServer(
@@ -309,7 +308,6 @@ export default async function chat(
       getBaseUrl(),
     )
   }
-  console.log('Tools complete, conversation:', conversation)
 
   const chatBody: ChatBody = {
     conversation,
