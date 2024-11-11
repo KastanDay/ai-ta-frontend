@@ -332,7 +332,7 @@ export default async function chat(
   chatBody.conversation = buildPromptResponse
 
   // Make the API request to the chat handler
-  const baseUrl = getBaseUrl()
+  // const baseUrl = getBaseUrl()
   const apiResponse = await routeModelRequest(chatBody, controller, baseUrl)
 
   // Handle errors from the chat handler API

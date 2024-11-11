@@ -527,35 +527,6 @@ export function attachContextsToLastMessage(
 }
 
 /**
- * Constructs the ChatBody object for the chat handler.
- * @param {string} model - The model identifier.
- * @param {Conversation} conversation - The conversation object.
- * @param {string} key - The API key.
- * @param {string} prompt - The prompt for the chat.
- * @param {number} temperature - The temperature setting for the chat.
- * @param {string} course_name - The course name associated with the chat.
- * @param {boolean} stream - A boolean indicating if the response should be streamed.
- * @returns {ChatBody} The constructed ChatBody object.
- */
-export function constructChatBody(
-  conversation: Conversation,
-  key: string,
-  course_name: string,
-  stream: boolean,
-  courseMetadata?: CourseMetadata,
-  llmProviders?: AllLLMProviders,
-): ChatBody {
-  return {
-    conversation: conversation,
-    key: key,
-    course_name: course_name,
-    stream: stream,
-    courseMetadata: courseMetadata,
-    llmProviders: llmProviders,
-  }
-}
-
-/**
  * Handles the streaming of the chat response.
  * @param {NextResponse} apiResponse - The response from the chat handler.
  * @param {Conversation} conversation - The conversation object for logging purposes.
@@ -827,11 +798,14 @@ export const getOpenAIKey = (
   return key
 }
 
+import { POST as ollamaPost } from '@/app/api/chat/ollama/route'
+import { runOllamaChat } from '~/app/utils/ollama'
+
 export const routeModelRequest = async (
   chatBody: ChatBody,
-  controller: AbortController,
+  controller?: AbortController,
   baseUrl?: string,
-): Promise<Response> => {
+): Promise<any> => {
   /*  Use this to call the LLM. It will call the appropriate endpoint based on the conversation.model.
       🧠 ADD NEW LLM PROVIDERS HERE 🧠
   */
@@ -839,9 +813,7 @@ export const routeModelRequest = async (
 
   // Add this check at the beginning of the function
   if (!selectedConversation.model || !selectedConversation.model.id) {
-    throw new Error(
-      'Conversation model is undefined or missing "id" property.',
-    )
+    throw new Error('Conversation model is undefined or missing "id" property.')
   }
 
   posthog.capture('LLM Invoked', {
@@ -865,19 +837,26 @@ export const routeModelRequest = async (
     const newChatBody = chatBody!.llmProviders!.NCSAHosted as NCSAHostedProvider
     newChatBody.baseUrl = process.env.OLLAMA_SERVER_URL // inject proper baseURL
 
-    const url = baseUrl ? `${baseUrl}/api/chat/ollama` : '/api/chat/ollama'
-    response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    console.log('in Ollama routing option, newChatBody: ', newChatBody)
 
-      body: JSON.stringify({
-        conversation: selectedConversation,
-        ollamaProvider: newChatBody,
-        stream: chatBody.stream,
-      }),
-    })
+    // Create a mock Request object
+    // const mockRequest = new Request('http://localhost', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     conversation: selectedConversation,
+    //     ollamaProvider: newChatBody,
+    //     stream: chatBody.stream,
+    //   }),
+    // })
+
+    return await runOllamaChat(
+      chatBody.conversation!,
+      chatBody!.llmProviders!.Ollama as OllamaProvider,
+      true,
+    )
   } else if (
     Object.values(OllamaModelIDs).includes(selectedConversation.model.id as any)
   ) {
@@ -945,7 +924,7 @@ export const routeModelRequest = async (
       headers: {
         'Content-Type': 'application/json',
       },
-      signal: controller.signal,
+      ...(controller && { signal: controller.signal }),
       body: JSON.stringify(chatBody),
     })
   } else {
