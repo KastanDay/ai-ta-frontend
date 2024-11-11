@@ -45,13 +45,11 @@ import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import ChatNavbar from '../UIUC-Components/navbars/ChatNavbar'
-// import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
 import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import {
   State,
-  constructChatBody,
   getOpenAIKey,
   handleContextSearch,
   processChunkWithStateMachine,

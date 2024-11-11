@@ -10,7 +10,6 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { CourseMetadata } from '~/types/courseMetadata'
 import {
   attachContextsToLastMessage,
-  constructChatBody,
   constructSearchQuery,
   determineAndValidateModel,
   fetchKeyToUse,
@@ -25,7 +24,6 @@ import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '~/utils/app/const'
 import { v4 as uuidv4 } from 'uuid'
 import { getBaseUrl } from '~/utils/apiUtils'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
-import { buildPrompt } from '../chat'
 import {
   fetchTools,
   handleToolsServer,
@@ -37,6 +35,7 @@ import {
   ProviderNames,
 } from '~/utils/modelProviders/LLMProvider'
 import { fetchEnabledDocGroups } from '~/utils/dbUtils'
+import { buildPrompt } from '~/app/utils/buildPromptUtils'
 
 export const maxDuration = 60
 /**
@@ -312,15 +311,14 @@ export default async function chat(
   }
   console.log('Tools complete, conversation:', conversation)
 
-  // Construct the chat body for the API request
-  const chatBody: ChatBody = constructChatBody(
+  const chatBody: ChatBody = {
     conversation,
     key,
     course_name,
     stream,
     courseMetadata,
     llmProviders,
-  )
+  }
 
   // Build the prompt
   const buildPromptResponse = await buildPrompt({
@@ -332,7 +330,7 @@ export default async function chat(
   chatBody.conversation = buildPromptResponse
 
   // Make the API request to the chat handler
-  // const baseUrl = getBaseUrl()
+  const baseUrl = getBaseUrl()
   const apiResponse = await routeModelRequest(chatBody, controller, baseUrl)
 
   // Handle errors from the chat handler API
