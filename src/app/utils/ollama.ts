@@ -39,13 +39,16 @@ export async function runOllamaChat(
   }
 
   if (stream) {
-    console.log('Right before streamText response')
     const result = await streamText(commonParams)
     return result.toTextStreamResponse()
   } else {
     const result = await generateText(commonParams)
     const choices = [{ message: { content: result.text } }]
-    return { choices }
+    const response = { choices: choices }
+    return NextResponse.json(response, {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 }
 

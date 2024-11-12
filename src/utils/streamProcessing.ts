@@ -339,7 +339,6 @@ export async function determineAndValidateModel(
   modelsWithProviders: AllLLMProviders
 }> {
   const baseUrl = getBaseUrl()
-  console.log('baseUrl:', baseUrl)
 
   const response = await fetch(baseUrl + '/api/models', {
     method: 'POST',
