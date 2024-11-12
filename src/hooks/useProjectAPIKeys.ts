@@ -1,4 +1,6 @@
 import { QueryClient, useMutation, useQuery } from '@tanstack/react-query'
+import { debounce } from 'lodash'
+import { useMemo, useRef } from 'react'
 import { showConfirmationToast } from '~/components/UIUC-Components/api-inputs/LLMsApiKeyInputForm'
 import { AllLLMProviders } from '~/utils/modelProviders/LLMProvider'
 
@@ -40,35 +42,54 @@ export function useGetProjectLLMProviders({
 }
 
 export function useSetProjectLLMProviders(queryClient: QueryClient) {
+  // This is the main mutation function, just debounced in a delightful way.
+  const debouncedMutate = useMemo(
+    () =>
+      debounce(
+        (variables: {
+          projectName: string
+          llmProviders: AllLLMProviders
+          defaultModelID: string
+          defaultTemperature: string
+        }) => {
+          return new Promise(async (resolve, reject) => {
+            try {
+              const response = await fetch('/api/UIUC-api/upsertLLMProviders', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(variables),
+              })
+
+              if (!response.ok) {
+                reject(new Error('Failed to set LLM settings.'))
+                return
+              }
+
+              const data = await response.json()
+              resolve(data)
+            } catch (error) {
+              reject(error)
+            }
+          })
+        },
+        1000,
+        { maxWait: 10000 },
+      ),
+    [],
+  )
+
   return useMutation({
-    mutationFn: async ({
-      projectName,
-      llmProviders,
-      defaultModelID,
-      defaultTemperature,
-    }: {
+    mutationFn: async (variables: {
       projectName: string
       queryClient: QueryClient
       llmProviders: AllLLMProviders
       defaultModelID: string
       defaultTemperature: string
     }) => {
-      const response = await fetch('/api/UIUC-api/upsertLLMProviders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          projectName: projectName,
-          llmProviders: llmProviders,
-          defaultModelID: defaultModelID,
-          defaultTemperature: defaultTemperature,
-        }),
-      })
-      if (!response.ok) {
-        throw new Error('Failed to set LLM providers')
-      }
-      return response.json()
+      // THIS IS THE MUTATION, just in the function above.
+      return await debouncedMutate(variables)
     },
     onMutate: async (variables) => {
       // Cancel any outgoing refetches
@@ -112,11 +133,11 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
       //   isError: false,
       // })
     },
-    onSettled: (data, error, variables, context) => {
-      // Always refetch after error or success to ensure we have the latest data
-      queryClient.invalidateQueries({
-        queryKey: ['projectLLMProviders', variables.projectName],
-      })
-    },
+    // onSettled: (data, error, variables, context) => {
+    //   // Always refetch after error or success to ensure we have the latest data
+    //   queryClient.invalidateQueries({
+    //     queryKey: ['projectLLMProviders', variables.projectName],
+    //   })
+    // },
   })
 }
