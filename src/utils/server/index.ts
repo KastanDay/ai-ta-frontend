@@ -196,7 +196,12 @@ export const OpenAIStream = async (
         }
       },
     })
-
+    console.log('Streaming response from OpenAI:', {
+      type: typeof apiStream,
+      constructor: apiStream?.constructor?.name,
+      isReadableStream: apiStream instanceof ReadableStream,
+      properties: Object.keys(apiStream || {}),
+    })
     return apiStream
   } else {
     console.log('Non Streaming response ')

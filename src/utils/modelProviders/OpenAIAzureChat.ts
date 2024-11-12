@@ -5,33 +5,15 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 export const maxDuration = 60
 
-export const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+export const openAIAzureChat = async (chatBody: ChatBody, stream: boolean) => {
   // OpenAI's main chat endpoint
   try {
-    // Ensure encoding is initialized before usage
-    await initializeEncoding()
-
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method Not Allowed' })
-    }
-
-    const {
-      conversation,
-      key,
-      course_name,
-      courseMetadata,
-      stream,
-      llmProviders,
-    } = req.body as ChatBody
+    const { conversation, llmProviders } = chatBody
 
     if (!conversation) {
-      console.error(
+      throw new Error(
         'No conversation provided. It seems the `messages` array was empty.',
       )
-      return res.status(400).json({
-        error:
-          'No conversation provided. It seems the `messages` array was empty.',
-      })
     }
 
     const messagesToSend = convertConversationToOpenAIMessages(
@@ -44,10 +26,7 @@ export const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         ?.latestSystemMessage
 
     if (!latestSystemMessage) {
-      console.error('No system message found in the conversation.')
-      return res.status(400).json({
-        error: 'No system message found in the conversation.',
-      })
+      throw new Error('No system message found in the conversation.')
     }
 
     const apiStream = await OpenAIStream(
@@ -55,41 +34,33 @@ export const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       latestSystemMessage,
       conversation.temperature,
       llmProviders!,
-      // openAIKey,
       // @ts-ignore -- I think the types are fine.
       messagesToSend, //old: conversation.messages
       stream,
     )
 
     if (stream) {
-      res.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache, no-transform',
-        Connection: 'keep-alive',
-      })
-
-      for await (const chunk of apiStream) {
-        res.write(chunk)
+      if (apiStream instanceof ReadableStream) {
+        return new Response(apiStream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            Connection: 'keep-alive',
+          },
+        })
       }
-
-      res.end()
+      return apiStream
     } else {
-      return new Response(JSON.stringify(apiStream))
+      return JSON.stringify(apiStream)
     }
   } catch (error) {
     if (error instanceof OpenAIError) {
       const { name, message } = error
       console.error('OpenAI Completion Error', message)
-      res.status(400).json({
-        statusCode: 400,
-        name: name,
-        message: message,
-      })
+      throw error
     } else {
       console.error('Unexpected Error', error)
-      res
-        .status(500)
-        .json({ name: 'Error', message: 'An unexpected error occurred' })
+      throw new Error('An unexpected error occurred')
     }
   }
 }
@@ -146,5 +117,3 @@ const convertConversationToOpenAIMessages = (
     return strippedMessage
   })
 }
-
-export default handler

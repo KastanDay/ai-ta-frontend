@@ -800,6 +800,7 @@ export const getOpenAIKey = (
 
 import { POST as ollamaPost } from '@/app/api/chat/ollama/route'
 import { runOllamaChat } from '~/app/utils/ollama'
+import { openAIAzureChat } from './modelProviders/OpenAIAzureChat'
 
 export const routeModelRequest = async (
   chatBody: ChatBody,
@@ -838,19 +839,6 @@ export const routeModelRequest = async (
     newChatBody.baseUrl = process.env.OLLAMA_SERVER_URL // inject proper baseURL
 
     console.log('in Ollama routing option, newChatBody: ', newChatBody)
-
-    // Create a mock Request object
-    // const mockRequest = new Request('http://localhost', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     conversation: selectedConversation,
-    //     ollamaProvider: newChatBody,
-    //     stream: chatBody.stream,
-    //   }),
-    // })
 
     return await runOllamaChat(
       chatBody.conversation!,
@@ -918,15 +906,8 @@ export const routeModelRequest = async (
     Object.values(AzureModelID).includes(selectedConversation.model.id as any)
   ) {
     // Call the OpenAI or Azure API
-    const url = baseUrl ? `${baseUrl}/api/chat` : '/api/chat'
-    response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      ...(controller && { signal: controller.signal }),
-      body: JSON.stringify(chatBody),
-    })
+    console.log('Calling OpenAI API baseurl: ', baseUrl)
+    return await openAIAzureChat(chatBody, true)
   } else {
     throw new Error(
       `Model '${selectedConversation.model.name}' is not supported.`,

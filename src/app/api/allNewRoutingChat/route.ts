@@ -1,24 +1,8 @@
-import { CourseMetadata } from '~/types/courseMetadata'
-import { getCourseMetadata } from '~/pages/api/UIUC-api/getCourseMetadata'
-import {
-  ChatBody,
-  Content,
-  ContextWithMetadata,
-  Conversation,
-  MessageType,
-  OpenAIChatMessage,
-  UIUCTool,
-} from '@/types/chat'
-import { NextApiRequest, NextApiResponse } from 'next'
-import { AnySupportedModel } from '~/utils/modelProviders/LLMProvider'
-import { DEFAULT_SYSTEM_PROMPT } from '@/utils/app/const'
+import { ChatBody } from '@/types/chat'
 import { routeModelRequest } from '~/utils/streamProcessing'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { encodingForModel } from 'js-tiktoken'
-import { buildPrompt, getSystemPostPrompt } from '~/app/utils/buildPromptUtils'
-
-const encoding = encodingForModel('gpt-4o')
+import { buildPrompt } from '~/app/utils/buildPromptUtils'
 
 export async function POST(req: NextRequest, res: NextResponse) {
   const startTime = Date.now()
@@ -54,5 +38,5 @@ export async function POST(req: NextRequest, res: NextResponse) {
   const duration = endTime - startTime
   console.log(`Total duration: ${duration}ms`)
 
-  return result.toTextStreamResponse()
+  return result
 }
