@@ -17,7 +17,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
     stream,
     llmProviders,
   } = body as ChatBody
-  console.log('body in /api/chat', body)
 
   const buildPromptStartTime = Date.now()
   const newConversation = await buildPrompt({
@@ -32,7 +31,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
   body.conversation = newConversation
 
   const result = await routeModelRequest(body as ChatBody)
-  console.log('Result in /api/chat', result)
 
   const endTime = Date.now()
   const duration = endTime - startTime

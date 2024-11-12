@@ -31,8 +31,6 @@ export async function runOllamaChat(
     throw new Error('Conversation messages array is empty')
   }
 
-  console.log('Using model conversation.model.id', conversation.model.id)
-
   const commonParams = {
     model: ollama(conversation.model.id),
     messages: convertConversatonToVercelAISDKv3(conversation),

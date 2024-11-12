@@ -51,7 +51,24 @@ export const openAIAzureChat = async (chatBody: ChatBody, stream: boolean) => {
       }
       return apiStream
     } else {
-      return JSON.stringify(apiStream)
+      // For non-streaming responses, ensure we're returning a properly formatted response
+      return new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: apiStream,
+              },
+            },
+          ],
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+      // return JSON.stringify(apiStream)
     }
   } catch (error) {
     if (error instanceof OpenAIError) {

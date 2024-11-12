@@ -79,10 +79,6 @@ function convertConversatonToVercelAISDKv3(
     (msg) => msg.latestSystemMessage !== undefined,
   )
   if (systemMessage) {
-    console.log(
-      'Found system message, latestSystemMessage: ',
-      systemMessage.latestSystemMessage,
-    )
     coreMessages.push({
       role: 'system',
       content: systemMessage.latestSystemMessage || '',

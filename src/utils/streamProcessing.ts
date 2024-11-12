@@ -65,7 +65,6 @@ export async function processChunkWithStateMachine(
   stateMachineContext: { state: State; buffer: string },
   citationLinkCache: Map<number, string>,
 ): Promise<string> {
-  // console.log('in processChunkWithStateMachine with chunk: ', chunk)
   let { state, buffer } = stateMachineContext
   let processedChunk = ''
 
@@ -524,7 +523,6 @@ export function attachContextsToLastMessage(
     lastMessage.contexts = []
   }
   lastMessage.contexts = contexts
-  console.log('lastMessage: ', lastMessage)
 }
 
 /**
@@ -842,7 +840,7 @@ export const routeModelRequest = async (
     return await runOllamaChat(
       chatBody.conversation!,
       chatBody!.llmProviders!.Ollama as OllamaProvider,
-      true,
+      chatBody.stream,
     )
   } else if (
     Object.values(OllamaModelIDs).includes(selectedConversation.model.id as any)
@@ -852,7 +850,7 @@ export const routeModelRequest = async (
     return await runOllamaChat(
       selectedConversation,
       chatBody!.llmProviders!.Ollama as OllamaProvider,
-      true,
+      chatBody.stream,
     )
   } else if (
     Object.values(AnthropicModelID).includes(
@@ -864,7 +862,7 @@ export const routeModelRequest = async (
       return await runAnthropicChat(
         selectedConversation,
         chatBody!.llmProviders!.Anthropic as AnthropicProvider,
-        true,
+        chatBody.stream,
       )
     } catch (error) {
       return new Response(
@@ -887,8 +885,7 @@ export const routeModelRequest = async (
     Object.values(AzureModelID).includes(selectedConversation.model.id as any)
   ) {
     // Call the OpenAI or Azure API
-    console.log('Calling OpenAI API baseurl: ', baseUrl)
-    return await openAIAzureChat(chatBody, true)
+    return await openAIAzureChat(chatBody, chatBody.stream)
   } else {
     throw new Error(
       `Model '${selectedConversation.model.name}' is not supported.`,
