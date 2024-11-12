@@ -17,6 +17,7 @@ import posthog from 'posthog-js'
 import {
   AllLLMProviders,
   AllSupportedModels,
+  AnthropicProvider,
   GenericSupportedModel,
   NCSAHostedProvider,
   OllamaProvider,
@@ -801,6 +802,7 @@ export const getOpenAIKey = (
 import { POST as ollamaPost } from '@/app/api/chat/ollama/route'
 import { runOllamaChat } from '~/app/utils/ollama'
 import { openAIAzureChat } from './modelProviders/OpenAIAzureChat'
+import { runAnthropicChat } from '~/app/utils/anthropic'
 
 export const routeModelRequest = async (
   chatBody: ChatBody,
@@ -828,7 +830,6 @@ export const routeModelRequest = async (
     model_id: selectedConversation.model.id,
   })
 
-  let response: Response
   if (
     Object.values(NCSAHostedModelID).includes(
       selectedConversation.model.id as any,
@@ -837,8 +838,6 @@ export const routeModelRequest = async (
     // NCSA Hosted LLMs
     const newChatBody = chatBody!.llmProviders!.NCSAHosted as NCSAHostedProvider
     newChatBody.baseUrl = process.env.OLLAMA_SERVER_URL // inject proper baseURL
-
-    console.log('in Ollama routing option, newChatBody: ', newChatBody)
 
     return await runOllamaChat(
       chatBody.conversation!,
@@ -860,28 +859,20 @@ export const routeModelRequest = async (
       selectedConversation.model.id as any,
     )
   ) {
-    const url = baseUrl
-      ? `${baseUrl}/api/chat/anthropic`
-      : '/api/chat/anthropic'
-
+    // ANTHROPIC
     try {
-      response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ chatBody }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(JSON.stringify(errorData) || 'Unknown error occurred')
-      }
+      return await runAnthropicChat(
+        selectedConversation,
+        chatBody!.llmProviders!.Anthropic as AnthropicProvider,
+        true,
+      )
     } catch (error) {
       return new Response(
         JSON.stringify({
           error:
-            error instanceof Error ? error.message : 'Unknown error occurred',
+            error instanceof Error
+              ? error.message
+              : 'Unknown error occurred when streaming Anthropic LLMs.',
         }),
         {
           status: 500,
@@ -903,5 +894,4 @@ export const routeModelRequest = async (
       `Model '${selectedConversation.model.name}' is not supported.`,
     )
   }
-  return response
 }
