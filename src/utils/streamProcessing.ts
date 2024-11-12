@@ -848,23 +848,13 @@ export const routeModelRequest = async (
   } else if (
     Object.values(OllamaModelIDs).includes(selectedConversation.model.id as any)
   ) {
-    console.log(
-      'IN NCSA OLLAMA ROUTER SIDE....',
-      chatBody!.llmProviders!.Ollama,
-    )
+    // User-supplied Ollama instance
 
-    // Ollama model
-    const url = baseUrl ? `${baseUrl}/api/chat/ollama` : '/api/chat/ollama'
-    response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        conversation: selectedConversation,
-        ollamaProvider: chatBody!.llmProviders!.Ollama as OllamaProvider,
-      }),
-    })
+    return await runOllamaChat(
+      selectedConversation,
+      chatBody!.llmProviders!.Ollama as OllamaProvider,
+      true,
+    )
   } else if (
     Object.values(AnthropicModelID).includes(
       selectedConversation.model.id as any,
