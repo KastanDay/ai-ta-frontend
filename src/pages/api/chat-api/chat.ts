@@ -39,14 +39,6 @@ import { buildPrompt } from '~/app/utils/buildPromptUtils'
 
 export const maxDuration = 60
 
-export const config = {
-  api: {
-      bodyParser: {
-          sizeLimit: '4mb' 
-      }
-  }
-}
-
 
 /**
  * The chat API endpoint for handling chat requests and streaming/non streaming responses.
