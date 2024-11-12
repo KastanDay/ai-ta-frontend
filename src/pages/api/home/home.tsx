@@ -26,8 +26,6 @@ import { type HomeInitialState, initialState } from './home.state'
 import { v4 as uuidv4 } from 'uuid'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import {
-  AnySupportedModel,
-  ProjectWideLLMProviders,
   selectBestModel,
   VisionCapableModels,
 } from '~/utils/modelProviders/LLMProvider'
@@ -41,8 +39,6 @@ import { useUpdateConversation } from '~/hooks/conversationQueries'
 import { FolderType, FolderWithConversation } from '~/types/folder'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCreateFolder } from '~/hooks/folderQueries'
-import { GetCurrentPageName } from '~/components/UIUC-Components/CanViewOnlyCourse'
-import { useGetProjectLLMProviders } from '~/hooks/useProjectAPIKeys'
 
 const Home = ({
   current_email,
@@ -118,7 +114,7 @@ const Home = ({
         throw new Error('Failed to fetch models')
       }
 
-      return response.json() as unknown as ProjectWideLLMProviders
+      return response.json()
     },
     [],
   )
@@ -139,6 +135,7 @@ const Home = ({
       selectedConversation,
       prompts,
       temperature,
+      llmProviders,
       documentGroups,
       tools,
       searchTerm,
@@ -151,38 +148,21 @@ const Home = ({
     queryClient,
     course_name,
   )
-  const projectName = GetCurrentPageName()
-
-  const {
-    data: llmProviders,
-    isLoading: isLoadingLLMProviders,
-    isError: isErrorLLMProviders,
-    error: errorLLMProviders,
-    // enabled: !!projectName // Only run the query when projectName is available
-  } = useGetProjectLLMProviders({ projectName: projectName })
-
   // Use effects for setting up the course metadata and models depending on the course/project
   useEffect(() => {
     // Set model after we fetch available models
     if (!llmProviders || Object.keys(llmProviders).length === 0) return
-
-    let model
-    if (!llmProviders.defaultModel) {
-      model = selectBestModel(llmProviders.providers)
-    } else {
-      model = llmProviders.defaultModel
-    }
+    const model = selectBestModel(llmProviders)
 
     dispatch({
       field: 'defaultModelId',
-      value: llmProviders.defaultModel,
+      value: model.id,
     })
 
-    // THIS IS ERRORING DUE TO TYPES
     // Ensure current convo has a valid model
-    if (selectedConversation && llmProviders.defaultModel) {
+    if (selectedConversation) {
       const convo_with_valid_model = selectedConversation
-      convo_with_valid_model.model = llmProviders.defaultModel
+      convo_with_valid_model.model = model
       dispatch({
         field: 'selectedConversation',
         value: convo_with_valid_model,
@@ -232,11 +212,10 @@ const Home = ({
       try {
         if (!course_metadata) return
 
-        const llmProviders = await getModels({
+        const models = await getModels({
           projectName: course_name,
         })
-
-        dispatch({ field: 'llmProviders', value: llmProviders.providers })
+        dispatch({ field: 'llmProviders', value: models })
       } catch (error) {
         console.error('Error fetching models user has access to: ', error)
         dispatch({ field: 'modelError', value: getModelsError(error) })
@@ -338,27 +317,17 @@ const Home = ({
     if (selectedConversation?.messages.length === 0) return
   }
 
-  // This will ONLY update the react context and not the server
   const handleNewConversation = () => {
-    if (selectedConversation?.messages.length === 0) return
     const lastConversation = conversations[conversations.length - 1]
-    // Determine the model to use for the new conversation
 
-    let model
-    if (llmProviders && !llmProviders.defaultModel) {
-      model = selectBestModel(llmProviders.providers)
-    } else if (llmProviders) {
-      model = llmProviders.defaultModel
-    } else {
-      // @ts-ignore - this is a hack to get the default model
-      model = selectBestModel({})
-    }
+    // Determine the model to use for the new conversation
+    const model = selectBestModel(llmProviders)
 
     const newConversation: Conversation = {
       id: uuidv4(),
       name: t('New Conversation'),
       messages: [],
-      model: (model as AnySupportedModel) ?? llmProviders?.defaultModel,
+      model: model,
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
@@ -390,17 +359,12 @@ const Home = ({
     conversation: Conversation,
     data: KeyValuePair,
   ) => {
-    // If there is data that means only update selectedConversation and local storage, irrespective of user email
-    // If there is no data, update the selectedConversation, local storage if user email is not set, and selectedConversation, local storage and server if user email is set
-
-    let updatedConversation = conversation
-    console.log('updating conversation with data: ', data)
-    updatedConversation = {
+    const updatedConversation = {
       ...conversation,
       [data.key]: data.value,
     }
 
-    console.log('updating conversation in local storage: ', updatedConversation)
+    // Save to localStorage immediately
     localStorage.setItem(
       'selectedConversation',
       JSON.stringify(updatedConversation),
@@ -408,44 +372,50 @@ const Home = ({
 
     dispatch({ field: 'selectedConversation', value: updatedConversation })
 
-    const updatedConversations = conversations.map((c) => {
-      if (c.id === updatedConversation.id) {
-        return updatedConversation
-      }
+    let updatedConversations
 
-      return c
-    })
+    const existingConversationIndex = conversations.findIndex(
+      (c) => c.id === updatedConversation.id,
+    )
+
+    if (existingConversationIndex >= 0) {
+      // Update existing conversation
+      updatedConversations = conversations.map((c) => {
+        if (c.id === updatedConversation.id) {
+          return updatedConversation
+        }
+        return c
+      })
+    } else {
+      // Add new conversation to the list
+      updatedConversations = [updatedConversation, ...conversations]
+    }
+
     dispatch({ field: 'conversations', value: updatedConversations })
-    // localStorage.setItem(
-    //   'conversationHistory',
-    //   JSON.stringify(updatedConversations),
-    // )
-
-    // if (data) {
-    //   updatedConversation = {
-    //     ...conversation,
-    //     [data.key]: data.value,
-    //   }
-
-    //   localStorage.setItem(
-    //     'selectedConversation',
-    //     JSON.stringify(updatedConversation),
-    //   )
-    //   const updatedConversations = conversations.map((c) => {
-    //     if (c.id === updatedConversation.id) {
-    //       return updatedConversation
-    //     }
-    //   }
-    //   )
-    //   localStorage.setItem('conversations', JSON.stringify(updatedConversations))
-    //   dispatch({ field: 'conversations', value: updatedConversations })
-    // } else if() {
-
-    // }
-    // updateConversationMutation.mutate(updatedConversation)
-    // updateConversation(updatedConversation)
-    // dispatch({ field: 'selectedConversation', value: updatedConversation })
   }
+
+  const handleFeedbackUpdate = (
+    conversation: Conversation,
+    data: KeyValuePair,
+  ) => {
+    if (!conversation?.messages) return;
+
+    // Create updated conversation object
+    const updatedConversation = {
+      ...conversation,
+      [data.key]: data.value,
+    };
+
+    // Update state
+    dispatch({ field: 'selectedConversation', value: updatedConversation });
+
+    // Update conversations list
+    const updatedConversations = conversations.map((c) => 
+      c.id === conversation.id ? updatedConversation : c
+    );
+
+    dispatch({ field: 'conversations', value: updatedConversations });
+  };
 
   // Other context actions --------------------------------------------
 
@@ -647,6 +617,7 @@ const Home = ({
         if (!llmProviders || Object.keys(llmProviders).length === 0) return
         handleNewConversation()
       }
+      // handleNewConversation()
       setIsInitialSetupDone(true)
     }
 
@@ -671,6 +642,7 @@ const Home = ({
           handleUpdateFolder,
           handleSelectConversation,
           handleUpdateConversation,
+          handleFeedbackUpdate,
           setIsImg2TextLoading,
           setIsRouting,
           // setRoutingResponse,

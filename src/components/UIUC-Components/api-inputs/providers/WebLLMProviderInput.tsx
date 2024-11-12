@@ -22,7 +22,12 @@ export default function WebLLMProviderInput({
   }
   return (
     <motion.div layout>
-      <Card shadow="sm" p="lg" radius="lg" className="w-[310px] bg-[#15162c]">
+      <Card
+        shadow="sm"
+        p="lg"
+        radius="lg"
+        className="max-w-[330px] bg-[#15162c] md:w-[330px]"
+      >
         <div
           style={{
             display: 'flex',
@@ -60,9 +65,7 @@ export default function WebLLMProviderInput({
                 aria-label="Enable WebLLM provider"
                 checked={field.state.value}
                 onChange={(event) => {
-                  const newValue = event.currentTarget.checked
-                  field.handleChange(newValue)
-                  provider.enabled = newValue
+                  field.handleChange(event.currentTarget.checked)
                   // Trigger form submission
                   setTimeout(() => form.handleSubmit(), 0)
                 }}

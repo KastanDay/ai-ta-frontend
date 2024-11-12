@@ -12,7 +12,7 @@ import { Database } from 'database.types'
 import { v4 as uuidv4 } from 'uuid'
 import {
   AllSupportedModels,
-  AnySupportedModel,
+  GenericSupportedModel,
 } from '~/utils/modelProviders/LLMProvider'
 
 export const config = {
@@ -54,13 +54,13 @@ export function convertDBToChatConversation(
     name: dbConversation.name,
     model: Array.from(AllSupportedModels).find(
       (model) => model.id === dbConversation.model,
-    ) as AnySupportedModel,
+    ) as GenericSupportedModel,
     prompt: dbConversation.prompt,
     temperature: dbConversation.temperature,
     userEmail: dbConversation.user_email || undefined,
     projectName: dbConversation.project_name,
     folderId: dbConversation.folder_id,
-    messages: (dbMessages || []).map((msg) => {
+    messages: (dbMessages || []).map((msg: any) => {
       const content: Content[] = []
       if (msg.content_text) {
         content.push({
@@ -85,7 +85,15 @@ export function convertDBToChatConversation(
         }
       }
 
-      return {
+      const feedbackObj = msg.feedback
+        ? {
+            isPositive: msg.feedback.feedback_is_positive,
+            category: msg.feedback.feedback_category,
+            details: msg.feedback.feedback_details,
+          }
+        : undefined
+
+      const messageObj = {
         id: msg.id,
         role: msg.role as Role,
         content: content,
@@ -97,7 +105,10 @@ export function convertDBToChatConversation(
         responseTimeSec: msg.response_time_sec || undefined,
         created_at: msg.created_at || undefined,
         updated_at: msg.updated_at || undefined,
+        feedback: feedbackObj,
       }
+
+      return messageObj
     }),
     createdAt: dbConversation.created_at || undefined,
     updatedAt: dbConversation.updated_at || undefined,
@@ -163,6 +174,9 @@ export function convertChatToDBMessage(
     conversation_id: conversationId,
     created_at: chatMessage.created_at || new Date().toISOString(),
     updated_at: chatMessage.updated_at || new Date().toISOString(),
+    feedback_is_positive: chatMessage.feedback?.isPositive ?? null,
+    feedback_category: chatMessage.feedback?.category ?? null,
+    feedback_details: chatMessage.feedback?.details ?? null,
   }
 }
 
@@ -187,6 +201,10 @@ export default async function handler(
       try {
         // Convert conversation to DB type
         const dbConversation = convertChatToDBConversation(conversation)
+        console.log(
+          'Saving conversation to server with db object:',
+          dbConversation,
+        )
 
         if (conversation.messages.length === 0) {
           throw new Error('No messages in conversation, not saving!')
@@ -232,7 +250,7 @@ export default async function handler(
       try {
         const pageSize = 8
 
-        const { data, error } = await supabase.rpc('search_conversations', {
+        const { data, error } = await supabase.rpc('search_conversations_v2', {
           p_user_email: user_email,
           p_project_name: courseName,
           p_search_term: searchTerm || null,
