@@ -109,23 +109,18 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
         ['projectLLMProviders', newData.projectName],
         context?.previousLLMProviders,
       )
-      showConfirmationToast({
-        title: 'Failed to set LLM providers',
-        message: `The database request failed with error: ${err.name} -- ${err.message}`,
-        isError: true,
-      })
     },
     onSuccess: (data, variables) => {
-      showConfirmationToast({
-        title: 'Updated LLM providers',
-        message: `Successfully updated your project's LLM settings!`,
-      })
+      // showConfirmationToast({
+      //   title: 'Updated LLM providers',
+      //   message: `Successfully updated your project's LLM settings!`,
+      // })
     },
     onSettled: (data, error, variables) => {
-      showConfirmationToast({
-        title: 'onSettled',
-        message: `Settled.`,
-      })
+      // showConfirmationToast({
+      //   title: 'onSettled',
+      //   message: `Settled.`,
+      // })
       // Always invalidate the query after mutation settles(success or error)
       queryClient.invalidateQueries({
         queryKey: ['projectLLMProviders', variables.projectName],
