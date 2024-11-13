@@ -50,6 +50,7 @@ import { VisionCapableModels } from '~/utils/modelProviders/LLMProvider'
 import { OpenAIModelID } from '~/utils/modelProviders/types/openai'
 import { UserSettings } from '~/components/Chat/UserSettings'
 import { IconChevronRight } from '@tabler/icons-react'
+import { showConfirmationToast } from '../UIUC-Components/api-inputs/LLMsApiKeyInputForm'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -457,6 +458,20 @@ export const ChatInput = ({
 
   const handleImageUpload = useCallback(
     async (files: File[]) => {
+      // TODO: FIX IMAGE UPLOADS ASAP
+      showConfirmationToast({
+        title: `😢 We can't handle all these images...`,
+        message: `Image uploads are temporarily disabled. I'm really sorry, I'm working on getting them back. Email me if you want to complain: kvday2@illinois.edu`,
+        isError: true,
+        autoClose: 10000,
+      })
+
+      // Clear any selected files
+      if (imageUploadRef.current) {
+        imageUploadRef.current.value = ''
+      }
+      return // Exit early to prevent processing
+
       const validFiles = files.filter((file) => isImageValid(file.name))
       const invalidFilesCount = files.length - validFiles.length
 
