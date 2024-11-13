@@ -642,8 +642,10 @@ export const Chat = memo(
               }
 
               errorToast({
-                title: `Error ${errorCode || ''}`,
-                message: errorMessage || 'An unexpected error occurred',
+                title: `Error calling LLM`,
+                message:
+                  errorMessage ||
+                  `An unexpected error occurred. Try using a different model.${errorCode ? ` Error code: ${errorCode}` : ''}`,
               })
               return
             } else {
