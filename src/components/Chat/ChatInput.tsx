@@ -378,21 +378,58 @@ export const ChatInput = ({
     [parseVariables, setContent, updatePromptListVisibility],
   )
 
-  const handleSubmit = useCallback(
-    (updatedVariables: string[]) => {
-      const newContent = content?.replace(/{{(.*?)}}/g, (match, variable) => {
-        const index = variables.indexOf(variable)
-        return updatedVariables[index] || ''
+  const handleSubmit = async () => {
+    if (messageIsStreaming) {
+      return
+    }
+
+    const textContent = content
+    let imageContent: Content[] = []
+
+    try {
+      // ... existing image handling code ...
+
+      const response = await fetch('/api/allNewRoutingChat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversation: selectedConversation,
+          // key: apiKey,
+          course_name: courseName,
+          // courseMetadata: courseMetadata,
+          stream: true,
+          // llmProviders: llmProviders,
+        }),
       })
 
-      setContent(newContent)
-
-      if (textareaRef && textareaRef.current) {
-        textareaRef.current.focus()
+      if (!response.ok) {
+        const errorResponse = await response.json()
+        const errorMessage =
+          errorResponse.error ||
+          'An error occurred while processing your request'
+        notifications.show({
+          message: errorMessage,
+          color: 'red',
+        })
+        return
       }
-    },
-    [variables, setContent, textareaRef],
-  ) // Add dependencies used in the function
+
+      // ... rest of success handling ...
+    } catch (error) {
+      console.error('Error in chat submission:', error)
+      notifications.show({
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to send message. Please try again.',
+        color: 'red',
+      })
+    } finally {
+      setUploadingImage(false)
+    }
+  }
 
   // https://platform.openai.com/docs/guides/vision/what-type-of-files-can-i-upload
   const validImageTypes = ['.jpg', '.jpeg', '.png', '.webp', '.gif']
