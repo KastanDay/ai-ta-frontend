@@ -10,7 +10,6 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { CourseMetadata } from '~/types/courseMetadata'
 import {
   attachContextsToLastMessage,
-  constructChatBody,
   constructSearchQuery,
   determineAndValidateModel,
   fetchKeyToUse,
@@ -25,7 +24,6 @@ import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '~/utils/app/const'
 import { v4 as uuidv4 } from 'uuid'
 import { getBaseUrl } from '~/utils/apiUtils'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
-import { buildPrompt } from '../chat'
 import {
   fetchTools,
   handleToolsServer,
@@ -37,6 +35,7 @@ import {
   ProviderNames,
 } from '~/utils/modelProviders/LLMProvider'
 import { fetchEnabledDocGroups } from '~/utils/dbUtils'
+import { buildPrompt } from '~/app/utils/buildPromptUtils'
 
 export const maxDuration = 60
 /**
@@ -50,7 +49,7 @@ export const maxDuration = 60
  */
 export default async function chat(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ): Promise<void> {
   // Validate the HTTP method
   if (req.method !== 'POST') {
@@ -163,7 +162,9 @@ export default async function chat(
       permission: permission,
       user_id: email,
     })
-    res.status(403).json({ error: 'You do not have permission to perform this action' })
+    res
+      .status(403)
+      .json({ error: 'You do not have permission to perform this action' })
     return
   }
 
@@ -192,21 +193,16 @@ export default async function chat(
     } catch (error) {
       console.error('Error fetching tools.', error)
       availableTools = []
-      res.status(500).json({ error: `Error fetching tools. ${(error as Error).message}` })
+      res
+        .status(500)
+        .json({ error: `Error fetching tools. ${(error as Error).message}` })
       return
     }
   }
 
   // Fetch document groups
-  let doc_groups: string[] = []
-  try {
-    const enabledDocGroups = await fetchEnabledDocGroups(course_name!)
-    doc_groups = enabledDocGroups.map((group) => group.name)
-  } catch (error) {
-    console.error('Error fetching document groups:', error)
-    res.status(500).json({ error: 'Error fetching document groups' })
-    return
-  }
+  // We can fetch custom doc groups here instead, but for now we'll just use the default
+  const doc_groups = ['All Documents']
 
   const controller = new AbortController()
   // Construct the search query
@@ -265,7 +261,11 @@ export default async function chat(
   }
 
   // Fetch Contexts
-  console.log('Before context search:', { courseName: course_name, searchQuery, documentGroups: doc_groups })
+  console.log('Before context search:', {
+    courseName: course_name,
+    searchQuery,
+    documentGroups: doc_groups,
+  })
   const contexts = await handleContextSearch(
     lastMessage,
     course_name,
@@ -295,7 +295,6 @@ export default async function chat(
   attachContextsToLastMessage(lastMessage, contexts)
 
   // Handle tools
-  console.log('Tools start with openai_key:', key)
   let updatedConversation = conversation
   if (availableTools.length > 0) {
     updatedConversation = await handleToolsServer(
@@ -309,17 +308,15 @@ export default async function chat(
       getBaseUrl(),
     )
   }
-  console.log('Tools complete, conversation:', conversation)
 
-  // Construct the chat body for the API request
-  const chatBody: ChatBody = constructChatBody(
+  const chatBody: ChatBody = {
     conversation,
     key,
     course_name,
     stream,
     courseMetadata,
     llmProviders,
-  )
+  }
 
   // Build the prompt
   const buildPromptResponse = await buildPrompt({
@@ -343,7 +340,9 @@ export default async function chat(
       status: apiResponse.status,
       user_id: email,
     })
-    res.status(apiResponse.status).json({ error: `API error: ${apiResponse.statusText}` })
+    res
+      .status(apiResponse.status)
+      .json({ error: `API error: ${apiResponse.statusText}` })
     return
   }
 
