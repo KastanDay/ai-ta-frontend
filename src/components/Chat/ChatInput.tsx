@@ -383,9 +383,6 @@ export const ChatInput = ({
       return
     }
 
-    const textContent = content
-    let imageContent: Content[] = []
-
     try {
       // ... existing image handling code ...
 
