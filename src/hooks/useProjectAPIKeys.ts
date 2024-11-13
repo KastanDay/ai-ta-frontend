@@ -42,37 +42,34 @@ export function useGetProjectLLMProviders({
 }
 
 export function useSetProjectLLMProviders(queryClient: QueryClient) {
-  // This is the main mutation function, just debounced in a delightful way.
-  const debouncedMutate = useMemo(
+  const debouncedApiCall = useMemo(
     () =>
       debounce(
-        (variables: {
-          projectName: string
-          llmProviders: AllLLMProviders
-          defaultModelID: string
-          defaultTemperature: string
-        }) => {
-          return new Promise(async (resolve, reject) => {
-            try {
-              const response = await fetch('/api/UIUC-api/upsertLLMProviders', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(variables),
-              })
-
-              if (!response.ok) {
-                reject(new Error('Failed to set LLM settings.'))
-                return
-              }
-
-              const data = await response.json()
-              resolve(data)
-            } catch (error) {
-              reject(error)
-            }
+        (
+          variables: {
+            projectName: string
+            llmProviders: AllLLMProviders
+            defaultModelID: string
+            defaultTemperature: string
+          },
+          resolve: (value: any) => void,
+          reject: (reason?: any) => void,
+        ) => {
+          fetch('/api/UIUC-api/upsertLLMProviders', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(variables),
           })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error('Failed to set LLM settings.')
+              }
+              return response.json()
+            })
+            .then(resolve)
+            .catch(reject)
         },
         1000,
         { maxWait: 10000 },
@@ -83,13 +80,13 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
   return useMutation({
     mutationFn: async (variables: {
       projectName: string
-      queryClient: QueryClient
       llmProviders: AllLLMProviders
       defaultModelID: string
       defaultTemperature: string
     }) => {
-      // THIS IS THE MUTATION, just in the function above.
-      return await debouncedMutate(variables)
+      return new Promise((resolve, reject) => {
+        debouncedApiCall(variables, resolve, reject)
+      })
     },
     onMutate: async (variables) => {
       // Cancel any outgoing refetches
@@ -102,13 +99,6 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
         'projectLLMProviders',
         variables.projectName,
       ])
-
-      // Optimistically update to the new value
-      queryClient.setQueryData(['projectLLMProviders', variables.projectName], {
-        ...variables.llmProviders,
-        defaultModel: variables.defaultModelID,
-        defaultTemp: parseFloat(variables.defaultTemperature),
-      })
 
       // Return a context object with the snapshotted value
       return { previousLLMProviders }
@@ -125,19 +115,21 @@ export function useSetProjectLLMProviders(queryClient: QueryClient) {
         isError: true,
       })
     },
-    onSuccess: (data, variables, context) => {
-      // Optionally, you can show a success toast here
-      // showConfirmationToast({
-      //   title: 'Updated LLM providers',
-      //   message: `Now your project's users can use the supplied LLMs!`,
-      //   isError: false,
-      // })
+    onSuccess: (data, variables) => {
+      showConfirmationToast({
+        title: 'Updated LLM providers',
+        message: `Successfully updated your project's LLM settings!`,
+      })
     },
-    // onSettled: (data, error, variables, context) => {
-    //   // Always refetch after error or success to ensure we have the latest data
-    //   queryClient.invalidateQueries({
-    //     queryKey: ['projectLLMProviders', variables.projectName],
-    //   })
-    // },
+    onSettled: (data, error, variables) => {
+      showConfirmationToast({
+        title: 'onSettled',
+        message: `Settled.`,
+      })
+      // Always invalidate the query after mutation settles(success or error)
+      queryClient.invalidateQueries({
+        queryKey: ['projectLLMProviders', variables.projectName],
+      })
+    },
   })
 }
