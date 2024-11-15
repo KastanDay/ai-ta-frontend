@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck -- this is our only js file so far, just don't bother with types.
 import { exec } from 'child_process'
 import { promisify } from 'util'
 

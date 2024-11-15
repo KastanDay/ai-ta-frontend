@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck -- this is our only js file so far, just don't bother with types.
 describe('test-ece-2', function () {
   before(function (browser) {
     browser.options.desiredCapabilities['goog:chromeOptions'] = {
