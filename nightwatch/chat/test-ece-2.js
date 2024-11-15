@@ -3,7 +3,12 @@
 describe('test-ece-2', function () {
   before(function (browser) {
     browser.options.desiredCapabilities['goog:chromeOptions'] = {
-      args: ['--headless=new'],
+      args: [
+        '--headless=new',
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
     }
   })
 
