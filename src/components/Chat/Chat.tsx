@@ -482,7 +482,19 @@ export const Chat = memo(
           // Action 2: Context Retrieval: Vector Search
           homeDispatch({ field: 'isRetrievalLoading', value: true })
 
-          const QUERY_REWRITE_PROMPT = `You are a query rewriting assistant. Enhance search queries by extracting key technical terms and maintaining context from previous messages. For follow-up questions, incorporate main topics from prior context. Focus on content-relevant terms while ignoring conversational fillers. If the query is already well-formed and does not need enhancement, output it exactly as given. If the input query is empty, output "yikes that was not supposed to happen". Output only the enhanced search query as a single line without any prefixes or explanations.`;
+          const QUERY_REWRITE_PROMPT = `You are a vector database query optimizer. Your task is to rewrite search queries to improve semantic similarity matching in vector space, focusing on RAG (Retrieval Augmented Generation) systems.
+
+            Key objectives:
+            - Extract and emphasize technical terms and domain-specific vocabulary
+            - Maintain key context from previous messages in the conversation
+            - Remove conversational fillers and non-essential words that could dilute vector similarity
+            - Expand acronyms and technical shorthand into full terms
+            - Include relevant synonyms for important technical concepts
+            - Preserve the core technical meaning while optimizing for vector similarity matching
+
+            Note: This query is only for vector database retrieval, not for the final LLM prompt.
+
+            Output the enhanced search query as a single line without explanations or formatting.`;
 
           let rewrittenQuery = searchQuery // Default to original query
 
