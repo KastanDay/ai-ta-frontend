@@ -608,8 +608,6 @@ export const Chat = memo(
               }
             }
             
-            console.log('rewriteResponse', rewriteResponse)
-
             if (rewriteResponse instanceof Response) {
               try {
                 const responseData = await rewriteResponse.json();
