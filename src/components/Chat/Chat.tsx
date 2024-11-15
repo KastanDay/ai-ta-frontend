@@ -564,53 +564,6 @@ export const Chat = memo(
 
             let rewriteResponse: Response | AsyncIterable<webllm.ChatCompletionChunk> | undefined
 
-            // if (
-            //   selectedConversation.model &&
-            //   webLLMModels.some(
-            //     (model) => model.name === selectedConversation.model.name,
-            //   )
-            // ) {
-            //   // WebLLM model handling
-            //   while (chat_ui.isModelLoading() === true) {
-            //     await new Promise((resolve) => setTimeout(resolve, 10))
-            //   }
-            //   try {
-            //     rewriteResponse = await chat_ui.runChatCompletion(
-            //       queryRewriteConversation,
-            //       getCurrentPageName(),
-            //     )
-            //   } catch (error) {
-            //     errorToast({
-            //       title: 'Error running query rewrite',
-            //       message: (error as Error).message || 'An unexpected error occurred',
-            //     })
-            //   }
-            // } else {
-            //   // Route to specific model provider
-            //   try {
-            //     // Add detailed logging right before the request
-            //     console.log('Sending query rewrite request:', {
-            //       url: '/api/allNewRoutingChat',
-            //       method: 'POST',
-            //       body: JSON.stringify(queryRewriteBody, null, 2),
-            //       headers: {
-            //         'Content-Type': 'application/json'
-            //       }
-            //     });
-
-            //     rewriteResponse = await fetch('/api/allNewRoutingChat', {
-            //       method: 'POST',
-            //       headers: {
-            //         'Content-Type': 'application/json',
-            //       },
-            //       body: JSON.stringify(queryRewriteBody),
-            //     })
-            //   } catch (error) {
-            //     console.error('Error routing query rewrite to model provider:', error)
-            //     throw error
-            //   }
-            // }
-
             if (
               selectedConversation.model &&
               webLLMModels.some(
