@@ -13,6 +13,8 @@ describe('test-ece-2', function () {
   })
 
   it('tests test-ece-2', function (browser) {
+    browser.timeouts('implicit', 10000)
+
     browser
       .windowRect({ width: 955, height: 1045 })
       .navigateTo('https://www.uiuc.chat/ece120/chat')
@@ -29,6 +31,11 @@ describe('test-ece-2', function () {
 
         return actions.keyUp(this.Keys.ENTER)
       })
+      // Add waitForElementVisible before clicking
+      .waitForElementVisible(
+        'div.bg-gray-50\\/50 div.dark\\:prose-invert > div > div.w-full > div',
+        15000,
+      )
       .click(
         'div.bg-gray-50\\/50 div.dark\\:prose-invert > div > div.w-full > div',
       )
