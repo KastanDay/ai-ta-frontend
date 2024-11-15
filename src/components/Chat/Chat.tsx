@@ -479,6 +479,7 @@ export const Chat = memo(
           }
 
           // Action 2: Context Retrieval: Vector Search
+          // TEST PR
           homeDispatch({ field: 'isRetrievalLoading', value: true })
           await handleContextSearch(
             message,
