@@ -1,0 +1,24 @@
+name: E2E Test
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '*/30 * * * *' # Runs every 30 minutes
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm install
+      - name: Install Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+      - name: Run Nightwatch tests
+        run: npx nightwatch nightwatch/chat/test-ece-2.js
