@@ -599,7 +599,6 @@ export const Chat = memo(
               }
             } else {
               // Direct call to routeModelRequest instead of going through the API route
-              console.log('queryRewriteBody:', util.inspect(queryRewriteBody, { depth: null, colors: true }))
               try {
                 rewriteResponse = await routeModelRequest(queryRewriteBody as ChatBody)
               } catch (error) {
