@@ -643,25 +643,11 @@ export const Chat = memo(
               rewrittenQuery = searchQuery
             }
 
-            // Debug logging
-            console.log('Original query:', {
-              content: Array.isArray(message.content)
-                ? message.content.map(content => `${content.type}: ${content.text}`).join(', ')
-                : message.content,
-              type: Array.isArray(message.content) ? 'array' : typeof message.content
-            })
-
-            console.log('Enhanced search query:', {
-              query: rewrittenQuery,
-              length: rewrittenQuery.length,
-              type: typeof rewrittenQuery
-            })
-
-            // Use enhanced query for context search
           } catch (error) {
             console.error('Error in query rewriting:', error)
           }
 
+          // Use enhanced query for context search
           await handleContextSearch(
             message,
             courseName,
