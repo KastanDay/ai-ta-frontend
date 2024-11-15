@@ -1,9 +1,7 @@
 name: E2E Test
 on:
-  push:
-  pull_request:
   schedule:
-    - cron: '*/30 * * * *' # Runs every 30 minutes
+    - cron: '7,37 * * * *' # Runs at 7 and 37 minutes past every hour
 
 jobs:
   test:
@@ -20,5 +18,5 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser
-      - name: Run Nightwatch tests
-        run: npx nightwatch nightwatch/chat/test-ece-2.js
+      - name: Run Nightwatch e2e tests on Prod
+        run: npx nightwatch nightwatch/e2e-test-of-uiucchat-prod.js
