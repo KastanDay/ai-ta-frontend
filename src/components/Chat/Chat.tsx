@@ -73,6 +73,7 @@ import { useUpdateConversation } from '~/hooks/conversationQueries'
 import { motion } from 'framer-motion'
 import { useDeleteMessages } from '~/hooks/messageQueries'
 import { AllLLMProviders } from '~/utils/modelProviders/LLMProvider'
+import util from 'util';
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -481,199 +482,226 @@ export const Chat = memo(
           // Action 2: Context Retrieval: Vector Search
           homeDispatch({ field: 'isRetrievalLoading', value: true })
 
-          // const QUERY_REWRITE_PROMPT = `You are a query rewriting assistant focused on enhancing search queries for document retrieval. Your goal is to create search queries that capture both the current question and relevant context from previous messages.
+          const QUERY_REWRITE_PROMPT = `You are a query rewriting assistant. Enhance search queries by extracting key technical terms and maintaining context from previous messages. For follow-up questions, incorporate main topics from prior context. Focus on content-relevant terms while ignoring conversational fillers. If the query is already well-formed and does not need enhancement, output it exactly as given. If the input query is empty, output "yikes that was not supposed to happen". Output only the enhanced search query as a single line without any prefixes or explanations.`;
 
-          // Key responsibilities:
-          // 1. Maintain context from previous messages when the current query is a follow-up question
-          // 2. Extract key technical terms, concepts, and topics from the conversation
-          // 3. Ignore conversational fillers and focus on content-relevant terms
-          // 4. Preserve specific technical terminology, equations, or code references
-          // 5. Expand abbreviated terms to their full form for better matching
+          let rewrittenQuery = searchQuery // Default to original query
 
-          // Guidelines:
-          // - For follow-up questions (e.g., "explain more", "can you elaborate"), incorporate the main topic from previous messages
-          // - For new questions, focus on the current query while incorporating any relevant context
-          // - Keep the query concise but comprehensive
-          // - Focus on terms that would appear in educational materials and documentation
-          // - Do not add interpretations or explanations - only terms for matching
+          try {
+            // Get conversation context (last 10 messages or fewer)
+            const contextMessages = selectedConversation?.messages?.slice(-10) || []
 
-          // Examples:
-          // Previous: "What is binary search?"
-          // Current: "explain more"
-          // Enhanced: "binary search algorithm implementation complexity comparison"
+            const queryRewriteConversation: Conversation = {
+              id: uuidv4(),
+              name: 'Query Rewrite',
+              messages: [
+                {
+                  id: uuidv4(),
+                  role: 'user',
+                  content: `Previous conversation:\n${contextMessages
+                    .map((msg) => {
+                      const contentText = Array.isArray(msg.content)
+                        ? msg.content
+                            .filter(content => content.type === 'text' && content.text)
+                            .map(content => content.text!)
+                            .join(' ')
+                        : typeof msg.content === 'string'
+                          ? msg.content
+                          : ''
+                      return `${msg.role}: ${contentText.trim()}`
+                    })
+                    .filter(text => text.length > 0)
+                    .join('\n')}\n\nCurrent query: "${searchQuery}"\n\nEnhanced query:`,
+                  latestSystemMessage: QUERY_REWRITE_PROMPT,
+                  finalPromtEngineeredMessage: `\n<User Query>\nPrevious conversation:\n${contextMessages
+                    .map((msg) => {
+                      const contentText = Array.isArray(msg.content)
+                        ? msg.content
+                            .filter(content => content.type === 'text' && content.text)
+                            .map(content => content.text!)
+                            .join(' ')
+                        : typeof msg.content === 'string'
+                          ? msg.content
+                          : ''
+                      return `${msg.role}: ${contentText.trim()}`
+                    })
+                    .filter(text => text.length > 0)
+                    .join('\n')}\n\nCurrent query: "${searchQuery}"\n\nEnhanced query:\n</User Query>`
+                }
+              ],
+              model: selectedConversation.model,
+              prompt: QUERY_REWRITE_PROMPT,
+              temperature: 0.2,
+              folderId: null,
+              userEmail: currentEmail,
+              projectName: courseName,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            }
 
-          // Previous: "How do I use Python lists?"
-          // Current: "what about appending items?"
-          // Enhanced: "Python list append method adding elements array manipulation"
+            const queryRewriteBody: ChatBody = {
+              conversation: {
+                ...queryRewriteConversation,
+                messages: queryRewriteConversation.messages.map(msg => ({
+                  ...msg,
+                  content: typeof msg.content === 'string' 
+                    ? msg.content.trim()
+                    : Array.isArray(msg.content)
+                      ? msg.content.map(c => c.text).join(' ').trim()
+                      : ''
+                }))
+              },
+              key: getOpenAIKey(courseMetadata, apiKey),
+              course_name: courseName,
+              stream: false,
+              courseMetadata: courseMetadata,
+              llmProviders: llmProviders,
+              model: selectedConversation.model,
+            }
 
-          // Previous: "Explain Newton's first law"
-          // Current: "what are some real world examples?"
-          // Enhanced: "Newton's first law of motion inertia practical applications examples physics"
+            if (!queryRewriteBody.model || !queryRewriteBody.model.id) {
+              queryRewriteBody.model = selectedConversation.model
+            }
 
-          // Output only the enhanced search query without any explanation or additional text.`
+            let rewriteResponse: Response | AsyncIterable<webllm.ChatCompletionChunk> | undefined
 
-          // try {
-          //   // Get conversation context (last 10 messages or fewer)
-          //   const contextMessages = selectedConversation?.messages?.slice(-10) || []
+            // if (
+            //   selectedConversation.model &&
+            //   webLLMModels.some(
+            //     (model) => model.name === selectedConversation.model.name,
+            //   )
+            // ) {
+            //   // WebLLM model handling
+            //   while (chat_ui.isModelLoading() === true) {
+            //     await new Promise((resolve) => setTimeout(resolve, 10))
+            //   }
+            //   try {
+            //     rewriteResponse = await chat_ui.runChatCompletion(
+            //       queryRewriteConversation,
+            //       getCurrentPageName(),
+            //     )
+            //   } catch (error) {
+            //     errorToast({
+            //       title: 'Error running query rewrite',
+            //       message: (error as Error).message || 'An unexpected error occurred',
+            //     })
+            //   }
+            // } else {
+            //   // Route to specific model provider
+            //   try {
+            //     // Add detailed logging right before the request
+            //     console.log('Sending query rewrite request:', {
+            //       url: '/api/allNewRoutingChat',
+            //       method: 'POST',
+            //       body: JSON.stringify(queryRewriteBody, null, 2),
+            //       headers: {
+            //         'Content-Type': 'application/json'
+            //       }
+            //     });
 
-          //   // Build a new conversation for the query rewriting, ensuring it has all necessary fields
-          //   const queryRewriteConversation: Conversation = {
-          //     id: uuidv4(),
-          //     name: 'Query Rewrite',
-          //     messages: [
-          //       {
-          //         id: uuidv4(),
-          //         role: 'user',
-          //         content: `Previous conversation:\n${contextMessages
-          //           .map((msg) => {
-          //             const contentText = Array.isArray(msg.content)
-          //               ? msg.content
-          //                   .map((content) =>
-          //                     content.type === 'text' ? content.text : '',
-          //                   )
-          //                   .join(' ')
-          //               : msg.content
-          //             return `${msg.role}: ${contentText}`
-          //           })
-          //           .join('\n')}\n\nCurrent query: "${searchQuery}"\n\nEnhanced query:`,
-          //           latestSystemMessage: QUERY_REWRITE_PROMPT,
-          //       },
-          //     ],
-          //     model: selectedConversation.model,
-          //     prompt: QUERY_REWRITE_PROMPT,
-          //     temperature: 0.2,
-          //     folderId: null,
-          //     userEmail: currentEmail,
-          //     projectName: courseName,
-          //     createdAt: new Date().toISOString(),
-          //     updatedAt: new Date().toISOString(),
-          //   }
+            //     rewriteResponse = await fetch('/api/allNewRoutingChat', {
+            //       method: 'POST',
+            //       headers: {
+            //         'Content-Type': 'application/json',
+            //       },
+            //       body: JSON.stringify(queryRewriteBody),
+            //     })
+            //   } catch (error) {
+            //     console.error('Error routing query rewrite to model provider:', error)
+            //     throw error
+            //   }
+            // }
 
-          //   // Construct the ChatBody using the built conversation
-          //   const queryRewriteBody: ChatBody = constructChatBody(
-          //     queryRewriteConversation,
-          //     getOpenAIKey(courseMetadata, apiKey),
-          //     courseName,
-          //     false,
-          //     courseMetadata,
-          //     llmProviders,
-          //   )
+            if (
+              selectedConversation.model &&
+              webLLMModels.some(
+                (model) => model.name === selectedConversation.model.name,
+              )
+            ) {
+              // WebLLM model handling remains the same
+              while (chat_ui.isModelLoading() === true) {
+                await new Promise((resolve) => setTimeout(resolve, 10))
+              }
+              try {
+                rewriteResponse = await chat_ui.runChatCompletion(
+                  queryRewriteConversation,
+                  getCurrentPageName(),
+                )
+              } catch (error) {
+                errorToast({
+                  title: 'Error running query rewrite',
+                  message: (error as Error).message || 'An unexpected error occurred',
+                })
+              }
+            } else {
+              // Direct call to routeModelRequest instead of going through the API route
+              console.log('queryRewriteBody:', util.inspect(queryRewriteBody, { depth: null, colors: true }))
+              try {
+                rewriteResponse = await routeModelRequest(queryRewriteBody as ChatBody)
+              } catch (error) {
+                console.error('Error routing query rewrite to model provider:', error)
+                throw error
+              }
+            }
+            
+            console.log('rewriteResponse', rewriteResponse)
 
-          //   if (!queryRewriteBody.model || !queryRewriteBody.model.id) {
-          //     queryRewriteBody.model = selectedConversation.model
-          //   }
+            if (rewriteResponse instanceof Response) {
+              try {
+                const responseData = await rewriteResponse.json();
 
-          //   console.log('queryRewriteBody: ', queryRewriteBody)
+                // Adjust to handle 'choices' being an array or an object with numeric keys
+                let choices = responseData.choices;
 
-          //   let rewriteResponse:
-          //     | Response
-          //     | AsyncIterable<webllm.ChatCompletionChunk>
-          //     | undefined
+                if (Array.isArray(choices)) {
+                  // 'choices' is already an array, do nothing
+                } else if (typeof choices === 'object' && choices !== null) {
+                  // Convert 'choices' object to array
+                  choices = Object.values(choices);
+                } else {
+                  // 'choices' is neither an array nor an object
+                  throw new Error('Invalid format for choices in response data.');
+                }
 
-          //   if (
-          //     selectedConversation.model &&
-          //     webLLMModels.some(
-          //       (model) => model.name === selectedConversation.model.name,
-          //     )
-          //   ) {
-          //     // Is WebLLM model
-          //     while (chat_ui.isModelLoading() === true) {
-          //       await new Promise((resolve) => setTimeout(resolve, 10))
-          //     }
-          //     try {
-          //       rewriteResponse = await chat_ui.runChatCompletion(
-          //         queryRewriteConversation,
-          //         getCurrentPageName(),
-          //       )
-          //     } catch (error) {
-          //       errorToast({
-          //         title: 'Error running query rewrite',
-          //         message: (error as Error).message || 'An unexpected error occurred',
-          //       })
-          //     }
-          //   } else {
-          //     // Route to the specific model provider
-          //     // Ensure model is properly set in the body
-          //     if (!queryRewriteBody.model || !queryRewriteBody.model.id) {
-          //       queryRewriteBody.model = selectedConversation.model
-          //     }
-              
-          //     try {
-          //       rewriteResponse = await routeModelRequest(queryRewriteBody, controller)
-          //       if (!rewriteResponse) {
-          //         throw new Error('No response received from model routing')
-          //       }
-          //     } catch (error) {
-          //       console.error('Error routing query rewrite to model provider:', error)
-          //       // Fallback to original query if rewriting fails
-          //       throw error
-          //     }
-          //   }
+                // Extract the content from the non-streaming response
+                rewrittenQuery = choices?.[0]?.message?.content?.choices?.[0]?.message?.content || searchQuery;
 
-          //   console.log('rewriteResponse: ', rewriteResponse)
+              } catch (error) {
+                console.error('Error parsing non-streaming response:', error);
+                // Fall back to the original search query
+                rewrittenQuery = searchQuery;
+              }
+            }
 
-          //   if (
-          //     !rewriteResponse ||
-          //     (rewriteResponse instanceof Response && !rewriteResponse.ok)
-          //   ) {
-          //     throw new Error('Query rewrite failed')
-          //   }
+            console.log('rewrittenQuery after parsing:', rewrittenQuery)
 
-          //   let enhancedQuery: string = searchQuery; // Default to original query
+            if (typeof rewrittenQuery !== 'string') {
+              rewrittenQuery = searchQuery
+            }
 
-          //   if (rewriteResponse instanceof Response) {
-          //     const data = await rewriteResponse.json();
-          //     if (data.choices?.[0]?.message?.content) {
-          //       enhancedQuery = data.choices[0].message.content.trim();
-          //     }
-          //   } else if (rewriteResponse) {
-          //     // For WebLLM, accumulate chunks
-          //     let text = '';
-          //     for await (const chunk of rewriteResponse) {
-          //       if (chunk.choices?.[0]?.delta?.content) {
-          //         text += chunk.choices[0].delta.content;
-          //       }
-          //     }
-          //     if (text.trim()) {
-          //       enhancedQuery = text.trim();
-          //     }
-          //   }
+            // Debug logging
+            console.log('Original query:', {
+              content: Array.isArray(message.content)
+                ? message.content.map(content => `${content.type}: ${content.text}`).join(', ')
+                : message.content,
+              type: Array.isArray(message.content) ? 'array' : typeof message.content
+            })
 
-          //   // Add validation
-          //   if (!enhancedQuery || enhancedQuery.length < 3) {
-          //     enhancedQuery = searchQuery; // Fallback to original query if result is too short
-          //   }
+            console.log('Enhanced search query:', {
+              query: rewrittenQuery,
+              length: rewrittenQuery.length,
+              type: typeof rewrittenQuery
+            })
 
-          //   console.log('Original query:', message.content)
-          //   console.log('Enhanced search query:', enhancedQuery)
-
-          //   // Use the enhanced query for context search
-          //   await handleContextSearch(
-          //     message,
-          //     courseName,
-          //     selectedConversation,
-          //     enhancedQuery,
-          //     enabledDocumentGroups,
-          //   )
-          // } catch (error) {
-          //   console.error('Error in query rewriting:', error)
-          //   // Fall back to original query if rewriting fails
-          //   await handleContextSearch(
-          //     message,
-          //     courseName,
-          //     selectedConversation,
-          //     searchQuery,
-          //     enabledDocumentGroups,
-          //   )
-          // } finally {
-          //   homeDispatch({ field: 'isRetrievalLoading', value: false })
-          // }
+            // Use enhanced query for context search
+          } catch (error) {
+            console.error('Error in query rewriting:', error)
+          }
 
           await handleContextSearch(
             message,
             courseName,
             selectedConversation,
-            searchQuery,
+            rewrittenQuery,
             enabledDocumentGroups,
           )
           homeDispatch({ field: 'isRetrievalLoading', value: false })
