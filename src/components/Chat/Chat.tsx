@@ -600,9 +600,15 @@ export const Chat = memo(
             } else {
               // Direct call to routeModelRequest instead of going through the API route
               try {
-                rewriteResponse = await routeModelRequest(queryRewriteBody as ChatBody)
+                rewriteResponse = await fetch('/api/queryRewrite', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(queryRewriteBody),
+                })
               } catch (error) {
-                console.error('Error routing query rewrite to model provider:', error)
+                console.error('Error calling query rewrite endpoint:', error)
                 throw error
               }
             }
