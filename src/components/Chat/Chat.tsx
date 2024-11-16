@@ -612,6 +612,8 @@ export const Chat = memo(
                 throw error
               }
             }
+
+            console.log('query rewriteResponse:', rewriteResponse)
             
             if (rewriteResponse instanceof Response) {
               try {
@@ -629,6 +631,8 @@ export const Chat = memo(
                   // 'choices' is neither an array nor an object
                   throw new Error('Invalid format for choices in response data.');
                 }
+
+                console.log('queryRewrite choices:', choices)
 
                 // Extract the content from the non-streaming response
                 rewrittenQuery = choices?.[0]?.message?.content?.choices?.[0]?.message?.content || searchQuery;
