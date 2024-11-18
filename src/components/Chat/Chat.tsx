@@ -499,8 +499,8 @@ export const Chat = memo(
           let rewrittenQuery = searchQuery // Default to original query
 
           try {
-            // Get conversation context (last 10 messages or fewer)
-            const contextMessages = selectedConversation?.messages?.slice(-10) || []
+            // Get conversation context (last 6 messages or fewer)
+            const contextMessages = selectedConversation?.messages?.slice(-6) || []
 
             const queryRewriteConversation: Conversation = {
               id: uuidv4(),
@@ -655,6 +655,8 @@ export const Chat = memo(
           } catch (error) {
             console.error('Error in query rewriting:', error)
           }
+
+          console.log('rewrittenQuery used for context search:', rewrittenQuery)
 
           // Use enhanced query for context search
           await handleContextSearch(
