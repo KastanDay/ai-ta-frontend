@@ -480,6 +480,9 @@ export const Chat = memo(
           }
 
           // Action 2: Context Retrieval: Vector Search
+          // TODO: add UI on chat page showing query was rewritten when it is rewritten
+          // TODO: change system prompt for queryRewrite to include "NO_REWRITE_REQUIRED" if it does not need to be rewritten for the vector search
+          // TODO: add toggle to turn queryRewrite on and off on materials page
           homeDispatch({ field: 'isRetrievalLoading', value: true })
 
           const QUERY_REWRITE_PROMPT = `You are a vector database query optimizer. Your task is to rewrite search queries to improve semantic similarity matching in vector space, focusing on RAG (Retrieval Augmented Generation) systems.
