@@ -635,7 +635,9 @@ export const Chat = memo(
                 console.log('queryRewrite choices:', choices)
 
                 // Extract the content from the non-streaming response
-                rewrittenQuery = choices?.[0]?.message?.content?.choices?.[0]?.message?.content || searchQuery;
+                rewrittenQuery = choices?.[0]?.message?.content?.choices?.[0]?.message?.content || 
+                                choices?.[0]?.message?.content ||
+                                searchQuery;
 
               } catch (error) {
                 console.error('Error parsing non-streaming response:', error);
