@@ -485,19 +485,27 @@ export const Chat = memo(
           // TODO: add toggle to turn queryRewrite on and off on materials page
           homeDispatch({ field: 'isRetrievalLoading', value: true })
 
-          const QUERY_REWRITE_PROMPT = `You are a vector database query optimizer. Your task is to rewrite search queries to improve semantic similarity matching in vector space, focusing on RAG (Retrieval Augmented Generation) systems.
+          const QUERY_REWRITE_PROMPT = `You are a vector database query optimizer. Your task is to analyze search queries and determine if rewriting would significantly improve vector retrieval results.
 
-            Key objectives:
-            - Extract and emphasize technical terms and domain-specific vocabulary
-            - Maintain key context from previous messages in the conversation
-            - Remove conversational fillers and non-essential words that could dilute vector similarity
-            - Expand acronyms and technical shorthand into full terms
-            - Include relevant synonyms for important technical concepts
-            - Preserve the core technical meaning while optimizing for vector similarity matching
+            Output "NO_REWRITE_REQUIRED" if:
+            - The query would not gain substantial retrieval benefit from rewriting
+            - The query is long and complex but already contains sufficient context
+            - The core search intent is already clear and well-expressed
+            - Rewriting would only yield minor or cosmetic improvements
 
-            Note: This query is only for vector database retrieval, not for the final LLM prompt.
+            Otherwise, output an optimized version of the query that meaningfully improves vector search results through:
+            - Adding critical missing technical terms or domain context
+            - Expanding crucial acronyms that could impair matching
+            - Removing substantial noise that dilutes the vector representation
+            - Adding vital synonyms for key technical concepts
 
-            Output the enhanced search query as a single line without explanations or formatting.`;
+            Focus on changes that will have a meaningful impact on retrieval quality.
+
+            Your response should be either:
+            1. The exact string "NO_REWRITE_REQUIRED" or
+            2. The optimized query text
+
+            Note: This query is only for vector database retrieval, not for the final LLM prompt.`;
 
           let rewrittenQuery = searchQuery // Default to original query
 
@@ -653,13 +661,21 @@ export const Chat = memo(
 
             if (typeof rewrittenQuery !== 'string') {
               rewrittenQuery = searchQuery
+            } else {
+              // Check if the response is NO_REWRITE_REQUIRED
+              if (rewrittenQuery.trim().toUpperCase() === 'NO_REWRITE_REQUIRED') {
+                console.log('Query rewrite not required, using original query')
+                rewrittenQuery = searchQuery
+              } else {
+                console.log('Using rewritten query:', rewrittenQuery)
+              }
             }
 
           } catch (error) {
             console.error('Error in query rewriting:', error)
           }
 
-          console.log('rewrittenQuery used for context search:', rewrittenQuery)
+          console.log('Final query used for context search:', rewrittenQuery)
 
           // Use enhanced query for context search
           await handleContextSearch(
