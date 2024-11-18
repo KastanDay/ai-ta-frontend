@@ -481,7 +481,6 @@ export const Chat = memo(
 
           // Action 2: Context Retrieval: Vector Search
           // TODO: add UI on chat page showing query was rewritten when it is rewritten
-          // TODO: change system prompt for queryRewrite to include "NO_REWRITE_REQUIRED" if it does not need to be rewritten for the vector search
           // TODO: add toggle to turn queryRewrite on and off on materials page
           homeDispatch({ field: 'isRetrievalLoading', value: true })
 
