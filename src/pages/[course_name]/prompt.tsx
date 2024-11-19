@@ -897,6 +897,7 @@ export const showToastNotification = (
         borderColor: isError ? '#E53935' : '#6D28D9', // Red for errors, purple for success
         borderWidth: '1px',
         borderStyle: 'solid',
+        borderRadius: '8px', // Added rounded corners
       },
       title: {
         color: '#FFFFFF', // White text for the title
@@ -907,6 +908,7 @@ export const showToastNotification = (
       },
       closeButton: {
         color: '#FFFFFF', // White color for the close button
+        borderRadius: '4px', // Added rounded corners to close button
         '&:hover': {
           backgroundColor: 'rgba(255, 255, 255, 0.1)', // Subtle hover effect
         },
