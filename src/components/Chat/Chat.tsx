@@ -489,9 +489,9 @@ export const Chat = memo(
             2. Current search query
 
             OUTPUT FORMAT:
-            Respond with either:
+            You must respond in ONE of these two formats ONLY:
             1. The exact string "NO_REWRITE_REQUIRED" or
-            2. An optimized query string that expands the original with necessary context
+            2. An XML tag containing the vector query: <vector_query>your optimized query here</vector_query>
 
             WHEN TO OUTPUT "NO_REWRITE_REQUIRED":
             Return "NO_REWRITE_REQUIRED" if ALL of these conditions are met:
@@ -510,30 +510,36 @@ export const Chat = memo(
             REWRITING RULES:
             When rewriting, follow these rules:
             1. Replace references to previous items with their specific content
-              Example: "explain the first option" → "explain [specific item/concept from previous message]"
-              Example: "what about the second one" → "what about [full description of second item from context]"
+              Example: "explain the first option" →
+              <vector_query>explain the gradient descent optimization algorithm</vector_query>
 
             2. Add essential context from conversation history
-              Example: "explain the process" → "explain the process of [specific process being discussed]"
-              Example: "what are the steps" → "what are the steps for [specific task from context]"
+              Example: "what are the steps" →
+              <vector_query>what are the steps for implementing backpropagation in neural networks</vector_query>
 
             3. Resolve all pronouns and demonstratives
-              Example: "how does it work" → "how does [specific concept/system from context] work"
-              Example: "why is this important" → "why is [specific topic from context] important"
+              Example: "how does it work" →
+              <vector_query>how does the transformer attention mechanism work</vector_query>
 
             4. Include key technical terms and synonyms
-              Example: "what causes this" → "[technical term] causes and mechanisms in [specific context]"
-              Example: "ways to solve" → "methods and techniques for solving [specific problem]"
+              Example: "what causes this" →
+              <vector_query>root causes and mechanisms of gradient vanishing in deep neural networks</vector_query>
 
-            5. Remove any text that would dilute vector matching
-              Before: "I was wondering if you could tell me about the method we discussed"
-              After: "[specific method from context] explanation"
+            IMPORTANT OUTPUT RULES:
+            - Do not include ANY explanatory text
+            - Do not include multiple options
+            - Do not include reasoning or notes
+            - Output ONLY "NO_REWRITE_REQUIRED" or a <vector_query> tag
+            - Never include both formats in one response
+            - Never nest tags or use other XML tags
+            - Never add punctuation or text outside the tags
 
             The final rewritten query must:
             - Be self-contained and understandable without conversation context
             - Maintain the original search intent
             - Include specific details that enable accurate vector matching
             - Be concise while containing all necessary context
+            - Contain ONLY the search terms inside the XML tags
 
             Remember: This query optimization is for vector database retrieval only, not for the final LLM prompt.`;
 
@@ -702,15 +708,24 @@ export const Chat = memo(
                 message.wasQueryRewritten = false;
                 message.queryRewriteText = undefined;
               } else {
-                // Check if the response is NO_REWRITE_REQUIRED
-                if (rewrittenQuery.trim().toUpperCase() === 'NO_REWRITE_REQUIRED') {
-                  console.log('Query rewrite not required, using original query')
+                // Extract vector query from XML tags if present
+                const vectorQueryMatch = rewrittenQuery.match(/<vector_query>(.*?)<\/vector_query>/) || null;
+                const extractedQuery = vectorQueryMatch?.[1]?.trim();
+                
+                // Check if the response is NO_REWRITE_REQUIRED or if we couldn't extract a valid query
+                if (
+                  rewrittenQuery.trim().toUpperCase() === 'NO_REWRITE_REQUIRED' || 
+                  !extractedQuery
+                ) {
+                  console.log('Query rewrite not required or invalid format, using original query')
                   rewrittenQuery = searchQuery
                   homeDispatch({ field: 'wasQueryRewritten', value: false })
                   homeDispatch({ field: 'queryRewriteText', value: null })
                   message.wasQueryRewritten = false;
                   message.queryRewriteText = undefined;
                 } else {
+                  // Use the extracted query
+                  rewrittenQuery = extractedQuery;
                   console.log('Using rewritten query:', rewrittenQuery)
                   homeDispatch({ field: 'wasQueryRewritten', value: true })
                   homeDispatch({ field: 'queryRewriteText', value: rewrittenQuery })
