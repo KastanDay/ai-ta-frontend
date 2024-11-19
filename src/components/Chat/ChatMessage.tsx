@@ -115,6 +115,7 @@ export const ChatMessage: FC<Props> = memo(
         isRouting,
         isRunningTool,
         isRetrievalLoading,
+        isQueryRewriting,
         loading,
       },
       dispatch: homeDispatch,
@@ -552,6 +553,12 @@ export const ChatMessage: FC<Props> = memo(
       processTools()
     }, [message.tools])
 
+    // Add this useEffect for debugging
+    useEffect(() => {
+      console.log('2342 wasQueryRewritten:', message.wasQueryRewritten)
+      console.log('2342 queryRewriteText:', message.queryRewriteText)
+    }, [message.wasQueryRewritten, message.queryRewriteText])
+
     return (
       <div
         className={`group md:px-6 ${
@@ -716,6 +723,32 @@ export const ChatMessage: FC<Props> = memo(
                         <>{message.content}</>
                       )}
                       <div className="flex w-full flex-col items-start space-y-2">
+                        {/* Query rewrite loading state */}
+                        {isQueryRewriting && (
+                          <IntermediateStateAccordion
+                            accordionKey="query-rewrite"
+                            title="Optimizing search query"
+                            isLoading={isQueryRewriting}
+                            error={false}
+                            content={<></>}
+                          />
+                        )}
+
+                        {/* Query rewrite result - using message properties */}
+                        {!isQueryRewriting && message.wasQueryRewritten !== undefined && message.wasQueryRewritten !== null && (
+                          <IntermediateStateAccordion
+                            accordionKey="query-rewrite-result"
+                            title="Optimized search query"
+                            isLoading={false}
+                            error={false}
+                            content={
+                              message.wasQueryRewritten
+                                ? `Using optimized query for document retrieval: ${message.queryRewriteText}`
+                                : "Using original query for document retrieval."
+                            }
+                          />
+                        )}
+
                         {/* Retrieval results for all messages */}
                         {message.contexts && message.contexts.length > 0 && (
                           <IntermediateStateAccordion

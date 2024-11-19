@@ -480,201 +480,259 @@ export const Chat = memo(
           }
 
           // Action 2: Context Retrieval: Vector Search
-          // TODO: add UI on chat page showing query was rewritten when it is rewritten
           // TODO: add toggle to turn queryRewrite on and off on materials page
-          homeDispatch({ field: 'isRetrievalLoading', value: true })
+          const QUERY_REWRITE_PROMPT = `You are a vector database query optimizer that improves search queries for semantic vector retrieval.
 
-          const QUERY_REWRITE_PROMPT = `You are a vector database query optimizer. Your task is to analyze search queries and determine if rewriting would significantly improve vector retrieval results.
+            INPUT:
+            The input will include:
+            1. Previous conversation messages (if any)
+            2. Current search query
 
-            Output "NO_REWRITE_REQUIRED" if:
-            - The query would not gain substantial retrieval benefit from rewriting
-            - The query is long and complex but already contains sufficient context
-            - The core search intent is already clear and well-expressed
-            - Rewriting would only yield minor or cosmetic improvements
-
-            Otherwise, output an optimized version of the query that meaningfully improves vector search results through:
-            - Adding critical missing technical terms or domain context
-            - Expanding crucial acronyms that could impair matching
-            - Removing substantial noise that dilutes the vector representation
-            - Adding vital synonyms for key technical concepts
-
-            Focus on changes that will have a meaningful impact on retrieval quality.
-
-            Your response should be either:
+            OUTPUT FORMAT:
+            Respond with either:
             1. The exact string "NO_REWRITE_REQUIRED" or
-            2. The optimized query text
+            2. An optimized query string that expands the original with necessary context
 
-            Note: This query is only for vector database retrieval, not for the final LLM prompt.`;
+            WHEN TO OUTPUT "NO_REWRITE_REQUIRED":
+            Return "NO_REWRITE_REQUIRED" if ALL of these conditions are met:
+            - Query contains specific, unique terms that would match relevant documents
+            - Query includes all necessary context without requiring conversation history
+            - Query has no ambiguous references (like "it", "this", "that example", "option one")
+            - Query would yield effective vector embeddings without modification
+
+            WHEN TO REWRITE THE QUERY:
+            Rewrite the query if ANY of these conditions are met:
+            - Query contains references to items from previous messages
+            - Query uses pronouns or demonstratives without clear referents
+            - Query lacks technical terms or context needed for effective matching
+            - Query requires conversation history to be fully understood
+
+            REWRITING RULES:
+            When rewriting, follow these rules:
+            1. Replace references to previous items with their specific content
+              Example: "explain the first option" → "explain [specific item/concept from previous message]"
+              Example: "what about the second one" → "what about [full description of second item from context]"
+
+            2. Add essential context from conversation history
+              Example: "explain the process" → "explain the process of [specific process being discussed]"
+              Example: "what are the steps" → "what are the steps for [specific task from context]"
+
+            3. Resolve all pronouns and demonstratives
+              Example: "how does it work" → "how does [specific concept/system from context] work"
+              Example: "why is this important" → "why is [specific topic from context] important"
+
+            4. Include key technical terms and synonyms
+              Example: "what causes this" → "[technical term] causes and mechanisms in [specific context]"
+              Example: "ways to solve" → "methods and techniques for solving [specific problem]"
+
+            5. Remove any text that would dilute vector matching
+              Before: "I was wondering if you could tell me about the method we discussed"
+              After: "[specific method from context] explanation"
+
+            The final rewritten query must:
+            - Be self-contained and understandable without conversation context
+            - Maintain the original search intent
+            - Include specific details that enable accurate vector matching
+            - Be concise while containing all necessary context
+
+            Remember: This query optimization is for vector database retrieval only, not for the final LLM prompt.`;
 
           let rewrittenQuery = searchQuery // Default to original query
 
-          try {
-            // Get conversation context (last 6 messages or fewer)
-            const contextMessages = selectedConversation?.messages?.slice(-6) || []
+          console.log('vector_search_rewrite_disabled setting:', courseMetadata?.vector_search_rewrite_disabled)
 
-            const queryRewriteConversation: Conversation = {
-              id: uuidv4(),
-              name: 'Query Rewrite',
-              messages: [
-                {
-                  id: uuidv4(),
-                  role: 'user',
-                  content: `Previous conversation:\n${contextMessages
-                    .map((msg) => {
-                      const contentText = Array.isArray(msg.content)
-                        ? msg.content
-                            .filter(content => content.type === 'text' && content.text)
-                            .map(content => content.text!)
-                            .join(' ')
-                        : typeof msg.content === 'string'
+          // Skip query rewrite if disabled in course metadata
+          if (courseMetadata?.vector_search_rewrite_disabled) {
+            console.log('Query rewrite disabled for this course, using original query')
+            rewrittenQuery = searchQuery
+            homeDispatch({ field: 'wasQueryRewritten', value: false })
+            homeDispatch({ field: 'queryRewriteText', value: null })
+            message.wasQueryRewritten = false;
+            message.queryRewriteText = undefined;
+          } else {
+            homeDispatch({ field: 'isQueryRewriting', value: true })
+            try {
+              // Get conversation context (last 6 messages or fewer)
+              const contextMessages = selectedConversation?.messages?.slice(-6) || []
+
+              const queryRewriteConversation: Conversation = {
+                id: uuidv4(),
+                name: 'Query Rewrite',
+                messages: [
+                  {
+                    id: uuidv4(),
+                    role: 'user',
+                    content: `Previous conversation:\n${contextMessages
+                      .map((msg) => {
+                        const contentText = Array.isArray(msg.content)
                           ? msg.content
-                          : ''
-                      return `${msg.role}: ${contentText.trim()}`
-                    })
-                    .filter(text => text.length > 0)
-                    .join('\n')}\n\nCurrent query: "${searchQuery}"\n\nEnhanced query:`,
-                  latestSystemMessage: QUERY_REWRITE_PROMPT,
-                  finalPromtEngineeredMessage: `\n<User Query>\nPrevious conversation:\n${contextMessages
-                    .map((msg) => {
-                      const contentText = Array.isArray(msg.content)
-                        ? msg.content
-                            .filter(content => content.type === 'text' && content.text)
-                            .map(content => content.text!)
-                            .join(' ')
-                        : typeof msg.content === 'string'
+                              .filter(content => content.type === 'text' && content.text)
+                              .map(content => content.text!)
+                              .join(' ')
+                          : typeof msg.content === 'string'
+                            ? msg.content
+                            : ''
+                        return `${msg.role}: ${contentText.trim()}`
+                      })
+                      .filter(text => text.length > 0)
+                      .join('\n')}\n\nCurrent query: "${searchQuery}"\n\nEnhanced query:`,
+                    latestSystemMessage: QUERY_REWRITE_PROMPT,
+                    finalPromtEngineeredMessage: `\n<User Query>\nPrevious conversation:\n${contextMessages
+                      .map((msg) => {
+                        const contentText = Array.isArray(msg.content)
                           ? msg.content
-                          : ''
-                      return `${msg.role}: ${contentText.trim()}`
-                    })
-                    .filter(text => text.length > 0)
-                    .join('\n')}\n\nCurrent query: "${searchQuery}"\n\nEnhanced query:\n</User Query>`
-                }
-              ],
-              model: selectedConversation.model,
-              prompt: QUERY_REWRITE_PROMPT,
-              temperature: 0.2,
-              folderId: null,
-              userEmail: currentEmail,
-              projectName: courseName,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            }
-
-            const queryRewriteBody: ChatBody = {
-              conversation: {
-                ...queryRewriteConversation,
-                messages: queryRewriteConversation.messages.map(msg => ({
-                  ...msg,
-                  content: typeof msg.content === 'string' 
-                    ? msg.content.trim()
-                    : Array.isArray(msg.content)
-                      ? msg.content.map(c => c.text).join(' ').trim()
-                      : ''
-                }))
-              },
-              key: getOpenAIKey(courseMetadata, apiKey),
-              course_name: courseName,
-              stream: false,
-              courseMetadata: courseMetadata,
-              llmProviders: llmProviders,
-              model: selectedConversation.model,
-            }
-
-            if (!queryRewriteBody.model || !queryRewriteBody.model.id) {
-              queryRewriteBody.model = selectedConversation.model
-            }
-
-            let rewriteResponse: Response | AsyncIterable<webllm.ChatCompletionChunk> | undefined
-
-            if (
-              selectedConversation.model &&
-              webLLMModels.some(
-                (model) => model.name === selectedConversation.model.name,
-              )
-            ) {
-              // WebLLM model handling remains the same
-              while (chat_ui.isModelLoading() === true) {
-                await new Promise((resolve) => setTimeout(resolve, 10))
+                              .filter(content => content.type === 'text' && content.text)
+                              .map(content => content.text!)
+                              .join(' ')
+                          : typeof msg.content === 'string'
+                            ? msg.content
+                            : ''
+                        return `${msg.role}: ${contentText.trim()}`
+                      })
+                      .filter(text => text.length > 0)
+                      .join('\n')}\n\nCurrent query: "${searchQuery}"\n\nEnhanced query:\n</User Query>`
+                  }
+                ],
+                model: selectedConversation.model,
+                prompt: QUERY_REWRITE_PROMPT,
+                temperature: 0.2,
+                folderId: null,
+                userEmail: currentEmail,
+                projectName: courseName,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
               }
-              try {
-                rewriteResponse = await chat_ui.runChatCompletion(
-                  queryRewriteConversation,
-                  getCurrentPageName(),
+
+              const queryRewriteBody: ChatBody = {
+                conversation: {
+                  ...queryRewriteConversation,
+                  messages: queryRewriteConversation.messages.map(msg => ({
+                    ...msg,
+                    content: typeof msg.content === 'string' 
+                      ? msg.content.trim()
+                      : Array.isArray(msg.content)
+                        ? msg.content.map(c => c.text).join(' ').trim()
+                        : ''
+                  }))
+                },
+                key: getOpenAIKey(courseMetadata, apiKey),
+                course_name: courseName,
+                stream: false,
+                courseMetadata: courseMetadata,
+                llmProviders: llmProviders,
+                model: selectedConversation.model,
+              }
+
+              if (!queryRewriteBody.model || !queryRewriteBody.model.id) {
+                queryRewriteBody.model = selectedConversation.model
+              }
+
+              let rewriteResponse: Response | AsyncIterable<webllm.ChatCompletionChunk> | undefined
+
+              if (
+                selectedConversation.model &&
+                webLLMModels.some(
+                  (model) => model.name === selectedConversation.model.name,
                 )
-              } catch (error) {
-                errorToast({
-                  title: 'Error running query rewrite',
-                  message: (error as Error).message || 'An unexpected error occurred',
-                })
-              }
-            } else {
-              // Direct call to routeModelRequest instead of going through the API route
-              try {
-                rewriteResponse = await fetch('/api/queryRewrite', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(queryRewriteBody),
-                })
-              } catch (error) {
-                console.error('Error calling query rewrite endpoint:', error)
-                throw error
-              }
-            }
-
-            console.log('query rewriteResponse:', rewriteResponse)
-            
-            if (rewriteResponse instanceof Response) {
-              try {
-                const responseData = await rewriteResponse.json();
-
-                // Adjust to handle 'choices' being an array or an object with numeric keys
-                let choices = responseData.choices;
-
-                if (Array.isArray(choices)) {
-                  // 'choices' is already an array, do nothing
-                } else if (typeof choices === 'object' && choices !== null) {
-                  // Convert 'choices' object to array
-                  choices = Object.values(choices);
-                } else {
-                  // 'choices' is neither an array nor an object
-                  throw new Error('Invalid format for choices in response data.');
+              ) {
+                // WebLLM model handling remains the same
+                while (chat_ui.isModelLoading() === true) {
+                  await new Promise((resolve) => setTimeout(resolve, 10))
                 }
-
-                console.log('queryRewrite choices:', choices)
-
-                // Extract the content from the non-streaming response
-                rewrittenQuery = choices?.[0]?.message?.content?.choices?.[0]?.message?.content || 
-                                choices?.[0]?.message?.content ||
-                                searchQuery;
-
-              } catch (error) {
-                console.error('Error parsing non-streaming response:', error);
-                // Fall back to the original search query
-                rewrittenQuery = searchQuery;
-              }
-            }
-
-            console.log('rewrittenQuery after parsing:', rewrittenQuery)
-
-            if (typeof rewrittenQuery !== 'string') {
-              rewrittenQuery = searchQuery
-            } else {
-              // Check if the response is NO_REWRITE_REQUIRED
-              if (rewrittenQuery.trim().toUpperCase() === 'NO_REWRITE_REQUIRED') {
-                console.log('Query rewrite not required, using original query')
-                rewrittenQuery = searchQuery
+                try {
+                  rewriteResponse = await chat_ui.runChatCompletion(
+                    queryRewriteConversation,
+                    getCurrentPageName(),
+                  )
+                } catch (error) {
+                  errorToast({
+                    title: 'Error running query rewrite',
+                    message: (error as Error).message || 'An unexpected error occurred',
+                  })
+                }
               } else {
-                console.log('Using rewritten query:', rewrittenQuery)
+                // Direct call to routeModelRequest instead of going through the API route
+                try {
+                  rewriteResponse = await fetch('/api/queryRewrite', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(queryRewriteBody),
+                  })
+                } catch (error) {
+                  console.error('Error calling query rewrite endpoint:', error)
+                  throw error
+                }
               }
-            }
 
-          } catch (error) {
-            console.error('Error in query rewriting:', error)
+              console.log('query rewriteResponse:', rewriteResponse)
+              
+              // After processing the query rewrite response
+              if (rewriteResponse instanceof Response) {
+                try {
+                  const responseData = await rewriteResponse.json();
+                  let choices = responseData.choices;
+
+                  if (Array.isArray(choices)) {
+                    // 'choices' is already an array, do nothing
+                  } else if (typeof choices === 'object' && choices !== null) {
+                    // Convert 'choices' object to array
+                    choices = Object.values(choices);
+                  } else {
+                    throw new Error('Invalid format for choices in response data.');
+                  }
+
+                  rewrittenQuery = choices?.[0]?.message?.content?.choices?.[0]?.message?.content || 
+                                  choices?.[0]?.message?.content ||
+                                  searchQuery;
+
+                } catch (error) {
+                  console.error('Error parsing non-streaming response:', error);
+                  message.wasQueryRewritten = false;
+                }
+              }
+
+              console.log('rewrittenQuery after parsing:', rewrittenQuery)
+
+              if (typeof rewrittenQuery !== 'string') {
+                rewrittenQuery = searchQuery
+                homeDispatch({ field: 'wasQueryRewritten', value: false })
+                homeDispatch({ field: 'queryRewriteText', value: null })
+                message.wasQueryRewritten = false;
+                message.queryRewriteText = undefined;
+              } else {
+                // Check if the response is NO_REWRITE_REQUIRED
+                if (rewrittenQuery.trim().toUpperCase() === 'NO_REWRITE_REQUIRED') {
+                  console.log('Query rewrite not required, using original query')
+                  rewrittenQuery = searchQuery
+                  homeDispatch({ field: 'wasQueryRewritten', value: false })
+                  homeDispatch({ field: 'queryRewriteText', value: null })
+                  message.wasQueryRewritten = false;
+                  message.queryRewriteText = undefined;
+                } else {
+                  console.log('Using rewritten query:', rewrittenQuery)
+                  homeDispatch({ field: 'wasQueryRewritten', value: true })
+                  homeDispatch({ field: 'queryRewriteText', value: rewrittenQuery })
+                  message.wasQueryRewritten = true;
+                  message.queryRewriteText = rewrittenQuery;
+                }
+              }
+
+            } catch (error) {
+              console.error('Error in query rewriting:', error)
+              homeDispatch({ field: 'wasQueryRewritten', value: false })
+              homeDispatch({ field: 'queryRewriteText', value: null })
+              message.wasQueryRewritten = false;
+              message.queryRewriteText = undefined;
+            } finally {
+              homeDispatch({ field: 'isQueryRewriting', value: false })
+            }
           }
 
           console.log('Final query used for context search:', rewrittenQuery)
+
+          homeDispatch({ field: 'isRetrievalLoading', value: true })
 
           // Use enhanced query for context search
           await handleContextSearch(
@@ -684,6 +742,7 @@ export const Chat = memo(
             rewrittenQuery,
             enabledDocumentGroups,
           )
+          
           homeDispatch({ field: 'isRetrievalLoading', value: false })
 
           // Action 3: Tool Execution
@@ -922,8 +981,13 @@ export const Chat = memo(
                       content: chunkValue,
                       contexts: message.contexts,
                       feedback: message.feedback,
+                      wasQueryRewritten: message.wasQueryRewritten,
+                      queryRewriteText: message.queryRewriteText
                     },
                   ]
+
+                  console.log('updatedMessages with queryRewrite info:', updatedMessages)
+
                   finalAssistantRespose += chunkValue
                   updatedConversation = {
                     ...updatedConversation,
@@ -1056,6 +1120,8 @@ export const Chat = memo(
                   content: answer,
                   contexts: message.contexts,
                   feedback: message.feedback,
+                  wasQueryRewritten: message.wasQueryRewritten,
+                  queryRewriteText: message.queryRewriteText
                 },
               ]
               updatedConversation = {
