@@ -12,6 +12,7 @@ import {
   Divider,
   Accordion,
   createStyles,
+  Indicator,
 } from '@mantine/core'
 import { IconLock } from '@tabler/icons-react'
 import {
@@ -28,6 +29,7 @@ import { WebScrape } from '~/components/UIUC-Components/WebScrape'
 import { callSetCourseMetadata, uploadToS3 } from '~/utils/apiUtils'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import SetExampleQuestions from './SetExampleQuestions'
+import CustomSwitch from '~/components/Switches/CustomSwitch'
 
 const montserrat_light = Montserrat({
   weight: '400',
@@ -464,6 +466,9 @@ const PrivateOrPublicCourse = ({
   apiKey: string
 }) => {
   const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
+  const [vectorSearchRewrite, setVectorSearchRewrite] = useState(
+    !courseMetadata.vector_search_rewrite_disabled
+  )
   const { classes } = useStyles() // for Accordion
   const [courseAdmins, setCourseAdmins] = useState<string[]>([])
 
@@ -521,6 +526,23 @@ const PrivateOrPublicCourse = ({
       console.log('Course metadata updated successfully')
     } else {
       console.error('Error updating course metadata')
+    }
+  }
+
+  const handleSettingChange = async (updates: Partial<CourseMetadata>) => {
+    try {
+      const updatedMetadata = {
+        ...courseMetadata,
+        ...updates
+      }
+      const response = await callSetCourseMetadata(course_name, updatedMetadata)
+      if (response) {
+        console.log('Course metadata updated successfully')
+      } else {
+        console.error('Error updating course metadata')
+      }
+    } catch (error) {
+      console.error('Error updating course settings:', error)
     }
   }
 
@@ -685,6 +707,53 @@ const PrivateOrPublicCourse = ({
         is_for_admins={true}
       />
       <Divider />
+      
+      <Flex align="center">
+        <Title
+          className={`${montserrat_heading.variable} font-montserratHeading`}
+          variant="gradient" 
+          gradient={{ from: 'gold', to: 'white', deg: 170 }}
+          order={3}
+          pl={'md'}
+          pr={'md'}
+          pt={'sm'}
+          pb={'xs'}
+          style={{ alignSelf: 'left', marginLeft: '-11px' }}
+        >
+          Document Search Optimization
+        </Title>
+        <Indicator
+          label={
+            <Text className={`${montserrat_heading.variable} font-montserratHeading`}>
+              New
+            </Text>
+          }
+          color="hsl(280,100%,70%)"
+          size={13}
+          styles={{
+            indicator: {
+              top: '-17px !important',
+              right: '7px !important',
+            },
+          }}
+        >
+          <span className={`${montserrat_heading.variable} font-montserratHeading`}></span>
+        </Indicator>
+      </Flex>
+
+      <div className="px-3 pb-4">
+        <CustomSwitch
+          label="Smart Document Search"
+          tooltip="When enabled, UIUC.chat optimizes your queries to better search through course materials and find relevant content. Note: This only affects how documents are searched - your chat messages remain exactly as you write them."
+          checked={vectorSearchRewrite}
+          onChange={(value: boolean) => {
+            setVectorSearchRewrite(value)
+            handleSettingChange({ vector_search_rewrite_disabled: !value })
+          }}
+        />
+      </div>
+
+      <Divider/>
     </>
   )
 }

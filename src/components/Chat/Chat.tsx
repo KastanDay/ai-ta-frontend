@@ -547,7 +547,7 @@ export const Chat = memo(
             rewrittenQuery = searchQuery
             homeDispatch({ field: 'wasQueryRewritten', value: false })
             homeDispatch({ field: 'queryRewriteText', value: null })
-            message.wasQueryRewritten = false;
+            message.wasQueryRewritten = undefined;
             message.queryRewriteText = undefined;
           } else {
             homeDispatch({ field: 'isQueryRewriting', value: true })
