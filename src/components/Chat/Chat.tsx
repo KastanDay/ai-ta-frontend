@@ -709,7 +709,7 @@ export const Chat = memo(
                 message.queryRewriteText = undefined;
               } else {
                 // Extract vector query from XML tags if present
-                const vectorQueryMatch = rewrittenQuery.match(/<vector_query>(.*?)<\/vector_query>/) || null;
+                const vectorQueryMatch = rewrittenQuery.match(/<\s*vector_query\s*>(.*?)<\s*\/\s*vector_query\s*>/) || null;
                 const extractedQuery = vectorQueryMatch?.[1]?.trim();
                 
                 // Check if the response is NO_REWRITE_REQUIRED or if we couldn't extract a valid query
