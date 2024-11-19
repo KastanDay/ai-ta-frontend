@@ -981,6 +981,7 @@ export const ChatMessage: FC<Props> = memo(
                         {!isRouting &&
                           !isRetrievalLoading &&
                           !isImg2TextLoading &&
+                          !isQueryRewriting &&
                           loading &&
                           (messageIndex ===
                             (selectedConversation?.messages.length ?? 0) - 1 ||
