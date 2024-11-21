@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Card,
   Text,
@@ -12,8 +12,6 @@ import {
   Divider,
   Accordion,
   createStyles,
-  Indicator,
-  useMantineTheme,
 } from '@mantine/core'
 import { IconLock } from '@tabler/icons-react'
 import {
@@ -30,9 +28,6 @@ import { WebScrape } from '~/components/UIUC-Components/WebScrape'
 import { callSetCourseMetadata, uploadToS3 } from '~/utils/apiUtils'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import SetExampleQuestions from './SetExampleQuestions'
-import CustomSwitch from '~/components/Switches/CustomSwitch'
-import { showToastNotification } from '~/pages/[course_name]/prompt'
-import { debounce } from 'lodash'
 
 const montserrat_light = Montserrat({
   weight: '400',
@@ -115,8 +110,6 @@ const EditCourseCard = ({
   const [projectDescription, setProjectDescription] = useState(
     courseMetadata?.project_description || '',
   )
-
-  const theme = useMantineTheme()
 
   const checkCourseAvailability = () => {
     const courseExists =
@@ -471,9 +464,6 @@ const PrivateOrPublicCourse = ({
   apiKey: string
 }) => {
   const [isPrivate, setIsPrivate] = useState(courseMetadata.is_private)
-  const [vectorSearchRewrite, setVectorSearchRewrite] = useState(
-    !courseMetadata.vector_search_rewrite_disabled
-  )
   const { classes } = useStyles() // for Accordion
   const [courseAdmins, setCourseAdmins] = useState<string[]>([])
 
@@ -531,49 +521,6 @@ const PrivateOrPublicCourse = ({
       console.log('Course metadata updated successfully')
     } else {
       console.error('Error updating course metadata')
-    }
-  }
-
-  const theme = useMantineTheme()
-
-  const showToastOnSearchOptimization = (enabled: boolean) => {
-    const title = enabled ? 'Search Optimization Enabled' : 'Search Optimization Disabled'
-    const message = enabled 
-      ? 'Document search will now be optimized for better results.'
-      : 'Document search will now use exact query matching.'
-
-    showToastNotification(theme, title, message, false)
-  }
-
-  const debouncedSave = useCallback(
-    debounce(async (updates: Partial<CourseMetadata>) => {
-      try {
-        const updatedMetadata = {
-          ...courseMetadata,
-          ...updates
-        }
-        const response = await callSetCourseMetadata(course_name, updatedMetadata)
-        if (response) {
-          showToastOnSearchOptimization(!updates.vector_search_rewrite_disabled)
-        } else {
-          showToastNotification(theme, 'Error', 'Failed to update search settings', true)
-        }
-      } catch (error) {
-        console.error('Error updating course settings:', error)
-        showToastNotification(theme, 'Error', 'Failed to update search settings', true)
-      }
-    }, 500),
-    [course_name, courseMetadata, theme]
-  )
-
-  const handleSettingChange = async (updates: Partial<CourseMetadata>) => {
-    try {
-      setVectorSearchRewrite(!updates.vector_search_rewrite_disabled)
-      
-      debouncedSave(updates)
-    } catch (error) {
-      console.error('Error updating course settings:', error)
-      showToastNotification(theme, 'Error', 'Failed to update search settings', true)
     }
   }
 
@@ -738,52 +685,6 @@ const PrivateOrPublicCourse = ({
         is_for_admins={true}
       />
       <Divider />
-      
-      <Flex align="center">
-        <Title
-          className={`${montserrat_heading.variable} font-montserratHeading`}
-          variant="gradient" 
-          gradient={{ from: 'gold', to: 'white', deg: 170 }}
-          order={3}
-          pl={'md'}
-          pr={'md'}
-          pt={'sm'}
-          pb={'xs'}
-          style={{ alignSelf: 'left', marginLeft: '-11px' }}
-        >
-          Document Search Optimization
-        </Title>
-        <Indicator
-          label={
-            <Text className={`${montserrat_heading.variable} font-montserratHeading`}>
-              New
-            </Text>
-          }
-          color="hsl(280,100%,70%)"
-          size={13}
-          styles={{
-            indicator: {
-              top: '-17px !important',
-              right: '7px !important',
-            },
-          }}
-        >
-          <span className={`${montserrat_heading.variable} font-montserratHeading`}></span>
-        </Indicator>
-      </Flex>
-
-      <div className="px-3 pb-4">
-        <CustomSwitch
-          label="Smart Document Search"
-          tooltip="When enabled, UIUC.chat optimizes your queries to better search through course materials and find relevant content. Note: This only affects how documents are searched - your chat messages remain exactly as you write them."
-          checked={vectorSearchRewrite}
-          onChange={(value: boolean) => {
-            handleSettingChange({ vector_search_rewrite_disabled: !value })
-          }}
-        />
-      </div>
-
-      <Divider/>
     </>
   )
 }
