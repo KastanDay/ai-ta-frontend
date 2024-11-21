@@ -10,8 +10,8 @@ export const aws_config = {
   secretAccessKey: process.env.AWS_SECRET,
 }
 
-console.log('bucket name ---------------', process.env.S3_BUCKET_NAME)
-console.log('aws ---------------', process.env.AWS_KEY)
+// console.log('bucket name ---------------', process.env.S3_BUCKET_NAME)
+// console.log('aws ---------------', process.env.AWS_KEY)
 
 const s3Client = new S3Client({
   region: aws_config.region,
@@ -31,7 +31,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     console.log('in uploadToS3.ts: CourseName:', courseName)
     console.log('in uploadToS3.ts: uniqueFileName:', uniqueFileName)
     const s3_filepath = `courses/${courseName}/${uniqueFileName}`
-    console.log('S3 path to upload:', s3_filepath)
+    // console.log('S3 path to upload:', s3_filepath)
 
     const post = await createPresignedPost(s3Client, {
       Bucket: aws_config.bucketName,

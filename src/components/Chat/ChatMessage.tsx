@@ -553,12 +553,6 @@ export const ChatMessage: FC<Props> = memo(
       processTools()
     }, [message.tools])
 
-    // Add this useEffect for debugging
-    useEffect(() => {
-      console.log('2342 wasQueryRewritten:', message.wasQueryRewritten)
-      console.log('2342 queryRewriteText:', message.queryRewriteText)
-    }, [message.wasQueryRewritten, message.queryRewriteText])
-
     return (
       <div
         className={`group md:px-6 ${

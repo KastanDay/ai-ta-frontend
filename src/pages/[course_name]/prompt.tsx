@@ -483,7 +483,7 @@ const CourseMain: NextPage = () => {
     }
     setApiKey(newApiKey)
 
-    console.log('apikey set to', apiKey)
+    // console.log('apikey set to', apiKey)
     e.preventDefault()
 
     const systemPrompt = `Understand the Task: Grasp the main objective, goals, requirements, constraints, and expected output.

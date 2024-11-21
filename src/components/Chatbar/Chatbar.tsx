@@ -130,7 +130,7 @@ export const Chatbar = ({
         !isConversationHistoryLoading &&
         conversationHistory
       ) {
-        console.log('Raw conversation history:', conversationHistory)
+        // console.log('Raw conversation history:', conversationHistory)
         const allConversations = conversationHistory.pages
           .flatMap((page) => (Array.isArray(page) ? page : []))
           .filter((conversation) => conversation !== undefined)

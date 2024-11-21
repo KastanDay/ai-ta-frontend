@@ -545,7 +545,7 @@ export const Chat = memo(
 
           let rewrittenQuery = searchQuery // Default to original query
 
-          console.log('vector_search_rewrite_disabled setting:', courseMetadata?.vector_search_rewrite_disabled)
+          // console.log('vector_search_rewrite_disabled setting:', courseMetadata?.vector_search_rewrite_disabled)
 
           // Skip query rewrite if disabled in course metadata or if it's the first message
           if (courseMetadata?.vector_search_rewrite_disabled || (selectedConversation?.messages?.length ?? 0) === 0) {
@@ -672,7 +672,7 @@ export const Chat = memo(
                 }
               }
 
-              console.log('query rewriteResponse:', rewriteResponse)
+              // console.log('query rewriteResponse:', rewriteResponse)
               
               // After processing the query rewrite response
               if (rewriteResponse instanceof Response) {
@@ -726,7 +726,7 @@ export const Chat = memo(
                 } else {
                   // Use the extracted query
                   rewrittenQuery = extractedQuery;
-                  console.log('Using rewritten query:', rewrittenQuery)
+                  // console.log('Using rewritten query:', rewrittenQuery)
                   homeDispatch({ field: 'wasQueryRewritten', value: true })
                   homeDispatch({ field: 'queryRewriteText', value: rewrittenQuery })
                   message.wasQueryRewritten = true;
@@ -745,7 +745,7 @@ export const Chat = memo(
             }
           }
 
-          console.log('Final query used for context search:', rewrittenQuery)
+          // console.log('Final query used for context search:', rewrittenQuery)
 
           homeDispatch({ field: 'isRetrievalLoading', value: true })
 
@@ -1001,7 +1001,7 @@ export const Chat = memo(
                     },
                   ]
 
-                  console.log('updatedMessages with queryRewrite info:', updatedMessages)
+                  // console.log('updatedMessages with queryRewrite info:', updatedMessages)
 
                   finalAssistantRespose += chunkValue
                   updatedConversation = {
