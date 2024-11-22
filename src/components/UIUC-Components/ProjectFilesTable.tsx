@@ -301,15 +301,17 @@ export function ProjectFilesTable({
   const deleteDocumentMutation = useMutation({
     mutationFn: async (recordsToDelete: CourseDocument[]) => {
       console.debug('Deleting records:', recordsToDelete)
-      const API_URL = 'https://flask-production-751b.up.railway.app'
       const deletePromises = recordsToDelete.map((record) =>
-        axios.delete(`${API_URL}/delete`, {
-          params: {
-            course_name: record.course_name,
-            s3_path: record.s3_path,
-            url: record.url,
+        axios.delete(
+          `${process.env.NEXT_PUBLIC_UIUC_CHAT_BACKEND_URL}/delete`,
+          {
+            params: {
+              course_name: record.course_name,
+              s3_path: record.s3_path,
+              url: record.url,
+            },
           },
-        }),
+        ),
       )
       await Promise.all(deletePromises)
       console.debug('Deleted records')

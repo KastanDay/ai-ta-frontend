@@ -261,7 +261,7 @@ export const Chat = memo(({ stopConversationRef, courseMetadata }: Props) => {
     try {
       // Log conversation to our Flask Backend (especially Nomic)
       const response = await fetch(
-        `https://flask-production-751b.up.railway.app/onResponseCompletion`,
+        `${process.env.NEXT_PUBLIC_UIUC_CHAT_BACKEND_URL}/onResponseCompletion`,
         {
           method: 'POST',
           headers: {

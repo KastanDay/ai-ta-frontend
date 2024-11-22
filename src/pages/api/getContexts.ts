@@ -44,7 +44,7 @@ export const fetchContexts = async (
   // ]
   // return dummyContexts
 
-  const url = `https://flask-production-751b.up.railway.app/getTopContexts`
+  const url = `${process.env.NEXT_PUBLIC_UIUC_CHAT_BACKEND_URL}/getTopContexts`
 
   try {
     const response = await fetch(url, {
