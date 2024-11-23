@@ -21,21 +21,15 @@ const config = {
       asyncWebAssembly: true,
       layers: true, // Enable layers experiment
     }
-    }
 
     // Adjust the module rules for WASM files
     config.module.rules.push({
       test: /\.wasm$/,
       // Exclude the Next.js middleware WASM loader from processing your WASM files
-      exclude:
-        /node_modules\/next\/dist\/build\/webpack\/loaders\/next-middleware-wasm-loader\.js/,
-      exclude:
-        /node_modules\/next\/dist\/build\/webpack\/loaders\/next-middleware-wasm-loader\.js/,
+      exclude: /node_modules\/next\/dist\/build\/webpack\/loaders\/next-middleware-wasm-loader\.js/,
       type: 'webassembly/async',
     })
-    })
 
-    return config
     return config
   },
 
