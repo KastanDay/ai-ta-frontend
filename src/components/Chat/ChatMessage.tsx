@@ -729,19 +729,25 @@ export const ChatMessage: FC<Props> = memo(
                         )}
 
                         {/* Query rewrite result - using message properties */}
-                        {!isQueryRewriting && message.wasQueryRewritten !== undefined && message.wasQueryRewritten !== null && (
-                          <IntermediateStateAccordion
-                            accordionKey="query-rewrite-result"
-                            title="Optimized search query"
-                            isLoading={false}
-                            error={false}
-                            content={
-                              message.wasQueryRewritten
-                                ? `Using optimized query for document retrieval: ${message.queryRewriteText}`
-                                : "Using original query for document retrieval."
-                            }
-                          />
-                        )}
+                        {!isQueryRewriting &&
+                          message.wasQueryRewritten !== undefined &&
+                          message.wasQueryRewritten !== null && (
+                            <IntermediateStateAccordion
+                              accordionKey="query-rewrite-result"
+                              title={
+                                message.wasQueryRewritten
+                                  ? 'Optimized search query'
+                                  : 'No query optimization necessary'
+                              }
+                              isLoading={false}
+                              error={false}
+                              content={
+                                message.wasQueryRewritten
+                                  ? message.queryRewriteText
+                                  : 'Using original query, the LLM determined no optimization was necessary. We only optimize to better contextualize your message into a vector search query that will return the most relevant documents to match your search intent.'
+                              }
+                            />
+                          )}
 
                         {/* Retrieval results for all messages */}
                         {message.contexts && message.contexts.length > 0 && (
