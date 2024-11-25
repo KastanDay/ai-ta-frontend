@@ -744,7 +744,7 @@ export const ChatMessage: FC<Props> = memo(
                               content={
                                 message.wasQueryRewritten
                                   ? message.queryRewriteText
-                                  : "Using original query, the LLM determined no optimization was necessary. We only optimize when it's necessary to turn a single message into a stand-alone search to retrieve the best documents."
+                                  : "The LLM determined no optimization was necessary. We only optimize when it's necessary to turn a single message into a stand-alone search to retrieve the best documents."
                               }
                             />
                           )}
