@@ -199,7 +199,7 @@ const callN8nFunction = async (
 
   const timeStart = Date.now()
   const response: Response = await fetch(
-    `https://flask-production-751b.up.railway.app/run_flow`,
+    `${process.env.NEXT_PUBLIC_UIUC_CHAT_BACKEND_URL}/run_flow`,
     {
       method: 'POST',
       headers: {
@@ -469,7 +469,7 @@ export async function fetchTools(
   const parsedPagination = pagination.toLowerCase() === 'true'
 
   const response = await fetch(
-    `https://flask-production-751b.up.railway.app/getworkflows?api_key=${api_key}&limit=${limit}&pagination=${parsedPagination}`,
+    `${process.env.NEXT_PUBLIC_UIUC_CHAT_BACKEND_URL}/getworkflows?api_key=${api_key}&limit=${limit}&pagination=${parsedPagination}`,
   )
   if (!response.ok) {
     // return res.status(response.status).json({ error: response.statusText })

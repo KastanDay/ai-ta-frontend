@@ -10,7 +10,7 @@ export const createProject = async (
     project_description: project_description,
     project_owner_email: project_owner_email,
   }
-  const url = 'https://flask-production-751b.up.railway.app/createProject'
+  const url = '${process.env.NEXT_PUBLIC_UIUC_CHAT_BACKEND_URL}/createProject'
 
   try {
     const response = await fetch(url, {
