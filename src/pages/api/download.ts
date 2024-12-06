@@ -1,27 +1,39 @@
 import { S3Client } from '@aws-sdk/client-s3'
 import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiRequest, NextApiResponse } from 'next'
+
+// const region = process.env.MINIO_REGION || process.env.AWS_REGION
+// const accessKey = process.env.MINIO_ACCESS_KEY || process.env.AWS_KEY
+// const secretKey = process.env.MINIO_SECRET_KEY || process.env.AWS_SECRET
+// const bucketName = process.env.MINIO_BUCKET_NAME || process.env.S3_BUCKET_NAME
+const region = process.env.AWS_REGION // no need for any MINIO_REGION. It doesn't exist.
+const accessKey = process.env.MINIO_KEY || process.env.AWS_KEY
+const secretKey = process.env.MINIO_SECRET || process.env.AWS_SECRET
+const bucketName = process.env.MINIO_BUCKET_NAME || process.env.S3_BUCKET_NAME
+
+if (
+  !region ||
+  !accessKey ||
+  !secretKey ||
+  !bucketName ||
+  !process.env.MINIO_ENDPOINT
+) {
+  throw new Error(
+    'Missing required AWS S3 or MINIO credentials, endpoint, or bucket name in environment variables.',
+  )
+}
 
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
+  region,
   credentials: {
-    // @ts-ignore -- it's fine, stop complaining
-    accessKeyId: process.env.AWS_KEY,
-    // @ts-ignore -- it's fine, stop complaining
-    secretAccessKey: process.env.AWS_SECRET,
+    accessKeyId: accessKey,
+    secretAccessKey: secretKey,
   },
-  // If MINIO_ENDPOINT is defined, use it instead of AWS S3.
-  ...(process.env.MINIO_ENDPOINT
-    ? {
-        endpoint: process.env.MINIO_ENDPOINT,
-        forcePathStyle: true,
-        credentials: {
-          accessKeyId: process.env.AWS_KEY,
-          secretAccessKey: process.env.AWS_SECRET,
-        },
-      }
-    : {}),
+  ...(process.env.MINIO_ENDPOINT && {
+    endpoint: process.env.MINIO_ENDPOINT,
+    forcePathStyle: true,
+  }),
 })
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -42,7 +54,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const command = new GetObjectCommand({
-      Bucket: process.env.S3_BUCKET_NAME!,
+      Bucket: bucketName,
       Key: filePath,
       ResponseContentDisposition: 'inline',
       ResponseContentType: ResponseContentType,
