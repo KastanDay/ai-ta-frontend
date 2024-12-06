@@ -281,7 +281,7 @@ export const Chat = memo(
             body: JSON.stringify({
               course_name: getCurrentPageName(),
               conversation: conversation,
-              llmProviders: llmProviders,
+              // llmProviders: llmProviders,
             }),
           },
         )
@@ -1239,6 +1239,7 @@ export const Chat = memo(
             body: JSON.stringify({
               course_name: getCurrentPageName(),
               conversation: updatedConversation,
+              llmProviders: llmProviders,
             }),
           })
         } catch (error) {

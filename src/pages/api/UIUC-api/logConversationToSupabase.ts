@@ -4,10 +4,10 @@ import { RunTree } from 'langsmith'
 import { AllLLMProviders } from '~/utils/modelProviders/LLMProvider'
 import { ChatBody } from '~/types/chat'
 const logConversationToSupabase = async (req: any, res: any) => {
-  const { course_name, conversation, llmProviders } = req.body as {
+  const { course_name, conversation, } = req.body as {
     course_name: string
     conversation: Conversation
-    llmProviders: AllLLMProviders
+    //llmProviders: AllLLMProviders
   }
 
   // Set final system and user prompts in the conversation
@@ -26,26 +26,27 @@ const logConversationToSupabase = async (req: any, res: any) => {
     key: '',
     course_name: course_name,
     stream: false,
-    llmProviders: llmProviders,
+    // llmProviders: llmProviders,
     model: conversation.model,
   }
 
   // Call the new endpoint to get the conversation summary . But dont want streaming here
-  const response = await fetch('/api/allNewRoutingChat', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(chatBody),
-  })
+  // const response = await fetch('/api/allNewRoutingChat', {
+  //   method: 'POST',
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //   },
+  //   body: JSON.stringify(chatBody),
+  // })
 
-  // Extracting the JSON from the NextResponse
-  const jsonResponse = await response.json();
+  // // Extracting the JSON from the NextResponse
+  // const jsonResponse = await response.json();
   
-  // Accessing result.text
-  const resultText = jsonResponse.choices[0].message.content;
-  conversation.summary = resultText
-  console.log('conversation summary', conversation.summary)
+  // // Accessing result.text
+  // const resultText = jsonResponse.choices[0].message.content;
+  // conversation.summary = resultText
+  console.log('conversation', conversation)
+  console.log('conversation model', conversation.model)
 
   const { data, error } = await supabase.from('llm-convo-monitor').upsert(
     [
