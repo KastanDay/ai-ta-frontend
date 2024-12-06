@@ -18,6 +18,7 @@ import {
   // Divider,
   MantineTheme,
   Divider,
+  ActionIcon,
   // TextInput,
   // Tooltip,
 } from '@mantine/core'
@@ -33,10 +34,11 @@ import ConversationsPerDayChart from './ConversationsPerDayChart'
 import ConversationsPerHourChart from './ConversationsPerHourChart'
 import ConversationsPerDayOfWeekChart from './ConversationsPerDayOfWeekChart'
 import ConversationsHeatmapByHourChart from './ConversationsHeatmapByHourChart'
-import { 
+import {
   IconMessage2,
   IconUsers,
   IconMessageCircle2,
+  IconInfoCircle,
 } from '@tabler/icons-react'
 
 const useStyles = createStyles((theme: MantineTheme) => ({
@@ -146,32 +148,6 @@ const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
 
     fetchData()
   }, [currentPageName, clerk_user.isLoaded])
-
-  const [nomicMapData, setNomicMapData] = useState<NomicMapData | null>(null)
-  const [nomicIsLoading, setNomicIsLoading] = useState(true)
-
-  // fetch nomicMapData
-  useEffect(() => {
-    const fetchNomicMapData = async () => {
-      try {
-        const response = await fetch(
-          `/api/getNomicMapForQueries?course_name=${course_name}`,
-        )
-        const data = await response.json()
-        const parsedData: NomicMapData = {
-          map_id: data.map_id,
-          map_link: data.map_link,
-        }
-        setNomicMapData(parsedData)
-        setNomicIsLoading(false)
-      } catch (error) {
-        console.error('Error fetching nomic map:', error)
-        setNomicIsLoading(false) // Set nomicIsLoading to false even if there is an error
-      }
-    }
-
-    fetchNomicMapData()
-  }, [course_name])
 
   const [hasConversationData, setHasConversationData] = useState<boolean>(true)
 
@@ -297,7 +273,7 @@ const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
                 <Title
                   order={3}
                   align="left"
-                  className={`px-2 text-[hsl(280,100%,70%)] ${montserrat_heading.variable} font-montserratHeading`}
+                  className={`px-4 text-[hsl(280,100%,70%)] ${montserrat_heading.variable} font-montserratHeading`}
                   style={{ flexGrow: 2 }}
                 >
                   Usage Overview
@@ -328,8 +304,8 @@ const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
               {/* Usage Overview Banner */}
               <div className="my-6 w-[95%] rounded-xl bg-[#1a1b30] p-6 shadow-lg shadow-purple-900/20">
                 <div className="mb-6">
-                  <Title 
-                    order={4} 
+                  <Title
+                    order={4}
                     className={`${montserrat_heading.variable} font-montserratHeading text-white`}
                   >
                     Project Analytics
@@ -351,16 +327,20 @@ const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
                           Total chat sessions
                         </Text>
                       </div>
-                      <IconMessageCircle2 
-                        size={24} 
-                        className="text-purple-400 opacity-80" 
+                      <IconMessageCircle2
+                        size={24}
+                        className="text-purple-400 opacity-80"
                       />
                     </div>
                     <div className="flex items-center justify-start">
                       {courseStatsLoading ? (
                         <LoadingSpinner size="sm" />
                       ) : courseStatsError ? (
-                        <Text size="sm" color="red" className="flex items-center">
+                        <Text
+                          size="sm"
+                          color="red"
+                          className="flex items-center"
+                        >
                           <IconAlertTriangle size={16} className="mr-1" />
                           Error
                         </Text>
@@ -370,7 +350,8 @@ const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
                           weight={700}
                           className="text-purple-400"
                         >
-                          {courseStats?.total_conversations?.toLocaleString() || 0}
+                          {courseStats?.total_conversations?.toLocaleString() ||
+                            0}
                         </Text>
                       )}
                     </div>
@@ -387,16 +368,20 @@ const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
                           Total exchanges
                         </Text>
                       </div>
-                      <IconMessage2 
-                        size={24} 
-                        className="text-purple-400 opacity-80" 
+                      <IconMessage2
+                        size={24}
+                        className="text-purple-400 opacity-80"
                       />
                     </div>
                     <div className="flex items-center justify-start">
                       {courseStatsLoading ? (
                         <LoadingSpinner size="sm" />
                       ) : courseStatsError ? (
-                        <Text size="sm" color="red" className="flex items-center">
+                        <Text
+                          size="sm"
+                          color="red"
+                          className="flex items-center"
+                        >
                           <IconAlertTriangle size={16} className="mr-1" />
                           Error
                         </Text>
@@ -423,16 +408,20 @@ const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
                           Unique participants
                         </Text>
                       </div>
-                      <IconUsers 
-                        size={24} 
-                        className="text-purple-400 opacity-80" 
+                      <IconUsers
+                        size={24}
+                        className="text-purple-400 opacity-80"
                       />
                     </div>
                     <div className="flex items-center justify-start">
                       {courseStatsLoading ? (
                         <LoadingSpinner size="sm" />
                       ) : courseStatsError ? (
-                        <Text size="sm" color="red" className="flex items-center">
+                        <Text
+                          size="sm"
+                          color="red"
+                          className="flex items-center"
+                        >
                           <IconAlertTriangle size={16} className="mr-1" />
                           Error
                         </Text>
@@ -558,61 +547,8 @@ const MakeQueryAnalysisPage = ({ course_name }: { course_name: string }) => {
             </div>
           </Flex>
         </div>
-        {/* NOMIC VISUALIZATION  */}
-        {/* {false ? ( */}
-        {/* {true ? ( */}
-        {/* {nomicIsLoading ? (
-              <>
-                <span className="nomic-iframe skeleton-box pl-7 pr-7 pt-4"></span>
-              </>
-            ) : nomicMapData && nomicMapData.map_id ? (
-              <>
-                <iframe
-                  className="nomic-iframe pl-7 pr-7 pt-4 pt-4"
-                  id={nomicMapData.map_id}
-                  allow="clipboard-read; clipboard-write"
-                  src={nomicMapData.map_link}
-                />
-                <Title
-                  order={6}
-                  className={`w-full text-center ${montserrat_heading.variable} mt-2 font-montserratHeading`}
-                >
-                  A conceptual map of the questions asked by users on this page.
-                  <br></br>
-                  Read more about{' '}
-                  <a
-                    className={'text-purple-600'}
-                    href="https://atlas.nomic.ai/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ textDecoration: 'underline', paddingRight: '5px' }}
-                  >
-                    semantic similarity visualizations
-                  </a
-                </Title>
-              </>
-            ) : (
-              <>
-                <Title
-                  order={6}
-                  className={`w-full text-center ${montserrat_heading.variable} mt-2 font-montserratHeading`}
-                >
-                  Query visualization requires at least 20 queries to be made...
-                  go ask some questions and check back later :)
-                  <br></br>
-                  Read more about{' '}
-                  <a
-                    className={'text-purple-600'}
-                    href="https://atlas.nomic.ai/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ textDecoration: 'underline', paddingRight: '5px' }}
-                  >
-                    semantic similarity visualizations
-                  </a */}
-        {/* </Title> */}
-        {/* </> */}
-        {/* )}  */}
+
+        <NomicDocumentMap course_name={course_name as string} />
         <GlobalFooter />
       </main>
     </>
@@ -629,7 +565,7 @@ import {
 
 import { CannotEditCourse } from './CannotEditCourse'
 import { type CourseMetadata } from '~/types/courseMetadata'
-// import { CannotViewCourse } from './CannotViewCourse'
+// import {CannotViewCourse} from './CannotViewCourse'
 
 interface CourseFile {
   name: string
@@ -652,6 +588,8 @@ import GlobalFooter from './GlobalFooter'
 import Navbar from './navbars/Navbar'
 import Link from 'next/link'
 import { Separator } from 'tabler-icons-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import NomicDocumentMap from './NomicDocumentsMap'
 
 const CourseFilesList = ({ files }: CourseFilesListProps) => {
   const router = useRouter()
