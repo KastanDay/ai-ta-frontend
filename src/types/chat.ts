@@ -24,6 +24,7 @@ export interface Conversation {
   projectName?: string
   createdAt?: string
   updatedAt?: string
+  summary?: string
 }
 
 export interface Message {
