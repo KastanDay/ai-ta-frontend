@@ -3,10 +3,6 @@ import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-// const region = process.env.MINIO_REGION || process.env.AWS_REGION
-// const accessKey = process.env.MINIO_ACCESS_KEY || process.env.AWS_KEY
-// const secretKey = process.env.MINIO_SECRET_KEY || process.env.AWS_SECRET
-// const bucketName = process.env.MINIO_BUCKET_NAME || process.env.S3_BUCKET_NAME
 const region = process.env.AWS_REGION // no need for any MINIO_REGION. It doesn't exist.
 const accessKey = process.env.MINIO_KEY || process.env.AWS_KEY
 const secretKey = process.env.MINIO_SECRET || process.env.AWS_SECRET
