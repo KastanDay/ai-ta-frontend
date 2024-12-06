@@ -384,7 +384,7 @@ export const WebScrape = ({
       if (!url || !courseName || !localDir) return null
       console.log('calling downloadMITCourse')
       const response = await axios.get(
-        `https://flask-production-751b.up.railway.app/mit-download`,
+        `https://flask-pr-327-vyriad-custom.up.railway.app/mit-download`,
         {
           params: {
             url: url,
