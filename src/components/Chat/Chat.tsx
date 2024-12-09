@@ -297,6 +297,7 @@ export const Chat = memo(
         stream: false,
         courseMetadata: courseMetadata,
         model: selectedConversation?.model,
+        llmProviders: llmProviders,
       }
 
       try {
@@ -594,16 +595,6 @@ export const Chat = memo(
             model: selectedConversation.model,
           }
           updatedConversation = chatBody.conversation!
-
-          // Action 4: Build Prompt - Put everything together into a prompt
-          // const buildPromptResponse = await fetch('/api/buildPrompt', {
-          //   method: 'POST',
-          //   headers: {
-          //     'Content-Type': 'application/json',
-          //   },
-          //   body: JSON.stringify(chatBody),
-          // })
-          // const builtConversation = await buildPromptResponse.json()
 
           // Update the selected conversation
           homeDispatch({
