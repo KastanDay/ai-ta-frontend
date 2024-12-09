@@ -269,25 +269,9 @@ export const Chat = memo(
     }, [tools])
 
     const callLLMForConversationSummary = async (conversation: Conversation): Promise<string> => {
-      // Create a new conversation object for summary
-      const summaryConversation: Conversation = {
-        ...conversation,
-        messages: [
-          {
-            id: uuidv4(),
-            role: 'system',
-            latestSystemMessage: 'You are a helpful assistant that summarizes answers to questions. Summarize the answer within 3 sentences',
-            content: conversation.messages
-              .filter(msg => msg.role === 'assistant')
-              .map(msg => msg.content)
-              .join('\n\n'),
-          },
-        ],
-      }
-
       // Prepare the chat body for the API call
       const chatBody: ChatBody = {
-        conversation: summaryConversation,
+        conversation: conversation,
         key: getOpenAIKey(courseMetadata, apiKey),
         course_name: getCurrentPageName(),
         stream: false,
@@ -297,9 +281,17 @@ export const Chat = memo(
       }
 
       try {
-        const response = await routeModelRequest(chatBody as ChatBody)
+        const response = await fetch('/api/allNewRoutingChat?summary=true', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(chatBody),
+        })
+        if (!response.ok) {
+          throw new Error('Failed to generate summary')
+        }
         const result = await response.json()
-        console.log('result', result)
         return result.choices[0].message.content || ''
       } catch (error) {
         console.error('Error generating conversation summary:', error)
