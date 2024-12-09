@@ -106,6 +106,8 @@ export function convertDBToChatConversation(
         created_at: msg.created_at || undefined,
         updated_at: msg.updated_at || undefined,
         feedback: feedbackObj,
+        wasQueryRewritten: msg.was_query_rewritten ?? null,
+        queryRewriteText: msg.query_rewrite_text ?? null,
       }
 
       return messageObj
@@ -119,14 +121,6 @@ export function convertChatToDBMessage(
   chatMessage: ChatMessage,
   conversationId: string,
 ): DBMessage {
-  console.log(
-    'chatMessage',
-    'for id: ',
-    conversationId,
-    'for message: ',
-    // chatMessage,
-  )
-  // console.log('chatMessage.content type: ', typeof chatMessage.content)
   let content_text = ''
   let content_image_urls: string[] = []
   let image_description = ''
@@ -177,6 +171,8 @@ export function convertChatToDBMessage(
     feedback_is_positive: chatMessage.feedback?.isPositive ?? null,
     feedback_category: chatMessage.feedback?.category ?? null,
     feedback_details: chatMessage.feedback?.details ?? null,
+    was_query_rewritten: chatMessage.wasQueryRewritten ?? null,
+    query_rewrite_text: chatMessage.queryRewriteText ?? null,
   }
 }
 
@@ -201,10 +197,6 @@ export default async function handler(
       try {
         // Convert conversation to DB type
         const dbConversation = convertChatToDBConversation(conversation)
-        console.log(
-          'Saving conversation to server with db object:',
-          dbConversation,
-        )
 
         if (conversation.messages.length === 0) {
           throw new Error('No messages in conversation, not saving!')
@@ -250,7 +242,7 @@ export default async function handler(
       try {
         const pageSize = 8
 
-        const { data, error } = await supabase.rpc('search_conversations_v2', {
+        const { data, error } = await supabase.rpc('search_conversations_v3', {
           p_user_email: user_email,
           p_project_name: courseName,
           p_search_term: searchTerm || null,
