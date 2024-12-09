@@ -271,8 +271,22 @@ export const Chat = memo(
 
     const callLLMForConversationSummary = async (conversation: Conversation): Promise<string> => {
       // Prepare the chat body for the API call
+      const summaryConversation: Conversation = {
+        ...conversation,
+        messages: [
+          {
+            id: uuidv4(),
+            role: 'system',
+            latestSystemMessage: 'You are a helpful assistant that summarizes answers to questions. Summarize the answer within 3 sentences',
+            content: conversation?.messages
+              .filter(msg => msg.role === 'assistant')
+              .map(msg => msg.content)
+              .join('\n\n') || '',
+          },
+        ],
+      }
       const chatBody: ChatBody = {
-        conversation: conversation,
+        conversation: summaryConversation,
         key: getOpenAIKey(courseMetadata, apiKey),
         course_name: getCurrentPageName(),
         stream: false,
