@@ -3,12 +3,13 @@
 import { ChatBody } from '@/types/chat'
 import { routeModelRequest } from '~/utils/streamProcessing'
 import { NextRequest, NextResponse } from 'next/server'
-
 import { buildPrompt } from '~/app/utils/buildPromptUtils'
 import { OpenAIError } from '~/utils/server'
 
 export async function POST(req: NextRequest, res: NextResponse) {
   const startTime = Date.now()
+  const { searchParams } = new URL(req.url)
+  const summary = searchParams.get('summary') === 'true'
 
   const body = await req.json()
 
@@ -21,17 +22,20 @@ export async function POST(req: NextRequest, res: NextResponse) {
     // llmProviders,
   } = body as ChatBody
 
-  const buildPromptStartTime = Date.now()
-  const newConversation = await buildPrompt({
-    conversation,
-    projectName: course_name,
-    courseMetadata,
-  })
-  const buildPromptEndTime = Date.now()
-  const buildPromptDuration = buildPromptEndTime - buildPromptStartTime
-  console.log(`buildPrompt duration: ${buildPromptDuration}ms`)
+  if (!summary) {
+    // buildPrompt if not calling LLM for summarized conversation
+    const buildPromptStartTime = Date.now()
+    const newConversation = await buildPrompt({
+      conversation,
+      projectName: course_name,
+      courseMetadata,
+    })
+    const buildPromptEndTime = Date.now()
+    const buildPromptDuration = buildPromptEndTime - buildPromptStartTime
+    console.log(`buildPrompt duration: ${buildPromptDuration}ms`)
 
-  body.conversation = newConversation
+    body.conversation = newConversation
+  }
 
   try {
     const result = await routeModelRequest(body as ChatBody)
@@ -42,7 +46,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     return result
   } catch (error) {
-    console.error('Error in chat route:', error)
+    console.error('Error in routeModelRequest:', error)
 
     let errorMessage = 'An unexpected error occurred'
     let statusCode = 500

@@ -269,7 +269,56 @@ export const Chat = memo(
       )
     }, [tools])
 
+    const callLLMForConversationSummary = async (conversation: Conversation): Promise<string> => {
+      // Prepare the chat body for the API call
+      const summaryConversation: Conversation = {
+        ...conversation,
+        messages: [
+          {
+            id: uuidv4(),
+            role: 'user',
+            latestSystemMessage: 'You are a helpful assistant that summarizes content. Summarize the content within 3 sentences',
+            content: conversation?.messages
+              .filter(msg => msg.role === 'assistant')
+              .map(msg => msg.content)
+              .join('\n\n') || '',
+          },
+        ],
+      }
+      const chatBody: ChatBody = {
+        conversation: summaryConversation,
+        key: getOpenAIKey(courseMetadata, apiKey),
+        course_name: getCurrentPageName(),
+        stream: false,
+        courseMetadata: courseMetadata,
+        model: selectedConversation?.model,
+        llmProviders: llmProviders,
+      }
+
+      try {
+        const response = await fetch('/api/allNewRoutingChat?summary=true', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(chatBody),
+        })
+        if (!response.ok) {
+          throw new Error('Failed to generate summary')
+        }
+        const result = await response.json()
+        return result.choices[0].message.content || ''
+      } catch (error) {
+        console.error('Error generating conversation summary:', error)
+        return ''
+      }
+    }
+
     const onMessageReceived = async (conversation: Conversation) => {
+      // Call LLM for conversation summary
+      const summary = await callLLMForConversationSummary(conversation)
+      console.log('summary: ', summary)
+      // conversation.summary = summary
       // Log conversation to Supabase
       try {
         const response = await fetch(
@@ -282,6 +331,7 @@ export const Chat = memo(
             body: JSON.stringify({
               course_name: getCurrentPageName(),
               conversation: conversation,
+              // llmProviders: llmProviders,
             }),
           },
         )
@@ -294,8 +344,9 @@ export const Chat = memo(
 
       try {
         // Log conversation to our Flask Backend (especially Nomic)
+        console.log('conversation before onResponseCompletion Flask', conversation)
         const response = await fetch(
-          `https://flask-production-751b.up.railway.app/onResponseCompletion`,
+          `https://flask-pr-316.up.railway.app/onResponseCompletion`,
           {
             method: 'POST',
             headers: {
@@ -340,6 +391,7 @@ export const Chat = memo(
           'handleSend called with model:',
           selectedConversation?.model,
         )
+        console.log('llmProviders in handleSend', llmProviders)
         setCurrentMessage(message)
         resetMessageStates()
 
@@ -805,16 +857,6 @@ export const Chat = memo(
             model: selectedConversation.model,
           }
           updatedConversation = chatBody.conversation!
-
-          // Action 4: Build Prompt - Put everything together into a prompt
-          // const buildPromptResponse = await fetch('/api/buildPrompt', {
-          //   method: 'POST',
-          //   headers: {
-          //     'Content-Type': 'application/json',
-          //   },
-          //   body: JSON.stringify(chatBody),
-          // })
-          // const builtConversation = await buildPromptResponse.json()
 
           // Update the selected conversation
           homeDispatch({
@@ -1532,6 +1574,7 @@ export const Chat = memo(
             body: JSON.stringify({
               course_name: getCurrentPageName(),
               conversation: updatedConversation,
+              llmProviders: llmProviders,
             }),
           })
         } catch (error) {
