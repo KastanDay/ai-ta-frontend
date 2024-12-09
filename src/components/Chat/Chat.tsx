@@ -294,6 +294,7 @@ export const Chat = memo(
 
       try {
         // Log conversation to our Flask Backend (especially Nomic)
+        console.log('conversation before onResponseCompletion Flask', conversation)
         const response = await fetch(
           `https://flask-pr-316.up.railway.app/onResponseCompletion`,
           {
@@ -340,6 +341,7 @@ export const Chat = memo(
           'handleSend called with model:',
           selectedConversation?.model,
         )
+        console.log('llmProviders in handleSend', llmProviders)
         setCurrentMessage(message)
         resetMessageStates()
 
