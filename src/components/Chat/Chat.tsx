@@ -276,7 +276,7 @@ export const Chat = memo(
           {
             id: uuidv4(),
             role: 'system',
-            latestSystemMessage: 'You are a helpful assistant that summarizes conversations. Summarize the conversation within 3 sentences',
+            latestSystemMessage: 'You are a helpful assistant that summarizes answers to questions. Summarize the answer within 3 sentences',
             content: conversation.messages
               .filter(msg => msg.role === 'assistant')
               .map(msg => msg.content)
@@ -297,18 +297,7 @@ export const Chat = memo(
       }
 
       try {
-        const response = await fetch('/api/allNewRoutingChat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(chatBody),
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to generate summary')
-        }
-
+        const response = await routeModelRequest(chatBody as ChatBody)
         const result = await response.json()
         console.log('result', result)
         return result.choices[0].message.content || ''
