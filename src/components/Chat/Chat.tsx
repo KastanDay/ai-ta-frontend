@@ -268,7 +268,64 @@ export const Chat = memo(
       )
     }, [tools])
 
+    const callLLMForConversationSummary = async (conversation: Conversation): Promise<string> => {
+      // Create a new conversation object for summary
+      const summaryConversation: Conversation = {
+        ...conversation,
+        messages: [
+          {
+            id: uuidv4(),
+            role: 'system',
+            content: 'You are a helpful assistant that summarizes conversations. Summarize the conversation within 3 sentences',
+          },
+          {
+            id: uuidv4(),
+            role: 'user',
+            content: conversation.messages
+              .filter(msg => msg.role === 'assistant')
+              .map(msg => msg.content)
+              .join('\n\n'),
+          },
+        ],
+      }
+
+      // Prepare the chat body for the API call
+      const chatBody: ChatBody = {
+        conversation: summaryConversation,
+        key: getOpenAIKey(courseMetadata, apiKey),
+        course_name: getCurrentPageName(),
+        stream: false,
+        courseMetadata: courseMetadata,
+        model: selectedConversation?.model,
+      }
+
+      try {
+        const response = await fetch('/api/allNewRoutingChat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(chatBody),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to generate summary')
+        }
+
+        const result = await response.json()
+        console.log('result', result)
+        return result.choices[0].message.content || ''
+      } catch (error) {
+        console.error('Error generating conversation summary:', error)
+        return ''
+      }
+    }
+
     const onMessageReceived = async (conversation: Conversation) => {
+      // Call LLM for conversation summary
+      const summary = await callLLMForConversationSummary(conversation)
+      console.log('summary', summary)
+      conversation.summary = summary
       // Log conversation to Supabase
       try {
         const response = await fetch(
