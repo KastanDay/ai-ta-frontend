@@ -276,8 +276,8 @@ export const Chat = memo(
         messages: [
           {
             id: uuidv4(),
-            role: 'system',
-            latestSystemMessage: 'You are a helpful assistant that summarizes answers to questions. Summarize the answer within 3 sentences',
+            role: 'user',
+            latestSystemMessage: 'You are a helpful assistant that summarizes content. Summarize the content within 3 sentences',
             content: conversation?.messages
               .filter(msg => msg.role === 'assistant')
               .map(msg => msg.content)
@@ -317,7 +317,7 @@ export const Chat = memo(
     const onMessageReceived = async (conversation: Conversation) => {
       // Call LLM for conversation summary
       const summary = await callLLMForConversationSummary(conversation)
-      console.log('summary', summary)
+      console.log('summary: ', summary)
       // conversation.summary = summary
       // Log conversation to Supabase
       try {
