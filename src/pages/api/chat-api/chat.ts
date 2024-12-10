@@ -324,6 +324,7 @@ export default async function chat(
     conversation: chatBody.conversation!,
     projectName: chatBody.course_name,
     courseMetadata: chatBody.courseMetadata,
+    summary: false,
   })
 
   chatBody.conversation = buildPromptResponse

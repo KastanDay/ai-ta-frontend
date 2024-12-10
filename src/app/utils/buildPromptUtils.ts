@@ -423,7 +423,7 @@ const _getSystemPrompt = async ({
   }
 
   // If userDefinedSystemPrompt is null or undefined, use DEFAULT_SYSTEM_PROMPT
-  let systemPrompt = userDefinedSystemPrompt ?? DEFAULT_SYSTEM_PROMPT ?? ''
+  const systemPrompt = userDefinedSystemPrompt ?? DEFAULT_SYSTEM_PROMPT ?? ''
 
   // Removing equation formatting for mHealth chatbot
   // // Necessary for math notation. See https://docs.mathjax.org/en/latest/input/tex/index.html
