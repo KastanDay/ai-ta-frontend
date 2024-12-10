@@ -57,7 +57,7 @@ export const buildPrompt = async ({
     const userPromptSections: string[] = []
     const lastUserTextInput = await _getLastUserTextInput({ conversation })
     const finalSystemPrompt =
-      "You are a helpful assistant that summarizes answer to the user's query. Summarize the content within 3 sentences"
+      'You are a helpful assistant that summarizes content. Summarize the below content within 3 sentences'
     // P1: Most recent user text input
     const userQuery = `\n<User Query>\n${lastUserTextInput}\n</User Query>`
     if (encoding) {
@@ -68,7 +68,17 @@ export const buildPrompt = async ({
       conversation?.messages
         .filter((msg) => msg.role === 'assistant')
         .slice(-1)[0]?.content || ''
-    const answer = `\n<Answer>\n${lastAssistantMessage}\n</Answer>`
+
+    // Remove "References:" section from assistant message if it exists
+    let cleanedAssistantMessage = ''
+    if (typeof lastAssistantMessage === 'string') {
+      const referencesIndex = lastAssistantMessage.indexOf('References:' + '\n')
+      cleanedAssistantMessage =
+        referencesIndex !== -1
+          ? lastAssistantMessage.substring(0, referencesIndex).trim()
+          : lastAssistantMessage
+    }
+    const answer = `\n<Answer>\n${cleanedAssistantMessage}\n</Answer>`
     if (encoding) {
       remainingTokenBudget -= encoding.encode(answer).length
     }
@@ -319,8 +329,9 @@ const _getLastUserTextInput = async ({
   /* 
       Gets ONLY the text that the user input. Does not return images or anything else. Just what the user typed.
     */
-  const lastMessageContent =
-    conversation.messages?.[conversation.messages.length - 1]?.content
+  const lastMessageContent = conversation.messages
+    ?.filter((msg) => msg.role === 'user')
+    .slice(-1)[0]?.content
 
   if (typeof lastMessageContent === 'string') {
     return lastMessageContent
@@ -332,31 +343,30 @@ const _getLastUserTextInput = async ({
 
 function _buildQueryTopContext({
   conversation,
-  // encoding,
   tokenLimit = 8000,
 }: {
   conversation: Conversation
-  // encoding: Tiktoken
   tokenLimit: number
 }) {
   try {
     const contexts = conversation.messages[conversation.messages.length - 1]
       ?.contexts as ContextWithMetadata[]
 
-    if (contexts.length === 0) {
+    if (!contexts || contexts.length === 0) {
       return undefined
     }
 
-    let tokenCounter = 0 // encoding.encode(system_prompt + searchQuery).length
+    let tokenCounter = 0
     const validDocs = []
-    for (const [index, d] of contexts.entries()) {
+
+    for (let index = 0; index < contexts.length; index++) {
+      const d = contexts[index]
+      if (!d) return ''
       const docString = `---\n${index + 1}: ${d.readable_filename}${
         d.pagenumber ? ', page: ' + d.pagenumber : ''
       }\n${d.text}\n`
       const numTokens = encoding.encode(docString).length
-      // console.log(
-      //   `token_counter: ${tokenCounter}, num_tokens: ${numTokens}, token_limit: ${tokenLimit}`,
-      // )
+
       if (tokenCounter + numTokens <= tokenLimit) {
         tokenCounter += numTokens
         validDocs.push({ index, d })
@@ -374,14 +384,6 @@ function _buildQueryTopContext({
           }\n${d.text}\n`,
       )
       .join(separator)
-
-    // const stuffedPrompt =
-    //   contextText + '\n\nNow please respond to my query: ' + searchQuery
-    // const totalNumTokens = encoding.encode(stuffedPrompt).length
-    // console.log('contextText', contextText)
-    // console.log(
-    // `Total number of tokens: ${totalNumTokens}. Number of docs: ${contexts.length}, number of valid docs: ${validDocs.length}`,
-    // )
 
     return contextText
   } catch (e) {
@@ -423,14 +425,14 @@ const _getSystemPrompt = async ({
   // If userDefinedSystemPrompt is null or undefined, use DEFAULT_SYSTEM_PROMPT
   let systemPrompt = userDefinedSystemPrompt ?? DEFAULT_SYSTEM_PROMPT ?? ''
 
-  // Necessary for math notation. See https://docs.mathjax.org/en/latest/input/tex/index.html
-  systemPrompt += `\nWhen responding with equations, use MathJax/KaTeX notation. Equations should be wrapped in either:
+  // // Necessary for math notation. See https://docs.mathjax.org/en/latest/input/tex/index.html
+  // systemPrompt += `\nWhen responding with equations, use MathJax/KaTeX notation. Equations should be wrapped in either:
 
-  * Single dollar signs $...$ for inline math
-  * Double dollar signs $$...$$ for display/block math
-  * Or \\[...\\] for display math
-  
-  Here's how the equations should be formatted in the markdown: Schrödinger Equation: $i\\hbar \\frac{\\partial}{\\partial t} \\Psi(\\mathbf{r}, t) = \\hat{H} \\Psi(\\mathbf{r}, t)$`
+  // * Single dollar signs $...$ for inline math
+  // * Double dollar signs $$...$$ for display/block math
+  // * Or \\[...\\] for display math
+
+  // Here's how the equations should be formatted in the markdown: Schrödinger Equation: $i\\hbar \\frac{\\partial}{\\partial t} \\Psi(\\mathbf{r}, t) = \\hat{H} \\Psi(\\mathbf{r}, t)$`
 
   // Check if contexts are present
   const contexts =
