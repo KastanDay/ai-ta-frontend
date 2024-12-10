@@ -56,14 +56,18 @@ export const buildPrompt = async ({
     // Initialize an array to collect sections of the user prompt
     const userPromptSections: string[] = []
     const lastUserTextInput = await _getLastUserTextInput({ conversation })
-    const finalSystemPrompt = 'You are a helpful assistant that summarizes answer to the user\'s query. Summarize the content within 3 sentences'
+    const finalSystemPrompt =
+      "You are a helpful assistant that summarizes answer to the user's query. Summarize the content within 3 sentences"
     // P1: Most recent user text input
     const userQuery = `\n<User Query>\n${lastUserTextInput}\n</User Query>`
     if (encoding) {
       remainingTokenBudget -= encoding.encode(userQuery).length
     }
     userPromptSections.push(userQuery)
-    const lastAssistantMessage = conversation?.messages.filter(msg => msg.role === 'assistant').slice(-1)[0]?.content || ''
+    const lastAssistantMessage =
+      conversation?.messages
+        .filter((msg) => msg.role === 'assistant')
+        .slice(-1)[0]?.content || ''
     const answer = `\n<Answer>\n${lastAssistantMessage}\n</Answer>`
     if (encoding) {
       remainingTokenBudget -= encoding.encode(answer).length
@@ -74,16 +78,14 @@ export const buildPrompt = async ({
     // Set final system and user prompts in the conversation
     conversation.messages[
       conversation.messages.length - 1
-      ]!.finalPromtEngineeredMessage = userPrompt
+    ]!.finalPromtEngineeredMessage = userPrompt
 
     conversation.messages[
       conversation.messages.length - 1
     ]!.latestSystemMessage = finalSystemPrompt
 
     return conversation
-
-  }
-  else {
+  } else {
     try {
       // Execute asynchronous operations in parallel and await their results
       const allPromises = []
@@ -96,53 +98,53 @@ export const buildPrompt = async ({
           UIUCTool[],
           string | undefined,
         ]
-  
+
       const finalSystemPrompt = systemPrompt ?? DEFAULT_SYSTEM_PROMPT ?? ''
-  
+
       // Adjust remaining token budget based on the system prompt length
       if (encoding) {
         const tokenCount = encoding.encode(finalSystemPrompt).length
         remainingTokenBudget -= tokenCount
       }
-  
+
       // --------- <USER PROMPT> ----------
       // Initialize an array to collect sections of the user prompt
       const userPromptSections: string[] = []
-  
+
       // P1: Most recent user text input
       const userQuery = `\n<User Query>\n${lastUserTextInput}\n</User Query>`
       if (encoding) {
         remainingTokenBudget -= encoding.encode(userQuery).length
       }
-  
+
       // P2: Latest 2 conversation messages (Reserved tokens)
       const tokensInLastTwoMessages = _getRecentConvoTokens({
         conversation,
       })
       console.log('Tokens in last two messages: ', tokensInLastTwoMessages)
       remainingTokenBudget -= tokensInLastTwoMessages
-  
+
       // Get contexts from the last message
       const contexts =
         (conversation.messages[conversation.messages.length - 1]
           ?.contexts as ContextWithMetadata[]) || []
-  
+
       if (contexts && contexts.length > 0) {
         // Documents are present; maintain all existing processes as normal
         // P5: query_topContext
-  
+
         // Check if encoding is initialized
         if (!encoding) {
           console.error('Encoding is not initialized.')
           throw new Error('Encoding initialization failed.')
         }
-  
+
         const query_topContext = _buildQueryTopContext({
           conversation: conversation,
           // encoding: encoding,
           tokenLimit: remainingTokenBudget - tokensInLastTwoMessages, // Keep room for conversation history
         })
-  
+
         if (query_topContext) {
           const queryContextMsg = `
           <RetrievedDocumentsInstructions>
@@ -158,52 +160,51 @@ export const buildPrompt = async ({
           userPromptSections.push(queryContextMsg)
         }
       }
-  
+
       const latestUserMessage =
         conversation.messages[conversation.messages.length - 1]
-  
+
       // Move Tool Outputs to be added before the userQuery
       if (latestUserMessage?.tools) {
         const toolsOutputResults = _buildToolsOutputResults({ conversation })
-  
+
         // Add Tool Instructions and outputs
         const toolInstructions =
           "<Tool Instructions>The user query required the invocation of external tools, and now it's your job to use the tool outputs and any other information to craft a great response. All tool invocations have already been completed before you saw this message. You should not attempt to invoke any tools yourself; instead, use the provided results/outputs of the tools. If any tools errored out, inform the user. If the tool outputs are irrelevant to their query, let the user know. Use relevant tool outputs to craft your response. The user may or may not reference the tools directly, but provide a helpful response based on the available information. Never tell the user you will run tools for them, as this has already been done. Always use the past tense to refer to the tool outputs. Never request access to the tools, as you are guaranteed to have access when appropriate; for example, never say 'I would need access to the tool.' When using tool results in your answer, always specify the source, using code notation, such as '...as per tool `tool name`...' or 'According to tool `tool name`...'. Never fabricate tool results; it is crucial to be honest and transparent. Stick to the facts as presented.</Tool Instructions>"
-  
+
         // Add to user prompt sections
         userPromptSections.push(toolInstructions)
-  
+
         // Adjust remaining token budget for tool outputs
         if (encoding) {
           remainingTokenBudget -= encoding.encode(toolsOutputResults).length
         }
-  
+
         // Add tool outputs to user prompt sections
         userPromptSections.push(toolsOutputResults)
       }
-  
+
       // Add the user's query to the prompt sections
       userPromptSections.push(userQuery)
-  
+
       // Assemble the user prompt by joining sections with double line breaks
       const userPrompt = userPromptSections.join('\n\n')
-  
+
       // Set final system and user prompts in the conversation
       conversation.messages[
         conversation.messages.length - 1
       ]!.finalPromtEngineeredMessage = userPrompt
-  
+
       conversation.messages[
         conversation.messages.length - 1
       ]!.latestSystemMessage = finalSystemPrompt
-  
+
       return conversation
     } catch (error) {
       console.error('Error in buildPrompt:', error)
       throw error
     }
   }
-
 }
 
 const _getRecentConvoTokens = ({
@@ -529,7 +530,7 @@ export const getDefaultPostPrompt = (): string => {
     documentsOnly: false,
     guidedLearning: false,
     systemPromptOnly: false,
-    vector_search_rewrite_disabled: false
+    vector_search_rewrite_disabled: false,
   }
 
   // Call getSystemPostPrompt with default values

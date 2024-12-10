@@ -48,9 +48,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       courseMetadata,
       summary: true,
     })
-    
-  }
-  else {
+  } else {
     // buildPrompt if not calling LLM for summarized conversation
     newConversation = await buildPrompt({
       conversation,

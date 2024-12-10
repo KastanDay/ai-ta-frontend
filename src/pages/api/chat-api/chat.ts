@@ -39,7 +39,6 @@ import { buildPrompt } from '~/app/utils/buildPromptUtils'
 
 export const maxDuration = 60
 
-
 /**
  * The chat API endpoint for handling chat requests and streaming/non streaming responses.
  * This function orchestrates the validation of the request, user permissions,

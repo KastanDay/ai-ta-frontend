@@ -2,13 +2,11 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { ChatBody } from '@/types/chat'
 import { buildPrompt } from '~/app/utils/buildPromptUtils'
 
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   try {
-
     const { conversation, course_name, courseMetadata, summary } = req.body
 
     // **Add a nullish check for 'conversation'**
