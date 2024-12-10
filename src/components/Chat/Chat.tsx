@@ -269,24 +269,23 @@ export const Chat = memo(
       )
     }, [tools])
 
-    const callLLMForConversationSummary = async (conversation: Conversation): Promise<string> => {
+    const callLLMForMessageSummary = async (conversation: Conversation): Promise<string> => {
       // Prepare the chat body for the API call
-      const summaryConversation: Conversation = {
-        ...conversation,
-        messages: [
-          {
-            id: uuidv4(),
-            role: 'user',
-            latestSystemMessage: 'You are a helpful assistant that summarizes content. Summarize the content within 3 sentences',
-            content: conversation?.messages
-              .filter(msg => msg.role === 'assistant')
-              .map(msg => msg.content)
-              .join('\n\n') || '',
-          },
-        ],
-      }
+      // const summaryConversation: Conversation = {
+      //   ...conversation,
+      //   messages: [
+      //     {
+      //       id: uuidv4(),
+      //       role: 'user',
+      //       latestSystemMessage: 'You are a helpful assistant that summarizes content. Summarize the content within 3 sentences',
+      //       content: conversation?.messages
+      //         .filter(msg => msg.role === 'assistant')
+      //         .slice(-1)[0]?.content || '',
+      //     },
+      //   ],
+      // }
       const chatBody: ChatBody = {
-        conversation: summaryConversation,
+        conversation: conversation,
         key: getOpenAIKey(courseMetadata, apiKey),
         course_name: getCurrentPageName(),
         stream: false,
@@ -316,7 +315,7 @@ export const Chat = memo(
 
     const onMessageReceived = async (conversation: Conversation) => {
       // Call LLM for conversation summary
-      const summary = await callLLMForConversationSummary(conversation)
+      const summary = await callLLMForMessageSummary(conversation)
       console.log('summary: ', summary)
       // conversation.summary = summary
       // Log conversation to Supabase

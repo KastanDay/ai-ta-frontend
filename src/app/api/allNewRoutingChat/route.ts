@@ -1,6 +1,6 @@
 // src/app/api/allNewRoutingChat/route.ts
 
-import { ChatBody } from '@/types/chat'
+import { ChatBody, Conversation } from '@/types/chat'
 import { routeModelRequest } from '~/utils/streamProcessing'
 import { NextRequest, NextResponse } from 'next/server'
 import { buildPrompt } from '~/app/utils/buildPromptUtils'
@@ -22,22 +22,50 @@ export async function POST(req: NextRequest, res: NextResponse) {
     // llmProviders,
   } = body as ChatBody
 
-  if (!summary) {
-    // buildPrompt if not calling LLM for summarized conversation
+  const buildPromptStartTime = Date.now()
+  let newConversation: Conversation
+
+  if (summary) {
+    // call LLM for summarized conversation
     const buildPromptStartTime = Date.now()
-    const newConversation = await buildPrompt({
+    // const summaryConversation: Conversation = {
+    //   ...conversation,
+    //   messages: [
+    //     {
+    //       id: uuidv4(),
+    //       role: 'user',
+    //       latestSystemMessage: 'You are a helpful assistant that summarizes content. Summarize the content within 3 sentences',
+    //       content: conversation?.messages
+    //           .filter(msg => msg.role === 'assistant')
+    //           .slice(-1)[0]?.content || '',
+    //       finalPromtEngineeredMessage: conversation?.messages
+    //     },
+    //   ],
+    // }
+    newConversation = await buildPrompt({
       conversation,
       projectName: course_name,
       courseMetadata,
+      summary: true,
     })
-    const buildPromptEndTime = Date.now()
-    const buildPromptDuration = buildPromptEndTime - buildPromptStartTime
-    console.log(`buildPrompt duration: ${buildPromptDuration}ms`)
-
-    body.conversation = newConversation
+    
   }
+  else {
+    // buildPrompt if not calling LLM for summarized conversation
+    newConversation = await buildPrompt({
+      conversation,
+      projectName: course_name,
+      courseMetadata,
+      summary: false,
+    })
+  }
+  body.conversation = newConversation
+  const buildPromptEndTime = Date.now()
+  const buildPromptDuration = buildPromptEndTime - buildPromptStartTime
+  console.log(`buildPrompt duration: ${buildPromptDuration}ms`)
 
   try {
+    console.log('body conversation', body.conversation)
     const result = await routeModelRequest(body as ChatBody)
 
     const endTime = Date.now()
