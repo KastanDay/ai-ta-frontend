@@ -86,13 +86,14 @@ export const buildPrompt = async ({
     // Assemble the user prompt by joining sections with double line breaks
     const userPrompt = userPromptSections.join('\n\n')
     // Set final system and user prompts in the conversation
-    conversation.messages[
-      conversation.messages.length - 1
-    ]!.finalPromtEngineeredMessage = userPrompt
+    // Only keep the last message
+    conversation.messages = [
+      conversation.messages[conversation.messages.length - 1]!,
+    ]
+    conversation.messages[0]!.finalPromtEngineeredMessage = userPrompt
+    conversation.messages[0]!.latestSystemMessage = finalSystemPrompt
 
-    conversation.messages[
-      conversation.messages.length - 1
-    ]!.latestSystemMessage = finalSystemPrompt
+    // console.log('summary buildPromptCall conversation', conversation)
 
     return conversation
   } else {
@@ -358,7 +359,6 @@ function _buildQueryTopContext({
 
     let tokenCounter = 0
     const validDocs = []
-
     for (let index = 0; index < contexts.length; index++) {
       const d = contexts[index]
       if (!d) return ''
@@ -425,13 +425,13 @@ const _getSystemPrompt = async ({
   // If userDefinedSystemPrompt is null or undefined, use DEFAULT_SYSTEM_PROMPT
   let systemPrompt = userDefinedSystemPrompt ?? DEFAULT_SYSTEM_PROMPT ?? ''
 
+  // Removing equation formatting for mHealth chatbot
   // // Necessary for math notation. See https://docs.mathjax.org/en/latest/input/tex/index.html
   // systemPrompt += `\nWhen responding with equations, use MathJax/KaTeX notation. Equations should be wrapped in either:
 
   // * Single dollar signs $...$ for inline math
   // * Double dollar signs $$...$$ for display/block math
   // * Or \\[...\\] for display math
-
   // Here's how the equations should be formatted in the markdown: Schrödinger Equation: $i\\hbar \\frac{\\partial}{\\partial t} \\Psi(\\mathbf{r}, t) = \\hat{H} \\Psi(\\mathbf{r}, t)$`
 
   // Check if contexts are present
