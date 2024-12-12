@@ -24,7 +24,6 @@ export interface Conversation {
   projectName?: string
   createdAt?: string
   updatedAt?: string
-  summary?: string
 }
 
 export interface Message {
@@ -42,6 +41,7 @@ export interface Message {
   feedback?: MessageFeedback
   wasQueryRewritten?: boolean
   queryRewriteText?: string
+  summary?: string
 }
 
 export type MessageFeedback = {

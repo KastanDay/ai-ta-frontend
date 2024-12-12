@@ -63,7 +63,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
   console.log(`buildPrompt duration: ${buildPromptDuration}ms`)
 
   try {
-    console.log('body conversation', body.conversation)
+    console.log('body conversation before routeModelRequest', body.conversation)
     const result = await routeModelRequest(body as ChatBody)
 
     const endTime = Date.now()
