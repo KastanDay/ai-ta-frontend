@@ -100,7 +100,7 @@ export const Chat = memo(
     // const
     const [bannerUrl, setBannerUrl] = useState<string | null>(null)
     const getCurrentPageName = () => {
-      // /CS-125/materials --> CS-125
+      // /CS-125/dashboard --> CS-125
       return router.asPath.slice(1).split('/')[0] as string
     }
     const user_email = extractEmailsFromClerk(clerk_obj.user)[0]
@@ -590,13 +590,8 @@ export const Chat = memo(
           // console.log('vector_search_rewrite_disabled setting:', courseMetadata?.vector_search_rewrite_disabled)
 
           // Skip query rewrite if disabled in course metadata or if it's the first message
-          if (
-            courseMetadata?.vector_search_rewrite_disabled ||
-            (selectedConversation?.messages?.length ?? 0) === 0
-          ) {
-            console.log(
-              'Query rewrite disabled for this course or it is the first message, using original query',
-            )
+          if (courseMetadata?.vector_search_rewrite_disabled || updatedConversation.messages.length <= 1) {
+            console.log('Query rewrite disabled for this course or it is the first message, using original query')
             rewrittenQuery = searchQuery
             homeDispatch({ field: 'wasQueryRewritten', value: false })
             homeDispatch({ field: 'queryRewriteText', value: null })
@@ -1437,7 +1432,13 @@ export const Chat = memo(
                 <div
                   key={index}
                   className="w-full rounded-lg border-b-2 border-[rgba(42,42,64,0.4)] hover:cursor-pointer hover:bg-[rgba(42,42,64,0.9)]"
-                  onClick={() => setInputContent(statement)}
+                  onClick={() => {
+                    setInputContent('')  // First clear the input
+                    setTimeout(() => {   // Then set it with a small delay
+                      setInputContent(statement)
+                      textareaRef.current?.focus()
+                    }, 0)
+                  }}
                 >
                   <Button
                     variant="link"

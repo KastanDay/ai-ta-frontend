@@ -11,11 +11,16 @@ import {
 } from '@/types/chat'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { AnySupportedModel } from '~/utils/modelProviders/LLMProvider'
-import { DEFAULT_SYSTEM_PROMPT } from '@/utils/app/const'
+import { DEFAULT_SYSTEM_PROMPT, GUIDED_LEARNING_PROMPT } from '@/utils/app/const'
 import { routeModelRequest } from '~/utils/streamProcessing'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { encodingForModel } from 'js-tiktoken'
+
+// Extend the Conversation type to include guidedLearning
+interface ConversationWithGuidedLearning extends Conversation {
+  guidedLearning?: boolean
+}
 
 const encoding = encodingForModel('gpt-4o')
 
@@ -25,11 +30,10 @@ export const buildPrompt = async ({
   courseMetadata,
   summary,
 }: {
-  conversation: Conversation | undefined
+  conversation: ConversationWithGuidedLearning | undefined
   projectName: string
   courseMetadata: CourseMetadata | undefined
-  summary: boolean | undefined
-}): Promise<Conversation> => {
+}): Promise<ConversationWithGuidedLearning> => {
   /*
     System prompt -- defined by user. If documents are provided, add the citations instructions to it.
   
@@ -47,70 +51,27 @@ export const buildPrompt = async ({
     throw new Error('Conversation is undefined when building prompt.')
   }
 
+  // Check for guided learning in both course metadata and conversation parameters
+  const isGuidedLearningFromConversation = conversation.guidedLearning && !courseMetadata?.guidedLearning
+
   let remainingTokenBudget = conversation.model.tokenLimit - 1500 // Save space for images, OpenAI's handling, etc.
 
-  if (summary) {
-    // LLM prompt to summarise the last user query and assistant answer
-    console.log('summary buildPromptCall', summary)
+  try {
+    // Execute asynchronous operations in parallel and await their results
+    const allPromises = []
+    allPromises.push(_getLastUserTextInput({ conversation }))
+    allPromises.push(_getLastToolResult({ conversation }))
+    allPromises.push(_getSystemPrompt({ courseMetadata, conversation }))
+    const [lastUserTextInput, lastToolResult, systemPrompt] =
+      (await Promise.all(allPromises)) as [
+        string,
+        UIUCTool[],
+        string | undefined,
+      ]
 
-    // Initialize an array to collect sections of the user prompt
-    const userPromptSections: string[] = []
-    const lastUserTextInput = await _getLastUserTextInput({ conversation })
-    const finalSystemPrompt =
-      'You are a helpful assistant that summarizes content. Summarize the below content within 3 sentences'
-    // P1: Most recent user text input
-    const userQuery = `\n<User Query>\n${lastUserTextInput}\n</User Query>`
-    if (encoding) {
-      remainingTokenBudget -= encoding.encode(userQuery).length
-    }
-    userPromptSections.push(userQuery)
-    const lastAssistantMessage =
-      conversation?.messages
-        .filter((msg) => msg.role === 'assistant')
-        .slice(-1)[0]?.content || ''
-
-    // Remove "References:" section from assistant message if it exists
-    let cleanedAssistantMessage = ''
-    if (typeof lastAssistantMessage === 'string') {
-      const referencesIndex = lastAssistantMessage.indexOf('References:' + '\n')
-      cleanedAssistantMessage =
-        referencesIndex !== -1
-          ? lastAssistantMessage.substring(0, referencesIndex).trim()
-          : lastAssistantMessage
-    }
-    const answer = `\n<Answer>\n${cleanedAssistantMessage}\n</Answer>`
-    if (encoding) {
-      remainingTokenBudget -= encoding.encode(answer).length
-    }
-    userPromptSections.push(answer)
-    // Assemble the user prompt by joining sections with double line breaks
-    const userPrompt = userPromptSections.join('\n\n')
-    // Set final system and user prompts in the conversation
-    // Only keep the last message
-    conversation.messages = [
-      conversation.messages[conversation.messages.length - 1]!,
-    ]
-    conversation.messages[0]!.finalPromtEngineeredMessage = userPrompt
-    conversation.messages[0]!.latestSystemMessage = finalSystemPrompt
-
-    // console.log('summary buildPromptCall conversation', conversation)
-
-    return conversation
-  } else {
-    try {
-      // Execute asynchronous operations in parallel and await their results
-      const allPromises = []
-      allPromises.push(_getLastUserTextInput({ conversation }))
-      allPromises.push(_getLastToolResult({ conversation }))
-      allPromises.push(_getSystemPrompt({ courseMetadata, conversation }))
-      const [lastUserTextInput, lastToolResult, systemPrompt] =
-        (await Promise.all(allPromises)) as [
-          string,
-          UIUCTool[],
-          string | undefined,
-        ]
-
-      const finalSystemPrompt = systemPrompt ?? DEFAULT_SYSTEM_PROMPT ?? ''
+    // Only add GUIDED_LEARNING_PROMPT if guided learning is enabled via conversation but not course-wide
+      const finalSystemPrompt = (systemPrompt ?? DEFAULT_SYSTEM_PROMPT ?? '') + 
+      (isGuidedLearningFromConversation ? GUIDED_LEARNING_PROMPT : '')
 
       // Adjust remaining token budget based on the system prompt length
       if (encoding) {
@@ -458,10 +419,12 @@ export const getSystemPostPrompt = ({
   conversation,
   courseMetadata,
 }: {
-  conversation: Conversation
+  conversation: ConversationWithGuidedLearning
   courseMetadata: CourseMetadata
 }): string => {
-  const { guidedLearning, systemPromptOnly, documentsOnly } = courseMetadata
+  // Check for guided learning in both course metadata and conversation parameters
+  const isGuidedLearning = courseMetadata.guidedLearning || conversation.guidedLearning
+  const { systemPromptOnly, documentsOnly } = courseMetadata
 
   // If systemPromptOnly is true, return an empty PostPrompt
   if (systemPromptOnly) {
@@ -474,12 +437,16 @@ export const getSystemPostPrompt = ({
   // The main system prompt
   PostPromptLines.push(
     `Please analyze and respond to the following question using the excerpts from the provided documents. These documents can be pdf files or web pages. Additionally, you may see the output from API calls (called 'tools') to the user's services which, when relevant, you should use to construct your answer. You may also see image descriptions from images uploaded by the user. Prioritize image descriptions, when helpful, to construct your answer.
-Integrate relevant information from these documents, ensuring each reference is linked to the document's number.
+Integrate relevant information from these documents, ensuring each reference is linked to the document's number.${
+      isGuidedLearning
+        ? '\n\nIMPORTANT: While in guided learning mode, you must still cite and link to ALL relevant course materials in the exact format described below, even if they contain direct answers. Never filter out or omit relevant materials - your role is to guide students to explore these materials through questions and hints while ensuring they have access to all relevant sources.'
+        : ''
+    }
 
 When quoting directly from a source document, cite with footnotes linked to the document number and page number, if provided. 
 Summarize or paraphrase other relevant information with inline citations, again referencing the document number and page number, if provided.
 If the answer is not in the provided documents, state so.${
-      guidedLearning || documentsOnly
+      isGuidedLearning || documentsOnly
         ? ''
         : ' Yet always provide as helpful a response as possible to directly answer the question.'
     }
@@ -545,7 +512,8 @@ export const getDefaultPostPrompt = (): string => {
       prompt: '',
       temperature: 0.7,
       folderId: null,
-    } as Conversation,
+      guidedLearning: false
+    } as ConversationWithGuidedLearning,
     courseMetadata: defaultCourseMetadata,
   })
 }
