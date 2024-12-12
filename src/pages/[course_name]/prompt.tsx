@@ -98,6 +98,7 @@ const CourseMain: NextPage = () => {
   )
   const [baseSystemPrompt, setBaseSystemPrompt] = useState('')
   const [opened, { close, open }] = useDisclosure(false)
+  const [resetModalOpened, { close: closeResetModal, open: openResetModal }] = useDisclosure(false)
   const [apiKey, setApiKey] = useState<string | undefined>(undefined)
   const { messages, input, handleInputChange, reload, setMessages, setInput } =
     useChat({
@@ -1130,14 +1131,184 @@ The final prompt you output should adhere to the following structure below. Do n
                               </Flex>
                             )}
 
-                            {/* Reset Button */}
+                            {/* Reset Button and Modal */}
+                            <Modal
+                              opened={resetModalOpened}
+                              onClose={closeResetModal}
+                              title={
+                                <Text 
+                                  className={`${montserrat_heading.variable} font-montserratHeading`}
+                                  size="lg"
+                                  weight={700}
+                                  gradient={{ from: 'red', to: 'white', deg: 45 }}
+                                  variant="gradient"
+                                >
+                                  Reset Prompting Settings
+                                </Text>
+                              }
+                              centered
+                              radius="md"
+                              size="md"
+                              styles={{
+                                header: { 
+                                  backgroundColor: '#15162c', 
+                                  borderBottom: '1px solid #2D2F48',
+                                  padding: '20px 24px',
+                                  marginBottom: '16px'
+                                },
+                                content: { 
+                                  backgroundColor: '#15162c', 
+                                  border: '1px solid #2D2F48',
+                                },
+                                body: {
+                                  padding: '0 24px 24px 24px',
+                                },
+                                title: { 
+                                  marginBottom: '0',
+                                },
+                                close: {
+                                  marginTop: '4px'
+                                }
+                              }}
+                            >
+                              <Flex direction="column" gap="xl" style={{ marginTop: '8px' }}>
+                                <Flex align="flex-start" gap="md">
+                                  <IconAlertTriangle 
+                                    size={24} 
+                                    color={theme.colors.red[5]} 
+                                    style={{ marginTop: '2px' }}
+                                  />
+                                  <Text 
+                                    className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                                    size="sm" 
+                                    weight={500}
+                                    style={{ color: 'white', lineHeight: 1.5 }}
+                                  >
+                                    Are you sure you want to reset your system prompt and all behavior settings to their default values?
+                                  </Text>
+                                </Flex>
+                                
+                                <Divider style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+                                
+                                <div>
+                                  <Text 
+                                    size="sm" 
+                                    className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                                    weight={600}
+                                    style={{ color: '#D1D1D1', marginBottom: '12px' }}
+                                  >
+                                    This action will:
+                                  </Text>
+                                  <List 
+                                    size="sm" 
+                                    spacing="sm"
+                                    style={{ color: '#D1D1D1' }}
+                                    icon={
+                                      <div 
+                                        style={{
+                                          width: '6px',
+                                          height: '6px',
+                                          borderRadius: '50%',
+                                          backgroundColor: 'hsl(0,100%,70%)',
+                                          marginTop: '8px'
+                                        }} 
+                                      />
+                                    }
+                                  >
+                                    <List.Item>Restore the system prompt to the default template</List.Item>
+                                    <List.Item>Disable Guided Learning, Document-Only mode, and other custom settings</List.Item>
+                                  </List>
+                                </div>
+
+                                <Text 
+                                  size="sm" 
+                                  style={{ color: '#D1D1D1' }}
+                                  className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                                >
+                                  This cannot be undone. Please confirm you wish to proceed.
+                                </Text>
+
+                                <Group position="right" mt="md">
+                                  <Button
+                                    variant="outline"
+                                    color="gray"
+                                    radius="md"
+                                    onClick={closeResetModal}
+                                    className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                                    styles={(theme) => ({
+                                      root: {
+                                        borderColor: theme.colors.gray[6],
+                                        color: '#fff',
+                                        '&:hover': {
+                                          backgroundColor: theme.colors.gray[8],
+                                        },
+                                      },
+                                    })}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    variant="filled"
+                                    color="red"
+                                    radius="md"
+                                    className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                                    sx={(theme) => ({
+                                      backgroundColor: `${theme.colors.red[8]} !important`,
+                                      border: 'none',
+                                      color: '#fff',
+                                      padding: '10px 20px',
+                                      fontWeight: 600,
+                                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+                                      transition: 'all 0.2s ease',
+                                      '&:hover': {
+                                        backgroundColor: `${theme.colors.red[9]} !important`,
+                                        transform: 'translateY(-1px)',
+                                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+                                      },
+                                      '&:active': {
+                                        transform: 'translateY(0)',
+                                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+                                      },
+                                    })}
+                                    onClick={() => {
+                                      resetSystemPrompt();
+                                      closeResetModal();
+                                    }}
+                                  >
+                                    Confirm
+                                  </Button>
+                                </Group>
+                              </Flex>
+                            </Modal>
+
                             <Flex mt="md" justify="flex-start">
                               <Button
-                                className="relative bg-red-500 text-white hover:border-red-600 hover:bg-red-600"
-                                onClick={resetSystemPrompt}
-                                style={{ minWidth: 'fit-content' }}
+                                variant="filled"
+                                color="red"
+                                radius="md"
+                                leftIcon={<IconAlertTriangle size={16} />}
+                                className={`${montserrat_paragraph.variable} font-montserratParagraph`}
+                                sx={(theme) => ({
+                                  backgroundColor: `${theme.colors.red[8]} !important`,
+                                  border: 'none',
+                                  color: '#fff',
+                                  padding: '10px 20px',
+                                  fontWeight: 600,
+                                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+                                  transition: 'all 0.2s ease',
+                                  '&:hover': {
+                                    backgroundColor: `${theme.colors.red[9]} !important`,
+                                    transform: 'translateY(-1px)',
+                                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+                                  },
+                                  '&:active': {
+                                    transform: 'translateY(0)',
+                                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+                                  },
+                                })}
+                                onClick={openResetModal}
                               >
-                                Reset
+                                Reset Prompting Settings
                               </Button>
                             </Flex>
                           </Flex>
