@@ -11,7 +11,10 @@ import {
 } from '@/types/chat'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { AnySupportedModel } from '~/utils/modelProviders/LLMProvider'
-import { DEFAULT_SYSTEM_PROMPT, GUIDED_LEARNING_PROMPT } from '@/utils/app/const'
+import {
+  DEFAULT_SYSTEM_PROMPT,
+  GUIDED_LEARNING_PROMPT,
+} from '@/utils/app/const'
 import { routeModelRequest } from '~/utils/streamProcessing'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -28,10 +31,12 @@ export const buildPrompt = async ({
   conversation,
   projectName,
   courseMetadata,
+  summary,
 }: {
   conversation: ConversationWithGuidedLearning | undefined
   projectName: string
   courseMetadata: CourseMetadata | undefined
+  summary: boolean | undefined
 }): Promise<ConversationWithGuidedLearning> => {
   /*
     System prompt -- defined by user. If documents are provided, add the citations instructions to it.
@@ -49,131 +54,182 @@ export const buildPrompt = async ({
   if (conversation == undefined) {
     throw new Error('Conversation is undefined when building prompt.')
   }
+  // Check if encoding is initialized
+  if (!encoding) {
+    console.error('Encoding is not initialized.')
+    throw new Error('Encoding initialization failed.')
+  }
 
   // Check for guided learning in both course metadata and conversation parameters
-  const isGuidedLearningFromConversation = conversation.guidedLearning && !courseMetadata?.guidedLearning
+  const isGuidedLearningFromConversation =
+    conversation.guidedLearning && !courseMetadata?.guidedLearning
 
   let remainingTokenBudget = conversation.model.tokenLimit - 1500 // Save space for images, OpenAI's handling, etc.
 
-  try {
-    // Execute asynchronous operations in parallel and await their results
-    const allPromises = []
-    allPromises.push(_getLastUserTextInput({ conversation }))
-    allPromises.push(_getLastToolResult({ conversation }))
-    allPromises.push(_getSystemPrompt({ courseMetadata, conversation }))
-    const [lastUserTextInput, lastToolResult, systemPrompt] =
-      (await Promise.all(allPromises)) as [
-        string,
-        UIUCTool[],
-        string | undefined,
-      ]
+  if (summary) {
+    // LLM prompt to summarise the last user query and assistant answer
+    console.log('Summarize last user query and assistant answer: ', summary)
 
-    // Only add GUIDED_LEARNING_PROMPT if guided learning is enabled via conversation but not course-wide
-    const finalSystemPrompt = (systemPrompt ?? DEFAULT_SYSTEM_PROMPT ?? '') + 
-      (isGuidedLearningFromConversation ? GUIDED_LEARNING_PROMPT : '')
-
-    // Adjust remaining token budget based on the system prompt length
-    if (encoding) {
-      const tokenCount = encoding.encode(finalSystemPrompt).length
-      remainingTokenBudget -= tokenCount
-    }
-
-    // --------- <USER PROMPT> ----------
     // Initialize an array to collect sections of the user prompt
     const userPromptSections: string[] = []
-
+    const lastUserTextInput = await _getLastUserTextInput({ conversation })
+    const finalSystemPrompt =
+      'You are a helpful assistant that summarizes content. Summarize the below content within 3 sentences'
     // P1: Most recent user text input
     const userQuery = `\n<User Query>\n${lastUserTextInput}\n</User Query>`
     if (encoding) {
       remainingTokenBudget -= encoding.encode(userQuery).length
     }
-
-    // P2: Latest 2 conversation messages (Reserved tokens)
-    const tokensInLastTwoMessages = _getRecentConvoTokens({
-      conversation,
-    })
-    console.log('Tokens in last two messages: ', tokensInLastTwoMessages)
-    remainingTokenBudget -= tokensInLastTwoMessages
-
-    // Get contexts from the last message
-    const contexts =
-      (conversation.messages[conversation.messages.length - 1]
-        ?.contexts as ContextWithMetadata[]) || []
-
-    if (contexts && contexts.length > 0) {
-      // Documents are present; maintain all existing processes as normal
-      // P5: query_topContext
-
-      // Check if encoding is initialized
-      if (!encoding) {
-        console.error('Encoding is not initialized.')
-        throw new Error('Encoding initialization failed.')
-      }
-
-      const query_topContext = _buildQueryTopContext({
-        conversation: conversation,
-        // encoding: encoding,
-        tokenLimit: remainingTokenBudget - tokensInLastTwoMessages, // Keep room for conversation history
-      })
-
-      if (query_topContext) {
-        const queryContextMsg = `
-        <RetrievedDocumentsInstructions>
-        The following are passages retrieved via RAG from a large dataset. They may be relevant but aren't guaranteed to be. Evaluate critically, use what's pertinent, disregard irrelevant info. Cite used passages carefully in the format previously described.
-        </RetrievedDocumentsInstructions>
-        
-        <PotentiallyRelevantDocuments>
-        ${query_topContext}
-        </PotentiallyRelevantDocuments>`
-        // Adjust remaining token budget
-        remainingTokenBudget -= encoding.encode(queryContextMsg).length
-        // Add to user prompt sections
-        userPromptSections.push(queryContextMsg)
-      }
-    }
-
-    const latestUserMessage =
-      conversation.messages[conversation.messages.length - 1]
-
-    // Move Tool Outputs to be added before the userQuery
-    if (latestUserMessage?.tools) {
-      const toolsOutputResults = _buildToolsOutputResults({ conversation })
-
-      // Add Tool Instructions and outputs
-      const toolInstructions =
-        "<Tool Instructions>The user query required the invocation of external tools, and now it's your job to use the tool outputs and any other information to craft a great response. All tool invocations have already been completed before you saw this message. You should not attempt to invoke any tools yourself; instead, use the provided results/outputs of the tools. If any tools errored out, inform the user. If the tool outputs are irrelevant to their query, let the user know. Use relevant tool outputs to craft your response. The user may or may not reference the tools directly, but provide a helpful response based on the available information. Never tell the user you will run tools for them, as this has already been done. Always use the past tense to refer to the tool outputs. Never request access to the tools, as you are guaranteed to have access when appropriate; for example, never say 'I would need access to the tool.' When using tool results in your answer, always specify the source, using code notation, such as '...as per tool \`tool name\`...' or 'According to tool \`tool name\`...'. Never fabricate tool results; it is crucial to be honest and transparent. Stick to the facts as presented.</Tool Instructions>"
-
-      // Add to user prompt sections
-      userPromptSections.push(toolInstructions)
-
-      // Adjust remaining token budget for tool outputs
-      if (encoding) {
-        remainingTokenBudget -= encoding.encode(toolsOutputResults).length
-      }
-
-      // Add tool outputs to user prompt sections
-      userPromptSections.push(toolsOutputResults)
-    }
-
-    // Add the user's query to the prompt sections
     userPromptSections.push(userQuery)
+    const lastAssistantMessage =
+      conversation?.messages
+        .filter((msg) => msg.role === 'assistant')
+        .slice(-1)[0]?.content || ''
 
+    // Remove "References:" section from assistant message if it exists
+    let cleanedAssistantMessage = ''
+    if (typeof lastAssistantMessage === 'string') {
+      const referencesIndex = lastAssistantMessage.search(
+        /References:|Relevant Sources:/,
+      ) // TODO: make this search string more robust
+      cleanedAssistantMessage =
+        referencesIndex !== -1
+          ? lastAssistantMessage.substring(0, referencesIndex).trim()
+          : lastAssistantMessage
+    }
+    const answer = `\n<Answer>\n${cleanedAssistantMessage}\n</Answer>`
+    if (encoding) {
+      remainingTokenBudget -= encoding.encode(answer).length
+    }
+    userPromptSections.push(answer)
     // Assemble the user prompt by joining sections with double line breaks
     const userPrompt = userPromptSections.join('\n\n')
-
+    // Only keep the last message as only the last message is needed for the summary
+    conversation.messages = [
+      conversation.messages[conversation.messages.length - 1]!,
+    ]
     // Set final system and user prompts in the conversation
-    conversation.messages[
-      conversation.messages.length - 1
-    ]!.finalPromtEngineeredMessage = userPrompt
-
-    conversation.messages[
-      conversation.messages.length - 1
-    ]!.latestSystemMessage = finalSystemPrompt
+    conversation.messages[0]!.finalPromtEngineeredMessage = userPrompt
+    conversation.messages[0]!.latestSystemMessage = finalSystemPrompt
 
     return conversation
-  } catch (error) {
-    console.error('Error in buildPrompt:', error)
-    throw error
+  } else {
+    // normal flow for buildPrompt for the entire conversation
+    try {
+      // Execute asynchronous operations in parallel and await their results
+      const allPromises = []
+      allPromises.push(_getLastUserTextInput({ conversation }))
+      allPromises.push(_getLastToolResult({ conversation }))
+      allPromises.push(_getSystemPrompt({ courseMetadata, conversation }))
+      const [lastUserTextInput, lastToolResult, systemPrompt] =
+        (await Promise.all(allPromises)) as [
+          string,
+          UIUCTool[],
+          string | undefined,
+        ]
+
+      // Only add GUIDED_LEARNING_PROMPT if guided learning is enabled via conversation but not course-wide
+      const finalSystemPrompt =
+        (systemPrompt ?? DEFAULT_SYSTEM_PROMPT ?? '') +
+        (isGuidedLearningFromConversation ? GUIDED_LEARNING_PROMPT : '')
+
+      // Adjust remaining token budget based on the system prompt length
+      if (encoding) {
+        const tokenCount = encoding.encode(finalSystemPrompt).length
+        remainingTokenBudget -= tokenCount
+      }
+
+      // --------- <USER PROMPT> ----------
+      // Initialize an array to collect sections of the user prompt
+      const userPromptSections: string[] = []
+
+      // P1: Most recent user text input
+      const userQuery = `\n<User Query>\n${lastUserTextInput}\n</User Query>`
+      if (encoding) {
+        remainingTokenBudget -= encoding.encode(userQuery).length
+      }
+
+      // P2: Latest 2 conversation messages (Reserved tokens)
+      const tokensInLastTwoMessages = _getRecentConvoTokens({
+        conversation,
+      })
+      console.log('Tokens in last two messages: ', tokensInLastTwoMessages)
+      remainingTokenBudget -= tokensInLastTwoMessages
+
+      // Get contexts from the last message
+      const contexts =
+        (conversation.messages[conversation.messages.length - 1]
+          ?.contexts as ContextWithMetadata[]) || []
+
+      if (contexts && contexts.length > 0) {
+        // Documents are present; maintain all existing processes as normal
+        // P5: query_topContext
+
+        const query_topContext = _buildQueryTopContext({
+          conversation: conversation,
+          // encoding: encoding,
+          tokenLimit: remainingTokenBudget - tokensInLastTwoMessages, // Keep room for conversation history
+        })
+
+        if (query_topContext) {
+          const queryContextMsg = `
+          <RetrievedDocumentsInstructions>
+          The following are passages retrieved via RAG from a large dataset. They may be relevant but aren't guaranteed to be. Evaluate critically, use what's pertinent, disregard irrelevant info. Cite used passages carefully in the format previously described.
+          </RetrievedDocumentsInstructions>
+          
+          <PotentiallyRelevantDocuments>
+          ${query_topContext}
+          </PotentiallyRelevantDocuments>`
+          // Adjust remaining token budget
+          remainingTokenBudget -= encoding.encode(queryContextMsg).length
+          // Add to user prompt sections
+          userPromptSections.push(queryContextMsg)
+        }
+      }
+
+      const latestUserMessage =
+        conversation.messages[conversation.messages.length - 1]
+
+      // Move Tool Outputs to be added before the userQuery
+      if (latestUserMessage?.tools) {
+        const toolsOutputResults = _buildToolsOutputResults({ conversation })
+
+        // Add Tool Instructions and outputs
+        const toolInstructions =
+          "<Tool Instructions>The user query required the invocation of external tools, and now it's your job to use the tool outputs and any other information to craft a great response. All tool invocations have already been completed before you saw this message. You should not attempt to invoke any tools yourself; instead, use the provided results/outputs of the tools. If any tools errored out, inform the user. If the tool outputs are irrelevant to their query, let the user know. Use relevant tool outputs to craft your response. The user may or may not reference the tools directly, but provide a helpful response based on the available information. Never tell the user you will run tools for them, as this has already been done. Always use the past tense to refer to the tool outputs. Never request access to the tools, as you are guaranteed to have access when appropriate; for example, never say 'I would need access to the tool.' When using tool results in your answer, always specify the source, using code notation, such as '...as per tool `tool name`...' or 'According to tool `tool name`...'. Never fabricate tool results; it is crucial to be honest and transparent. Stick to the facts as presented.</Tool Instructions>"
+
+        // Add to user prompt sections
+        userPromptSections.push(toolInstructions)
+
+        // Adjust remaining token budget for tool outputs
+        if (encoding) {
+          remainingTokenBudget -= encoding.encode(toolsOutputResults).length
+        }
+
+        // Add tool outputs to user prompt sections
+        userPromptSections.push(toolsOutputResults)
+      }
+
+      // Add the user's query to the prompt sections
+      userPromptSections.push(userQuery)
+
+      // Assemble the user prompt by joining sections with double line breaks
+      const userPrompt = userPromptSections.join('\n\n')
+
+      // Set final system and user prompts in the conversation
+      conversation.messages[
+        conversation.messages.length - 1
+      ]!.finalPromtEngineeredMessage = userPrompt
+
+      conversation.messages[
+        conversation.messages.length - 1
+      ]!.latestSystemMessage = finalSystemPrompt
+
+      return conversation
+    } catch (error) {
+      console.error('Error in buildPrompt:', error)
+      throw error
+    }
   }
 }
 
@@ -287,10 +343,11 @@ const _getLastUserTextInput = async ({
   conversation: Conversation
 }): Promise<string> => {
   /* 
-      Gets ONLY the text that the user input. Does not return images or anything else. Just what the user typed.
-    */
-  const lastMessageContent =
-    conversation.messages?.[conversation.messages.length - 1]?.content
+    Gets ONLY the text that the user input. Does not return images or anything else. Just what the user typed.
+  */
+  const lastMessageContent = conversation.messages
+    ?.filter((msg) => msg.role === 'user')
+    .slice(-1)[0]?.content
 
   if (typeof lastMessageContent === 'string') {
     return lastMessageContent
@@ -302,31 +359,27 @@ const _getLastUserTextInput = async ({
 
 function _buildQueryTopContext({
   conversation,
-  // encoding,
   tokenLimit = 8000,
 }: {
   conversation: Conversation
-  // encoding: Tiktoken
   tokenLimit: number
 }) {
   try {
-    const contexts = conversation.messages[conversation.messages.length - 1]
-      ?.contexts as ContextWithMetadata[]
+    const contexts =
+      (conversation.messages[conversation.messages.length - 1]
+        ?.contexts as ContextWithMetadata[]) || []
 
-    if (contexts.length === 0) {
+    if (!Array.isArray(contexts) || contexts.length === 0) {
       return undefined
     }
 
-    let tokenCounter = 0 // encoding.encode(system_prompt + searchQuery).length
+    let tokenCounter = 0
     const validDocs = []
     for (const [index, d] of contexts.entries()) {
       const docString = `---\n${index + 1}: ${d.readable_filename}${
         d.pagenumber ? ', page: ' + d.pagenumber : ''
       }\n${d.text}\n`
       const numTokens = encoding.encode(docString).length
-      // console.log(
-      //   `token_counter: ${tokenCounter}, num_tokens: ${numTokens}, token_limit: ${tokenLimit}`,
-      // )
       if (tokenCounter + numTokens <= tokenLimit) {
         tokenCounter += numTokens
         validDocs.push({ index, d })
@@ -335,7 +388,7 @@ function _buildQueryTopContext({
       }
     }
 
-    const separator = '---\n' // between each context
+    const separator = '---\n'
     const contextText = validDocs
       .map(
         ({ index, d }) =>
@@ -344,14 +397,6 @@ function _buildQueryTopContext({
           }\n${d.text}\n`,
       )
       .join(separator)
-
-    // const stuffedPrompt =
-    //   contextText + '\n\nNow please respond to my query: ' + searchQuery
-    // const totalNumTokens = encoding.encode(stuffedPrompt).length
-    // console.log('contextText', contextText)
-    // console.log(
-    // `Total number of tokens: ${totalNumTokens}. Number of docs: ${contexts.length}, number of valid docs: ${validDocs.length}`,
-    // )
 
     return contextText
   } catch (e) {
@@ -391,16 +436,17 @@ const _getSystemPrompt = async ({
   }
 
   // If userDefinedSystemPrompt is null or undefined, use DEFAULT_SYSTEM_PROMPT
-  let systemPrompt = userDefinedSystemPrompt ?? DEFAULT_SYSTEM_PROMPT ?? ''
-
+  const systemPrompt = userDefinedSystemPrompt ?? DEFAULT_SYSTEM_PROMPT ?? ''
+  console.log('systemPrompt', systemPrompt)
+  // Math equations not used for mHealth project. Commenting out for now.
   // Necessary for math notation. See https://docs.mathjax.org/en/latest/input/tex/index.html
-  systemPrompt += `\nWhen responding with equations, use MathJax/KaTeX notation. Equations should be wrapped in either:
+  // systemPrompt += `\nWhen responding with equations, use MathJax/KaTeX notation. Equations should be wrapped in either:
 
-  * Single dollar signs $...$ for inline math
-  * Double dollar signs $$...$$ for display/block math
-  * Or \\[...\\] for display math
-  
-  Here's how the equations should be formatted in the markdown: Schrödinger Equation: $i\\hbar \\frac{\\partial}{\\partial t} \\Psi(\\mathbf{r}, t) = \\hat{H} \\Psi(\\mathbf{r}, t)$`
+  // * Single dollar signs $...$ for inline math
+  // * Double dollar signs $$...$$ for display/block math
+  // * Or \\[...\\] for display math
+
+  // Here's how the equations should be formatted in the markdown: Schrödinger Equation: $i\\hbar \\frac{\\partial}{\\partial t} \\Psi(\\mathbf{r}, t) = \\hat{H} \\Psi(\\mathbf{r}, t)$`
 
   // Check if contexts are present
   const contexts =
@@ -430,7 +476,8 @@ export const getSystemPostPrompt = ({
   courseMetadata: CourseMetadata
 }): string => {
   // Check for guided learning in both course metadata and conversation parameters
-  const isGuidedLearning = courseMetadata.guidedLearning || conversation.guidedLearning
+  const isGuidedLearning =
+    courseMetadata.guidedLearning || conversation.guidedLearning
   const { systemPromptOnly, documentsOnly } = courseMetadata
 
   // If systemPromptOnly is true, return an empty PostPrompt
@@ -443,7 +490,7 @@ export const getSystemPostPrompt = ({
 
   // The main system prompt
   PostPromptLines.push(
-    `Please analyze and respond to the following question using the excerpts from the provided documents. These documents can be pdf files or web pages. Additionally, you may see the output from API calls (called 'tools') to the user's services which, when relevant, you should use to construct your answer. You may also see image descriptions from images uploaded by the user. Prioritize image descriptions, when helpful, to construct your answer.
+    `Please analyze and respond to the following question using the excerpts from the provided documents. These documents can be pdf files or web pages. 
 Integrate relevant information from these documents, ensuring each reference is linked to the document's number.${
       isGuidedLearning
         ? '\n\nIMPORTANT: While in guided learning mode, you must still cite and link to ALL relevant course materials in the exact format described below, even if they contain direct answers. Never filter out or omit relevant materials - your role is to guide students to explore these materials through questions and hints while ensuring they have access to all relevant sources.'
@@ -473,14 +520,13 @@ Consecutive inline citations are ALWAYS discouraged. Use a maximum of 3 citation
 Suppose a document name is shared with you along with the index and pageNumber below like "27: www.pdf, page: 2", "28: www.osd", "29: pdf.www, page 11\n15" where 27, 28, 29 are indices, www.pdf, www.osd, pdf.www are document_name, and 2, 11 are the pageNumbers and 15 is the content of the document, then inline citations and final list of cited documents should ALWAYS be in the following format:
 """
 The sky is blue. [27, page: 2][28] The grass is green. [29, page: 11]
-Relevant Sources:
+References:
 
 27. [www.pdf, page: 2](#)
 28. [www.osd](#)
 29. [pdf.www, page: 11](#)
 """
-ONLY return the documents with relevant information and cited in the response. If there are no relevant sources, don't include the "Relevant Sources" section in response.
-The user message will include excerpts from the high-quality documents, APIs/tools, and image descriptions to construct your answer. Each will be labeled with XML-style tags, like <Potentially Relevant Documents> and <Tool Outputs>. Make use of that information when writing your response.`,
+ONLY return the documents with relevant information and cited in the response. If there are no relevant sources, don't include the "References" section in response.`,
   )
 
   // Combine the lines to form the PostPrompt
@@ -506,7 +552,7 @@ export const getDefaultPostPrompt = (): string => {
     documentsOnly: false,
     guidedLearning: false,
     systemPromptOnly: false,
-    vector_search_rewrite_disabled: false
+    vector_search_rewrite_disabled: false,
   }
 
   // Call getSystemPostPrompt with default values
@@ -519,7 +565,7 @@ export const getDefaultPostPrompt = (): string => {
       prompt: '',
       temperature: 0.7,
       folderId: null,
-      guidedLearning: false
+      guidedLearning: false,
     } as ConversationWithGuidedLearning,
     courseMetadata: defaultCourseMetadata,
   })

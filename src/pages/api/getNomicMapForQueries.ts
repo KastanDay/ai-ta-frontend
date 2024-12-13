@@ -12,7 +12,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     console.log('Map type:', map_type)
 
     const response = await fetch(
-      `https://flask-production-751b.up.railway.app/getNomicMap?course_name=${course_name}&map_type=${map_type}`,
+      `https://flask-pr-316.up.railway.app/getNomicMap?course_name=${course_name}&map_type=${map_type}`,
     )
     const data = await response.json()
 

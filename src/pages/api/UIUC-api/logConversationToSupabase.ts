@@ -1,7 +1,8 @@
 import { supabase } from '@/utils/supabaseClient'
 import { Content, Conversation } from '~/types/chat'
 import { RunTree } from 'langsmith'
-
+import { AllLLMProviders } from '~/utils/modelProviders/LLMProvider'
+import { ChatBody } from '~/types/chat'
 const logConversationToSupabase = async (req: any, res: any) => {
   const { course_name, conversation } = req.body as {
     course_name: string
