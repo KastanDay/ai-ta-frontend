@@ -305,7 +305,26 @@ export const Chat = memo(
       // Call LLM for conversation summary
       const summary = await callLLMForMessageSummary(conversation)
       console.log('summary: ', summary)
-      // conversation.summary = summary
+      if (conversation.messages.length > 0 && summary) {
+        // Ensure content is an array
+        const lastMessage =
+          conversation.messages[conversation.messages.length - 1]
+
+        // Initialize content as an array if it's not already
+        if (!Array.isArray(lastMessage!.content)) {
+          lastMessage!.content = [{ type: 'text', text: lastMessage!.content }]
+        }
+
+        // Add to Message summary field
+        lastMessage!.summary = summary
+
+        // Add summary as a new content object
+        lastMessage!.content.push({
+          type: 'summary',
+          text: summary,
+        })
+      }
+
       // Log conversation to Supabase
       try {
         const response = await fetch(
@@ -318,7 +337,6 @@ export const Chat = memo(
             body: JSON.stringify({
               course_name: getCurrentPageName(),
               conversation: conversation,
-              // llmProviders: llmProviders,
             }),
           },
         )
@@ -590,8 +608,13 @@ export const Chat = memo(
           // console.log('vector_search_rewrite_disabled setting:', courseMetadata?.vector_search_rewrite_disabled)
 
           // Skip query rewrite if disabled in course metadata or if it's the first message
-          if (courseMetadata?.vector_search_rewrite_disabled || updatedConversation.messages.length <= 1) {
-            console.log('Query rewrite disabled for this course or it is the first message, using original query')
+          if (
+            courseMetadata?.vector_search_rewrite_disabled ||
+            updatedConversation.messages.length <= 1
+          ) {
+            console.log(
+              'Query rewrite disabled for this course or it is the first message, using original query',
+            )
             rewrittenQuery = searchQuery
             homeDispatch({ field: 'wasQueryRewritten', value: false })
             homeDispatch({ field: 'queryRewriteText', value: null })
@@ -1433,8 +1456,9 @@ export const Chat = memo(
                   key={index}
                   className="w-full rounded-lg border-b-2 border-[rgba(42,42,64,0.4)] hover:cursor-pointer hover:bg-[rgba(42,42,64,0.9)]"
                   onClick={() => {
-                    setInputContent('')  // First clear the input
-                    setTimeout(() => {   // Then set it with a small delay
+                    setInputContent('') // First clear the input
+                    setTimeout(() => {
+                      // Then set it with a small delay
                       setInputContent(statement)
                       textareaRef.current?.focus()
                     }, 0)

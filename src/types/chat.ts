@@ -41,7 +41,7 @@ export interface Message {
   feedback?: MessageFeedback
   wasQueryRewritten?: boolean
   queryRewriteText?: string
-  summary?: string
+  summary?: string // Adding summary to content array is more flexible and nicer. Can be used in convertChatToDBMessage
 }
 
 export type MessageFeedback = {
@@ -79,7 +79,7 @@ export interface ToolOutput {
 }
 
 // tool_image_url is for images returned by tools
-export type MessageType = 'text' | 'image_url' | 'tool_image_url'
+export type MessageType = 'text' | 'image_url' | 'tool_image_url' | 'summary'
 
 export interface Content {
   type: MessageType

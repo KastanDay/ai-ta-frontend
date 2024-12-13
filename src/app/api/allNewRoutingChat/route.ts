@@ -27,21 +27,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
   if (summary) {
     // call LLM for summarized conversation
-    const buildPromptStartTime = Date.now()
-    // const summaryConversation: Conversation = {
-    //   ...conversation,
-    //   messages: [
-    //     {
-    //       id: uuidv4(),
-    //       role: 'user',
-    //       latestSystemMessage: 'You are a helpful assistant that summarizes content. Summarize the content within 3 sentences',
-    //       content: conversation?.messages
-    //           .filter(msg => msg.role === 'assistant')
-    //           .slice(-1)[0]?.content || '',
-    //       finalPromtEngineeredMessage: conversation?.messages
-    //     },
-    //   ],
-    // }
     newConversation = await buildPrompt({
       conversation,
       projectName: course_name,
@@ -49,7 +34,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       summary: true,
     })
   } else {
-    // buildPrompt if not calling LLM for summarized conversation
+    // normal flow without summary
     newConversation = await buildPrompt({
       conversation,
       projectName: course_name,
@@ -63,7 +48,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
   console.log(`buildPrompt duration: ${buildPromptDuration}ms`)
 
   try {
-    console.log('body conversation before routeModelRequest', body.conversation)
     const result = await routeModelRequest(body as ChatBody)
 
     const endTime = Date.now()

@@ -84,6 +84,13 @@ export function convertDBToChatConversation(
           })
         }
       }
+      // add summary message
+      if (msg.summary) {
+        content.push({
+          type: 'summary',
+          text: msg.summary,
+        })
+      }
 
       const feedbackObj = msg.feedback
         ? {
@@ -121,36 +128,51 @@ export function convertChatToDBMessage(
   chatMessage: ChatMessage,
   conversationId: string,
 ): DBMessage {
+  let content_type = ''
   let content_text = ''
   let content_image_urls: string[] = []
   let image_description = ''
   if (typeof chatMessage.content == 'string') {
+    content_type = 'text'
     content_text = chatMessage.content
   } else if (Array.isArray(chatMessage.content)) {
+    const contentTypes: string[] = []
     content_text = chatMessage.content
-      .filter((content) => content.type === 'text' && content.text)
+      .filter(
+        (content) =>
+          (content.type === 'text' || content.type === 'summary') &&
+          content.text,
+      )
       .map((content) => {
         if ((content.text as string).trim().startsWith('Image description:')) {
           image_description =
             content.text?.split(':').slice(1).join(':').trim() || ''
           return ''
         }
+        contentTypes.push(content.type)
         return content.text
       })
       .join(' ')
+    content_type = contentTypes.join(', ') // this is not currently used.
     content_image_urls = chatMessage.content
       .filter((content) => content.type === 'image_url')
       .map((content) => content.image_url?.url || '')
   }
 
+  // Ensure contexts is an array
+  const chatMessageContexts = Array.isArray(chatMessage.contexts)
+    ? chatMessage.contexts
+    : []
+
   return {
     id: chatMessage.id || uuidv4(),
     role: chatMessage.role,
+    // content_type: content_type,
     content_text: content_text,
     content_image_url: content_image_urls,
     image_description: image_description,
     contexts:
-      chatMessage.contexts?.map((context, index) => {
+      chatMessageContexts?.map((context, index) => {
         // TODO:
         // This is where we will put context_id in the future
         // console.log('context: ', context)
@@ -320,7 +342,7 @@ export default async function handler(
         user_email?: string
         course_name?: string
       }
-      
+
       try {
         if (id) {
           // Delete single conversation
@@ -336,7 +358,7 @@ export default async function handler(
             .delete()
             .eq('user_email', userEmail)
             .eq('project_name', course_name)
-            .is('folder_id', null)  // Only delete conversations that are not in folders
+            .is('folder_id', null) // Only delete conversations that are not in folders
           if (error) throw error
         } else {
           res.status(400).json({ error: 'Invalid request parameters' })
