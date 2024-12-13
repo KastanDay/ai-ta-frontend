@@ -89,7 +89,9 @@ export const buildPrompt = async ({
     // Remove "References:" section from assistant message if it exists
     let cleanedAssistantMessage = ''
     if (typeof lastAssistantMessage === 'string') {
-      const referencesIndex = lastAssistantMessage.indexOf('References:')
+      const referencesIndex = lastAssistantMessage.search(
+        /References:|Relevant Sources:/,
+      ) // TODO: make this search string more robust
       cleanedAssistantMessage =
         referencesIndex !== -1
           ? lastAssistantMessage.substring(0, referencesIndex).trim()
