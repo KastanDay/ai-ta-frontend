@@ -19,22 +19,18 @@ export default async function handler(req: NextRequest, res: NextResponse) {
   const requestBody = await req.text()
   let courseName: string
   let llmProviders: AllLLMProviders
-  let defaultModelID: string
-  let defaultTemperature: number
 
   try {
     const parsedBody = JSON.parse(requestBody)
     courseName = parsedBody.projectName as string
     llmProviders = parsedBody.llmProviders as AllLLMProviders
-    defaultModelID = parsedBody.defaultModelID as string
-    defaultTemperature = parsedBody.defaultTemperature as number
   } catch (error) {
     console.error('Error parsing request body:', error)
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
   // Check if all required variables are defined
-  if (!courseName || !llmProviders || !defaultModelID || !defaultTemperature) {
+  if (!courseName || !llmProviders) {
     console.error('Error: Missing required parameters')
     return NextResponse.json(
       { error: 'Missing required parameters' },
@@ -44,9 +40,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
 
   // Type checking
   if (
-    typeof courseName !== 'string' ||
-    typeof defaultModelID !== 'string' ||
-    typeof defaultTemperature !== 'string'
+    typeof courseName !== 'string'
   ) {
     console.error('Error: Invalid parameter types')
     return NextResponse.json(
@@ -88,14 +82,6 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     // Now await the existing LLMs and combine with encrypted providers
     const existingLLMs = await existingLLMsPromise
     const combined_llms = { ...existingLLMs, ...llmProviders }
-
-    if (defaultModelID) {
-      combined_llms.defaultModel = defaultModelID
-    }
-
-    if (defaultTemperature) {
-      combined_llms.defaultTemp = defaultTemperature
-    }
 
     console.debug('-----------------------------------------')
     console.debug('EXISTING LLM Providers:', existingLLMs)
