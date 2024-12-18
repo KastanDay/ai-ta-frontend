@@ -1,5 +1,5 @@
 import { CourseMetadata } from '~/types/courseMetadata'
-import { extractEmailsFromClerk } from './clerkHelpers'
+import { extractEmailsFromClerk } from './AuthHelpers'
 
 export const get_user_permission = (
   course_metadata: CourseMetadata,

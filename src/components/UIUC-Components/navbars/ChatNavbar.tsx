@@ -1,4 +1,3 @@
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 // import { magicBellTheme } from '~/components/UIUC-Components/navbars/GlobalHeader'
 import { useDisclosure } from '@mantine/hooks'
@@ -25,8 +24,7 @@ import {
 import { IconFileText, IconHome, IconSettings } from '@tabler/icons-react'
 import { useRouter } from 'next/router'
 import { montserrat_heading } from 'fonts'
-import { useUser } from '@clerk/nextjs'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
+import { useSession } from 'next-auth/react'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import HomeContext from '~/pages/api/home/home.context'
 import { UserSettings } from '../../Chat/UserSettings'
@@ -34,6 +32,7 @@ import { UserSettings } from '../../Chat/UserSettings'
 //   FloatingNotificationInbox,
 // } from '@magicbell/magicbell-react'
 import { usePostHog } from 'posthog-js/react'
+import { extractUserEmails } from '../AuthHelpers'
 
 const styles: Record<string, React.CSSProperties> = {
   logoContainerBox: {
@@ -158,7 +157,7 @@ const ChatNavbar = ({ bannerUrl = '', isgpt4 = true }: ChatNavbarProps) => {
   const [opened, { toggle }] = useDisclosure(false)
   const [show, setShow] = useState(true)
   const [isAdminOrOwner, setIsAdminOrOwner] = useState(false)
-  const clerk_user = useUser()
+  const { data: session, status } = useSession()
   const posthog = usePostHog()
   const {
     state: { showModelSettings, selectedConversation },
@@ -179,10 +178,10 @@ const ChatNavbar = ({ bannerUrl = '', isgpt4 = true }: ChatNavbarProps) => {
 
   useEffect(() => {
     const fetchCourses = async () => {
-      if (clerk_user.isLoaded && clerk_user.isSignedIn) {
-        const currUserEmails = extractEmailsFromClerk(clerk_user.user)
+      if (status != "authenticated") {
+        const currUserEmails = extractUserEmails()
         // Posthog identify
-        posthog?.identify(clerk_user.user.id, {
+        posthog?.identify(session?.user?.id, {
           email: currUserEmails[0] || 'no_email',
         })
         setUserEmail(currUserEmails[0] || 'no_email')
@@ -207,7 +206,7 @@ const ChatNavbar = ({ bannerUrl = '', isgpt4 = true }: ChatNavbarProps) => {
       }
     }
     fetchCourses()
-  }, [clerk_user.isLoaded, clerk_user.isSignedIn])
+  }, [isPending, session?.])
 
   const items = [
     ...(spotlight

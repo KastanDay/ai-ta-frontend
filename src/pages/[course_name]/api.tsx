@@ -2,7 +2,6 @@
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import { useUser } from '@clerk/nextjs'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { LoadingPlaceholderForAdminPages } from '~/components/UIUC-Components/MainPageBackground'
 import ApiKeyManagement from '~/components/UIUC-Components/ApiKeyManagament'
@@ -10,10 +9,11 @@ import { CourseMetadata } from '~/types/courseMetadata'
 import { fetchCourseMetadata } from '~/utils/apiUtils'
 import { Flex } from '@mantine/core'
 import Navbar from '~/components/UIUC-Components/navbars/Navbar'
+import { useSession } from '~/lib/auth-client'
 
 const ApiPage: NextPage = () => {
   const router = useRouter()
-  const user = useUser()
+  const { data: session, isPending } = useSession()
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
   )
@@ -45,18 +45,18 @@ const ApiPage: NextPage = () => {
 
   // Second useEffect to handle permissions and other dependent data
   useEffect(() => {
-    if (isLoading || !user.isLoaded || courseName == null) {
+    if (isLoading || isPending|| courseName == null) {
       // Do not proceed if we are still loading or if the user data is not loaded yet.
       return
     }
 
     const handlePermissionsAndData = async () => {
       try {
-        if (!courseMetadata || !user.isLoaded) {
+        if (!courseMetadata || isPending) {
           return
         }
 
-        const permission_str = get_user_permission(courseMetadata, user, router)
+        const permission_str = get_user_permission(courseMetadata, session?.user, router)
 
         if (permission_str !== 'edit') {
           console.debug(
@@ -71,13 +71,13 @@ const ApiPage: NextPage = () => {
       }
     }
     handlePermissionsAndData()
-  }, [courseMetadata, user.isLoaded])
+  }, [courseMetadata, !isPending])
 
-  if (isLoading || !user.isLoaded || courseName == null) {
+  if (isLoading || isPending|| courseName == null) {
     return <LoadingPlaceholderForAdminPages />
   }
 
-  if (!user || !user.isSignedIn) {
+  if (!session?.user || !session?.session) {
     router.replace('/sign-in')
     return <></>
   }
@@ -88,9 +88,9 @@ const ApiPage: NextPage = () => {
       <main className="course-page-main min-w-screen flex min-h-screen flex-col items-center">
         <div className="items-left flex w-full flex-col justify-center py-0">
           <Flex direction="column" align="center" w="100%">
-            <ApiKeyManagement
+          <ApiKeyManagement
               course_name={router.query.course_name as string}
-              clerk_user={user}
+              user={session.user}
             />
           </Flex>
         </div>

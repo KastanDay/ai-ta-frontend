@@ -42,8 +42,8 @@ interface Props {
 }
 
 import { useRouter } from 'next/router'
-import { useUser } from '@clerk/nextjs'
-import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
+import { useSession } from '@/lib/auth-client'
+import { extractUserEmails } from '~/components/UIUC-Components/AuthHelpers'
 import ChatNavbar from '../UIUC-Components/navbars/ChatNavbar'
 import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
@@ -74,6 +74,7 @@ import { motion } from 'framer-motion'
 import { useDeleteMessages } from '~/hooks/messageQueries'
 import { AllLLMProviders } from '~/utils/modelProviders/LLMProvider'
 import util from 'util'
+import { get } from 'lodash'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -94,7 +95,7 @@ export const Chat = memo(
     currentEmail,
   }: Props) => {
     const { t } = useTranslation('chat')
-    const clerk_obj = useUser()
+    const user_obj = useSession()
     const router = useRouter()
     const queryClient = useQueryClient()
     // const
@@ -103,7 +104,7 @@ export const Chat = memo(
       // /CS-125/dashboard --> CS-125
       return router.asPath.slice(1).split('/')[0] as string
     }
-    const user_email = extractEmailsFromClerk(clerk_obj.user)[0]
+    const user_email = get(user_obj, 'user.email')
     // const [user_email, setUserEmail] = useState<string | undefined>(undefined)
 
     // const updateConversationMutation = useUpdateConversation(
@@ -409,7 +410,7 @@ export const Chat = memo(
               // Use only texts instead of content itself
               const contentText = Array.isArray(content)
                 ? content.map((content) => content.text).join(' ')
-                : content
+                : content 
 
               // This is where we can customize the name of the conversation
               const customName =

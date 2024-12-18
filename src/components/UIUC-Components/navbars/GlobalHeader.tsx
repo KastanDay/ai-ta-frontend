@@ -101,7 +101,7 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
 import Link from 'next/link'
 import { montserrat_heading } from 'fonts'
 import { createStyles, Group, rem } from '@mantine/core'
-import { extractEmailsFromClerk } from '../clerkHelpers'
+import { extractEmailsFromClerk } from '../AuthHelpers'
 import { useEffect, useState } from 'react'
 import { usePostHog } from 'posthog-js/react'
 import { IconFilePlus } from '@tabler/icons-react'
