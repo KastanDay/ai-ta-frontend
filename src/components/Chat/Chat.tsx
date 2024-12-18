@@ -45,13 +45,11 @@ import { useRouter } from 'next/router'
 import { useUser } from '@clerk/nextjs'
 import { extractEmailsFromClerk } from '../UIUC-Components/clerkHelpers'
 import ChatNavbar from '../UIUC-Components/navbars/ChatNavbar'
-// import { MainPageBackground } from '../UIUC-Components/MainPageBackground'
 import { notifications } from '@mantine/notifications'
 import { Montserrat } from 'next/font/google'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
 import {
   State,
-  constructChatBody,
   getOpenAIKey,
   handleContextSearch,
   processChunkWithStateMachine,
@@ -75,6 +73,7 @@ import { useUpdateConversation } from '~/hooks/conversationQueries'
 import { motion } from 'framer-motion'
 import { useDeleteMessages } from '~/hooks/messageQueries'
 import { AllLLMProviders } from '~/utils/modelProviders/LLMProvider'
+import util from 'util'
 
 const montserrat_med = Montserrat({
   weight: '500',
@@ -101,7 +100,7 @@ export const Chat = memo(
     // const
     const [bannerUrl, setBannerUrl] = useState<string | null>(null)
     const getCurrentPageName = () => {
-      // /CS-125/materials --> CS-125
+      // /CS-125/dashboard --> CS-125
       return router.asPath.slice(1).split('/')[0] as string
     }
     const user_email = extractEmailsFromClerk(clerk_obj.user)[0]
@@ -168,12 +167,13 @@ export const Chat = memo(
         llmProviders,
       },
       handleUpdateConversation,
+      handleFeedbackUpdate,
       dispatch: homeDispatch,
     } = useContext(HomeContext)
 
     useEffect(() => {
       const loadModel = async () => {
-        if (selectedConversation && !chat_ui.isModelLoading()) {
+        if (selectedConversation?.model && !chat_ui.isModelLoading()) {
           homeDispatch({
             field: 'webLLMModelIdLoading',
             value: { id: selectedConversation.model.id, isLoading: true },
@@ -189,12 +189,12 @@ export const Chat = memo(
         }
       }
       if (
-        selectedConversation &&
+        selectedConversation?.model &&
         webLLMModels.some((m) => m.name === selectedConversation.model.name)
       ) {
         loadModel()
       }
-    }, [selectedConversation?.model.name, chat_ui])
+    }, [selectedConversation?.model?.id, chat_ui])
 
     const [currentMessage, setCurrentMessage] = useState<Message>()
     const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true)
@@ -336,6 +336,10 @@ export const Chat = memo(
         enabledDocumentGroups: string[],
         llmProviders: AllLLMProviders,
       ) => {
+        console.log(
+          'handleSend called with model:',
+          selectedConversation?.model,
+        )
         setCurrentMessage(message)
         resetMessageStates()
 
@@ -344,6 +348,27 @@ export const Chat = memo(
           : message.content
 
         if (selectedConversation) {
+          // Add this type guard function
+          function isValidModel(
+            model: any,
+          ): model is { id: string; name: string } {
+            return (
+              model &&
+              typeof model.id === 'string' &&
+              typeof model.name === 'string'
+            )
+          }
+
+          // Check if model is defined and valid
+          if (!isValidModel(selectedConversation.model)) {
+            console.error('Selected conversation does not have a valid model.')
+            errorToast({
+              title: 'Model Error',
+              message: 'No valid model selected for the conversation.',
+            })
+            return
+          }
+
           let updatedConversation: Conversation
           if (deleteCount) {
             // Remove tools from message to clear old tools
@@ -355,7 +380,7 @@ export const Chat = memo(
                 )
               : message.content
 
-            const updatedMessages = [...selectedConversation.messages]
+            const updatedMessages = [...(selectedConversation.messages || [])]
             const messagesToDelete = updatedMessages.slice(0, deleteCount)
             for (let i = 0; i < deleteCount; i++) {
               updatedMessages.pop()
@@ -371,15 +396,15 @@ export const Chat = memo(
           } else {
             updatedConversation = {
               ...selectedConversation,
-              messages: [...selectedConversation.messages, message],
+              messages: [...(selectedConversation.messages || []), message],
             }
             // console.log(
             //   'updatedConversation before name:',
             //   updatedConversation,
-            //   updatedConversation.messages.length,
+            //   updatedConversation.messages?.length,
             // )
             // Update the name of the conversation if it's the first message
-            if (updatedConversation.messages.length === 1) {
+            if (updatedConversation.messages?.length === 1) {
               const { content } = message
               // Use only texts instead of content itself
               const contentText = Array.isArray(content)
@@ -402,19 +427,6 @@ export const Chat = memo(
               // )
             }
           }
-          // homeDispatch({
-          //   field: 'selectedConversation',
-          //   value: updatedConversation,
-          // })
-          // Update the conversation in the server
-          // if (!user_email) {
-          // saveConversationToLocalStorage(updatedConversation)
-          // } else {
-
-          // console.log(
-          //   'updatedConversation before mutation:',
-          //   updatedConversation,
-          // )
           handleUpdateConversation(updatedConversation, {
             key: 'messages',
             value: updatedConversation.messages,
@@ -468,14 +480,315 @@ export const Chat = memo(
           }
 
           // Action 2: Context Retrieval: Vector Search
+          // TODO: add toggle to turn queryRewrite on and off on materials page
+          const QUERY_REWRITE_PROMPT = `You are a vector database query optimizer that improves search queries for semantic vector retrieval.
+
+            INPUT:
+            The input will include:
+            1. Previous conversation messages (if any)
+            2. Current search query
+
+            OUTPUT FORMAT:
+            You must respond in ONE of these two formats ONLY:
+            1. The exact string "NO_REWRITE_REQUIRED" or
+            2. An XML tag containing the vector query: <vector_query>your optimized query here</vector_query>
+
+            WHEN TO OUTPUT "NO_REWRITE_REQUIRED":
+            Return "NO_REWRITE_REQUIRED" if ALL of these conditions are met:
+            - Query contains specific, unique terms that would match relevant documents
+            - Query includes all necessary context without requiring conversation history
+            - Query has no ambiguous references (like "it", "this", "that example", "option one")
+            - Query would yield effective vector embeddings without modification
+
+            WHEN TO REWRITE THE QUERY:
+            Rewrite the query if ANY of these conditions are met:
+            - Query contains references to items from previous messages
+            - Query uses pronouns or demonstratives without clear referents
+            - Query lacks technical terms or context needed for effective matching
+            - Query requires conversation history to be fully understood
+
+            REWRITING RULES:
+            When rewriting, follow these rules:
+            1. Replace references to previous items with their specific content
+              Example: "explain the first option" →
+              <vector_query>explain the gradient descent optimization algorithm</vector_query>
+
+            2. Add essential context from conversation history
+              Example: "what are the steps" →
+              <vector_query>what are the steps for implementing backpropagation in neural networks</vector_query>
+
+            3. Resolve all pronouns and demonstratives
+              Example: "how does it work" →
+              <vector_query>how does the transformer attention mechanism work</vector_query>
+
+            4. Include key technical terms and synonyms
+              Example: "what causes this" →
+              <vector_query>root causes and mechanisms of gradient vanishing in deep neural networks</vector_query>
+
+            IMPORTANT OUTPUT RULES:
+            - Do not include ANY explanatory text
+            - Do not include multiple options
+            - Do not include reasoning or notes
+            - Output ONLY "NO_REWRITE_REQUIRED" or a <vector_query> tag
+            - Never include both formats in one response
+            - Never nest tags or use other XML tags
+            - Never add punctuation or text outside the tags
+
+            The final rewritten query must:
+            - Be self-contained and understandable without conversation context
+            - Maintain the original search intent
+            - Include specific details that enable accurate vector matching
+            - Be concise while containing all necessary context
+            - Contain ONLY the search terms inside the XML tags
+
+            Remember: This query optimization is for vector database retrieval only, not for the final LLM prompt.`
+
+          let rewrittenQuery = searchQuery // Default to original query
+
+          // console.log('vector_search_rewrite_disabled setting:', courseMetadata?.vector_search_rewrite_disabled)
+
+          // Skip query rewrite if disabled in course metadata or if it's the first message
+          if (courseMetadata?.vector_search_rewrite_disabled || updatedConversation.messages.length <= 1) {
+            console.log('Query rewrite disabled for this course or it is the first message, using original query')
+            rewrittenQuery = searchQuery
+            homeDispatch({ field: 'wasQueryRewritten', value: false })
+            homeDispatch({ field: 'queryRewriteText', value: null })
+            message.wasQueryRewritten = undefined
+            message.queryRewriteText = undefined
+          } else {
+            homeDispatch({ field: 'isQueryRewriting', value: true })
+            try {
+              // Get conversation context (last 6 messages or fewer)
+              const contextMessages =
+                selectedConversation?.messages?.slice(-6) || []
+
+              const queryRewriteConversation: Conversation = {
+                id: uuidv4(),
+                name: 'Query Rewrite',
+                messages: [
+                  {
+                    id: uuidv4(),
+                    role: 'user',
+                    content: `Previous conversation:\n${contextMessages
+                      .map((msg) => {
+                        const contentText = Array.isArray(msg.content)
+                          ? msg.content
+                              .filter(
+                                (content) =>
+                                  content.type === 'text' && content.text,
+                              )
+                              .map((content) => content.text!)
+                              .join(' ')
+                          : typeof msg.content === 'string'
+                            ? msg.content
+                            : ''
+                        return `${msg.role}: ${contentText.trim()}`
+                      })
+                      .filter((text) => text.length > 0)
+                      .join(
+                        '\n',
+                      )}\n\nCurrent query: "${searchQuery}"\n\nEnhanced query:`,
+                    latestSystemMessage: QUERY_REWRITE_PROMPT,
+                    finalPromtEngineeredMessage: `\n<User Query>\nPrevious conversation:\n${contextMessages
+                      .map((msg) => {
+                        const contentText = Array.isArray(msg.content)
+                          ? msg.content
+                              .filter(
+                                (content) =>
+                                  content.type === 'text' && content.text,
+                              )
+                              .map((content) => content.text!)
+                              .join(' ')
+                          : typeof msg.content === 'string'
+                            ? msg.content
+                            : ''
+                        return `${msg.role}: ${contentText.trim()}`
+                      })
+                      .filter((text) => text.length > 0)
+                      .join(
+                        '\n',
+                      )}\n\nCurrent query: "${searchQuery}"\n\nEnhanced query:\n</User Query>`,
+                  },
+                ],
+                model: selectedConversation.model,
+                prompt: QUERY_REWRITE_PROMPT,
+                temperature: 0.2,
+                folderId: null,
+                userEmail: currentEmail,
+                projectName: courseName,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              }
+
+              const queryRewriteBody: ChatBody = {
+                conversation: {
+                  ...queryRewriteConversation,
+                  messages: queryRewriteConversation.messages.map((msg) => ({
+                    ...msg,
+                    content:
+                      typeof msg.content === 'string'
+                        ? msg.content.trim()
+                        : Array.isArray(msg.content)
+                          ? msg.content
+                              .map((c) => c.text)
+                              .join(' ')
+                              .trim()
+                          : '',
+                  })),
+                },
+                key: getOpenAIKey(courseMetadata, apiKey),
+                course_name: courseName,
+                stream: false,
+                courseMetadata: courseMetadata,
+                llmProviders: llmProviders,
+                model: selectedConversation.model,
+              }
+
+              if (!queryRewriteBody.model || !queryRewriteBody.model.id) {
+                queryRewriteBody.model = selectedConversation.model
+              }
+
+              let rewriteResponse:
+                | Response
+                | AsyncIterable<webllm.ChatCompletionChunk>
+                | undefined
+
+              if (
+                selectedConversation.model &&
+                webLLMModels.some(
+                  (model) => model.name === selectedConversation.model.name,
+                )
+              ) {
+                // WebLLM model handling remains the same
+                while (chat_ui.isModelLoading() === true) {
+                  await new Promise((resolve) => setTimeout(resolve, 10))
+                }
+                try {
+                  rewriteResponse = await chat_ui.runChatCompletion(
+                    queryRewriteConversation,
+                    getCurrentPageName(),
+                  )
+                } catch (error) {
+                  errorToast({
+                    title: 'Error running query rewrite',
+                    message:
+                      (error as Error).message ||
+                      'An unexpected error occurred',
+                  })
+                }
+              } else {
+                // Direct call to routeModelRequest instead of going through the API route
+                try {
+                  rewriteResponse = await fetch('/api/queryRewrite', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(queryRewriteBody),
+                  })
+                } catch (error) {
+                  console.error('Error calling query rewrite endpoint:', error)
+                  throw error
+                }
+              }
+
+              // console.log('query rewriteResponse:', rewriteResponse)
+
+              // After processing the query rewrite response
+              if (rewriteResponse instanceof Response) {
+                try {
+                  const responseData = await rewriteResponse.json()
+                  let choices = responseData.choices
+
+                  if (Array.isArray(choices)) {
+                    // 'choices' is already an array, do nothing
+                  } else if (typeof choices === 'object' && choices !== null) {
+                    // Convert 'choices' object to array
+                    choices = Object.values(choices)
+                  } else {
+                    throw new Error(
+                      'Invalid format for choices in response data.',
+                    )
+                  }
+
+                  rewrittenQuery =
+                    choices?.[0]?.message?.content?.choices?.[0]?.message
+                      ?.content ||
+                    choices?.[0]?.message?.content ||
+                    searchQuery
+                } catch (error) {
+                  console.error('Error parsing non-streaming response:', error)
+                  message.wasQueryRewritten = false
+                }
+              }
+
+              console.log('rewrittenQuery after parsing:', rewrittenQuery)
+
+              if (typeof rewrittenQuery !== 'string') {
+                rewrittenQuery = searchQuery
+                homeDispatch({ field: 'wasQueryRewritten', value: false })
+                homeDispatch({ field: 'queryRewriteText', value: null })
+                message.wasQueryRewritten = false
+                message.queryRewriteText = undefined
+              } else {
+                // Extract vector query from XML tags if present
+                const vectorQueryMatch =
+                  rewrittenQuery.match(
+                    /<\s*vector_query\s*>(.*?)<\s*\/\s*vector_query\s*>/,
+                  ) || null
+                const extractedQuery = vectorQueryMatch?.[1]?.trim()
+
+                // Check if the response is NO_REWRITE_REQUIRED or if we couldn't extract a valid query
+                if (
+                  rewrittenQuery.trim().toUpperCase() ===
+                    'NO_REWRITE_REQUIRED' ||
+                  !extractedQuery
+                ) {
+                  console.log(
+                    'Query rewrite not required or invalid format, using original query',
+                  )
+                  rewrittenQuery = searchQuery
+                  homeDispatch({ field: 'wasQueryRewritten', value: false })
+                  homeDispatch({ field: 'queryRewriteText', value: null })
+                  message.wasQueryRewritten = false
+                  message.queryRewriteText = undefined
+                } else {
+                  // Use the extracted query
+                  rewrittenQuery = extractedQuery
+                  // console.log('Using rewritten query:', rewrittenQuery)
+                  homeDispatch({ field: 'wasQueryRewritten', value: true })
+                  homeDispatch({
+                    field: 'queryRewriteText',
+                    value: rewrittenQuery,
+                  })
+                  message.wasQueryRewritten = true
+                  message.queryRewriteText = rewrittenQuery
+                }
+              }
+            } catch (error) {
+              console.error('Error in query rewriting:', error)
+              homeDispatch({ field: 'wasQueryRewritten', value: false })
+              homeDispatch({ field: 'queryRewriteText', value: null })
+              message.wasQueryRewritten = false
+              message.queryRewriteText = undefined
+            } finally {
+              homeDispatch({ field: 'isQueryRewriting', value: false })
+            }
+          }
+
+          // console.log('Final query used for context search:', rewrittenQuery)
+
           homeDispatch({ field: 'isRetrievalLoading', value: true })
+
+          // Use enhanced query for context search
           await handleContextSearch(
             message,
             courseName,
             selectedConversation,
-            searchQuery,
+            rewrittenQuery,
             enabledDocumentGroups,
           )
+
           homeDispatch({ field: 'isRetrievalLoading', value: false })
 
           // Action 3: Tool Execution
@@ -513,28 +826,31 @@ export const Chat = memo(
             }
           }
 
-          const chatBody: ChatBody = constructChatBody(
-            updatedConversation,
-            getOpenAIKey(courseMetadata, apiKey),
-            courseName,
-            true,
-            courseMetadata,
-            llmProviders,
-          )
-          // Action 4: Build Prompt - Put everything together into a prompt
-          const buildPromptResponse = await fetch('/api/buildPrompt', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(chatBody),
-          })
-          chatBody.conversation = await buildPromptResponse.json()
+          const chatBody: ChatBody = {
+            conversation: updatedConversation,
+            key: getOpenAIKey(courseMetadata, apiKey),
+            course_name: courseName,
+            stream: true,
+            courseMetadata: courseMetadata,
+            llmProviders: llmProviders,
+            model: selectedConversation.model,
+          }
           updatedConversation = chatBody.conversation!
 
+          // Action 4: Build Prompt - Put everything together into a prompt
+          // const buildPromptResponse = await fetch('/api/buildPrompt', {
+          //   method: 'POST',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //   },
+          //   body: JSON.stringify(chatBody),
+          // })
+          // const builtConversation = await buildPromptResponse.json()
+
+          // Update the selected conversation
           homeDispatch({
             field: 'selectedConversation',
-            value: chatBody.conversation,
+            value: updatedConversation,
           })
 
           // Action 5: Run Chat Completion based on model provider
@@ -545,8 +861,9 @@ export const Chat = memo(
           let reader
 
           if (
+            selectedConversation.model &&
             webLLMModels.some(
-              (model) => model.name === chatBody.conversation?.model.name,
+              (model) => model.name === selectedConversation.model.name,
             )
           ) {
             // Is WebLLM model
@@ -555,21 +872,33 @@ export const Chat = memo(
             }
             try {
               response = await chat_ui.runChatCompletion(
-                chatBody.conversation!,
+                selectedConversation,
                 getCurrentPageName(),
               )
             } catch (error) {
               errorToast({
                 title: 'Error running chat completion',
                 message:
-                  (error as Error).message || 'An unexpected error occurred',
+                  (error as Error).message ||
+                  'In Chat.tsx An unexpected error occurred',
               })
             }
           } else {
             try {
               // Route to the specific model provider
-              response = await routeModelRequest(chatBody, controller)
+              // response = await routeModelRequest(chatBody, controller)
+
+              // CALL OUR NEW ENDPOINT... /api/chat
+              response = await fetch('/api/allNewRoutingChat', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(chatBody),
+              })
+              console.log('response from /api/chat', response)
             } catch (error) {
+              // TODO: Improve error messages here...
               console.error('Error routing to model provider:', error)
               errorToast({
                 title: 'Error routing to model provider',
@@ -580,20 +909,55 @@ export const Chat = memo(
           }
 
           if (response instanceof Response && !response.ok) {
-            const final_response = await response.json()
+            let final_response
+            try {
+              final_response = await response.json()
+            } catch (error) {
+              console.error('Error parsing response:', error)
+              homeDispatch({ field: 'loading', value: false })
+              homeDispatch({ field: 'messageIsStreaming', value: false })
+              errorToast({
+                title: 'Error',
+                message:
+                  'Received an invalid response from the server. Please try again.',
+              })
+              return
+            }
+
             homeDispatch({ field: 'loading', value: false })
             homeDispatch({ field: 'messageIsStreaming', value: false })
-            console.error(
-              'Error calling the LLM:',
-              final_response.name,
-              final_response.message,
-            )
-            errorToast({
-              title: final_response.name,
-              message:
-                final_response.message ||
-                'There was an unexpected error calling the LLM. Try using a different model (via the Settings button in the header).',
-            })
+            console.error('Error calling the LLM:', final_response)
+
+            if (final_response.error) {
+              let errorMessage = final_response.error
+              let errorCode = final_response.code
+
+              // Handle case where error is a JSON string
+              if (typeof final_response.error === 'string') {
+                try {
+                  const parsed = JSON.parse(final_response.error)
+                  errorMessage = parsed.error || parsed.message
+                  errorCode = parsed.code
+                } catch (e) {
+                  // Keep original error message if not valid JSON
+                }
+              }
+
+              errorToast({
+                title: `Error calling LLM`,
+                message:
+                  errorMessage ||
+                  `An unexpected error occurred. Try using a different model.${errorCode ? ` Error code: ${errorCode}` : ''}`,
+              })
+              return
+            } else {
+              errorToast({
+                title: final_response.name || 'Error',
+                message:
+                  final_response.message ||
+                  'There was an unexpected error calling the LLM. Try using a different model (via the Settings button in the header).',
+              })
+            }
             return
           }
 
@@ -661,8 +1025,15 @@ export const Chat = memo(
                       id: uuidv4(),
                       role: 'assistant',
                       content: chunkValue,
+                      contexts: message.contexts,
+                      feedback: message.feedback,
+                      wasQueryRewritten: message.wasQueryRewritten,
+                      queryRewriteText: message.queryRewriteText,
                     },
                   ]
+
+                  // console.log('updatedMessages with queryRewrite info:', updatedMessages)
+
                   finalAssistantRespose += chunkValue
                   updatedConversation = {
                     ...updatedConversation,
@@ -673,9 +1044,9 @@ export const Chat = memo(
                     value: updatedConversation,
                   })
                 } else {
-                  if (updatedConversation.messages.length > 0) {
+                  if (updatedConversation.messages?.length > 0) {
                     const lastMessageIndex =
-                      updatedConversation.messages.length - 1
+                      updatedConversation.messages?.length - 1
                     const lastMessage =
                       updatedConversation.messages[lastMessageIndex]
                     const lastUserMessage =
@@ -695,7 +1066,7 @@ export const Chat = memo(
                         )
 
                       // Update the last message with the new content
-                      const updatedMessages = updatedConversation.messages.map(
+                      const updatedMessages = updatedConversation.messages?.map(
                         (msg, index) =>
                           index === lastMessageIndex
                             ? { ...msg, content: finalAssistantRespose }
@@ -794,6 +1165,9 @@ export const Chat = memo(
                   role: 'assistant',
                   content: answer,
                   contexts: message.contexts,
+                  feedback: message.feedback,
+                  wasQueryRewritten: message.wasQueryRewritten,
+                  queryRewriteText: message.queryRewriteText,
                 },
               ]
               updatedConversation = {
@@ -868,7 +1242,7 @@ export const Chat = memo(
         }
         if (
           selectedConversation?.messages[
-            selectedConversation?.messages.length - 1
+            selectedConversation?.messages?.length - 1
           ]?.role === 'user'
         ) {
           // console.log('user')
@@ -953,13 +1327,13 @@ export const Chat = memo(
       if (messageIsStreaming) throttledScrollDown()
       if (selectedConversation) {
         const messages = selectedConversation.messages
-        if (messages.length > 1) {
-          if (messages[messages.length - 1]?.role === 'assistant') {
-            setCurrentMessage(messages[messages.length - 2])
+        if (messages?.length > 1) {
+          if (messages[messages?.length - 1]?.role === 'assistant') {
+            setCurrentMessage(messages[messages?.length - 2])
           } else {
-            setCurrentMessage(messages[messages.length - 1])
+            setCurrentMessage(messages[messages?.length - 1])
           }
-        } else if (messages.length === 1) {
+        } else if (messages?.length === 1) {
           setCurrentMessage(messages[0])
         } else {
           setCurrentMessage(undefined)
@@ -1026,7 +1400,13 @@ export const Chat = memo(
                 <div
                   key={index}
                   className="w-full rounded-lg border-b-2 border-[rgba(42,42,64,0.4)] hover:cursor-pointer hover:bg-[rgba(42,42,64,0.9)]"
-                  onClick={() => setInputContent(statement)}
+                  onClick={() => {
+                    setInputContent('')  // First clear the input
+                    setTimeout(() => {   // Then set it with a small delay
+                      setInputContent(statement)
+                      textareaRef.current?.focus()
+                    }, 0)
+                  }}
                 >
                   <Button
                     variant="link"
@@ -1074,7 +1454,7 @@ export const Chat = memo(
     }
 
     const updateMessages = (updatedMessage: Message, messageIndex: number) => {
-      return selectedConversation?.messages.map((message, index) => {
+      return selectedConversation?.messages?.map((message, index) => {
         return index === messageIndex ? updatedMessage : message
       })
     }
@@ -1119,6 +1499,101 @@ export const Chat = memo(
       [selectedConversation, conversations],
     )
 
+    const handleFeedback = useCallback(
+      async (
+        message: Message,
+        isPositive: boolean,
+        category?: string,
+        details?: string,
+      ) => {
+        if (!selectedConversation) return
+
+        // Get conversation from localStorage and parse it
+        const sourceConversationStr = localStorage.getItem(
+          'selectedConversation',
+        )
+        let sourceConversation
+
+        try {
+          sourceConversation = sourceConversationStr
+            ? JSON.parse(sourceConversationStr)
+            : null
+        } catch (error) {
+          sourceConversation = null
+        }
+
+        if (!sourceConversation?.messages) {
+          return
+        }
+
+        // Create updated conversation object using sourceConversation as the base
+        const updatedConversation = {
+          ...sourceConversation,
+          messages: sourceConversation.messages.map((msg: Message) => {
+            if (msg.id === message.id) {
+              return {
+                ...msg,
+                feedback: {
+                  isPositive,
+                  category,
+                  details,
+                },
+              }
+            }
+            return msg
+          }),
+        }
+
+        try {
+          // Update localStorage
+          localStorage.setItem(
+            'selectedConversation',
+            JSON.stringify(updatedConversation),
+          )
+
+          // Update the conversation using handleUpdateConversation
+          handleFeedbackUpdate(updatedConversation, {
+            key: 'messages',
+            value: updatedConversation.messages,
+          })
+
+          // Update database
+          await updateConversationMutation.mutateAsync(updatedConversation)
+
+          // Log to Supabase
+          await fetch('/api/UIUC-api/logConversationToSupabase', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              course_name: getCurrentPageName(),
+              conversation: updatedConversation,
+            }),
+          })
+        } catch (error) {
+          homeDispatch({
+            field: 'conversations',
+            value: conversations,
+          })
+          homeDispatch({
+            field: 'selectedConversation',
+            value: sourceConversation,
+          })
+          errorToast({
+            title: 'Error updating feedback',
+            message: 'Failed to save feedback. Please try again.',
+          })
+        }
+      },
+      [
+        selectedConversation,
+        conversations,
+        homeDispatch,
+        updateConversationMutation,
+      ],
+    )
+
     return (
       <>
         <Head>
@@ -1143,12 +1618,14 @@ export const Chat = memo(
                   className="mt-4 max-h-full"
                   ref={chatContainerRef}
                   onScroll={handleScroll}
-                  initial={{ opacity: 0, scale: 0.95 }} // Initial state: invisible and slightly scaled down
-                  animate={{ opacity: 1, scale: 1 }} // Animate to: fully visible and scaled to normal size
-                  exit={{ opacity: 0, scale: 0.95 }} // Exit state: invisible and slightly scaled down
-                  transition={{ duration: 0.25, ease: 'easeInOut' }} // Duration and easing of the animation
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.25, ease: 'easeInOut' }}
                 >
-                  {selectedConversation?.messages.length === 0 ? (
+                  {selectedConversation &&
+                  selectedConversation.messages &&
+                  selectedConversation.messages?.length === 0 ? (
                     <>
                       <div className="mt-16">
                         {renderIntroductoryStatements()}
@@ -1156,23 +1633,23 @@ export const Chat = memo(
                     </>
                   ) : (
                     <>
-                      {selectedConversation?.messages.map((message, index) => (
+                      {selectedConversation?.messages?.map((message, index) => (
                         <MemoizedChatMessage
                           key={index}
                           message={message}
                           contentRenderer={renderMessageContent}
                           messageIndex={index}
                           onEdit={(editedMessage) => {
-                            // setCurrentMessage(editedMessage)
                             handleSend(
                               editedMessage,
-                              selectedConversation?.messages.length - index,
+                              selectedConversation?.messages?.length - index,
                               null,
                               tools,
                               enabledDocumentGroups,
                               llmProviders,
                             )
                           }}
+                          onFeedback={handleFeedback}
                           onImageUrlsUpdate={onImageUrlsUpdate}
                         />
                       ))}

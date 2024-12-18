@@ -50,7 +50,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
 
     // Print all the old keys
     fs.writeFileSync('processedKeys.json', JSON.stringify(processedKeys))
-    console.log('Processed keys:', processedKeys)
+    // console.log('Processed keys:', processedKeys)
 
     return NextResponse.json({ success: true })
   } catch (error) {

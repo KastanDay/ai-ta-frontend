@@ -1,3 +1,4 @@
+
 // src/pages/home/home.tsx
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -56,6 +57,10 @@ const Home = ({
 
   // Make a new conversation if the current one isn't empty
   const [hasMadeNewConvoAlready, setHasMadeNewConvoAlready] = useState(false)
+
+  // Add these two new state setters
+  const [isQueryRewriting, setIsQueryRewriting] = useState<boolean>(false)
+  const [queryRewriteResult, setQueryRewriteResult] = useState<string>('')
 
   // Hooks
   const { t } = useTranslation('chat')
@@ -189,8 +194,6 @@ const Home = ({
         value: true,
       })
       dispatch({ field: 'apiKey', value: '' })
-      // TODO: add logging for axiom, after merging with main (to get the axiom code)
-      // log.debug('Using Course-Wide OpenAI API Key', { course_metadata: { course_metadata } })
     } else if (local_api_key) {
       if (local_api_key.startsWith('sk-')) {
         console.log(
@@ -227,17 +230,17 @@ const Home = ({
   }, [course_metadata, apiKey])
 
   // ---- Set up conversations and folders ----
-  useEffect(() => {
-    // console.log("In useEffect for selectedConversation, home.tsx, selectedConversation: ", selectedConversation)
-    // ALWAYS make a new convo if current one isn't empty
-    if (!selectedConversation) return
-    if (hasMadeNewConvoAlready) return
-    setHasMadeNewConvoAlready(true)
+  // useEffect(() => {
+  //   // console.log("In useEffect for selectedConversation, home.tsx, selectedConversation: ", selectedConversation)
+  //   // ALWAYS make a new convo if current one isn't empty
+  //   if (!selectedConversation) return
+  //   if (hasMadeNewConvoAlready) return
+  //   setHasMadeNewConvoAlready(true)
 
-    // if (selectedConversation?.messages.length > 0) {
-    handleNewConversation()
-    // }
-  }, [selectedConversation, conversations])
+  //   // if (selectedConversation?.messages.length > 0) {
+  //   handleNewConversation()
+  //   // }
+  // }, [selectedConversation, conversations])
 
   // useEffect(() => {
   //   if (isConversationHistoryFetched && !isLoadingConversationHistory) {
@@ -313,8 +316,16 @@ const Home = ({
   }
 
   // This will ONLY update the react context and not the server
-  const handleNewConversation = () => {
+  const handleDuplicateRequest = () => {
     if (selectedConversation?.messages.length === 0) return
+  }
+
+  const handleNewConversation = () => {
+    // If we're already in an empty conversation, don't create a new one
+    if (selectedConversation && selectedConversation.messages.length === 0) {
+      return
+    }
+
     const lastConversation = conversations[conversations.length - 1]
 
     // Determine the model to use for the new conversation
@@ -322,7 +333,7 @@ const Home = ({
 
     const newConversation: Conversation = {
       id: uuidv4(),
-      name: t('New Conversation'),
+      name: '',
       messages: [],
       model: model,
       prompt: DEFAULT_SYSTEM_PROMPT,
@@ -334,35 +345,25 @@ const Home = ({
       updatedAt: new Date().toISOString(),
     }
 
-    const updatedConversations = [newConversation, ...conversations]
-
+    // Only update selectedConversation, don't add to conversations list yet
     dispatch({ field: 'selectedConversation', value: newConversation })
-    dispatch({ field: 'conversations', value: updatedConversations })
-
-    // saveConversation(newConversation)
-    // saveConversations(updatedConversations)
-    // saveConversationToServer(newConversation).catch((error) => {
-    //   console.error('Error saving updated conversation to server:', error)
-    // })
-
     dispatch({ field: 'loading', value: false })
+    localStorage.setItem(
+      'selectedConversation',
+      JSON.stringify(newConversation),
+    )
   }
 
   const handleUpdateConversation = (
     conversation: Conversation,
     data: KeyValuePair,
   ) => {
-    // If there is data that means only update selectedConversation and local storage, irrespective of user email
-    // If there is no data, update the selectedConversation, local storage if user email is not set, and selectedConversation, local storage and server if user email is set
-
-    let updatedConversation = conversation
-    console.log('updating conversation with data: ', data)
-    updatedConversation = {
+    const updatedConversation = {
       ...conversation,
       [data.key]: data.value,
     }
 
-    console.log('updating conversation in local storage: ', updatedConversation)
+    // Save to localStorage immediately
     localStorage.setItem(
       'selectedConversation',
       JSON.stringify(updatedConversation),
@@ -370,43 +371,49 @@ const Home = ({
 
     dispatch({ field: 'selectedConversation', value: updatedConversation })
 
-    const updatedConversations = conversations.map((c) => {
-      if (c.id === updatedConversation.id) {
-        return updatedConversation
-      }
+    let updatedConversations
 
-      return c
-    })
+    const existingConversationIndex = conversations.findIndex(
+      (c) => c.id === updatedConversation.id,
+    )
+
+    if (existingConversationIndex >= 0) {
+      // Update existing conversation
+      updatedConversations = conversations.map((c) => {
+        if (c.id === updatedConversation.id) {
+          return updatedConversation
+        }
+        return c
+      })
+    } else {
+      // Add new conversation to the list
+      updatedConversations = [updatedConversation, ...conversations]
+    }
+
     dispatch({ field: 'conversations', value: updatedConversations })
-    // localStorage.setItem(
-    //   'conversationHistory',
-    //   JSON.stringify(updatedConversations),
-    // )
+  }
 
-    // if (data) {
-    //   updatedConversation = {
-    //     ...conversation,
-    //     [data.key]: data.value,
-    //   }
+  const handleFeedbackUpdate = (
+    conversation: Conversation,
+    data: KeyValuePair,
+  ) => {
+    if (!conversation?.messages) return
 
-    //   localStorage.setItem(
-    //     'selectedConversation',
-    //     JSON.stringify(updatedConversation),
-    //   )
-    //   const updatedConversations = conversations.map((c) => {
-    //     if (c.id === updatedConversation.id) {
-    //       return updatedConversation
-    //     }
-    //   }
-    //   )
-    //   localStorage.setItem('conversations', JSON.stringify(updatedConversations))
-    //   dispatch({ field: 'conversations', value: updatedConversations })
-    // } else if() {
+    // Create updated conversation object
+    const updatedConversation = {
+      ...conversation,
+      [data.key]: data.value,
+    }
 
-    // }
-    // updateConversationMutation.mutate(updatedConversation)
-    // updateConversation(updatedConversation)
-    // dispatch({ field: 'selectedConversation', value: updatedConversation })
+    // Update state
+    dispatch({ field: 'selectedConversation', value: updatedConversation })
+
+    // Update conversations list
+    const updatedConversations = conversations.map((c) =>
+      c.id === conversation.id ? updatedConversation : c,
+    )
+
+    dispatch({ field: 'conversations', value: updatedConversations })
   }
 
   // Other context actions --------------------------------------------
@@ -585,18 +592,31 @@ const Home = ({
       if (selectedConversation) {
         const parsedSelectedConversation: Conversation =
           JSON.parse(selectedConversation)
-        const cleanedSelectedConversation = cleanSelectedConversation(
-          parsedSelectedConversation,
-        )
-
-        dispatch({
-          field: 'selectedConversation',
-          value: cleanedSelectedConversation,
-        })
+        if (parsedSelectedConversation.projectName === course_name) {
+          const cleanedSelectedConversation = cleanSelectedConversation(
+            parsedSelectedConversation,
+          )
+          const oneHourAgo = new Date(Date.now() - 3600 * 1000).toISOString()
+          if (
+            cleanedSelectedConversation &&
+            cleanedSelectedConversation.updatedAt &&
+            cleanedSelectedConversation.updatedAt > oneHourAgo
+          ) {
+            dispatch({
+              field: 'selectedConversation',
+              value: cleanedSelectedConversation,
+            })
+          } else {
+            handleNewConversation()
+          }
+        } else {
+          handleNewConversation()
+        }
       } else {
         if (!llmProviders || Object.keys(llmProviders).length === 0) return
         handleNewConversation()
       }
+      // handleNewConversation()
       setIsInitialSetupDone(true)
     }
 
@@ -621,6 +641,7 @@ const Home = ({
           handleUpdateFolder,
           handleSelectConversation,
           handleUpdateConversation,
+          handleFeedbackUpdate,
           setIsImg2TextLoading,
           setIsRouting,
           // setRoutingResponse,
@@ -628,6 +649,8 @@ const Home = ({
           setIsRetrievalLoading,
           handleUpdateDocumentGroups,
           handleUpdateTools,
+          setIsQueryRewriting,
+          setQueryRewriteResult,
         }}
       >
         <Head>
@@ -646,7 +669,7 @@ const Home = ({
             <div className="fixed top-0 w-full sm:hidden">
               <Navbar
                 selectedConversation={selectedConversation}
-                onNewConversation={handleNewConversation}
+                onNewConversation={handleDuplicateRequest}
               />
             </div>
 

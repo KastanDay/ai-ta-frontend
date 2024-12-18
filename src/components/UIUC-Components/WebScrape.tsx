@@ -166,6 +166,10 @@ export const WebScrape = ({
           system_prompt: undefined,
           disabled_models: undefined,
           project_description: undefined,
+          documentsOnly: undefined,
+          guidedLearning: undefined,
+          systemPromptOnly: undefined,
+          vector_search_rewrite_disabled: undefined,
         })
         if (!response) {
           throw new Error('Error while setting course metadata')
@@ -184,7 +188,6 @@ export const WebScrape = ({
 
         showToast()
       } else if (url.includes('canvas.illinois.edu/courses/')) {
-        // TODO: Switch this to new canvas ingest endpoint (https://bb51x.apps.beam.cloud for canvas)
         const response = await fetch('/api/UIUC-api/ingestCanvas', {
           method: 'POST',
           headers: {
@@ -197,7 +200,10 @@ export const WebScrape = ({
           }),
         })
         const data = await response.json()
-        if (data.error) {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        if (data && data.error) {
           throw new Error(data.error)
         }
         await new Promise((resolve) => setTimeout(resolve, 8000)) // wait a moment before redirecting
@@ -223,7 +229,7 @@ export const WebScrape = ({
     setLoadingSpinner(false)
     setUrl('') // clear url
     if (is_new_course) {
-      await router.push(`/${courseName}/materials`)
+      await router.push(`/${courseName}/dashboard`)
     }
     // No need to refresh, our materials table auto-refreshes.
   }

@@ -85,7 +85,8 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     }
     await processProviders()
 
-    // Combine the existing metadata with the new metadata, prioritizing the new values
+    // Now await the existing LLMs and combine with encrypted providers
+    const existingLLMs = await existingLLMsPromise
     const combined_llms = { ...existingLLMs, ...llmProviders }
 
     if (defaultModelID) {
@@ -106,7 +107,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     await redisClient.set(redisKey, JSON.stringify(combined_llms))
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error setting course metadata:', error)
+    console.error('Error upserting LLM providers:', error)
     return NextResponse.json({ success: false })
   }
 }

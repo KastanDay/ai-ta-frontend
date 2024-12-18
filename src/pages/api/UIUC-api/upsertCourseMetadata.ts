@@ -8,6 +8,8 @@ import { redisClient } from '~/utils/redisClient'
 
 export const runtime = 'edge'
 
+export const superAdmins = ['kvday2@illinois.edu', 'rohan13@illinois.edu']
+
 export default async function handler(req: NextRequest, res: NextResponse) {
   const requestBody = await req.text()
   const {
@@ -43,8 +45,8 @@ export default async function handler(req: NextRequest, res: NextResponse) {
       !combined_metadata.course_admins ||
       combined_metadata.course_admins.length === 0
     ) {
-      combined_metadata.course_admins = ['kvday2@illinois.edu']
-      console.log('course_admins field was empty. Added default admin email.')
+      combined_metadata.course_admins = superAdmins
+      console.log('course_admins field was empty. Added default admin emails.')
     }
 
     // Check if combined_metadata doesn't have anything in the field is_private
@@ -64,7 +66,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
         combined_metadata.openai_api_key,
         process.env.NEXT_PUBLIC_SIGNING_KEY as string,
       )
-      console.log('Signed api key: ', combined_metadata.openai_api_key)
+      // console.log('Signed api key: ', combined_metadata.openai_api_key)
     }
 
     // Save the combined metadata

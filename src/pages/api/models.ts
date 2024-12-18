@@ -121,7 +121,7 @@ const handler = async (
       }
     }
 
-    console.log('FINAL -- allLLMProviders', allLLMProviders)
+    // console.log('FINAL -- allLLMProviders', allLLMProviders)
     return NextResponse.json(allLLMProviders as AllLLMProviders, {
       status: 200,
     })

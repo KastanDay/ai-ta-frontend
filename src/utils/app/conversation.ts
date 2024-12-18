@@ -30,9 +30,35 @@ export async function fetchConversationHistory(
     }
 
     const { conversations, nextCursor } = await response.json()
+    
+    // Clean the conversations and ensure they're properly structured
+    const cleanedConversations = conversations.map((conversation: any) => {
+      // Ensure messages are properly ordered by creation time
+      if (conversation.messages) {
+        conversation.messages.sort((a: any, b: any) => {
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        })
+      }
+      return conversation
+    })
 
-    finalResponse = cleanConversationHistory(conversations)
+    finalResponse = cleanConversationHistory(cleanedConversations)
     finalResponse.nextCursor = nextCursor
+
+    // Sync with local storage
+    const selectedConversation = localStorage.getItem('selectedConversation')
+    if (selectedConversation) {
+      const parsed = JSON.parse(selectedConversation)
+      const serverConversation = finalResponse.conversations.find(
+        (c) => c.id === parsed.id
+      )
+      if (serverConversation) {
+        localStorage.setItem(
+          'selectedConversation',
+          JSON.stringify(serverConversation)
+        )
+      }
+    }
   } catch (error) {
     console.error('Error fetching conversation history:', error)
   }
@@ -87,8 +113,32 @@ export const saveConversationToLocalStorage = (conversation: Conversation) => {
   let successful = false
   while (!successful) {
     try {
-      localStorage.setItem('selectedConversation', JSON.stringify(conversation))
-      successful = true // Set to false if setItem succeeds
+      // Get existing conversation to preserve feedback
+      const existingConversation = JSON.parse(
+        localStorage.getItem('selectedConversation') || '{}'
+      );
+
+      // If it's the same conversation, preserve feedback
+      if (existingConversation.id === conversation.id) {
+        const messagesWithFeedback = conversation.messages.map(msg => {
+          const existingMsg = existingConversation.messages?.find((m: typeof msg) => m.id === msg.id);
+          return {
+            ...msg,
+            feedback: existingMsg?.feedback || msg.feedback
+          };
+        });
+        
+        const conversationWithFeedback = {
+          ...conversation,
+          messages: messagesWithFeedback
+        };
+        
+        localStorage.setItem('selectedConversation', JSON.stringify(conversationWithFeedback))
+      } else {
+        localStorage.setItem('selectedConversation', JSON.stringify(conversation))
+      }
+      
+      successful = true
     } catch (e) {
       console.debug(
         'Error saving conversation history. Clearing storage, then trying again. Error:',

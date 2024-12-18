@@ -90,7 +90,6 @@ export default async (req: any, res: any) => {
     return NextResponse.json(all_course_metadata)
   } catch (error) {
     console.log('Error occurred while fetching courseMetadata', error)
-    log.error('Error occurred while fetching courseMetadata', { error: error })
     return NextResponse.json({ success: false, error: error })
   }
 }
