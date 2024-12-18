@@ -5,7 +5,8 @@ import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { Montserrat } from 'next/font/google'
 import { useRouter } from 'next/router'
-import { useUser } from '@clerk/nextjs'
+import { useSession } from '~/lib/auth-client'
+import { extractUserEmails } from '~/components/UIUC-Components/AuthHelpers'
 import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import {
@@ -31,7 +32,6 @@ import {
   useMantineTheme,
   Divider,
 } from '@mantine/core'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { DEFAULT_SYSTEM_PROMPT, GUIDED_LEARNING_PROMPT } from '~/utils/app/const'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
@@ -90,7 +90,7 @@ const CourseMain: NextPage = () => {
   }
   const isSmallScreen = useMediaQuery('(max-width: 1280px)')
   const course_name = GetCurrentPageName() as string
-  const { user, isLoaded, isSignedIn } = useUser()
+  const { data: session, isPending } = useSession()
   const [courseExists, setCourseExists] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
@@ -406,16 +406,16 @@ const CourseMain: NextPage = () => {
   }
 
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!isLoaded || isLoading) {
+  if (isPending || isLoading) {
     return <LoadingPlaceholderForAdminPages />
   }
 
-  if (!isSignedIn) {
-    console.log('User not logged in', isSignedIn, isLoaded, course_name)
+  if (!session?.session) {
+    console.log('User not logged in', session?.session, !isPending, course_name)
     return <AuthComponent course_name={course_name} />
   }
 
-  const user_emails = extractEmailsFromClerk(user)
+  const user_emails = extractUserEmails()
 
   // if their account is somehow broken (with no email address)
   if (user_emails.length == 0) {

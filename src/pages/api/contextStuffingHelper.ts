@@ -1,10 +1,7 @@
 import { ContextWithMetadata } from '~/types/chat'
-
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json'
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { type CourseMetadata } from '~/types/courseMetadata'
-import { useUser } from '@clerk/nextjs'
 import router from 'next/router'
 import { getCoursesByOwnerOrAdmin } from './UIUC-api/getAllCourseMetadata'
 import { getCourseMetadata } from './UIUC-api/getCourseMetadata'

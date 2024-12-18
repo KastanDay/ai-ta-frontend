@@ -1,11 +1,11 @@
 // export { default } from '~/pages/api/home'
 
-import { useUser } from '@clerk/nextjs'
+import { useSession } from '~/lib/auth-client'
+import { extractUserEmails } from '~/components/UIUC-Components/AuthHelpers'
 import { NextPage } from 'next'
 import { useEffect, useState } from 'react'
 import Home from '../api/home/home'
 import { useRouter } from 'next/router'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import { CourseMetadata } from '~/types/courseMetadata'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
@@ -15,8 +15,7 @@ import Head from 'next/head'
 import { GUIDED_LEARNING_PROMPT } from '~/utils/app/const'
 
 const ChatPage: NextPage = () => {
-  const clerk_user_outer = useUser()
-  const { user, isLoaded, isSignedIn } = clerk_user_outer
+  const { data: session, isPending } = useSession()
   const router = useRouter()
   const curr_route_path = router.asPath as string
   const getCurrentPageName = () => {
@@ -77,14 +76,14 @@ const ChatPage: NextPage = () => {
 
   // UseEffect to check user permissions and fetch user email
   useEffect(() => {
-    if (!isLoaded || isCourseMetadataLoading) {
+    if (isPending || isCourseMetadataLoading) {
       return
     }
-    if (clerk_user_outer.isLoaded || isCourseMetadataLoading) {
+    if (!isPending || isCourseMetadataLoading) {
       if (courseMetadata != null) {
         const permission_str = get_user_permission(
           courseMetadata,
-          clerk_user_outer,
+          session?.user,
           router,
         )
 
@@ -103,7 +102,7 @@ const ChatPage: NextPage = () => {
       // )
       // This will not work because setUserEmail is async
       // setUserEmail(extractEmailsFromClerk(clerk_user_outer.user)[0] as string)
-      const email = extractEmailsFromClerk(user)[0]
+      const email = extractUserEmails()[0]
       if (email) {
         setCurrentEmail(email)
         // console.log('setting user email: ', user)
@@ -126,7 +125,7 @@ const ChatPage: NextPage = () => {
         }
       }
     }
-  }, [clerk_user_outer.isLoaded, isCourseMetadataLoading])
+  }, [!isPending, isCourseMetadataLoading])
 
   return (
     <>

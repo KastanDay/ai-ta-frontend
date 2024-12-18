@@ -22,7 +22,7 @@ import { CannotEditCourse } from './CannotEditCourse'
 import { type CourseMetadata } from '~/types/courseMetadata'
 
 import { LoadingPlaceholderForAdminPages } from './MainPageBackground'
-import { extractEmailsFromClerk } from './clerkHelpers'
+import { extractEmailsFromClerk } from './AuthHelpers'
 import { notifications } from '@mantine/notifications'
 import GlobalFooter from './GlobalFooter'
 import Navbar from './navbars/Navbar'

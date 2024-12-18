@@ -3,7 +3,6 @@ import MakeNewCoursePage from '~/components/UIUC-Components/MakeNewCoursePage'
 import React, { useEffect, useState } from 'react'
 import { Montserrat } from 'next/font/google'
 import { useRouter } from 'next/router'
-import { useUser } from '@clerk/nextjs'
 import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
 import {
   LoadingPlaceholderForAdminPages,
@@ -11,9 +10,9 @@ import {
 } from '~/components/UIUC-Components/MainPageBackground'
 import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { Title } from '@mantine/core'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import MakeToolsPage from '~/components/UIUC-Components/N8NPage'
 import posthog from 'posthog-js'
+import { extractUserEmails } from '~/components/UIUC-Components/AuthHelpers'
 
 const montserrat = Montserrat({
   weight: '700',
@@ -62,17 +61,16 @@ const ToolsPage: NextPage = () => {
     fetchCourseData()
   }, [router.isReady])
 
-  // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!isLoaded || isLoading || courseExists === null) {
+  const { data: session, isLoading } = useSession()
+  if (isLoading) {
     return <LoadingPlaceholderForAdminPages />
   }
 
-  if (!isSignedIn) {
-    console.log('User not logged in', isSignedIn, isLoaded, course_name)
+  if (!session) {
     return <AuthComponent course_name={course_name} />
   }
 
-  const user_emails = extractEmailsFromClerk(user)
+  const user_emails = extractUserEmails(session)
 
   // if their account is somehow broken (with no email address)
 

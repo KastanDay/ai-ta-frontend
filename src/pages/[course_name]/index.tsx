@@ -3,7 +3,8 @@ import { type NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { type CourseMetadata } from '~/types/courseMetadata'
-import { useUser } from '@clerk/nextjs'
+import { useSession } from '~/lib/auth-client'
+import { extractUserEmails } from '~/components/UIUC-Components/AuthHelpers'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import { get_user_permission } from '~/components/UIUC-Components/runAuthCheck'
 import { MainPageBackground } from '~/components/UIUC-Components/MainPageBackground'
@@ -11,7 +12,7 @@ import { fetchCourseMetadata } from '~/utils/apiUtils'
 
 const IfCourseExists: NextPage = () => {
   const router = useRouter()
-  const user = useUser()
+  const { data: session, isPending } = useSession()
   const [courseName, setCourseName] = useState<string | null>(null)
   const [courseMetadataIsLoaded, setCourseMetadataIsLoaded] = useState(false)
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(

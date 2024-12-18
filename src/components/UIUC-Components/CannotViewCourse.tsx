@@ -21,7 +21,8 @@ import { CourseMetadata } from '~/types/courseMetadata'
 import React, { useState, useEffect } from 'react'
 import { LoadingSpinner } from './LoadingSpinner'
 import { useRouter } from 'next/router'
-import { useUser } from '@clerk/nextjs'
+import { useSession } from '~/lib/auth-client'
+import { extractUserEmails } from './AuthHelpers'
 import { CannotEditCourse } from './CannotEditCourse'
 import GlobalFooter from './GlobalFooter'
 import { montserrat_heading } from 'fonts'
@@ -43,8 +44,8 @@ export const CannotViewCourse = ({
   // console.log('course_name in CannotViewCourse: ', course_name)
   const currentPageName = GetCurrentPageName()
 
-  const { isSignedIn, user } = useUser()
-  const curr_user_email = user?.primaryEmailAddress?.emailAddress as string
+  const {data: session} = useSession()
+  const curr_user_email = session?.user?.email as string
 
   const [courseMetadata, setCourseMetadata] = useState<CourseMetadata | null>(
     null,
