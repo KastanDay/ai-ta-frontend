@@ -1,8 +1,6 @@
 // ~/src/pages/api/UIUC-api/getCourseMetadata.ts
-import { kv } from '@vercel/kv'
 import { NextResponse } from 'next/server'
 import { CourseMetadata } from '~/types/courseMetadata'
-import { log } from 'next-axiom'
 import { redisClient } from '~/utils/redisClient'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
@@ -53,7 +51,6 @@ export default async function handler(
     res.status(200).json({ course_metadata: course_metadata })
   } catch (error) {
     console.log('Error occurred while fetching courseMetadata', error)
-    log.error('Error occurred while fetching courseMetadata', { error: error })
     res.status(500).json({ success: false, error: error })
   }
 }

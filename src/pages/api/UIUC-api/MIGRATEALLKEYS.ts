@@ -1,4 +1,3 @@
-import { kv } from '@vercel/kv'
 import { type NextRequest, NextResponse } from 'next/server'
 import { getAllCourseMetadata } from './getAllCourseMetadata'
 import { CourseMetadata } from '~/types/courseMetadata'

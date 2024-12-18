@@ -1,5 +1,4 @@
 // ~/src/pages/api/UIUC-api/getAllCourseNames.ts
-import { kv } from '@vercel/kv'
 import { NextResponse } from 'next/server'
 import { redisClient } from '~/utils/redisClient'
 // import { performance } from 'perf_hooks'; // not available in Edge runtime

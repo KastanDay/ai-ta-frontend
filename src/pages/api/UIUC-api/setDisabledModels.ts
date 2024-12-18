@@ -1,4 +1,3 @@
-import { kv } from '@vercel/kv'
 import { CourseMetadata } from '~/types/courseMetadata'
 import { NextRequest, NextResponse } from 'next/server'
 import { redisClient } from '~/utils/redisClient'

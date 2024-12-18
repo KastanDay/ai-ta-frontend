@@ -1,5 +1,4 @@
 // src/pages/api/UIUC-api/moveToNewCourseMetadata.ts
-import { kv } from '@vercel/kv'
 import { type CourseMetadata } from '~/types/courseMetadata'
 import { type NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'

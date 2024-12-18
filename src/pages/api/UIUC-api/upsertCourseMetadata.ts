@@ -1,14 +1,11 @@
 // upsertCourseMetadata.ts
-import { kv } from '@vercel/kv'
 import { type CourseMetadataOptionalForUpsert } from '~/types/courseMetadata'
 import { type NextRequest, NextResponse } from 'next/server'
 import { encrypt, isEncrypted } from '~/utils/crypto'
 import { getCourseMetadata } from './getCourseMetadata'
 import { redisClient } from '~/utils/redisClient'
-
+import { superAdmins } from '~/utils/superAdmins'
 export const runtime = 'edge'
-
-export const superAdmins = ['kvday2@illinois.edu', 'rohan13@illinois.edu']
 
 export default async function handler(req: NextRequest, res: NextResponse) {
   const requestBody = await req.text()

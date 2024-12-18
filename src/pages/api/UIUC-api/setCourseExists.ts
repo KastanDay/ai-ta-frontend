@@ -1,4 +1,3 @@
-import { kv } from '@vercel/kv'
 import { redisClient } from '~/utils/redisClient'
 
 // export const runtime = "edge";

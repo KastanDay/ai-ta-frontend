@@ -1,5 +1,4 @@
 // upsertCourseMetadata.ts
-import { kv } from '@vercel/kv'
 import { type NextRequest, NextResponse } from 'next/server'
 import { ProjectWideLLMProviders } from '~/types/courseMetadata'
 import { encryptKeyIfNeeded } from '~/utils/crypto'
@@ -86,7 +85,6 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     await processProviders()
 
     // Now await the existing LLMs and combine with encrypted providers
-    const existingLLMs = await existingLLMsPromise
     const combined_llms = { ...existingLLMs, ...llmProviders }
 
     if (defaultModelID) {

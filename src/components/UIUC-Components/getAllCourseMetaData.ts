@@ -1,8 +1,6 @@
 // ~/src/pages/api/UIUC-api/getAllCourseMetadata.ts
-import { kv } from '@vercel/kv'
 import { NextResponse } from 'next/server'
 import { CourseMetadata } from '~/types/courseMetadata'
-import { log } from 'next-axiom'
 import { redisClient } from '~/utils/redisClient'
 
 export const runtime = 'edge'
