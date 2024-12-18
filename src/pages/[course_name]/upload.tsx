@@ -2,7 +2,8 @@ import { type NextPage } from 'next'
 import MakeNomicVisualizationPage from '~/components/UIUC-Components/MakeQueryAnalysisPage'
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { useUser } from '@clerk/nextjs'
+import { useSession } from '~/lib/auth-client'
+import { extractUserEmails } from '~/components/UIUC-Components/AuthHelpers'
 import { CannotEditGPT4Page } from '~/components/UIUC-Components/CannotEditGPT4'
 import { LoadingSpinner } from '~/components/UIUC-Components/LoadingSpinner'
 import {
@@ -13,7 +14,6 @@ import { AuthComponent } from '~/components/UIUC-Components/AuthToEditCourse'
 import { fetchCourseMetadata } from '~/utils/apiUtils'
 import { CourseMetadata } from '~/types/courseMetadata'
 import LargeDropzone from '~/components/UIUC-Components/LargeDropzone'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 import Navbar from '~/components/UIUC-Components/navbars/Navbar'
 import Head from 'next/head'
 import { Card, Flex, SimpleGrid, Title } from '@mantine/core'
@@ -31,9 +31,9 @@ import { CannotEditCourse } from '~/components/UIUC-Components/CannotEditCourse'
 const CourseMain: NextPage = () => {
   const router = useRouter()
   const [projectName, setProjectName] = useState<string | null>(null)
-  const { user, isLoaded, isSignedIn } = useUser()
+  const { data: session, isPending } = useSession()
   const [isFetchingCourseMetadata, setIsFetchingCourseMetadata] = useState(true)
-  const user_emails = extractEmailsFromClerk(user)
+  const user_emails = extractUserEmails()
   const [metadata, setProjectMetadata] = useState<CourseMetadata | null>()
   const getCurrentPageName = () => {
     return router.query.course_name as string
@@ -68,12 +68,12 @@ const CourseMain: NextPage = () => {
     return <CannotEditCourse course_name={getCurrentPageName() as string} />
   }
   // Check auth - https://clerk.com/docs/nextjs/read-session-and-user-data
-  if (!isLoaded || isFetchingCourseMetadata || projectName == null) {
+  if (isPending || isFetchingCourseMetadata || projectName == null) {
     return <LoadingPlaceholderForAdminPages />
   }
 
-  if (!isSignedIn) {
-    console.log('User not logged in', isSignedIn, isLoaded, projectName)
+  if (!session?.session) {
+    console.log('User not logged in', session?.session, isPending, projectName)
     return <AuthComponent course_name={projectName as string} />
   }
 

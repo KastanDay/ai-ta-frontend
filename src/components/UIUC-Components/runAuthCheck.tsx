@@ -1,31 +1,31 @@
 import { CourseMetadata } from '~/types/courseMetadata'
-import { extractEmailsFromClerk } from './AuthHelpers'
+import { extractUserEmails } from './AuthHelpers'
 
 export const get_user_permission = (
   course_metadata: CourseMetadata,
-  clerk_user: any,
+  user: any,
   router: any,
 ) => {
   // const router = useRouter()
-
+  // TODO: will definitely need to refactor this a bunch
   if (course_metadata && Object.keys(course_metadata).length > 0) {
     // if private && not signed in, redirect
-    if (course_metadata.is_private && !clerk_user.isSignedIn) {
-      console.log('private && not signed in, redirect ', clerk_user)
+    if (course_metadata.is_private && !user.isSignedIn) {
+      console.log('private && not signed in, redirect ', user)
       return 'no_permission'
     }
 
     // GET ALL ASSOCIATED EMAIL ADDRESSES (could have multiple from different socials.)
-    const curr_user_email_addresses = extractEmailsFromClerk(clerk_user.user)
+    const curr_user_email_addresses = extractUserEmails()
 
     if (course_metadata.is_private == false) {
       // Course is public
-      if (!clerk_user.isSignedIn) {
+      if (!user.isSignedIn) {
         return 'view'
       }
 
       if (
-        // clerk_user must be be signed in now.
+        // user must be be signed in now.
         curr_user_email_addresses.includes(course_metadata.course_owner) ||
         course_metadata.course_admins.some((email) =>
           curr_user_email_addresses.includes(email),
@@ -39,7 +39,7 @@ export const get_user_permission = (
       }
     } else {
       // Course is Private
-      if (!clerk_user.isSignedIn) {
+      if (!user.isSignedIn) {
         console.log(
           'User is not signed in. Course is private. Auth: no_permission.',
         )

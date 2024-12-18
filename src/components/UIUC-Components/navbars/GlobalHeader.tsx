@@ -1,14 +1,23 @@
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-  useUser,
-} from '@clerk/nextjs'
+// import {
+//   SignedIn,
+//   SignedOut,
+//   SignInButton,
+//   UserButton,
+//   useUser,
+// } from '@clerk/nextjs'
 import { IconClipboardText, IconFile } from '@tabler/icons-react'
 // import MagicBell, {
 //   FloatingNotificationInbox,
 // } from '@magicbell/magicbell-react'
+import { authClient } from '~/lib/auth-client'
+import Link from 'next/link'
+import { montserrat_heading } from 'fonts'
+import { Button, createStyles, Group, rem } from '@mantine/core'
+import { extractUserEmails } from '../AuthHelpers'
+import { useEffect, useState } from 'react'
+import { usePostHog } from 'posthog-js/react'
+import { IconFilePlus } from '@tabler/icons-react'
+import { useSession } from '~/lib/auth-client'
 
 export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
   const headerStyle = isNavbar
@@ -26,19 +35,20 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
         padding: '1em',
       }
 
-  const clerk_obj = useUser()
+  // const clerk_obj = useUser()
+  const { data: session, isPending } = useSession()
   const posthog = usePostHog()
   const [userEmail, setUserEmail] = useState('no_email')
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    if (clerk_obj.isLoaded) {
-      if (clerk_obj.isSignedIn) {
-        const emails = extractEmailsFromClerk(clerk_obj.user)
+    if (!isPending) {
+      if (session?.session) {
+        const emails = extractUserEmails()
         setUserEmail(emails[0] || 'no_email')
 
         // Posthog identify
-        posthog?.identify(clerk_obj.user.id, {
+        posthog?.identify(session.user.id, {
           email: emails[0] || 'no_email',
         })
       }
@@ -46,7 +56,15 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
     } else {
       // console.debug('NOT LOADED OR SIGNED IN')
     }
-  }, [clerk_obj.isLoaded])
+  }, [!isPending])
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+  };
+
+  const handleLogin = async () => {
+    await authClient.signIn.email({ email: 'user@example.com', password: 'password' });
+    const { data } = await authClient.getSession();
 
   if (!isLoaded) {
     return (
@@ -68,43 +86,21 @@ export default function Header({ isNavbar = false }: { isNavbar?: boolean }) {
   }
 
   return (
-    <header style={headerStyle} className="py-16">
-      <SignedIn>
-        {/* Docs: https://www.magicbell.com/docs/libraries/react#custom-themes */}
-        {/* <MagicBell
-          apiKey={process.env.NEXT_PUBLIC_MAGIC_BELL_API as string}
-          userEmail={userEmail}
-          theme={magicBellTheme}
-          locale="en"
-          images={{
-            emptyInboxUrl:
-              'https://assets.kastan.ai/minified_empty_chat_art.png',
-          }}
-        > */}
-        {/* {(props) => (
-            <FloatingNotificationInbox width={400} height={500} {...props} />
-          )}
-        </MagicBell> */}
-        {/* Add some padding for separation */}
-        <div style={{ paddingLeft: '0px', paddingRight: '10px' }}></div>
-        {/* Mount the UserButton component */}
-        <UserButton />
-      </SignedIn>
-      <SignedOut>
-        {/* Signed out users get sign in button */}
-        <SignInButton />
-      </SignedOut>
+      <header style={headerStyle} className="py-16">
+      <h1>My Application</h1>
+      {session?.session ? (
+        <div>
+          <span>Welcome, {session?.user.name}</span>
+          <Button onClick={logout}>Logout</Button>
+        </div>
+      ) : (
+        <Button onClick={login}>Login</Button>
+      )}
     </header>
   )
 }
 
-import Link from 'next/link'
-import { montserrat_heading } from 'fonts'
-import { createStyles, Group, rem } from '@mantine/core'
-import { extractEmailsFromClerk } from '../AuthHelpers'
-import { useEffect, useState } from 'react'
-import { usePostHog } from 'posthog-js/react'
-import { IconFilePlus } from '@tabler/icons-react'
+
 
 export function LandingPageHeader({
   forGeneralPurposeNotLandingpage = false,
@@ -132,8 +128,8 @@ export function LandingPageHeader({
   const posthog = usePostHog()
 
   useEffect(() => {
-    if (clerk_obj.isLoaded) {
-      if (clerk_obj.isSignedIn) {
+    if (!isPending) {
+      if (session?.session) {
         const emails = extractEmailsFromClerk(clerk_obj.user)
         setUserEmail(emails[0] || 'no_email')
 
@@ -146,7 +142,7 @@ export function LandingPageHeader({
     } else {
       // console.debug('NOT LOADED OR SIGNED IN')
     }
-  }, [clerk_obj.isLoaded])
+  }, [!isPending])
 
   if (!isLoaded) {
     return (

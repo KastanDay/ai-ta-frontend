@@ -1,6 +1,16 @@
 import { betterAuth } from "better-auth"
+import { Pool } from "pg"
 
 export const auth = betterAuth({
+  database: new Pool({
+    connectionString: process.env.SUPABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    },
+  }),
+  headers: {
+    apikey: process.env.SUPABASE_KEY
+  },
   emailAndPassword: {
     enabled: true
   },
@@ -10,9 +20,4 @@ export const auth = betterAuth({
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
     }
   },
-  // Configure database (using your existing database)
-  database: {
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  }
 })

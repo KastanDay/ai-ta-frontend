@@ -14,21 +14,15 @@ import {
 } from '@mantine/core'
 import { useClipboard, useMediaQuery } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
-import { type UserResource } from '@clerk/types'
+import { useSession } from '~/lib/auth-client'
 import { IconCheck, IconCopy, IconExternalLink } from '@tabler/icons-react'
 import { montserrat_heading } from 'fonts'
 import style from 'react-syntax-highlighter/dist/esm/styles/hljs/a11y-dark'
 
 const ApiKeyManagement = ({
   course_name,
-  clerk_user,
 }: {
   course_name: string
-  clerk_user: {
-    isLoaded: boolean
-    isSignedIn: boolean
-    user: UserResource | undefined
-  }
 }) => {
   const theme = useMantineTheme()
   const isSmallScreen = useMediaQuery('(max-width: 960px)')
@@ -36,6 +30,7 @@ const ApiKeyManagement = ({
   const [apiKey, setApiKey] = useState<string | null>(null)
   const baseUrl = process.env.VERCEL_URL || window.location.origin
   const [loading, setLoading] = useState(true)
+  const { data: session, isPending } = useSession()
   // Define a type for the keys of codeSnippets
   type Language = 'curl' | 'python' | 'node'
 
@@ -171,6 +166,8 @@ axios.post('${baseUrl}/api/chat-api/chat', data, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          // Add session token to auth header if needed
+          'Authorization': `Bearer ${session?.session?.id}` 
         },
       })
 
@@ -179,7 +176,7 @@ axios.post('${baseUrl}/api/chat-api/chat', data, {
         setApiKey(data.apiKey)
       } else {
         showNotification({
-          title: 'Error',
+          title: 'Error', 
           message: 'Failed to fetch API key.',
           color: 'red',
         })
@@ -187,14 +184,18 @@ axios.post('${baseUrl}/api/chat-api/chat', data, {
       setLoading(false)
     }
 
-    fetchApiKey()
-  }, [clerk_user.isLoaded])
+    // Only fetch if we have a valid session
+    if (session?.user) {
+      fetchApiKey()
+    }
+  }, [session])
 
   const handleGenerate = async () => {
     const response = await fetch(`/api/chat-api/keys/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.session?.id}`
       },
     })
 
@@ -219,6 +220,7 @@ axios.post('${baseUrl}/api/chat-api/chat', data, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.session?.id}`
       },
     })
 
@@ -243,6 +245,7 @@ axios.post('${baseUrl}/api/chat-api/chat', data, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.session?.id}`
       },
     })
 

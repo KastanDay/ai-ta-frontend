@@ -90,7 +90,7 @@ const ApiPage: NextPage = () => {
           <Flex direction="column" align="center" w="100%">
           <ApiKeyManagement
               course_name={router.query.course_name as string}
-              user={session.user}
+              user={session?.user}
             />
           </Flex>
         </div>
