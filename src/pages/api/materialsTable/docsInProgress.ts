@@ -36,7 +36,7 @@ export default async function docsInProgress(
     }
 
     if (!data || data.length === 0) {
-      return res.status(200).json({ apiKey: null })
+      return res.status(200).json({ documents: [] })
     }
 
     if (data && data.length > 0) {

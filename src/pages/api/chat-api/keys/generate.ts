@@ -4,40 +4,39 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase } from '@/utils/supabaseClient'
 import { v4 as uuidv4 } from 'uuid'
 import posthog from 'posthog-js'
-import { NextRequest, NextResponse } from 'next/server'
 import { getAuth } from '@clerk/nextjs/server'
-import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 
-
+type ApiResponse = {
+  message?: string
+  apiKey?: string
+  error?: string
+}
 
 /**
  * API endpoint to generate a unique API key for a user.
  * The endpoint checks if the user is authenticated and if a key already exists for the user.
  * If not, it generates a new API key, stores it, and returns it to the user.
  *
- * @param {NextRequest} req - The incoming API request.
- * @param {NextResponse} res - The outgoing API response.
- * @returns {Promise<NextResponse>} The response with the API key or an error message.
+ * @param {NextApiRequest} req - The incoming API request.
+ * @param {NextApiResponse} res - The outgoing API response.
+ * @returns {Promise<void>} The response with the API key or an error message.
  */
 export default async function generateKey(
-  req: NextRequest,
-  res: NextResponse,
-): Promise<NextResponse> {
+  req: NextApiRequest,
+  res: NextApiResponse<ApiResponse>
+) {
   // Ensure the request is a POST request
   if (req.method !== 'POST') {
-    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+    return res.status(405).json({ error: 'Method not allowed' })
   }
 
   // Get the current user's email
-  const currUserId = await getAuth(req).userId
+  const currUserId = getAuth(req).userId
   console.log('Generating api key for: ', currUserId)
 
   // Ensure the user email is present
   if (!currUserId) {
-    return NextResponse.json(
-      { error: 'User email is required' },
-      { status: 401 },
-    )
+    return res.status(401).json({ error: 'User email is required' })
   }
 
   try {
@@ -53,10 +52,7 @@ export default async function generateKey(
     }
 
     if (keys.length > 0 && keys[0]?.is_active) {
-      return NextResponse.json(
-        { error: 'User already has an API key' },
-        { status: 409 },
-      )
+      return res.status(409).json({ error: 'User already has an API key' })
     }
 
     // Generate a new API key
@@ -93,10 +89,10 @@ export default async function generateKey(
     })
 
     // Respond with the generated API key
-    return NextResponse.json(
-      { message: 'API key generated successfully', apiKey },
-      { status: 200 },
-    )
+    return res.status(200).json({
+      message: 'API key generated successfully',
+      apiKey,
+    })
   } catch (error) {
     // Log the error for debugging purposes
     console.error('Error generating API key:', error)
@@ -108,9 +104,6 @@ export default async function generateKey(
     })
 
     // Respond with a server error message
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    )
+    return res.status(500).json({ error: 'Internal server error' })
   }
 }
