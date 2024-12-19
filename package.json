@@ -2,6 +2,7 @@
   "name": "uiuc-chat-frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "next build",
     "bd": "infisical run --env=dev -- next build",

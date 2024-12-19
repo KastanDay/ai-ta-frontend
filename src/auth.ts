@@ -3,7 +3,7 @@ import { Pool } from "pg"
  
 export const auth = betterAuth({
     database: new Pool({
-        connectionString: "postgresql://postgres:8fyvaXYuPXTY4mjsZToZjsEGuzaem4Dv74jwtfky@bigbird-vm.humpback-symmetric.ts.net:5432"
+        connectionString: process.env.POSTGRES_DEV_CONNECTION_STRING as string
     }),
     emailAndPassword: {  
         enabled: true
