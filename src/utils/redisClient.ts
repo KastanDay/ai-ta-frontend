@@ -1,20 +1,21 @@
-import { createClient } from 'redis'
+// Create a Redis client with direct connection string format
+// export const redisClient = createClient({
+//   url: `redis://default:${process.env.REDIS_PASSWORD}@redis-13160.c283.us-east-1-4.ec2.redns.redis-cloud.com:13160`,
+// })
 
-// Create a Redis client
-export const redisClient = createClient({
-  // url: 'redis://dankchat:5438',
+import { Redis } from '@upstash/redis'
+
+export const redisClient = new Redis({
   url: process.env.REDIS_URL,
-  password: process.env.REDIS_PASSWORD,
+  token: process.env.REDIS_TOKEN,
 })
 
-console.log('Redis pasword: ', process.env.REDIS_PASSWORD)
-
 // Connect to the Redis server
-redisClient
-  .connect()
-  .then(() => {
-    console.log('Connected to Redis')
-  })
-  .catch((err) => {
-    console.error('Redis connection error:', err)
-  })
+// redisClient
+//   .connect()
+//   .then(() => {
+//     console.log('Connected to Redis')
+//   })
+//   .catch((err) => {
+//     console.error('Redis connection error:', err)
+//   })
