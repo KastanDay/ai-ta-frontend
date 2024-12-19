@@ -13,7 +13,7 @@ import { getOllamaModels } from '~/utils/modelProviders/ollama'
 import { getAzureModels } from '~/utils/modelProviders/azure'
 import { getAnthropicModels } from '~/utils/modelProviders/routes/anthropic'
 import { getWebLLMModels } from '~/utils/modelProviders/WebLLM'
-import type { NextApiRequest, NextApiResponse } from 'next'
+import { NextApiRequest, NextApiResponse } from 'next'
 import { getNCSAHostedModels } from '~/utils/modelProviders/NCSAHosted'
 import { getOpenAIModels } from '~/utils/modelProviders/routes/openai'
 import { OpenAIModelID } from '~/utils/modelProviders/types/openai'
@@ -34,16 +34,12 @@ export default async function handler(
     }
 
     // Fetch the project's API keys
-    let llmProviders = (await redisClient.get(
-      `${projectName}-llms`,
-    )) as ProjectWideLLMProviders | null
-
-    console.log('llmProviders in getModels', llmProviders)
-
-    if (!llmProviders) {
+    let llmProviders: ProjectWideLLMProviders
+    const redisValue = await redisClient.get(`${projectName}-llms`)
+    if (!redisValue) {
       llmProviders = {} as ProjectWideLLMProviders
     } else {
-      llmProviders = llmProviders as ProjectWideLLMProviders
+      llmProviders = JSON.parse(redisValue) as ProjectWideLLMProviders
     }
 
     // Define a function to create a placeholder provider with default values

@@ -23,7 +23,6 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   const course_name = req.query.course_name as string
-  console.log('course_name', course_name)
   const course_metadata = await getCourseMetadata(course_name)
 
   try {
