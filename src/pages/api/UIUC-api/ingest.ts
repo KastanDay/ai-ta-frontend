@@ -3,9 +3,7 @@ import { NextResponse } from 'next/server'
 import { supabase } from '~/utils/supabaseClient'
 import posthog from 'posthog-js'
 
-export const config = {
-  runtime: 'edge',
-}
+
 
 const handler = async (req: NextApiRequest) => {
   try {

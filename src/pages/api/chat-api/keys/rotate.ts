@@ -6,9 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { getAuth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 
-export const config = {
-  runtime: 'edge',
-}
+
 
 /**
  * API handler to rotate an API key for a user.

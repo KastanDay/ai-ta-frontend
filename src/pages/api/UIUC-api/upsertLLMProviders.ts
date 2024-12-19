@@ -1,5 +1,4 @@
 // upsertCourseMetadata.ts
-import { kv } from '@vercel/kv'
 import { type NextRequest, NextResponse } from 'next/server'
 import { ProjectWideLLMProviders } from '~/types/courseMetadata'
 import { encryptKeyIfNeeded } from '~/utils/crypto'
@@ -7,6 +6,7 @@ import {
   AllLLMProviders,
   LLMProvider,
 } from '~/utils/modelProviders/LLMProvider'
+import { redisClient } from '~/utils/redisClient'
 
 export const runtime = 'edge'
 
@@ -64,10 +64,9 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     console.debug('llmProviders BEFORE being cleaned and such', llmProviders)
 
     const redisKey = `${courseName}-llms`
-    // Start fetching existing LLMs early
-    const existingLLMsPromise = kv.get(
+    const existingLLMs = (await redisClient.get(
       redisKey,
-    ) as Promise<ProjectWideLLMProviders>
+    )) as ProjectWideLLMProviders
 
     // Ensure all keys are encrypted, then save to DB.
     const processProviders = async () => {
@@ -86,7 +85,6 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     await processProviders()
 
     // Now await the existing LLMs and combine with encrypted providers
-    const existingLLMs = await existingLLMsPromise
     const combined_llms = { ...existingLLMs, ...llmProviders }
 
     if (defaultModelID) {
@@ -104,7 +102,7 @@ export default async function handler(req: NextRequest, res: NextResponse) {
     console.debug('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 
     // Save the combined metadata
-    await kv.set(redisKey, combined_llms)
+    await redisClient.set(redisKey, JSON.stringify(combined_llms))
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error upserting LLM providers:', error)

@@ -8,9 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuth } from '@clerk/nextjs/server'
 import { extractEmailsFromClerk } from '~/components/UIUC-Components/clerkHelpers'
 
-export const config = {
-  runtime: 'edge',
-}
+
 
 /**
  * API endpoint to generate a unique API key for a user.

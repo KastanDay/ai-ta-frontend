@@ -4,9 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/utils/supabaseClient'
 import { getAuth } from '@clerk/nextjs/server'
 
-export const config = {
-  runtime: 'edge',
-}
+
 
 export default async function docsInProgress(
   req: NextRequest,
