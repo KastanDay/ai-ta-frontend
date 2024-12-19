@@ -118,7 +118,7 @@ const CourseMain: NextPage = () => {
   const [insightsOpen, setInsightsOpen] = useState(false)
 
   const courseMetadataRef = useRef<CourseMetadata | null>(null);
-  
+
   useEffect(() => {
     courseMetadataRef.current = courseMetadata;
   }, [courseMetadata]);
@@ -570,11 +570,10 @@ The final prompt you output should adhere to the following structure below. Do n
                           order={3}
                           variant="gradient"
                           gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                          className={`${montserrat_heading.variable} min-w-0 font-montserratHeading text-base sm:text-xl ${
-                            course_name.length > 40
-                              ? 'max-w-[120px] truncate sm:max-w-[300px] lg:max-w-[400px]'
-                              : ''
-                          }`}
+                          className={`${montserrat_heading.variable} min-w-0 font-montserratHeading text-base sm:text-xl ${course_name.length > 40
+                            ? 'max-w-[120px] truncate sm:max-w-[300px] lg:max-w-[400px]'
+                            : ''
+                            }`}
                         >
                           {course_name}
                         </Title>
@@ -591,6 +590,9 @@ The final prompt you output should adhere to the following structure below. Do n
                     className="min-h-full justify-center"
                   >
                     <div className="card flex h-full flex-col">
+
+
+
                       <Group
                         m="2rem"
                         align="center"
@@ -602,6 +604,156 @@ The final prompt you output should adhere to the following structure below. Do n
                           overflow: 'hidden',
                         }}
                       >
+                        {/* Prompt Engineering Guide */}
+                        <Paper
+                          className="rounded-xl w-full px-4 sm:px-6 md:px-8"
+                          shadow="xs"
+                          p="md"
+                          sx={{
+                            backgroundColor: '#15162c',
+                            border: '1px solid rgba(147, 51, 234, 0.3)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              backgroundColor: '#1a1b34',
+                              borderColor: 'rgba(147, 51, 234, 0.5)',
+                              transform: 'translateY(-1px)',
+                            },
+                          }}
+                          onClick={() => setInsightsOpen(!insightsOpen)}
+                        >
+                          <Flex
+                            align="center"
+                            justify="space-between"
+                            sx={{
+                              padding: '4px 8px',
+                              borderRadius: '8px',
+                            }}
+                          >
+                            <Flex align="center" gap="md">
+                              <IconBook
+                                size={24}
+                                style={{
+                                  color: 'hsl(280,100%,70%)',
+                                }}
+                              />
+                              <Text
+                                size="md"
+                                weight={600}
+                                className={`${montserrat_paragraph.variable} select-text font-montserratParagraph`}
+                                variant="gradient"
+                                gradient={{ from: 'gold', to: 'white', deg: 50 }}
+                              >
+                                Prompt Engineering Guide
+                              </Text>
+                            </Flex>
+                            <div
+                              className="transition-transform duration-200"
+                              style={{
+                                transform: insightsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                                color: 'hsl(280,100%,70%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <IconChevronDown size={24} />
+                            </div>
+                          </Flex>
+
+                          <Collapse in={insightsOpen} transitionDuration={200}>
+                            <div className="mt-4 px-2">
+                              <Text
+                                size="md"
+                                className={`${montserrat_paragraph.variable} select-text font-montserratParagraph`}
+                              >
+                                For additional insights and best practices on prompt creation, please review:
+                                <List
+                                  withPadding
+                                  className="mt-2"
+                                  spacing="sm"
+                                  icon={
+                                    <div
+                                      style={{
+                                        width: '6px',
+                                        height: '6px',
+                                        borderRadius: '50%',
+                                        backgroundColor: 'hsl(280,100%,70%)',
+                                        marginTop: '8px'
+                                      }}
+                                    />
+                                  }
+                                >
+                                  <List.Item>
+                                    <a
+                                      className={`text-sm hover:text-purple-400 transition-colors duration-200 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                      style={{ color: 'hsl(280,100%,70%)' }}
+                                      href="https://platform.openai.com/docs/guides/prompt-engineering"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      The Official OpenAI Prompt Engineering Guide
+                                      <IconExternalLink
+                                        size={18}
+                                        className="inline-block pl-1"
+                                        style={{ position: 'relative', top: '-2px' }}
+                                      />
+                                    </a>
+                                  </List.Item>
+                                  <List.Item>
+                                    <a
+                                      className={`text-sm hover:text-purple-400 transition-colors duration-200 ${montserrat_paragraph.variable} font-montserratParagraph`}
+                                      style={{ color: 'hsl(280,100%,70%)' }}
+                                      href="https://docs.anthropic.com/claude/prompt-library"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      The Official Anthropic Prompt Library
+                                      <IconExternalLink
+                                        size={18}
+                                        className="inline-block pl-1"
+                                        style={{ position: 'relative', top: '-2px' }}
+                                      />
+                                    </a>
+                                  </List.Item>
+                                </List>
+
+                                <Text
+                                  className={`label ${montserrat_paragraph.variable} inline-block select-text font-montserratParagraph`}
+                                  size="md"
+                                  style={{ marginTop: '1.5rem' }}
+                                >
+                                  The System Prompt provides the foundation for every conversation in this project. It defines the model&apos;s role, tone, and behavior. Consider including:
+                                  <List
+                                    withPadding
+                                    className="mt-2"
+                                    spacing="xs"
+                                    icon={
+                                      <div
+                                        style={{
+                                          width: '6px',
+                                          height: '6px',
+                                          borderRadius: '50%',
+                                          backgroundColor: 'hsl(280,100%,70%)',
+                                          marginTop: '8px'
+                                        }}
+                                      />
+                                    }
+                                  >
+                                    <List.Item>Key instructions or examples</List.Item>
+                                    <List.Item>A warm welcome message</List.Item>
+                                    <List.Item>Helpful links for further learning</List.Item>
+                                  </List>
+                                </Text>
+                              </Text>
+                            </div>
+                          </Collapse>
+                        </Paper>
+
+
+                        {/* SYSTEM PROMPT INPUT BOX */}
                         <div
                           style={{
                             width: isRightSideVisible ? '100%' : '100%',
@@ -716,12 +868,12 @@ The final prompt you output should adhere to the following structure below. Do n
                                   }}
                                   className={`relative text-white ${montserrat_paragraph.variable} font-montserratParagraph`}
                                   onMouseEnter={(e) =>
-                                    (e.currentTarget.style.background =
-                                      'linear-gradient(90deg, #4f46e5 0%, #2563eb 50%, #6d28d9 100%)')
+                                  (e.currentTarget.style.background =
+                                    'linear-gradient(90deg, #4f46e5 0%, #2563eb 50%, #6d28d9 100%)')
                                   }
                                   onMouseLeave={(e) =>
-                                    (e.currentTarget.style.background =
-                                      'linear-gradient(90deg, #6d28d9 0%, #4f46e5 50%, #2563eb 100%)')
+                                  (e.currentTarget.style.background =
+                                    'linear-gradient(90deg, #6d28d9 0%, #4f46e5 50%, #2563eb 100%)')
                                   }
                                 >
                                   <IconSparkles
@@ -810,153 +962,8 @@ The final prompt you output should adhere to the following structure below. Do n
                           </div>
                         </div>
 
-                        {/* Prompt Engineering Guide */}
-                        <Paper
-                          className="rounded-xl w-full px-4 sm:px-6 md:px-8"
-                          shadow="xs"
-                          p="md"
-                          sx={{
-                            backgroundColor: '#15162c',
-                            border: '1px solid rgba(147, 51, 234, 0.3)',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              backgroundColor: '#1a1b34',
-                              borderColor: 'rgba(147, 51, 234, 0.5)',
-                              transform: 'translateY(-1px)',
-                            },
-                          }}
-                          onClick={() => setInsightsOpen(!insightsOpen)}
-                        >
-                          <Flex 
-                            align="center" 
-                            justify="space-between" 
-                            sx={{
-                              padding: '4px 8px',
-                              borderRadius: '8px',
-                            }}
-                          >
-                            <Flex align="center" gap="md">
-                              <IconBook
-                                size={24} 
-                                style={{ 
-                                  color: 'hsl(280,100%,70%)',
-                                }} 
-                              />
-                              <Text
-                                size="md"
-                                weight={600}
-                                className={`${montserrat_paragraph.variable} select-text font-montserratParagraph`}
-                                variant="gradient"
-                                gradient={{ from: 'gold', to: 'white', deg: 50 }}
-                              >
-                                Prompt Engineering Guide
-                              </Text>
-                            </Flex>
-                            <div 
-                              className="transition-transform duration-200" 
-                              style={{ 
-                                transform: insightsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                                color: 'hsl(280,100%,70%)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            >
-                              <IconChevronDown size={24} />
-                            </div>
-                          </Flex>
 
-                          <Collapse in={insightsOpen} transitionDuration={200}>
-                            <div className="mt-4 px-2">
-                              <Text
-                                size="md"
-                                className={`${montserrat_paragraph.variable} select-text font-montserratParagraph`}
-                              >
-                                For additional insights and best practices on prompt creation, please review:
-                                <List 
-                                  withPadding 
-                                  className="mt-2"
-                                  spacing="sm"
-                                  icon={
-                                    <div
-                                      style={{
-                                        width: '6px',
-                                        height: '6px',
-                                        borderRadius: '50%',
-                                        backgroundColor: 'hsl(280,100%,70%)',
-                                        marginTop: '8px'
-                                      }}
-                                    />
-                                  }
-                                >
-                                  <List.Item>
-                                    <a
-                                      className={`text-sm hover:text-purple-400 transition-colors duration-200 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                      style={{ color: 'hsl(280,100%,70%)' }}
-                                      href="https://platform.openai.com/docs/guides/prompt-engineering"
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      The Official OpenAI Prompt Engineering Guide
-                                      <IconExternalLink
-                                        size={18}
-                                        className="inline-block pl-1"
-                                        style={{ position: 'relative', top: '-2px' }}
-                                      />
-                                    </a>
-                                  </List.Item>
-                                  <List.Item>
-                                    <a
-                                      className={`text-sm hover:text-purple-400 transition-colors duration-200 ${montserrat_paragraph.variable} font-montserratParagraph`}
-                                      style={{ color: 'hsl(280,100%,70%)' }}
-                                      href="https://docs.anthropic.com/claude/prompt-library"
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      The Official Anthropic Prompt Library
-                                      <IconExternalLink
-                                        size={18}
-                                        className="inline-block pl-1"
-                                        style={{ position: 'relative', top: '-2px' }}
-                                      />
-                                    </a>
-                                  </List.Item>
-                                </List>
 
-                                <Text
-                                  className={`label ${montserrat_paragraph.variable} inline-block select-text font-montserratParagraph`}
-                                  size="md"
-                                  style={{ marginTop: '1.5rem' }}
-                                >
-                                  The System Prompt provides the foundation for every conversation in this project. It defines the model&apos;s role, tone, and behavior. Consider including:
-                                  <List 
-                                    withPadding 
-                                    className="mt-2"
-                                    spacing="xs"
-                                    icon={
-                                      <div
-                                        style={{
-                                          width: '6px',
-                                          height: '6px',
-                                          borderRadius: '50%',
-                                          backgroundColor: 'hsl(280,100%,70%)',
-                                          marginTop: '8px'
-                                        }}
-                                      />
-                                    }
-                                  >
-                                    <List.Item>Key instructions or examples</List.Item>
-                                    <List.Item>A warm welcome message</List.Item>
-                                    <List.Item>Helpful links for further learning</List.Item>
-                                  </List>
-                                </Text>
-                              </Text>
-                            </div>
-                          </Collapse>
-                        </Paper>
                       </Group>
                       {/* <Alert icon={<IconAlertCircle size="1rem" />} title="Attention!" color="pink" style={{ width: isRightSideVisible ? '90%' : '73%', margin: 'auto', marginTop: '0px', color: 'pink' }}>
                         <span style={{ color: 'pink' }}>Remember to save and update the system prompt before you leave this page.</span>
@@ -977,10 +984,10 @@ The final prompt you output should adhere to the following structure below. Do n
                     >
                       <div className="card flex h-full flex-col">
                         <Flex direction="column" m="3rem" gap="md">
-                        <Flex align="center">
+                          <Flex align="center">
                             <Title
                               className={`${montserrat_heading.variable} font-montserratHeading`}
-                              variant="gradient" 
+                              variant="gradient"
                               gradient={{ from: 'gold', to: 'white', deg: 170 }}
                               order={3}
                               pl={'md'}
@@ -1019,7 +1026,7 @@ The final prompt you output should adhere to the following structure below. Do n
                             }}
                           />
 
-                          <Divider/>
+                          <Divider />
 
                           <Flex align="center" style={{ paddingTop: '15px' }}>
                             <Title
@@ -1136,7 +1143,7 @@ The final prompt you output should adhere to the following structure below. Do n
                               opened={resetModalOpened}
                               onClose={closeResetModal}
                               title={
-                                <Text 
+                                <Text
                                   className={`${montserrat_heading.variable} font-montserratHeading`}
                                   size="lg"
                                   weight={700}
@@ -1150,20 +1157,20 @@ The final prompt you output should adhere to the following structure below. Do n
                               radius="md"
                               size="md"
                               styles={{
-                                header: { 
-                                  backgroundColor: '#15162c', 
+                                header: {
+                                  backgroundColor: '#15162c',
                                   borderBottom: '1px solid #2D2F48',
                                   padding: '20px 24px',
                                   marginBottom: '16px'
                                 },
-                                content: { 
-                                  backgroundColor: '#15162c', 
+                                content: {
+                                  backgroundColor: '#15162c',
                                   border: '1px solid #2D2F48',
                                 },
                                 body: {
                                   padding: '0 24px 24px 24px',
                                 },
-                                title: { 
+                                title: {
                                   marginBottom: '0',
                                 },
                                 close: {
@@ -1173,45 +1180,45 @@ The final prompt you output should adhere to the following structure below. Do n
                             >
                               <Flex direction="column" gap="xl" style={{ marginTop: '8px' }}>
                                 <Flex align="flex-start" gap="md">
-                                  <IconAlertTriangle 
-                                    size={24} 
-                                    color={theme.colors.red[5]} 
+                                  <IconAlertTriangle
+                                    size={24}
+                                    color={theme.colors.red[5]}
                                     style={{ marginTop: '2px' }}
                                   />
-                                  <Text 
+                                  <Text
                                     className={`${montserrat_paragraph.variable} font-montserratParagraph`}
-                                    size="sm" 
+                                    size="sm"
                                     weight={500}
                                     style={{ color: 'white', lineHeight: 1.5 }}
                                   >
                                     Are you sure you want to reset your system prompt and all behavior settings to their default values?
                                   </Text>
                                 </Flex>
-                                
+
                                 <Divider style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
-                                
+
                                 <div>
-                                  <Text 
-                                    size="sm" 
+                                  <Text
+                                    size="sm"
                                     className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                                     weight={600}
                                     style={{ color: '#D1D1D1', marginBottom: '12px' }}
                                   >
                                     This action will:
                                   </Text>
-                                  <List 
-                                    size="sm" 
+                                  <List
+                                    size="sm"
                                     spacing="sm"
                                     style={{ color: '#D1D1D1' }}
                                     icon={
-                                      <div 
+                                      <div
                                         style={{
                                           width: '6px',
                                           height: '6px',
                                           borderRadius: '50%',
                                           backgroundColor: 'hsl(0,100%,70%)',
                                           marginTop: '8px'
-                                        }} 
+                                        }}
                                       />
                                     }
                                   >
@@ -1220,8 +1227,8 @@ The final prompt you output should adhere to the following structure below. Do n
                                   </List>
                                 </div>
 
-                                <Text 
-                                  size="sm" 
+                                <Text
+                                  size="sm"
                                   style={{ color: '#D1D1D1' }}
                                   className={`${montserrat_paragraph.variable} font-montserratParagraph`}
                                 >
