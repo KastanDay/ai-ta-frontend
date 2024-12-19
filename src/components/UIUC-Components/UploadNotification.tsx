@@ -20,6 +20,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { LoadingSpinner } from './LoadingSpinner'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { useQuery } from '@tanstack/react-query'
 
 export interface FileUpload {
   name: string
@@ -29,19 +30,41 @@ export interface FileUpload {
   error?: string
 }
 
+interface FailedDocumentsResponse {
+  final_docs: Array<{
+    id: string | number
+    course_name: string
+    readable_filename: string
+    s3_path: string
+    url: string
+    base_url: string
+    created_at: string
+    error: string
+  }>
+  total_count: number
+  recent_fail_count: number
+}
+
+
 interface UploadNotificationProps {
   files: FileUpload[]
   onClose: () => void
   // onCancel: () => void
+  projectName: string
 }
 
 function UploadNotificationContent({
   files,
   onClose,
+  projectName
 }: UploadNotificationProps) {
   const [isMinimized, setIsMinimized] = useState(false)
   const [currentFiles, setCurrentFiles] = useState<FileUpload[]>([])
-
+  const { data: failedDocuments } = useQuery<FailedDocumentsResponse>({
+    queryKey: ['failedDocuments', projectName, 1, '', '', 'created_at', 'desc'],
+    staleTime: 10000,
+    enabled: !!projectName,
+  })
   useEffect(() => {
     if (files && Array.isArray(files)) {
       setCurrentFiles((prevFiles) => {
@@ -60,10 +83,28 @@ function UploadNotificationContent({
           }
           return newFile
         })
+
+        if (failedDocuments?.final_docs) {
+          return files.map(file => {
+            const failedDoc = failedDocuments.final_docs.find(
+              doc => doc.readable_filename === file.name || doc.url === file.url
+            )
+
+            if (failedDoc) {
+              return {
+                ...file,
+                status: 'error' as const,
+                error: failedDoc.error
+              }
+            }
+            return file
+          })
+        }
+
         return updatedFiles
       })
     }
-  }, [files])
+  }, [files, failedDocuments])
 
   useEffect(() => {
     const allFilesDone =
@@ -175,7 +216,7 @@ function UploadNotificationContent({
             component="pre"
           >
             {currentFiles.some((file) => file.status === 'error')
-              ? 'If it doesn&#39;t work, please try again and let us know!'
+              ? "If it doesn't work, please try again and let us know!"
               : currentFiles.some((file) => file.status === 'uploading')
                 ? 'Please stay on this page while files are uploading'
                 : currentFiles.some((file) => file.status === 'ingesting')
@@ -244,19 +285,19 @@ function UploadNotificationContent({
                   <div className="ml-2 flex items-center">
                     {(file.status === 'uploading' ||
                       file.status === 'ingesting') && (
-                      <Tooltip
-                        label={
-                          file.status === 'uploading'
-                            ? 'Uploading to secure storage'
-                            : 'Processing for chat'
-                        }
-                        classNames={{
-                          tooltip: `${montserrat_paragraph.variable} font-montserratParagraph`,
-                        }}
-                      >
-                        <LoadingSpinner size="xs" />
-                      </Tooltip>
-                    )}
+                        <Tooltip
+                          label={
+                            file.status === 'uploading'
+                              ? 'Uploading to secure storage'
+                              : 'Processing for chat'
+                          }
+                          classNames={{
+                            tooltip: `${montserrat_paragraph.variable} font-montserratParagraph`,
+                          }}
+                        >
+                          <LoadingSpinner size="xs" />
+                        </Tooltip>
+                      )}
                     {file.status === 'complete' && (
                       <Tooltip
                         label="Ready for chat"
