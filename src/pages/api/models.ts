@@ -20,9 +20,7 @@ import { OpenAIModelID } from '~/utils/modelProviders/types/openai'
 import { ProjectWideLLMProviders } from '~/types/courseMetadata'
 import { redisClient } from '~/utils/redisClient'
 
-export const config = {
-  runtime: 'edge',
-}
+
 
 const handler = async (
   req: NextRequest,

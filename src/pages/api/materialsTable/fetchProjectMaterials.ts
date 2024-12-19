@@ -5,9 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PostgrestError } from '@supabase/supabase-js'
 import { CourseDocument } from '~/types/courseMaterials'
 
-export const config = {
-  runtime: 'edge',
-}
+
 
 /**
  * API handler to delete an API key for a user.

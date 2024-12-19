@@ -3,9 +3,7 @@ import { getAuth } from '@clerk/nextjs/server'
 import posthog from 'posthog-js'
 import { NextRequest, NextResponse } from 'next/server'
 
-export const config = {
-  runtime: 'edge',
-}
+
 
 /**
  * API handler to delete an API key for a user.
