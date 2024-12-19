@@ -6,8 +6,8 @@
       "dom.iterable",
       "esnext"
     ],
-    "module": "esnext", // relevant
-    "moduleResolution": "bundler", // relevant 
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "allowJs": true,
     "checkJs": true,
     "skipLibCheck": true,
@@ -21,6 +21,7 @@
     "incremental": true,
     "noUncheckedIndexedAccess": true,
     "baseUrl": ".",
+    "declaration": false, // for betterAuth: https://www.better-auth.com/docs/concepts/typescript#typescript-config
     "paths": {
       "~/*": [
         "./src/*"

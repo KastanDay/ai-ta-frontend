@@ -58,7 +58,9 @@ const config = {
     ],
   },
   experimental: {
-    esmExternals: false, // To make certain packages work with the /pages router.
+    // esmExternals: false, // To make certain packages work with the /pages router.
+    esmExternals: true, // Change this to true (default value)
+    serverComponentsExternalPackages: ['consola'],
   },
   async headers() {
     return [

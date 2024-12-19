@@ -1,5 +1,5 @@
 "use client"
-import { authClient } from "@/lib/auth-client"; //import the auth client
+import { authClient } from "@/lib/auth-client"; // import the auth client
 import React from "react";
 import { useState } from 'react';
 
@@ -14,9 +14,6 @@ export default function NewSignUp() {
       email,
       password,
       name,
-      // email: 'hi',
-      // password: 'there',
-      // name: 'stan',
       // image: image ? convertImageToBase64(image) : undefined, 
     }, {
       onRequest: (ctx) => {
