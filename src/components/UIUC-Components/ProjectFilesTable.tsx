@@ -205,13 +205,6 @@ export function ProjectFilesTable({
       return failedDocumentsResponse
     },
   })
-  console.log('failedDocuments',
-    course_name,
-    page,
-    filterKey,
-    filterValue,
-    sortStatus.columnAccessor,
-    sortStatus.direction,)
 
   const {
     data: documentGroups,

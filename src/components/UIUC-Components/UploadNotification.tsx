@@ -65,7 +65,6 @@ function UploadNotificationContent({
     staleTime: 10000,
     enabled: !!projectName,
   })
-  console.log("failedDocuments", failedDocuments)
   useEffect(() => {
     if (files && Array.isArray(files)) {
       setCurrentFiles((prevFiles) => {
