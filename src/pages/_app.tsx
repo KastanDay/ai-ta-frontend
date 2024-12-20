@@ -11,7 +11,7 @@ import Maintenance from '~/components/UIUC-Components/Maintenance'
 import posthog from 'posthog-js'
 import { PostHogProvider } from 'posthog-js/react'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
@@ -54,7 +54,7 @@ const MyApp: AppType = ({ Component, pageProps: { ...pageProps } }) => {
       try {
         const response = await fetch('/api/UIUC-api/getMaintenanceModeFast')
         const data = await response.json()
-        console.log("Maintance mode", data)
+        console.log("Maintenance mode", data)
         setIsMaintenanceMode(data.isMaintenanceMode)
       } catch (error) {
         console.error('Failed to check maintenance mode:', error)
