@@ -35,6 +35,7 @@ const MyApp: AppType = ({ Component, pageProps: { ...pageProps } }) => {
   const router = useRouter()
   const queryClient = new QueryClient()
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false)
+  const effectRan = useRef(false)
 
   useEffect(() => {
     // Track page views in PostHog
@@ -48,6 +49,8 @@ const MyApp: AppType = ({ Component, pageProps: { ...pageProps } }) => {
 
   useEffect(() => {
     const checkMaintenanceMode = async () => {
+      if (effectRan.current) return
+
       try {
         const response = await fetch('/api/UIUC-api/getMaintenanceModeFast')
         const data = await response.json()
@@ -60,6 +63,7 @@ const MyApp: AppType = ({ Component, pageProps: { ...pageProps } }) => {
     }
 
     checkMaintenanceMode()
+    effectRan.current = true
   }, [])
 
   if (isMaintenanceMode) {
