@@ -19,8 +19,11 @@ import {
 import { LandingPageHeader } from '~/components/UIUC-Components/navbars/GlobalHeader'
 import GlobalFooter from '~/components/UIUC-Components/GlobalFooter'
 import { montserrat_heading, montserrat_paragraph } from 'fonts'
+import { useSession } from '~/lib/auth-client'
 
 const Home: NextPage = () => {
+  const data = useSession()
+  const username = data?.data?.session?.userId
   return (
     <>
       <Head>
@@ -39,6 +42,7 @@ const Home: NextPage = () => {
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             UIUC.<span className="text-[hsl(280,100%,70%)]">chat</span>
           </h1>
+          <h1>Username: {username ?? "not logged in"}</h1>
           <div className="w-full max-w-4xl">
             {/* size="lg"
             py="l"
