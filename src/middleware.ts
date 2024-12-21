@@ -50,6 +50,9 @@ export default async function middleware(request: NextRequest) {
 
 // Update the matcher to include the materials routes
 export const config = {
+  api: {
+    bodyParser: false,
+  },
   matcher: [
     '/((?!.*\\..*|_next).*)',
     '/',
